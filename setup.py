@@ -10,7 +10,7 @@ from setuptools import find_packages, setup
 
 PATH_ROOT = os.path.dirname(__file__)
 
-import pl_sandbox  # noqa: E402
+import torchmetrics  # noqa: E402
 
 
 def load_requirements(path_dir=PATH_ROOT, comment_char='#'):
@@ -23,7 +23,7 @@ def load_requirements(path_dir=PATH_ROOT, comment_char='#'):
 
 def load_long_describtion():
     # https://github.com/PyTorchLightning/pytorch-lightning/raw/master/docs/source/_images/lightning_module/pt_to_pl.png
-    url = os.path.join(pl_sandbox.__homepage__, 'raw', pl_sandbox.__version__, 'docs')
+    url = os.path.join(torchmetrics.__homepage__, 'raw', torchmetrics.__version__, 'docs')
     text = open('README.md', encoding='utf-8').read()
     # replace relative repository path to absolute link to the release
     text = text.replace('](docs', f']({url}')
@@ -38,14 +38,14 @@ def load_long_describtion():
 # the goal of the project is simplicity for researchers, don't want to add too much
 # engineer specific practices
 setup(
-    name='lightning-sandbox',
-    version=pl_sandbox.__version__,
-    description=pl_sandbox.__docs__,
-    author=pl_sandbox.__author__,
-    author_email=pl_sandbox.__author_email__,
-    url=pl_sandbox.__homepage__,
-    download_url='https://github.com/PyTorchLightning/lightning-sandbox',
-    license=pl_sandbox.__license__,
+    name='torchmetrics',
+    version=torchmetrics.__version__,
+    description=torchmetrics.__docs__,
+    author=torchmetrics.__author__,
+    author_email=torchmetrics.__author_email__,
+    url=torchmetrics.__homepage__,
+    download_url='https://github.com/PyTorchLightning/torchmetrics',
+    license=torchmetrics.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
 
     long_description=load_long_describtion(),
@@ -59,9 +59,9 @@ setup(
     install_requires=load_requirements(PATH_ROOT),
 
     project_urls={
-        "Bug Tracker": "https://github.com/PyTorchLightning/lightning-sandbox/issues",
-        "Documentation": "https://lightning-sandbox.rtfd.io/en/latest/",
-        "Source Code": "https://github.com/PyTorchLightning/lightning-sandbox",
+        "Bug Tracker": "https://github.com/PyTorchLightning/torchmetrics/issues",
+        "Documentation": "https://torchmetrics.rtfd.io/en/latest/",
+        "Source Code": "https://github.com/PyTorchLightning/torchmetrics",
     },
 
     classifiers=[

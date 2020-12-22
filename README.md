@@ -2,9 +2,9 @@
 
 This is starter project template which shall simplify initial steps for each new PL project...
 
-[![CI testing](https://github.com/PyTorchLightning/lightning-sandbox/workflows/CI%20testing/badge.svg)](https://github.com/PyTorchLightning/lightning-sandbox/actions?query=workflow%3A%22CI+testing%22)
-![Check Code formatting](https://github.com/PyTorchLightning/lightning-sandbox/workflows/Check%20Code%20formatting/badge.svg)
-[![Documentation Status](https://readthedocs.org/projects/pt-lightning-sandbox/badge/?version=latest)](https://pt-lightning-sandbox.readthedocs.io/en/latest/?badge=latest)
+[![CI testing](https://github.com/PyTorchLightning/torchmetrics/workflows/CI%20testing/badge.svg)](https://github.com/PyTorchLightning/torchmetrics/actions?query=workflow%3A%22CI+testing%22)
+![Check Code formatting](https://github.com/PyTorchLightning/torchmetrics/workflows/Check%20Code%20formatting/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/pt-torchmetrics/badge/?version=latest)](https://pt-torchmetrics.readthedocs.io/en/latest/?badge=latest)
 
 \* the Read-The-Docs is failing as this one leads to the public domain which requires the repo to be public too
 
@@ -12,11 +12,11 @@ This is starter project template which shall simplify initial steps for each new
 
 Listing the implemented sections:
  - sample package named `pl_sandbox`
- - setting [CI](https://github.com/PyTorchLightning/lightning-sandbox/actions?query=workflow%3A%22CI+testing%22) for package and _tests_ folder
+ - setting [CI](https://github.com/PyTorchLightning/torchmetrics/actions?query=workflow%3A%22CI+testing%22) for package and _tests_ folder
  - setup/install package
  - setting docs with Sphinx
  - automatic PyPI release on GH release
- - Docs deployd as [GH pages](https://pytorchlightning.github.io/lightning-sandbox)
+ - Docs deployd as [GH pages](https://pytorchlightning.github.io/torchmetrics)
 
 ## To be Done
 

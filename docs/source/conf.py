@@ -32,19 +32,19 @@ builtins.__LIGHTNING_BOLT_SETUP__ = True
 
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get('SPHINX_MOCK_REQUIREMENTS', True))
 
-import pl_sandbox  # noqa: E402
+import torchmetrics  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
 # this name shall match the project name in Github as it is used for linking to code
-project = 'PyTorch-Lightning-Sandbox'
-copyright = pl_sandbox.__copyright__
-author = pl_sandbox.__author__
+project = 'PyTorch-torchmetrics'
+copyright = torchmetrics.__copyright__
+author = torchmetrics.__author__
 
 # The short X.Y version
-version = pl_sandbox.__version__
+version = torchmetrics.__version__
 # The full version, including alpha/beta/rc tags
-release = pl_sandbox.__version__
+release = torchmetrics.__version__
 
 # Options for the linkcode extension
 # ----------------------------------
@@ -131,7 +131,7 @@ language = None
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    'api/pl_sandbox.rst',
+    'api/torchmetrics.rst',
     'api/modules.rst',
     'PULL_REQUEST_TEMPLATE.md',
 ]
@@ -153,8 +153,8 @@ html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
 # documentation.
 
 html_theme_options = {
-    'pytorch_project': pl_sandbox.__homepage__,
-    'canonical_url': pl_sandbox.__homepage__,
+    'pytorch_project': torchmetrics.__homepage__,
+    'canonical_url': torchmetrics.__homepage__,
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
@@ -221,7 +221,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, project, project + ' Documentation', author, project,
-     pl_sandbox.__docs__,
+     torchmetrics.__docs__,
      'Miscellaneous'),
 ]
 
@@ -267,7 +267,7 @@ todo_include_todos = True
 
 # packages for which sphinx-apidoc should generate the docs (.rst files)
 PACKAGES = [
-    pl_sandbox.__name__,
+    torchmetrics.__name__,
 ]
 
 apidoc_output_folder = os.path.join(PATH_HERE, 'api')

@@ -1,6 +1,6 @@
 import pytest
 
-from pl_sandbox.sample_module import my_sample_func
+from torchmetrics.sample_module import my_sample_func
 
 
 @pytest.mark.parametrize('a,b,expected', [
