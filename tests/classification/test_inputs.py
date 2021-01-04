@@ -4,7 +4,7 @@ from torch import randint, rand
 
 from pytorch_lightning.metrics.utils import to_onehot, select_topk
 from pytorch_lightning.metrics.classification.helpers import _input_format_classification
-from tests.metrics.classification.inputs import (
+from tests.classification.inputs import (
     Input,
     _binary_inputs as _bin,
     _binary_prob_inputs as _bin_prob,
@@ -17,7 +17,7 @@ from tests.metrics.classification.inputs import (
     _multilabel_multidim_inputs as _mlmd,
     _multilabel_multidim_prob_inputs as _mlmd_prob,
 )
-from tests.metrics.utils import NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM, THRESHOLD
+from tests.utils import NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM, THRESHOLD
 
 torch.manual_seed(42)
 
