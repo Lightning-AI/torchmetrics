@@ -10,7 +10,7 @@ PyTorch-torchmetrics documentation
    :name: start
    :caption: Start here
 
-   api/pl_sandbox.sample_module
+   api/torchmetrics.sample_module
 
 
 Indices and tables
