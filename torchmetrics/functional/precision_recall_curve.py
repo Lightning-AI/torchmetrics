@@ -16,7 +16,7 @@ from typing import Optional, Sequence, Tuple, List, Union
 import torch
 import torch.nn.functional as F
 
-from pytorch_lightning.utilities import rank_zero_warn
+from torchmetrics.utils import rank_zero_warn
 
 
 def _binary_clf_curve(

@@ -20,10 +20,7 @@ from typing import Any, Callable, Optional, Union
 import torch
 from torch import nn
 
-from torchmetrics.utils import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
-from pytorch_lightning.utilities.apply_func import apply_to_collection
-from pytorch_lightning.utilities.distributed import gather_all_tensors
-
+from torchmetrics.utils import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum, gather_all_tensors, apply_to_collection
 
 class Metric(nn.Module, ABC):
     """

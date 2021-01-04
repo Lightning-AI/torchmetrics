@@ -15,7 +15,7 @@ import torch
 from typing import Any, Callable, Optional
 
 from torchmetrics.metric import Metric
-from pytorch_lightning.utilities import rank_zero_warn
+from torchmetrics.utils import rank_zero_warn
 from torchmetrics.functional.explained_variance import (
     _explained_variance_update,
     _explained_variance_compute,

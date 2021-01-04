@@ -20,7 +20,7 @@ from torchmetrics.functional.roc import (
     _roc_update,
     _roc_compute
 )
-from pytorch_lightning.utilities import rank_zero_warn
+from torchmetrics.utils import rank_zero_warn
 
 
 class ROC(Metric):

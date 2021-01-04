@@ -15,7 +15,7 @@ import torch
 from typing import Any, Optional, Sequence
 
 from torchmetrics.metric import Metric
-from pytorch_lightning.utilities import rank_zero_warn
+from torchmetrics.utils import rank_zero_warn
 from torchmetrics.functional.ssim import _ssim_update, _ssim_compute
 
 

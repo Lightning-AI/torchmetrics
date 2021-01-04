@@ -20,7 +20,7 @@ from torchmetrics.functional.precision_recall_curve import (
     _precision_recall_curve_update,
     _precision_recall_curve_compute
 )
-from pytorch_lightning.utilities import rank_zero_warn
+from torchmetrics.utils import rank_zero_warn
 
 
 class PrecisionRecallCurve(Metric):

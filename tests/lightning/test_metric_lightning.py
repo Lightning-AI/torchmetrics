@@ -4,8 +4,7 @@ import torch
 
 from pytorch_lightning import Trainer
 from torchmetrics import Metric
-from tests.base.boring_model import BoringModel
-import tests.base.develop_utils as tutils
+from boring_model import BoringModel
 
 
 class SumMetric(Metric):

@@ -11,14 +11,97 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union, Mapping, Callable, Sequence, Any
+import os
+import warnings
+from functools import wraps
 
 import torch
 
-from pytorch_lightning.utilities import rank_zero_warn
-
 METRIC_EPS = 1e-6
 
+
+def rank_zero_only(fn):
+    # NOTE: copied from pytorch_lightning.utilities.distributed
+    # TODO this is fairly lightning specific, should be agnostic
+    @wraps(fn)
+    def wrapped_fn(*args, **kwargs):
+        if rank_zero_only.rank == 0:
+            return fn(*args, **kwargs)
+
+    return wrapped_fn
+
+
+# add the attribute to the function but don't overwrite in case Trainer has already set it
+rank_zero_only.rank = getattr(
+    rank_zero_only, "rank", int(os.environ.get("LOCAL_RANK", 0))
+)
+
+
+def _warn(*args, **kwargs):
+    warnings.warn(*args, **kwargs)
+
+rank_zero_warn = rank_zero_only(_warn)
+
+
+def apply_to_collection(data: Any, dtype: Union[type, tuple], function: Callable, *args, **kwargs) -> Any:
+    """
+    NOTE: copied from pytorch_lightning.utilities.apply_func
+    Recursively applies a function to all elements of a certain dtype.
+    Args:
+        data: the collection to apply the function to
+        dtype: the given function will be applied to all elements of this dtype
+        function: the function to apply
+        *args: positional arguments (will be forwarded to calls of ``function``)
+        **kwargs: keyword arguments (will be forwarded to calls of ``function``)
+    Returns:
+        the resulting collection
+    """
+    elem_type = type(data)
+
+    # Breaking condition
+    if isinstance(data, dtype):
+        return function(data, *args, **kwargs)
+
+    # Recursively apply to collection items
+    elif isinstance(data, Mapping):
+        return elem_type({k: apply_to_collection(v, dtype, function, *args, **kwargs)
+                          for k, v in data.items()})
+    elif isinstance(data, tuple) and hasattr(data, '_fields'):  # named tuple
+        return elem_type(*(apply_to_collection(d, dtype, function, *args, **kwargs) for d in data))
+    elif isinstance(data, Sequence) and not isinstance(data, str):
+        return elem_type([apply_to_collection(d, dtype, function, *args, **kwargs) for d in data])
+
+    # data is neither of dtype, nor a collection
+    return data
+
+def gather_all_tensors(result: Union[torch.Tensor], group: Optional[Any] = None):
+    """
+    NOTE: copied from pytorch_lightning.utlities.distributed
+    Function to gather all tensors from several ddp processes onto a list that
+    is broadcasted to all processes
+    Args:
+        result: the value to sync
+        group: the process group to gather results from. Defaults to all processes (world)
+    Return:
+        gathered_result: list with size equal to the process group where
+            gathered_result[i] corresponds to result tensor from process i
+    """
+    if group is None:
+        group = torch.distributed.group.WORLD
+
+    # convert tensors to contiguous format
+    result = result.contiguous()
+
+    world_size = torch.distributed.get_world_size(group)
+
+    gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
+
+    # sync and broadcast all
+    torch.distributed.barrier(group=group)
+    torch.distributed.all_gather(gathered_result, result, group)
+
+    return gathered_result
 
 def dim_zero_cat(x):
     x = x if isinstance(x, (list, tuple)) else [x]
@@ -40,7 +123,9 @@ def _flatten(x):
 def _check_same_shape(pred: torch.Tensor, target: torch.Tensor):
     """ Check that predictions and target have the same shape, else raise error """
     if pred.shape != target.shape:
-        raise RuntimeError("Predictions and targets are expected to have the same shape")
+        raise RuntimeError(
+            "Predictions and targets are expected to have the same shape"
+        )
 
 
 def _input_format_classification(
@@ -59,7 +144,9 @@ def _input_format_classification(
         target: tensor with labels
     """
     if not (preds.ndim == target.ndim or preds.ndim == target.ndim + 1):
-        raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
+        raise ValueError(
+            "preds and target must have same number of dimensions, or one additional dimension for preds"
+        )
 
     if preds.ndim == target.ndim + 1:
         # multi class probabilites
@@ -72,7 +159,11 @@ def _input_format_classification(
 
 
 def _input_format_classification_one_hot(
-    num_classes: int, preds: torch.Tensor, target: torch.Tensor, threshold: float = 0.5, multilabel: bool = False
+    num_classes: int,
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    threshold: float = 0.5,
+    multilabel: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Convert preds and target tensors into one hot spare label tensors
 
@@ -89,13 +180,20 @@ def _input_format_classification_one_hot(
         target: one hot tensors of shape [num_classes, -1] with true labels
     """
     if not (preds.ndim == target.ndim or preds.ndim == target.ndim + 1):
-        raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
+        raise ValueError(
+            "preds and target must have same number of dimensions, or one additional dimension for preds"
+        )
 
     if preds.ndim == target.ndim + 1:
         # multi class probabilites
         preds = torch.argmax(preds, dim=1)
 
-    if preds.ndim == target.ndim and preds.dtype in (torch.long, torch.int) and num_classes > 1 and not multilabel:
+    if (
+        preds.ndim == target.ndim
+        and preds.dtype in (torch.long, torch.int)
+        and num_classes > 1
+        and not multilabel
+    ):
         # multi-class
         preds = to_onehot(preds, num_classes=num_classes)
         target = to_onehot(target, num_classes=num_classes)
@@ -251,7 +349,10 @@ def reduce(to_reduce: torch.Tensor, reduction: str) -> torch.Tensor:
 
 
 def class_reduce(
-    num: torch.Tensor, denom: torch.Tensor, weights: torch.Tensor, class_reduction: str = "none"
+    num: torch.Tensor,
+    denom: torch.Tensor,
+    weights: torch.Tensor,
+    class_reduction: str = "none",
 ) -> torch.Tensor:
     """
     Function used to reduce classification metrics of the form `num / denom * weights`.
@@ -291,5 +392,6 @@ def class_reduce(
         return fraction
 
     raise ValueError(
-        f"Reduction parameter {class_reduction} unknown." f" Choose between one of these: {valid_reduction}"
+        f"Reduction parameter {class_reduction} unknown."
+        f" Choose between one of these: {valid_reduction}"
     )
