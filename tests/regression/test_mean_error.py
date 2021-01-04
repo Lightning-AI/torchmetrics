@@ -15,7 +15,7 @@ from torchmetrics.functional import (
     mean_squared_error,
     mean_squared_log_error,
 )
-from tests.metrics.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 torch.manual_seed(42)
 

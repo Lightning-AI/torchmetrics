@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import torch
 
-from tests.metrics.utils import (
+from tests.utils import (
     NUM_BATCHES,
     BATCH_SIZE,
     NUM_CLASSES,

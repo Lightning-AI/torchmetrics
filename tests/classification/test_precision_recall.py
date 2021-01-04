@@ -6,7 +6,7 @@ import torch
 from sklearn.metrics import precision_score, recall_score
 
 from torchmetrics import Precision, Recall
-from tests.metrics.classification.inputs import (
+from tests.classification.inputs import (
     _binary_inputs,
     _binary_prob_inputs,
     _multiclass_inputs,
@@ -16,7 +16,7 @@ from tests.metrics.classification.inputs import (
     _multilabel_inputs,
     _multilabel_prob_inputs,
 )
-from tests.metrics.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
 
 torch.manual_seed(42)
 

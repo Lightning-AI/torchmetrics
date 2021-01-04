@@ -7,12 +7,12 @@ from sklearn.metrics import average_precision_score as _sk_average_precision_sco
 
 from torchmetrics.classification.average_precision import AveragePrecision
 from torchmetrics.functional.average_precision import average_precision
-from tests.metrics.classification.inputs import (
+from tests.classification.inputs import (
     _binary_prob_inputs,
     _multiclass_prob_inputs,
     _multidim_multiclass_prob_inputs,
 )
-from tests.metrics.utils import NUM_CLASSES, MetricTester
+from tests.utils import NUM_CLASSES, MetricTester
 
 torch.manual_seed(42)
 

@@ -7,7 +7,7 @@ from sklearn.metrics import explained_variance_score
 
 from torchmetrics.regression import ExplainedVariance
 from torchmetrics.functional import explained_variance
-from tests.metrics.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 torch.manual_seed(42)
 
