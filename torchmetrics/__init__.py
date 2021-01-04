@@ -10,10 +10,27 @@ __docs__ = "PyTorch Lightning Sample project."
 __long_doc__ = """
 What is it?
 -----------
-This is starter project template which shall simplify initial steps for each new PL project...
-
-Except the implemented sections:
- - sample package
- - setting CI
- - setting Docs
+...
 """
+from pytorch_lightning.metrics.metric import Metric
+
+from pytorch_lightning.metrics.classification import (
+    Accuracy,
+    Precision,
+    Recall,
+    ConfusionMatrix,
+    PrecisionRecallCurve,
+    AveragePrecision,
+    ROC,
+    FBeta,
+    F1,
+)
+
+from pytorch_lightning.metrics.regression import (
+    MeanSquaredError,
+    MeanAbsoluteError,
+    MeanSquaredLogError,
+    ExplainedVariance,
+    PSNR,
+    SSIM,
+)
