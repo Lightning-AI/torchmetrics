@@ -1,6 +1,6 @@
 """Root package info."""
 
-__version__ = '0.0.0rc'
+__version__ = '0.0.0rc1'
 __author__ = 'PyTorchLightning et al.'
 __author_email__ = 'name@pytorchlightning.ai'
 __license__ = 'TBD'

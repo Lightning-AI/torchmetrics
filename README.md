@@ -13,7 +13,6 @@ This is starter project which shall simplify initial steps for each new PL proje
 You still need to enable some external integrations such as:
  - in GH setting lock the master breach - no direct push without PR
  - init Read-The-Docs (add this new project)
- - add credentials for releasing package to PyPI
  - specify license in `LICENSE` file and package init
 
 ## Tests / Docs notes
