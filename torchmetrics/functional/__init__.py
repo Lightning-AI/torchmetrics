@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pytorch_lightning.metrics.functional.average_precision import average_precision
-from pytorch_lightning.metrics.functional.classification import (
+from torchmetrics.functional.average_precision import average_precision
+from torchmetrics.functional.classification import (
     accuracy,
     auc,
     auroc,
@@ -25,16 +25,16 @@ from pytorch_lightning.metrics.functional.classification import (
     stat_scores_multiple_classes,
     iou,
 )
-from pytorch_lightning.metrics.functional.confusion_matrix import confusion_matrix
+from torchmetrics.functional.confusion_matrix import confusion_matrix
 # TODO: unify metrics between class and functional, add below
-from pytorch_lightning.metrics.functional.explained_variance import explained_variance
-from pytorch_lightning.metrics.functional.f_beta import fbeta, f1
-from pytorch_lightning.metrics.functional.mean_absolute_error import mean_absolute_error
-from pytorch_lightning.metrics.functional.mean_squared_error import mean_squared_error
-from pytorch_lightning.metrics.functional.mean_squared_log_error import mean_squared_log_error
-from pytorch_lightning.metrics.functional.nlp import bleu_score
-from pytorch_lightning.metrics.functional.precision_recall_curve import precision_recall_curve
-from pytorch_lightning.metrics.functional.psnr import psnr
-from pytorch_lightning.metrics.functional.roc import roc
-from pytorch_lightning.metrics.functional.self_supervised import embedding_similarity
-from pytorch_lightning.metrics.functional.ssim import ssim
+from torchmetrics.functional.explained_variance import explained_variance
+from torchmetrics.functional.f_beta import fbeta, f1
+from torchmetrics.functional.mean_absolute_error import mean_absolute_error
+from torchmetrics.functional.mean_squared_error import mean_squared_error
+from torchmetrics.functional.mean_squared_log_error import mean_squared_log_error
+from torchmetrics.functional.nlp import bleu_score
+from torchmetrics.functional.precision_recall_curve import precision_recall_curve
+from torchmetrics.functional.psnr import psnr
+from torchmetrics.functional.roc import roc
+from torchmetrics.functional.self_supervised import embedding_similarity
+from torchmetrics.functional.ssim import ssim

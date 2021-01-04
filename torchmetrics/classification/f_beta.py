@@ -15,11 +15,11 @@ from typing import Any, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.f_beta import (
+from torchmetrics.functional.f_beta import (
     _fbeta_update,
     _fbeta_compute
 )
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
 
 class FBeta(Metric):
@@ -68,7 +68,7 @@ class FBeta(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import FBeta
+        >>> from torchmetrics import FBeta
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> f_beta = FBeta(num_classes=3, beta=0.5)
@@ -172,7 +172,7 @@ class F1(FBeta):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-        >>> from pytorch_lightning.metrics import F1
+        >>> from torchmetrics import F1
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> f1 = F1(num_classes=3)

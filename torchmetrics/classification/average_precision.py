@@ -15,8 +15,8 @@ from typing import Optional, Any, Union, List
 
 import torch
 
-from pytorch_lightning.metrics import Metric
-from pytorch_lightning.metrics.functional.average_precision import (
+from torchmetrics import Metric
+from torchmetrics.functional.average_precision import (
     _average_precision_update,
     _average_precision_compute
 )

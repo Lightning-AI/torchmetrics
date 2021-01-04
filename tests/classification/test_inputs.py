@@ -2,8 +2,8 @@ import pytest
 import torch
 from torch import randint, rand
 
-from pytorch_lightning.metrics.utils import to_onehot, select_topk
-from pytorch_lightning.metrics.classification.helpers import _input_format_classification
+from torchmetrics.utils import to_onehot, select_topk
+from torchmetrics.classification.helpers import _input_format_classification
 from tests.metrics.classification.inputs import (
     Input,
     _binary_inputs as _bin,

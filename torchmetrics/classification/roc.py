@@ -15,8 +15,8 @@ from typing import Optional, Any, Union, List, Tuple
 
 import torch
 
-from pytorch_lightning.metrics import Metric
-from pytorch_lightning.metrics.functional.roc import (
+from torchmetrics import Metric
+from torchmetrics.functional.roc import (
     _roc_update,
     _roc_compute
 )

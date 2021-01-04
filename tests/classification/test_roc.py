@@ -5,8 +5,8 @@ import pytest
 import torch
 from sklearn.metrics import roc_curve as _sk_roc_curve
 
-from pytorch_lightning.metrics.classification.roc import ROC
-from pytorch_lightning.metrics.functional.roc import roc
+from torchmetrics.classification.roc import ROC
+from torchmetrics.functional.roc import roc
 from tests.metrics.classification.inputs import (
     _binary_prob_inputs,
     _multiclass_prob_inputs,

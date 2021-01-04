@@ -15,11 +15,11 @@ from typing import Any, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.confusion_matrix import (
+from torchmetrics.functional.confusion_matrix import (
     _confusion_matrix_update,
     _confusion_matrix_compute
 )
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
 
 class ConfusionMatrix(Metric):
@@ -64,7 +64,7 @@ class ConfusionMatrix(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import ConfusionMatrix
+        >>> from torchmetrics import ConfusionMatrix
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> confmat = ConfusionMatrix(num_classes=2)

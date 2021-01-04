@@ -5,8 +5,8 @@ import pytest
 import torch
 from sklearn.metrics import fbeta_score
 
-from pytorch_lightning.metrics import FBeta
-from pytorch_lightning.metrics.functional import fbeta, f1
+from torchmetrics import FBeta
+from torchmetrics.functional import fbeta, f1
 from tests.metrics.classification.inputs import (
     _binary_inputs,
     _binary_prob_inputs,

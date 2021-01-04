@@ -15,7 +15,7 @@ from typing import Tuple
 
 import torch
 
-from pytorch_lightning.metrics.utils import _input_format_classification_one_hot, class_reduce
+from torchmetrics.utils import _input_format_classification_one_hot, class_reduce
 
 
 def _fbeta_update(
@@ -93,7 +93,7 @@ def fbeta(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import fbeta
+        >>> from torchmetrics.functional import fbeta
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> fbeta(preds, target, num_classes=3, beta=0.5)
@@ -145,7 +145,7 @@ def f1(
         multilabel: If predictions are from multilabel classification.
 
     Example:
-        >>> from pytorch_lightning.metrics.functional import f1
+        >>> from torchmetrics.functional import f1
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> f1(preds, target, num_classes=3)

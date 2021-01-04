@@ -17,7 +17,7 @@ from typing import Callable, Optional, Sequence, Tuple
 import torch
 from torch.nn import functional as F
 
-from pytorch_lightning.metrics.utils import to_categorical, get_num_classes, reduce, class_reduce
+from torchmetrics.utils import to_categorical, get_num_classes, reduce, class_reduce
 from pytorch_lightning.utilities import rank_zero_warn
 
 
@@ -376,7 +376,7 @@ def _binary_clf_curve(
     return fps, tps, pred[threshold_idxs]
 
 
-# TODO: deprecated in favor of general ROC in pytorch_lightning/metrics/functional/roc.py
+# TODO: deprecated in favor of general ROC in torchmetrics/functional/roc.py
 def __roc(
         pred: torch.Tensor,
         target: torch.Tensor,
@@ -433,7 +433,7 @@ def __roc(
     return fpr, tpr, thresholds
 
 
-# TODO: deprecated in favor of general ROC in pytorch_lightning/metrics/functional/roc.py
+# TODO: deprecated in favor of general ROC in torchmetrics/functional/roc.py
 def __multiclass_roc(
         pred: torch.Tensor,
         target: torch.Tensor,

@@ -15,7 +15,7 @@ from typing import Tuple, Optional
 
 import torch
 
-from pytorch_lightning.metrics.utils import to_onehot, select_topk
+from torchmetrics.utils import to_onehot, select_topk
 
 
 def _basic_input_validation(preds: torch.Tensor, target: torch.Tensor, threshold: float, is_multiclass: bool):

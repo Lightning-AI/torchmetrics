@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import torch
 
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
 torch.manual_seed(42)
 

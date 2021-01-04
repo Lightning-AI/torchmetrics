@@ -9,7 +9,7 @@ import pytest
 import torch
 from torch.multiprocessing import Pool, set_start_method
 
-from pytorch_lightning.metrics import Metric
+from torchmetrics import Metric
 
 NUM_PROCESSES = 2
 NUM_BATCHES = 10

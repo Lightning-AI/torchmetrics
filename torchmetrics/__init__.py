@@ -30,9 +30,9 @@ Except the implemented sections:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
-from pytorch_lightning.metrics.classification import (
+from torchmetrics.classification import (
     Accuracy,
     Precision,
     Recall,
@@ -44,7 +44,7 @@ from pytorch_lightning.metrics.classification import (
     F1,
 )
 
-from pytorch_lightning.metrics.regression import (
+from torchmetrics.regression import (
     MeanSquaredError,
     MeanAbsoluteError,
     MeanSquaredLogError,

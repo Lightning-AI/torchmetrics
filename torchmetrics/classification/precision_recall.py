@@ -15,8 +15,8 @@ from typing import Any, Optional
 
 import torch
 
-from pytorch_lightning.metrics.metric import Metric
-from pytorch_lightning.metrics.utils import METRIC_EPS, _input_format_classification_one_hot
+from torchmetrics.metric import Metric
+from torchmetrics.utils import METRIC_EPS, _input_format_classification_one_hot
 
 
 class Precision(Metric):
@@ -61,7 +61,7 @@ class Precision(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import Precision
+        >>> from torchmetrics import Precision
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> precision = Precision(num_classes=3)
@@ -154,7 +154,7 @@ class Recall(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import Recall
+        >>> from torchmetrics import Recall
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> recall = Recall(num_classes=3)

@@ -5,8 +5,8 @@ import pytest
 import torch
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
-from pytorch_lightning.metrics.classification.confusion_matrix import ConfusionMatrix
-from pytorch_lightning.metrics.functional.confusion_matrix import confusion_matrix
+from torchmetrics.classification.confusion_matrix import ConfusionMatrix
+from torchmetrics.functional.confusion_matrix import confusion_matrix
 from tests.metrics.classification.inputs import (
     _binary_inputs,
     _binary_prob_inputs,
