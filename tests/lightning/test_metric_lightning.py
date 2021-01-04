@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from pytorch_lightning import Trainer
-from pytorch_lightning.metrics import Metric
+from torchmetrics import Metric
 from boring_model import BoringModel
 
 

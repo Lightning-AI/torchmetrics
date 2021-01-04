@@ -16,11 +16,11 @@ from typing import Callable, Optional, Sequence, Tuple
 
 import torch
 
-from pytorch_lightning.metrics.functional.average_precision import average_precision as __ap
-from pytorch_lightning.metrics.functional.f_beta import fbeta as __fb, f1 as __f1
-from pytorch_lightning.metrics.functional.precision_recall_curve import _binary_clf_curve, precision_recall_curve as __prc
-from pytorch_lightning.metrics.functional.roc import roc as __roc
-from pytorch_lightning.metrics.utils import (
+from torchmetrics.functional.average_precision import average_precision as __ap
+from torchmetrics.functional.f_beta import fbeta as __fb, f1 as __f1
+from torchmetrics.functional.precision_recall_curve import _binary_clf_curve, precision_recall_curve as __prc
+from torchmetrics.functional.roc import roc as __roc
+from torchmetrics.utils import (
     to_categorical as __tc,
     to_onehot as __to,
     get_num_classes as __gnc,
@@ -37,11 +37,11 @@ def to_onehot(
     """
     Converts a dense label tensor to one-hot format
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.utils.to_onehot`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.utils.to_onehot`
     """
     rank_zero_warn(
         "This `to_onehot` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.utils import to_onehot`."
+        " `from torchmetrics.utils import to_onehot`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __to(tensor, num_classes)
@@ -54,12 +54,12 @@ def to_categorical(
     """
     Converts a tensor of probabilities to a dense label tensor
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.utils.to_categorical`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.utils.to_categorical`
 
     """
     rank_zero_warn(
         "This `to_categorical` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.utils import to_categorical`."
+        " `from torchmetrics.utils import to_categorical`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __tc(tensor)
@@ -73,12 +73,12 @@ def get_num_classes(
     """
     Calculates the number of classes for a given prediction and target tensor.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.utils.get_num_classes`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.utils.get_num_classes`
 
     """
     rank_zero_warn(
         "This `get_num_classes` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.utils import get_num_classes`."
+        " `from torchmetrics.utils import get_num_classes`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __gnc(pred,target, num_classes)
@@ -405,17 +405,17 @@ def roc(
     """
     Computes the Receiver Operating Characteristic (ROC). It assumes classifier is binary.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.roc.roc`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.roc.roc`
     """
     rank_zero_warn(
         "This `multiclass_roc` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.functional.roc import roc`."
+        " `from torchmetrics.functional.roc import roc`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __roc(preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label)
 
 
-# TODO: deprecated in favor of general ROC in pytorch_lightning/metrics/functional/roc.py
+# TODO: deprecated in favor of general ROC in torchmetrics/functional/roc.py
 def _roc(
         pred: torch.Tensor,
         target: torch.Tensor,
@@ -425,7 +425,7 @@ def _roc(
     """
     Computes the Receiver Operating Characteristic (ROC). It assumes classifier is binary.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.roc.roc`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.roc.roc`
 
     Example:
 
@@ -442,7 +442,7 @@ def _roc(
     """
     rank_zero_warn(
         "This `multiclass_roc` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.functional.roc import roc`."
+        " `from torchmetrics.functional.roc import roc`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     fps, tps, thresholds = _binary_clf_curve(pred, target, sample_weights=sample_weight, pos_label=pos_label)
@@ -466,7 +466,7 @@ def _roc(
     return fpr, tpr, thresholds
 
 
-# TODO: deprecated in favor of general ROC in pytorch_lightning/metrics/functional/roc.py
+# TODO: deprecated in favor of general ROC in torchmetrics/functional/roc.py
 def multiclass_roc(
         pred: torch.Tensor,
         target: torch.Tensor,
@@ -476,7 +476,7 @@ def multiclass_roc(
     """
     Computes the Receiver Operating Characteristic (ROC) for multiclass predictors.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.roc.roc`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.roc.roc`
 
     Args:
         pred: estimated probabilities
@@ -503,7 +503,7 @@ def multiclass_roc(
     """
     rank_zero_warn(
         "This `multiclass_roc` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.functional.roc import roc`."
+        " `from torchmetrics.functional.roc import roc`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     num_classes = get_num_classes(pred, target, num_classes)
@@ -822,11 +822,11 @@ def precision_recall_curve(
     """
     Computes precision-recall pairs for different thresholds.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.precision_recall_curve.precision_recall_curve`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.precision_recall_curve.precision_recall_curve`
     """
     rank_zero_warn(
         "This `precision_recall_curve` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.functional.precision_recall_curve import precision_recall_curve`."
+        " `from torchmetrics.functional.precision_recall_curve import precision_recall_curve`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __prc(preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label)
@@ -842,11 +842,11 @@ def multiclass_precision_recall_curve(
     """
     Computes precision-recall pairs for different thresholds given a multiclass scores.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.precision_recall_curve.precision_recall_curve`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.precision_recall_curve.precision_recall_curve`
     """
     rank_zero_warn(
         "This `multiclass_precision_recall_curve` was deprecated in v1.1.0 in favor of"
-        " `from pytorch_lightning.metrics.functional.precision_recall_curve import precision_recall_curve`."
+        " `from torchmetrics.functional.precision_recall_curve import precision_recall_curve`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     if num_classes is None:
@@ -864,11 +864,11 @@ def average_precision(
     """
     Compute average precision from prediction scores.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.average_precision.average_precision`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.average_precision.average_precision`
     """
     rank_zero_warn(
         "This `average_precision` was deprecated in v1.1.0 in favor of"
-        " `pytorch_lightning.metrics.functional.average_precision import average_precision`."
+        " `torchmetrics.functional.average_precision import average_precision`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __ap(preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label)
@@ -885,11 +885,11 @@ def fbeta_score(
     """
     Computes the F-beta score which is a weighted harmonic mean of precision and recall.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.f_beta.fbeta`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.f_beta.fbeta`
     """
     rank_zero_warn(
         "This `average_precision` was deprecated in v1.0.x in favor of"
-        " `from pytorch_lightning.metrics.functional.f_beta import fbeta`."
+        " `from torchmetrics.functional.f_beta import fbeta`."
         " It will be removed in v1.2.0", DeprecationWarning
     )
     if num_classes is None:
@@ -907,11 +907,11 @@ def f1_score(
     """
     Computes the F1-score (a.k.a F-measure), which is the harmonic mean of the precision and recall.
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.functional.f_beta.f1`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.functional.f_beta.f1`
     """
     rank_zero_warn(
         "This `average_precision` was deprecated in v1.0.x in favor of"
-        " `from pytorch_lightning.metrics.functional.f_beta import f1`."
+        " `from torchmetrics.functional.f_beta import f1`."
         " It will be removed in v1.2.0", DeprecationWarning
     )
     if num_classes is None:

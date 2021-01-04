@@ -12,9 +12,9 @@ What is it?
 -----------
 ...
 """
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
-from pytorch_lightning.metrics.classification import (
+from torchmetrics.classification import (
     Accuracy,
     Precision,
     Recall,
@@ -26,7 +26,7 @@ from pytorch_lightning.metrics.classification import (
     F1,
 )
 
-from pytorch_lightning.metrics.regression import (
+from torchmetrics.regression import (
     MeanSquaredError,
     MeanAbsoluteError,
     MeanSquaredLogError,

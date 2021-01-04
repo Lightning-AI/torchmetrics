@@ -3,7 +3,7 @@ import pytest
 import torch
 from sklearn.metrics import accuracy_score
 
-from pytorch_lightning.metrics.classification.accuracy import Accuracy
+from torchmetrics.classification.accuracy import Accuracy
 from tests.classification.inputs import (
     _binary_inputs,
     _binary_prob_inputs,

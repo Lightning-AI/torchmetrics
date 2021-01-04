@@ -14,9 +14,9 @@
 import torch
 from typing import Any, Optional, Sequence
 
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 from pytorch_lightning.utilities import rank_zero_warn
-from pytorch_lightning.metrics.functional.ssim import _ssim_update, _ssim_compute
+from torchmetrics.functional.ssim import _ssim_update, _ssim_compute
 
 
 class SSIM(Metric):
@@ -41,7 +41,7 @@ class SSIM(Metric):
         Tensor with SSIM score
 
     Example:
-        >>> from pytorch_lightning.metrics import SSIM
+        >>> from torchmetrics import SSIM
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ssim = SSIM()

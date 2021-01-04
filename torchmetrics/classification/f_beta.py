@@ -15,11 +15,11 @@ from typing import Any, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.f_beta import (
+from torchmetrics.functional.f_beta import (
     _fbeta_update,
     _fbeta_compute
 )
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 from pytorch_lightning.utilities import rank_zero_warn
 
 
@@ -69,7 +69,7 @@ class FBeta(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import FBeta
+        >>> from torchmetrics import FBeta
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> f_beta = FBeta(num_classes=3, beta=0.5)
@@ -137,7 +137,7 @@ class Fbeta(FBeta):
     r"""
     Computes `F-score <https://en.wikipedia.org/wiki/F-score>`_
 
-    .. warning :: Deprecated in favor of :func:`~pytorch_lightning.metrics.classification.f_beta.FBeta`
+    .. warning :: Deprecated in favor of :func:`~torchmetrics.classification.f_beta.FBeta`
     """
     def __init__(
         self,
@@ -152,7 +152,7 @@ class Fbeta(FBeta):
     ):
         rank_zero_warn(
             "This `Fbeta` was deprecated in v1.0.x in favor of"
-            " `from pytorch_lightning.metrics.classification.f_beta import FBeta`."
+            " `from torchmetrics.classification.f_beta import FBeta`."
             " It will be removed in v1.2.0", DeprecationWarning
         )
         super().__init__(
@@ -201,7 +201,7 @@ class F1(FBeta):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-        >>> from pytorch_lightning.metrics import F1
+        >>> from torchmetrics import F1
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> f1 = F1(num_classes=3)

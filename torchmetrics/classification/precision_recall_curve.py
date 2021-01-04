@@ -15,8 +15,8 @@ from typing import Optional, Any, Union, Tuple, List
 
 import torch
 
-from pytorch_lightning.metrics import Metric
-from pytorch_lightning.metrics.functional.precision_recall_curve import (
+from torchmetrics import Metric
+from torchmetrics.functional.precision_recall_curve import (
     _precision_recall_curve_update,
     _precision_recall_curve_compute
 )

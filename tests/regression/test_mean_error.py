@@ -9,8 +9,8 @@ from sklearn.metrics import (
     mean_squared_log_error as sk_mean_squared_log_error
 )
 
-from pytorch_lightning.metrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
-from pytorch_lightning.metrics.functional import (
+from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
+from torchmetrics.functional import (
     mean_absolute_error,
     mean_squared_error,
     mean_squared_log_error,

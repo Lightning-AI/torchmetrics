@@ -15,8 +15,8 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from pytorch_lightning.metrics.metric import Metric
-from pytorch_lightning.metrics.utils import _input_format_classification
+from torchmetrics.metric import Metric
+from torchmetrics.utils import _input_format_classification
 
 
 class Accuracy(Metric):
@@ -56,7 +56,7 @@ class Accuracy(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import Accuracy
+        >>> from torchmetrics import Accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
         >>> accuracy = Accuracy()
