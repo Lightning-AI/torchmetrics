@@ -1,5 +1,3 @@
-import pytest
-
 import torch
 
 from pytorch_lightning import Trainer

@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.classification.accuracy import Accuracy
-from torchmetrics.classification.average_precision import AveragePrecision
-from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.classification.f_beta import FBeta, Fbeta, F1
-from torchmetrics.classification.precision_recall import Precision, Recall
-from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
-from torchmetrics.classification.roc import ROC
+from torchmetrics.classification.accuracy import Accuracy  # noqa: F401
+from torchmetrics.classification.average_precision import AveragePrecision  # noqa: F401
+from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
+from torchmetrics.classification.f_beta import FBeta, Fbeta, F1  # noqa: F401
+from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
+from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
+from torchmetrics.classification.roc import ROC  # noqa: F401

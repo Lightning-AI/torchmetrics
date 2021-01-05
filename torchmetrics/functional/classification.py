@@ -81,7 +81,7 @@ def get_num_classes(
         " `from torchmetrics.utils import get_num_classes`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
-    return __gnc(pred,target, num_classes)
+    return __gnc(pred, target, num_classes)
 
 
 def stat_scores(

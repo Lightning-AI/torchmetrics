@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.average_precision import average_precision
-from torchmetrics.functional.classification import (
+from torchmetrics.functional.average_precision import average_precision  # noqa: F401
+from torchmetrics.functional.classification import (  # noqa: F401
     accuracy,
     auc,
     auroc,
@@ -30,16 +30,16 @@ from torchmetrics.functional.classification import (
     to_categorical,
     to_onehot,
 )
-from torchmetrics.functional.confusion_matrix import confusion_matrix
+from torchmetrics.functional.confusion_matrix import confusion_matrix  # noqa: F401
 # TODO: unify metrics between class and functional, add below
-from torchmetrics.functional.explained_variance import explained_variance
-from torchmetrics.functional.f_beta import fbeta, f1
-from torchmetrics.functional.mean_absolute_error import mean_absolute_error
-from torchmetrics.functional.mean_squared_error import mean_squared_error
-from torchmetrics.functional.mean_squared_log_error import mean_squared_log_error
-from torchmetrics.functional.nlp import bleu_score
-from torchmetrics.functional.precision_recall_curve import precision_recall_curve
-from torchmetrics.functional.psnr import psnr
-from torchmetrics.functional.roc import roc
-from torchmetrics.functional.self_supervised import embedding_similarity
-from torchmetrics.functional.ssim import ssim
+from torchmetrics.functional.explained_variance import explained_variance  # noqa: F401
+from torchmetrics.functional.f_beta import fbeta, f1  # noqa: F401
+from torchmetrics.functional.mean_absolute_error import mean_absolute_error  # noqa: F401
+from torchmetrics.functional.mean_squared_error import mean_squared_error  # noqa: F401
+from torchmetrics.functional.mean_squared_log_error import mean_squared_log_error  # noqa: F401
+from torchmetrics.functional.nlp import bleu_score  # noqa: F401
+from torchmetrics.functional.precision_recall_curve import precision_recall_curve  # noqa: F401
+from torchmetrics.functional.psnr import psnr  # noqa: F401
+from torchmetrics.functional.roc import roc  # noqa: F401
+from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
+from torchmetrics.functional.ssim import ssim  # noqa: F401

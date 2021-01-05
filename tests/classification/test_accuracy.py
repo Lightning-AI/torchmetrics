@@ -4,17 +4,7 @@ import torch
 from sklearn.metrics import accuracy_score
 
 from torchmetrics.classification.accuracy import Accuracy
-from tests.classification.inputs import (
-    _binary_inputs,
-    _binary_prob_inputs,
-    _multiclass_inputs,
-    _multiclass_prob_inputs,
-    _multidim_multiclass_inputs,
-    _multidim_multiclass_prob_inputs,
-    _multilabel_inputs,
-    _multilabel_prob_inputs,
-)
-from tests.utils import THRESHOLD, MetricTester
+from tests.utils import THRESHOLD
 
 torch.manual_seed(42)
 
