@@ -37,7 +37,7 @@ jobs:
           pip --version
       - name: isort
         run: |
-          isort . --check --diff
+          isort --settings-path=./pyproject.toml . --check --diff
 
   typing-check-mypy:
     runs-on: ubuntu-20.04
