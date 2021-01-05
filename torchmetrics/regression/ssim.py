@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
 from typing import Any, Optional, Sequence
 
-from torchmetrics.metric import Metric
+import torch
 from pytorch_lightning.utilities import rank_zero_warn
-from torchmetrics.functional.ssim import _ssim_update, _ssim_compute
+
+from torchmetrics.functional.ssim import _ssim_compute, _ssim_update
+from torchmetrics.metric import Metric
 
 
 class SSIM(Metric):

@@ -1,8 +1,8 @@
 import torch
-
 from pytorch_lightning import Trainer
-from torchmetrics import Metric
+
 from tests.boring_model import BoringModel
+from torchmetrics import Metric
 
 
 class SumMetric(Metric):

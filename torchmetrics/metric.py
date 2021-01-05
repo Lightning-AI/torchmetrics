@@ -18,11 +18,11 @@ from copy import deepcopy
 from typing import Any, Callable, Optional, Union
 
 import torch
+from pytorch_lightning.utilities.apply_func import apply_to_collection
+from pytorch_lightning.utilities.distributed import gather_all_tensors
 from torch import nn
 
 from torchmetrics.utils import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
-from pytorch_lightning.utilities.apply_func import apply_to_collection
-from pytorch_lightning.utilities.distributed import gather_all_tensors
 
 
 class Metric(nn.Module, ABC):

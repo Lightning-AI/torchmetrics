@@ -15,19 +15,19 @@ from functools import wraps
 from typing import Callable, Optional, Sequence, Tuple
 
 import torch
+from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.functional.average_precision import average_precision as __ap
-from torchmetrics.functional.f_beta import fbeta as __fb, f1 as __f1
-from torchmetrics.functional.precision_recall_curve import _binary_clf_curve, precision_recall_curve as __prc
+from torchmetrics.functional.f_beta import f1 as __f1
+from torchmetrics.functional.f_beta import fbeta as __fb
+from torchmetrics.functional.precision_recall_curve import _binary_clf_curve
+from torchmetrics.functional.precision_recall_curve import precision_recall_curve as __prc
 from torchmetrics.functional.roc import roc as __roc
-from torchmetrics.utils import (
-    to_categorical as __tc,
-    to_onehot as __to,
-    get_num_classes as __gnc,
-    reduce,
-    class_reduce,
-)
-from pytorch_lightning.utilities import rank_zero_warn
+from torchmetrics.utils import class_reduce
+from torchmetrics.utils import get_num_classes as __gnc
+from torchmetrics.utils import reduce
+from torchmetrics.utils import to_categorical as __tc
+from torchmetrics.utils import to_onehot as __to
 
 
 def to_onehot(

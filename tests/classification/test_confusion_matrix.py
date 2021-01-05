@@ -5,8 +5,6 @@ import pytest
 import torch
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
-from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.confusion_matrix import confusion_matrix
 from tests.classification.inputs import (
     _binary_inputs,
     _binary_prob_inputs,
@@ -15,9 +13,11 @@ from tests.classification.inputs import (
     _multidim_multiclass_inputs,
     _multidim_multiclass_prob_inputs,
     _multilabel_inputs,
-    _multilabel_prob_inputs
+    _multilabel_prob_inputs,
 )
 from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics.classification.confusion_matrix import ConfusionMatrix
+from torchmetrics.functional.confusion_matrix import confusion_matrix
 
 torch.manual_seed(42)
 

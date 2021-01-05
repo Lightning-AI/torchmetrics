@@ -5,8 +5,6 @@ import pytest
 import torch
 from sklearn.metrics import fbeta_score
 
-from torchmetrics import FBeta
-from torchmetrics.functional import fbeta, f1
 from tests.classification.inputs import (
     _binary_inputs,
     _binary_prob_inputs,
@@ -19,6 +17,8 @@ from tests.classification.inputs import (
     _multilabel_prob_inputs,
 )
 from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics import FBeta
+from torchmetrics.functional import f1, fbeta
 
 torch.manual_seed(42)
 

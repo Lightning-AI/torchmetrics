@@ -11,16 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Any, Union, List
+from typing import Any, List, Optional, Union
 
 import torch
-
-from torchmetrics import Metric
-from torchmetrics.functional.average_precision import (
-    _average_precision_update,
-    _average_precision_compute
-)
 from pytorch_lightning.utilities import rank_zero_warn
+
+from torchmetrics.functional.average_precision import _average_precision_compute, _average_precision_update
+from torchmetrics.metric import Metric
 
 
 class AveragePrecision(Metric):

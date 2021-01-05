@@ -28,25 +28,23 @@ if __LIGHTNING_SETUP__:
     # We are not importing the rest of the lightning during the build process, as it may not be compiled yet
 else:
 
-    from torchmetrics.metric import Metric  # noqa: F401
-
     from torchmetrics.classification import (  # noqa: F401
-        Accuracy,
-        Precision,
-        Recall,
-        ConfusionMatrix,
-        PrecisionRecallCurve,
-        AveragePrecision,
-        ROC,
-        FBeta,
         F1,
+        ROC,
+        Accuracy,
+        AveragePrecision,
+        ConfusionMatrix,
+        FBeta,
+        Precision,
+        PrecisionRecallCurve,
+        Recall,
     )
-
+    from torchmetrics.metric import Metric  # noqa: F401
     from torchmetrics.regression import (  # noqa: F401
-        MeanSquaredError,
-        MeanAbsoluteError,
-        MeanSquaredLogError,
-        ExplainedVariance,
         PSNR,
         SSIM,
+        ExplainedVariance,
+        MeanAbsoluteError,
+        MeanSquaredError,
+        MeanSquaredLogError,
     )

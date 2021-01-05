@@ -14,7 +14,7 @@
 from torchmetrics.classification.accuracy import Accuracy  # noqa: F401
 from torchmetrics.classification.average_precision import AveragePrecision  # noqa: F401
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
-from torchmetrics.classification.f_beta import FBeta, Fbeta, F1  # noqa: F401
+from torchmetrics.classification.f_beta import F1, FBeta, Fbeta  # noqa: F401
 from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.roc import ROC  # noqa: F401

@@ -31,9 +31,10 @@ from torchmetrics.functional.classification import (  # noqa: F401
     to_onehot,
 )
 from torchmetrics.functional.confusion_matrix import confusion_matrix  # noqa: F401
+
 # TODO: unify metrics between class and functional, add below
 from torchmetrics.functional.explained_variance import explained_variance  # noqa: F401
-from torchmetrics.functional.f_beta import fbeta, f1  # noqa: F401
+from torchmetrics.functional.f_beta import f1, fbeta  # noqa: F401
 from torchmetrics.functional.mean_absolute_error import mean_absolute_error  # noqa: F401
 from torchmetrics.functional.mean_squared_error import mean_squared_error  # noqa: F401
 from torchmetrics.functional.mean_squared_log_error import mean_squared_log_error  # noqa: F401

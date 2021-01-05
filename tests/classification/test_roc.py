@@ -5,14 +5,10 @@ import pytest
 import torch
 from sklearn.metrics import roc_curve as _sk_roc_curve
 
+from tests.classification.inputs import _binary_prob_inputs, _multiclass_prob_inputs, _multidim_multiclass_prob_inputs
+from tests.utils import NUM_CLASSES, MetricTester
 from torchmetrics.classification.roc import ROC
 from torchmetrics.functional.roc import roc
-from tests.classification.inputs import (
-    _binary_prob_inputs,
-    _multiclass_prob_inputs,
-    _multidim_multiclass_prob_inputs,
-)
-from tests.utils import NUM_CLASSES, MetricTester
 
 torch.manual_seed(42)
 

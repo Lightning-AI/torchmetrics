@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
 
-from torchmetrics.utils import to_onehot, select_topk
+from torchmetrics.utils import select_topk, to_onehot
 
 
 def _basic_input_validation(preds: torch.Tensor, target: torch.Tensor, threshold: float, is_multiclass: bool):

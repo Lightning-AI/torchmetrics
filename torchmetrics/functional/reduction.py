@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
-
-from torchmetrics.utils import reduce as __reduce, class_reduce as __cr
 from pytorch_lightning.utilities import rank_zero_warn
+
+from torchmetrics.utils import class_reduce as __cr
+from torchmetrics.utils import reduce as __reduce
 
 
 def reduce(to_reduce: torch.Tensor, reduction: str) -> torch.Tensor:

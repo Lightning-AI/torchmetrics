@@ -3,9 +3,9 @@ import sys
 import pytest
 import torch
 
-from torchmetrics import Metric
 from tests.test_metric import Dummy
 from tests.utils import setup_ddp
+from torchmetrics import Metric
 
 torch.manual_seed(42)
 

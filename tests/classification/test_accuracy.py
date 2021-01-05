@@ -3,8 +3,8 @@ import pytest
 import torch
 from sklearn.metrics import accuracy_score
 
-from torchmetrics.classification.accuracy import Accuracy
 from tests.utils import THRESHOLD
+from torchmetrics.classification.accuracy import Accuracy
 
 torch.manual_seed(42)
 
