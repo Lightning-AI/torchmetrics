@@ -73,10 +73,14 @@ jobs:
     #    # Look to see if there is a cache hit for the corresponding requirements file
     #    key: pl-datasets
 
+    #- name: Tests
+    #  run: |
+    #    coverage run --source torchmetrics -m py.test torchmetrics tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
+    #    coverage xml
+
     - name: Tests
       run: |
-        coverage run --source torchmetrics -m py.test torchmetrics tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
-        coverage xml
+        pytest tests
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
