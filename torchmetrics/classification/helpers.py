@@ -391,12 +391,10 @@ def _input_format_classification(
               inputs are labels, but will work if they are probabilities as well. For this case the
               parameter should be set to ``False``.
 
-
     Returns:
         preds: binary tensor of shape (N, C) or (N, C, X)
         target: binary tensor of shape (N, C) or (N, C, X)
-        case: The case the inputs fall in, one of 'binary', 'multi-class', 'multi-label' or
-            'multi-dim multi-class'
+        case: The case the inputs fall in, one of 'binary', 'multi-class', 'multi-label' or multi-dim multi-class'
     """
     # Remove excess dimensions
     if preds.shape[0] == 1:

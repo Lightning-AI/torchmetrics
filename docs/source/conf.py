@@ -131,7 +131,7 @@ language = None
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    'api/torchmetrics.rst',
+    'api/torchmetrics.*',
     'api/modules.rst',
     'PULL_REQUEST_TEMPLATE.md',
 ]
@@ -160,7 +160,8 @@ html_theme_options = {
     'logo_only': False,
 }
 
-html_logo = '_images/logos/lightning_logo-name.svg'
+# TODO
+# html_logo = '_images/logos/lightning_logo-name.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -321,19 +322,17 @@ def package_list_from_file(file):
     return mocked_packages
 
 
+# define mapping from PyPI names to python imports
+PACKAGE_MAPPING = {
+    'PyYAML': 'yaml',
+}
 MOCK_PACKAGES = []
 if SPHINX_MOCK_REQUIREMENTS:
     # mock also base packages when we are on RTD since we don't install them there
     MOCK_PACKAGES += package_list_from_file(os.path.join(PATH_ROOT, 'requirements.txt'))
+MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 
-MOCK_MANUAL_PACKAGES = [
-    'pytorch_lightning',
-    'numpy',
-    'torch',
-]
-autodoc_mock_imports = MOCK_PACKAGES + MOCK_MANUAL_PACKAGES
-# for mod_name in MOCK_REQUIRE_PACKAGES:
-#     sys.modules[mod_name] = mock.Mock()
+autodoc_mock_imports = MOCK_PACKAGES
 
 
 # Resolve function

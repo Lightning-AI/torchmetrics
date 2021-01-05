@@ -75,7 +75,7 @@ jobs:
 
     - name: Tests
       run: |
-        coverage run --source torchmetrics -m py.test torchmetrics tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        coverage run --source torchmetrics -m pytest torchmetrics tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
         coverage xml
 
     - name: Upload pytest test results
