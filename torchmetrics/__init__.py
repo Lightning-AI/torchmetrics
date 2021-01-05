@@ -17,3 +17,25 @@ Except the implemented sections:
  - setting CI
  - setting Docs
 """
+from torchmetrics.metric import Metric
+
+from torchmetrics.classification import (
+    Accuracy,
+    Precision,
+    Recall,
+    ConfusionMatrix,
+    PrecisionRecallCurve,
+    AveragePrecision,
+    ROC,
+    FBeta,
+    F1,
+)
+
+from torchmetrics.regression import (
+    MeanSquaredError,
+    MeanAbsoluteError,
+    MeanSquaredLogError,
+    ExplainedVariance,
+    PSNR,
+    SSIM,
+)
