@@ -412,7 +412,6 @@ def _input_format_classification(
             :ref:`documentation section <extensions/metrics:using the is_multiclass parameter>`
             for a more detailed explanation and examples.
 
-
     Returns:
         preds: binary tensor of shape ``(N, C)`` or ``(N, C, X)``
         target: binary tensor of shape ``(N, C)`` or ``(N, C, X)``
