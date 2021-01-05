@@ -131,7 +131,7 @@ language = None
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    'api/torchmetrics.rst',
+    'api/torchmetrics.*',
     'api/modules.rst',
     'PULL_REQUEST_TEMPLATE.md',
 ]
@@ -160,7 +160,8 @@ html_theme_options = {
     'logo_only': False,
 }
 
-html_logo = '_images/logos/lightning_logo-name.svg'
+# TODO
+# html_logo = '_images/logos/lightning_logo-name.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
