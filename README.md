@@ -20,3 +20,4 @@ You still need to enable some external integrations such as:
 * We are using [Napoleon style](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) and we shall use static types...
 * It is nice to se [doctest](https://docs.python.org/3/library/doctest.html) as they are also generated as examples in documentation
 * For wider and edge cases testing use [pytest parametrization](https://docs.pytest.org/en/stable/parametrize.html) :]
+
