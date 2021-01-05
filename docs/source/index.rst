@@ -10,7 +10,8 @@ PyTorchMetrics documentation
    :name: start
    :caption: Start here
 
-
+   functional
+   metrics
 
 Indices and tables
 ==================
