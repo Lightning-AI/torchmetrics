@@ -321,19 +321,17 @@ def package_list_from_file(file):
     return mocked_packages
 
 
+# define mapping from PyPI names to python imports
+PACKAGE_MAPPING = {
+    'PyYAML': 'yaml',
+}
 MOCK_PACKAGES = []
 if SPHINX_MOCK_REQUIREMENTS:
     # mock also base packages when we are on RTD since we don't install them there
     MOCK_PACKAGES += package_list_from_file(os.path.join(PATH_ROOT, 'requirements.txt'))
+MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 
-MOCK_MANUAL_PACKAGES = [
-    'pytorch_lightning',
-    'numpy',
-    'torch',
-]
-autodoc_mock_imports = MOCK_PACKAGES + MOCK_MANUAL_PACKAGES
-# for mod_name in MOCK_REQUIRE_PACKAGES:
-#     sys.modules[mod_name] = mock.Mock()
+autodoc_mock_imports = MOCK_PACKAGES
 
 
 # Resolve function
