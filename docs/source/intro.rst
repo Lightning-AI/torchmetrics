@@ -18,7 +18,7 @@ logic present in ``.compute()`` is applied to state information from all process
 
 This metrics API is independent of PyTorch Lightning. Metrics can directly be used in PyTorch as shown in the example:
 
-.. code-block:: python
+.. testcode::
 
     from torchmetrics.classification import Accuracy
 
