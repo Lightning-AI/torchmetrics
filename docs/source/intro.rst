@@ -18,12 +18,13 @@ logic present in ``.compute()`` is applied to state information from all process
 
 This metrics API is independent of PyTorch Lightning. Metrics can directly be used in PyTorch as shown in the example:
 
-.. testcode::
+.. NOTE: this can't actually be tested as epochs, train_data, and valid_data are undefined
+.. code-block:: python
 
     from torchmetrics.classification import Accuracy
 
-    train_accuracy = metrics.Accuracy()
-    valid_accuracy = metrics.Accuracy(compute_on_step=False)
+    train_accuracy = Accuracy()
+    valid_accuracy = Accuracy(compute_on_step=False)
 
     for epoch in range(epochs):
         for x, y in train_data:
@@ -75,7 +76,7 @@ Example implementation:
 
 .. testcode::
 
-    from pytorch_lightning.metrics import Metric
+    from torchmetrics import Metric
 
     class MyAccuracy(Metric):
         def __init__(self, dist_sync_on_step=False):
