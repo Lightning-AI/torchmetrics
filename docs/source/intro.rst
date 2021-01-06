@@ -73,7 +73,7 @@ from the base ``Metric`` class.
 
 Example implementation:
 
-.. code-block:: python
+.. testcode::
 
     from pytorch_lightning.metrics import Metric
 
@@ -105,4 +105,3 @@ In practise this means that:
     metric = MyMetric()
     val = metric(pred, target) # this value can be backpropagated
     val = metric.compute() # this value cannot be backpropagated
-
