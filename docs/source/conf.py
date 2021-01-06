@@ -94,6 +94,7 @@ extensions = [
     "sphinx.ext.githubpages",
 ]
 
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -131,8 +132,8 @@ language = None
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    'api/torchmetrics.*',
-    'api/modules.rst',
+#    'api/torchmetrics.*',
+#    'api/modules.rst',
     'PULL_REQUEST_TEMPLATE.md',
 ]
 
@@ -274,30 +275,30 @@ PACKAGES = [
 apidoc_output_folder = os.path.join(PATH_HERE, 'api')
 
 
-def run_apidoc(_):
-    sys.path.insert(0, apidoc_output_folder)
-
-    # delete api-doc files before generating them
-    if os.path.exists(apidoc_output_folder):
-        shutil.rmtree(apidoc_output_folder)
-
-    for pkg in PACKAGES:
-        argv = ['-e',
-                '-o', apidoc_output_folder,
-                os.path.join(PATH_ROOT, pkg),
-                '**/test_*',
-                '--force',
-                '--private',
-                '--module-first']
-
-        apidoc.main(argv)
+# def run_apidoc(_):
+#     sys.path.insert(0, apidoc_output_folder)
+# 
+#     # delete api-doc files before generating them
+#     if os.path.exists(apidoc_output_folder):
+#         shutil.rmtree(apidoc_output_folder)
+# 
+#     for pkg in PACKAGES:
+#         argv = ['-e',
+#                 '-o', apidoc_output_folder,
+#                 os.path.join(PATH_ROOT, pkg),
+#                 '**/test_*',
+#                 '--force',
+#                 '--private',
+#                 '--module-first']
+# 
+#         apidoc.main(argv)
 
 
 def setup(app):
     # this is for hiding doctest decoration,
     # see: http://z4r.github.io/python/2011/12/02/hides-the-prompts-and-output/
     app.add_javascript('copybutton.js')
-    app.connect('builder-inited', run_apidoc)
+    # app.connect('builder-inited', run_apidoc)
 
 
 # copy all notebooks to local folder
@@ -374,20 +375,23 @@ def linkcode_resolve(domain, info):
            % (github_user, github_repo, filename)
 
 
-autodoc_member_order = 'groupwise'
-autoclass_content = 'both'
+# autodoc_member_order = 'groupwise'
+# autoclass_content = 'both'
+autodoc_default_flags = ['members']
+autosummary_generate = True
+
 # the options are fixed and will be soon in release,
 #  see https://github.com/sphinx-doc/sphinx/issues/5459
-autodoc_default_options = {
-    'members': None,
-    'methods': None,
-    # 'attributes': None,
-    'special-members': '__call__',
-    'exclude-members': '_abc_impl',
-    'show-inheritance': True,
-    'private-members': True,
-    'noindex': True,
-}
+# autodoc_default_options = {
+#     'members': None,
+#     'methods': None,
+#     # 'attributes': None,
+#     'special-members': '__call__',
+#     'exclude-members': '_abc_impl',
+#     'show-inheritance': True,
+#     'private-members': True,
+#     'noindex': True,
+# }
 
 # Sphinx will add “permalinks” for each heading and description environment as paragraph signs that
 #  become visible when the mouse hovers over them.

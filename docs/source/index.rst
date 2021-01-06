@@ -10,8 +10,10 @@ PyTorchMetrics documentation
    :name: start
    :caption: Start here
 
+   intro
+   torchmetrics
    functional
-   metrics
+   lightning
 
 Indices and tables
 ==================
