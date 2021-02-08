@@ -15,10 +15,7 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from torchmetrics.functional.mean_squared_error import (
-    _mean_squared_error_compute,
-    _mean_squared_error_update,
-)
+from torchmetrics.functional.mean_squared_error import _mean_squared_error_compute, _mean_squared_error_update
 from torchmetrics.metric import Metric
 
 

@@ -15,6 +15,7 @@ from functools import wraps
 from typing import Callable, Optional, Sequence, Tuple
 
 import torch
+from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.functional.auc import auc as __auc
 from torchmetrics.functional.auroc import auroc as __auroc
@@ -28,7 +29,6 @@ from torchmetrics.utils import get_num_classes as __gnc
 from torchmetrics.utils import reduce
 from torchmetrics.utils import to_categorical as __tc
 from torchmetrics.utils import to_onehot as __to
-from pytorch_lightning.utilities import rank_zero_warn
 
 
 def to_onehot(

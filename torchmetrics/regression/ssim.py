@@ -14,10 +14,10 @@
 from typing import Any, Optional, Sequence
 
 import torch
+from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.functional.ssim import _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
-from pytorch_lightning.utilities import rank_zero_warn
 
 
 class SSIM(Metric):

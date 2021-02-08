@@ -15,10 +15,10 @@ from distutils.version import LooseVersion
 from typing import Any, Callable, Optional
 
 import torch
+from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.functional.auroc import _auroc_compute, _auroc_update
 from torchmetrics.metric import Metric
-from pytorch_lightning.utilities import rank_zero_warn
 
 
 class AUROC(Metric):

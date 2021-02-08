@@ -15,11 +15,11 @@ from distutils.version import LooseVersion
 from typing import Optional, Sequence, Tuple
 
 import torch
+from pytorch_lightning.utilities import LightningEnum
 
-from torchmetrics.classification.helpers import _input_format_classification, DataType
+from torchmetrics.classification.helpers import DataType, _input_format_classification
 from torchmetrics.functional.auc import auc
 from torchmetrics.functional.roc import roc
-from pytorch_lightning.utilities import LightningEnum
 
 
 class AverageMethods(LightningEnum):

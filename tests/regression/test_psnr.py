@@ -6,9 +6,9 @@ import pytest
 import torch
 from skimage.metrics import peak_signal_noise_ratio
 
+from tests.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import psnr
 from torchmetrics.regression import PSNR
-from tests.utils import BATCH_SIZE, MetricTester, NUM_BATCHES
 
 torch.manual_seed(42)
 

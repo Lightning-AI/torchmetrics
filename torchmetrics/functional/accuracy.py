@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from torchmetrics.classification.helpers import _input_format_classification, DataType
+from torchmetrics.classification.helpers import DataType, _input_format_classification
 
 
 def _accuracy_update(

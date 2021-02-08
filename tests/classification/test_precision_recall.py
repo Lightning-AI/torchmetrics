@@ -6,9 +6,6 @@ import pytest
 import torch
 from sklearn.metrics import precision_score, recall_score
 
-from torchmetrics import Metric, Precision, Recall
-from torchmetrics.classification.helpers import _input_format_classification
-from torchmetrics.functional import precision, precision_recall, recall
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -16,7 +13,10 @@ from tests.classification.inputs import _input_multidim_multiclass as _input_mdm
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.utils import MetricTester, NUM_CLASSES, THRESHOLD
+from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics import Metric, Precision, Recall
+from torchmetrics.classification.helpers import _input_format_classification
+from torchmetrics.functional import precision, precision_recall, recall
 
 torch.manual_seed(42)
 

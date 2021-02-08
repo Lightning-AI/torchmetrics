@@ -14,7 +14,6 @@
 from typing import Optional, Tuple
 
 import torch
-
 from pytorch_lightning.utilities import rank_zero_warn
 
 METRIC_EPS = 1e-6

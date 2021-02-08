@@ -29,28 +29,28 @@ if __LIGHTNING_SETUP__:
     # We are not importing the rest of the lightning during the build process, as it may not be compiled yet
 else:
     from pytorch_lightning.metrics.classification import (  # noqa: F401
-        Accuracy,
         AUC,
         AUROC,
+        F1,
+        ROC,
+        Accuracy,
         AveragePrecision,
         ConfusionMatrix,
-        F1,
         FBeta,
         HammingDistance,
         IoU,
         Precision,
         PrecisionRecallCurve,
         Recall,
-        ROC,
         StatScores,
     )
     from pytorch_lightning.metrics.metric import Metric, MetricCollection  # noqa: F401
     from pytorch_lightning.metrics.regression import (  # noqa: F401
+        PSNR,
+        SSIM,
         ExplainedVariance,
         MeanAbsoluteError,
         MeanSquaredError,
         MeanSquaredLogError,
-        PSNR,
         R2Score,
-        SSIM,
     )
