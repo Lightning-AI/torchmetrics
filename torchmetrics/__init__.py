@@ -28,7 +28,7 @@ if __LIGHTNING_SETUP__:
     sys.stdout.write(f'Partial import of `{__name__}` during the build process.\n')  # pragma: no-cover
     # We are not importing the rest of the lightning during the build process, as it may not be compiled yet
 else:
-    from pytorch_lightning.metrics.classification import (  # noqa: F401
+    from torchmetrics.classification import (  # noqa: F401
         AUC,
         AUROC,
         F1,
@@ -44,8 +44,8 @@ else:
         Recall,
         StatScores,
     )
-    from pytorch_lightning.metrics.metric import Metric, MetricCollection  # noqa: F401
-    from pytorch_lightning.metrics.regression import (  # noqa: F401
+    from torchmetrics.metric import Metric, MetricCollection  # noqa: F401
+    from torchmetrics.regression import (  # noqa: F401
         PSNR,
         SSIM,
         ExplainedVariance,
