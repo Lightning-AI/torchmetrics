@@ -15,8 +15,8 @@ from typing import Any, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.psnr import _psnr_compute, _psnr_update
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.functional.psnr import _psnr_compute, _psnr_update
+from torchmetrics.metric import Metric
 
 
 class PSNR(Metric):
@@ -47,7 +47,7 @@ class PSNR(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import PSNR
+        >>> from torchmetrics import PSNR
         >>> psnr = PSNR()
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])

@@ -15,7 +15,7 @@ from typing import Tuple, Union
 
 import torch
 
-from pytorch_lightning.metrics.classification.helpers import _input_format_classification
+from torchmetrics.classification.helpers import _input_format_classification
 
 
 def _hamming_distance_update(
@@ -62,7 +62,7 @@ def hamming_distance(preds: torch.Tensor, target: torch.Tensor, threshold: float
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import hamming_distance
+        >>> from torchmetrics.functional import hamming_distance
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])
         >>> hamming_distance(preds, target)

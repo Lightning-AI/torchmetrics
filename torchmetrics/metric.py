@@ -21,7 +21,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import torch
 from torch import nn
 
-from pytorch_lightning.metrics.utils import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
+from torchmetrics.utils import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from pytorch_lightning.utilities.apply_func import apply_to_collection
 from pytorch_lightning.utilities.distributed import gather_all_tensors
 
@@ -338,153 +338,153 @@ class Metric(nn.Module, ABC):
         return hash(tuple(hash_vals))
 
     def __add__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.add, self, other)
 
     def __and__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.bitwise_and, self, other)
 
     def __eq__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.eq, self, other)
 
     def __floordiv__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.floor_divide, self, other)
 
     def __ge__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.ge, self, other)
 
     def __gt__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.gt, self, other)
 
     def __le__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.le, self, other)
 
     def __lt__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.lt, self, other)
 
     def __matmul__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.matmul, self, other)
 
     def __mod__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.fmod, self, other)
 
     def __mul__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.mul, self, other)
 
     def __ne__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.ne, self, other)
 
     def __or__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.bitwise_or, self, other)
 
     def __pow__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.pow, self, other)
 
     def __radd__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.add, other, self)
 
     def __rand__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         # swap them since bitwise_and only supports that way and it's commutative
         return CompositionalMetric(torch.bitwise_and, self, other)
 
     def __rfloordiv__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.floor_divide, other, self)
 
     def __rmatmul__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.matmul, other, self)
 
     def __rmod__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.fmod, other, self)
 
     def __rmul__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.mul, other, self)
 
     def __ror__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.bitwise_or, other, self)
 
     def __rpow__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.pow, other, self)
 
     def __rsub__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.sub, other, self)
 
     def __rtruediv__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.true_divide, other, self)
 
     def __rxor__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.bitwise_xor, other, self)
 
     def __sub__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.sub, self, other)
 
     def __truediv__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.true_divide, self, other)
 
     def __xor__(self, other: Any):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.bitwise_xor, self, other)
 
     def __abs__(self):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.abs, self, None)
 
     def __inv__(self):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.bitwise_not, self, None)
 
@@ -492,12 +492,12 @@ class Metric(nn.Module, ABC):
         return self.__inv__()
 
     def __neg__(self):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(_neg, self, None)
 
     def __pos__(self):
-        from pytorch_lightning.metrics.compositional import CompositionalMetric
+        from torchmetrics.compositional import CompositionalMetric
 
         return CompositionalMetric(torch.abs, self, None)
 
@@ -524,7 +524,7 @@ class MetricCollection(nn.ModuleDict):
 
     Example (input as list):
 
-        >>> from pytorch_lightning.metrics import MetricCollection, Accuracy, Precision, Recall
+        >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall
         >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
         >>> metrics = MetricCollection([Accuracy(),

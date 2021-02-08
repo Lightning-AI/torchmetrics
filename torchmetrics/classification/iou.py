@@ -15,8 +15,8 @@ from typing import Any, Optional
 
 import torch
 
-from pytorch_lightning.metrics.classification.confusion_matrix import ConfusionMatrix
-from pytorch_lightning.metrics.functional.iou import _iou_from_confmat
+from torchmetrics.classification.confusion_matrix import ConfusionMatrix
+from torchmetrics.functional.iou import _iou_from_confmat
 
 
 class IoU(ConfusionMatrix):
@@ -67,7 +67,7 @@ class IoU(ConfusionMatrix):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-        >>> from pytorch_lightning.metrics import IoU
+        >>> from torchmetrics import IoU
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]

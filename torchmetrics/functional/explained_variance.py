@@ -15,7 +15,7 @@ from typing import Sequence, Tuple, Union
 
 import torch
 
-from pytorch_lightning.metrics.utils import _check_same_shape
+from torchmetrics.utils import _check_same_shape
 
 
 def _explained_variance_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -73,7 +73,7 @@ def explained_variance(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import explained_variance
+        >>> from torchmetrics.functional import explained_variance
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> explained_variance(preds, target)

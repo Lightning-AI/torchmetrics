@@ -5,16 +5,16 @@ import pytest
 import torch
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 
-from pytorch_lightning.metrics.classification.confusion_matrix import ConfusionMatrix
-from pytorch_lightning.metrics.functional.confusion_matrix import confusion_matrix
-from tests.metrics.classification.inputs import _input_binary, _input_binary_prob
-from tests.metrics.classification.inputs import _input_multiclass as _input_mcls
-from tests.metrics.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.metrics.classification.inputs import _input_multidim_multiclass as _input_mdmc
-from tests.metrics.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.metrics.classification.inputs import _input_multilabel as _input_mlb
-from tests.metrics.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.metrics.utils import MetricTester, NUM_CLASSES, THRESHOLD
+from torchmetrics.classification.confusion_matrix import ConfusionMatrix
+from torchmetrics.functional.confusion_matrix import confusion_matrix
+from tests.classification.inputs import _input_binary, _input_binary_prob
+from tests.classification.inputs import _input_multiclass as _input_mcls
+from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
+from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.classification.inputs import _input_multilabel as _input_mlb
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.utils import MetricTester, NUM_CLASSES, THRESHOLD
 
 torch.manual_seed(42)
 

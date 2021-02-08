@@ -15,8 +15,8 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.r2score import _r2score_compute, _r2score_update
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.functional.r2score import _r2score_compute, _r2score_update
+from torchmetrics.metric import Metric
 
 
 class R2Score(Metric):
@@ -68,7 +68,7 @@ class R2Score(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import R2Score
+        >>> from torchmetrics import R2Score
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> r2score = R2Score()

@@ -16,9 +16,9 @@ from typing import Optional, Sequence, Tuple
 
 import torch
 
-from pytorch_lightning.metrics.classification.helpers import _input_format_classification, DataType
-from pytorch_lightning.metrics.functional.auc import auc
-from pytorch_lightning.metrics.functional.roc import roc
+from torchmetrics.classification.helpers import _input_format_classification, DataType
+from torchmetrics.functional.auc import auc
+from torchmetrics.functional.roc import roc
 from pytorch_lightning.utilities import LightningEnum
 
 

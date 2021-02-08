@@ -15,11 +15,11 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.explained_variance import (
+from torchmetrics.functional.explained_variance import (
     _explained_variance_compute,
     _explained_variance_update,
 )
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 from pytorch_lightning.utilities import rank_zero_warn
 
 
@@ -61,7 +61,7 @@ class ExplainedVariance(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import ExplainedVariance
+        >>> from torchmetrics import ExplainedVariance
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> explained_variance = ExplainedVariance()

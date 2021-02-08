@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from pytorch_lightning.metrics.functional.image_gradients import image_gradients
+from torchmetrics.functional.image_gradients import image_gradients
 
 
 def test_invalid_input_img_type():

@@ -5,12 +5,12 @@ import pytest
 import torch
 from sklearn.metrics import roc_curve as sk_roc_curve
 
-from pytorch_lightning.metrics.classification.roc import ROC
-from pytorch_lightning.metrics.functional.roc import roc
-from tests.metrics.classification.inputs import _input_binary_prob
-from tests.metrics.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.metrics.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.metrics.utils import MetricTester, NUM_CLASSES
+from torchmetrics.classification.roc import ROC
+from torchmetrics.functional.roc import roc
+from tests.classification.inputs import _input_binary_prob
+from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.utils import MetricTester, NUM_CLASSES
 
 torch.manual_seed(42)
 

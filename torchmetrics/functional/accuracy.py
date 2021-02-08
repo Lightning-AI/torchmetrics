@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from pytorch_lightning.metrics.classification.helpers import _input_format_classification, DataType
+from torchmetrics.classification.helpers import _input_format_classification, DataType
 
 
 def _accuracy_update(
@@ -104,7 +104,7 @@ def accuracy(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import accuracy
+        >>> from torchmetrics.functional import accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
         >>> accuracy(preds, target)

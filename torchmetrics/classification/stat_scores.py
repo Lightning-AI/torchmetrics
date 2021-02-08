@@ -15,8 +15,8 @@ from typing import Any, Callable, Optional, Tuple
 
 import torch
 
-from pytorch_lightning.metrics.functional.stat_scores import _stat_scores_compute, _stat_scores_update
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.functional.stat_scores import _stat_scores_compute, _stat_scores_update
+from torchmetrics.metric import Metric
 
 
 class StatScores(Metric):
@@ -103,7 +103,7 @@ class StatScores(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics.classification import StatScores
+        >>> from torchmetrics.classification import StatScores
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> stat_scores = StatScores(reduce='macro', num_classes=3)

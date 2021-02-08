@@ -2,7 +2,7 @@ from typing import Callable, Union
 
 import torch
 
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
 
 class CompositionalMetric(Metric):

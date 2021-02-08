@@ -8,7 +8,7 @@ import pytest
 import torch
 from torch import nn
 
-from pytorch_lightning.metrics.metric import Metric, MetricCollection
+from torchmetrics.metric import Metric, MetricCollection
 
 torch.manual_seed(42)
 

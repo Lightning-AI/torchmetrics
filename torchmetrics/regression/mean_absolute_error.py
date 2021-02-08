@@ -15,11 +15,11 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.mean_absolute_error import (
+from torchmetrics.functional.mean_absolute_error import (
     _mean_absolute_error_compute,
     _mean_absolute_error_update,
 )
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
 
 class MeanAbsoluteError(Metric):
@@ -41,7 +41,7 @@ class MeanAbsoluteError(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import MeanAbsoluteError
+        >>> from torchmetrics import MeanAbsoluteError
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> mean_absolute_error = MeanAbsoluteError()

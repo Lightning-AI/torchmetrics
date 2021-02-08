@@ -2,9 +2,9 @@ import pytest
 import torch
 
 from pytorch_lightning import seed_everything
-from pytorch_lightning.metrics.functional.classification import dice_score
-from pytorch_lightning.metrics.functional.precision_recall_curve import _binary_clf_curve
-from pytorch_lightning.metrics.utils import get_num_classes, to_categorical, to_onehot
+from torchmetrics.functional.classification import dice_score
+from torchmetrics.functional.precision_recall_curve import _binary_clf_curve
+from torchmetrics.utils import get_num_classes, to_categorical, to_onehot
 
 
 def test_onehot():

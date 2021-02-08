@@ -15,8 +15,8 @@ from typing import Optional
 
 import torch
 
-from pytorch_lightning.metrics.classification.helpers import _reduce_stat_scores
-from pytorch_lightning.metrics.functional.stat_scores import _stat_scores_update
+from torchmetrics.classification.helpers import _reduce_stat_scores
+from torchmetrics.functional.stat_scores import _stat_scores_update
 from pytorch_lightning.utilities import rank_zero_warn
 
 
@@ -138,7 +138,7 @@ def precision(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import precision
+        >>> from torchmetrics.functional import precision
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> precision(preds, target, average='macro', num_classes=3)
@@ -300,7 +300,7 @@ def recall(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import recall
+        >>> from torchmetrics.functional import recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> recall(preds, target, average='macro', num_classes=3)
@@ -449,7 +449,7 @@ def precision_recall(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import precision_recall
+        >>> from torchmetrics.functional import precision_recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> precision_recall(preds, target, average='macro', num_classes=3)

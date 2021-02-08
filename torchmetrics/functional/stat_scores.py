@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from pytorch_lightning.metrics.classification.helpers import _input_format_classification
+from torchmetrics.classification.helpers import _input_format_classification
 
 
 def _del_column(tensor: torch.Tensor, index: int):
@@ -246,7 +246,7 @@ def stat_scores(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import stat_scores
+        >>> from torchmetrics.functional import stat_scores
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> stat_scores(preds, target, reduce='macro', num_classes=3)

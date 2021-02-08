@@ -5,17 +5,17 @@ import pytest
 import torch
 from sklearn.metrics import fbeta_score
 
-from pytorch_lightning.metrics import F1, FBeta
-from pytorch_lightning.metrics.functional import f1, fbeta
-from tests.metrics.classification.inputs import _input_binary, _input_binary_prob
-from tests.metrics.classification.inputs import _input_multiclass as _input_mcls
-from tests.metrics.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.metrics.classification.inputs import _input_multidim_multiclass as _input_mdmc
-from tests.metrics.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.metrics.classification.inputs import _input_multilabel as _input_mlb
-from tests.metrics.classification.inputs import _input_multilabel_no_match as _input_mlb_nomatch
-from tests.metrics.classification.inputs import _input_multilabel_prob as _mlb_prob_inputs
-from tests.metrics.utils import MetricTester, NUM_CLASSES, THRESHOLD
+from torchmetrics import F1, FBeta
+from torchmetrics.functional import f1, fbeta
+from tests.classification.inputs import _input_binary, _input_binary_prob
+from tests.classification.inputs import _input_multiclass as _input_mcls
+from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
+from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.classification.inputs import _input_multilabel as _input_mlb
+from tests.classification.inputs import _input_multilabel_no_match as _input_mlb_nomatch
+from tests.classification.inputs import _input_multilabel_prob as _mlb_prob_inputs
+from tests.utils import MetricTester, NUM_CLASSES, THRESHOLD
 
 torch.manual_seed(42)
 

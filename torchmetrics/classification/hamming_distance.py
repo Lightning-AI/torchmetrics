@@ -15,8 +15,8 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.hamming_distance import _hamming_distance_compute, _hamming_distance_update
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.functional.hamming_distance import _hamming_distance_compute, _hamming_distance_update
+from torchmetrics.metric import Metric
 
 
 class HammingDistance(Metric):
@@ -55,7 +55,7 @@ class HammingDistance(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import HammingDistance
+        >>> from torchmetrics import HammingDistance
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])
         >>> hamming_distance = HammingDistance()

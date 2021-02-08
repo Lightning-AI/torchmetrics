@@ -5,9 +5,9 @@ import pytest
 import torch
 from sklearn.metrics import r2_score as sk_r2score
 
-from pytorch_lightning.metrics.functional import r2score
-from pytorch_lightning.metrics.regression import R2Score
-from tests.metrics.utils import BATCH_SIZE, MetricTester, NUM_BATCHES
+from torchmetrics.functional import r2score
+from torchmetrics.regression import R2Score
+from tests.utils import BATCH_SIZE, MetricTester, NUM_BATCHES
 
 torch.manual_seed(42)
 

@@ -15,11 +15,11 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.mean_squared_log_error import (
+from torchmetrics.functional.mean_squared_log_error import (
     _mean_squared_log_error_compute,
     _mean_squared_log_error_update,
 )
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.metric import Metric
 
 
 class MeanSquaredLogError(Metric):
@@ -43,7 +43,7 @@ class MeanSquaredLogError(Metric):
 
     Example:
 
-        >>> from pytorch_lightning.metrics import MeanSquaredLogError
+        >>> from torchmetrics import MeanSquaredLogError
         >>> target = torch.tensor([2.5, 5, 4, 8])
         >>> preds = torch.tensor([3, 5, 2.5, 7])
         >>> mean_squared_log_error = MeanSquaredLogError()

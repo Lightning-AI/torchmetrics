@@ -15,7 +15,7 @@ from typing import Optional
 
 import torch
 
-from pytorch_lightning.metrics.classification.helpers import _input_format_classification, DataType
+from torchmetrics.classification.helpers import _input_format_classification, DataType
 from pytorch_lightning.utilities import rank_zero_warn
 
 
@@ -86,7 +86,7 @@ def confusion_matrix(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import confusion_matrix
+        >>> from torchmetrics.functional import confusion_matrix
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> confusion_matrix(preds, target, num_classes=2)

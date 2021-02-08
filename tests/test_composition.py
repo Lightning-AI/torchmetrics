@@ -4,8 +4,8 @@ from operator import neg, pos
 import pytest
 import torch
 
-from pytorch_lightning.metrics.compositional import CompositionalMetric
-from pytorch_lightning.metrics.metric import Metric
+from torchmetrics.compositional import CompositionalMetric
+from torchmetrics.metric import Metric
 
 _MARK_TORCH_LOWER_1_4 = dict(
     condition=LooseVersion(torch.__version__) < LooseVersion("1.5.0"), reason='required PT >= 1.5'

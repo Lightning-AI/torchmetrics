@@ -16,7 +16,7 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
-from pytorch_lightning.metrics.utils import select_topk, to_onehot
+from torchmetrics.utils import select_topk, to_onehot
 from pytorch_lightning.utilities import LightningEnum
 
 

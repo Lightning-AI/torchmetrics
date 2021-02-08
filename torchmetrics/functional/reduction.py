@@ -13,15 +13,15 @@
 # limitations under the License.
 import torch
 
-from pytorch_lightning.metrics.utils import class_reduce as __cr
-from pytorch_lightning.metrics.utils import reduce as __reduce
+from torchmetrics.utils import class_reduce as __cr
+from torchmetrics.utils import reduce as __reduce
 from pytorch_lightning.utilities import rank_zero_warn
 
 
 def reduce(to_reduce: torch.Tensor, reduction: str) -> torch.Tensor:
     rank_zero_warn(
         "This `reduce` was deprecated in v1.1.0 in favor of"
-        " `pytorch_lightning.metrics.utils import reduce`."
+        " `torchmetrics.utils import reduce`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __reduce(to_reduce=to_reduce, reduction=reduction)
@@ -30,7 +30,7 @@ def reduce(to_reduce: torch.Tensor, reduction: str) -> torch.Tensor:
 def class_reduce(num: torch.Tensor, denom: torch.Tensor, weights: torch.Tensor, class_reduction: str = 'none'):
     rank_zero_warn(
         "This `class_reduce` was deprecated in v1.1.0 in favor of"
-        " `pytorch_lightning.metrics.utils import class_reduce`."
+        " `torchmetrics.utils import class_reduce`."
         " It will be removed in v1.3.0", DeprecationWarning
     )
     return __cr(num=num, denom=denom, weights=weights, class_reduction=class_reduction)

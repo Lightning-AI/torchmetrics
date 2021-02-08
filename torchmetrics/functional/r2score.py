@@ -15,7 +15,7 @@ from typing import Tuple
 
 import torch
 
-from pytorch_lightning.metrics.utils import _check_same_shape
+from torchmetrics.utils import _check_same_shape
 from pytorch_lightning.utilities import rank_zero_warn
 
 
@@ -116,7 +116,7 @@ def r2score(
 
     Example:
 
-        >>> from pytorch_lightning.metrics.functional import r2score
+        >>> from torchmetrics.functional import r2score
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> r2score(preds, target)

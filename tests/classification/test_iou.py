@@ -5,16 +5,16 @@ import pytest
 import torch
 from sklearn.metrics import jaccard_score as sk_jaccard_score
 
-from pytorch_lightning.metrics.classification.iou import IoU
-from pytorch_lightning.metrics.functional.iou import iou
-from tests.metrics.classification.inputs import _input_binary, _input_binary_prob
-from tests.metrics.classification.inputs import _input_multiclass as _input_mcls
-from tests.metrics.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.metrics.classification.inputs import _input_multidim_multiclass as _input_mdmc
-from tests.metrics.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.metrics.classification.inputs import _input_multilabel as _input_mlb
-from tests.metrics.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.metrics.utils import MetricTester, NUM_CLASSES, THRESHOLD
+from torchmetrics.classification.iou import IoU
+from torchmetrics.functional.iou import iou
+from tests.classification.inputs import _input_binary, _input_binary_prob
+from tests.classification.inputs import _input_multiclass as _input_mcls
+from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
+from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.classification.inputs import _input_multilabel as _input_mlb
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.utils import MetricTester, NUM_CLASSES, THRESHOLD
 
 
 def _sk_iou_binary_prob(preds, target, average=None):
