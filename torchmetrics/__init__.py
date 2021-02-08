@@ -30,7 +30,7 @@ if __LIGHTNING_SETUP__:
 else:
 
     from torchmetrics.classification import (  # noqa: F401
-        F,
+        F1,
         ROC,
         Accuracy,
         AveragePrecision,
