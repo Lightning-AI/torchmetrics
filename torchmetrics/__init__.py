@@ -17,3 +17,30 @@ Except the implemented sections:
  - setting CI
  - setting Docs
 """
+
+from torchmetrics.classification import (  # noqa: F401
+    Accuracy,
+    AUC,
+    AUROC,
+    AveragePrecision,
+    ConfusionMatrix,
+    F1,
+    FBeta,
+    HammingDistance,
+    IoU,
+    Precision,
+    PrecisionRecallCurve,
+    Recall,
+    ROC,
+    StatScores,
+)
+from torchmetrics.metric import Metric, MetricCollection  # noqa: F401
+from torchmetrics.regression import (  # noqa: F401
+    ExplainedVariance,
+    MeanAbsoluteError,
+    MeanSquaredError,
+    MeanSquaredLogError,
+    PSNR,
+    R2Score,
+    SSIM,
+)
