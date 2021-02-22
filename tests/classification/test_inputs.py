@@ -2,8 +2,7 @@ import pytest
 import torch
 from torch import rand, randint
 
-from torchmetrics.classification.helpers import _input_format_classification, DataType
-from torchmetrics.utils import select_topk, to_onehot
+from tests.classification.inputs import Input
 from tests.classification.inputs import _input_binary as _bin
 from tests.classification.inputs import _input_binary_prob as _bin_prob
 from tests.classification.inputs import _input_multiclass as _mc
@@ -14,8 +13,9 @@ from tests.classification.inputs import _input_multilabel as _ml
 from tests.classification.inputs import _input_multilabel_multidim as _mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _ml_prob
-from tests.classification.inputs import Input
 from tests.utils import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, THRESHOLD
+from torchmetrics.classification.helpers import DataType, _input_format_classification
+from torchmetrics.utils import select_topk, to_onehot
 
 torch.manual_seed(42)
 

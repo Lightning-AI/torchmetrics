@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional, Tuple
 
 import torch
+
 from torchmetrics.functional.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
 

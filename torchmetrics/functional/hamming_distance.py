@@ -14,6 +14,7 @@
 from typing import Tuple, Union
 
 import torch
+
 from torchmetrics.classification.helpers import _input_format_classification
 
 

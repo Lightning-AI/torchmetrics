@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+
 from torchmetrics.functional.mean_squared_log_error import (
     _mean_squared_log_error_compute,
     _mean_squared_log_error_update,

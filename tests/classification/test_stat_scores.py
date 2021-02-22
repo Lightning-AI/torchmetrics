@@ -6,16 +6,16 @@ import pytest
 import torch
 from sklearn.metrics import multilabel_confusion_matrix
 
-from torchmetrics import StatScores
-from torchmetrics.classification.helpers import _input_format_classification
-from torchmetrics.functional import stat_scores
 from tests.classification.inputs import _input_binary, _input_binary_prob, _input_multiclass
 from tests.classification.inputs import _input_multiclass_prob as _input_mccls_prob
 from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mcls
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.utils import MetricTester, NUM_CLASSES, THRESHOLD
+from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics import StatScores
+from torchmetrics.classification.helpers import _input_format_classification
+from torchmetrics.functional import stat_scores
 
 torch.manual_seed(42)
 

@@ -5,14 +5,14 @@ import pytest
 import torch
 from sklearn.metrics import roc_auc_score as sk_roc_auc_score
 
-from torchmetrics.classification.auroc import AUROC
-from torchmetrics.functional.auroc import auroc
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.utils import MetricTester, NUM_CLASSES
+from tests.utils import NUM_CLASSES, MetricTester
+from torchmetrics.classification.auroc import AUROC
+from torchmetrics.functional.auroc import auroc
 
 torch.manual_seed(42)
 

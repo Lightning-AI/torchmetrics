@@ -29,12 +29,28 @@ if __LIGHTNING_SETUP__:
 else:
 
     from torchmetrics.classification import (  # noqa: F401
-        Accuracy, AUC, AUROC, AveragePrecision, ConfusionMatrix, F1, FBeta,
-        HammingDistance, IoU, Precision, PrecisionRecallCurve, Recall, ROC,
+        AUC,
+        AUROC,
+        F1,
+        ROC,
+        Accuracy,
+        AveragePrecision,
+        ConfusionMatrix,
+        FBeta,
+        HammingDistance,
+        IoU,
+        Precision,
+        PrecisionRecallCurve,
+        Recall,
         StatScores,
     )
     from torchmetrics.metric import Metric, MetricCollection  # noqa: F401
     from torchmetrics.regression import (  # noqa: F401
-        ExplainedVariance, MeanAbsoluteError, MeanSquaredError,
-        MeanSquaredLogError, PSNR, R2Score, SSIM,
+        PSNR,
+        SSIM,
+        ExplainedVariance,
+        MeanAbsoluteError,
+        MeanSquaredError,
+        MeanSquaredLogError,
+        R2Score,
     )

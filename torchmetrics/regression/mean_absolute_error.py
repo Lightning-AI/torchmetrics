@@ -15,10 +15,7 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from torchmetrics.functional.mean_absolute_error import (
-    _mean_absolute_error_compute,
-    _mean_absolute_error_update,
-)
+from torchmetrics.functional.mean_absolute_error import _mean_absolute_error_compute, _mean_absolute_error_update
 from torchmetrics.metric import Metric
 
 

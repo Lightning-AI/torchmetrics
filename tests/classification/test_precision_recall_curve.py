@@ -5,12 +5,12 @@ import pytest
 import torch
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
 
-from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
-from torchmetrics.functional.precision_recall_curve import precision_recall_curve
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.utils import MetricTester, NUM_CLASSES
+from tests.utils import NUM_CLASSES, MetricTester
+from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
+from torchmetrics.functional.precision_recall_curve import precision_recall_curve
 
 torch.manual_seed(42)
 

@@ -14,6 +14,7 @@
 from typing import Tuple
 
 import torch
+
 from torchmetrics.utils import _check_same_shape
 
 

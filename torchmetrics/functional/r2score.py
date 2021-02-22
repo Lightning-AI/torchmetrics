@@ -14,9 +14,9 @@
 from typing import Tuple
 
 import torch
+from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.utils import _check_same_shape
-from pytorch_lightning.utilities import rank_zero_warn
 
 
 def _r2score_update(

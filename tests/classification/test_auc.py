@@ -5,9 +5,9 @@ import pytest
 import torch
 from sklearn.metrics import auc as _sk_auc
 
+from tests.utils import NUM_BATCHES, MetricTester
 from torchmetrics.classification.auc import AUC
 from torchmetrics.functional.auc import auc
-from tests.utils import MetricTester, NUM_BATCHES
 
 torch.manual_seed(42)
 

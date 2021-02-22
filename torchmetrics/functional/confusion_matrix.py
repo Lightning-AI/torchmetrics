@@ -14,9 +14,9 @@
 from typing import Optional
 
 import torch
-
-from torchmetrics.classification.helpers import _input_format_classification, DataType
 from pytorch_lightning.utilities import rank_zero_warn
+
+from torchmetrics.classification.helpers import DataType, _input_format_classification
 
 
 def _confusion_matrix_update(

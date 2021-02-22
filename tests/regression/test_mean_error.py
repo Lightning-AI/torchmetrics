@@ -3,13 +3,13 @@ from functools import partial
 
 import pytest
 import torch
-from torchmetrics.functional import mean_absolute_error, mean_squared_error, mean_squared_log_error
-from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 
-from tests.utils import BATCH_SIZE, MetricTester, NUM_BATCHES
+from tests.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.functional import mean_absolute_error, mean_squared_error, mean_squared_log_error
+from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
 
 torch.manual_seed(42)
 

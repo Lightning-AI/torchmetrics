@@ -5,9 +5,6 @@ import pytest
 import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
 
-from torchmetrics import Accuracy
-from torchmetrics.classification.helpers import _input_format_classification, DataType
-from torchmetrics.functional import accuracy
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -17,7 +14,10 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.utils import MetricTester, THRESHOLD
+from tests.utils import THRESHOLD, MetricTester
+from torchmetrics import Accuracy
+from torchmetrics.classification.helpers import DataType, _input_format_classification
+from torchmetrics.functional import accuracy
 
 torch.manual_seed(42)
 

@@ -5,9 +5,9 @@ import pytest
 import torch
 from skimage.metrics import structural_similarity
 
+from tests.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import ssim
 from torchmetrics.regression import SSIM
-from tests.utils import BATCH_SIZE, MetricTester, NUM_BATCHES
 
 torch.manual_seed(42)
 

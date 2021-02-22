@@ -14,9 +14,10 @@
 from typing import Optional
 
 import torch
+from pytorch_lightning.utilities import rank_zero_warn
+
 from torchmetrics.classification.helpers import _reduce_stat_scores
 from torchmetrics.functional.stat_scores import _stat_scores_update
-from pytorch_lightning.utilities import rank_zero_warn
 
 
 def _precision_compute(

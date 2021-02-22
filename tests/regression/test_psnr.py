@@ -18,11 +18,11 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from torchmetrics.functional import psnr
-from torchmetrics.regression import PSNR
 from skimage.metrics import peak_signal_noise_ratio
 
 from tests.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.functional import psnr
+from torchmetrics.regression import PSNR
 
 torch.manual_seed(42)
 

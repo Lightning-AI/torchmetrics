@@ -3,6 +3,7 @@ from operator import neg, pos
 
 import pytest
 import torch
+
 from torchmetrics.compositional import CompositionalMetric
 from torchmetrics.metric import Metric
 

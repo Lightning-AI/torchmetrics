@@ -5,8 +5,6 @@ import pytest
 import torch
 from sklearn.metrics import fbeta_score
 
-from torchmetrics import F1, FBeta
-from torchmetrics.functional import f1, fbeta
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -15,7 +13,9 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_no_match as _input_mlb_nomatch
 from tests.classification.inputs import _input_multilabel_prob as _mlb_prob_inputs
-from tests.utils import MetricTester, NUM_CLASSES, THRESHOLD
+from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics import F1, FBeta
+from torchmetrics.functional import f1, fbeta
 
 torch.manual_seed(42)
 
