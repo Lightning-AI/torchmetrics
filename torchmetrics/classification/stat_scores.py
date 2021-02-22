@@ -105,7 +105,6 @@ class StatScores(Metric):
             will be used to perform the allgather.
 
     Example:
-
         >>> from torchmetrics.classification import StatScores
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])

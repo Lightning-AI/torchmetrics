@@ -105,7 +105,6 @@ class Precision(StatScores):
             will be used to perform the allgather.
 
     Example:
-
         >>> from torchmetrics import Precision
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -253,7 +252,6 @@ class Recall(StatScores):
             will be used to perform the allgather.
 
     Example:
-
         >>> from torchmetrics import Recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])

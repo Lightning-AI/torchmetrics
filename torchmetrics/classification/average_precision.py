@@ -52,16 +52,16 @@ class AveragePrecision(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example (binary case):
-
+    Example:
+        >>> # binary case
+        >>> from torchmetrics import AveragePrecision
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> average_precision = AveragePrecision(pos_label=1)
         >>> average_precision(pred, target)
         tensor(1.)
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],

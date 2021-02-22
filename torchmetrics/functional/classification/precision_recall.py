@@ -131,7 +131,6 @@ def precision(
           of classes
 
     Example:
-
         >>> from torchmetrics.functional import precision
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -283,7 +282,6 @@ def recall(
           of classes
 
     Example:
-
         >>> from torchmetrics.functional import recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -420,7 +418,6 @@ def precision_recall(
           the number of classes
 
     Example:
-
         >>> from torchmetrics.functional import precision_recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])

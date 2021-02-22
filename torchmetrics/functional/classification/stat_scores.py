@@ -246,7 +246,6 @@ def stat_scores(
           - If ``reduce='samples'``, the shape will be ``(N, X, 5)``
 
     Example:
-
         >>> from torchmetrics.functional import stat_scores
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -256,7 +255,6 @@ def stat_scores(
                 [1, 0, 3, 0, 1]])
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
-
     """
 
     if reduce not in ["micro", "macro", "samples"]:

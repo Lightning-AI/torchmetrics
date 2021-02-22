@@ -80,7 +80,6 @@ class Accuracy(Metric):
             will be used to perform the allgather
 
     Example:
-
         >>> from torchmetrics import Accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])

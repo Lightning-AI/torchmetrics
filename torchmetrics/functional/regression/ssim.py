@@ -143,6 +143,7 @@ def ssim(
         Tensor with SSIM score
 
     Example:
+        >>> from torchmetrics.functional import ssim
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ssim(preds, target)
