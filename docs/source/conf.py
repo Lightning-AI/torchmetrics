@@ -51,7 +51,6 @@ release = torchmetrics.__version__
 github_user = 'PyTorchLightning'
 github_repo = project
 
-
 # -- Project documents -------------------------------------------------------
 # export the READme
 with open(os.path.join(PATH_ROOT, 'README.md'), 'r') as fp:
@@ -139,7 +138,6 @@ exclude_patterns = [
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -178,7 +176,6 @@ html_static_path = ['_images', '_templates', '_static']
 #
 # html_sidebars = {}
 
-
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
@@ -211,9 +208,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, project, project + ' Documentation', [author], 1)
-]
+man_pages = [(master_doc, project, project + ' Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -221,9 +216,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, project, project + ' Documentation', author, project,
-     torchmetrics.__docs__,
-     'Miscellaneous'),
+    (master_doc, project, project + ' Documentation', author, project, torchmetrics.__docs__, 'Miscellaneous'),
 ]
 
 # -- Options for Epub output -------------------------------------------------
@@ -282,13 +275,10 @@ def run_apidoc(_):
         shutil.rmtree(apidoc_output_folder)
 
     for pkg in PACKAGES:
-        argv = ['-e',
-                '-o', apidoc_output_folder,
-                os.path.join(PATH_ROOT, pkg),
-                '**/test_*',
-                '--force',
-                '--private',
-                '--module-first']
+        argv = [
+            '-e', '-o', apidoc_output_folder,
+            os.path.join(PATH_ROOT, pkg), '**/test_*', '--force', '--private', '--module-first'
+        ]
 
         apidoc.main(argv)
 
@@ -338,6 +328,7 @@ autodoc_mock_imports = MOCK_PACKAGES
 # Resolve function
 # This function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info):
+
     def find_source():
         # try to find the file and line number, based on code from numpy:
         # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L286

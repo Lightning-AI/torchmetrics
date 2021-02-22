@@ -52,23 +52,19 @@ setup(
     download_url='https://github.com/PyTorchLightning/torchmetrics',
     license=torchmetrics.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
-
     long_description=load_long_describtion(),
     long_description_content_type='text/markdown',
     include_package_data=True,
     zip_safe=False,
-
     keywords=['deep learning', 'pytorch', 'AI'],
     python_requires='>=3.6',
     setup_requires=[],
     install_requires=load_requirements(PATH_ROOT),
-
     project_urls={
         "Bug Tracker": "https://github.com/PyTorchLightning/torchmetrics/issues",
         "Documentation": "https://torchmetrics.rtfd.io/en/latest/",
         "Source Code": "https://github.com/PyTorchLightning/torchmetrics",
     },
-
     classifiers=[
         'Environment :: Console',
         'Natural Language :: English',

@@ -17,6 +17,7 @@ from torch.utils.data import Dataset
 
 
 class RandomDictStringDataset(Dataset):
+
     def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)
@@ -29,6 +30,7 @@ class RandomDictStringDataset(Dataset):
 
 
 class RandomDataset(Dataset):
+
     def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)

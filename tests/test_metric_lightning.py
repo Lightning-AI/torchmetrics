@@ -106,7 +106,6 @@ def test_metric_lightning(tmpdir):
 #     assert torch.allclose(torch.tensor(logged["sum_step"]), model.sum)
 #     assert torch.allclose(torch.tensor(logged["sum_epoch"]), model.sum)
 
-
 # todo: need to be fixed
 # def test_scriptable(tmpdir):
 #     class TestModel(BoringModel):
@@ -144,7 +143,6 @@ def test_metric_lightning(tmpdir):
 #     output = model(rand_input)
 #     script_output = script_model(rand_input)
 #     assert torch.allclose(output, script_output)
-
 
 # def test_metric_collection_lightning_log(tmpdir):
 #
