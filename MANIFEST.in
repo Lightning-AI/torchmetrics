@@ -28,6 +28,7 @@ include requirements.txt
 
 # Exclude build configs
 exclude *.yml
+exclude Makefile
 
 prune .git
 prune .github
