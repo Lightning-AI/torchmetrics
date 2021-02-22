@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable, Union, Any
 
 import torch
 
@@ -41,18 +41,18 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn=None):
+    def _sync_dist(self, dist_sync_fn: Callable = None) -> None:
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 
-    def update(self, *args, **kwargs):
+    def update(self, *args, **kwargs) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
         if isinstance(self.metric_b, Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
-    def compute(self):
+    def compute(self) -> Any:
 
         # also some parsing for kwargs?
         if isinstance(self.metric_a, Metric):
@@ -70,20 +70,20 @@ class CompositionalMetric(Metric):
 
         return self.op(val_a, val_b)
 
-    def reset(self):
+    def reset(self) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.reset()
 
         if isinstance(self.metric_b, Metric):
             self.metric_b.reset()
 
-    def persistent(self, mode: bool = False):
+    def persistent(self, mode: bool = False) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.persistent(mode=mode)
         if isinstance(self.metric_b, Metric):
             self.metric_b.persistent(mode=mode)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
         repr_str = (self.__class__.__name__ + _op_metrics)
 
