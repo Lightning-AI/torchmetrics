@@ -71,7 +71,7 @@ with open("readme.md", "w") as fp:
 
 # If your documentation needs a minimal Sphinx version, state it here.
 
-needs_sphinx = "2.0"
+needs_sphinx = "3.4"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -99,7 +99,7 @@ extensions = [
 
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = ["_templates", "_static"]
 
 # https://berkeley-stat159-f17.github.io/stat159-f17/lectures/14-sphinx..html#conf.py-(cont.)
 # https://stackoverflow.com/questions/38526888/embed-ipython-notebook-in-sphinx-document
@@ -162,12 +162,12 @@ html_theme_options = {
 }
 
 # TODO
-# html_logo = '_images/logos/lightning_logo-name.svg'
+# html_logo = 'images/logo.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_images", "_templates", "_static"]
+html_static_path = ["_templates", "_static"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
