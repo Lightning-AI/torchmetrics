@@ -49,11 +49,10 @@ def to_onehot(
         label_tensor: dense label tensor, with shape [N, d1, d2, ...]
         num_classes: number of classes C
 
-    Output:
+    Returns:
         A sparse label tensor with shape [N, C, d1, d2, ...]
 
     Example:
-
         >>> x = torch.tensor([1, 2, 3])
         >>> to_onehot(x)
         tensor([[0, 1, 0, 0],
@@ -85,11 +84,10 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
         topk: number of highest entries to turn into 1s
         dim: dimension on which to compare entries
 
-    Output:
+    Returns:
         A binary tensor of the same shape as the input tensor of type torch.int32
 
     Example:
-
         >>> x = torch.tensor([[1.1, 2.0, 3.0], [2.0, 1.0, 0.5]])
         >>> select_topk(x, topk=2)
         tensor([[0, 1, 1],
@@ -112,7 +110,6 @@ def to_categorical(tensor: Tensor, argmax_dim: int = 1) -> Tensor:
         A tensor with categorical labels [N, d2, ...]
 
     Example:
-
         >>> x = torch.tensor([[0.2, 0.5], [0.9, 0.1]])
         >>> to_categorical(x)
         tensor([1, 0])

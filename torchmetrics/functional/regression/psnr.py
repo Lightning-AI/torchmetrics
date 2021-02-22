@@ -87,7 +87,7 @@ def psnr(
         Tensor with PSNR score
 
     Example:
-
+        >>> from torchmetrics.functional import psnr
         >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(pred, target)

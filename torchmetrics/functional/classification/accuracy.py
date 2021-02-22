@@ -110,7 +110,6 @@ def accuracy(
               still applies in both cases, if set.
 
     Example:
-
         >>> from torchmetrics.functional import accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])

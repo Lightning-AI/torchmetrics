@@ -56,6 +56,7 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
         Tuple of (dy, dx) with each gradient of shape ``[N, C, H, W]``
 
     Example:
+        >>> from torchmetrics.functional import image_gradients
         >>> image = torch.arange(0, 1*1*5*5, dtype=torch.float32)
         >>> image = torch.reshape(image, (1, 1, 5, 5))
         >>> dy, dx = image_gradients(image)

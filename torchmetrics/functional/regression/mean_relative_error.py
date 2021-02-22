@@ -44,7 +44,7 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
         Tensor with mean relative error
 
     Example:
-
+        >>> from torchmetrics.functional import mean_relative_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_relative_error(x, y)

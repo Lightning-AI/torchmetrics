@@ -41,7 +41,6 @@ def _stat_scores(
         True Positive, False Positive, True Negative, False Negative, Support
 
     Example:
-
         >>> x = torch.tensor([1, 2, 3])
         >>> y = torch.tensor([0, 2, 3])
         >>> tp, fp, tn, fn, sup = _stat_scores(x, y, class_index=1)
@@ -88,7 +87,7 @@ def dice_score(
         Tensor containing dice score
 
     Example:
-
+        >>> from torchmetrics.functional import dice_score
         >>> pred = torch.tensor([[0.85, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.85, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.85, 0.05],

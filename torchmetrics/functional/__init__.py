@@ -29,6 +29,7 @@ from torchmetrics.functional.image_gradients import image_gradients  # noqa: F40
 from torchmetrics.functional.nlp import bleu_score  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
+from torchmetrics.functional.regression.mean_relative_error import mean_relative_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_error import mean_squared_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error  # noqa: F401
 from torchmetrics.functional.regression.psnr import psnr  # noqa: F401

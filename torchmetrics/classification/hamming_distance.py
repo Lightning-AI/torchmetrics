@@ -55,7 +55,6 @@ class HammingDistance(Metric):
             will be used to perform the all gather.
 
     Example:
-
         >>> from torchmetrics import HammingDistance
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])

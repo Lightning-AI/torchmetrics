@@ -43,7 +43,6 @@ class MeanSquaredLogError(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-
         >>> from torchmetrics import MeanSquaredLogError
         >>> target = torch.tensor([2.5, 5, 4, 8])
         >>> preds = torch.tensor([3, 5, 2.5, 7])
