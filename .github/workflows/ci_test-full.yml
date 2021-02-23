@@ -3,9 +3,9 @@ name: CI testing
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
   push:
-    branches: [master]
+    branches: [master, "release/*"]
   pull_request:
-    branches: [master]
+    branches: [master, "release/*"]
 
 jobs:
   pytest:
@@ -59,8 +59,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html --use-feature=2020-resolver
-        pip install --requirement tests/requirements.txt --quiet --use-feature=2020-resolver
+        pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement tests/requirements.txt --quiet
         python --version
         pip --version
         pip list
@@ -76,7 +76,6 @@ jobs:
     - name: Tests
       run: |
         coverage run --source torchmetrics -m pytest torchmetrics tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
-        coverage xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
@@ -88,6 +87,7 @@ jobs:
     - name: Statistics
       if: success()
       run: |
+        coverage xml
         coverage report
 
     - name: Upload coverage to Codecov
