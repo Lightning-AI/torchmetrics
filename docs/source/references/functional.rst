@@ -206,7 +206,7 @@ NLP
 ***
 
 bleu_score [func]
------------------
+~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
@@ -216,8 +216,7 @@ Pairwise
 ********
 
 embedding_similarity [func]
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.embedding_similarity
     :noindex:
-
