@@ -17,7 +17,6 @@ import builtins
 import glob
 import inspect
 import os
-import re
 import shutil
 import sys
 
@@ -29,6 +28,7 @@ sys.path.insert(0, os.path.abspath(PATH_ROOT))
 
 builtins.__LIGHTNING_BOLT_SETUP__ = True
 
+FOLDER_GENERATED = 'generated'
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
 import torchmetrics  # noqa: E402
@@ -36,7 +36,7 @@ import torchmetrics  # noqa: E402
 # -- Project information -----------------------------------------------------
 
 # this name shall match the project name in Github as it is used for linking to code
-project = "PyTorch-torchmetrics"
+project = "PyTorch-Metrics"
 copyright = torchmetrics.__copyright__
 author = torchmetrics.__author__
 
@@ -50,28 +50,39 @@ release = torchmetrics.__version__
 github_user = "PyTorchLightning"
 github_repo = project
 
-
 # -- Project documents -------------------------------------------------------
-# export the READme
-with open(os.path.join(PATH_ROOT, "README.md"), "r") as fp:
-    readme = fp.read()
-# TODO: temp fix removing SVG badges and GIF, because PDF cannot show them
-readme = re.sub(r"(\[!\[.*\))", "", readme)
-readme = re.sub(r"(!\[.*.gif\))", "", readme)
-for dir_name in (
-    os.path.basename(p)
-    for p in glob.glob(os.path.join(PATH_ROOT, "*"))
-    if os.path.isdir(p)
-):
-    readme = readme.replace("](%s/" % dir_name, "](%s/%s/" % (PATH_ROOT, dir_name))
-with open("readme.md", "w") as fp:
-    fp.write(readme)
+
+
+def _transform_changelog(path_in: str, path_out: str) -> None:
+    with open(path_in, 'r') as fp:
+        chlog_lines = fp.readlines()
+    # enrich short subsub-titles to be unique
+    chlog_ver = ''
+    for i, ln in enumerate(chlog_lines):
+        if ln.startswith('## '):
+            chlog_ver = ln[2:].split('-')[0].strip()
+        elif ln.startswith('### '):
+            ln = ln.replace('###', f'### {chlog_ver} -')
+            chlog_lines[i] = ln
+    with open(path_out, 'w') as fp:
+        fp.writelines(chlog_lines)
+
+
+os.makedirs(os.path.join(PATH_HERE, FOLDER_GENERATED), exist_ok=True)
+# copy all documents from GH templates like contribution guide
+for md in glob.glob(os.path.join(PATH_ROOT, '.github', '*.md')):
+    shutil.copy(md, os.path.join(PATH_HERE, FOLDER_GENERATED, os.path.basename(md)))
+# copy also the changelog
+_transform_changelog(
+    os.path.join(PATH_ROOT, 'CHANGELOG.md'),
+    os.path.join(PATH_HERE, FOLDER_GENERATED, 'CHANGELOG.md'),
+)
 
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 
-needs_sphinx = "2.0"
+needs_sphinx = "3.4"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -96,7 +107,6 @@ extensions = [
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
 ]
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -135,7 +145,7 @@ language = None
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    "PULL_REQUEST_TEMPLATE.md",
+    os.path.join(FOLDER_GENERATED, "PULL_REQUEST_TEMPLATE.md"),
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -161,13 +171,12 @@ html_theme_options = {
     "logo_only": False,
 }
 
-# TODO
-# html_logo = '_images/logos/lightning_logo-name.svg'
+html_logo = '_static/images/logo.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_images", "_templates", "_static"]
+html_static_path = ["_static"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -272,10 +281,8 @@ PACKAGES = [
     torchmetrics.__name__,
 ]
 
-apidoc_output_folder = os.path.join(PATH_HERE, "api")
-
-
 # def run_apidoc(_):
+#     apidoc_output_folder = os.path.join(PATH_HERE, "api")
 #     sys.path.insert(0, apidoc_output_folder)
 #
 #     # delete api-doc files before generating them
@@ -317,7 +324,7 @@ def package_list_from_file(file):
     with open(file, "r") as fp:
         for ln in fp.readlines():
             found = [ln.index(ch) for ch in list(",=<>#") if ch in ln]
-            pkg = ln[: min(found)] if found else ln
+            pkg = ln[:min(found)] if found else ln
             if pkg.rstrip():
                 mocked_packages.append(pkg.rstrip())
     return mocked_packages

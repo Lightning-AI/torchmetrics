@@ -10,10 +10,22 @@ PyTorchMetrics documentation
    :name: start
    :caption: Start here
 
-   intro
-   torchmetrics
-   functional
-   lightning
+   pages/intro
+   pages/implement
+   pages/overview
+   pages/lightning
+   references/functional
+   references/modules
+
+.. toctree::
+   :maxdepth: 1
+   :name: community
+   :caption: Community
+
+
+   generated/CODE_OF_CONDUCT.md
+   generated/CONTRIBUTING.md
+   generated/CHANGELOG.md
 
 Indices and tables
 ==================
@@ -21,9 +33,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. This is here to make sphinx aware of the modules but not throw an error/warning
-.. toctree::
-   :hidden:
-
-   readme
