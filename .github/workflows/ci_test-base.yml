@@ -1,26 +1,25 @@
-name: CI testing
+name: CI testing - base
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
   push:
-    branches: [master]
+    branches: [master, "release/*"]
   pull_request:
-    branches: [master]
+    branches: [master, "release/*"]
 
 jobs:
-  pytest:
+  doctest:
 
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      # max-parallel: 6
       matrix:
-        os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.6, 3.8]
-        requires: ['minimal', 'latest']
+        os: [ubuntu-20.04, windows-2019, macOS-10.15]
+        python-version: [3.7]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 15
-
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -34,14 +33,6 @@ jobs:
       run: |
         brew install libomp  # https://github.com/pytorch/pytorch/issues/20030
 
-    - name: Set min. dependencies
-      if: matrix.requires == 'minimal'
-      run: |
-        for fpath in ('requirements.txt', 'tests/requirements.txt'):
-            req = open(fpath).read().replace('>=', '==')
-            open(fpath, 'w').write(req)
-      shell: python
-
     # Note: This uses an internal pip API and may not always work
     # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
     - name: Get pip cache
@@ -53,49 +44,46 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-${{ hashFiles('requirements.txt') }}
+        key: ${{ runner.os }}-pip-py${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-
+          ${{ runner.os }}-pip-py${{ matrix.python-version }}-
 
     - name: Install dependencies
       run: |
-        pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html --use-feature=2020-resolver
-        pip install --requirement tests/requirements.txt --quiet --use-feature=2020-resolver
+        python -m pip install --upgrade --user pip
+        pip install --requirement ./requirements.txt --quiet  --find-links https://download.pytorch.org/whl/cpu/torch_stable.html --upgrade
+        pip install coverage pytest --quiet --upgrade-strategy only-if-needed
         python --version
         pip --version
         pip list
       shell: bash
 
-    #- name: Cache datasets
-    #  uses: actions/cache@v2
-    #  with:
-    #    path: Datasets # This path is specific to Ubuntu
-    #    # Look to see if there is a cache hit for the corresponding requirements file
-    #    key: pl-datasets
-
-    - name: Tests
+    - name: Test Package [only]
       run: |
-        coverage run --source torchmetrics -m pytest torchmetrics tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
-        coverage xml
+        # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
+        coverage run --source torchmetrics -m pytest torchmetrics -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}
-        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}
+        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
       if: failure()
 
     - name: Statistics
       if: success()
       run: |
         coverage report
+        coverage xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
+      if: always()
+      # see: https://github.com/actions/toolkit/issues/399
+      continue-on-error: true
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
-        flags: unittests
-        env_vars: OS,PYTHON
-        name: codecov-umbrella
+        file: coverage.xml
+        flags: cpu,pytest
+        name: Base-coverage
         fail_ci_if_error: false
