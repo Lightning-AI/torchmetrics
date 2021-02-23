@@ -11,14 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import wraps
-from typing import Callable, Optional, Tuple
+from typing import Tuple
 
 import torch
 from pytorch_lightning.utilities import rank_zero_warn
 
-from torchmetrics.functional.auc import auc
-from torchmetrics.utils import class_reduce, get_num_classes, reduce, to_categorical
+from torchmetrics.utils import reduce, to_categorical
 
 
 def stat_scores(
