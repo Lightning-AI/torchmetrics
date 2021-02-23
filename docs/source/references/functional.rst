@@ -1,168 +1,223 @@
 .. role:: hidden
     :class: hidden-section
 
-torchmetrics.functional
-=======================
-.. TODO: this should work and then autofunction doesn't need the full path
-.. and then we don't need no index
-.. .. currentmodule:: torchmetrics.functional
+**********************
+Classification Metrics
+**********************
 
+accuracy [func]
+~~~~~~~~~~~~~~~
 
-Classification functions
-------------------------
-
-:hidden:`accuracy`
-~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.accuracy
+.. autofunction:: torchmetrics.functional.accuracy
     :noindex:
 
-:hidden:`auc`
-~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.auc
+
+auc [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.auc
     :noindex:
 
-:hidden:`auroc`
-~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.auroc
+
+auroc [func]
+~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.auroc
     :noindex:
 
-:hidden:`multiclass_auroc`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.multiclass_auroc
-    :noindex:
 
-:hidden:`average_precision`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+average_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.functional.average_precision
     :noindex:
 
-:hidden:`confusion_matrix`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+confusion_matrix [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.functional.confusion_matrix
     :noindex:
 
-:hidden:`dice_score`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.dice_score
+
+dice_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.dice_score
     :noindex:
 
-:hidden:`f1`
-~~~~~~~~~~~~~~~~
+
+f1 [func]
+~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.functional.f1
     :noindex:
 
-:hidden:`fbeta`
-~~~~~~~~~~~~~~~~
+
+fbeta [func]
+~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.functional.fbeta
     :noindex:
 
-:hidden:`iou`
-~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.iou
+hamming_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.hamming_distance
     :noindex:
 
-:hidden:`roc`
-~~~~~~~~~~~~~~~~
+iou [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.iou
+    :noindex:
+
+
+roc [func]
+~~~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.functional.roc
     :noindex:
 
-:hidden:`precision`
-~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.precision
+
+precision [func]
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.precision
     :noindex:
 
-:hidden:`precision_recall`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.precision_recall
+
+precision_recall [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.precision_recall
     :noindex:
 
-:hidden:`precision_recall_curve`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+precision_recall_curve [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.functional.precision_recall_curve
     :noindex:
 
-:hidden:`recall`
-~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.recall
+
+recall [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.recall
     :noindex:
 
-:hidden:`stat_scores`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.stat_scores
-    :noindex:
-
-:hidden:`stat_scores_multiple_classes`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.classification.stat_scores_multiple_classes
-    :noindex:
-
-
-Regression functions
-------------------------
-
-:hidden:`explained_variance`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.explained_variance
-    :noindex:
-
-
-:hidden:`mean_absolute_error`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.mean_absolute_error
-    :noindex:
-
-:hidden:`mean_squared_error`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.mean_squared_error
-    :noindex:
-
-:hidden:`mean_squared_log_error`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.mean_squared_log_error
-    :noindex:
-
-:hidden:`psnr`
-~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.psnr
-    :noindex:
-
-:hidden:`ssim`
-~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.ssim
-    :noindex:
-
-
-NLP functions
-------------------------
-
-:hidden:`bleu_score`
+select_topk [func]
 ~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.nlp.bleu_score
-    :noindex:
 
-Pairwise functions
---------------------
-:hidden:`embedding_similarity`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. autofunction:: torchmetrics.functional.self_supervised.embedding_similarity
-    :noindex:
-
-
-Utility functions
---------------------
-
-:hidden:`select_topk`
-~~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: torchmetrics.utils.select_topk
     :noindex:
 
 
-:hidden:`to_categorical`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+stat_scores [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.stat_scores
+    :noindex:
+
+
+stat_scores_multiple_classes [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.stat_scores_multiple_classes
+    :noindex:
+
+
+to_categorical [func]
+~~~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.utils.to_categorical
     :noindex:
 
-:hidden:`to_onehot`
-~~~~~~~~~~~~~~~~~~~~~~
+
+to_onehot [func]
+~~~~~~~~~~~~~~~~
+
 .. autofunction:: torchmetrics.utils.to_onehot
     :noindex:
+
+
+******************
+Regression Metrics
+******************
+
+explained_variance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.explained_variance
+    :noindex:
+
+
+image_gradients [func]
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.image_gradients
+    :noindex:
+
+
+mean_absolute_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.mean_absolute_error
+    :noindex:
+
+
+mean_squared_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.mean_squared_error
+    :noindex:
+
+
+mean_squared_log_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.mean_squared_log_error
+    :noindex:
+
+
+psnr [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.psnr
+    :noindex:
+
+
+ssim [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ssim
+    :noindex:
+
+
+r2score [func]
+~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.r2score
+    :noindex:
+
+***
+NLP
+***
+
+bleu_score [func]
+-----------------
+
+.. autofunction:: torchmetrics.functional.bleu_score
+    :noindex:
+
+********
+Pairwise
+********
+
+embedding_similarity [func]
+---------------------------
+
+.. autofunction:: torchmetrics.functional.embedding_similarity
+    :noindex:
+

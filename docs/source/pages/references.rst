@@ -2,10 +2,10 @@
     :class: hidden-section
 
 torchmetrics
-===================================
+============
 
 Classification
---------------------
+--------------
 
 For the purposes of classification metrics, inputs (predictions and targets) are split 
 into these categories (``N`` stands for the batch size and ``C`` for number of classes):
@@ -73,7 +73,7 @@ For these cases, the metrics where this distinction would make a difference, exp
 
 
 Regression
---------------------
+----------
 
 .. currentmodule:: torchmetrics.regression
 
