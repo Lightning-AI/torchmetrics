@@ -16,7 +16,7 @@ from typing import Optional, Tuple, Union
 import torch
 from pytorch_lightning import utilities
 
-from torchmetrics import utils
+from torchmetrics.utilities.distributed import reduce
 
 
 def _psnr_compute(
@@ -28,7 +28,7 @@ def _psnr_compute(
 ) -> torch.Tensor:
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / n_obs)
     psnr = psnr_base_e * (10 / torch.log(torch.tensor(base)))
-    return utils.reduce(psnr, reduction=reduction)
+    return reduce(psnr, reduction=reduction)
 
 
 def _psnr_update(preds: torch.Tensor,

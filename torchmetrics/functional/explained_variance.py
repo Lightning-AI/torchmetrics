@@ -15,7 +15,7 @@ from typing import Sequence, Tuple, Union
 
 import torch
 
-from torchmetrics.utils import _check_same_shape
+from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _explained_variance_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:

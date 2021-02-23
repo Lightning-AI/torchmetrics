@@ -16,7 +16,8 @@ from typing import Tuple
 import torch
 from pytorch_lightning.utilities import rank_zero_warn
 
-from torchmetrics.utils import reduce, to_categorical
+from torchmetrics.utilities.data import to_categorical
+from torchmetrics.utilities.distributed import reduce
 
 
 def stat_scores(
