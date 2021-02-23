@@ -47,7 +47,6 @@ def precision(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-    class_reduction: Optional[str] = None,
 ) -> torch.Tensor:
     r"""
     Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -126,9 +125,6 @@ def precision(
             :ref:`documentation section <pages/overview:using the is_multiclass parameter>`
             for a more detailed explanation and examples.
 
-        class_reduction:
-            .. warning :: This parameter is deprecated, use ``average``. Will be removed in v1.4.0.
-
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
 
@@ -147,14 +143,6 @@ def precision(
         tensor(0.2500)
 
     """
-    if class_reduction:
-        rank_zero_warn(
-            "This `class_reduction` parameter was deprecated in v1.2.0 in favor of"
-            " `reduce`. It will be removed in v1.4.0",
-            DeprecationWarning,
-        )
-        average = class_reduction
-
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -212,7 +200,6 @@ def recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-    class_reduction: Optional[str] = None,
 ) -> torch.Tensor:
     r"""
     Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -288,9 +275,6 @@ def recall(
             :ref:`documentation section <pages/overview:using the is_multiclass parameter>`
             for a more detailed explanation and examples.
 
-        class_reduction:
-            .. warning :: This parameter is deprecated, use ``average``. Will be removed in v1.4.0.
-
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
 
@@ -309,14 +293,6 @@ def recall(
         tensor(0.2500)
 
     """
-    if class_reduction:
-        rank_zero_warn(
-            "This `class_reduction` parameter was deprecated in v1.2.0 in favor of"
-            " `reduce`. It will be removed in v1.4.0",
-            DeprecationWarning,
-        )
-        average = class_reduction
-
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -357,7 +333,6 @@ def precision_recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-    class_reduction: Optional[str] = None,
 ) -> torch.Tensor:
     r"""
     Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -436,9 +411,6 @@ def precision_recall(
             :ref:`documentation section <pages/overview:using the is_multiclass parameter>`
             for a more detailed explanation and examples.
 
-        class_reduction:
-            .. warning :: This parameter is deprecated, use ``average``. Will be removed in v1.4.0.
-
     Return:
         The function returns a tuple with two elements: precision and recall. Their shape
         depends on the ``average`` parameter
@@ -458,14 +430,6 @@ def precision_recall(
         (tensor(0.2500), tensor(0.2500))
 
     """
-    if class_reduction:
-        rank_zero_warn(
-            "This `class_reduction` parameter was deprecated in v1.2.0 in favor of"
-            " `reduce`. It will be removed in v1.4.0",
-            DeprecationWarning,
-        )
-        average = class_reduction
-
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

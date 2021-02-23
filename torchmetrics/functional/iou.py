@@ -16,8 +16,7 @@ from typing import Optional
 import torch
 
 from torchmetrics.functional.confusion_matrix import _confusion_matrix_update
-from torchmetrics.functional.reduction import reduce
-from torchmetrics.utils import get_num_classes
+from torchmetrics.utils import get_num_classes, reduce
 
 
 def _iou_from_confmat(
