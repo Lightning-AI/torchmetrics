@@ -18,10 +18,7 @@ import torch
 from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.functional.auc import auc
-from torchmetrics.utils import class_reduce
-from torchmetrics.utils import get_num_classes
-from torchmetrics.utils import reduce
-from torchmetrics.utils import to_categorical
+from torchmetrics.utils import class_reduce, get_num_classes, reduce, to_categorical
 
 
 def stat_scores(
