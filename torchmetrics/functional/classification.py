@@ -12,74 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import wraps
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Callable, Optional, Tuple
 
 import torch
 from pytorch_lightning.utilities import rank_zero_warn
 
-from torchmetrics.functional.auc import auc as __auc
-from torchmetrics.functional.auroc import auroc as __auroc
-from torchmetrics.functional.average_precision import average_precision as __ap
-from torchmetrics.functional.iou import iou as __iou
-from torchmetrics.functional.precision_recall_curve import _binary_clf_curve
-from torchmetrics.functional.precision_recall_curve import precision_recall_curve as __prc
-from torchmetrics.functional.roc import roc as __roc
+from torchmetrics.functional.auc import auc
 from torchmetrics.utils import class_reduce
-from torchmetrics.utils import get_num_classes as __gnc
+from torchmetrics.utils import get_num_classes
 from torchmetrics.utils import reduce
-from torchmetrics.utils import to_categorical as __tc
-from torchmetrics.utils import to_onehot as __to
-
-
-def to_onehot(
-    tensor: torch.Tensor,
-    num_classes: Optional[int] = None,
-) -> torch.Tensor:
-    """
-    Converts a dense label tensor to one-hot format
-
-    .. warning :: Deprecated in favor of :func:`~torchmetrics.utils.to_onehot`
-    """
-    rank_zero_warn(
-        "This `to_onehot` was deprecated in v1.1.0 in favor of"
-        " `from torchmetrics.utils import to_onehot`."
-        " It will be removed in v1.3.0", DeprecationWarning
-    )
-    return __to(tensor, num_classes)
-
-
-def to_categorical(tensor: torch.Tensor, argmax_dim: int = 1) -> torch.Tensor:
-    """
-    Converts a tensor of probabilities to a dense label tensor
-
-    .. warning :: Deprecated in favor of :func:`~torchmetrics.utils.to_categorical`
-
-    """
-    rank_zero_warn(
-        "This `to_categorical` was deprecated in v1.1.0 in favor of"
-        " `from torchmetrics.utils import to_categorical`."
-        " It will be removed in v1.3.0", DeprecationWarning
-    )
-    return __tc(tensor)
-
-
-def get_num_classes(
-    pred: torch.Tensor,
-    target: torch.Tensor,
-    num_classes: Optional[int] = None,
-) -> int:
-    """
-    Calculates the number of classes for a given prediction and target tensor.
-
-    .. warning :: Deprecated in favor of :func:`~torchmetrics.utils.get_num_classes`
-
-    """
-    rank_zero_warn(
-        "This `get_num_classes` was deprecated in v1.1.0 in favor of"
-        " `from torchmetrics.utils import get_num_classes`."
-        " It will be removed in v1.3.0", DeprecationWarning
-    )
-    return __gnc(pred, target, num_classes)
+from torchmetrics.utils import to_categorical
 
 
 def stat_scores(
@@ -354,39 +296,6 @@ def recall(
     return precision_recall(pred=pred, target=target, num_classes=num_classes, class_reduction=class_reduction)[1]
 
 
-def auc(
-    x: torch.Tensor,
-    y: torch.Tensor,
-) -> torch.Tensor:
-    """
-    Computes Area Under the Curve (AUC) using the trapezoidal rule
-
-    .. warning :: Deprecated in favor of
-     :func:`~torchmetrics.functional.auc.auc`. Will be removed
-     in v1.4.0.
-
-    Args:
-        x: x-coordinates
-        y: y-coordinates
-
-    Return:
-        Tensor containing AUC score (float)
-
-    Example:
-
-        >>> x = torch.tensor([0, 1, 2, 3])
-        >>> y = torch.tensor([0, 1, 2, 2])
-        >>> auc(x, y)
-        tensor(4.)
-    """
-    rank_zero_warn(
-        "This `auc` was deprecated in v1.2.0 in favor of"
-        " `torchmetrics.functional.auc import auc`."
-        " It will be removed in v1.4.0", DeprecationWarning
-    )
-    return __auc(x, y)
-
-
 def auc_decorator() -> Callable:
     rank_zero_warn("This `auc_decorator` was deprecated in v1.2.0." " It will be removed in v1.4.0", DeprecationWarning)
 
@@ -423,110 +332,6 @@ def multiclass_auc_decorator() -> Callable:
         return new_func
 
     return wrapper
-
-
-def auroc(
-    pred: torch.Tensor,
-    target: torch.Tensor,
-    sample_weight: Optional[Sequence] = None,
-    pos_label: int = 1.,
-    max_fpr: float = None,
-) -> torch.Tensor:
-    """
-    Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) from prediction scores
-
-    .. warning :: Deprecated in favor of
-     :func:`~torchmetrics.functional.auroc.auroc`. Will be removed
-     in v1.4.0.
-
-    Args:
-        pred: estimated probabilities
-        target: ground-truth labels
-        sample_weight: sample weights
-        pos_label: the label for the positive class
-        max_fpr: If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
-
-    Return:
-        Tensor containing ROCAUC score
-
-    Example:
-
-        >>> x = torch.tensor([0, 1, 2, 3])
-        >>> y = torch.tensor([0, 1, 1, 0])
-        >>> auroc(x, y)
-        tensor(0.5000)
-    """
-    rank_zero_warn(
-        "This `auroc` was deprecated in v1.2.0 in favor of"
-        " `torchmetrics.functional.auroc import auroc`."
-        " It will be removed in v1.4.0", DeprecationWarning
-    )
-    return __auroc(
-        preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label, max_fpr=max_fpr, num_classes=1
-    )
-
-
-def multiclass_auroc(
-    pred: torch.Tensor,
-    target: torch.Tensor,
-    sample_weight: Optional[Sequence] = None,
-    num_classes: Optional[int] = None,
-) -> torch.Tensor:
-    """
-    Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC) from multiclass
-    prediction scores
-
-    .. warning :: Deprecated in favor of
-     :func:`~torchmetrics.functional.auroc.auroc`. Will be removed
-     in v1.4.0.
-
-    Args:
-        pred: estimated probabilities, with shape [N, C]
-        target: ground-truth labels, with shape [N,]
-        sample_weight: sample weights
-        num_classes: number of classes (default: None, computes automatically from data)
-
-    Return:
-        Tensor containing ROCAUC score
-
-    Example:
-
-        >>> pred = torch.tensor([[0.85, 0.05, 0.05, 0.05],
-        ...                      [0.05, 0.85, 0.05, 0.05],
-        ...                      [0.05, 0.05, 0.85, 0.05],
-        ...                      [0.05, 0.05, 0.05, 0.85]])
-        >>> target = torch.tensor([0, 1, 3, 2])
-        >>> multiclass_auroc(pred, target, num_classes=4)
-        tensor(0.6667)
-    """
-    rank_zero_warn(
-        "This `multiclass_auroc` was deprecated in v1.2.0 in favor of"
-        " `torchmetrics.functional.auroc import auroc`."
-        " It will be removed in v1.4.0", DeprecationWarning
-    )
-
-    if not torch.allclose(pred.sum(dim=1), torch.tensor(1.0)):
-        raise ValueError(
-            "Multiclass AUROC metric expects the target scores to be"
-            " probabilities, i.e. they should sum up to 1.0 over classes"
-        )
-
-    if torch.unique(target).size(0) != pred.size(1):
-        raise ValueError(
-            f"Number of classes found in in 'target' ({torch.unique(target).size(0)})"
-            f" does not equal the number of columns in 'pred' ({pred.size(1)})."
-            " Multiclass AUROC is not defined when all of the classes do not"
-            " occur in the target labels."
-        )
-
-    if num_classes is not None and num_classes != pred.size(1):
-        raise ValueError(
-            f"Number of classes deduced from 'pred' ({pred.size(1)}) does not equal"
-            f" the number of classes passed in 'num_classes' ({num_classes})."
-        )
-
-    return __auroc(preds=pred, target=target, sample_weights=sample_weight, num_classes=num_classes)
 
 
 def dice_score(
