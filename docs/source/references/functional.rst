@@ -121,13 +121,6 @@ stat_scores [func]
     :noindex:
 
 
-stat_scores_multiple_classes [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.stat_scores_multiple_classes
-    :noindex:
-
-
 to_categorical [func]
 ~~~~~~~~~~~~~~~~~~~~~
 
