@@ -49,7 +49,7 @@ setup(
     author=torchmetrics.__author__,
     author_email=torchmetrics.__author_email__,
     url=torchmetrics.__homepage__,
-    download_url='https://github.com/PyTorchLightning/torchmetrics',
+    download_url='https://github.com/PyTorchLightning/metrics/archive/master.zip',
     license=torchmetrics.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
     long_description=load_long_describtion(),
