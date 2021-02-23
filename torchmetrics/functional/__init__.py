@@ -18,10 +18,8 @@ from torchmetrics.functional.average_precision import average_precision  # noqa:
 from torchmetrics.functional.classification import (  # noqa: F401
     dice_score,
     get_num_classes,
-    multiclass_auroc,
     stat_scores_multiple_classes,
     to_categorical,
-    to_onehot,
 )
 from torchmetrics.functional.confusion_matrix import confusion_matrix  # noqa: F401
 from torchmetrics.functional.explained_variance import explained_variance  # noqa: F401
