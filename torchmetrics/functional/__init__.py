@@ -17,8 +17,6 @@ from torchmetrics.functional.auroc import auroc  # noqa: F401
 from torchmetrics.functional.average_precision import average_precision  # noqa: F401
 from torchmetrics.functional.classification import (  # noqa: F401
     dice_score,
-    get_num_classes,
-    stat_scores_multiple_classes,
     to_categorical,
 )
 from torchmetrics.functional.confusion_matrix import confusion_matrix  # noqa: F401
