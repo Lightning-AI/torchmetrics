@@ -17,7 +17,6 @@ import builtins
 import glob
 import inspect
 import os
-import re
 import shutil
 import sys
 
@@ -51,8 +50,8 @@ release = torchmetrics.__version__
 github_user = "PyTorchLightning"
 github_repo = project
 
-
 # -- Project documents -------------------------------------------------------
+
 
 def _transform_changelog(path_in: str, path_out: str) -> None:
     with open(path_in, 'r') as fp:
@@ -108,7 +107,6 @@ extensions = [
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
 ]
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -284,7 +282,6 @@ PACKAGES = [
     torchmetrics.__name__,
 ]
 
-
 # def run_apidoc(_):
 #     apidoc_output_folder = os.path.join(PATH_HERE, "api")
 #     sys.path.insert(0, apidoc_output_folder)
@@ -328,7 +325,7 @@ def package_list_from_file(file):
     with open(file, "r") as fp:
         for ln in fp.readlines():
             found = [ln.index(ch) for ch in list(",=<>#") if ch in ln]
-            pkg = ln[: min(found)] if found else ln
+            pkg = ln[:min(found)] if found else ln
             if pkg.rstrip():
                 mocked_packages.append(pkg.rstrip())
     return mocked_packages
