@@ -19,7 +19,7 @@ import torch
 from torchmetrics.classification.checks import _input_format_classification
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.roc import roc
-from torchmetrics.utilities.enums import DataType, SimpleAverageMethod
+from torchmetrics.utilities.enums import DataType, AverageMethod
 
 
 def _auroc_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, str]:
@@ -90,18 +90,18 @@ def _auroc_compute(
             auc_scores = [auc(x, y) for x, y in zip(fpr, tpr)]
 
             # calculate average
-            if average == SimpleAverageMethod.NONE:
+            if average == AverageMethod.NONE:
                 return auc_scores
-            elif average == SimpleAverageMethod.MACRO:
+            elif average == AverageMethod.MACRO:
                 return torch.mean(torch.stack(auc_scores))
-            elif average == SimpleAverageMethod.WEIGHTED:
+            elif average == AverageMethod.WEIGHTED:
                 if mode == DataType.MULTILABEL:
                     support = torch.sum(target, dim=0)
                 else:
                     support = torch.bincount(target.flatten(), minlength=num_classes)
                 return torch.sum(torch.stack(auc_scores) * support / support.sum())
 
-            allowed_average = [e.value for e in SimpleAverageMethod]
+            allowed_average = (AverageMethod.NONE.value, AverageMethod.MACRO.value, AverageMethod.WEIGHTED.value)
             raise ValueError(
                 f"Argument `average` expected to be one of the following:"
                 f" {allowed_average} but got {average}"

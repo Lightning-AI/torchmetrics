@@ -51,15 +51,8 @@ class AverageMethod(EnumStr):
     MICRO = "micro"
     MACRO = "macro"
     WEIGHTED = "weighted"
-    NONE = "none"
-    SAMPLES = "samples"
-
-
-class SimpleAverageMethod(EnumStr):
-    """Enum to represent average method fro AUC"""
-    MACRO = 'macro'
-    WEIGHTED = 'weighted'
     NONE = None
+    SAMPLES = "samples"
 
 
 class MDMCAverageMethod(EnumStr):
