@@ -14,10 +14,10 @@
 from typing import Any, Optional
 
 import torch
-from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.functional.classification.f_beta import _fbeta_compute, _fbeta_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
 class FBeta(Metric):

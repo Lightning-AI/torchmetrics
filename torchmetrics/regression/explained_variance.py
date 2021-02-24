@@ -14,13 +14,13 @@
 from typing import Any, Callable, Optional
 
 import torch
-from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.functional.regression.explained_variance import (
     _explained_variance_compute,
     _explained_variance_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
 class ExplainedVariance(Metric):

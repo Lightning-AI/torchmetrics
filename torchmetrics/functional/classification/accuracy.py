@@ -16,7 +16,7 @@ from typing import Optional, Tuple
 import torch
 
 from torchmetrics.classification.checks import _input_format_classification
-from torchmetrics.classification.enums import DataType
+from torchmetrics.utilities.enums import DataType
 
 
 def _accuracy_update(

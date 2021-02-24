@@ -15,8 +15,8 @@ from typing import Optional, Tuple
 
 import torch
 
-from torchmetrics.classification.enums import DataType
 from torchmetrics.utilities.data import select_topk, to_onehot
+from torchmetrics.utilities.enums import DataType
 
 
 def _basic_input_validation(preds: torch.Tensor, target: torch.Tensor, threshold: float, is_multiclass: bool):

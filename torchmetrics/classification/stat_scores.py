@@ -16,9 +16,9 @@ from typing import Any, Callable, Optional, Tuple
 import numpy as np
 import torch
 
-from torchmetrics.classification.enums import AverageMethod, MDMCAverageMethod
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 class StatScores(Metric):

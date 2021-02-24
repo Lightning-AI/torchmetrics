@@ -14,9 +14,8 @@
 from typing import Optional, Tuple, Union
 
 import torch
-from pytorch_lightning import utilities
 
-from torchmetrics.utilities.distributed import reduce
+from torchmetrics.utilities import reduce
 
 
 def _psnr_compute(

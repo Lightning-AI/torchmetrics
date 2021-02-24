@@ -14,10 +14,10 @@
 from typing import Optional
 
 import torch
-from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.classification.checks import _input_format_classification
-from torchmetrics.classification.enums import DataType
+from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.enums import DataType
 
 
 def _confusion_matrix_update(
