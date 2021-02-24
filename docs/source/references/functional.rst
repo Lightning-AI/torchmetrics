@@ -110,7 +110,7 @@ recall [func]
 select_topk [func]
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.utils.select_topk
+.. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:
 
 
@@ -124,14 +124,14 @@ stat_scores [func]
 to_categorical [func]
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.utils.to_categorical
+.. autofunction:: torchmetrics.utilities.data.to_categorical
     :noindex:
 
 
 to_onehot [func]
 ~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.utils.to_onehot
+.. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
 
