@@ -10,7 +10,7 @@ from tests.classification.inputs import _input_multiclass_prob as _input_mcls_pr
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.utils import NUM_CLASSES, MetricTester
 from torchmetrics.classification.roc import ROC
-from torchmetrics.functional.roc import roc
+from torchmetrics.functional import roc
 
 torch.manual_seed(42)
 

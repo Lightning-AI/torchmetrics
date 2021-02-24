@@ -14,7 +14,7 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.confusion_matrix import confusion_matrix
+from torchmetrics.functional import confusion_matrix
 
 torch.manual_seed(42)
 

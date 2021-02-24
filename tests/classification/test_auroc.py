@@ -12,7 +12,7 @@ from tests.classification.inputs import _input_multilabel_multidim_prob as _inpu
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.utils import NUM_CLASSES, MetricTester
 from torchmetrics.classification.auroc import AUROC
-from torchmetrics.functional.auroc import auroc
+from torchmetrics.functional import auroc
 
 torch.manual_seed(42)
 

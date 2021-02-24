@@ -2,7 +2,7 @@ import pytest
 import torch
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu, sentence_bleu
 
-from torchmetrics.functional.nlp import bleu_score
+from torchmetrics.functional import bleu_score
 
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.sentence_bleu

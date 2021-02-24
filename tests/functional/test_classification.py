@@ -2,8 +2,8 @@ import pytest
 import torch
 from pytorch_lightning import seed_everything
 
-from torchmetrics.functional.classification import dice_score
-from torchmetrics.functional.precision_recall_curve import _binary_clf_curve
+from torchmetrics.functional import dice_score
+from torchmetrics.functional.classification.precision_recall_curve import _binary_clf_curve
 from torchmetrics.utilities.data import get_num_classes, to_categorical, to_onehot
 
 
