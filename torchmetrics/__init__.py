@@ -5,7 +5,7 @@ import os
 __version__ = '0.2.0rc'
 __author__ = 'PyTorchLightning et al.'
 __author_email__ = 'name@pytorchlightning.ai'
-__license__ = 'TBD'
+__license__ = 'Apache-2.0'
 __copyright__ = 'Copyright (c) 2020-2020, %s.' % __author__
 __homepage__ = 'https://github.com/PyTorchLightning/metrics'
 __docs__ = "PyTorch Lightning Sample project."
