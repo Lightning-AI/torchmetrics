@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 
 from torchmetrics.classification.stat_scores import StatScores
-from torchmetrics.functional.precision_recall import _precision_compute, _recall_compute
+from torchmetrics.functional.classification.precision_recall import _precision_compute, _recall_compute
 
 
 class Precision(StatScores):

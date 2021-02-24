@@ -18,8 +18,8 @@ import torch
 from pytorch_lightning.utilities import LightningEnum
 
 from torchmetrics.classification.helpers import DataType, _input_format_classification
-from torchmetrics.functional.auc import auc
-from torchmetrics.functional.roc import roc
+from torchmetrics.functional.classification.auc import auc
+from torchmetrics.functional.classification.roc import roc
 
 
 class AverageMethods(LightningEnum):

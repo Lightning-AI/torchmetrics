@@ -16,7 +16,7 @@ from typing import Optional
 import torch
 
 from torchmetrics.classification.helpers import _reduce_stat_scores
-from torchmetrics.functional.stat_scores import _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import _stat_scores_update
 
 
 def _precision_compute(
