@@ -46,7 +46,13 @@ class DataType(EnumStr):
 
 
 class AverageMethod(EnumStr):
-    """Enum to represent average method"""
+    """Enum to represent average method
+
+    >>> None in list(AverageMethod)
+    True
+    >>> None == AverageMethod.NONE
+    True
+    """
 
     MICRO = "micro"
     MACRO = "macro"
