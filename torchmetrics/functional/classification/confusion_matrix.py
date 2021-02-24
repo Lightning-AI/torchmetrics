@@ -16,7 +16,8 @@ from typing import Optional
 import torch
 from pytorch_lightning.utilities import rank_zero_warn
 
-from torchmetrics.classification.helpers import DataType, _input_format_classification
+from torchmetrics.classification.enums import DataType
+from torchmetrics.classification.checks import _input_format_classification
 
 
 def _confusion_matrix_update(
