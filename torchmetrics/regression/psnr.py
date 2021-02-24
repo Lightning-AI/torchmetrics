@@ -14,10 +14,10 @@
 from typing import Any, Optional, Sequence, Tuple, Union
 
 import torch
-from pytorch_lightning import utilities
 
 from torchmetrics.functional.regression.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
 class PSNR(Metric):
@@ -79,7 +79,7 @@ class PSNR(Metric):
         )
 
         if dim is None and reduction != 'elementwise_mean':
-            utilities.rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
+            rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
 
         if dim is None:
             self.add_state("sum_squared_error", default=torch.tensor(0.0), dist_reduce_fx="sum")

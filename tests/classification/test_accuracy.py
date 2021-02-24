@@ -30,8 +30,8 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.utils import THRESHOLD, MetricTester
 from torchmetrics import Accuracy
 from torchmetrics.classification.checks import _input_format_classification
-from torchmetrics.classification.enums import DataType
 from torchmetrics.functional import accuracy
+from torchmetrics.utilities.enums import DataType
 
 torch.manual_seed(42)
 

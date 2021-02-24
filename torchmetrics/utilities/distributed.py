@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any, Optional, Union
+
 import torch
 
 
@@ -81,3 +83,33 @@ def class_reduce(
         f"Reduction parameter {class_reduction} unknown."
         f" Choose between one of these: {valid_reduction}"
     )
+
+
+def gather_all_tensors(result: Union[torch.Tensor], group: Optional[Any] = None):
+    """
+    Function to gather all tensors from several ddp processes onto a list that
+    is broadcasted to all processes
+
+    Args:
+        result: the value to sync
+        group: the process group to gather results from. Defaults to all processes (world)
+
+    Return:
+        gathered_result: list with size equal to the process group where
+            gathered_result[i] corresponds to result tensor from process i
+    """
+    if group is None:
+        group = torch.distributed.group.WORLD
+
+    # convert tensors to contiguous format
+    result = result.contiguous()
+
+    world_size = torch.distributed.get_world_size(group)
+
+    gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
+
+    # sync and broadcast all
+    torch.distributed.barrier(group=group)
+    torch.distributed.all_gather(gathered_result, result, group)
+
+    return gathered_result

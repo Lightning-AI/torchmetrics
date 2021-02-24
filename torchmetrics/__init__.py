@@ -1,6 +1,8 @@
 """Root package info."""
+import logging as __logging
+import os
 
-__version__ = '0.1.0'
+__version__ = '0.2.0rc'
 __author__ = 'PyTorchLightning et al.'
 __author_email__ = 'name@pytorchlightning.ai'
 __license__ = 'TBD'
@@ -12,6 +14,13 @@ What is it?
 -----------
 metrics...
 """
+
+_logger = __logging.getLogger("torchmetrics")
+_logger.addHandler(__logging.StreamHandler())
+_logger.setLevel(__logging.INFO)
+
+_PACKAGE_ROOT = os.path.dirname(__file__)
+_PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 try:
     # This variable is injected in the __builtins__ by the build

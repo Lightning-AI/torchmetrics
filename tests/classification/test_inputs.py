@@ -28,8 +28,8 @@ from tests.classification.inputs import _input_multilabel_multidim_prob as _mlmd
 from tests.classification.inputs import _input_multilabel_prob as _ml_prob
 from tests.utils import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, THRESHOLD
 from torchmetrics.classification.checks import _input_format_classification
-from torchmetrics.classification.enums import DataType
 from torchmetrics.utilities.data import select_topk, to_onehot
+from torchmetrics.utilities.enums import DataType
 
 torch.manual_seed(42)
 
