@@ -15,7 +15,7 @@ from tests.classification.inputs import _input_multilabel_multidim_prob as _mlmd
 from tests.classification.inputs import _input_multilabel_prob as _ml_prob
 from tests.utils import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, THRESHOLD
 from torchmetrics.classification.helpers import DataType, _input_format_classification
-from torchmetrics.utils import select_topk, to_onehot
+from torchmetrics.utilities.data import select_topk, to_onehot
 
 torch.manual_seed(42)
 

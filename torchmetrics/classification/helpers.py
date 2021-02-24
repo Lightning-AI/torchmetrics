@@ -17,7 +17,7 @@ import numpy as np
 import torch
 from pytorch_lightning.utilities import LightningEnum
 
-from torchmetrics.utils import select_topk, to_onehot
+from torchmetrics.utilities.data import select_topk, to_onehot
 
 
 class DataType(LightningEnum):
