@@ -11,64 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
-
 import torch
-from pytorch_lightning.utilities import rank_zero_warn
 
-from torchmetrics.utilities.data import to_categorical
+from torchmetrics.functional.classification import stat_scores
 from torchmetrics.utilities.distributed import reduce
-
-
-def stat_scores(
-    pred: torch.Tensor,
-    target: torch.Tensor,
-    class_index: int,
-    argmax_dim: int = 1,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    """
-    Calculates the number of true positive, false positive, true negative
-    and false negative for a specific class
-
-    Args:
-        pred: prediction tensor
-        target: target tensor
-        class_index: class to calculate over
-        argmax_dim: if pred is a tensor of probabilities, this indicates the
-            axis the argmax transformation will be applied over
-
-    Return:
-        True Positive, False Positive, True Negative, False Negative, Support
-
-    Example:
-
-        >>> x = torch.tensor([1, 2, 3])
-        >>> y = torch.tensor([0, 2, 3])
-        >>> tp, fp, tn, fn, sup = stat_scores(x, y, class_index=1)
-        >>> tp, fp, tn, fn, sup
-        (tensor(0), tensor(1), tensor(2), tensor(0), tensor(0))
-
-    """
-    if pred.ndim == target.ndim + 1:
-        pred = to_categorical(pred, argmax_dim=argmax_dim)
-
-    tp = ((pred == class_index) * (target == class_index)).to(torch.long).sum()
-    fp = ((pred == class_index) * (target != class_index)).to(torch.long).sum()
-    tn = ((pred != class_index) * (target != class_index)).to(torch.long).sum()
-    fn = ((pred != class_index) * (target == class_index)).to(torch.long).sum()
-    sup = (target == class_index).to(torch.long).sum()
-
-    return tp, fp, tn, fn, sup
-
-
-def _confmat_normalize(cm):
-    """ Normalization function for confusion matrix """
-    cm = cm / cm.sum(-1, keepdim=True)
-    nan_elements = cm[torch.isnan(cm)].nelement()
-    if nan_elements != 0:
-        cm[torch.isnan(cm)] = 0
-        rank_zero_warn(f'{nan_elements} nan values found in confusion matrix have been replaced with zeros.')
-    return cm
 
 
 def dice_score(
