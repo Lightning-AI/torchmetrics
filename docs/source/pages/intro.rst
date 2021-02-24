@@ -3,7 +3,7 @@
 Introduction
 ############
 
-``torchmetrics`` is a Metrics API created for easy metric development and usage in
+The ``torchmetrics`` is a Metrics API created for easy metric development and usage in
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
@@ -18,7 +18,6 @@ logic present in ``.compute()`` is applied to state information from all process
 
 This metrics API is independent of PyTorch Lightning. Metrics can directly be used in PyTorch as shown in the example:
 
-.. NOTE: this can't actually be tested as epochs, train_data, and valid_data are undefined
 .. code-block:: python
 
     from torchmetrics.classification import Accuracy

@@ -5,22 +5,22 @@
 # the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
-* @borda @teddykoker
+* @borda @SkafteNicki @justusschock @ananyahjha93 @tchaton
 
 # owners
-/.github/CODEOWNERS   @borda
+/.github/CODEOWNERS   @williamFalcon
 # main
-/README.md            @borda @teddykoker @edenlightning
+/README.md            @borda @SkafteNicki @edenlightning
 # installation
-/setup.py             @borda @teddykoker
+/setup.py             @borda @SkafteNicki @tchaton
 
 # CI/CD
-/.github/workflows/   @borda
+/.github/workflows/   @borda @tchaton
 # configs in root
-/*.yml                @borda
+/*.yml                @borda @tchaton
 
 # Docs
-/docs/                          @edenlightning @teddykoker @borda
-/.github/*.md                   @edenlightning @teddykoker @borda
-/.github/ISSUE_TEMPLATE/*.md    @edenlightning @borda @teddykoker
-/docs/source/conf.py            @borda
+/docs/                          @edenlightning @SkafteNicki @borda
+/.github/*.md                   @edenlightning @SkafteNicki @borda
+/.github/ISSUE_TEMPLATE/*.md    @edenlightning @borda @SkafteNicki
+/docs/source/conf.py            @borda @awaelchli
