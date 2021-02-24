@@ -15,7 +15,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 
-from torchmetrics.functional.precision_recall_curve import (
+from torchmetrics.functional.classification.precision_recall_curve import (
     _precision_recall_curve_compute,
     _precision_recall_curve_update,
 )

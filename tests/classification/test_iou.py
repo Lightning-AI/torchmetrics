@@ -14,7 +14,7 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics.classification.iou import IoU
-from torchmetrics.functional.iou import iou
+from torchmetrics.functional import iou
 
 
 def _sk_iou_binary_prob(preds, target, average=None):

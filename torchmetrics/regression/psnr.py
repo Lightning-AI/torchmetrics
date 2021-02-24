@@ -16,7 +16,7 @@ from typing import Any, Optional, Sequence, Tuple, Union
 import torch
 from pytorch_lightning import utilities
 
-from torchmetrics.functional.psnr import _psnr_compute, _psnr_update
+from torchmetrics.functional.regression.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
 
 

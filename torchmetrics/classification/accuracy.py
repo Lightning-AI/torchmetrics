@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from torchmetrics.functional.accuracy import _accuracy_compute, _accuracy_update
+from torchmetrics.functional.classification.accuracy import _accuracy_compute, _accuracy_update
 from torchmetrics.metric import Metric
 
 

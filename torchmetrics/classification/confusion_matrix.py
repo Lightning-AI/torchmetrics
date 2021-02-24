@@ -15,7 +15,7 @@ from typing import Any, Optional
 
 import torch
 
-from torchmetrics.functional.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
+from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
 from torchmetrics.metric import Metric
 
 

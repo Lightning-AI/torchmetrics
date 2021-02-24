@@ -14,14 +14,13 @@
 from typing import Tuple
 
 import torch
-from pytorch_lightning.utilities import rank_zero_warn
 
 from torchmetrics.utilities.data import to_categorical
 from torchmetrics.utilities.distributed import reduce
 
 
-def stat_scores(
-    pred: torch.Tensor,
+def _stat_scores(
+    preds: torch.Tensor,
     target: torch.Tensor,
     class_index: int,
     argmax_dim: int = 1,
@@ -44,31 +43,21 @@ def stat_scores(
 
         >>> x = torch.tensor([1, 2, 3])
         >>> y = torch.tensor([0, 2, 3])
-        >>> tp, fp, tn, fn, sup = stat_scores(x, y, class_index=1)
+        >>> tp, fp, tn, fn, sup = _stat_scores(x, y, class_index=1)
         >>> tp, fp, tn, fn, sup
         (tensor(0), tensor(1), tensor(2), tensor(0), tensor(0))
 
     """
-    if pred.ndim == target.ndim + 1:
-        pred = to_categorical(pred, argmax_dim=argmax_dim)
+    if preds.ndim == target.ndim + 1:
+        preds = to_categorical(preds, argmax_dim=argmax_dim)
 
-    tp = ((pred == class_index) * (target == class_index)).to(torch.long).sum()
-    fp = ((pred == class_index) * (target != class_index)).to(torch.long).sum()
-    tn = ((pred != class_index) * (target != class_index)).to(torch.long).sum()
-    fn = ((pred != class_index) * (target == class_index)).to(torch.long).sum()
+    tp = ((preds == class_index) * (target == class_index)).to(torch.long).sum()
+    fp = ((preds == class_index) * (target != class_index)).to(torch.long).sum()
+    tn = ((preds != class_index) * (target != class_index)).to(torch.long).sum()
+    fn = ((preds != class_index) * (target == class_index)).to(torch.long).sum()
     sup = (target == class_index).to(torch.long).sum()
 
     return tp, fp, tn, fn, sup
-
-
-def _confmat_normalize(cm):
-    """ Normalization function for confusion matrix """
-    cm = cm / cm.sum(-1, keepdim=True)
-    nan_elements = cm[torch.isnan(cm)].nelement()
-    if nan_elements != 0:
-        cm[torch.isnan(cm)] = 0
-        rank_zero_warn(f'{nan_elements} nan values found in confusion matrix have been replaced with zeros.')
-    return cm
 
 
 def dice_score(
@@ -117,7 +106,8 @@ def dice_score(
             scores[i - bg] += no_fg_score
             continue
 
-        tp, fp, tn, fn, sup = stat_scores(pred=pred, target=target, class_index=i)
+        # TODO: rewrite to use general `stat_scores`
+        tp, fp, tn, fn, sup = _stat_scores(preds=pred, target=target, class_index=i)
         denom = (2 * tp + fp + fn).to(torch.float)
         # nan result
         score_cls = (2 * tp).to(torch.float) / denom if torch.is_nonzero(denom) else nan_score

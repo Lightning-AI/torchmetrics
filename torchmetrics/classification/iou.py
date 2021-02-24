@@ -16,7 +16,7 @@ from typing import Any, Optional
 import torch
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.iou import _iou_from_confmat
+from torchmetrics.functional.classification.iou import _iou_from_confmat
 
 
 class IoU(ConfusionMatrix):

@@ -16,7 +16,7 @@ from typing import Any, List, Optional, Tuple, Union
 import torch
 from pytorch_lightning.utilities import rank_zero_warn
 
-from torchmetrics.functional.roc import _roc_compute, _roc_update
+from torchmetrics.functional.classification.roc import _roc_compute, _roc_update
 from torchmetrics.metric import Metric
 
 

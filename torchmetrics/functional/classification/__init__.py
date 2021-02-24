@@ -24,13 +24,3 @@ from torchmetrics.functional.classification.precision_recall import precision, p
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
-from torchmetrics.functional.image_gradients import image_gradients  # noqa: F401
-from torchmetrics.functional.nlp import bleu_score  # noqa: F401
-from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
-from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
-from torchmetrics.functional.regression.mean_squared_error import mean_squared_error  # noqa: F401
-from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error  # noqa: F401
-from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
-from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
-from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
-from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401

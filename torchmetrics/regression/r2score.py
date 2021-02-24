@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from torchmetrics.functional.r2score import _r2score_compute, _r2score_update
+from torchmetrics.functional.regression.r2score import _r2score_compute, _r2score_update
 from torchmetrics.metric import Metric
 
 

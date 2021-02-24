@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from torchmetrics.functional.hamming_distance import _hamming_distance_compute, _hamming_distance_update
+from torchmetrics.functional.classification.hamming_distance import _hamming_distance_compute, _hamming_distance_update
 from torchmetrics.metric import Metric
 
 

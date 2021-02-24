@@ -15,7 +15,10 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 
-from torchmetrics.functional.precision_recall_curve import _binary_clf_curve, _precision_recall_curve_update
+from torchmetrics.functional.classification.precision_recall_curve import (
+    _binary_clf_curve,
+    _precision_recall_curve_update,
+)
 
 
 def _roc_update(
