@@ -19,7 +19,7 @@ class EnumStr(str, Enum):
     """ Type of any enumerator with allowed comparison to string invariant to cases. """
 
     @classmethod
-    def from_str(cls, value: str) -> 'LightningEnum':
+    def from_str(cls, value: str) -> 'EnumStr':
         statuses = [status for status in dir(cls) if not status.startswith('_')]
         for st in statuses:
             if st.lower() == value.lower():

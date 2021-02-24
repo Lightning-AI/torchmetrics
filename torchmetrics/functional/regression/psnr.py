@@ -15,7 +15,7 @@ from typing import Optional, Tuple, Union
 
 import torch
 
-from torchmetrics.utilities import reduce
+from torchmetrics.utilities import reduce, rank_zero_warn
 
 
 def _psnr_compute(
@@ -92,7 +92,7 @@ def psnr(
 
     """
     if dim is None and reduction != 'elementwise_mean':
-        utilities.rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
+        rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
 
     if data_range is None:
         if dim is not None:

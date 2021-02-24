@@ -15,7 +15,7 @@ from typing import Any, Callable, Mapping, Optional, Sequence, Union
 
 import torch
 
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
 
