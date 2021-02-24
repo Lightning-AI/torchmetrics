@@ -37,7 +37,11 @@ class EnumStr(str, Enum):
 
 
 class DataType(EnumStr):
-    """Enum to represent data type"""
+    """Enum to represent data type
+
+    >>> "Binary" in list(DataType)
+    True
+    """
 
     BINARY = "binary"
     MULTILABEL = "multi-label"
@@ -50,7 +54,7 @@ class AverageMethod(EnumStr):
 
     >>> None in list(AverageMethod)
     True
-    >>> None == AverageMethod.NONE
+    >>> 'none' == AverageMethod.NONE == None
     True
     """
 

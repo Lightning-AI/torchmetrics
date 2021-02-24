@@ -15,7 +15,7 @@ from typing import Optional, Tuple, Union
 
 import torch
 
-from torchmetrics.utilities import reduce, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn, reduce
 
 
 def _psnr_compute(
