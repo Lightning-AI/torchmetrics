@@ -5,7 +5,7 @@ pytest-cov
 # pytest-flake8
 flake8
 check-manifest
-twine>=2.3
+twine>=3.2
 isort>=5.0
 mypy>=0.720
 
