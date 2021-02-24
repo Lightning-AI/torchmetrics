@@ -5,11 +5,9 @@
     from pytorch_lightning.core.lightning import LightningModule
     from torchmetrics import Metric
 
-.. _metrics:
-
-###########
+#########
 Lightning
-###########
+#########
 
 The example below shows how to use a metric in your ``LightningModule``:
 
@@ -85,5 +83,3 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
             #update and log
             self.metric(outputs['preds'], outputs['target'])
             self.log('metric', self.metric)
-
-

@@ -58,14 +58,14 @@ binary/multi-label inputs as 2-class (multi-dimensional) multi-class inputs.
 
 For these cases, the metrics where this distinction would make a difference, expose the
 ``is_multiclass`` argument. Let's see how this is used on the example of
-:class:`~pytorch_lightning.metrics.StatScores` metric.
+:class:`~torchmetrics.StatScores` metric.
 
 First, let's consider the case with label predictions with 2 classes, which we want to
 treat as binary.
 
 .. testcode::
 
-   from pytorch_lightning.metrics.functional import stat_scores
+   from torchmetrics.functional import stat_scores
 
    # These inputs are supposed to be binary, but appear as multi-class
    preds  = torch.tensor([0, 1, 0])
