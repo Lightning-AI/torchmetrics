@@ -144,10 +144,3 @@ we’ll be happy to cite these frameworks and the corresponding authors.
 ## License
 Please observe the Apache 2.0 license that is listed in this repository. In addition
 the Lightning framework is Patent Pending.
-
-
-## To be Done
-
-You still need to enable some external integrations such as:
- - add relevant badges (docs, tests, coverage, pypi)
- - init Read-The-Docs (add this new project)
