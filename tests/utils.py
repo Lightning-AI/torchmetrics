@@ -282,3 +282,49 @@ class MetricTester:
                 check_batch=check_batch,
                 atol=self.atol,
             )
+
+
+class DummyMetric(Metric):
+    name = "Dummy"
+
+    def __init__(self):
+        super().__init__()
+        self.add_state("x", torch.tensor(0.0), dist_reduce_fx=None)
+
+    def update(self):
+        pass
+
+    def compute(self):
+        pass
+
+
+class DummyListMetric(Metric):
+    name = "DummyList"
+
+    def __init__(self):
+        super().__init__()
+        self.add_state("x", list(), dist_reduce_fx=None)
+
+    def update(self):
+        pass
+
+    def compute(self):
+        pass
+
+
+class DummyMetricSum(DummyMetric):
+
+    def update(self, x):
+        self.x += x
+
+    def compute(self):
+        return self.x
+
+
+class DummyMetricDiff(DummyMetric):
+
+    def update(self, y):
+        self.x -= y
+
+    def compute(self):
+        return self.x

@@ -21,45 +21,16 @@ import pytest
 import torch
 from torch import nn
 
-from torchmetrics.metric import Metric, MetricCollection
-
+from tests.utils import DummyListMetric, DummyMetric, DummyMetricSum
 torch.manual_seed(42)
 
 
-class Dummy(Metric):
-    name = "Dummy"
-
-    def __init__(self):
-        super().__init__()
-        self.add_state("x", torch.tensor(0.0), dist_reduce_fx=None)
-
-    def update(self):
-        pass
-
-    def compute(self):
-        pass
-
-
-class DummyList(Metric):
-    name = "DummyList"
-
-    def __init__(self):
-        super().__init__()
-        self.add_state("x", list(), dist_reduce_fx=None)
-
-    def update(self):
-        pass
-
-    def compute(self):
-        pass
-
-
 def test_inherit():
-    Dummy()
+    DummyMetric()
 
 
 def test_add_state():
-    a = Dummy()
+    a = DummyMetric()
 
     a.add_state("a", torch.tensor(0), "sum")
     assert a._reductions["a"](torch.tensor([1, 1])) == 2
@@ -90,7 +61,7 @@ def test_add_state():
 
 
 def test_add_state_persistent():
-    a = Dummy()
+    a = DummyMetric()
 
     a.add_state("a", torch.tensor(0), "sum", persistent=True)
     assert "a" in a.state_dict()
@@ -103,10 +74,10 @@ def test_add_state_persistent():
 
 def test_reset():
 
-    class A(Dummy):
+    class A(DummyMetric):
         pass
 
-    class B(DummyList):
+    class B(DummyListMetric):
         pass
 
     a = A()
@@ -124,7 +95,7 @@ def test_reset():
 
 def test_update():
 
-    class A(Dummy):
+    class A(DummyMetric):
 
         def update(self, x):
             self.x += x
@@ -142,7 +113,7 @@ def test_update():
 
 def test_compute():
 
-    class A(Dummy):
+    class A(DummyMetric):
 
         def update(self, x):
             self.x += x
@@ -169,10 +140,10 @@ def test_compute():
 
 def test_hash():
 
-    class A(Dummy):
+    class A(DummyMetric):
         pass
 
-    class B(DummyList):
+    class B(DummyListMetric):
         pass
 
     a1 = A()
@@ -195,7 +166,7 @@ def test_hash():
 
 def test_forward():
 
-    class A(Dummy):
+    class A(DummyMetric):
 
         def update(self, x):
             self.x += x
@@ -213,27 +184,9 @@ def test_forward():
     assert a.compute() == 13
 
 
-class DummyMetric1(Dummy):
-
-    def update(self, x):
-        self.x += x
-
-    def compute(self):
-        return self.x
-
-
-class DummyMetric2(Dummy):
-
-    def update(self, y):
-        self.x -= y
-
-    def compute(self):
-        return self.x
-
-
 def test_pickle(tmpdir):
     # doesn't tests for DDP
-    a = DummyMetric1()
+    a = DummyMetricSum()
     a.update(1)
 
     metric_pickled = pickle.dumps(a)
@@ -252,7 +205,7 @@ def test_pickle(tmpdir):
 
 def test_state_dict(tmpdir):
     """ test that metric states can be removed and added to state dict """
-    metric = Dummy()
+    metric = DummyMetric()
     assert metric.state_dict() == OrderedDict()
     metric.persistent(True)
     assert metric.state_dict() == OrderedDict(x=0)
@@ -267,7 +220,7 @@ def test_child_metric_state_dict():
 
         def __init__(self):
             super().__init__()
-            self.metric = Dummy()
+            self.metric = DummyMetric()
             self.metric.add_state('a', torch.tensor(0), persistent=True)
             self.metric.add_state('b', [], persistent=True)
             self.metric.register_buffer('c', torch.tensor(0))
@@ -283,7 +236,7 @@ def test_child_metric_state_dict():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 def test_device_and_dtype_transfer(tmpdir):
-    metric = DummyMetric1()
+    metric = DummyMetricSum()
     assert metric.x.is_cuda is False
     assert metric.x.dtype == torch.float32
 
@@ -295,113 +248,3 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.half()
     assert metric.x.dtype == torch.float16
-
-
-def test_metric_collection(tmpdir):
-    m1 = DummyMetric1()
-    m2 = DummyMetric2()
-
-    metric_collection = MetricCollection([m1, m2])
-
-    # Test correct dict structure
-    assert len(metric_collection) == 2
-    assert metric_collection['DummyMetric1'] == m1
-    assert metric_collection['DummyMetric2'] == m2
-
-    # Test correct initialization
-    for name, metric in metric_collection.items():
-        assert metric.x == 0, f'Metric {name} not initialized correctly'
-
-    # Test every metric gets updated
-    metric_collection.update(5)
-    for name, metric in metric_collection.items():
-        assert metric.x.abs() == 5, f'Metric {name} not updated correctly'
-
-    # Test compute on each metric
-    metric_collection.update(-5)
-    metric_vals = metric_collection.compute()
-    assert len(metric_vals) == 2
-    for name, metric_val in metric_vals.items():
-        assert metric_val == 0, f'Metric {name}.compute not called correctly'
-
-    # Test that everything is reset
-    for name, metric in metric_collection.items():
-        assert metric.x == 0, f'Metric {name} not reset correctly'
-
-    # Test pickable
-    metric_pickled = pickle.dumps(metric_collection)
-    metric_loaded = pickle.loads(metric_pickled)
-    assert isinstance(metric_loaded, MetricCollection)
-
-
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
-def test_device_and_dtype_transfer_metriccollection(tmpdir):
-    m1 = DummyMetric1()
-    m2 = DummyMetric2()
-
-    metric_collection = MetricCollection([m1, m2])
-    for _, metric in metric_collection.items():
-        assert metric.x.is_cuda is False
-        assert metric.x.dtype == torch.float32
-
-    metric_collection = metric_collection.to(device='cuda')
-    for _, metric in metric_collection.items():
-        assert metric.x.is_cuda
-
-    metric_collection = metric_collection.double()
-    for _, metric in metric_collection.items():
-        assert metric.x.dtype == torch.float64
-
-    metric_collection = metric_collection.half()
-    for _, metric in metric_collection.items():
-        assert metric.x.dtype == torch.float16
-
-
-def test_metric_collection_wrong_input(tmpdir):
-    """ Check that errors are raised on wrong input """
-    m1 = DummyMetric1()
-
-    # Not all input are metrics (list)
-    with pytest.raises(ValueError):
-        _ = MetricCollection([m1, 5])
-
-    # Not all input are metrics (dict)
-    with pytest.raises(ValueError):
-        _ = MetricCollection({'metric1': m1, 'metric2': 5})
-
-    # Same metric passed in multiple times
-    with pytest.raises(ValueError, match='Encountered two metrics both named *.'):
-        _ = MetricCollection([m1, m1])
-
-    # Not a list or dict passed in
-    with pytest.raises(ValueError, match='Unknown input to MetricCollection.'):
-        _ = MetricCollection(m1)
-
-
-def test_metric_collection_args_kwargs(tmpdir):
-    """ Check that args and kwargs gets passed correctly in metric collection,
-        Checks both update and forward method
-    """
-    m1 = DummyMetric1()
-    m2 = DummyMetric2()
-
-    metric_collection = MetricCollection([m1, m2])
-
-    # args gets passed to all metrics
-    metric_collection.update(5)
-    assert metric_collection['DummyMetric1'].x == 5
-    assert metric_collection['DummyMetric2'].x == -5
-    metric_collection.reset()
-    _ = metric_collection(5)
-    assert metric_collection['DummyMetric1'].x == 5
-    assert metric_collection['DummyMetric2'].x == -5
-    metric_collection.reset()
-
-    # kwargs gets only passed to metrics that it matches
-    metric_collection.update(x=10, y=20)
-    assert metric_collection['DummyMetric1'].x == 10
-    assert metric_collection['DummyMetric2'].x == -20
-    metric_collection.reset()
-    _ = metric_collection(x=10, y=20)
-    assert metric_collection['DummyMetric1'].x == 10
-    assert metric_collection['DummyMetric2'].x == -20

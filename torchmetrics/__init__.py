@@ -53,7 +53,8 @@ else:
         Recall,
         StatScores,
     )
-    from torchmetrics.metric import Metric, MetricCollection  # noqa: F401
+    from torchmetrics.metric import Metric  # noqa: F401
+    from torchmetrics.metric_collection import MetricCollection  # noqa: F401
     from torchmetrics.regression import (  # noqa: F401
         PSNR,
         SSIM,
