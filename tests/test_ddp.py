@@ -16,8 +16,7 @@ import sys
 import pytest
 import torch
 
-from tests.test_metric import Dummy
-from tests.utils import setup_ddp
+from tests.utils import DummyMetric, setup_ddp
 from torchmetrics import Metric
 
 torch.manual_seed(42)
@@ -25,7 +24,7 @@ torch.manual_seed(42)
 
 def _test_ddp_sum(rank, worldsize):
     setup_ddp(rank, worldsize)
-    dummy = Dummy()
+    dummy = DummyMetric()
     dummy._reductions = {"foo": torch.sum}
     dummy.foo = torch.tensor(1)
 
@@ -35,7 +34,7 @@ def _test_ddp_sum(rank, worldsize):
 
 def _test_ddp_cat(rank, worldsize):
     setup_ddp(rank, worldsize)
-    dummy = Dummy()
+    dummy = DummyMetric()
     dummy._reductions = {"foo": torch.cat}
     dummy.foo = [torch.tensor([1])]
     dummy._sync_dist()
@@ -44,7 +43,7 @@ def _test_ddp_cat(rank, worldsize):
 
 def _test_ddp_sum_cat(rank, worldsize):
     setup_ddp(rank, worldsize)
-    dummy = Dummy()
+    dummy = DummyMetric()
     dummy._reductions = {"foo": torch.cat, "bar": torch.sum}
     dummy.foo = [torch.tensor([1])]
     dummy.bar = torch.tensor(1)
@@ -62,7 +61,7 @@ def test_ddp(process):
 def _test_non_contiguous_tensors(rank, worldsize):
     setup_ddp(rank, worldsize)
 
-    class DummyMetric(Metric):
+    class DummyCatMetric(Metric):
 
         def __init__(self):
             super().__init__()
@@ -75,7 +74,7 @@ def _test_non_contiguous_tensors(rank, worldsize):
             x = torch.cat(self.x, dim=0)
             return x.sum()
 
-    metric = DummyMetric()
+    metric = DummyCatMetric()
     metric.update(torch.randn(10, 5)[:, 0])
 
 
