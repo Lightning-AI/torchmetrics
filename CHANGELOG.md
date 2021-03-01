@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Decoupled PL dependency ([#13](https://github.com/PyTorchLightning/metrics/pull/13))
 - Refactored functional - mimic the module-like structure: classification, regression, etc. ([#16](https://github.com/PyTorchLightning/metrics/pull/16))
 - Refactored utilities -  split to topics/submodules ([#14](https://github.com/PyTorchLightning/metrics/pull/14))
+- Refactored `MetricCollection` ([#19](https://github.com/PyTorchLightning/metrics/pull/19))
 
 
 ### Fixed
