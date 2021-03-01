@@ -6,6 +6,8 @@
 
 [![CI testing](https://github.com/PyTorchLightning/metrics/workflows/CI%20testing/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/torchmetrics/actions?query=workflow%3A%22CI+testing%22)
 ![Check Code formatting](https://github.com/PyTorchLightning/metrics/workflows/Check%20Code%20formatting/badge.svg?branch=master&event=push)
+[![Build Status](https://dev.azure.com/PytorchLightning/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/PytorchLightning/Metrics/_build/latest?definitionId=3&branchName=master)
+[![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/main/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 [![Documentation Status](https://readthedocs.org/projects/metrics/badge/?version=latest)](https://metrics.readthedocs.io/en/latest/?badge=latest)
 
 ## Installation 

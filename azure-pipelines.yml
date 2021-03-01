@@ -1,0 +1,66 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+  tags:
+    include:
+      - '*'
+  branches:
+    include:
+      - master
+      - release/*
+      - refs/tags/*
+pr:
+  - master
+  - release/*
+
+jobs:
+  - job: pytest
+    # how long to run the job before automatically cancelling
+    timeoutInMinutes: 25
+    # how much time to give 'run always even if cancelled tasks' before stopping them
+    cancelTimeoutInMinutes: 2
+
+    pool: gridai-spot-pool
+
+    container:
+      image: "pytorch/pytorch:1.7.1-cuda11.0-cudnn8-runtime"
+      options: "--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all"
+
+    workspace:
+      clean: all
+
+    steps:
+
+    - bash: |
+        lspci | egrep 'VGA|3D'
+        whereis nvidia
+        nvidia-smi
+        python --version
+        pip --version
+        pip list
+      displayName: 'Image info & NVIDIA'
+
+    - bash: |
+        #sudo apt-get install -y cmake
+        # python -m pip install "pip==20.1"
+        pip install --requirement requirements.txt
+        pip install --requirement ./tests/requirements.txt --upgrade-strategy only-if-needed
+        pip list
+      displayName: 'Install dependencies'
+
+    - bash: |
+        python -c "import torch ; mgpu = torch.cuda.device_count() ; assert mgpu >= 2, f'GPU: {mgpu}'"
+      displayName: 'Sanity check'
+
+    - bash: |
+        python -m coverage run --source torchmetrics -m pytest torchmetrics tests -v --durations=50
+      displayName: 'Testing'
+
+    - bash: |
+        python -m coverage report
+        python -m coverage xml
+        python -m codecov --token=$(CODECOV_TOKEN) --flags=gpu,pytest --name="GPU-coverage" --env=linux,azure
+      displayName: 'Statistics'
