@@ -17,7 +17,7 @@ import pytest
 import torch
 
 from tests.utils import DummyMetricDiff, DummyMetricSum
-from torchmetrics.metric_collection import MetricCollection
+from torchmetrics.collections import MetricCollection
 
 torch.manual_seed(42)
 
