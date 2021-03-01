@@ -21,7 +21,7 @@ from sklearn.metrics import roc_curve as sk_roc_curve
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.utils import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.roc import ROC
 from torchmetrics.functional import roc
 

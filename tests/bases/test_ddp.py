@@ -16,7 +16,7 @@ import sys
 import pytest
 import torch
 
-from tests.utils import DummyMetric, setup_ddp
+from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 
 torch.manual_seed(42)

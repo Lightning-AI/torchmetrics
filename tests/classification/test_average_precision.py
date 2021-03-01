@@ -21,7 +21,7 @@ from sklearn.metrics import average_precision_score as sk_average_precision_scor
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.utils import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.average_precision import AveragePrecision
 from torchmetrics.functional import average_precision
 

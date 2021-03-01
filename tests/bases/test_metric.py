@@ -21,7 +21,7 @@ import pytest
 import torch
 from torch import nn
 
-from tests.utils import DummyListMetric, DummyMetric, DummyMetricSum
+from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
 
 torch.manual_seed(42)
 
