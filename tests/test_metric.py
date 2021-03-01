@@ -22,6 +22,7 @@ import torch
 from torch import nn
 
 from tests.utils import DummyListMetric, DummyMetric, DummyMetricSum
+
 torch.manual_seed(42)
 
 

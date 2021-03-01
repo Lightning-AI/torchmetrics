@@ -1,1 +1,1 @@
-from tests.utils import BATCH_SIZE, DummyMetric, NUM_BATCHES, NUM_PROCESSES, MetricTester  # noqa: F401
+from tests.utils import BATCH_SIZE, NUM_BATCHES, NUM_PROCESSES, DummyMetric, MetricTester  # noqa: F401
