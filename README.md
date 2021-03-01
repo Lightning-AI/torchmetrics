@@ -34,7 +34,7 @@ Torchmetrics is a metrics API created for easy metric development and usage in b
 [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/). It was originally a part of 
 Pytorch Lightning, but got split off so users could take advantage of the large collection of metrics 
 implemented without having to install Pytorch Lightning (eventhough we would love for you to try it out). 
-We currently have around 25+ metrics implemented but we continuesly is adding more metrics, both within 
+We currently have around 25+ metrics implemented and we continuesly is adding more metrics, both within 
 already covered domains (classification, regression ect.) but also new domains (object detection ect.). 
 We make sure that all our metrics are rigorously tested such that you can trust them. 
 
@@ -71,7 +71,7 @@ metric.reset()
 ```
 
   
-* Functional based metrics follows a input-output paradigme: a single batch is feed in and the metric is computed 
+* Functional based metrics follows a simple input-output paradigme: a single batch is feed in and the metric is computed 
 for only that
 
 ``` python
@@ -90,7 +90,7 @@ acc = torchmetrics.functional.accuracy(preds, target)
 Implementing your own metric is as easy as subclassing an `torch.nn.Module`. Simply, subclass `torchmetrics.Metric` 
 and do the following:
 
-1. Implement `__init__` where you call `self.add_state`for every internal state that is needed for the metrics computions
+1. Implement `__init__` where you call `self.add_state`for every internal state that is needed for the metrics computations
 2. Implement `update` method, where all logic that is nessesary for updating metric states go
 3. Implement `compute` method, where the final metric computations happens
 
@@ -128,7 +128,8 @@ square root in `update` and the remaining in `compute`.
 
 ## Contribute!
 The lightning + torchmetric team is hard at work adding even more metrics. 
-But we're looking for incredible contributors like you to submit new tasks!
+But we're looking for incredible contributors like you to submit new metrics
+and improve existing ones!
 
 Join our [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A) 
 to get help becoming a contributor!
