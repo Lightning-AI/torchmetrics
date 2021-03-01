@@ -14,7 +14,7 @@
 import torch
 from pytorch_lightning import Trainer
 
-from tests.boring_model import BoringModel
+from tests.integrations.lightning_models import BoringModel
 from torchmetrics import Metric
 
 

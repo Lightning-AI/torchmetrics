@@ -24,7 +24,7 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.utils import THRESHOLD, MetricTester
+from tests.helpers.testers import THRESHOLD, MetricTester
 from torchmetrics import HammingDistance
 from torchmetrics.classification.checks import _input_format_classification
 from torchmetrics.functional import hamming_distance

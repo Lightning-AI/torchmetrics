@@ -26,7 +26,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_no_match as _input_mlb_nomatch
 from tests.classification.inputs import _input_multilabel_prob as _mlb_prob_inputs
-from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import F1, FBeta
 from torchmetrics.functional import f1, fbeta
 

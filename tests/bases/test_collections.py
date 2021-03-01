@@ -16,7 +16,7 @@ import pickle
 import pytest
 import torch
 
-from tests.utils import DummyMetricDiff, DummyMetricSum
+from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
 from torchmetrics.collections import MetricCollection
 
 torch.manual_seed(42)

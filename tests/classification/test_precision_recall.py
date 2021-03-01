@@ -26,7 +26,7 @@ from tests.classification.inputs import _input_multidim_multiclass as _input_mdm
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.utils import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Precision, Recall
 from torchmetrics.classification.checks import _input_format_classification
 from torchmetrics.functional import precision, precision_recall, recall

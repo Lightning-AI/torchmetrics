@@ -20,7 +20,7 @@ from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 
-from tests.utils import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import mean_absolute_error, mean_squared_error, mean_squared_log_error
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
 
