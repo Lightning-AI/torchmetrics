@@ -25,6 +25,10 @@ jobs:
 
     pool: gridai-spot-pool
 
+    container:
+      image: "pytorch/pytorch:1.7.1-cuda11.0-cudnn8-runtime"
+      options: "--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all"
+
     workspace:
       clean: all
 
