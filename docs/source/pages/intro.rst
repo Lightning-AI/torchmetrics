@@ -84,8 +84,8 @@ Metric Arithmetics
 
 Metrics support most of python built-in operators for arithmetic, logic and bitwise operations.
 
-For example for a metric that should return the sum of two different metrics, implementing a new metric is an overhead that is not necessary.
-It can now be done with:
+For example for a metric that should return the sum of two different metrics, implementing a new metric is an 
+overhead that is not necessary. It can now be done with:
 
 .. code-block:: python
 
@@ -94,10 +94,12 @@ It can now be done with:
 
     new_metric = first_metric + second_metric
 
-``new_metric.update(*args, **kwargs)`` now calls update of ``first_metric`` and ``second_metric``. It forwards all positional arguments but
-forwards only the keyword arguments that are available in respective metric's update declaration.
-
-Similarly ``new_metric.compute()`` now calls compute of ``first_metric`` and ``second_metric`` and adds the results up.
+``new_metric.update(*args, **kwargs)`` now calls update of ``first_metric`` and ``second_metric``. It forwards 
+all positional arguments but forwards only the keyword arguments that are available in respective metric's update 
+declaration. Similarly ``new_metric.compute()`` now calls compute of ``first_metric`` and ``second_metric`` and 
+adds the results up. It is important to note that all implemented operations always returns a new metric object. This means 
+that the line ``first_metric == second_metric`` will not return a bool indicating if ``first_metric`` and ``second_metric``
+is the same metric, but will return a new metric that checks if the ``first_metric.compute() == second_metric.compute()``.
 
 This pattern is implemented for the following operators (with ``a`` being metrics and ``b`` being metrics, tensors, integer or floats):
 
@@ -122,6 +124,12 @@ This pattern is implemented for the following operators (with ``a`` being metric
 * Inversion (``~a``)
 * Negative Value (``neg(a)``)
 * Positive Value (``pos(a)``)
+
+.. note::
+
+    Some of these operations are only fully supported from Pytorch v1.4 and onwards, explicitly we found:
+    ``add``, ``mul``, ``rmatmul``, ``rsub``, ``rmod``
+
 
 ****************
 MetricCollection
