@@ -17,8 +17,7 @@ import pytest
 import torch
 
 from tests.helpers import _MARK_TORCH_MIN_1_4, _MARK_TORCH_MIN_1_5, _MARK_TORCH_MIN_1_6
-from torchmetrics.compositional import CompositionalMetric
-from torchmetrics.metric import Metric
+from torchmetrics.metric import CompositionalMetric, Metric
 
 
 class DummyMetric(Metric):
