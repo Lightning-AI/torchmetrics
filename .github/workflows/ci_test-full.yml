@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.6, 3.9]
+        python-version: [3.6, 3.8, 3.9]
         requires: ['minimal', 'latest']
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -33,6 +33,15 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install libomp  # https://github.com/pytorch/pytorch/issues/20030
+
+    - name: Adjust minimal for Python 3.9
+      if: matrix.requires == 'minimal' && matrix.python-version == 3.9
+      run: |
+        import re
+        fname='requirements.txt'
+        req = re.sub(r'torch>=[\d\.]+', 'torch>=1.7.1', open(fname).read())
+        open(fname, 'w').write(req)
+      shell: python
 
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
