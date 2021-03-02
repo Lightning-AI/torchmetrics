@@ -42,7 +42,7 @@ jobs:
         py_ver = f'{sys.version_info.major}.{sys.version_info.minor}'
         if py_ver in torch_lut:
             fpath='requirements.txt'
-            req = re.sub(r'torch>=[\d\.]+', f'torch>={}', open(fpath).read())
+            req = re.sub(r'torch>=[\d\.]+', f'torch>={torch_lut[py_ver]}', open(fpath).read())
             open(fpath, 'w').write(req)
 
         for fpath in ('requirements.txt', 'tests/requirements.txt'):
