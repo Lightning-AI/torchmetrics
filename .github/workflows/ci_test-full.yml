@@ -34,18 +34,17 @@ jobs:
       run: |
         brew install libomp  # https://github.com/pytorch/pytorch/issues/20030
 
-    - name: Adjust minimal for Python 3.9
-      if: matrix.requires == 'minimal' && matrix.python-version == 3.9
-      run: |
-        import re
-        fname='requirements.txt'
-        req = re.sub(r'torch>=[\d\.]+', 'torch>=1.7.1', open(fname).read())
-        open(fname, 'w').write(req)
-      shell: python
-
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
       run: |
+        import re, sys
+        torch_lut = {'3.8': '1.4', '3.9': '1.7.1'}
+        py_ver = f'{sys.version_info.major}.{sys.version_info.minor}'
+        if py_ver in torch_lut:
+            fpath='requirements.txt'
+            req = re.sub(r'torch>=[\d\.]+', f'torch>={}', open(fpath).read())
+            open(fpath, 'w').write(req)
+
         for fpath in ('requirements.txt', 'tests/requirements.txt'):
             req = open(fpath).read().replace('>=', '==')
             open(fpath, 'w').write(req)
