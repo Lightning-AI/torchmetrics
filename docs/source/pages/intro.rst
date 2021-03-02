@@ -127,7 +127,8 @@ This pattern is implemented for the following operators (with ``a`` being metric
 
 .. note::
 
-    Some of these operations are only fully support from Pytorch v1.4 and onwards
+    Some of these operations are only fully supported from Pytorch v1.4 and onwards, explicitly we found:
+    ``add``, ``mul``, ``rmatmul``, ``rsub``, ``rmod``
 
 
 ****************
