@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.6, 3.8]
+        python-version: [3.6, 3.8, 3.9]
         requires: ['minimal', 'latest']
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -37,6 +37,14 @@ jobs:
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
       run: |
+        import re, sys
+        torch_lut = {'3.8': '1.4', '3.9': '1.7.1'}
+        py_ver = f'{sys.version_info.major}.{sys.version_info.minor}'
+        if py_ver in torch_lut:
+            fpath='requirements.txt'
+            req = re.sub(r'torch>=[\d\.]+', f'torch>={torch_lut[py_ver]}', open(fpath).read())
+            open(fpath, 'w').write(req)
+
         for fpath in ('requirements.txt', 'tests/requirements.txt'):
             req = open(fpath).read().replace('>=', '==')
             open(fpath, 'w').write(req)
@@ -65,13 +73,6 @@ jobs:
         pip --version
         pip list
       shell: bash
-
-    #- name: Cache datasets
-    #  uses: actions/cache@v2
-    #  with:
-    #    path: Datasets # This path is specific to Ubuntu
-    #    # Look to see if there is a cache hit for the corresponding requirements file
-    #    key: pl-datasets
 
     - name: Tests
       run: |

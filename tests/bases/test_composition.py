@@ -11,21 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from distutils.version import LooseVersion
 from operator import neg, pos
 
 import pytest
 import torch
 
+from tests.helpers import _MARK_TORCH_MIN_1_4, _MARK_TORCH_MIN_1_5, _MARK_TORCH_MIN_1_6
 from torchmetrics.compositional import CompositionalMetric
 from torchmetrics.metric import Metric
-
-_MARK_TORCH_LOWER_1_4 = dict(
-    condition=LooseVersion(torch.__version__) < LooseVersion("1.5.0"), reason='required PT >= 1.5'
-)
-_MARK_TORCH_LOWER_1_5 = dict(
-    condition=LooseVersion(torch.__version__) < LooseVersion("1.6.0"), reason='required PT >= 1.6'
-)
 
 
 class DummyMetric(Metric):
@@ -52,7 +45,7 @@ class DummyMetric(Metric):
         (DummyMetric(2), torch.tensor(4)),
         (2, torch.tensor(4)),
         (2.0, torch.tensor(4.0)),
-        (torch.tensor(2), torch.tensor(4)),
+        pytest.param(torch.tensor(2), torch.tensor(4), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4)),
     ],
 )
 def test_metrics_add(second_operand, expected_result):
@@ -72,7 +65,7 @@ def test_metrics_add(second_operand, expected_result):
     ["second_operand", "expected_result"],
     [(DummyMetric(3), torch.tensor(2)), (3, torch.tensor(2)), (3, torch.tensor(2)), (torch.tensor(3), torch.tensor(2))],
 )
-@pytest.mark.skipif(**_MARK_TORCH_LOWER_1_4)
+@pytest.mark.skipif(**_MARK_TORCH_MIN_1_5)
 def test_metrics_and(second_operand, expected_result):
     first_metric = DummyMetric(2)
 
@@ -115,7 +108,7 @@ def test_metrics_eq(second_operand, expected_result):
         (torch.tensor(2), torch.tensor(2)),
     ],
 )
-@pytest.mark.skipif(**_MARK_TORCH_LOWER_1_4)
+@pytest.mark.skipif(**_MARK_TORCH_MIN_1_5)
 def test_metrics_floordiv(second_operand, expected_result):
     first_metric = DummyMetric(5)
 
@@ -245,7 +238,7 @@ def test_metrics_mod(second_operand, expected_result):
         (DummyMetric(2), torch.tensor(4)),
         (2, torch.tensor(4)),
         (2.0, torch.tensor(4.0)),
-        (torch.tensor(2), torch.tensor(4)),
+        pytest.param(torch.tensor(2), torch.tensor(4), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4)),
     ],
 )
 def test_metrics_mul(second_operand, expected_result):
@@ -285,7 +278,7 @@ def test_metrics_ne(second_operand, expected_result):
     ["second_operand", "expected_result"],
     [(DummyMetric([1, 0, 3]), torch.tensor([-1, -2, 3])), (torch.tensor([1, 0, 3]), torch.tensor([-1, -2, 3]))],
 )
-@pytest.mark.skipif(**_MARK_TORCH_LOWER_1_4)
+@pytest.mark.skipif(**_MARK_TORCH_MIN_1_5)
 def test_metrics_or(second_operand, expected_result):
     first_metric = DummyMetric([-1, -2, 3])
 
@@ -304,7 +297,7 @@ def test_metrics_or(second_operand, expected_result):
     [
         pytest.param(DummyMetric(2), torch.tensor(4)),
         pytest.param(2, torch.tensor(4)),
-        pytest.param(2.0, torch.tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_LOWER_1_5)),
+        pytest.param(2.0, torch.tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_6)),
         pytest.param(torch.tensor(2), torch.tensor(4)),
     ],
 )
@@ -322,7 +315,7 @@ def test_metrics_pow(second_operand, expected_result):
     ["first_operand", "expected_result"],
     [(5, torch.tensor(2)), (5.0, torch.tensor(2.0)), (torch.tensor(5), torch.tensor(2))],
 )
-@pytest.mark.skipif(**_MARK_TORCH_LOWER_1_4)
+@pytest.mark.skipif(**_MARK_TORCH_MIN_1_5)
 def test_metrics_rfloordiv(first_operand, expected_result):
     second_operand = DummyMetric(2)
 
@@ -332,7 +325,10 @@ def test_metrics_rfloordiv(first_operand, expected_result):
     assert torch.allclose(expected_result, final_rfloordiv.compute())
 
 
-@pytest.mark.parametrize(["first_operand", "expected_result"], [(torch.tensor([2, 2, 2]), torch.tensor(12))])
+@pytest.mark.parametrize(
+    ["first_operand", "expected_result"],
+    [pytest.param(torch.tensor([2, 2, 2]), torch.tensor(12), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4))]
+)
 def test_metrics_rmatmul(first_operand, expected_result):
     second_operand = DummyMetric([2, 2, 2])
 
@@ -343,7 +339,10 @@ def test_metrics_rmatmul(first_operand, expected_result):
     assert torch.allclose(expected_result, final_rmatmul.compute())
 
 
-@pytest.mark.parametrize(["first_operand", "expected_result"], [(torch.tensor(2), torch.tensor(2))])
+@pytest.mark.parametrize(
+    ["first_operand", "expected_result"],
+    [pytest.param(torch.tensor(2), torch.tensor(2), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4))]
+)
 def test_metrics_rmod(first_operand, expected_result):
     second_operand = DummyMetric(5)
 
@@ -359,7 +358,7 @@ def test_metrics_rmod(first_operand, expected_result):
     [
         pytest.param(DummyMetric(2), torch.tensor(4)),
         pytest.param(2, torch.tensor(4)),
-        pytest.param(2.0, torch.tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_LOWER_1_5)),
+        pytest.param(2.0, torch.tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_6)),
     ],
 )
 def test_metrics_rpow(first_operand, expected_result):
@@ -378,7 +377,7 @@ def test_metrics_rpow(first_operand, expected_result):
         (DummyMetric(3), torch.tensor(1)),
         (3, torch.tensor(1)),
         (3.0, torch.tensor(1.0)),
-        (torch.tensor(3), torch.tensor(1)),
+        pytest.param(torch.tensor(3), torch.tensor(1), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4)),
     ],
 )
 def test_metrics_rsub(first_operand, expected_result):
@@ -400,7 +399,7 @@ def test_metrics_rsub(first_operand, expected_result):
         (torch.tensor(6), torch.tensor(2.0)),
     ],
 )
-@pytest.mark.skipif(**_MARK_TORCH_LOWER_1_4)
+@pytest.mark.skipif(**_MARK_TORCH_MIN_1_5)
 def test_metrics_rtruediv(first_operand, expected_result):
     second_operand = DummyMetric(3)
 
@@ -439,7 +438,7 @@ def test_metrics_sub(second_operand, expected_result):
         (torch.tensor(3), torch.tensor(2.0)),
     ],
 )
-@pytest.mark.skipif(**_MARK_TORCH_LOWER_1_4)
+@pytest.mark.skipif(**_MARK_TORCH_MIN_1_5)
 def test_metrics_truediv(second_operand, expected_result):
     first_metric = DummyMetric(6)
 
@@ -454,6 +453,7 @@ def test_metrics_truediv(second_operand, expected_result):
     ["second_operand", "expected_result"],
     [(DummyMetric([1, 0, 3]), torch.tensor([-2, -2, 0])), (torch.tensor([1, 0, 3]), torch.tensor([-2, -2, 0]))],
 )
+@pytest.mark.skipif(**_MARK_TORCH_MIN_1_5)
 def test_metrics_xor(second_operand, expected_result):
     first_metric = DummyMetric([-1, -2, 3])
 

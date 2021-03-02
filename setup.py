@@ -56,7 +56,7 @@ setup(
     long_description_content_type='text/markdown',
     include_package_data=True,
     zip_safe=False,
-    keywords=['deep learning', 'pytorch', 'AI'],
+    keywords=['deep learning', 'machine learning', 'pytorch', 'metrics', 'AI'],
     python_requires='>=3.6',
     setup_requires=[],
     install_requires=load_requirements(PATH_ROOT),
@@ -85,5 +85,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
 )
