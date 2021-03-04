@@ -157,6 +157,10 @@ def _stable_1d_sort(x: torch, nb: int = 2049):
     makes the sort and returns the sorted array (with the padding removed)
     See this discussion: https://discuss.pytorch.org/t/is-torch-sort-stable/20714
 
+    Raises:
+        ValueError:
+            If dim of ``x`` is greater than 1 since stable sort works with only 1d tensors.
+
     Example:
         >>> data = torch.tensor([8, 7, 2, 6, 4, 5, 3, 1, 9, 0])
         >>> _stable_1d_sort(data)

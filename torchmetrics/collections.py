@@ -38,6 +38,14 @@ class MetricCollection(nn.ModuleDict):
 
         prefix: a string to append in front of the keys of the output dict
 
+    Raises:
+        ValueError:
+            If one of the elements of ``metrics`` is not an instance of ``pl.metrics.Metric``.
+        ValueError:
+            If two elements in ``metrics`` have the same ``name``.
+        ValueError:
+            If ``metrics`` is not a ``list``, ``tuple`` or a ``dict``.
+
     Example:
         >>> # input as list
         >>> import torch
