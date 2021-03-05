@@ -344,169 +344,186 @@ class Metric(nn.Module, ABC):
         return hash(tuple(hash_vals))
 
     def __add__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.add, self, other)
 
     def __and__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.bitwise_and, self, other)
 
     def __eq__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.eq, self, other)
 
     def __floordiv__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.floor_divide, self, other)
 
     def __ge__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.ge, self, other)
 
     def __gt__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.gt, self, other)
 
     def __le__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.le, self, other)
 
     def __lt__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.lt, self, other)
 
     def __matmul__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.matmul, self, other)
 
     def __mod__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.fmod, self, other)
 
     def __mul__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.mul, self, other)
 
     def __ne__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.ne, self, other)
 
     def __or__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.bitwise_or, self, other)
 
     def __pow__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.pow, self, other)
 
     def __radd__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.add, other, self)
 
     def __rand__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         # swap them since bitwise_and only supports that way and it's commutative
         return CompositionalMetric(torch.bitwise_and, self, other)
 
     def __rfloordiv__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.floor_divide, other, self)
 
     def __rmatmul__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.matmul, other, self)
 
     def __rmod__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.fmod, other, self)
 
     def __rmul__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.mul, other, self)
 
     def __ror__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.bitwise_or, other, self)
 
     def __rpow__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.pow, other, self)
 
     def __rsub__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.sub, other, self)
 
     def __rtruediv__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.true_divide, other, self)
 
     def __rxor__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.bitwise_xor, other, self)
 
     def __sub__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.sub, self, other)
 
     def __truediv__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.true_divide, self, other)
 
     def __xor__(self, other: Any):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.bitwise_xor, self, other)
 
     def __abs__(self):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.abs, self, None)
 
     def __inv__(self):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.bitwise_not, self, None)
 
     def __invert__(self):
         return self.__inv__()
 
     def __neg__(self):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(_neg, self, None)
 
     def __pos__(self):
-        from torchmetrics.compositional import CompositionalMetric
-
         return CompositionalMetric(torch.abs, self, None)
 
 
 def _neg(tensor: torch.Tensor):
     return -torch.abs(tensor)
+
+
+class CompositionalMetric(Metric):
+    """Composition of two metrics with a specific operator which will be executed upon metric's compute """
+
+    def __init__(
+        self,
+        operator: Callable,
+        metric_a: Union[Metric, int, float, torch.Tensor],
+        metric_b: Union[Metric, int, float, torch.Tensor, None],
+    ):
+        """
+        Args:
+            operator: the operator taking in one (if metric_b is None)
+                or two arguments. Will be applied to outputs of metric_a.compute()
+                and (optionally if metric_b is not None) metric_b.compute()
+            metric_a: first metric whose compute() result is the first argument of operator
+            metric_b: second metric whose compute() result is the second argument of operator.
+                For operators taking in only one input, this should be None
+        """
+        super().__init__()
+
+        self.op = operator
+
+        if isinstance(metric_a, torch.Tensor):
+            self.register_buffer("metric_a", metric_a)
+        else:
+            self.metric_a = metric_a
+
+        if isinstance(metric_b, torch.Tensor):
+            self.register_buffer("metric_b", metric_b)
+        else:
+            self.metric_b = metric_b
+
+    def _sync_dist(self, dist_sync_fn: Callable = None) -> None:
+        # No syncing required here. syncing will be done in metric_a and metric_b
+        pass
+
+    def update(self, *args, **kwargs) -> None:
+        if isinstance(self.metric_a, Metric):
+            self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
+
+        if isinstance(self.metric_b, Metric):
+            self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
+
+    def compute(self) -> Any:
+
+        # also some parsing for kwargs?
+        if isinstance(self.metric_a, Metric):
+            val_a = self.metric_a.compute()
+        else:
+            val_a = self.metric_a
+
+        if isinstance(self.metric_b, Metric):
+            val_b = self.metric_b.compute()
+        else:
+            val_b = self.metric_b
+
+        if val_b is None:
+            return self.op(val_a)
+
+        return self.op(val_a, val_b)
+
+    def reset(self) -> None:
+        if isinstance(self.metric_a, Metric):
+            self.metric_a.reset()
+
+        if isinstance(self.metric_b, Metric):
+            self.metric_b.reset()
+
+    def persistent(self, mode: bool = False) -> None:
+        if isinstance(self.metric_a, Metric):
+            self.metric_a.persistent(mode=mode)
+        if isinstance(self.metric_b, Metric):
+            self.metric_b.persistent(mode=mode)
+
+    def __repr__(self) -> str:
+        _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
+        repr_str = (self.__class__.__name__ + _op_metrics)
+
+        return repr_str
