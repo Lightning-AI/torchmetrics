@@ -29,7 +29,7 @@ Similar to `torch.nn` most metrics comes both as class based version and simple 
         metric = torchmetrics.Accuracy()
 
         n_batches = 10
-        for i in range(n_batches)
+        for i in range(n_batches):
             # simulate a classification problem
             preds = torch.randn(10, 5).softmax(dim=-1)
             target = torch.randint(5, (10,))
