@@ -5,6 +5,9 @@
 
 PyTorchMetrics documentation
 =======================================
+
+
+
 .. toctree::
    :maxdepth: 1
    :name: start
@@ -12,7 +15,7 @@ PyTorchMetrics documentation
 
    pages/intro
    pages/implement
-   pages/overview
+   pages/details
    pages/lightning
    references/functional
    references/modules
