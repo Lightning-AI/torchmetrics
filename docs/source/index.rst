@@ -13,7 +13,7 @@ PyTorchMetrics documentation
    :name: start
    :caption: Start here
 
-   pages/intro
+   pages/overview
    pages/implement
    pages/details
    pages/lightning
