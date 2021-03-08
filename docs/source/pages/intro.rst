@@ -19,7 +19,7 @@ Similar to `torch.nn` most metrics comes both as class based version and simple 
 - The class based metrics offers the most functionality, by supporting both accumulation over multiple
     batches and automatic syncrenization between multiple devices.
 
-    .. testcode:: python
+    .. testcode::
 
         import torch
         # import our library
@@ -44,10 +44,17 @@ Similar to `torch.nn` most metrics comes both as class based version and simple 
         # Reseting internal state such that metric ready for new data
         metric.reset()
 
+    .. testoutput::
+       :hide:
+       :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
+
+        Accuracy on batch ...
+
 - Functional based metrics follows a simple input-output paradigme: a single batch is feed in and the metric
     is computed for only that
 
-    .. testcode:: python
+    .. testcode::
+
         import torch
         # import our library
         import torchmetrics
