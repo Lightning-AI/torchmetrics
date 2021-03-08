@@ -4,9 +4,10 @@
    contain the root `toctree` directive.
 
 PyTorchMetrics documentation
-=======================================
+============================
 
 
+.. include:: intro
 
 .. toctree::
    :maxdepth: 1
