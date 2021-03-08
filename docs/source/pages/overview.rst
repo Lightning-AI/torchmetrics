@@ -8,7 +8,7 @@ PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and in
 common metric implementations.
 
 The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric base class inherits
-``nn.Module`` which allows us to call ``metric(...)`` directly. The ``forward()`` method of the base ``Metric`` class
+:class:`~torch.nn.Module` which allows us to call ``metric(...)`` directly. The ``forward()`` method of the base ``Metric`` class
 serves the dual purpose of calling ``update()`` on its input and simultaneously returning the value of the metric over the
 provided input.
 

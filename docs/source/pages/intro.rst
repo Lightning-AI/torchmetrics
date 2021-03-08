@@ -62,8 +62,7 @@ Similar to `torch.nn` most metrics comes both as class based version and simple 
 Implementing your own metric
 ****************************
 
-Implementing your own metric is as easy as subclassing an ``torch.nn.Module``. Simply, subclass ``torchmetrics.Metric``
-and do the following:
+Implementing your own metric is as easy as subclassing an :class:`~torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
 
 1. Implement ``__init__`` where you call ``self.add_state`` for every internal state that is needed for the metrics computations
 2. Implement ``update`` method, where all logic that is necessary for updating metric states go

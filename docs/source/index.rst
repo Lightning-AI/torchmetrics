@@ -6,18 +6,27 @@
 PyTorchMetrics documentation
 ============================
 
+.. include:: pages/intro.rst
 
-.. include:: intro
+############
+More reading
+############
 
 .. toctree::
    :maxdepth: 1
    :name: start
-   :caption: Start here
+   :caption: Wider overview
 
    pages/overview
    pages/implement
    pages/details
    pages/lightning
+
+.. toctree::
+   :maxdepth: 1
+   :name: start
+   :caption: Metrics' references
+
    references/functional
    references/modules
 
