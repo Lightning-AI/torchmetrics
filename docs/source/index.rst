@@ -4,16 +4,29 @@
    contain the root `toctree` directive.
 
 PyTorchMetrics documentation
-=======================================
+============================
+
+.. include:: pages/intro.rst
+
+############
+More reading
+############
+
 .. toctree::
    :maxdepth: 1
-   :name: start
-   :caption: Start here
+   :name: overview
+   :caption: Wider overview
 
-   pages/intro
-   pages/implement
    pages/overview
+   pages/implement
+   pages/classification
    pages/lightning
+
+.. toctree::
+   :maxdepth: 1
+   :name: metrics
+   :caption: Metrics' references
+
    references/functional
    references/modules
 

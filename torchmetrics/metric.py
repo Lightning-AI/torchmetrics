@@ -56,7 +56,7 @@ class Metric(nn.Module, ABC):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather. default: None
+            will be used to perform the allgather.
     """
 
     def __init__(
