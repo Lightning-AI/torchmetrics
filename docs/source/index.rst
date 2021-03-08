@@ -19,7 +19,7 @@ More reading
 
    pages/overview
    pages/implement
-   pages/details
+   pages/classification
    pages/lightning
 
 .. toctree::
