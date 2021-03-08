@@ -14,7 +14,7 @@ More reading
 
 .. toctree::
    :maxdepth: 1
-   :name: start
+   :name: overview
    :caption: Wider overview
 
    pages/overview
@@ -24,7 +24,7 @@ More reading
 
 .. toctree::
    :maxdepth: 1
-   :name: start
+   :name: metrics
    :caption: Metrics' references
 
    references/functional
