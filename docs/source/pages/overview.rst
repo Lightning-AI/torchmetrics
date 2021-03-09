@@ -136,7 +136,7 @@ MetricCollection
 ****************
 
 In many cases it is beneficial to evaluate the model output by multiple metrics.
-In this case the `MetricCollection` class may come in handy. It accepts a sequence
+In this case the ``MetricCollection`` class may come in handy. It accepts a sequence
 of metrics and wraps theses into a single callable metric class, with the same
 interface as any other metric.
 
@@ -196,17 +196,17 @@ inside your LightningModule
     :noindex:
 
 
-***************************
-Class vs Functional Metrics
-***************************
+****************************
+Module vs Functional Metrics
+****************************
 
 The functional metrics follow the simple paradigm input in, output out.
 This means they don't provide any advanced mechanisms for syncing across DDP nodes or aggregation over batches.
 They simply compute the metric value based on the given inputs.
 
-Also, the integration within other parts of PyTorch Lightning will never be as tight as with the class-based interface.
+Also, the integration within other parts of PyTorch Lightning will never be as tight as with the Module-based interface.
 If you look for just computing the values, the functional metrics are the way to go.
-However, if you are looking for the best integration and user experience, please consider also using the class interface.
+However, if you are looking for the best integration and user experience, please consider also using the Module interface.
 
 **********************
 Classification Metrics
