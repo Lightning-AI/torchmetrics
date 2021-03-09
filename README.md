@@ -12,7 +12,7 @@
   <a href="#installation">Installation</a> •
   <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
   <a href="#build-in-metrics">Build-in metrics</a> •
-  <a href="#implementing-your-own-metric">Own metric</a> •
+  <a href="#implementing-your-own-metric">Implementing a metric</a> •
   <a href="#community">Community</a> •
   <a href="#license">License</a>
 </p>

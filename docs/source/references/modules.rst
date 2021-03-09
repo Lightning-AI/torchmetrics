@@ -1,6 +1,6 @@
-#################
-nn.Module metrics
-#################
+##############
+Module metrics
+##############
 
 **********************
 Classification Metrics
