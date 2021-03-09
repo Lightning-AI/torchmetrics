@@ -87,3 +87,5 @@ to ``update`` and ``compute`` in the following way (assuming metric is initializ
 
 This procedure has the consequence of calling the user defined ``update`` **twice** during a single
 forward call (one to update global statistics and one for getting the batch statistics).
+
+Read more about logging in Lightning `here <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_.
