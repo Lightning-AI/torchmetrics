@@ -6,7 +6,7 @@
 PyTorchMetrics documentation
 ============================
 
-.. include:: pages/intro.rst
+.. include:: pages/quickstart.rst
 
 
 More reading
@@ -17,7 +17,6 @@ More reading
    :name: guide
    :caption: User Guide
 
-   pages/quickstart
    pages/overview
    pages/implement
    pages/lightning

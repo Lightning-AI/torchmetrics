@@ -1,6 +1,3 @@
-.. _quickstart:
-
-
 .. testsetup:: *
 
     import torch
@@ -80,17 +77,18 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
         self.log('valid_acc', self.valid_acc, on_step=True, on_epoch=True)
 
 .. note::
+
     If using metrics in data parallel mode (dp), the metric update/logging should be done
     in the ``<mode>_step_end`` method (where ``<mode>`` is either ``training``, ``validation``
     or ``test``). This is due to metric states else being destroyed after each forward pass,
     leading to wrong accumulation. In practice do the following:
 
-    .. code-block:: python
+    .. testcode:: python
 
         def training_step(self, batch, batch_idx):
             data, target = batch
             preds = self(data)
-            ...
+            # ...
             return {'loss' : loss, 'preds' : preds, 'target' : target}
 
         def training_step_end(self, outputs):
@@ -98,4 +96,4 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
             self.metric(outputs['preds'], outputs['target'])
             self.log('metric', self.metric)
             
-For more details see  `Lightning Docs<https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_
+For more details see `Lightning Docs <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_
