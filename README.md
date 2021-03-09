@@ -26,6 +26,11 @@
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 
 
+---
+
+</div>
+
+
 ## Installation 
 
 Pip / conda
