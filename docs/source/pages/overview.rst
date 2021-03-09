@@ -196,9 +196,9 @@ inside your LightningModule
     :noindex:
 
 
-***************************
-Class vs Functional Metrics
-***************************
+****************************
+Module vs Functional Metrics
+****************************
 
 The functional metrics follow the simple paradigm input in, output out.
 This means they don't provide any advanced mechanisms for syncing across DDP nodes or aggregation over batches.
@@ -255,8 +255,8 @@ the possible class labels are 0, 1, 2, 3, etc. Below are some examples of differ
     ml_target = torch.tensor([[0, 1, 1], [1, 0, 0], [0, 0, 0]])
 
 
-Using the is_multiclass parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using the ``is_multiclass`` parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In some cases, you might have inputs which appear to be (multi-dimensional) multi-class
 but are actually binary/multi-label - for example, if both predictions and targets are

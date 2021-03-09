@@ -11,10 +11,10 @@ We make sure that all our metrics are rigorously tested against other popular im
 Build-in metrics
 ****************
 
-Similar to `torch.nn` most metrics comes both as class based version and simple functional version.
+Similar to `torch.nn` most metrics comes both as Module based version and simple functional version.
 
-- The class based metrics offers the most functionality, by supporting both accumulation over multiple
-    batches and automatic syncrenization between multiple devices.
+- The Module based metrics offers the most functionality, by supporting both accumulation over multiple
+    batches and automatic synchronization between multiple devices.
 
     .. testcode::
 
