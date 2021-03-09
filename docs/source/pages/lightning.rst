@@ -1,3 +1,6 @@
+.. _quickstart:
+
+
 .. testsetup:: *
 
     import torch
@@ -5,11 +8,19 @@
     from pytorch_lightning.core.lightning import LightningModule
     from torchmetrics import Metric
 
-#########
-Lightning
-#########
+#################################
+TorchMetrics in PyTorch Lightning
+#################################
 
-The example below shows how to use a metric in your ``LightningModule``:
+TorchMetrics was originaly created as part of `PyTorch Lightning <https://github.com/PyTorchLightning/pytorch-lightning>`_, a pwerful deep learning research framework designed for scaling models without boilerplate.
+
+While TorchMetrics was built to be used with native PyTorch, using TorchMetrics with Lightning offers additional benefits:
+
+* Class metrics are automatically placed on the correct device when properly defined inside a LightningModule. This means that your data will always be placed on the same device as your metrics.
+* Native support for logging metrics in Lightning using `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ inside your LightningModule.
+* The ``.reset()`` method of the metric will automatically be called and the end of an epoch.
+
+The example below shows how to use a metric in your `LightningModule <https://pytorch-lightning.readthedocs.io/en/stable/common/lightning_module.html>`_:
 
 .. code-block:: python
 
@@ -29,8 +40,11 @@ The example below shows how to use a metric in your ``LightningModule``:
         # log epoch metric
         self.log('train_acc_epoch', self.accuracy.compute())
 
+********************
+Logging TorchMetrics
+********************
 
-``Metric`` objects can also be directly logged, in which case Lightning will log
+:class:`~torchmetrics.Metric` objects can also be directly logged in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method. Lightning will log
 the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``.
 If ``on_epoch`` is True, the logger automatically logs the end of epoch metric value by calling
 ``.compute()``.

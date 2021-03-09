@@ -8,12 +8,12 @@ PyTorchMetrics documentation
 
 .. include:: pages/intro.rst
 
-############
+
 More reading
-############
+============
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :name: overview
    :caption: Wider overview
 
@@ -23,12 +23,12 @@ More reading
    pages/lightning
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :name: metrics
    :caption: Metrics' references
 
-   references/functional
    references/modules
+   references/functional
 
 .. toctree::
    :maxdepth: 1

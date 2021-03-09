@@ -383,23 +383,19 @@ def linkcode_resolve(domain, info):
     return "https://github.com/%s/%s/blob/%s" % (github_user, github_repo, filename)
 
 
-# autodoc_member_order = 'groupwise'
-# autoclass_content = 'both'
-autodoc_default_flags = ["members"]
 autosummary_generate = True
 
-# the options are fixed and will be soon in release,
-#  see https://github.com/sphinx-doc/sphinx/issues/5459
-# autodoc_default_options = {
-#     'members': None,
-#     'methods': None,
-#     # 'attributes': None,
-#     'special-members': '__call__',
-#     'exclude-members': '_abc_impl',
-#     'show-inheritance': True,
-#     'private-members': True,
-#     'noindex': True,
-# }
+autodoc_member_order = 'groupwise'
+
+autoclass_content = 'both'
+
+autodoc_default_options = {
+    'members': True,
+    # 'methods': True,
+    'special-members': '__call__',
+    'exclude-members': '_abc_impl',
+    # 'show-inheritance': True,
+}
 
 # Sphinx will add “permalinks” for each heading and description environment as paragraph signs that
 #  become visible when the mouse hovers over them.

@@ -1,6 +1,21 @@
-# TorchMetrics
+<div align="center">
+
+<img src="docs/source/_static/images/logo.png" width="400px">
 
 **Collection of metrics for easy evaluating machine learning models**
+
+---
+
+<p align="center">
+  <a href="https://www.pytorchlightning.ai/">Website</a> •
+  <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
+  <a href="#installation">Installation</a> •
+  <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
+  <a href="#build-in-metrics">Build-in metrics</a> •
+  <a href="#implementing-your-own-metric">Implementing your own metric</a> •
+  <a href="#community">Community</a> •
+  <a href="#license">License</a>
+</p>
 
 ---
 
@@ -9,6 +24,20 @@
 [![Build Status](https://dev.azure.com/PytorchLightning/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/PytorchLightning/Metrics/_build/latest?definitionId=3&branchName=master)
 [![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/main/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
+
+---
+
+</div>
+
+## What is Torchmetrics
+
+Torchmetrics is a metrics API created for easy metric development and usage in both PyTorch and 
+[PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/). It was originally a part of 
+Pytorch Lightning, but got split off so users could take advantage of the large collection of metrics 
+implemented without having to install Pytorch Lightning (eventhough we would love for you to try it out). 
+We currently have around 25+ metrics implemented and we continuesly is adding more metrics, both within 
+already covered domains (classification, regression ect.) but also new domains (object detection ect.). 
+We make sure that all our metrics are rigorously tested such that you can trust them. 
 
 ## Installation 
 
@@ -28,17 +57,6 @@ pip install git+https://github.com/PytorchLightning/metrics.git@master
 # OR from an archive
 pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
-
----
-
-## What is Torchmetrics
-Torchmetrics is a metrics API created for easy metric development and usage in both PyTorch and 
-[PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/). It was originally a part of 
-Pytorch Lightning, but got split off so users could take advantage of the large collection of metrics 
-implemented without having to install Pytorch Lightning (eventhough we would love for you to try it out). 
-We currently have around 25+ metrics implemented and we continuesly is adding more metrics, both within 
-already covered domains (classification, regression ect.) but also new domains (object detection ect.). 
-We make sure that all our metrics are rigorously tested such that you can trust them. 
 
 ## Build-in metrics
 
@@ -128,6 +146,9 @@ score calculated per batch and instead needs to implement all logic that needs t
 square root in `update` and the remaining in `compute`.
 
 
+## Community
+For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A)!
+
 ## Contribute!
 The lightning + torchmetric team is hard at work adding even more metrics. 
 But we're looking for incredible contributors like you to submit new metrics
@@ -135,9 +156,6 @@ and improve existing ones!
 
 Join our [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A) 
 to get help becoming a contributor!
-
-## Community
-For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A)!
 
 ## Citations
 We’re excited to continue the strong legacy of opensource software and have been inspired over the years by 
