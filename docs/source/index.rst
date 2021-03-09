@@ -8,9 +8,9 @@ PyTorchMetrics documentation
 
 .. include:: pages/intro.rst
 
-############
+
 More reading
-############
+============
 
 .. toctree::
    :maxdepth: 2
