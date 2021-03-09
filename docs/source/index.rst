@@ -22,7 +22,7 @@ More reading
    pages/lightning
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :name: metrics
    :caption: Metrics' references
 
