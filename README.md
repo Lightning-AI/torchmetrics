@@ -31,7 +31,10 @@
 </div>
 
 
-## Installation 
+## Installation
+
+<details>
+  <summary>View install</summary>
 
 Pip / conda
 
@@ -49,6 +52,8 @@ pip install git+https://github.com/PytorchLightning/metrics.git@master
 # OR from an archive
 pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
+
+</details>
 
 ---
 
