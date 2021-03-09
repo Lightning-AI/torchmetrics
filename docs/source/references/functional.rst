@@ -1,6 +1,10 @@
 .. role:: hidden
     :class: hidden-section
 
+##################
+Functional metrics
+##################
+
 **********************
 Classification Metrics
 **********************
