@@ -1,8 +1,4 @@
 
-####################
-What is Torchmetrics
-####################
-
 Torchmetrics is a metrics API created for easy metric development and usage in both PyTorch and
 `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_. It was originally a part of
 Pytorch Lightning, but got split off so all PyTorch users could take advantage of the large collection of metrics
@@ -11,107 +7,67 @@ We currently have around 25+ metrics implemented and we continuesly is adding mo
 already covered domains (classification, regression ect.) but also new domains (object detection ect.).
 We make sure that all our metrics are rigorously tested against other popular implemenetations.
 
-Installation
-============
+****************
+Build-in metrics
+****************
 
-.. code-block:: bash
+Similar to `torch.nn` most metrics comes both as class based version and simple functional version.
 
-    pip install torchmetrics
+- The class based metrics offers the most functionality, by supporting both accumulation over multiple
+    batches and automatic syncrenization between multiple devices.
 
-Available Metrics
-=================
+    .. testcode::
 
+        import torch
+        # import our library
+        import torchmetrics
 
-Class classification metrics
-============================
-.. currentmodule:: torchmetrics
+        # initialize metric
+        metric = torchmetrics.Accuracy()
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
+        n_batches = 10
+        for i in range(n_batches):
+            # simulate a classification problem
+            preds = torch.randn(10, 5).softmax(dim=-1)
+            target = torch.randint(5, (10,))
+            # metric on current batch
+            acc = metric(preds, target)
+            print(f"Accuracy on batch {i}: {acc}")
 
-    Accuracy
-    AveragePrecision
-    AUC
-    AUROC
-    ConfusionMatrix
-    F1
-    FBeta
-    IoU
-    HammingDistance
-    Precision
-    PrecisionRecallCurve
-    Recall
-    ROC
-    StatScores
+        # metric on all batches using custom accumulation
+        acc = metric.compute()
+        print(f"Accuracy on all data: {acc}")
 
-Class regression metrics
-========================
-.. currentmodule:: torchmetrics
+        # Reseting internal state such that metric ready for new data
+        metric.reset()
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
+    .. testoutput::
+       :hide:
+       :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    ExplainedVariance
-    MeanAbsoluteError
-    MeanSquaredError
-    MeanSquaredLogError
-    PSNR
-    SSIM
-    R2Score
+        Accuracy on batch ...
 
-Functional classification metrics
-=================================
-.. currentmodule:: torchmetrics.functional
+- Functional based metrics follows a simple input-output paradigme: a single batch is feed in and the metric
+    is computed for only that
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
+    .. testcode::
 
-    accuracy
-    auc
-    auroc
-    average_precision
-    confusion_matrix
-    dice_score
-    f1
-    fbeta
-    hamming_distance
-    iou
-    roc
-    precision
-    precision_recall
-    precision_recall_curve
-    recall
-    stat_scores
+        import torch
+        # import our library
+        import torchmetrics
 
-Functional regression metrics
-=============================
+        # simulate a classification problem
+        preds = torch.randn(10, 5).softmax(dim=-1)
+        target = torch.randint(5, (10,))
 
-.. currentmodule:: torchmetrics.functional
+        acc = torchmetrics.functional.accuracy(preds, target)
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
+****************************
+Implementing your own metric
+****************************
 
-    explained_variance
-    image_gradients
-    mean_absolute_error
-    mean_squared_error
-    mean_squared_log_error
-    psnr
-    ssim
-    r2score
+Implementing your own metric is as easy as subclassing an :class:`~torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
 
-Functional domain metrics
-=========================
-
-.. currentmodule:: torchmetrics.functional
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    bleu_score
-    embedding_similarity
+1. Implement ``__init__`` where you call ``self.add_state`` for every internal state that is needed for the metrics computations
+2. Implement ``update`` method, where all logic that is necessary for updating metric states go
+3. Implement ``compute`` method, where the final metric computations happens
