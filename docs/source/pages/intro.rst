@@ -22,102 +22,96 @@ Available Metrics
 =================
 
 
-.. Class classification metrics
-.. ============================
-.. .. currentmodule:: torchmetrics
+Class classification metrics
+============================
+.. currentmodule:: torchmetrics
 
-.. .. autosummary::
-..     :toctree: generated
-..     :nosignatures:
-..     :template: classtemplate.rst
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
 
-..     Accuracy
-..     AveragePrecision
-..     AUC
-..     AUROC
-..     ConfusionMatrix
-..     F1
-..     FBeta
-..     IoU
-..     HammingDistance
-..     Precision
-..     PrecisionRecallCurve
-..     Recall
-..     ROC
-..     StatScores
+    Accuracy
+    AveragePrecision
+    AUC
+    AUROC
+    ConfusionMatrix
+    F1
+    FBeta
+    IoU
+    HammingDistance
+    Precision
+    PrecisionRecallCurve
+    Recall
+    ROC
+    StatScores
 
-.. Class regression metrics
-.. ========================
-.. .. currentmodule:: torchmetrics
+Class regression metrics
+========================
+.. currentmodule:: torchmetrics
 
-.. .. autosummary::
-..     :toctree: generated
-..     :nosignatures:
-..     :template: classtemplate.rst
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
 
-..     ExplainedVariance
-..     MeanAbsoluteError
-..     MeanSquaredError
-..     MeanSquaredLogError
-..     PSNR
-..     SSIM
-..     R2Score
+    ExplainedVariance
+    MeanAbsoluteError
+    MeanSquaredError
+    MeanSquaredLogError
+    PSNR
+    SSIM
+    R2Score
 
-.. Functional classification metrics
-.. =================================
-.. .. currentmodule:: torchmetrics.functional
+Functional classification metrics
+=================================
+.. currentmodule:: torchmetrics.functional
 
-.. .. autosummary::
-..     :toctree: generated
-..     :nosignatures:
-..     :template: classtemplate.rst
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
 
-..     accuracy
-..     auc
-..     auroc
-..     average_precision
-..     confusion_matrix
-..     dice_score
-..     f1
-..     fbeta
-..     hamming_distance
-..     iou
-..     roc
-..     precision
-..     precision_recall
-..     precision_recall_curve
-..     recall
-..     stat_scores
+    accuracy
+    auc
+    auroc
+    average_precision
+    confusion_matrix
+    dice_score
+    f1
+    fbeta
+    hamming_distance
+    iou
+    roc
+    precision
+    precision_recall
+    precision_recall_curve
+    recall
+    stat_scores
 
-.. Functional regression metrics
-.. =============================
+Functional regression metrics
+=============================
 
-.. .. currentmodule:: torchmetrics.functional
+.. currentmodule:: torchmetrics.functional
 
-.. .. autosummary::
-..     :toctree: generated
-..     :nosignatures:
-..     :template: classtemplate.rst
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
 
-..     explained_variance
-..     image_gradients
-..     mean_absolute_error
-..     mean_squared_error
-..     mean_squared_log_error
-..     psnr
-..     ssim
-..     r2score
+    explained_variance
+    image_gradients
+    mean_absolute_error
+    mean_squared_error
+    mean_squared_log_error
+    psnr
+    ssim
+    r2score
 
-.. Functional domain metrics
-.. =========================
+Functional domain metrics
+=========================
 
-.. .. currentmodule:: torchmetrics.functional
+.. currentmodule:: torchmetrics.functional
 
-.. .. autosummary::
-..     :toctree: generated
-..     :nosignatures:
-..     :template: classtemplate.rst
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
 
-..     bleu_score
-..     embedding_similarity
-
+    bleu_score
+    embedding_similarity
