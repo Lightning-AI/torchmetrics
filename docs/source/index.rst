@@ -14,9 +14,10 @@ More reading
 
 .. toctree::
    :maxdepth: 2
-   :name: overview
-   :caption: Wider overview
+   :name: guide
+   :caption: User Guide
 
+   pages/quickstart
    pages/overview
    pages/implement
    pages/lightning
@@ -24,7 +25,7 @@ More reading
 .. toctree::
    :maxdepth: 3
    :name: metrics
-   :caption: Metrics' references
+   :caption: Metrics API references
 
    references/modules
    references/functional
