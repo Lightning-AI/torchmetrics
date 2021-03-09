@@ -17,6 +17,7 @@ More reading
    :name: guide
    :caption: User Guide
 
+   pages/quickstart
    pages/overview
    pages/implement
    pages/lightning
