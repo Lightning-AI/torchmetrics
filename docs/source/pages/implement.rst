@@ -1,8 +1,10 @@
+.. _implement:
+
 *********************
 Implementing a Metric
 *********************
 
-To implement your custom metric, subclass the base ``Metric`` class and implement the following methods:
+To implement your own custom metric, subclass the base :class:`~torchmetrics.Metric` class and implement the following methods:
 
 - ``__init__()``: Each state variable should be called using ``self.add_state(...)``.
 - ``update()``: Any code needed to update the state given any inputs to the metric.
