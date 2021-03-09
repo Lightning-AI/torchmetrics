@@ -18,7 +18,7 @@ While TorchMetrics was built to be used with native PyTorch, using TorchMetrics 
 
 * Class metrics are automatically placed on the correct device when properly defined inside a LightningModule. This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning using `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ inside your LightningModule.
-* The .reset() method of the metric will automatically be called and the end of an epoch.
+* The ``.reset()`` method of the metric will automatically be called and the end of an epoch.
 
 The example below shows how to use a metric in your `LightningModule <https://pytorch-lightning.readthedocs.io/en/stable/common/lightning_module.html>`_:
 
