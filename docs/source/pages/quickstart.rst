@@ -12,7 +12,7 @@ You can use TorchMetrics in any PyTorch model, or with in `PyTorch Lightning <ht
 
 * This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning using self.log inside your ``LightningModule``. Lightning will log the metric based on on_step and on_epoch flags present in ``self.log(…)``. If ``on_epoch=True``, the logger automatically logs the end of epoch metric value by calling ``.compute()``.
-* The ``.reset()`` method of the metric will automatically be called and the end of an epoch.
+* The ``.reset()`` method of the metric will automatically be called at the end of an epoch.
 
 Install
 *******
@@ -30,7 +30,7 @@ Using TorchMetrics
 Functional metrics
 ~~~~~~~~~~~~~~~~~~
 
-Similar to `torch.nn`, most metrics have both a class-based and a functional version. The functional versions implement the basic operations required for computing each metric. They are simple python functions that as input take torch.tensors and return the corresponding metric as a torch.tensor. The code-snippet below shows a simple example for calculating the accuracy using the functional interface:
+Similar to `torch.nn <https://pytorch.org/docs/stable/nn.html>`_, most metrics have both a class-based and a functional version. The functional versions implement the basic operations required for computing each metric. They are simple python functions that as input take `torch.tensors<https://pytorch.org/docs/stable/tensors.html#torch.Tensor>`_ and return the corresponding metric as a torch.tensor. The code-snippet below shows a simple example for calculating the accuracy using the functional interface:
 
 .. testcode::
 
