@@ -22,7 +22,7 @@ jobs:
             requires: 'minimal'
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 15
+    timeout-minutes: 35
 
     steps:
     - uses: actions/checkout@v2

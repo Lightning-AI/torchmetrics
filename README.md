@@ -12,7 +12,7 @@
   <a href="#installation">Installation</a> •
   <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
   <a href="#build-in-metrics">Build-in metrics</a> •
-  <a href="#implementing-your-own-metric">Own metric</a> •
+  <a href="#implementing-your-own-metric">Implementing a metric</a> •
   <a href="#community">Community</a> •
   <a href="#license">License</a>
 </p>
@@ -25,21 +25,16 @@
 [![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/main/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 
+
 ---
 
 </div>
 
-## What is Torchmetrics
 
-Torchmetrics is a metrics API created for easy metric development and usage in both PyTorch and 
-[PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/). It was originally a part of 
-Pytorch Lightning, but got split off so users could take advantage of the large collection of metrics 
-implemented without having to install Pytorch Lightning (eventhough we would love for you to try it out). 
-We currently have around 25+ metrics implemented and we are continuously adding more metrics, both within 
-already covered domains (classification, regression ect.) but also new domains (object detection etc.). 
-We make sure that all our metrics are rigorously tested such that you can trust them. 
+## Installation
 
-## Installation 
+<details>
+  <summary>View install</summary>
 
 Pip / conda
 
@@ -58,12 +53,62 @@ pip install git+https://github.com/PytorchLightning/metrics.git@master
 pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
 
+</details>
+
+---
+
+## What is Torchmetrics
+TorchMetrics is a collection of PyTorch metrics implementaions and an easy-to-use API to create custom metrics.
+It is designed to be distrubuted-training compatible and offers:
+
+* Automatic accumulation over batches
+* Automatic synchronization between multiple devices
+
+You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features:
+
+* Module metrics are automatically placed on the correct device when properly defined inside a LightningModule. This means that your data will always be placed on the same device as your metrics.
+* Native support for logging metrics in Lightning using `self.log` inside your `LightningModule`. Lightning will log the metric based on `on_step` and `on_epoch` flags present in `self.log(…)`. If `on_epoch=True`, the logger automatically logs the end of epoch metric value by calling `.compute()`.
+* The `.reset()` method of the metric will automatically be called and the end of an epoch.
+
 ## Build-in metrics
+* Accuracy
+* AveragePrecision
+* AUC
+* AUROC
+* F1
+* Hamming Distance
+* ROC
+* ExplainedVariance
+* MeanSquaredError
+* R2Score
+* bleu_score
+* embedding_similarity
 
-Similar to `torch.nn` most metrics comes both as class based version and simple functional version.
+And many more!
 
-* The class based metrics offers the most functionality, by supporting both accumulation over multiple 
-batches and automatic syncrenization between multiple devices.
+## Using functional metrics
+
+Similar to `torch.nn`, most metrics have both a module-based and a functional version. The functional versions implement the basic operations required for computing each metric. They are simple python functions that as input take torch.tensors and return the corresponding metric as a torch.tensor.
+
+``` python
+import torch
+# import our library
+import torchmetrics
+
+# simulate a classification problem
+preds = torch.randn(10, 5).softmax(dim=-1)
+target = torch.randint(5, (10,))
+
+acc = torchmetrics.functional.accuracy(preds, target)
+```
+
+## Using Module metrics
+
+Nearly all functional metrics have a corresponding module-based metric that calls it a functional counterpart underneath. The module-based metrics are characterized by having one or more internal metrics states (similar to the parameters of the PyTorch module) that allow them to offer additional functionalities:
+
+* Accumulation of multiple batches
+* Automatic synchronization between multiple devices
+* Metric arithmetic
   
 ``` python
 import torch
@@ -88,22 +133,6 @@ print(f"Accuracy on all data: {acc}")
 
 # Reseting internal state such that metric ready for new data
 metric.reset()
-```
-
-  
-* Functional based metrics follows a simple input-output paradigme: a single batch is feed in and the metric is computed 
-for only that
-
-``` python
-import torch
-# import our library
-import torchmetrics
-
-# simulate a classification problem
-preds = torch.randn(10, 5).softmax(dim=-1)
-target = torch.randint(5, (10,))
-
-acc = torchmetrics.functional.accuracy(preds, target)
 ```
 
 ## Implementing your own metric
@@ -146,9 +175,6 @@ score calculated per batch and instead needs to implement all logic that needs t
 square root in `update` and the remaining in `compute`.
 
 
-## Community
-For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A)!
-
 ## Contribute!
 The lightning + torchmetric team is hard at work adding even more metrics. 
 But we're looking for incredible contributors like you to submit new metrics
@@ -156,6 +182,9 @@ and improve existing ones!
 
 Join our [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A) 
 to get help becoming a contributor!
+
+## Community
+For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A)!
 
 ## Citations
 We’re excited to continue the strong legacy of opensource software and have been inspired over the years by 

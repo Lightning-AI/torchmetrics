@@ -97,3 +97,5 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
             #update and log
             self.metric(outputs['preds'], outputs['target'])
             self.log('metric', self.metric)
+            
+For more details see  `Lightning Docs<https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_
