@@ -89,3 +89,9 @@ This procedure has the consequence of calling the user defined ``update`` **twic
 forward call (one to update global statistics and one for getting the batch statistics).
 
 Read more about logging in Lightning `here <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_.
+
+
+---------
+
+.. autoclass:: torchmetrics.Metric
+    :members:
