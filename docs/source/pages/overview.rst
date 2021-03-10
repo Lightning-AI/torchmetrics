@@ -1,7 +1,7 @@
 
-############
-Introduction
-############
+########
+Overview
+########
 
 The ``torchmetrics`` is a Metrics API created for easy metric development and usage in
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
