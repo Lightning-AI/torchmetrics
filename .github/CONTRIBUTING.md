@@ -54,8 +54,8 @@ is that our users can trust our metric implementation. We can only garantee this
 Want to contribute a new metric. Great, but to keep all our metrics consistent please format in the following way:
 
 1. First implement the functional backend. This takes cares of all logic that does into the metric. The code should
-to put into single file placed under `torchmetrics/functional/"domain"/"new_metric".py` where `domain` is the type of
-metric (classification, regression, nlp ect) and `new_metric` is the name of the metric. In this file should be the
+to put into single file placed under `torchmetrics/functional/<domain>/<new_metric>.py` where `domain` is the type of
+metric (classification, regression, NLP etc) and `new_metric` is the name of the metric. In this file should be the
 following three functions:
     1. `_new_metric_update(...)`: everything that has to do with type/shape checking and all logic required before
   distributed syncing need to go here.
@@ -66,7 +66,7 @@ following three functions:
     The [accuracy](https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/functional/classification/accuracy.py)
 metric is a great example of this division of logic. 
 
-2. In a corresponding file placed in `torchmetrics/"domain"/"new_metric".py` create the module interface:
+2. In a corresponding file placed in `torchmetrics/<domain>/<new_metric>.py` create the module interface:
     1. Create a new module metric by subclassing `torchmetrics.Metric`
     2. In the `__init__` of the module call `self.add_state` for as many metric states are needed for the metric to
   proper accumulate metric statistics
@@ -77,15 +77,16 @@ metric is a great example of this division of logic.
     The module interface [Accuracy](https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/classification/accuracy.py)
 that correspond to the above functional example showcases these steps
 
-3. Remember to add binding to the different relevant `__init__` files
+3. Remember to add bindings to relevant `__init__` files
 
 4. Testing is key to keeping torchmetrics trustworty. This is why we have a very rigid testing protocol. This means
-that we in most cases require the metric to be tested against some other commen framework (`sklearn`, `scipy` ect).
-    1. Create a testing file in `tests/"domain"/test_"new_metric".py`. Only one file is needed as it is intended to test
+that we in most cases require the metric to be tested against some other commen framework (`sklearn`, `scipy` etc).
+
+    1. Create a testing file in `tests/<domain>/test_<new_metric>.py`. Only one file is needed as it is intended to test
   both the functional and module interface
     2. In that file, start by defining a number of test inputs that your metric should be evaluated on 
     3. Create a testclass `class NewMetric(MetricTester)` that inherits from `tests.helpers.testers.MetricTester`.
-  This testclass should essentially implement the `test_"new_metric"_class` and `test_"new_metric"_fn` methods that
+  This testclass should essentially implement the `test_{new_metric}_class` and `test_{new_metric}_fn` methods that
   respectively tests the module interface and the functional interface.
     4. The testclass should be parametrized (using `@pytest.mark.parametrize`) by the different test inputs defined initiallly.
   Additionally, the `test_"new_metric"_class` method should also be parametrized with an `ddp` parameter such that it gets
@@ -182,7 +183,7 @@ _Artifacts_ tab in CircleCI when you click on the task named _ci/circleci: Build
 To setup a local development environment, install both local and test dependencies:
 
 ```bash
-python -m pip install ".[dev, examples]"
+python -m pip install -r requirements/devel.txt
 python -m pip install pre-commit
 ```
 
