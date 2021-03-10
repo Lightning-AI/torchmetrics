@@ -5,8 +5,6 @@ import os
 # Always prefer setuptools over distutils
 from setuptools import find_packages, setup
 
-from torchmetrics.setup_tools import _load_readme_description, _load_requirements
-
 try:
     import builtins
 except ImportError:
@@ -18,6 +16,7 @@ PATH_ROOT = os.path.dirname(__file__)
 builtins.__LIGHTNING_SETUP__ = True
 
 import torchmetrics  # noqa: E402
+from torchmetrics.setup_tools import _load_readme_description, _load_requirements  # noqa: E402
 
 
 # https://packaging.python.org/discussions/install-requires-vs-requirements /
