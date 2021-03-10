@@ -13,9 +13,8 @@ TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-
 
 You can use TorchMetrics in any PyTorch model, or with in `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
 
-* Module metrics are automatically placed on the correct device.
+* This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
-
 
 Install
 *******
@@ -33,7 +32,11 @@ Using TorchMetrics
 Functional metrics
 ~~~~~~~~~~~~~~~~~~
 
-Similar to `torch.nn <https://pytorch.org/docs/stable/nn.html>`_, most metrics have both a class-based and a functional version. The functional versions implement the basic operations required for computing each metric. They are simple python functions that as input take `torch.tensors<https://pytorch.org/docs/stable/tensors.html#torch.Tensor>`_ and return the corresponding metric as a torch.tensor. The code-snippet below shows a simple example for calculating the accuracy using the functional interface:
+Similar to `torch.nn <https://pytorch.org/docs/stable/nn>`_, most metrics have both a class-based and a functional version. 
+The functional versions implement the basic operations required for computing each metric. 
+They are simple python functions that as input take `torch.tensors <https://pytorch.org/docs/stable/tensors.html>`_ 
+and return the corresponding metric as a ``torch.tensor``. 
+The code-snippet below shows a simple example for calculating the accuracy using the functional interface:
 
 .. testcode::
 
@@ -93,8 +96,10 @@ The code below shows how to use the class-based interface:
 Implementing your own metric
 ****************************
 
-Implementing your own metric is as easy as subclassing an :class:`~torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
+Implementing your own metric is as easy as subclassing an :class:`torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
 
 1. Implement ``__init__`` where you call ``self.add_state`` for every internal state that is needed for the metrics computations
 2. Implement ``update`` method, where all logic that is necessary for updating metric states go
 3. Implement ``compute`` method, where the final metric computations happens
+
+For practical examples and more info about implementing a metric, please see this :ref:`page <implement>`.
