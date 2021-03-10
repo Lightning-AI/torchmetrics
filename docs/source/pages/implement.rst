@@ -103,7 +103,7 @@ and tests gets formatted in the following way:
 
 1. Start by reading our `contribution guidelines <https://torchmetrics.readthedocs.io//en/latest/generated/CONTRIBUTING.html>`_
 2. First implement the functional backend. This takes cares of all logic that does into the metric. The code should
-   to put into single file placed under _torchmetrics/functional/"domain"/"new_metric".py_ where _domain_ is the type of
+   to put into single file placed under ``torchmetrics/functional/"domain"/"new_metric".py`` where ``domain`` is the type of
    metric (classification, regression, nlp ect) and ``new_metric`` is the name of the metric. In this file should be the
    following three functions:
 
@@ -116,7 +116,7 @@ and tests gets formatted in the following way:
      The `functional accuracy <https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/functional/classification/accuracy.py>`_
      metric is a great example of this division of logic. 
 
-3. In a corresponding file placed in _torchmetrics/"domain"/"new_metric".py_ create the module interface:
+3. In a corresponding file placed in ``torchmetrics/"domain"/"new_metric".py`` create the module interface:
 
   1. Create a new module metric by subclassing ``torchmetrics.Metric``
   2. In the ``__init__`` of the module call ``self.add_state`` for as many metric states are needed for the metric to
@@ -134,7 +134,7 @@ and tests gets formatted in the following way:
 5. Testing is key to keeping torchmetrics trustworty. This is why we have a very rigid testing protocol. This means
    that we in most cases require the metric to be tested against some other commen framework (``sklearn``, ``scipy`` ect).
 
-  1. Create a testing file in _tests/"domain"/test_"new_metric".py_. Only one file is needed as it is intended to test
+  1. Create a testing file in ``tests/"domain"/test_"new_metric".py``. Only one file is needed as it is intended to test
      both the functional and module interface
   2. In that file, start by defining a number of test inputs that your metric should be evaluated on 
   3. Create a testclass ``class NewMetric(MetricTester)`` that inherits from ``tests.helpers.testers.MetricTester``.
