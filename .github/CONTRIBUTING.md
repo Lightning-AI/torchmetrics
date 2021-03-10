@@ -50,7 +50,6 @@ is that our users can trust our metric implementation. We can only garantee this
 
 ## Guidelines
 
-
 ### Developments scripts
 To build the documentation locally, simply execute the following commands from project root (only for Unix):
 - `make clean` cleans repo from temp/generated files
@@ -133,7 +132,7 @@ _Artifacts_ tab in CircleCI when you click on the task named _ci/circleci: Build
 To setup a local development environment, install both local and test dependencies:
 
 ```bash
-python -m pip install ".[dev, examples]"
+python -m pip install -r requirements/devel.txt
 python -m pip install pre-commit
 ```
 
