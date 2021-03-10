@@ -50,55 +50,6 @@ is that our users can trust our metric implementation. We can only garantee this
 
 ## Guidelines
 
-### Implementing a new metric
-Want to contribute a new metric. Great, but to keep all our metrics consistent please format in the following way:
-
-1. First implement the functional backend. This takes cares of all logic that does into the metric. The code should
-to put into single file placed under `torchmetrics/functional/"domain"/"new_metric".py` where `domain` is the type of
-metric (classification, regression, nlp ect) and `new_metric` is the name of the metric. In this file should be the
-following three functions:
-    1. `_new_metric_update(...)`: everything that has to do with type/shape checking and all logic required before
-  distributed syncing need to go here.
-    2. `_new_metric_compute(...)`: all remaining logic
-    3. `new_metric(...)`: essentially wraps the `_update` and `_compute` private functions into one public function that
-  makes up the functional interface for the metric.
-
-    The [accuracy](https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/functional/classification/accuracy.py)
-metric is a great example of this division of logic. 
-
-2. In a corresponding file placed in `torchmetrics/"domain"/"new_metric".py` create the module interface:
-    1. Create a new module metric by subclassing `torchmetrics.Metric`
-    2. In the `__init__` of the module call `self.add_state` for as many metric states are needed for the metric to
-  proper accumulate metric statistics
-    3. The module interface should essentially call the private `_new_metric_update(...)` in its `update` method and simiarly the 
-  `_new_metric_compute(...)` function in its `compute`. No logic should really be implemented in the module interface.
-  We do this to not have duplicate code to maintain.
-
-    The module interface [Accuracy](https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/classification/accuracy.py)
-that correspond to the above functional example showcases these steps
-
-3. Remember to add binding to the different relevant `__init__` files
-
-4. Testing is key to keeping torchmetrics trustworty. This is why we have a very rigid testing protocol. This means
-that we in most cases require the metric to be tested against some other commen framework (`sklearn`, `scipy` ect).
-    1. Create a testing file in `tests/"domain"/test_"new_metric".py`. Only one file is needed as it is intended to test
-  both the functional and module interface
-    2. In that file, start by defining a number of test inputs that your metric should be evaluated on 
-    3. Create a testclass `class NewMetric(MetricTester)` that inherits from `tests.helpers.testers.MetricTester`.
-  This testclass should essentially implement the `test_"new_metric"_class` and `test_"new_metric"_fn` methods that
-  respectively tests the module interface and the functional interface.
-    4. The testclass should be parametrized (using `@pytest.mark.parametrize`) by the different test inputs defined initiallly.
-  Additionally, the `test_"new_metric"_class` method should also be parametrized with an `ddp` parameter such that it gets
-  tested in a distributed setting. If your metric has additionally parameters, then make sure to also parametrize these 
-  such that different combinations of input and parameters gets tested.
-    5. (optional) Ff your metrics raises any exceptions, please add tests that showcases this
-
-    The test file for [accuracy](https://github.com/PyTorchLightning/metrics/blob/master/tests/classification/test_accuracy.py) metric
-shows how to implement such tests. 
-
-If you only can figure out part of the steps, do not fear to send a PR. We will much rather receive working
-metrics that are not formatted exactly like our codebase, than not receiving any. Formatting can always be applied. 
-We will gladly guide and/or help implement the remaining :]
 
 ### Developments scripts
 To build the documentation locally, simply execute the following commands from project root (only for Unix):
