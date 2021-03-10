@@ -58,19 +58,21 @@ pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ---
 
 ## What is Torchmetrics
-TorchMetrics is a collection of PyTorch metrics implementaions and an easy-to-use API to create custom metrics.
-It is designed to be distrubuted-training compatible and offers:
+TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
+* A standardized interface to increase reproducability
+* Reduces Boilerplate
+* Distrubuted-training compatible
+* Rigorously tested
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
 You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features:
 
-* Module metrics are automatically placed on the correct device when properly defined inside a LightningModule. This means that your data will always be placed on the same device as your metrics.
-* Native support for logging metrics in Lightning using `self.log` inside your `LightningModule`. Lightning will log the metric based on `on_step` and `on_epoch` flags present in `self.log(…)`. If `on_epoch=True`, the logger automatically logs the end of epoch metric value by calling `.compute()`.
-* The `.reset()` method of the metric will automatically be called and the end of an epoch.
+* Module metrics are automatically placed on the correct device.
+* Native support for logging metrics in Lightning to reduce even more boilerplate.
 
-## Build-in metrics
+## Built-in metrics
 * Accuracy
 * AveragePrecision
 * AUC
@@ -88,7 +90,7 @@ And many more!
 
 ## Using functional metrics
 
-Similar to `torch.nn`, most metrics have both a module-based and a functional version. The functional versions implement the basic operations required for computing each metric. They are simple python functions that as input take torch.tensors and return the corresponding metric as a torch.tensor.
+Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://pytorchlightning.github.io/metrics/references/modules.html) and a [functional](https://pytorchlightning.github.io/metrics/references/functional.html) version. The functional version implements the basic operations required for computing each metric. They are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
 
 ``` python
 import torch
@@ -104,7 +106,7 @@ acc = torchmetrics.functional.accuracy(preds, target)
 
 ## Using Module metrics
 
-Nearly all functional metrics have a corresponding module-based metric that calls it a functional counterpart underneath. The module-based metrics are characterized by having one or more internal metrics states (similar to the parameters of the PyTorch module) that allow them to offer additional functionalities:
+Nearly all functional metrics have a corresponding module-based metric that calls it a functional counterpart underneath. The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) are characterized by having one or more internal metrics states (similar to the parameters of the PyTorch module) that allow them to offer additional functionalities:
 
 * Accumulation of multiple batches
 * Automatic synchronization between multiple devices
@@ -136,7 +138,7 @@ metric.reset()
 ```
 
 ## Implementing your own metric
-Implementing your own metric is as easy as subclassing an `torch.nn.Module`. Simply, subclass `torchmetrics.Metric` 
+Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
 and do the following:
 
 1. Implement `__init__` where you call `self.add_state`for every internal state that is needed for the metrics computations

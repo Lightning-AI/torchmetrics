@@ -2,17 +2,19 @@
 Quick Start
 ###########
 
-TorchMetrics is a collection of PyTorch metrics implementaions and an easy to use API to create custom metrics.
-It is designed to be distrubuted-training compatible and offers:
+TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
+* A standardized interface to increase reproducability
+* Reduces Boilerplate
+* Distrubuted-training compatible
+* Rigorously tested
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
 You can use TorchMetrics in any PyTorch model, or with in `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
 
 * This means that your data will always be placed on the same device as your metrics.
-* Native support for logging metrics in Lightning using self.log inside your ``LightningModule``. Lightning will log the metric based on on_step and on_epoch flags present in ``self.log(…)``. If ``on_epoch=True``, the logger automatically logs the end of epoch metric value by calling ``.compute()``.
-* The ``.reset()`` method of the metric will automatically be called at the end of an epoch.
+* Native support for logging metrics in Lightning to reduce even more boilerplate.
 
 Install
 *******
