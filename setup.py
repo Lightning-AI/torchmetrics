@@ -5,6 +5,8 @@ import os
 # Always prefer setuptools over distutils
 from setuptools import find_packages, setup
 
+from torchmetrics.setup_tools import _load_readme_description, _load_requirements
+
 try:
     import builtins
 except ImportError:
@@ -16,25 +18,6 @@ PATH_ROOT = os.path.dirname(__file__)
 builtins.__LIGHTNING_SETUP__ = True
 
 import torchmetrics  # noqa: E402
-
-
-def load_requirements(path_dir=PATH_ROOT, comment_char='#'):
-    with open(os.path.join(path_dir, 'requirements.txt'), 'r') as file:
-        lines = [ln.strip() for ln in file.readlines()]
-    reqs = [ln[:ln.index(comment_char)] if comment_char in ln else ln for ln in lines]
-    reqs = [ln for ln in reqs if ln]
-    return reqs
-
-
-def load_long_describtion():
-    # https://github.com/PyTorchLightning/pytorch-lightning/raw/master/docs/source/_images/lightning_module/pt_to_pl.png
-    url = os.path.join(torchmetrics.__homepage__, 'raw', torchmetrics.__version__, 'docs')
-    text = open('README.md', encoding='utf-8').read()
-    # replace relative repository path to absolute link to the release
-    text = text.replace('](docs', f']({url}')
-    # SVG images are not readable on PyPI, so replace them  with PNG
-    text = text.replace('.svg', '.png')
-    return text
 
 
 # https://packaging.python.org/discussions/install-requires-vs-requirements /
@@ -52,14 +35,14 @@ setup(
     download_url='https://github.com/PyTorchLightning/metrics/archive/master.zip',
     license=torchmetrics.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
-    long_description=load_long_describtion(),
+    long_description=_load_readme_description(PATH_ROOT),
     long_description_content_type='text/markdown',
     include_package_data=True,
     zip_safe=False,
     keywords=['deep learning', 'machine learning', 'pytorch', 'metrics', 'AI'],
     python_requires='>=3.6',
     setup_requires=[],
-    install_requires=load_requirements(PATH_ROOT),
+    install_requires=_load_requirements(PATH_ROOT),
     project_urls={
         "Bug Tracker": "https://github.com/PyTorchLightning/torchmetrics/issues",
         "Documentation": "https://torchmetrics.rtfd.io/en/latest/",
