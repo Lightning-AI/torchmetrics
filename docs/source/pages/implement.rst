@@ -103,7 +103,7 @@ and tests gets formatted in the following way:
 
 1. Start by reading our `contribution guidelines <https://torchmetrics.readthedocs.io//en/latest/generated/CONTRIBUTING.html>`_
 2. First implement the functional backend. This takes cares of all logic that does into the metric. The code should
-   to put into single file placed under ``torchmetrics/functional/"domain"/"new_metric".py`` where `domain` is the type of
+   to put into single file placed under _torchmetrics/functional/"domain"/"new_metric".py_ where _domain_ is the type of
    metric (classification, regression, nlp ect) and ``new_metric`` is the name of the metric. In this file should be the
    following three functions:
 
