@@ -6,7 +6,7 @@
 PyTorchMetrics documentation
 ============================
 
-.. include:: pages/quickstart.rst
+.. include:: pages/intro.rst
 
 
 More reading
