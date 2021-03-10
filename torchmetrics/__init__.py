@@ -2,7 +2,7 @@
 import logging as __logging
 import os
 
-__version__ = '0.2.0rc1'
+__version__ = '0.2.0rc2'
 __author__ = 'PyTorchLightning et al.'
 __author_email__ = 'name@pytorchlightning.ai'
 __license__ = 'Apache-2.0'
