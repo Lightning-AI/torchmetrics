@@ -7,8 +7,8 @@ The ``torchmetrics`` is a Metrics API created for easy metric development and us
 PyTorch and PyTorch Lightning. It is rigorously tested for all edge cases and includes a growing list of
 common metric implementations.
 
-The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric :ref:`base class <references/modules:base class>` inherits
-:class:`torch.nn.Module` which allows us to call ``metric(...)`` directly. The ``forward()`` method of the base ``Metric`` class
+The metrics API provides ``update()``, ``compute()``, ``reset()`` functions to the user. The metric base class inherits
+:class:`~torch.nn.Module` which allows us to call ``metric(...)`` directly. The ``forward()`` method of the base ``Metric`` class
 serves the dual purpose of calling ``update()`` on its input and simultaneously returning the value of the metric over the
 provided input.
 
@@ -77,37 +77,6 @@ be moved to the same device as the input of the metric:
     out = confmat(preds, target)
     print(out.device) # cuda:0
 
-However, when **properly defined** inside a :class:`~torch.nn.Module` or
-:class:`~pytorch_lightning.core.lightning.LightningModule` the metric will be be automatically move
-to the same device as the the module when using ``.to(device)``.  Being
-**properly defined** means that the metric is correctly identified as a child module of the
-model (check ``.children()`` attribute of the model). Therefore, metrics cannot be placed
-in native python ``list`` and ``dict``, as they will not be correctly identified
-as child modules. Instead of ``list`` use :class:`~torch.nn.ModuleList` and instead of
-``dict`` use :class:`~torch.nn.ModuleDict`. Furthermore, when working with multiple metrics
-the native `MetricCollection`_ module can also be used to wrap multiple metrics.
-
-.. testcode::
-
-    from torchmetrics import Accuracy, MetricCollection
-
-    class MyModule():
-        def __init__(self):
-            ...
-            # valid ways metrics will be identified as child modules
-            self.metric1 = Accuracy()
-            self.metric2 = nn.ModuleList(Accuracy())
-            self.metric3 = nn.ModuleDict({'accuracy': Accuracy()})
-            self.metric4 = MetricCollection([Accuracy()]) # torchmetrics build-in collection class
-
-        def forward(self, batch):
-            data, target = batch
-            preds = self(data)
-            ...
-            val1 = self.metric1(preds, target)
-            val2 = self.metric2[0](preds, target)
-            val3 = self.metric3['accuracy'](preds, target)
-            val4 = self.metric4(preds, target)
 
 ******************
 Metric Arithmetics
@@ -238,3 +207,105 @@ They simply compute the metric value based on the given inputs.
 Also, the integration within other parts of PyTorch Lightning will never be as tight as with the Module-based interface.
 If you look for just computing the values, the functional metrics are the way to go.
 However, if you are looking for the best integration and user experience, please consider also using the Module interface.
+
+**********************
+Classification Metrics
+**********************
+
+Input types
+-----------
+
+For the purposes of classification metrics, inputs (predictions and targets) are split
+into these categories (``N`` stands for the batch size and ``C`` for number of classes):
+
+.. csv-table:: \*dtype ``binary`` means integers that are either 0 or 1
+    :header: "Type", "preds shape", "preds dtype", "target shape", "target dtype"
+    :widths: 20, 10, 10, 10, 10
+
+    "Binary", "(N,)", "``float``", "(N,)", "``binary``\*"
+    "Multi-class", "(N,)", "``int``", "(N,)", "``int``"
+    "Multi-class with probabilities", "(N, C)", "``float``", "(N,)", "``int``"
+    "Multi-label", "(N, ...)", "``float``", "(N, ...)", "``binary``\*"
+    "Multi-dimensional multi-class", "(N, ...)", "``int``", "(N, ...)", "``int``"
+    "Multi-dimensional multi-class with probabilities", "(N, C, ...)", "``float``", "(N, ...)", "``int``"
+
+.. note::
+    All dimensions of size 1 (except ``N``) are "squeezed out" at the beginning, so
+    that, for example, a tensor of shape ``(N, 1)`` is treated as ``(N, )``.
+
+When predictions or targets are integers, it is assumed that class labels start at 0, i.e.
+the possible class labels are 0, 1, 2, 3, etc. Below are some examples of different input types
+
+.. testcode::
+
+    # Binary inputs
+    binary_preds  = torch.tensor([0.6, 0.1, 0.9])
+    binary_target = torch.tensor([1, 0, 2])
+
+    # Multi-class inputs
+    mc_preds  = torch.tensor([0, 2, 1])
+    mc_target = torch.tensor([0, 1, 2])
+
+    # Multi-class inputs with probabilities
+    mc_preds_probs  = torch.tensor([[0.8, 0.2, 0], [0.1, 0.2, 0.7], [0.3, 0.6, 0.1]])
+    mc_target_probs = torch.tensor([0, 1, 2])
+
+    # Multi-label inputs
+    ml_preds  = torch.tensor([[0.2, 0.8, 0.9], [0.5, 0.6, 0.1], [0.3, 0.1, 0.1]])
+    ml_target = torch.tensor([[0, 1, 1], [1, 0, 0], [0, 0, 0]])
+
+
+Using the is_multiclass parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In some cases, you might have inputs which appear to be (multi-dimensional) multi-class
+but are actually binary/multi-label - for example, if both predictions and targets are
+integer (binary) tensors. Or it could be the other way around, you want to treat
+binary/multi-label inputs as 2-class (multi-dimensional) multi-class inputs.
+
+For these cases, the metrics where this distinction would make a difference, expose the
+``is_multiclass`` argument. Let's see how this is used on the example of
+:class:`~torchmetrics.StatScores` metric.
+
+First, let's consider the case with label predictions with 2 classes, which we want to
+treat as binary.
+
+.. testcode::
+
+   from torchmetrics.functional import stat_scores
+
+   # These inputs are supposed to be binary, but appear as multi-class
+   preds  = torch.tensor([0, 1, 0])
+   target = torch.tensor([1, 1, 0])
+
+As you can see below, by default the inputs are treated
+as multi-class. We can set ``is_multiclass=False`` to treat the inputs as binary -
+which is the same as converting the predictions to float beforehand.
+
+.. doctest::
+
+    >>> stat_scores(preds, target, reduce='macro', num_classes=2)
+    tensor([[1, 1, 1, 0, 1],
+            [1, 0, 1, 1, 2]])
+    >>> stat_scores(preds, target, reduce='macro', num_classes=1, is_multiclass=False)
+    tensor([[1, 0, 1, 1, 2]])
+    >>> stat_scores(preds.float(), target, reduce='macro', num_classes=1)
+    tensor([[1, 0, 1, 1, 2]])
+
+Next, consider the opposite example: inputs are binary (as predictions are probabilities),
+but we would like to treat them as 2-class multi-class, to obtain the metric for both classes.
+
+.. testcode::
+
+   preds  = torch.tensor([0.2, 0.7, 0.3])
+   target = torch.tensor([1, 1, 0])
+
+In this case we can set ``is_multiclass=True``, to treat the inputs as multi-class.
+
+.. doctest::
+
+    >>> stat_scores(preds, target, reduce='macro', num_classes=1)
+    tensor([[1, 0, 1, 1, 2]])
+    >>> stat_scores(preds, target, reduce='macro', num_classes=2, is_multiclass=True)
+    tensor([[1, 1, 1, 0, 1],
+            [1, 0, 1, 1, 2]])
