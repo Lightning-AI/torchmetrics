@@ -6,7 +6,7 @@
 TorchMetrics documentation
 ==========================
 
-.. include:: pages/intro.rst
+.. include:: pages/brief_intro.rst
 
 
 More reading
