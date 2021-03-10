@@ -21,7 +21,6 @@ Functional metrics
 .. testcode::
 
     import torch
-    # import our library
     import torchmetrics
 
     # simulate a classification problem
@@ -36,7 +35,6 @@ Module metrics
 .. testcode::
 
     import torch
-    # import our library
     import torchmetrics
 
     # initialize metric
@@ -54,9 +52,6 @@ Module metrics
     # metric on all batches using custom accumulation
     acc = metric.compute()
     print(f"Accuracy on all data: {acc}")
-
-    # Reseting internal state such that metric ready for new data
-    metric.reset()
 
 .. testoutput::
    :hide:
