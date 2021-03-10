@@ -12,14 +12,6 @@ You can use TorchMetrics in any PyTorch model, or with in `PyTorch Lightning <ht
 * This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
 
-Install
-*******
-
-.. code-block:: bash
-
-    pip install torchmetrics
-
-
 Using TorchMetrics
 ******************
 
