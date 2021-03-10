@@ -1,7 +1,7 @@
 name: "Deploy Docs"
 on:
   push:
-    branches: [master]
+    branches: [on-never-ever]
 
 jobs:
   # https://github.com/marketplace/actions/deploy-to-github-pages
