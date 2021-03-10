@@ -138,7 +138,7 @@ You can run the full test-case in your terminal via this make script:
 ```bash
 make test
 # or natively
-python -m pytest torchmetrics tests`
+python -m pytest torchmetrics tests
 ```
 
 Note: if your computer does not have multi-GPU nor TPU these tests are skipped.
