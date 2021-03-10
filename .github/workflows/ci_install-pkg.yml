@@ -3,9 +3,9 @@ name: Install pkg
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
   push:
-    branches: [master]
+    branches: [master, "release/*"]
   pull_request:
-    branches: [master]
+    branches: [master, "release/*"]
 
 jobs:
   pkg-check:
@@ -39,26 +39,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-10.15]  #, windows-2019
-        python-version: [3.7]  #, 3.8
+        os: [ubuntu-20.04, macOS-10.15 , windows-2019]
+        python-version: [3.7]
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Prepare env
+        run: |
+          pip install check-manifest "twine==3.2" setuptools wheel
+
       - name: Create package
         run: |
-          python setup.py sdist
+          check-manifest
+          # python setup.py check --metadata --strict
+          python setup.py sdist bdist_wheel
 
-      - name: Install package
+      - name: Setup Windows
+        if: runner.os == 'windows'
         run: |
-          pip install virtualenv
-          virtualenv vEnv
-          source vEnv/bin/activate
-          pip install dist/*
-          cd .. & python -c "import torch ; print(torch.__version__)"
-          cd .. & python -c "import torchmetrics ; print(torchmetrics.__version__)"
-          deactivate
-          rm -rf vEnv
+          # this is just a hotfix because of Win cannot install it directly
+          pip install -r requirements.txt --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+
+      - name: Install | Uninstall package - archive
+        run: |
+          # install as archive
+          pip install dist/*.tar.gz
+          cd ..
+          python -c "import torchmetrics ; print(torchmetrics.__version__)"
+          pip uninstall -y torchmetrics
+
+      - name: Install | Uninstall package - wheel
+        run: |
+          # install as wheel
+          pip install dist/*.whl
+          cd ..
+          python -c "import torchmetrics ; print(torchmetrics.__version__)"
+          pip uninstall -y torchmetrics
