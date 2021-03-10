@@ -18,7 +18,6 @@ builtins.__LIGHTNING_SETUP__ = True
 import torchmetrics  # noqa: E402
 from torchmetrics.setup_tools import _load_readme_description, _load_requirements  # noqa: E402
 
-
 # https://packaging.python.org/discussions/install-requires-vs-requirements /
 # keep the meta-data here for simplicity in reading this file... it's not obvious
 # what happens and to non-engineers they won't know to look in init ...

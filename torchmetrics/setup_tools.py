@@ -15,7 +15,7 @@ import os
 import re
 from typing import List
 
-from torchmetrics import __homepage__, __version__, _PROJECT_ROOT
+from torchmetrics import _PROJECT_ROOT, __homepage__, __version__
 
 
 def _load_requirements(path_dir: str, file_name: str = 'requirements.txt', comment_char: str = '#') -> List[str]:
