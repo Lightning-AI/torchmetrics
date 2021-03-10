@@ -88,6 +88,12 @@ to ``update`` and ``compute`` in the following way (assuming metric is initializ
 This procedure has the consequence of calling the user defined ``update`` **twice** during a single
 forward call (one to update global statistics and one for getting the batch statistics).
 
+
+---------
+
+.. autoclass:: torchmetrics.Metric
+    :members:
+
 Contributing your metric to Torchmetrics
 ########################################
 
@@ -97,7 +103,7 @@ and tests gets formatted in the following way:
 
 1. Start by reading our [contribution guidelines](https://torchmetrics.readthedocs.io//en/latest/generated/CONTRIBUTING.html)
 
-1. First implement the functional backend. This takes cares of all logic that does into the metric. The code should
+2. First implement the functional backend. This takes cares of all logic that does into the metric. The code should
 to put into single file placed under `torchmetrics/functional/"domain"/"new_metric".py` where `domain` is the type of
 metric (classification, regression, nlp ect) and `new_metric` is the name of the metric. In this file should be the
 following three functions:
@@ -110,7 +116,7 @@ following three functions:
     The [accuracy](https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/functional/classification/accuracy.py)
 metric is a great example of this division of logic. 
 
-2. In a corresponding file placed in `torchmetrics/"domain"/"new_metric".py` create the module interface:
+3. In a corresponding file placed in `torchmetrics/"domain"/"new_metric".py` create the module interface:
     1. Create a new module metric by subclassing `torchmetrics.Metric`
     2. In the `__init__` of the module call `self.add_state` for as many metric states are needed for the metric to
   proper accumulate metric statistics
@@ -121,9 +127,9 @@ metric is a great example of this division of logic.
     The module interface [Accuracy](https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/classification/accuracy.py)
 that correspond to the above functional example showcases these steps
 
-3. Remember to add binding to the different relevant `__init__` files
+4. Remember to add binding to the different relevant `__init__` files
 
-4. Testing is key to keeping torchmetrics trustworty. This is why we have a very rigid testing protocol. This means
+5. Testing is key to keeping torchmetrics trustworty. This is why we have a very rigid testing protocol. This means
 that we in most cases require the metric to be tested against some other commen framework (`sklearn`, `scipy` ect).
     1. Create a testing file in `tests/"domain"/test_"new_metric".py`. Only one file is needed as it is intended to test
   both the functional and module interface
