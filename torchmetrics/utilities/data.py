@@ -160,11 +160,11 @@ def _stable_1d_sort(x: torch, nb: int = 2049):
     See this discussion: https://discuss.pytorch.org/t/is-torch-sort-stable/20714
 
     Example:
-        >>> data = torch.tensor([8, 0, 2, 6, 4, 5, 3, 1, 9, 0])
+        >>> data = torch.tensor([8, 7, 2, 6, 4, 5, 3, 1, 9, 0])
         >>> _stable_1d_sort(data)
-        (tensor([0, 0, 1, 2, 3, 4, 5, 6, 8, 9]), tensor([1, 9, 7, 2, 6, 4, 5, 3, 0, 8]))
+        (tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), tensor([9, 7, 2, 6, 4, 5, 3, 1, 0, 8]))
         >>> _stable_1d_sort(data, nb=5)
-        (tensor([0, 0, 1, 2, 3, 4, 5, 6, 8, 9]), tensor([1, 9, 7, 2, 6, 4, 5, 3, 0, 8]))
+        (tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), tensor([9, 7, 2, 6, 4, 5, 3, 1, 0, 8]))
     """
     if x.ndim > 1:
         raise ValueError('Stable sort only works on 1d tensors')
