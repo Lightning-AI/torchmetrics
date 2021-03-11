@@ -1,7 +1,7 @@
-coverage>=5.0
+coverage>=5.2
 codecov>=2.1
-pytest>=5.0
-pytest-cov>=2.11
+pytest>=6.0
+pytest-cov>2.10
 pytest-xdist
 # pytest-flake8
 flake8
