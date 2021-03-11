@@ -31,6 +31,10 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Update Pip
+      run: |
+        pip install "pip>=20.1" --upgrade --user  # needed for get pip cacher folder
+
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
     - name: Setup macOS
       if: runner.os == 'macOS'
@@ -70,7 +74,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip install --requirement tests/requirements.txt --quiet
         python --version
         pip --version
@@ -79,7 +83,7 @@ jobs:
 
     - name: Tests
       run: |
-        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
@@ -94,12 +98,16 @@ jobs:
         coverage xml
         coverage report
 
+    - run: |
+        echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
+      id: info
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-        flags: unittests
+        flags: cpu,pytest,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
         env_vars: OS,PYTHON
         name: codecov-umbrella
         fail_ci_if_error: false
