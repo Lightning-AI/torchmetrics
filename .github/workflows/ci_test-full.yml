@@ -101,7 +101,7 @@ jobs:
     - run: |
         torch=$(python -c "import torch ; print(torch.__version__)" 2>&1)
         echo "::set-output name=TORCH::$echo"
-        id: info
+      id: info
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
