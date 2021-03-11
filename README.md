@@ -44,7 +44,7 @@ pip install torchmetrics
 <details>
   <summary>Other installions</summary>
 
-Or conda
+Install using conda
 ```bash
 conda install torchmetrics
 ```
@@ -54,11 +54,15 @@ Pip from source
 ```bash
 # with git
 pip install git+https://github.com/PytorchLightning/metrics.git@master
-# OR from an archive
+```
+
+Pip from archive
+```bash
 pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
 
 </details>
+
 ---
 
 ## What is Torchmetrics
@@ -75,51 +79,7 @@ You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](ht
 * Module metrics are automatically placed on the correct device.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
 
-## Implementing your own Module metric
-
-Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
-and implement the following methods:
-
-```python
-class RMSE(torchmetrics.Metric):
-    def __init__(self):
-        # call `self.add_state`for every internal state that is needed for the metrics computations
-	    # dist_reduce_fx indicates the function that should be used to reduce 
-	    # state from multiple processes
-        self.add_state("sum_squared_errors", torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("n_observations", torch.tensor(0), dist_reduce_fx="sum")
-
-    def update(self, preds, target):
-        # update metric states
-        sum_squared_errors += torch.sum((preds - target) ** 2)
-        n_observations += preds.numel()
-       
-    def compute(self):
-        # compute final result
-        return torch.sqrt(sum_squared_errors / n_observations)
-```
-Because `sqrt(a+b) != sqrt(a) + sqrt(b)` we cannot implement this metric as a simple mean of the RMSE 
-score calculated per batch and instead needs to implement all logic that needs to happen before the 
-square root in `update` and the remaining in `compute`.
-
-## Built-in metrics
-
-## Functional metrics
-
-Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://pytorchlightning.github.io/metrics/references/modules.html) and a [functional](https://pytorchlightning.github.io/metrics/references/functional.html) version.
-The functional versions are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
-
-``` python
-import torch
-# import our library
-import torchmetrics
-
-# simulate a classification problem
-preds = torch.randn(10, 5).softmax(dim=-1)
-target = torch.randint(5, (10,))
-
-acc = torchmetrics.functional.accuracy(preds, target)
-```
+## Using TorchMetrics
 
 ### Module metrics
 
@@ -128,6 +88,8 @@ The [module-based metrics](https://pytorchlightning.github.io/metrics/references
 * Automatic accumulation over multiple batches
 * Automatic synchronization between multiple devices
 * Metric arithmetic
+
+**This can be run on CPU, single GPU or multi-GPUs!**
 
 For the single GPU/CPU case:
 
@@ -144,6 +106,7 @@ for i in range(n_batches):
     # simulate a classification problem
     preds = torch.randn(10, 5).softmax(dim=-1)
     target = torch.randint(5, (10,))
+
     # metric on current batch
     acc = metric(preds, target)
     print(f"Accuracy on batch {i}: {acc}")    
@@ -153,64 +116,102 @@ acc = metric.compute()
 print(f"Accuracy on all data: {acc}")
 ```
 
-Module metric usage remains the same when using DDP.
+Module metric usage remains the same when using multiple GPUs or multiple nodes. 
+
+<details>
+  <summary>Example using DDP</summary>
 
 ``` python
-import os
 
+os.environ['MASTER_ADDR'] = 'localhost'
+os.environ['MASTER_PORT'] = '12355'
+
+# create default process group
+dist.init_process_group("gloo", rank=rank, world_size=world_size)
+
+# initialize model
+metric = torchmetrics.Accuracy()
+
+# define a model and append your metric to it
+# this allows metric states to be placed on correct accelerators when
+# .to(device) is called on the model
+model = nn.Linear(10, 10)
+model.metric = metric
+model = model.to(rank)
+
+# initialize DDP
+model = DDP(model, device_ids=[rank])
+
+n_epochs = 5
+# this shows iteration over multiple training epochs
+for n in range(n_epochs):
+
+    # this will be replaced by a DataLoader with a DistributedSampler
+    n_batches = 10
+    for i in range(n_batches):
+        # simulate a classification problem
+        preds = torch.randn(10, 5).softmax(dim=-1)
+        target = torch.randint(5, (10,))
+
+        # metric on current batch
+        acc = metric(preds, target)
+        if rank == 0:  # print only for rank 0
+            print(f"Accuracy on batch {i}: {acc}")    
+
+    # metric on all batches and all accelerators using custom accumulation
+    # accuracy is same across both accelerators
+    acc = metric.compute()
+    print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
+
+    # Reseting internal state such that metric ready for new data
+    metric.reset()
+```
+</details>
+
+### Implementing your own Module metric
+
+Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
+and implement the following methods:
+
+```python
+class MyAccuracy(Metric):
+    def __init__(self, dist_sync_on_step=False):
+        # call `self.add_state`for every internal state that is needed for the metrics computations
+	# dist_reduce_fx indicates the function that should be used to reduce 
+	# state from multiple processes
+	super().__init__(dist_sync_on_step=dist_sync_on_step)
+
+        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: torch.Tensor, target: torch.Tensor):
+        # update metric states
+        preds, target = self._input_format(preds, target)
+        assert preds.shape == target.shape
+
+        self.correct += torch.sum(preds == target)
+        self.total += target.numel()
+
+    def compute(self):
+        # compute final result
+        return self.correct.float() / self.total
+```
+
+### Functional metrics
+
+Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://pytorchlightning.github.io/metrics/references/modules.html) and a [functional](https://pytorchlightning.github.io/metrics/references/functional.html) version.
+The functional versions are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
+
+``` python
 import torch
-import torch.nn as nn
-
-import torch.distributed as dist
-import torch.multiprocessing as mp
-from torch.nn.parallel import DistributedDataParallel as DDP
-
 # import our library
 import torchmetrics
 
-def main(rank, world_size):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12355'
+# simulate a classification problem
+preds = torch.randn(10, 5).softmax(dim=-1)
+target = torch.randint(5, (10,))
 
-    # create default process group
-    dist.init_process_group("gloo", rank=rank, world_size=world_size)
-
-    # initialize model
-    metric = torchmetrics.Accuracy()
-
-    # define a model and append your metric to it
-    # this allows metric states to be placed on correct accelerators when
-    # .to(device) is called on the model
-    model = nn.Linear(10, 10)
-    model.metric = metric
-    model = model.to(rank)
-
-    # initialize DDP
-    model = DDP(model, device_ids=[rank])
-
-    n_epochs = 5
-    # this shows iteration over multiple training epochs
-    for n in range(n_epochs):
-
-        # this will be replaced by a DataLoader with a DistributedSampler
-        n_batches = 10
-        for i in range(n_batches):
-            # simulate a classification problem
-            preds = torch.randn(10, 5).softmax(dim=-1).to(rank)
-            target = torch.randint(5, (10,)).to(rank)
-    
-            # metric on current batch
-            acc = metric(preds, target)
-            if rank == 0:  # print only for rank 0
-                print(f"Accuracy on batch {i}: {acc}")    
-    
-        # metric on all batches and all accelerators using custom accumulation
-        # accuracy is same across both accelerators
-        acc = metric.compute()
-        print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
-    
-        # Reseting internal state such that metric ready for new data
-        metric.reset()
+acc = torchmetrics.functional.accuracy(preds, target)
 ```
 
 ### Implemented metrics
