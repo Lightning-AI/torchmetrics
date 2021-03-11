@@ -162,7 +162,7 @@ To proper calculate RMSE, we need two metric states: `sum_squared_error` to keep
 between the target and the predictions and `n_observations` to know how many observations we have encountered.
 ```python
 class RMSE(torchmetrics.Metric):
-    def __init__(self)
+    def __init__(self):
 	# dist_reduce_fx indicates the function that should be used to reduce 
 	# state from multiple processes
         self.add_state("sum_squared_errors", torch.tensor(0), dist_reduce_fx="sum")
