@@ -63,6 +63,9 @@ Implementing a metric
 
 .. testcode::
 
+    import torch
+    from torchmetrics import Metric
+
     class MyAccuracy(Metric):
         def __init__(self, dist_sync_on_step=False):
             # call `self.add_state`for every internal state that is needed for the metrics computations
@@ -91,4 +94,3 @@ Implementing a metric
    :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     Accuracy on batch ...
-
