@@ -33,7 +33,7 @@ setup(
     download_url='https://github.com/PyTorchLightning/metrics/archive/master.zip',
     license=torchmetrics.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
-    long_description=_load_readme_description(PATH_ROOT),
+    long_description=_load_readme_description(PATH_ROOT, version=f'v{torchmetrics.__version__}'),
     long_description_content_type='text/markdown',
     include_package_data=True,
     zip_safe=False,
