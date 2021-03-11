@@ -33,6 +33,8 @@ SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
 import torchmetrics  # noqa: E402
 
+html_favicon = '_static/images/icon.svg'
+
 # -- Project information -----------------------------------------------------
 
 # this name shall match the project name in Github as it is used for linking to code
