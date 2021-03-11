@@ -161,7 +161,7 @@ def _stable_1d_sort(x: torch, nb: int = 2049):
 
     Example:
         >>> data = torch.tensor([8, 0, 2, 6, 4, 5, 3, 1, 9, 0])
-        >>> _stable_1d_sort(data)  # doc
+        >>> _stable_1d_sort(data)
         (tensor([0, 0, 1, 2, 3, 4, 5, 6, 8, 9]), tensor([1, 9, 7, 2, 6, 4, 5, 3, 0, 8]))
         >>> _stable_1d_sort(data, nb=5)
         (tensor([0, 0, 1, 2, 3, 4, 5, 6, 8, 9]), tensor([1, 9, 7, 2, 6, 4, 5, 3, 0, 8]))
