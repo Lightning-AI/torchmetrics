@@ -50,11 +50,11 @@ conda install torchmetrics
 ## What is Torchmetrics
 TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
-* Optimized for distributed-training
 * A standardized interface to increase reproducability
 * Reduces Boilerplate
 * Rigorously tested
 * Automatic accumulation over batches
+* Metrics optimized for distributed-training
 * Automatic synchronization between multiple devices
 
 You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features:
@@ -62,7 +62,8 @@ You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](ht
 * Module metrics are automatically placed on the correct device.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
 
-## Implementing your own metric
+## Implementing your own Module metric
+
 Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
 and implement the following methods:
 
@@ -70,8 +71,8 @@ and implement the following methods:
 class RMSE(torchmetrics.Metric):
     def __init__(self):
         # call `self.add_state`for every internal state that is needed for the metrics computations
-	# dist_reduce_fx indicates the function that should be used to reduce 
-	# state from multiple processes
+	    # dist_reduce_fx indicates the function that should be used to reduce 
+	    # state from multiple processes
         self.add_state("sum_squared_errors", torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("n_observations", torch.tensor(0), dist_reduce_fx="sum")
 
@@ -114,7 +115,9 @@ The [module-based metrics](https://pytorchlightning.github.io/metrics/references
 * Automatic accumulation over multiple batches
 * Automatic synchronization between multiple devices
 * Metric arithmetic
-  
+
+For the single GPU/CPU case:
+
 ``` python
 import torch
 # import our library
@@ -138,6 +141,66 @@ print(f"Accuracy on all data: {acc}")
 
 # Reseting internal state such that metric ready for new data
 metric.reset()
+```
+
+Module metric usage remains the same when using DDP.
+
+``` python
+import os
+
+import torch
+import torch.nn as nn
+
+import torch.distributed as dist
+import torch.multiprocessing as mp
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+# import our library
+import torchmetrics
+
+def main(rank, world_size):
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12355'
+
+    # create default process group
+    dist.init_process_group("gloo", rank=rank, world_size=world_size)
+
+    # initialize model
+    metric = torchmetrics.Accuracy()
+
+    # define a model and append your metric to it
+    # this allows metric states to be placed on correct accelerators when
+    # .to(device) is called on the model
+    model = nn.Linear(10, 10)
+    model.metric = metric
+    model = model.to(rank)
+
+    # initialize DDP
+    model = DDP(model, device_ids=[rank])
+
+    # this will be replaced by a DataLoader with a DistributedSampler
+    n_batches = 10
+    for i in range(n_batches):
+        # simulate a classification problem
+        preds = torch.randn(10, 5).softmax(dim=-1).to(rank)
+        target = torch.randint(5, (10,)).to(rank)
+
+        # metric on current batch
+        acc = metric(preds, target)
+        if rank == 0:  # print only for rank 0
+            print(f"Accuracy on batch {i}: {acc}")    
+
+    # metric on all batches and all accelerators using custom accumulation
+    # accuracy is same across both accelerators
+    acc = metric.compute()
+    print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
+
+    # Reseting internal state such that metric ready for new data
+    metric.reset()
+
+if __name__ == '__main__':
+    world_size = 2
+    mp.spawn(main, args=(world_size,), nprocs=world_size, join=True)
 ```
 
 ### Implemented metrics
