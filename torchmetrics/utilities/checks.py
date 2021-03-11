@@ -39,6 +39,10 @@ def _input_format_classification(
     Returns:
         preds: tensor with labels
         target: tensor with labels
+
+    Example:
+        >>> _input_format_classification(torch.tensor([[0.45, 0.55], [0.3, 0.7], [0.9, 0.1]]), torch.tensor([1, 0, 0]))
+        (tensor([1, 1, 0]), tensor([1, 0, 0]))
     """
     if not (preds.ndim == target.ndim or preds.ndim == target.ndim + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")

@@ -160,7 +160,6 @@ def _stable_1d_sort(x: torch, nb: int = 2049):
     See this discussion: https://discuss.pytorch.org/t/is-torch-sort-stable/20714
 
     Example:
-
         >>> data = torch.tensor([8, 0, 2, 6, 7, 6, 7, 1, 1, 0])
         >>> _stable_1d_sort(data)
         (tensor([0, 0, 1, 1, 2, 6, 6, 7, 7, 8]), tensor([1, 9, 7, 8, 2, 5, 3, 6, 4, 0]))
@@ -203,7 +202,6 @@ def apply_to_collection(
         the resulting collection
 
     Example:
-
         >>> apply_to_collection(torch.tensor([8, 0, 2, 6, 7]), dtype=torch.Tensor, function=lambda x: x ** 2)
         tensor([64,  0,  4, 36, 49])
         >>> apply_to_collection([8, 0, 2, 6, 7], dtype=int, function=lambda x: x ** 2)
