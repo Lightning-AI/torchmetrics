@@ -38,13 +38,27 @@
 
 Simple installation from PyPI
 ```bash
-pip install torchmetrics -U
+pip install torchmetrics
 ```
+
+<details>
+  <summary>Other installions</summary>
 
 Or conda
 ```bash
 conda install torchmetrics
 ```
+
+Pip from source
+
+```bash
+# with git
+pip install git+https://github.com/PytorchLightning/metrics.git@master
+# OR from an archive
+pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
+```
+
+</details>
 ---
 
 ## What is Torchmetrics
