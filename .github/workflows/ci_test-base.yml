@@ -85,6 +85,6 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: coverage.xml
-        flags: cpu,pytest
+        flags: cpu,pytest,${{ runner.os }}
         name: Base-coverage
         fail_ci_if_error: false
