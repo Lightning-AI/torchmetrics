@@ -69,6 +69,8 @@ def auc(x: torch.Tensor, y: torch.Tensor, reorder: bool = False) -> torch.Tensor
         >>> y = torch.tensor([0, 1, 2, 2])
         >>> auc(x, y)
         tensor(4.)
+        >>> auc(x, y, reorder=True)
+        tensor(4.)
     """
     x, y = _auc_update(x, y)
     return _auc_compute(x, y, reorder=reorder)
