@@ -2,7 +2,7 @@
 
 <img src="docs/source/_static/images/logo.png" width="400px">
 
-**Machine learning metrics for distributed, scalable PyTorch models.**
+**Machine learning metrics for distributed, scalable PyTorch applications.**
 
 ---
 
@@ -38,13 +38,27 @@
 
 Simple installation from PyPI
 ```bash
-pip install torchmetrics -U
+pip install torchmetrics
 ```
+
+<details>
+  <summary>Other installions</summary>
 
 Or conda
 ```bash
 conda install torchmetrics
 ```
+
+Pip from source
+
+```bash
+# with git
+pip install git+https://github.com/PytorchLightning/metrics.git@master
+# OR from an archive
+pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
+```
+
+</details>
 ---
 
 ## What is Torchmetrics
@@ -52,7 +66,6 @@ TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-
 
 * A standardized interface to increase reproducability
 * Reduces Boilerplate
-* Rigorously tested
 * Automatic accumulation over batches
 * Metrics optimized for distributed-training
 * Automatic synchronization between multiple devices
