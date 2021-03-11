@@ -151,9 +151,6 @@ for i in range(n_batches):
 # metric on all batches using custom accumulation
 acc = metric.compute()
 print(f"Accuracy on all data: {acc}")
-
-# Reseting internal state such that metric ready for new data
-metric.reset()
 ```
 
 Module metric usage remains the same when using DDP.
@@ -191,25 +188,29 @@ def main(rank, world_size):
     # initialize DDP
     model = DDP(model, device_ids=[rank])
 
-    # this will be replaced by a DataLoader with a DistributedSampler
-    n_batches = 10
-    for i in range(n_batches):
-        # simulate a classification problem
-        preds = torch.randn(10, 5).softmax(dim=-1).to(rank)
-        target = torch.randint(5, (10,)).to(rank)
+    n_epochs = 5
+    # this shows iteration over multiple training epochs
+    for n in range(n_epochs):
 
-        # metric on current batch
-        acc = metric(preds, target)
-        if rank == 0:  # print only for rank 0
-            print(f"Accuracy on batch {i}: {acc}")    
-
-    # metric on all batches and all accelerators using custom accumulation
-    # accuracy is same across both accelerators
-    acc = metric.compute()
-    print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
-
-    # Reseting internal state such that metric ready for new data
-    metric.reset()
+        # this will be replaced by a DataLoader with a DistributedSampler
+        n_batches = 10
+        for i in range(n_batches):
+            # simulate a classification problem
+            preds = torch.randn(10, 5).softmax(dim=-1).to(rank)
+            target = torch.randint(5, (10,)).to(rank)
+    
+            # metric on current batch
+            acc = metric(preds, target)
+            if rank == 0:  # print only for rank 0
+                print(f"Accuracy on batch {i}: {acc}")    
+    
+        # metric on all batches and all accelerators using custom accumulation
+        # accuracy is same across both accelerators
+        acc = metric.compute()
+        print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
+    
+        # Reseting internal state such that metric ready for new data
+        metric.reset()
 ```
 
 ### Implemented metrics
