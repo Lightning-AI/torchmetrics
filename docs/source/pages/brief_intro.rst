@@ -39,6 +39,12 @@ Module metrics
     # metric on all batches using custom accumulation
     acc = metric.compute()
     print(f"Accuracy on all data: {acc}")
+
+.. testoutput::
+   :hide:
+   :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
+
+    Accuracy on batch ...
     
 Module metric usage remains the same when using multiple GPUs or multiple nodes. 
 
@@ -63,9 +69,6 @@ Implementing a metric
 
 .. testcode::
 
-    import torch
-    from torchmetrics import Metric
-
     class MyAccuracy(Metric):
         def __init__(self, dist_sync_on_step=False):
             # call `self.add_state`for every internal state that is needed for the metrics computations
@@ -87,10 +90,3 @@ Implementing a metric
         def compute(self):
             # compute final result
             return self.correct.float() / self.total
-            
-
-.. testoutput::
-   :hide:
-   :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
-
-    Accuracy on batch ...
