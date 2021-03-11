@@ -2,15 +2,14 @@
 
 <img src="docs/source/_static/images/logo.png" width="400px">
 
-**Collection of metrics for easy evaluating machine learning models**
+**Machine learning metrics for distributed, scalable PyTorch models.**
 
 ---
 
 <p align="center">
-  <a href="https://www.pytorchlightning.ai/">Website</a> •
   <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
-  <a href="#build-in-metrics">Build-in metrics</a> •
   <a href="#implementing-your-own-metric">Implementing a metric</a> •
+  <a href="#build-in-metrics">Built-in metrics</a> •
   <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
   <a href="#community">Community</a> •
   <a href="#license">License</a>
@@ -37,36 +36,23 @@
 
 ## Installation
 
-<details>
-  <summary>View install</summary>
-
-Pip / conda
-
+Simple installation from PyPI
 ```bash
 pip install torchmetrics -U
+```
+
+Or conda
+```bash
 conda install torchmetrics
 ```
-
-Pip from source
-
-```bash
-# with git
-pip install git+https://github.com/PytorchLightning/metrics.git@master
-
-# OR from an archive
-pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
-```
-
-</details>
-
 ---
 
 ## What is Torchmetrics
 TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
+* Optimized for distributed-training
 * A standardized interface to increase reproducability
 * Reduces Boilerplate
-* Distrubuted-training compatible
 * Rigorously tested
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
@@ -76,25 +62,38 @@ You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](ht
 * Module metrics are automatically placed on the correct device.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
 
+## Implementing your own metric
+Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
+and implement the following methods:
+
+```python
+class RMSE(torchmetrics.Metric):
+    def __init__(self):
+        # call `self.add_state`for every internal state that is needed for the metrics computations
+	# dist_reduce_fx indicates the function that should be used to reduce 
+	# state from multiple processes
+        self.add_state("sum_squared_errors", torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("n_observations", torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds, target):
+        # update metric states
+        sum_squared_errors += torch.sum((preds - target) ** 2)
+        n_observations += preds.numel()
+       
+    def compute(self):
+        # compute final result
+        return torch.sqrt(sum_squared_errors / n_observations)
+```
+Because `sqrt(a+b) != sqrt(a) + sqrt(b)` we cannot implement this metric as a simple mean of the RMSE 
+score calculated per batch and instead needs to implement all logic that needs to happen before the 
+square root in `update` and the remaining in `compute`.
+
 ## Built-in metrics
-* Accuracy
-* AveragePrecision
-* AUC
-* AUROC
-* F1
-* Hamming Distance
-* ROC
-* ExplainedVariance
-* MeanSquaredError
-* R2Score
-* bleu_score
-* embedding_similarity
 
-And many more!
+## Functional metrics
 
-## Using functional metrics
-
-Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://pytorchlightning.github.io/metrics/references/modules.html) and a [functional](https://pytorchlightning.github.io/metrics/references/functional.html) version. The functional version implements the basic operations required for computing each metric. They are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
+Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://pytorchlightning.github.io/metrics/references/modules.html) and a [functional](https://pytorchlightning.github.io/metrics/references/functional.html) version.
+The functional versions are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
 
 ``` python
 import torch
@@ -108,11 +107,11 @@ target = torch.randint(5, (10,))
 acc = torchmetrics.functional.accuracy(preds, target)
 ```
 
-## Using Module metrics
+### Module metrics
 
-Nearly all functional metrics have a corresponding module-based metric that calls it a functional counterpart underneath. The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) are characterized by having one or more internal metrics states (similar to the parameters of the PyTorch module) that allow them to offer additional functionalities:
+The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
 
-* Accumulation of multiple batches
+* Automatic accumulation over multiple batches
 * Automatic synchronization between multiple devices
 * Metric arithmetic
   
@@ -141,45 +140,22 @@ print(f"Accuracy on all data: {acc}")
 metric.reset()
 ```
 
-## Implementing your own metric
-Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
-and do the following:
+### Implemented metrics
 
-1. Implement `__init__` where you call `self.add_state`for every internal state that is needed for the metrics computations
-2. Implement `update` method, where all logic that is nessesary for updating metric states go
-3. Implement `compute` method, where the final metric computations happens
+* [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy)
+* [AveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#averageprecision)
+* [AUC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auc)
+* [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
+* [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1) 
+* [Hamming Distance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#hamming-distance)
+* [ROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#roc)
+* [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance)
+* [MeanSquaredError](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meansquarederror)
+* [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
+* [bleu_score](https://torchmetrics.readthedocs.io/en/latest/references/functional.html#bleu-score-func)
+* [embedding_similarity](https://torchmetrics.readthedocs.io/en/latest/references/functional.html#embedding-similarity-func)
 
-### Example: Root mean squared error
-Root mean squared error is great example to showcase why many metric computations needs to be divided into 
-two functions. It is defined as:
-
-<p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=RMSE = \sqrt{ \frac{1}{N} \sum_{i=1}^N (\hat{y_i} - y_i)^2}">
-</p>
-
-To proper calculate RMSE, we need two metric states: `sum_squared_error` to keep track of the squared error 
-between the target and the predictions and `n_observations` to know how many observations we have encountered.
-```python
-class RMSE(torchmetrics.Metric):
-    def __init__(self):
-	# dist_reduce_fx indicates the function that should be used to reduce 
-	# state from multiple processes
-        self.add_state("sum_squared_errors", torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("n_observations", torch.tensor(0), dist_reduce_fx="sum")
-
-    def update(self, preds, target):
-        # update metric states
-        sum_squared_errors += torch.sum((preds - target) ** 2)
-        n_observations += preds.numel()
-       
-    def compute(self):
-        # compute final result
-        return torch.sqrt(sum_squared_errors / n_observations)
-```
-Because `sqrt(a+b) != sqrt(a) + sqrt(b)` we cannot implement this metric as a simple mean of the RMSE 
-score calculated per batch and instead needs to implement all logic that needs to happen before the 
-square root in `update` and the remaining in `compute`.
-
+And many more!
 
 ## Contribute!
 The lightning + torchmetric team is hard at work adding even more metrics. 
