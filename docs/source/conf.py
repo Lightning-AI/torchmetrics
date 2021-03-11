@@ -50,7 +50,7 @@ release = torchmetrics.__version__
 # Options for the linkcode extension
 # ----------------------------------
 github_user = "PyTorchLightning"
-github_repo = project
+github_repo = "metrics"
 
 # -- Project documents -------------------------------------------------------
 
