@@ -99,8 +99,7 @@ jobs:
         coverage report
 
     - run: |
-        torch=$(python -c "import torch ; print(torch.__version__)" 2>&1)
-        echo "::set-output name=TORCH::$echo"
+        echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
       id: info
 
     - name: Upload coverage to Codecov
