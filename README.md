@@ -165,6 +165,7 @@ print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
 # Reseting internal state such that metric ready for new data
 metric.reset()
 ```
+</details>
 
 ### Implementing your own Module metric
 
