@@ -2,7 +2,7 @@
 
 <img src="docs/source/_static/images/logo.png" width="400px">
 
-**Machine learning metrics for distributed, scalable PyTorch models.**
+**Machine learning metrics for distributed, scalable PyTorch applications.**
 
 ---
 
@@ -67,7 +67,6 @@ TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-
 * Optimized for distributed-training
 * A standardized interface to increase reproducability
 * Reduces Boilerplate
-* Rigorously tested
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
