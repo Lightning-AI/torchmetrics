@@ -28,7 +28,7 @@
 
 [![CI testing - base](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml)
 [![Build Status](https://dev.azure.com/PytorchLightning/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/PytorchLightning/Metrics/_build/latest?definitionId=3&branchName=master)
-[![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/main/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
+[![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 
 ---
@@ -162,7 +162,7 @@ To proper calculate RMSE, we need two metric states: `sum_squared_error` to keep
 between the target and the predictions and `n_observations` to know how many observations we have encountered.
 ```python
 class RMSE(torchmetrics.Metric):
-    def __init__(self)
+    def __init__(self):
 	# dist_reduce_fx indicates the function that should be used to reduce 
 	# state from multiple processes
         self.add_state("sum_squared_errors", torch.tensor(0), dist_reduce_fx="sum")
