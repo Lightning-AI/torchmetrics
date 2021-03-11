@@ -13,7 +13,7 @@ __long_doc__ = """
 Torchmetrics is a metrics API created for easy metric development and usage in both PyTorch and
 [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/). It was originally a part of
 Pytorch Lightning, but got split off so users could take advantage of the large collection of metrics
-implemented without having to install Pytorch Lightning (eventhough we would love for you to try it out).
+implemented without having to install Pytorch Lightning (even though we would love for you to try it out).
 We currently have around 25+ metrics implemented and we continuously is adding more metrics, both within
 already covered domains (classification, regression ect.) but also new domains (object detection ect.).
 We make sure that all our metrics are rigorously tested such that you can trust them.

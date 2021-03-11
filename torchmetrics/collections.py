@@ -48,11 +48,14 @@ class MetricCollection(nn.ModuleDict):
         {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
 
     Example (input as dict):
-
         >>> metrics = MetricCollection({'micro_recall': Recall(num_classes=3, average='micro'),
         ...                             'macro_recall': Recall(num_classes=3, average='macro')})
+        >>> same_metric = metrics.clone()
         >>> metrics(preds, target)
         {'micro_recall': tensor(0.1250), 'macro_recall': tensor(0.1111)}
+        >>> same_metric(preds, target)
+        {'micro_recall': tensor(0.1250), 'macro_recall': tensor(0.1111)}
+        >>> metrics.persistent()
 
     """
 
