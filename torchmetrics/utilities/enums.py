@@ -16,7 +16,16 @@ from typing import Union
 
 
 class EnumStr(str, Enum):
-    """ Type of any enumerator with allowed comparison to string invariant to cases. """
+    """ Type of any enumerator with allowed comparison to string invariant to cases.
+
+    Example:
+        >>> class MyEnum(EnumStr):
+        ...     ABC = 'abc'
+        >>> MyEnum.from_str('Abc')
+        <MyEnum.ABC: 'abc'>
+        >>> {MyEnum.ABC: 123}
+        {<MyEnum.ABC: 'abc'>: 123}
+    """
 
     @classmethod
     def from_str(cls, value: str) -> 'EnumStr':
