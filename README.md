@@ -210,10 +210,6 @@ def main(rank, world_size):
 
     # Reseting internal state such that metric ready for new data
     metric.reset()
-
-if __name__ == '__main__':
-    world_size = 2
-    mp.spawn(main, args=(world_size,), nprocs=world_size, join=True)
 ```
 
 ### Implemented metrics
