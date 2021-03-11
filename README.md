@@ -2,15 +2,14 @@
 
 <img src="docs/source/_static/images/logo.png" width="400px">
 
-**Collection of metrics for easy evaluating machine learning models**
+**Machine learning metrics for distributed, scalable PyTorch applications.**
 
 ---
 
 <p align="center">
-  <a href="https://www.pytorchlightning.ai/">Website</a> •
   <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
-  <a href="#build-in-metrics">Build-in metrics</a> •
   <a href="#implementing-your-own-metric">Implementing a metric</a> •
+  <a href="#build-in-metrics">Built-in metrics</a> •
   <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
   <a href="#community">Community</a> •
   <a href="#license">License</a>
@@ -37,13 +36,16 @@
 
 ## Installation
 
-<details>
-  <summary>View install</summary>
-
-Pip / conda
-
+Simple installation from PyPI
 ```bash
-pip install torchmetrics -U
+pip install torchmetrics
+```
+
+<details>
+  <summary>Other installions</summary>
+
+Install using conda
+```bash
 conda install torchmetrics
 ```
 
@@ -52,8 +54,10 @@ Pip from source
 ```bash
 # with git
 pip install git+https://github.com/PytorchLightning/metrics.git@master
+```
 
-# OR from an archive
+Pip from archive
+```bash
 pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
 
@@ -66,9 +70,8 @@ TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-
 
 * A standardized interface to increase reproducability
 * Reduces Boilerplate
-* Distrubuted-training compatible
-* Rigorously tested
 * Automatic accumulation over batches
+* Metrics optimized for distributed-training
 * Automatic synchronization between multiple devices
 
 You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features:
@@ -76,46 +79,20 @@ You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](ht
 * Module metrics are automatically placed on the correct device.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
 
-## Built-in metrics
-* Accuracy
-* AveragePrecision
-* AUC
-* AUROC
-* F1
-* Hamming Distance
-* ROC
-* ExplainedVariance
-* MeanSquaredError
-* R2Score
-* bleu_score
-* embedding_similarity
+## Using TorchMetrics
 
-And many more!
+### Module metrics
 
-## Using functional metrics
+The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
 
-Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://pytorchlightning.github.io/metrics/references/modules.html) and a [functional](https://pytorchlightning.github.io/metrics/references/functional.html) version. The functional version implements the basic operations required for computing each metric. They are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
-
-``` python
-import torch
-# import our library
-import torchmetrics
-
-# simulate a classification problem
-preds = torch.randn(10, 5).softmax(dim=-1)
-target = torch.randint(5, (10,))
-
-acc = torchmetrics.functional.accuracy(preds, target)
-```
-
-## Using Module metrics
-
-Nearly all functional metrics have a corresponding module-based metric that calls it a functional counterpart underneath. The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) are characterized by having one or more internal metrics states (similar to the parameters of the PyTorch module) that allow them to offer additional functionalities:
-
-* Accumulation of multiple batches
+* Automatic accumulation over multiple batches
 * Automatic synchronization between multiple devices
 * Metric arithmetic
-  
+
+**This can be run on CPU, single GPU or multi-GPUs!**
+
+For the single GPU/CPU case:
+
 ``` python
 import torch
 # import our library
@@ -129,6 +106,7 @@ for i in range(n_batches):
     # simulate a classification problem
     preds = torch.randn(10, 5).softmax(dim=-1)
     target = torch.randint(5, (10,))
+
     # metric on current batch
     acc = metric(preds, target)
     print(f"Accuracy on batch {i}: {acc}")    
@@ -136,50 +114,122 @@ for i in range(n_batches):
 # metric on all batches using custom accumulation
 acc = metric.compute()
 print(f"Accuracy on all data: {acc}")
-
-# Reseting internal state such that metric ready for new data
-metric.reset()
 ```
 
-## Implementing your own metric
+Module metric usage remains the same when using multiple GPUs or multiple nodes. 
+
+<details>
+  <summary>Example using DDP</summary>
+
+``` python
+
+os.environ['MASTER_ADDR'] = 'localhost'
+os.environ['MASTER_PORT'] = '12355'
+
+# create default process group
+dist.init_process_group("gloo", rank=rank, world_size=world_size)
+
+# initialize model
+metric = torchmetrics.Accuracy()
+
+# define a model and append your metric to it
+# this allows metric states to be placed on correct accelerators when
+# .to(device) is called on the model
+model = nn.Linear(10, 10)
+model.metric = metric
+model = model.to(rank)
+
+# initialize DDP
+model = DDP(model, device_ids=[rank])
+
+n_epochs = 5
+# this shows iteration over multiple training epochs
+for n in range(n_epochs):
+
+    # this will be replaced by a DataLoader with a DistributedSampler
+    n_batches = 10
+    for i in range(n_batches):
+        # simulate a classification problem
+        preds = torch.randn(10, 5).softmax(dim=-1)
+        target = torch.randint(5, (10,))
+
+        # metric on current batch
+        acc = metric(preds, target)
+        if rank == 0:  # print only for rank 0
+            print(f"Accuracy on batch {i}: {acc}")    
+
+    # metric on all batches and all accelerators using custom accumulation
+    # accuracy is same across both accelerators
+    acc = metric.compute()
+    print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
+
+    # Reseting internal state such that metric ready for new data
+    metric.reset()
+```
+</details>
+
+### Implementing your own Module metric
+
 Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
-and do the following:
+and implement the following methods:
 
-1. Implement `__init__` where you call `self.add_state`for every internal state that is needed for the metrics computations
-2. Implement `update` method, where all logic that is nessesary for updating metric states go
-3. Implement `compute` method, where the final metric computations happens
-
-### Example: Root mean squared error
-Root mean squared error is great example to showcase why many metric computations needs to be divided into 
-two functions. It is defined as:
-
-<p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=RMSE = \sqrt{ \frac{1}{N} \sum_{i=1}^N (\hat{y_i} - y_i)^2}">
-</p>
-
-To proper calculate RMSE, we need two metric states: `sum_squared_error` to keep track of the squared error 
-between the target and the predictions and `n_observations` to know how many observations we have encountered.
 ```python
-class RMSE(torchmetrics.Metric):
-    def __init__(self):
+class MyAccuracy(Metric):
+    def __init__(self, dist_sync_on_step=False):
+        # call `self.add_state`for every internal state that is needed for the metrics computations
 	# dist_reduce_fx indicates the function that should be used to reduce 
 	# state from multiple processes
-        self.add_state("sum_squared_errors", torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("n_observations", torch.tensor(0), dist_reduce_fx="sum")
+	super().__init__(dist_sync_on_step=dist_sync_on_step)
 
-    def update(self, preds, target):
+        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: torch.Tensor, target: torch.Tensor):
         # update metric states
-        sum_squared_errors += torch.sum((preds - target) ** 2)
-        n_observations += preds.numel()
-       
+        preds, target = self._input_format(preds, target)
+        assert preds.shape == target.shape
+
+        self.correct += torch.sum(preds == target)
+        self.total += target.numel()
+
     def compute(self):
         # compute final result
-        return torch.sqrt(sum_squared_errors / n_observations)
+        return self.correct.float() / self.total
 ```
-Because `sqrt(a+b) != sqrt(a) + sqrt(b)` we cannot implement this metric as a simple mean of the RMSE 
-score calculated per batch and instead needs to implement all logic that needs to happen before the 
-square root in `update` and the remaining in `compute`.
 
+### Functional metrics
+
+Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://pytorchlightning.github.io/metrics/references/modules.html) and a [functional](https://pytorchlightning.github.io/metrics/references/functional.html) version.
+The functional versions are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
+
+``` python
+import torch
+# import our library
+import torchmetrics
+
+# simulate a classification problem
+preds = torch.randn(10, 5).softmax(dim=-1)
+target = torch.randint(5, (10,))
+
+acc = torchmetrics.functional.accuracy(preds, target)
+```
+
+### Implemented metrics
+
+* [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy)
+* [AveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#averageprecision)
+* [AUC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auc)
+* [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
+* [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1) 
+* [Hamming Distance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#hamming-distance)
+* [ROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#roc)
+* [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance)
+* [MeanSquaredError](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meansquarederror)
+* [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
+* [bleu_score](https://torchmetrics.readthedocs.io/en/latest/references/functional.html#bleu-score-func)
+* [embedding_similarity](https://torchmetrics.readthedocs.io/en/latest/references/functional.html#embedding-similarity-func)
+
+And many more!
 
 ## Contribute!
 The lightning + torchmetric team is hard at work adding even more metrics. 
