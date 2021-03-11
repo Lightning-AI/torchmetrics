@@ -89,7 +89,7 @@ The [module-based metrics](https://pytorchlightning.github.io/metrics/references
 * Automatic synchronization between multiple devices
 * Metric arithmetic
 
-This can be run on CPU, single GPU or multi-GPUs without changes!
+**This can be run on CPU, single GPU or multi-GPUs!**
 
 For the single GPU/CPU case:
 
