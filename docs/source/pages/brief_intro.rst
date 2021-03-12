@@ -1,7 +1,7 @@
 TorchMetrics is a collection of Machine learning metrics for distributed, scalable PyTorch models and an easy-to-use API to create custom metrics. It offers:
 
 * Optimized for distributed-training
-* A standardized interface to increase reproducability
+* A standardized interface to increase reproducibility
 * Reduces Boilerplate
 * Distrubuted-training compatible
 * Rigorously tested
