@@ -74,7 +74,7 @@ TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-
 * Metrics optimized for distributed-training
 * Automatic synchronization between multiple devices
 
-You can use TorchMetrics in any PyTorch model, or with in [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features:
+You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features such as:
 
 * Module metrics are automatically placed on the correct device.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
