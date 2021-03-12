@@ -5,10 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - YYYY-MM-DD
-
-
-### Added
+## [0.2.0] - 2021-03-12
 
 
 ### Changed
@@ -18,17 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored utilities -  split to topics/submodules ([#14](https://github.com/PyTorchLightning/metrics/pull/14))
 - Refactored `MetricCollection` ([#19](https://github.com/PyTorchLightning/metrics/pull/19))
 
-
-### Fixed
-
-
 ### Removed
 
 - Removed deprecated metrics from PL base ([#12](https://github.com/PyTorchLightning/metrics/pull/12),
     [#15](https://github.com/PyTorchLightning/metrics/pull/15))
 
-
-### Deprecated
 
 
 ## [0.1.0] - 2021-02-22
