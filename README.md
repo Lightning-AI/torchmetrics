@@ -68,7 +68,7 @@ pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ## What is Torchmetrics
 TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
-* A standardized interface to increase reproducability
+* A standardized interface to increase reproducibility
 * Reduces Boilerplate
 * Automatic accumulation over batches
 * Metrics optimized for distributed-training
