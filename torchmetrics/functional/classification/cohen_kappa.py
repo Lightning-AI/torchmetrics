@@ -15,7 +15,7 @@ from typing import Optional
 
 import torch
 
-from pytorch_lightning.metrics.functional.confusion_matrix import _confusion_matrix_update, _confusion_matrix_compute
+from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update, _confusion_matrix_compute
 
 
 def _cohen_kappa_update(
@@ -89,7 +89,7 @@ def cohen_kappa(
             Threshold value for binary or multi-label probabilities. default: 0.5
 
     Example:
-        >>> from pytorch_lightning.metrics.functional import cohen_kappa
+        >>> from torchmetrics.functional import cohen_kappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> cohen_kappa(preds, target, num_classes=2)

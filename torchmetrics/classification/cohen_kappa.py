@@ -67,7 +67,7 @@ class CohenKappa(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-        >>> from pytorch_lightning.metrics import CohenKappa
+        >>> from torchmetrics import CohenKappa
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> cohenkappa = CohenKappa(num_classes=2)
