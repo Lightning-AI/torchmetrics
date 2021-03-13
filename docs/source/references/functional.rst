@@ -37,6 +37,13 @@ average_precision [func]
     :noindex:
 
 
+cohen_kappa [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.cohen_kappa
+    :noindex:
+
+
 confusion_matrix [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
