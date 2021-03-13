@@ -37,7 +37,7 @@ class CohenKappa(Metric):
 
     Forward accepts
         - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-        
+
         - ``target`` (long tensor): ``(N, ...)``
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
@@ -115,4 +115,3 @@ class CohenKappa(Metric):
         Computes cohen kappa score
         """
         return _cohen_kappa_compute(self.confmat, self.weights)
-

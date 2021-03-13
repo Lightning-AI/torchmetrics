@@ -32,7 +32,7 @@ def _cohen_kappa_compute(confmat: torch.Tensor, weights: Optional[str] = None) -
     n_classes = confmat.shape[0]
     sum0 = confmat.sum(dim=0, keepdim=True)
     sum1 = confmat.sum(dim=1, keepdim=True)
-    expected = sum1 @ sum0 / sum0.sum() # outer product
+    expected = sum1 @ sum0 / sum0.sum()  # outer product
 
     if weights is None:
         w_mat = torch.ones_like(confmat).flatten()
