@@ -20,7 +20,6 @@ from torchmetrics.functional.regression.explained_variance import (
     _explained_variance_update,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 
 
 class ExplainedVariance(Metric):
@@ -112,7 +111,7 @@ class ExplainedVariance(Metric):
         n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
         self.n_obs += n_obs
         self.sum_error += sum_error
-        self.sum_squared_error += sum_squared_target
+        self.sum_squared_error += sum_squared_error
         self.sum_target += sum_target
         self.sum_squared_target += sum_squared_target
 
