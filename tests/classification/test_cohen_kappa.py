@@ -5,8 +5,6 @@ import pytest
 import torch
 from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
 
-from torchmetrics.classification.cohen_kappa import CohenKappa
-from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -14,7 +12,9 @@ from tests.classification.inputs import _input_multidim_multiclass as _input_mdm
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.helpers.testers import MetricTester, NUM_CLASSES, THRESHOLD
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics.classification.cohen_kappa import CohenKappa
+from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 
 torch.manual_seed(42)
 

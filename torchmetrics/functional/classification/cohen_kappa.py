@@ -15,7 +15,7 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update, _confusion_matrix_compute
+from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
 
 
 def _cohen_kappa_update(
