@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from copy import deepcopy
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from torch import nn
 
@@ -35,6 +35,8 @@ class MetricCollection(nn.ModuleDict):
             * dict: if metrics are passed in as a dict, will use each key in the
               dict as key for output dict. Use this format if you want to chain
               together multiple of the same metric with different parameters.
+
+        prefix: a string to append in front of the keys of the output dict
 
     Example (input as list):
         >>> import torch
@@ -58,8 +60,11 @@ class MetricCollection(nn.ModuleDict):
         >>> metrics.persistent()
 
     """
-
-    def __init__(self, metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]]):
+    def __init__(
+            self,
+            metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]],
+            prefix: Optional[str] = None
+    ):
         super().__init__()
         if isinstance(metrics, dict):
             # Check all values are metrics
@@ -84,13 +89,15 @@ class MetricCollection(nn.ModuleDict):
         else:
             raise ValueError("Unknown input to MetricCollection.")
 
+        self.prefix = self._check_prefix_arg(prefix)
+
     def forward(self, *args, **kwargs) -> Dict[str, Any]:  # pylint: disable=E0202
         """
         Iteratively call forward for each metric. Positional arguments (args) will
         be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+        return {self._set_prefix(k): m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
 
     def update(self, *args, **kwargs):  # pylint: disable=E0202
         """
@@ -103,16 +110,21 @@ class MetricCollection(nn.ModuleDict):
             m.update(*args, **m_kwargs)
 
     def compute(self) -> Dict[str, Any]:
-        return {k: m.compute() for k, m in self.items()}
+        return {self._set_prefix(k): m.compute() for k, m in self.items()}
 
     def reset(self):
         """ Iteratively call reset for each metric """
         for _, m in self.items():
             m.reset()
 
-    def clone(self):
-        """ Make a copy of the metric collection """
-        return deepcopy(self)
+    def clone(self, prefix: Optional[str] = None):
+        """ Make a copy of the metric collection
+        Args:
+            prefix: a string to append in front of the metric keys
+        """
+        mc = deepcopy(self)
+        mc.prefix = self._check_prefix_arg(prefix)
+        return mc
 
     def persistent(self, mode: bool = True):
         """Method for post-init to change if metric states should be saved to
@@ -120,3 +132,14 @@ class MetricCollection(nn.ModuleDict):
         """
         for _, m in self.items():
             m.persistent(mode)
+
+    def _set_prefix(self, k):
+        return k if self.prefix is None else self.prefix + k
+
+    def _check_prefix_arg(self, prefix):
+        if prefix is not None:
+            if isinstance(prefix, str):
+                return prefix
+            else:
+                raise ValueError('Expected input `prefix` to be a string')
+        return None

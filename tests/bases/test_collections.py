@@ -130,3 +130,28 @@ def test_metric_collection_args_kwargs(tmpdir):
     _ = metric_collection(x=10, y=20)
     assert metric_collection['DummyMetricSum'].x == 10
     assert metric_collection['DummyMetricDiff'].x == -20
+
+
+def test_metric_collection_prefix_arg(tmpdir):
+    """ Test that the prefix arg alters the keywords in the output"""
+    m1 = DummyMetricSum()
+    m2 = DummyMetricDiff()
+    names = ['DummyMetricSum', 'DummyMetricDiff']
+
+    metric_collection = MetricCollection([m1, m2], prefix='prefix_')
+
+    # test forward
+    out = metric_collection(5)
+    for name in names:
+        assert f"prefix_{name}" in out, 'prefix argument not working as intended with forward method'
+
+    # test compute
+    out = metric_collection.compute()
+    for name in names:
+        assert f"prefix_{name}" in out, 'prefix argument not working as intended with compute method'
+
+    # test clone
+    new_metric_collection = metric_collection.clone(prefix='new_prefix_')
+    out = new_metric_collection(5)
+    for name in names:
+        assert f"new_prefix_{name}" in out, 'prefix argument not working as intended with clone method'
