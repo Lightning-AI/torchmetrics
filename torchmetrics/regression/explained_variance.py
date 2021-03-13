@@ -77,7 +77,7 @@ class ExplainedVariance(Metric):
 
     def __init__(
         self,
-        multioutput: str = 'uniform_average',
+        multioutput: str = "uniform_average",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -89,20 +89,17 @@ class ExplainedVariance(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        allowed_multioutput = ('raw_values', 'uniform_average', 'variance_weighted')
+        allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
         if multioutput not in allowed_multioutput:
             raise ValueError(
-                f'Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}'
+                f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
             )
         self.multioutput = multioutput
-        self.add_state("y", default=[], dist_reduce_fx=None)
-        self.add_state("y_pred", default=[], dist_reduce_fx=None)
-
-        rank_zero_warn(
-            'Metric `ExplainedVariance` will save all targets and'
-            ' predictions in buffer. For large datasets this may lead'
-            ' to large memory footprint.'
-        )
+        self.add_state("sum_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_target", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_target", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("n_obs", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         """
@@ -112,14 +109,22 @@ class ExplainedVariance(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _explained_variance_update(preds, target)
-        self.y_pred.append(preds)
-        self.y.append(target)
+        n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
+        self.n_obs += n_obs
+        self.sum_error += sum_error
+        self.sum_squared_error += sum_squared_target
+        self.sum_target += sum_target
+        self.sum_squared_target += sum_squared_target
 
     def compute(self):
         """
         Computes explained variance over state.
         """
-        preds = torch.cat(self.y_pred, dim=0)
-        target = torch.cat(self.y, dim=0)
-        return _explained_variance_compute(preds, target, self.multioutput)
+        return _explained_variance_compute(
+            self.n_obs,
+            self.sum_error,
+            self.sum_squared_error,
+            self.sum_target,
+            self.sum_squared_target,
+            self.multioutput,
+        )
