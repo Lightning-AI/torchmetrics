@@ -112,12 +112,12 @@ class MetricCollection(nn.ModuleDict):
     def compute(self) -> Dict[str, Any]:
         return {self._set_prefix(k): m.compute() for k, m in self.items()}
 
-    def reset(self):
+    def reset(self) -> None:
         """ Iteratively call reset for each metric """
         for _, m in self.items():
             m.reset()
 
-    def clone(self, prefix: Optional[str] = None):
+    def clone(self, prefix: Optional[str] = None) -> 'MetricCollection':
         """ Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
@@ -126,17 +126,17 @@ class MetricCollection(nn.ModuleDict):
         mc.prefix = self._check_prefix_arg(prefix)
         return mc
 
-    def persistent(self, mode: bool = True):
+    def persistent(self, mode: bool = True) -> None:
         """Method for post-init to change if metric states should be saved to
         its state_dict
         """
         for _, m in self.items():
             m.persistent(mode)
 
-    def _set_prefix(self, k):
+    def _set_prefix(self, k: str) -> str:
         return k if self.prefix is None else self.prefix + k
 
-    def _check_prefix_arg(self, prefix):
+    def _check_prefix_arg(self, prefix: str) -> Optional[str]:
         if prefix is not None:
             if isinstance(prefix, str):
                 return prefix
