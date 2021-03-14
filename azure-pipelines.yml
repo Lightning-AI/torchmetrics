@@ -62,6 +62,7 @@ jobs:
     - bash: |
         python -m coverage report
         python -m coverage xml
+        python -m coverage html
         python -m codecov --token=$(CODECOV_TOKEN) --flags=gpu,pytest --name="GPU-coverage" --env=linux,azure
       displayName: 'Statistics'
 
@@ -69,8 +70,12 @@ jobs:
       displayName: 'Publish test results'
       inputs:
         testResultsFiles: '$(Build.StagingDirectory)/test-results.xml'
-        testRunTitle: pytest
+        testRunTitle: '$(Agent.OS) - $(Build.DefinitionName) - Python $(python.version)'
+      condition: succeededOrFailed()
 
     - task: PublishCodeCoverageResults@1
       inputs:
-        summaryFileLocation: .coverage.xml
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+        reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+        testRunTitle: '$(Agent.OS) - $(Build.BuildNumber)[$(Agent.JobName)] - Python $(python.version)'
+      condition: succeededOrFailed()
