@@ -115,7 +115,7 @@ class TestPSNR(MetricTester):
         )
 
     # PSNR half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail("PSNR metric does not support cpu + half precision")
+    @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
     def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
         self.run_precision_test_cpu(preds, target, PSNR, psnr,
                                     {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim})
