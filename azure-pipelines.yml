@@ -70,3 +70,7 @@ jobs:
       inputs:
         testResultsFiles: '$(Build.StagingDirectory)/test-results.xml'
         testRunTitle: pytest
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        summaryFileLocation: .coverage.xml
