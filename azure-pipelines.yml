@@ -56,7 +56,7 @@ jobs:
       displayName: 'Sanity check'
 
     - bash: |
-        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=$(test_results) --durations=50
+        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=$(Build.StagingDirectory)/test-results.xml --durations=50
       displayName: 'Testing'
 
     - bash: |
@@ -64,3 +64,9 @@ jobs:
         python -m coverage xml
         python -m codecov --token=$(CODECOV_TOKEN) --flags=gpu,pytest --name="GPU-coverage" --env=linux,azure
       displayName: 'Statistics'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish test results'
+      inputs:
+        testResultsFiles: '$(Build.StagingDirectory)/test-results.xml'
+        testRunTitle: pytest
