@@ -67,13 +67,6 @@ jobs:
         ls -l
       displayName: 'Statistics'
 
-    - task: UseDotNet@2
-      displayName: 'Use .NET Core sdk'
-      inputs:
-        packageType: sdk
-        version: 2.2.203
-        installationPath: $(Agent.ToolsDirectory)/dotnet
-
     - task: PublishTestResults@2
       displayName: 'Publish test results'
       inputs:
