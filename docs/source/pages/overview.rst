@@ -195,27 +195,31 @@ Example:
 Similarly it can also reduce the amount of code required to log multiple metrics
 inside your LightningModule
 
-.. code-block:: python
+.. testcode::
 
-    def __init__(self):
-        ...
-        metrics = pl.metrics.MetricCollection(...)
-        self.train_metrics = metrics.clone()
-        self.valid_metrics = metrics.clone()
+    from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 
-    def training_step(self, batch, batch_idx):
-        logits = self(x)
-        ...
-        self.train_metrics(logits, y)
-        # use log_dict instead of log
-        self.log_dict(self.train_metrics, on_step=True, on_epoch=False, prefix='train')
+    class MyModule():
+        def __init__(self):
+            metrics = MetricCollection(Accuracy(), Precision(), Recall())
+            self.train_metrics = metrics.clone(prefix='train_')
+            self.valid_metrics = metrics.clone(prefix='val_')
 
-    def validation_step(self, batch, batch_idx):
-        logits = self(x)
-        ...
-        self.valid_metrics(logits, y)
-        # use log_dict instead of log
-        self.log_dict(self.valid_metrics, on_step=True, on_epoch=True, prefix='val')
+        def training_step(self, batch, batch_idx):
+            logits = self(x)
+            # ...
+            output = self.train_metrics(logits, y)
+            # use log_dict instead of log
+            # metrics are logged with keys: train_Accuracy, train_Precision and train_Recall
+            self.log_dict(output)
+
+        def validation_step(self, batch, batch_idx):
+            logits = self(x)
+            # ...
+            output = self.valid_metrics(logits, y)
+            # use log_dict instead of log
+            # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
+            self.log_dict(output)
 
 .. note::
 
