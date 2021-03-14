@@ -18,13 +18,7 @@ import torch
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
 
 
-def _cohen_kappa_update(
-        preds: torch.Tensor,
-        target: torch.Tensor,
-        num_classes: int,
-        threshold: float = 0.5
-) -> torch.Tensor:
-    return _confusion_matrix_update(preds, target, num_classes, threshold)
+_cohen_kappa_update = _confusion_matrix_update
 
 
 def _cohen_kappa_compute(confmat: torch.Tensor, weights: Optional[str] = None) -> torch.Tensor:
