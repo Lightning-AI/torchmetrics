@@ -74,8 +74,9 @@ jobs:
       condition: succeededOrFailed()
 
     - task: PublishCodeCoverageResults@1
+      displayName: 'Publish coverage report'
       inputs:
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-        reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+        summaryFileLocation: '**/coverage.xml'
+        reportDirectory: '**/htmlcov'
         testRunTitle: '$(Agent.OS) - $(Build.BuildNumber)[$(Agent.JobName)] - Python $(python.version)'
       condition: succeededOrFailed()
