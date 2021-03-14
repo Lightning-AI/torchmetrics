@@ -114,6 +114,17 @@ class TestPSNR(MetricTester):
             metric_args=_args,
         )
 
+    # PSNR half + cpu does not work due to missing support in torch.log
+    @pytest.mark.xfail("PSNR metric does not support cpu + half precision")
+    def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+        self.run_precision_test_cpu(preds, target, PSNR, psnr,
+                                    {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim})
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+        self.run_precision_test_gpu(preds, target, PSNR, psnr,
+                                    {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim})
+
 
 @pytest.mark.parametrize("reduction", ["none", "sum"])
 def test_reduction_for_dim_none(reduction):

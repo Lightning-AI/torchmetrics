@@ -20,7 +20,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 def _mean_squared_error_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, int]:
     _check_same_shape(preds, target)
-    sum_squared_error = torch.sum(torch.pow(preds - target, 2))
+    diff = preds - target
+    sum_squared_error = torch.sum(diff * diff)
     n_obs = target.numel()
     return sum_squared_error, n_obs
 

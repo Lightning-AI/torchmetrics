@@ -38,7 +38,8 @@ def _psnr_update(preds: torch.Tensor,
         n_obs = torch.tensor(target.numel(), device=target.device)
         return sum_squared_error, n_obs
 
-    sum_squared_error = torch.sum(torch.pow(preds - target, 2), dim=dim)
+    diff = preds - target
+    sum_squared_error = torch.sum(diff * diff, dim=dim)
 
     if isinstance(dim, int):
         dim_list = [dim]
@@ -89,6 +90,9 @@ def psnr(
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(pred, target)
         tensor(2.5527)
+
+    .. note::
+        Half precision is only support on GPU for this metric
 
     """
     if dim is None and reduction != 'elementwise_mean':

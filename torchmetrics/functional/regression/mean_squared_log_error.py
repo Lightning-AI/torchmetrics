@@ -47,6 +47,9 @@ def mean_squared_log_error(preds: torch.Tensor, target: torch.Tensor) -> torch.T
         >>> mean_squared_log_error(x, y)
         tensor(0.0207)
 
+    .. note::
+        Half precision is only support on GPU for this metric
+
     """
     sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
     return _mean_squared_log_error_compute(sum_squared_log_error, n_obs)

@@ -92,6 +92,16 @@ class TestMeanError(MetricTester):
             sk_metric=partial(sk_metric, sk_fn=sk_fn),
         )
 
+    def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+        if metric_class == MeanSquaredLogError:
+            # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
+            pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
+        self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+        self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
+
 
 @pytest.mark.parametrize("metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError])
 def test_error_on_different_shape(metric_class):

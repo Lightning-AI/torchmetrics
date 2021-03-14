@@ -167,6 +167,41 @@ def _functional_test(
         _assert_allclose(lightning_result, sk_result, atol=atol)
 
 
+def _assert_half_support(
+    metric_module: Metric,
+    metric_functional: Callable,
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    device: str = 'cpu'
+):
+    """
+    Test if an metric can be used with half precision tensors
+
+    Args:
+        metric_module: the metric module to test
+        metric_functional: the metric functional to test
+        preds: torch tensor with predictions
+        target: torch tensor with targets
+        device: determine device, either "cpu" or "cuda"
+    """
+    if device == 'cpu':
+        # test half-cpu
+        p = preds[0].half() if preds[0].is_floating_point() else preds[0]
+        t = target[0].half() if target[0].is_floating_point() else target[0]
+        assert metric_module(p, t)
+        assert metric_functional(p, t)
+
+    elif device == 'cuda':
+        # test half-gpu
+        p = preds[0].half().cuda() if preds[0].is_floating_point() else preds[0].cuda()
+        t = target[0].half().cuda() if target[0].is_floating_point() else target[0].cuda()
+        metric_module = metric_module.cuda()
+        assert metric_module(p, t)
+        assert metric_functional(p, t)
+    else:
+        raise ValueError('Unknown deivce input')
+
+
 class MetricTester:
     """Class used for efficiently run alot of parametrized tests in ddp mode.
     Makes sure that ddp is only setup once and that pool of processes are
@@ -282,6 +317,46 @@ class MetricTester:
                 check_batch=check_batch,
                 atol=self.atol,
             )
+
+    def run_precision_test_cpu(
+        self, preds: torch.Tensor, target: torch.Tensor,
+        metric_module: Metric, metric_functional: Callable, metric_args: dict = {}
+    ):
+        """ Test if an metric can be used with half precision tensors on cpu
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_functional: the metric functional to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        _assert_half_support(
+            metric_module(**metric_args),
+            partial(metric_functional, **metric_args),
+            preds,
+            target,
+            device='cpu'
+        )
+
+    def run_precision_test_gpu(
+        self, preds: torch.Tensor, target: torch.Tensor,
+        metric_module: Metric, metric_functional: Callable, metric_args: dict = {}
+    ):
+        """ Test if an metric can be used with half precision tensors on gpu
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_functional: the metric functional to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        _assert_half_support(
+            metric_module(**metric_args),
+            partial(metric_functional, **metric_args),
+            preds,
+            target,
+            device='cuda'
+        )
 
 
 class DummyMetric(Metric):
