@@ -130,6 +130,18 @@ def precision(
         - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
           of classes
 
+    Raises:
+        ValueError:
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
+            ``"samples"``, ``"none"`` or ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+
     Example:
         >>> from torchmetrics.functional import precision
         >>> preds  = torch.tensor([2, 0, 2, 1])
@@ -281,6 +293,18 @@ def recall(
         - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
           of classes
 
+    Raises:
+        ValueError:
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
+            ``"samples"``, ``"none"`` or ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+
     Example:
         >>> from torchmetrics.functional import recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
@@ -416,6 +440,18 @@ def precision_recall(
         - If ``average in ['micro', 'macro', 'weighted', 'samples']``, they are a single element tensor
         - If ``average in ['none', None]``, they are a tensor of shape ``(C, )``, where ``C`` stands for
           the number of classes
+
+    Raises:
+        ValueError:
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
+            ``"samples"``, ``"none"`` or ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
     Example:
         >>> from torchmetrics.functional import precision_recall
