@@ -42,7 +42,7 @@ pip install torchmetrics
 ```
 
 <details>
-  <summary>Other installions</summary>
+  <summary>Other installations</summary>
 
 Install using conda
 ```bash
@@ -69,7 +69,7 @@ pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
-* Reduces Boilerplate
+* Reduces boilerplate
 * Automatic accumulation over batches
 * Metrics optimized for distributed-training
 * Automatic synchronization between multiple devices
@@ -243,8 +243,8 @@ to get help becoming a contributor!
 For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A)!
 
 ## Citations
-We’re excited to continue the strong legacy of opensource software and have been inspired over the years by 
-Caffee, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai. When/if a paper is written about this, 
+We’re excited to continue the strong legacy of open source software and have been inspired over the years by 
+Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai. When/if a paper is written about this, 
 we’ll be happy to cite these frameworks and the corresponding authors.
 
 ## License
