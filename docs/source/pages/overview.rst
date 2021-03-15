@@ -109,6 +109,20 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             val3 = self.metric3['accuracy'](preds, target)
             val4 = self.metric4(preds, target)
 
+****************************
+Metrics and 16-bit precision
+****************************
+
+Most metrics in our collection can be used with 16-bit precision (``torch.half``) tensors. However, we have found
+the following limitations:
+
+* In general ``pytorch`` had better support for 16-bit precision much earlier on GPU than CPU. Therefore, we
+recommend that anyone that want to use metrics with half precision on CPU, upgrade to atleast pytorch v1.6
+where support for operations such as addition, subtraction, multiplication ect. was added.
+
+* Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their documentation
+
+
 ******************
 Metric Arithmetics
 ******************
