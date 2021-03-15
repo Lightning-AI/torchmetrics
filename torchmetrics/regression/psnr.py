@@ -14,7 +14,7 @@
 from typing import Any, Optional, Sequence, Tuple, Union
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
@@ -86,8 +86,8 @@ class PSNR(Metric):
             rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
 
         if dim is None:
-            self.add_state("sum_squared_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
-            self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         else:
             self.add_state("sum_squared_error", default=[])
             self.add_state("total", default=[])
@@ -99,10 +99,10 @@ class PSNR(Metric):
                 raise ValueError("The `data_range` must be given when `dim` is not None.")
 
             self.data_range = None
-            self.add_state("min_target", default=torch.tensor(0.0), dist_reduce_fx=torch.min)
-            self.add_state("max_target", default=torch.tensor(0.0), dist_reduce_fx=torch.max)
+            self.add_state("min_target", default=tensor(0.0), dist_reduce_fx=torch.min)
+            self.add_state("max_target", default=tensor(0.0), dist_reduce_fx=torch.max)
         else:
-            self.register_buffer("data_range", torch.tensor(float(data_range)))
+            self.register_buffer("data_range", tensor(float(data_range)))
         self.base = base
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim

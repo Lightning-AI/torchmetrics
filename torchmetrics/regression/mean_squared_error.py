@@ -14,7 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mean_squared_error import (
     _mean_squared_error_compute,
@@ -64,8 +64,8 @@ class MeanSquaredError(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_squared_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor):
         """
