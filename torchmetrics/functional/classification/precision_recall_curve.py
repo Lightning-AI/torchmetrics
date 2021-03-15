@@ -183,6 +183,14 @@ def precision_recall_curve(
         thresholds:
             Thresholds used for computing precision/recall scores
 
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same number of dimensions,
+            or one additional dimension for ``preds``.
+        ValueError:
+            If the number of classes deduced from ``preds`` is not the same as the
+            ``num_classes`` provided.
+
     Example:
         >>> # binary case
         >>> from torchmetrics.functional import precision_recall_curve
