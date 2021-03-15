@@ -17,7 +17,7 @@ clean:
 test: clean env
 
 	# run tests with coverage
-	python -m coverage run --source torchmetrics -m pytest torchmetrics tests -v
+	python -m pytest torchmetrics tests -v --cov=torchmetrics
 	python -m coverage report
 
 docs: clean
