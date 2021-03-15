@@ -2,7 +2,7 @@ coverage>5.2
 codecov>=2.1
 pytest>=6.0
 pytest-cov>2.10
-pytest-xdist
+# pytest-xdist
 # pytest-flake8
 flake8
 check-manifest
