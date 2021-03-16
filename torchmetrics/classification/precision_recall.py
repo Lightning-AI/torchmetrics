@@ -53,7 +53,7 @@ class Precision(StatScores):
               across samples (with equal weights for each sample).
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -200,7 +200,7 @@ class Recall(StatScores):
               across samples (with equal weights for each sample).
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the

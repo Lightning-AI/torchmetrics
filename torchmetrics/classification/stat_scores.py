@@ -57,7 +57,7 @@ class StatScores(Metric):
               Each statistic is represented by a ``(N, )`` 1d tensor.
 
             .. note:: Wwhat is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_reduce``.
+                depends on the value of ``mdmc_reduce``.
 
         num_classes:
             Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.

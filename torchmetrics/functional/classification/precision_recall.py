@@ -77,7 +77,7 @@ def precision(
               across samples (with equal weights for each sample).
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -227,7 +227,7 @@ def recall(
               across samples (with equal weights for each sample).
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -363,7 +363,7 @@ def precision_recall(
               across samples (with equal weights for each sample).
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
