@@ -23,12 +23,18 @@ from torchmetrics.metric import Metric
 
 
 class MatthewsCorrcoef(Metric):
-    """
-    Computes the `confusion matrix
-    <https://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix>`_.  Works with binary,
-    multiclass, and multilabel data.  Accepts probabilities from a model output or
-    integer class values in prediction.  Works with multi-dimensional preds and
-    target.
+    r"""
+    Calculates `Matthews correlation coefficient 
+    <https://en.wikipedia.org/wiki/Matthews_correlation_coefficient>`_ that measures
+    the general correlation or quality of a classification. In the binary case it
+    is defined as:
+
+    .. math::
+        MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
+
+    where TP, TN, FP and FN are respectively the true postitives, true negatives,
+    false positives and false negatives. Also works in the case of multi-label or 
+    multi-class input.
 
     Note:
         This metric produces a multi-dimensional output, so it can not be directly logged.
@@ -45,13 +51,6 @@ class MatthewsCorrcoef(Metric):
 
     Args:
         num_classes: Number of classes in the dataset.
-        normalize: Normalization mode for confusion matrix. Choose from
-
-            - ``None`` or ``'none'``: no normalization (default)
-            - ``'true'``: normalization over the targets (most commonly used)
-            - ``'pred'``: normalization over the predictions
-            - ``'all'``: normalization over the whole matrix
-
         threshold:
             Threshold value for binary or multi-label probabilites. default: 0.5
         compute_on_step:
@@ -61,16 +60,18 @@ class MatthewsCorrcoef(Metric):
             before returning the value at the step. default: False
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
 
     Example:
 
-        >>> from torchmetrics import ConfusionMatrix
+        >>> from torchmetrics import MatthewsCorrcoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = ConfusionMatrix(num_classes=2)
-        >>> confmat(preds, target)
-        tensor([[2., 0.],
-                [1., 1.]])
+        >>> matthews_corrcoef = MatthewsCorrcoef(num_classes=2)
+        >>> matthews_corrcoef(preds, target)
+        tensor(0.5774)
 
     """
     def __init__(
@@ -92,10 +93,6 @@ class MatthewsCorrcoef(Metric):
         self.num_classes = num_classes
         self.threshold = threshold
 
-        allowed_normalize = ('true', 'pred', 'all', 'none', None)
-        assert self.normalize in allowed_normalize, \
-            f"Argument average needs to one of the following: {allowed_normalize}"
-
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
     def update(self, preds: torch.Tensor, target: torch.Tensor):
@@ -113,4 +110,4 @@ class MatthewsCorrcoef(Metric):
         """
         Computes confusion matrix
         """
-        return _matthews_corrcoef_compute(self.confmat, self.normalize)
+        return _matthews_corrcoef_compute(self.confmat)

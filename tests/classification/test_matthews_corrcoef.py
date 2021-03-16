@@ -1,4 +1,3 @@
-
 # Copyright The PyTorch Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,92 +11,117 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
-
+import numpy as np
+import pytest
 import torch
+from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
-from torchmetrics.functional.classification.cohen_kappa import _cohen_kappa_compute, _cohen_kappa_update
-from torchmetrics.metric import Metric
+from tests.classification.inputs import _input_binary, _input_binary_prob
+from tests.classification.inputs import _input_multiclass as _input_mcls
+from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
+from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.classification.inputs import _input_multilabel as _input_mlb
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics.classification.matthews_corrcoef import MatthewsCorrcoef
+from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
+
+torch.manual_seed(42)
 
 
-class MatthewsCorrCoef(Metric):
-    r"""
-    Calculates `Cohen's kappa score <https://en.wikipedia.org/wiki/Cohen%27s_kappa>`_ that measures
-    inter-annotator agreement. It is defined as
-    .. math::
-        \kappa = (p_o - p_e) / (1 - p_e)
-    where :math:`p_o` is the empirical probability of agreement and :math:`p_e` is
-    the expected agreement when both annotators assign labels randomly. Note that
-    :math:`p_e` is estimated using a per-annotator empirical prior over the
-    class labels.
-    Works with binary, multiclass, and multilabel data.  Accepts probabilities from a model output or
-    integer class values in prediction.  Works with multi-dimensional preds and target.
-    Forward accepts
-        - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-        - ``target`` (long tensor): ``(N, ...)``
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-    Args:
-        num_classes: Number of classes in the dataset.
-        weights: Weighting type to calculate the score. Choose from
-            - ``None`` or ``'none'``: no weighting
-            - ``'linear'``: linear weighting
-            - ``'quadratic'``: quadratic weighting
-        threshold:
-            Threshold value for binary or multi-label probabilites. default: 0.5
-        compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
-        process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
-    Example:
-        >>> from torchmetrics import CohenKappa
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> cohenkappa = CohenKappa(num_classes=2)
-        >>> cohenkappa(preds, target)
-        tensor(0.5000)
-    """
-    def __init__(
-        self,
-        num_classes: int,
-        weights: Optional[str] = None,
-        threshold: float = 0.5,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ):
+def _sk_matthews_corrcoef_binary_prob(preds, target):
+    sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
+    sk_target = target.view(-1).numpy()
 
-        super().__init__(
-            compute_on_step=compute_on_step,
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+def _sk_matthews_corrcoef_binary(preds, target):
+    sk_preds = preds.view(-1).numpy()
+    sk_target = target.view(-1).numpy()
+
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+def _sk_matthews_corrcoef_multilabel_prob(preds, target):
+    sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
+    sk_target = target.view(-1).numpy()
+
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+def _sk_matthews_corrcoef_multilabel(preds, target):
+    sk_preds = preds.view(-1).numpy()
+    sk_target = target.view(-1).numpy()
+
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+def _sk_matthews_corrcoef_multiclass_prob(preds, target):
+    sk_preds = torch.argmax(preds, dim=len(preds.shape) - 1).view(-1).numpy()
+    sk_target = target.view(-1).numpy()
+
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+def _sk_matthews_corrcoef_multiclass(preds, target):
+    sk_preds = preds.view(-1).numpy()
+    sk_target = target.view(-1).numpy()
+
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+def _sk_matthews_corrcoef_multidim_multiclass_prob(preds, target):
+    sk_preds = torch.argmax(preds, dim=len(preds.shape) - 2).view(-1).numpy()
+    sk_target = target.view(-1).numpy()
+
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+def _sk_matthews_corrcoef_multidim_multiclass(preds, target):
+    sk_preds = preds.view(-1).numpy()
+    sk_target = target.view(-1).numpy()
+
+    return sk_matthews_corrcoef(y_true=sk_target, y_pred=sk_preds)
+
+
+@pytest.mark.parametrize(
+    "preds, target, sk_metric, num_classes",
+    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_matthews_corrcoef_binary_prob, 2),
+     (_input_binary.preds, _input_binary.target, _sk_matthews_corrcoef_binary, 2),
+     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_matthews_corrcoef_multilabel_prob, 2),
+     (_input_mlb.preds, _input_mlb.target, _sk_matthews_corrcoef_multilabel, 2),
+     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_matthews_corrcoef_multiclass_prob, NUM_CLASSES),
+     (_input_mcls.preds, _input_mcls.target, _sk_matthews_corrcoef_multiclass, NUM_CLASSES),
+     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_matthews_corrcoef_multidim_multiclass_prob, NUM_CLASSES),
+     (_input_mdmc.preds, _input_mdmc.target, _sk_matthews_corrcoef_multidim_multiclass, NUM_CLASSES)]
+)
+class TestMatthewsCorrCoef(MetricTester):
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_matthews_corrcoef(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MatthewsCorrcoef,
+            sk_metric=sk_metric,
             dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+            }
         )
-        self.num_classes = num_classes
-        self.weights = weights
-        self.threshold = threshold
 
-        allowed_weights = ('linear', 'quadratic', 'none', None)
-        assert self.weights in allowed_weights, \
-            f"Argument weights needs to one of the following: {allowed_weights}"
-
-        self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
-
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
-        """
-        Update state with predictions and targets.
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        confmat = _cohen_kappa_update(preds, target, self.num_classes, self.threshold)
-        self.confmat += confmat
-
-    def compute(self) -> torch.Tensor:
-        """
-        Computes cohen kappa score
-        """
-        return _cohen_kappa_compute(self.confmat, self.weights)
+    def test_matthews_corrcoef_functional(self, preds, target, sk_metric, num_classes):
+        self.run_functional_metric_test(
+            preds,
+            target,
+            metric_functional=matthews_corrcoef,
+            sk_metric=sk_metric,
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+            }
+        )
