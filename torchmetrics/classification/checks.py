@@ -352,10 +352,11 @@ def _input_format_classification(
     ``is_multiclass=False`` (and there are up to two classes), then the data is returned as
     ``(N, X)`` binary tensors (multi-label).
 
-    Note that where a one-hot transformation needs to be performed and the number of classes
-    is not implicitly given by a ``C`` dimension, the new ``C`` dimension will either be
-    equal to ``num_classes``, if it is given, or the maximum label value in preds and
-    target.
+    Note:
+        Where a one-hot transformation needs to be performed and the number of classes
+        is not implicitly given by a ``C`` dimension, the new ``C`` dimension will either be
+        equal to ``num_classes``, if it is given, or the maximum label value in preds and
+        target.
 
     Args:
         preds: Tensor with predictions (labels or probabilities)

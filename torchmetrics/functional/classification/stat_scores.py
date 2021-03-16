@@ -181,7 +181,7 @@ def stat_scores(
             - ``'samples'``: Counts the statistics for each sample separately (over all classes).
               Each statistic is represented by a ``(N, )`` 1d tensor.
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
             depends on the value of ``mdmc_reduce``.
 
         num_classes:

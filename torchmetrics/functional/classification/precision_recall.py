@@ -76,7 +76,7 @@ def precision(
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
             depends on the value of ``mdmc_average``.
 
         mdmc_average:
@@ -226,7 +226,7 @@ def recall(
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
             depends on the value of ``mdmc_average``.
 
         mdmc_average:
@@ -362,7 +362,7 @@ def precision_recall(
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
             depends on the value of ``mdmc_average``.
 
         mdmc_average:
