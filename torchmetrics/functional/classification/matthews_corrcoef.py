@@ -57,10 +57,6 @@ def matthews_corrcoef(
             ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
         target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
         num_classes: Number of classes in the dataset.
-        weights: Weighting type to calculate the score. Choose from
-            - ``None`` or ``'none'``: no weighting
-            - ``'linear'``: linear weighting
-            - ``'quadratic'``: quadratic weighting
         threshold:
             Threshold value for binary or multi-label probabilities. default: 0.5
 
