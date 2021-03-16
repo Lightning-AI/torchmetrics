@@ -5,8 +5,8 @@ import os
 # Always prefer setuptools over distutils
 from setuptools import find_packages, setup
 
-import torchmetrics.info  # noqa: E402
-from torchmetrics.setup_tools import _load_readme_description, _load_requirements  # noqa: E402
+from torchmetrics import info
+from torchmetrics.setup_tools import _load_readme_description, _load_requirements
 
 # https://packaging.python.org/guides/single-sourcing-package-version/
 # http://blog.ionelmc.ro/2014/05/25/python-packaging/
@@ -19,15 +19,15 @@ PATH_ROOT = os.path.dirname(__file__)
 # engineer specific practices
 setup(
     name='torchmetrics',
-    version=torchmetrics.info.__version__,
-    description=torchmetrics.info.__docs__,
-    author=torchmetrics.info.__author__,
-    author_email=torchmetrics.info.__author_email__,
-    url=torchmetrics.info.__homepage__,
+    version=info.__version__,
+    description=info.__docs__,
+    author=info.__author__,
+    author_email=info.__author_email__,
+    url=info.__homepage__,
     download_url='https://github.com/PyTorchLightning/metrics/archive/master.zip',
-    license=torchmetrics.info.__license__,
+    license=info.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
-    long_description=_load_readme_description(PATH_ROOT, version=f'v{torchmetrics.info.__version__}'),
+    long_description=_load_readme_description(PATH_ROOT, version=f'v{info.__version__}'),
     long_description_content_type='text/markdown',
     include_package_data=True,
     zip_safe=False,
