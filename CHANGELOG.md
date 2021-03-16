@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `CohenKappa` metric ([#69](https://github.com/PyTorchLightning/metrics/pull/69))
 
 
-- Added `MatthewsCorrcoef` metric ([]())
+- Added `MatthewsCorrcoef` metric ([#98](https://github.com/PyTorchLightning/metrics/pull/98))
 
 ### Changed
 
