@@ -57,7 +57,7 @@ jobs:
       run: |
         python -m pip install --upgrade --user pip
         pip install --requirement ./requirements.txt --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-        pip install coverage pytest --quiet --upgrade-strategy only-if-needed
+        pip install "pytest>6.0" "pytest-cov>2.10" --upgrade-strategy only-if-needed
         python --version
         pip --version
         pip list
@@ -66,7 +66,7 @@ jobs:
     - name: Test Package [only]
       run: |
         # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
-        coverage run --source torchmetrics -m pytest torchmetrics -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        python -m pytest torchmetrics -v --cov=torchmetrics --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2

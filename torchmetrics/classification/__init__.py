@@ -15,6 +15,7 @@ from torchmetrics.classification.accuracy import Accuracy  # noqa: F401
 from torchmetrics.classification.auc import AUC  # noqa: F401
 from torchmetrics.classification.auroc import AUROC  # noqa: F401
 from torchmetrics.classification.average_precision import AveragePrecision  # noqa: F401
+from torchmetrics.classification.cohen_kappa import CohenKappa  # noqa: F401
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
 from torchmetrics.classification.f_beta import F1, FBeta  # noqa: F401
 from torchmetrics.classification.hamming_distance import HammingDistance  # noqa: F401
