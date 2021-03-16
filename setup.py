@@ -5,18 +5,12 @@ import os
 # Always prefer setuptools over distutils
 from setuptools import find_packages, setup
 
-try:
-    import builtins
-except ImportError:
-    import __builtin__ as builtins
+import torchmetrics.info  # noqa: E402
+from torchmetrics.setup_tools import _load_readme_description, _load_requirements  # noqa: E402
 
 # https://packaging.python.org/guides/single-sourcing-package-version/
 # http://blog.ionelmc.ro/2014/05/25/python-packaging/
 PATH_ROOT = os.path.dirname(__file__)
-builtins.__LIGHTNING_SETUP__ = True
-
-import torchmetrics  # noqa: E402
-from torchmetrics.setup_tools import _load_readme_description, _load_requirements  # noqa: E402
 
 # https://packaging.python.org/discussions/install-requires-vs-requirements /
 # keep the meta-data here for simplicity in reading this file... it's not obvious
@@ -25,15 +19,15 @@ from torchmetrics.setup_tools import _load_readme_description, _load_requirement
 # engineer specific practices
 setup(
     name='torchmetrics',
-    version=torchmetrics.__version__,
-    description=torchmetrics.__docs__,
-    author=torchmetrics.__author__,
-    author_email=torchmetrics.__author_email__,
-    url=torchmetrics.__homepage__,
+    version=torchmetrics.info.__version__,
+    description=torchmetrics.info.__docs__,
+    author=torchmetrics.info.__author__,
+    author_email=torchmetrics.info.__author_email__,
+    url=torchmetrics.info.__homepage__,
     download_url='https://github.com/PyTorchLightning/metrics/archive/master.zip',
-    license=torchmetrics.__license__,
+    license=torchmetrics.info.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
-    long_description=_load_readme_description(PATH_ROOT, version=f'v{torchmetrics.__version__}'),
+    long_description=_load_readme_description(PATH_ROOT, version=f'v{torchmetrics.info.__version__}'),
     long_description_content_type='text/markdown',
     include_package_data=True,
     zip_safe=False,
