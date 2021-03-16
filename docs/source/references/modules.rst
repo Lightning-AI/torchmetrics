@@ -200,6 +200,14 @@ StatScores
     :noindex:
 
 
+************************
+Image Generation Metrics
+************************
+
+.. autoclass:: torchmetrics.FID
+    :noindex:
+
+
 ******************
 Regression Metrics
 ******************

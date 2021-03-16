@@ -10,6 +10,7 @@ twine>=3.2
 isort>=5.0
 mypy>=0.790
 yapf>=0.29.0
+torchvision>=0.5
 
 cloudpickle>=1.3
 pytorch-lightning>=1.0

@@ -58,6 +58,7 @@ else:
         StatScores,
     )
     from torchmetrics.collections import MetricCollection  # noqa: F401
+    from torchmetrics.image_generation import FID  # noqa: F401
     from torchmetrics.metric import Metric  # noqa: F401
     from torchmetrics.regression import (  # noqa: F401
         PSNR,
