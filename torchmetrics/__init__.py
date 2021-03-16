@@ -53,6 +53,7 @@ else:
         FBeta,
         HammingDistance,
         IoU,
+        MatthewsCorrcoef,
         Precision,
         PrecisionRecallCurve,
         Recall,
