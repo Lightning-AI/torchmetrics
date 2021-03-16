@@ -16,15 +16,15 @@ from typing import Any, Callable, Optional
 import torch
 
 from torchmetrics.functional.classification.matthews_corrcoef import (
-    _matthews_corrcoef_compute, 
-    _matthews_corrcoef_update
+    _matthews_corrcoef_compute,
+    _matthews_corrcoef_update,
 )
 from torchmetrics.metric import Metric
 
 
 class MatthewsCorrcoef(Metric):
     r"""
-    Calculates `Matthews correlation coefficient 
+    Calculates `Matthews correlation coefficient
     <https://en.wikipedia.org/wiki/Matthews_correlation_coefficient>`_ that measures
     the general correlation or quality of a classification. In the binary case it
     is defined as:
@@ -33,7 +33,7 @@ class MatthewsCorrcoef(Metric):
         MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
 
     where TP, TN, FP and FN are respectively the true postitives, true negatives,
-    false positives and false negatives. Also works in the case of multi-label or 
+    false positives and false negatives. Also works in the case of multi-label or
     multi-class input.
 
     Note:
@@ -108,6 +108,6 @@ class MatthewsCorrcoef(Metric):
 
     def compute(self) -> torch.Tensor:
         """
-        Computes confusion matrix
+        Computes matthews correlation coefficient
         """
         return _matthews_corrcoef_compute(self.confmat)

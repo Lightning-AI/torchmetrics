@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
-
 import torch
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
@@ -25,16 +23,17 @@ def _matthews_corrcoef_compute(confmat: torch.Tensor) -> torch.Tensor:
     pk = confmat.sum(dim=1).float()
     c = torch.trace(confmat).float()
     s = confmat.sum().float()
-    return (c*s - sum(tk * pk)) / (torch.sqrt(s**2 - sum(pk*pk)) * torch.sqrt(s**2 - sum(tk*tk)))
+    return (c * s - sum(tk * pk)) / (torch.sqrt(s ** 2 - sum(pk * pk)) * torch.sqrt(s ** 2 - sum(tk * tk)))
+
 
 def matthews_corrcoef(
         preds: torch.Tensor,
         target: torch.Tensor,
         num_classes: int,
         threshold: float = 0.5
-    ) -> torch.Tensor:
+) -> torch.Tensor:
     r"""
-    Calculates `Matthews correlation coefficient 
+    Calculates `Matthews correlation coefficient
     <https://en.wikipedia.org/wiki/Matthews_correlation_coefficient>`_ that measures
     the general correlation or quality of a classification. In the binary case it
     is defined as:
@@ -43,7 +42,7 @@ def matthews_corrcoef(
         MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
 
     where TP, TN, FP and FN are respectively the true postitives, true negatives,
-    false positives and false negatives. Also works in the case of multi-label or 
+    false positives and false negatives. Also works in the case of multi-label or
     multi-class input.
 
     Args:
