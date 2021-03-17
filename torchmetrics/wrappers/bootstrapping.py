@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union, List
+from typing import Any, Optional, Union, List, Callable
 from copy import deepcopy
 
 import torch
@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
 
 
-def _bootstrap_sampler(tensor, size: Optional[int] = None):
+def _bootstrap_sampler(tensor: torch.Tensor, size: Optional[int] = None) -> torch.Tensor:
     """  """
     if size is None:
         size = tensor.shape[0]
@@ -30,12 +30,18 @@ def _bootstrap_sampler(tensor, size: Optional[int] = None):
         num_samples=size,
         replacement=True
     )
+    print('pytorch', idx)
     return tensor[idx]
 
 
 class BootStrapper(Metric):
     def __init__(self, base_metric: Metric, 
-                 num_bootstraps: int = 10):
+                 num_bootstraps: int = 10,
+                 compute_on_step: bool = True,
+                 dist_sync_on_step: bool = False,
+                 process_group: Optional[Any] = None,
+                 dist_sync_fn: Callable = None
+    ) -> None:
         """ 
         Use to turn a metric into a bootstrapped metric that can automate the process of getting confidence
         intervals for metric values. This wrapper class basically keeps multiple copies of the same base metric
@@ -44,6 +50,21 @@ class BootStrapper(Metric):
      
         .. note:: Different from all other metrics, bootstrapped metrics has additional
             arguments in its ``compute``  method determining what should be returned.
+        
+        Args:
+            base_metric: 
+                base metric class to wrap
+            compute_on_step:
+                Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+            dist_sync_on_step:
+                Synchronize metric state across processes at each ``forward()``
+                before returning the value at the step
+            process_group:
+                Specify the process group on which synchronization is called.
+                default: ``None`` (which selects the entire world)
+            dist_sync_fn:
+                Callback that performs the allgather operation on the metric state. When ``None``, DDP
+                will be used to perform the allgather.
         
         Example::
             >>> from torchmetrics.wrappers import BootStrapper
@@ -58,7 +79,16 @@ class BootStrapper(Metric):
             tensor(0.4950) tensor(0.1677)
         
         """
-        super().__init__()
+        super().__init__(
+            compute_on_step,
+            dist_sync_on_step,
+            process_group,
+            dist_sync_fn
+        )
+        if not isinstance(base_metric, Metric):
+            raise ValueError("Expected base metric to be an instance of torchmetrics.Metric"
+                            f" but received {base_metric}")
+
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
         self.num_bootstraps = num_bootstraps
         

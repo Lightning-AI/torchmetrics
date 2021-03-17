@@ -107,7 +107,11 @@ def _class_test(
     if not metric_args:
         metric_args = {}
     # Instanciate lightning metric
-    metric = metric_class(compute_on_step=True, dist_sync_on_step=dist_sync_on_step, **metric_args)
+    metric = metric_class(
+        compute_on_step=check_dist_sync_on_step or check_batch,
+        dist_sync_on_step=dist_sync_on_step,
+        **metric_args
+    )
 
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
@@ -123,6 +127,8 @@ def _class_test(
                 sk_batch_result = sk_metric(ddp_preds, ddp_target)
                 # assert for dist_sync_on_step
                 if check_dist_sync_on_step:
+                    import pdb
+                    pdb.set_trace()
                     _assert_allclose(batch_result, sk_batch_result, atol=atol)
         else:
             sk_batch_result = sk_metric(preds[i], target[i])
