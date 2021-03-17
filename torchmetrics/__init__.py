@@ -69,3 +69,4 @@ else:
         MeanSquaredLogError,
         R2Score,
     )
+    from torchmetrics.wrappers import BootStrapper  # noqa: F401
