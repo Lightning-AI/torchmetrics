@@ -49,3 +49,4 @@ from torchmetrics.regression import (  # noqa: F401 E402
     R2Score,
 )
 from torchmetrics.retrieval import RetrievalMAP  # noqa: F401 E402
+from torchmetrics.wrappers import BootStrapper  # noqa: F401
