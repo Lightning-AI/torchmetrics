@@ -52,10 +52,8 @@ class Precision(StatScores):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
-        multilabel:
-            .. warning :: This parameter is deprecated and has no effect. Will be removed in v1.4.0.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -124,7 +122,6 @@ class Precision(StatScores):
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: str = "micro",
-        multilabel: bool = False,
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -202,10 +199,8 @@ class Recall(StatScores):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
-        multilabel:
-            .. warning :: This parameter is deprecated and has no effect. Will be removed in v1.4.0.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -275,7 +270,6 @@ class Recall(StatScores):
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: str = "micro",
-        multilabel: bool = False,
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,

@@ -15,8 +15,8 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.classification.checks import _input_format_classification
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
