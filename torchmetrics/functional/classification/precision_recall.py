@@ -76,11 +76,8 @@ def precision(
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
-
-        class_reduction:
-            .. warning :: This parameter is deprecated, use ``average``. Will be removed in v1.4.0.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -229,8 +226,8 @@ def recall(
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -365,8 +362,8 @@ def precision_recall(
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
