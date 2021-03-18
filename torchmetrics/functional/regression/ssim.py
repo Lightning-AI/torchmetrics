@@ -37,10 +37,7 @@ def _gaussian_kernel(
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1])
 
 
-def _ssim_update(
-    preds: Tensor,
-    target: Tensor,
-) -> Tuple[Tensor, Tensor]:
+def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."

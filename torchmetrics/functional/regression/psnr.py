@@ -31,9 +31,11 @@ def _psnr_compute(
     return reduce(psnr, reduction=reduction)
 
 
-def _psnr_update(preds: Tensor,
-                 target: Tensor,
-                 dim: Optional[Union[int, Tuple[int, ...]]] = None) -> Tuple[Tensor, Tensor]:
+def _psnr_update(
+    preds: Tensor,
+    target: Tensor,
+    dim: Optional[Union[int, Tuple[int, ...]]] = None,
+) -> Tuple[Tensor, Tensor]:
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         n_obs = tensor(target.numel(), device=target.device)

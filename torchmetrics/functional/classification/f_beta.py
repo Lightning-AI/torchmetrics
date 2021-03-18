@@ -20,11 +20,13 @@ from torchmetrics.utilities.checks import _input_format_classification_one_hot
 from torchmetrics.utilities.distributed import class_reduce
 
 
-def _fbeta_update(preds: Tensor,
-                  target: Tensor,
-                  num_classes: int,
-                  threshold: float = 0.5,
-                  multilabel: bool = False) -> Tuple[Tensor, Tensor, Tensor]:
+def _fbeta_update(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    threshold: float = 0.5,
+    multilabel: bool = False,
+) -> Tuple[Tensor, Tensor, Tensor]:
     preds, target = _input_format_classification_one_hot(num_classes, preds, target, threshold, multilabel)
     true_positives = torch.sum(preds * target, dim=1)
     predicted_positives = torch.sum(preds, dim=1)
@@ -37,7 +39,7 @@ def _fbeta_compute(
     predicted_positives: Tensor,
     actual_positives: Tensor,
     beta: float = 1.0,
-    average: str = "micro"
+    average: str = "micro",
 ) -> Tensor:
     if average == "micro":
         precision = true_positives.sum().float() / predicted_positives.sum()

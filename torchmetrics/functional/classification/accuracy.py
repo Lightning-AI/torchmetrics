@@ -20,8 +20,13 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
-def _accuracy_update(preds: Tensor, target: Tensor, threshold: float, top_k: Optional[int],
-                     subset_accuracy: bool) -> Tuple[Tensor, Tensor]:
+def _accuracy_update(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float,
+    top_k: Optional[int],
+    subset_accuracy: bool,
+) -> Tuple[Tensor, Tensor]:
 
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
 

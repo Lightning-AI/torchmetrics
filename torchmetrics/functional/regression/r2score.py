@@ -20,10 +20,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _r2score_update(
-    preds: Tensor,
-    target: Tensor,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _r2score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     _check_same_shape(preds, target)
     if preds.ndim > 2:
         raise ValueError(
@@ -47,7 +44,7 @@ def _r2score_compute(
     residual: Tensor,
     total: Tensor,
     adjusted: int = 0,
-    multioutput: str = "uniform_average"
+    multioutput: str = "uniform_average",
 ) -> Tensor:
     mean_error = sum_error / total
     diff = sum_squared_error - sum_error * mean_error
