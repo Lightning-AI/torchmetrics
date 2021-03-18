@@ -50,7 +50,11 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
 
 
 def cohen_kappa(
-    preds: Tensor, target: Tensor, num_classes: int, weights: Optional[str] = None, threshold: float = 0.5,
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    weights: Optional[str] = None,
+    threshold: float = 0.5,
 ) -> Tensor:
     r"""
     Calculates `Cohen's kappa score <https://en.wikipedia.org/wiki/Cohen%27s_kappa>`_ that measures
