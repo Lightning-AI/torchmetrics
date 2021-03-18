@@ -14,6 +14,7 @@
 import pytest
 import torch
 from pytorch_lightning import seed_everything
+from torch import Tensor
 
 from torchmetrics.functional import dice_score
 from torchmetrics.functional.classification.precision_recall_curve import _binary_clf_curve
@@ -83,9 +84,9 @@ def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
 
     fps, tps, thresh = _binary_clf_curve(preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label)
 
-    assert isinstance(tps, torch.Tensor)
-    assert isinstance(fps, torch.Tensor)
-    assert isinstance(thresh, torch.Tensor)
+    assert isinstance(tps, Tensor)
+    assert isinstance(fps, Tensor)
+    assert isinstance(thresh, Tensor)
     assert tps.shape == (exp_shape, )
     assert fps.shape == (exp_shape, )
     assert thresh.shape == (exp_shape, )

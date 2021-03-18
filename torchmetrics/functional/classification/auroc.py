@@ -14,6 +14,7 @@
 from typing import Optional, Sequence, Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.roc import roc
@@ -22,7 +23,7 @@ from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
-def _auroc_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, str]:
+def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, str]:
     # use _input_format_classification for validating the input and get the mode of data
     _, _, mode = _input_format_classification(preds, target)
 
@@ -39,15 +40,15 @@ def _auroc_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tens
 
 
 def _auroc_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     mode: str,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = 'macro',
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
-) -> torch.Tensor:
+) -> Tensor:
     # binary mode override num_classes
     if mode == 'binary':
         num_classes = 1
@@ -128,14 +129,14 @@ def _auroc_compute(
 
 
 def auroc(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = 'macro',
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
-) -> torch.Tensor:
+) -> Tensor:
     """ Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
     <https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Further_interpretations>`_
 

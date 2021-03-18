@@ -14,13 +14,14 @@
 from typing import Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
 
 _cohen_kappa_update = _confusion_matrix_update
 
 
-def _cohen_kappa_compute(confmat: torch.Tensor, weights: Optional[str] = None) -> torch.Tensor:
+def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tensor:
     confmat = _confusion_matrix_compute(confmat)
     n_classes = confmat.shape[0]
     sum0 = confmat.sum(dim=0, keepdim=True)
@@ -39,20 +40,18 @@ def _cohen_kappa_compute(confmat: torch.Tensor, weights: Optional[str] = None) -
         else:
             w_mat = torch.pow(w_mat - w_mat.T, 2.0)
     else:
-        raise ValueError(f"Received {weights} for argument ``weights`` but should be either"
-                         " None, 'linear' or 'quadratic'")
+        raise ValueError(
+            f"Received {weights} for argument ``weights`` but should be either"
+            " None, 'linear' or 'quadratic'"
+        )
 
     k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)
     return 1 - k
 
 
 def cohen_kappa(
-        preds: torch.Tensor,
-        target: torch.Tensor,
-        num_classes: int,
-        weights: Optional[str] = None,
-        threshold: float = 0.5
-) -> torch.Tensor:
+    preds: Tensor, target: Tensor, num_classes: int, weights: Optional[str] = None, threshold: float = 0.5
+) -> Tensor:
     r"""
     Calculates `Cohen's kappa score <https://en.wikipedia.org/wiki/Cohen%27s_kappa>`_ that measures
     inter-annotator agreement. It is defined as

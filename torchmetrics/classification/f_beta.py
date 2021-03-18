@@ -14,6 +14,7 @@
 from typing import Any, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.f_beta import _fbeta_compute, _fbeta_update
 from torchmetrics.metric import Metric
@@ -109,7 +110,7 @@ class FBeta(Metric):
         self.add_state("predicted_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
         self.add_state("actual_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -125,7 +126,7 @@ class FBeta(Metric):
         self.predicted_positives += predicted_positives
         self.actual_positives += actual_positives
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes fbeta over state.
         """

@@ -14,11 +14,12 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_relative_error_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, int]:
+def _mean_relative_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
     _check_same_shape(preds, target)
     target_nz = target.clone()
     target_nz[target == 0] = 1
@@ -27,11 +28,11 @@ def _mean_relative_error_update(preds: torch.Tensor, target: torch.Tensor) -> Tu
     return sum_rltv_error, n_obs
 
 
-def _mean_relative_error_compute(sum_rltv_error: torch.Tensor, n_obs: int) -> torch.Tensor:
+def _mean_relative_error_compute(sum_rltv_error: Tensor, n_obs: int) -> Tensor:
     return sum_rltv_error / n_obs
 
 
-def mean_relative_error(preds: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     Computes mean relative error
 

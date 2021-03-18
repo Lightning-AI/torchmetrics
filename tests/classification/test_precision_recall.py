@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import precision_score, recall_score
+from torch import Tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -198,8 +199,8 @@ class TestPrecisionRecall(MetricTester):
         self,
         ddp: bool,
         dist_sync_on_step: bool,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         sk_wrapper: Callable,
         metric_class: Metric,
         metric_fn: Callable,
@@ -248,8 +249,8 @@ class TestPrecisionRecall(MetricTester):
 
     def test_precision_recall_fn(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         sk_wrapper: Callable,
         metric_class: Metric,
         metric_fn: Callable,
@@ -336,11 +337,11 @@ def test_top_k(
     metric_class,
     metric_fn,
     k: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     average: str,
-    expected_prec: torch.Tensor,
-    expected_recall: torch.Tensor,
+    expected_prec: Tensor,
+    expected_recall: Tensor,
 ):
     """A simple test to check that top_k works as expected.
 

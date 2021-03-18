@@ -14,18 +14,19 @@
 from typing import Optional, Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
-def _check_same_shape(pred: torch.Tensor, target: torch.Tensor):
+def _check_same_shape(pred: Tensor, target: Tensor):
     """ Check that predictions and target have the same shape, else raise error """
     if pred.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: torch.Tensor, target: torch.Tensor, threshold: float, is_multiclass: bool):
+def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, is_multiclass: bool):
     """
     Perform basic validation of inputs that does not require deducing any information
     of the type of inputs.
@@ -56,7 +57,7 @@ def _basic_input_validation(preds: torch.Tensor, target: torch.Tensor, threshold
         raise ValueError("If you set `is_multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
 
 
-def _check_shape_and_type_consistency(preds: torch.Tensor, target: torch.Tensor) -> Tuple[str, int]:
+def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[str, int]:
     """
     This checks that the shape and type of inputs are consistent with
     each other and fall into one of the allowed input types (see the
@@ -139,9 +140,7 @@ def _check_num_classes_binary(num_classes: int, is_multiclass: bool):
         )
 
 
-def _check_num_classes_mc(
-    preds: torch.Tensor, target: torch.Tensor, num_classes: int, is_multiclass: bool, implied_classes: int
-):
+def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, is_multiclass: bool, implied_classes: int):
     """
     This checks that the consistency of `num_classes` with the data
     and `is_multiclass` param for (multi-dimensional) multi-class data.
@@ -206,8 +205,8 @@ def _check_top_k(top_k: int, case: str, implied_classes: int, is_multiclass: Opt
 
 
 def _check_classification_inputs(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float,
     num_classes: Optional[int],
     is_multiclass: bool,
@@ -305,13 +304,13 @@ def _check_classification_inputs(
 
 
 def _input_format_classification(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, str]:
+) -> Tuple[Tensor, Tensor, str]:
     """Convert preds and target tensors into common format.
 
     Preds and targets are supposed to fall into one of these categories (and are
@@ -448,11 +447,11 @@ def _input_format_classification(
 
 def _input_format_classification_one_hot(
     num_classes: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float = 0.5,
     multilabel: bool = False,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor]:
     """Convert preds and target tensors into one hot spare label tensors
 
     Args:

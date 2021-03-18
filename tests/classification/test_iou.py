@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import jaccard_score as sk_jaccard_score
+from torch import Tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -134,12 +135,12 @@ class TestIoU(MetricTester):
 
 
 @pytest.mark.parametrize(['half_ones', 'reduction', 'ignore_index', 'expected'], [
-    pytest.param(False, 'none', None, torch.Tensor([1, 1, 1])),
-    pytest.param(False, 'elementwise_mean', None, torch.Tensor([1])),
-    pytest.param(False, 'none', 0, torch.Tensor([1, 1])),
-    pytest.param(True, 'none', None, torch.Tensor([0.5, 0.5, 0.5])),
-    pytest.param(True, 'elementwise_mean', None, torch.Tensor([0.5])),
-    pytest.param(True, 'none', 0, torch.Tensor([0.5, 0.5])),
+    pytest.param(False, 'none', None, Tensor([1, 1, 1])),
+    pytest.param(False, 'elementwise_mean', None, Tensor([1])),
+    pytest.param(False, 'none', 0, Tensor([1, 1])),
+    pytest.param(True, 'none', None, Tensor([0.5, 0.5, 0.5])),
+    pytest.param(True, 'elementwise_mean', None, Tensor([0.5])),
+    pytest.param(True, 'none', 0, Tensor([0.5, 0.5])),
 ])
 def test_iou(half_ones, reduction, ignore_index, expected):
     pred = (torch.arange(120) % 3).view(-1, 1)

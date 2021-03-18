@@ -14,11 +14,12 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.data import _stable_1d_sort
 
 
-def _auc_update(x: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     if x.ndim > 1 or y.ndim > 1:
         raise ValueError(
             f'Expected both `x` and `y` tensor to be 1d, but got'
@@ -32,7 +33,7 @@ def _auc_update(x: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, torch.T
     return x, y
 
 
-def _auc_compute(x: torch.Tensor, y: torch.Tensor, reorder: bool = False) -> torch.Tensor:
+def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     if reorder:
         x, x_idx = _stable_1d_sort(x)
         y = y[x_idx]
@@ -51,7 +52,7 @@ def _auc_compute(x: torch.Tensor, y: torch.Tensor, reorder: bool = False) -> tor
     return direction * torch.trapz(y, x)
 
 
-def auc(x: torch.Tensor, y: torch.Tensor, reorder: bool = False) -> torch.Tensor:
+def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     """
     Computes Area Under the Curve (AUC) using the trapezoidal rule
 

@@ -15,6 +15,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import numpy as np
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
@@ -175,7 +176,7 @@ class StatScores(Metric):
         for s in ("tp", "fp", "tn", "fn"):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
@@ -209,7 +210,7 @@ class StatScores(Metric):
             self.tn.append(tn)
             self.fn.append(fn)
 
-    def _get_final_stats(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """Performs concatenation on the stat scores if neccesary,
         before passing them to a compute function.
         """
@@ -224,7 +225,7 @@ class StatScores(Metric):
 
         return tp, fp, tn, fn
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes the stat scores based on inputs passed in to ``update`` previously.
 
@@ -262,13 +263,13 @@ class StatScores(Metric):
 
 
 def _reduce_stat_scores(
-    numerator: torch.Tensor,
-    denominator: torch.Tensor,
-    weights: Optional[torch.Tensor],
+    numerator: Tensor,
+    denominator: Tensor,
+    weights: Optional[Tensor],
     average: str,
     mdmc_average: Optional[str],
     zero_division: int = 0,
-) -> torch.Tensor:
+) -> Tensor:
     """
     Reduces scores of type ``numerator/denominator`` or
     ``weights * (numerator/denominator)``, if ``average='weighted'``.

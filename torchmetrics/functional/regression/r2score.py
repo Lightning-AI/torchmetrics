@@ -14,6 +14,7 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
@@ -21,8 +22,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 def _r2score_update(
     preds: torch.tensor,
-    target: torch.Tensor,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    target: Tensor,
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     _check_same_shape(preds, target)
     if preds.ndim > 2:
         raise ValueError(
@@ -41,13 +42,13 @@ def _r2score_update(
 
 
 def _r2score_compute(
-    sum_squared_error: torch.Tensor,
-    sum_error: torch.Tensor,
-    residual: torch.Tensor,
-    total: torch.Tensor,
+    sum_squared_error: Tensor,
+    sum_error: Tensor,
+    residual: Tensor,
+    total: Tensor,
     adjusted: int = 0,
     multioutput: str = "uniform_average"
-) -> torch.Tensor:
+) -> Tensor:
     mean_error = sum_error / total
     diff = sum_squared_error - sum_error * mean_error
     raw_scores = 1 - (residual / diff)
@@ -82,11 +83,11 @@ def _r2score_compute(
 
 
 def r2score(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     adjusted: int = 0,
     multioutput: str = "uniform_average",
-) -> torch.Tensor:
+) -> Tensor:
     r"""
     Computes r2 score also known as `coefficient of determination
     <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:

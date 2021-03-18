@@ -20,6 +20,7 @@ from collections import Counter
 from typing import List, Sequence
 
 import torch
+from torch import Tensor
 
 
 def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
@@ -45,11 +46,8 @@ def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
 
 
 def bleu_score(
-    translate_corpus: Sequence[str],
-    reference_corpus: Sequence[str],
-    n_gram: int = 4,
-    smooth: bool = False
-) -> torch.Tensor:
+    translate_corpus: Sequence[str], reference_corpus: Sequence[str], n_gram: int = 4, smooth: bool = False
+) -> Tensor:
     """
     Calculate BLEU score of machine translated text with one or more references
 

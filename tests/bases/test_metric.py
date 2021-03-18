@@ -14,14 +14,14 @@
 import pickle
 from collections import OrderedDict
 
-
 import cloudpickle
 import numpy as np
 import pytest
 import torch
 from torch import nn
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
+
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 torch.manual_seed(42)
 

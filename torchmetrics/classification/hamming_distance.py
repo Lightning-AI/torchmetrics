@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.hamming_distance import _hamming_distance_compute, _hamming_distance_update
 from torchmetrics.metric import Metric
@@ -86,7 +87,7 @@ class HammingDistance(Metric):
             raise ValueError("The `threshold` should lie in the (0,1) interval.")
         self.threshold = threshold
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
@@ -100,7 +101,7 @@ class HammingDistance(Metric):
         self.correct += correct
         self.total += total
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes hamming distance based on inputs passed in to ``update`` previously.
         """

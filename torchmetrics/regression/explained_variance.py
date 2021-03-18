@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.regression.explained_variance import (
     _explained_variance_compute,
@@ -100,7 +101,7 @@ class ExplainedVariance(Metric):
         self.add_state("sum_squared_target", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_obs", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 

@@ -14,15 +14,14 @@
 from typing import Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
-def _confusion_matrix_update(
-    preds: torch.Tensor, target: torch.Tensor, num_classes: int, threshold: float = 0.5
-) -> torch.Tensor:
+def _confusion_matrix_update(preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5) -> Tensor:
     preds, target, mode = _input_format_classification(preds, target, threshold)
     if mode not in (DataType.BINARY, DataType.MULTILABEL):
         preds = preds.argmax(dim=1)
@@ -33,7 +32,7 @@ def _confusion_matrix_update(
     return confmat
 
 
-def _confusion_matrix_compute(confmat: torch.Tensor, normalize: Optional[str] = None) -> torch.Tensor:
+def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
     allowed_normalize = ('true', 'pred', 'all', 'none', None)
     assert normalize in allowed_normalize, \
         f"Argument average needs to one of the following: {allowed_normalize}"
@@ -54,12 +53,8 @@ def _confusion_matrix_compute(confmat: torch.Tensor, normalize: Optional[str] = 
 
 
 def confusion_matrix(
-    preds: torch.Tensor,
-    target: torch.Tensor,
-    num_classes: int,
-    normalize: Optional[str] = None,
-    threshold: float = 0.5
-) -> torch.Tensor:
+    preds: Tensor, target: Tensor, num_classes: int, normalize: Optional[str] = None, threshold: float = 0.5
+) -> Tensor:
     """
     Computes the confusion matrix. Works with binary, multiclass, and multilabel data.
     Accepts probabilities from a model output or integer class values in prediction.

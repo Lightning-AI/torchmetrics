@@ -14,6 +14,7 @@
 from typing import Any, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.cohen_kappa import _cohen_kappa_compute, _cohen_kappa_update
 from torchmetrics.metric import Metric
@@ -74,6 +75,7 @@ class CohenKappa(Metric):
         >>> cohenkappa(preds, target)
         tensor(0.5000)
     """
+
     def __init__(
         self,
         num_classes: int,
@@ -99,7 +101,7 @@ class CohenKappa(Metric):
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -110,7 +112,7 @@ class CohenKappa(Metric):
         confmat = _cohen_kappa_update(preds, target, self.num_classes, self.threshold)
         self.confmat += confmat
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes cohen kappa score
         """

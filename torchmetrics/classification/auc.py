@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.auc import _auc_compute, _auc_update
 from torchmetrics.metric import Metric
@@ -68,7 +69,7 @@ class AUC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, x: torch.Tensor, y: torch.Tensor):
+    def update(self, x: Tensor, y: Tensor):
         """
         Update state with predictions and targets.
 
@@ -81,7 +82,7 @@ class AUC(Metric):
         self.x.append(x)
         self.y.append(y)
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes AUC based on inputs passed in to ``update`` previously.
         """

@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.accuracy import _accuracy_compute, _accuracy_update
 from torchmetrics.metric import Metric
@@ -125,7 +126,7 @@ class Accuracy(Metric):
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
@@ -142,7 +143,7 @@ class Accuracy(Metric):
         self.correct += correct
         self.total += total
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes accuracy based on inputs passed in to ``update`` previously.
         """

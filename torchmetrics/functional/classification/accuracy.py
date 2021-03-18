@@ -14,14 +14,14 @@
 from typing import Optional, Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
-def _accuracy_update(
-    preds: torch.Tensor, target: torch.Tensor, threshold: float, top_k: Optional[int], subset_accuracy: bool
-) -> Tuple[torch.Tensor, torch.Tensor]:
+def _accuracy_update(preds: Tensor, target: Tensor, threshold: float, top_k: Optional[int],
+                     subset_accuracy: bool) -> Tuple[Tensor, Tensor]:
 
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
 
@@ -45,17 +45,17 @@ def _accuracy_update(
     return correct, total
 
 
-def _accuracy_compute(correct: torch.Tensor, total: torch.Tensor) -> torch.Tensor:
+def _accuracy_compute(correct: Tensor, total: Tensor) -> Tensor:
     return correct.float() / total
 
 
 def accuracy(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     subset_accuracy: bool = False,
-) -> torch.Tensor:
+) -> Tensor:
     r"""Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`_:
 
     .. math::

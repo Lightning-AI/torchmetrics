@@ -14,25 +14,26 @@
 from typing import Optional, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn, reduce
 
 
 def _psnr_compute(
-    sum_squared_error: torch.Tensor,
-    n_obs: torch.Tensor,
-    data_range: torch.Tensor,
+    sum_squared_error: Tensor,
+    n_obs: Tensor,
+    data_range: Tensor,
     base: float = 10.0,
     reduction: str = 'elementwise_mean',
-) -> torch.Tensor:
+) -> Tensor:
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / n_obs)
     psnr = psnr_base_e * (10 / torch.log(torch.tensor(base)))
     return reduce(psnr, reduction=reduction)
 
 
-def _psnr_update(preds: torch.Tensor,
-                 target: torch.Tensor,
-                 dim: Optional[Union[int, Tuple[int, ...]]] = None) -> Tuple[torch.Tensor, torch.Tensor]:
+def _psnr_update(preds: Tensor,
+                 target: Tensor,
+                 dim: Optional[Union[int, Tuple[int, ...]]] = None) -> Tuple[Tensor, Tensor]:
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         n_obs = torch.tensor(target.numel(), device=target.device)
@@ -54,13 +55,13 @@ def _psnr_update(preds: torch.Tensor,
 
 
 def psnr(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     data_range: Optional[float] = None,
     base: float = 10.0,
     reduction: str = 'elementwise_mean',
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
-) -> torch.Tensor:
+) -> Tensor:
     """
     Computes the peak signal-to-noise ratio
 
