@@ -110,7 +110,7 @@ class AUROC(Metric):
         self.average = average
         self.max_fpr = max_fpr
 
-        allowed_average = (None, 'macro', 'weighted')
+        allowed_average = (None, 'macro', 'weighted', 'micro')
         if self.average not in allowed_average:
             raise ValueError(
                 f'Argument `average` expected to be one of the following: {allowed_average} but got {average}'
