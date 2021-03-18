@@ -61,7 +61,11 @@ class MetricCollection(nn.ModuleDict):
 
     """
 
-    def __init__(self, metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]], prefix: Optional[str] = None):
+    def __init__(
+        self,
+        metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]],
+        prefix: Optional[str] = None,
+    ):
         super().__init__()
         if isinstance(metrics, dict):
             # Check all values are metrics
