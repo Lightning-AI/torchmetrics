@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from distutils.version import LooseVersion
 from typing import Optional, Sequence, Tuple
 
 import torch
@@ -20,6 +19,7 @@ from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, DataType
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 def _auroc_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, str]:
@@ -57,7 +57,7 @@ def _auroc_compute(
         if (not isinstance(max_fpr, float) and 0 < max_fpr <= 1):
             raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
 
-        if LooseVersion(torch.__version__) < LooseVersion('1.6.0'):
+        if _TORCH_LOWER_1_6:
             raise RuntimeError(
                 "`max_fpr` argument requires `torch.bucketize` which"
                 " is not available below PyTorch version 1.6"

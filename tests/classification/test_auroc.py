@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from distutils.version import LooseVersion
 from functools import partial
 
 import pytest
@@ -26,6 +25,7 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.auroc import AUROC
 from torchmetrics.functional import auroc
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 torch.manual_seed(42)
 
@@ -104,7 +104,7 @@ class TestAUROC(MetricTester):
             pytest.skip('max_fpr parameter not support for multi class or multi label')
 
         # max_fpr only supported for torch v1.6 or higher
-        if max_fpr is not None and LooseVersion(torch.__version__) < LooseVersion('1.6.0'):
+        if max_fpr is not None and _TORCH_LOWER_1_6:
             pytest.skip('requires torch v1.6 or higher to test max_fpr argument')
 
         self.run_class_metric_test(
@@ -127,7 +127,7 @@ class TestAUROC(MetricTester):
             pytest.skip('max_fpr parameter not support for multi class or multi label')
 
         # max_fpr only supported for torch v1.6 or higher
-        if max_fpr is not None and LooseVersion(torch.__version__) < LooseVersion('1.6.0'):
+        if max_fpr is not None and _TORCH_LOWER_1_6:
             pytest.skip('requires torch v1.6 or higher to test max_fpr argument')
 
         self.run_functional_metric_test(

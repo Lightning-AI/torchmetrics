@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from distutils.version import LooseVersion
 from typing import Any, Callable, Optional
 
 import torch
@@ -19,6 +18,7 @@ import torch
 from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 class AUROC(Metric):
@@ -120,7 +120,7 @@ class AUROC(Metric):
             if (not isinstance(max_fpr, float) and 0 < max_fpr <= 1):
                 raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
 
-            if LooseVersion(torch.__version__) < LooseVersion('1.6.0'):
+            if _TORCH_LOWER_1_6:
                 raise RuntimeError(
                     '`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6'
                 )

@@ -13,14 +13,14 @@
 # limitations under the License.
 import pickle
 from collections import OrderedDict
-from distutils.version import LooseVersion
+
 
 import cloudpickle
 import numpy as np
 import pytest
 import torch
 from torch import nn
-
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
 
 torch.manual_seed(42)
@@ -69,7 +69,7 @@ def test_add_state_persistent():
 
     a.add_state("b", torch.tensor(0), "sum", persistent=False)
 
-    if LooseVersion(torch.__version__) >= LooseVersion("1.6.0"):
+    if _TORCH_LOWER_1_6:
         assert "b" not in a.state_dict()
 
 
