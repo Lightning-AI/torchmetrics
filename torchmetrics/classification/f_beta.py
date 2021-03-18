@@ -11,16 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import torch
 
 from torchmetrics.functional.classification.f_beta import _fbeta_compute, _fbeta_update
-from torchmetrics.metric import Metric
+from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.utilities import rank_zero_warn
 
 
-class FBeta(Metric):
+class FBeta(StatScores):
     r"""
     Computes `F-score <https://en.wikipedia.org/wiki/F-score>`_, specifically:
 
@@ -42,27 +42,79 @@ class FBeta(Metric):
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
+
+
     Args:
-        num_classes: Number of classes in the dataset.
-        beta: Beta coefficient in the F measure.
+        num_classes:
+            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
+        beta: 
+            Beta coefficient in the F measure.
         threshold:
-            Threshold value for binary or multi-label probabilities. default: 0.5
-
+            Threshold probability value for transforming probability predictions to binary
+            (0,1) predictions, in the case of binary or multi-label inputs.
         average:
-            - ``'micro'`` computes metric globally
-            - ``'macro'`` computes metric for each class and uniformly averages them
-            - ``'weighted'`` computes metric for each class and does a weighted-average,
-              where each class is weighted by their support (accounts for class imbalance)
-            - ``'none'`` or ``None`` computes and returns the metric per class
+            Defines the reduction that is applied. Should be one of the following:
 
-        multilabel: If predictions are from multilabel classification.
+            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'macro'``: Calculate the metric for each class separately, and average the
+              metrics accross classes (with equal weights for each class).
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics accross classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
+            - ``'samples'``: Calculate the metric for each sample, and average the metrics
+              across samples (with equal weights for each sample).
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
+
+        mdmc_average:
+            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter). Should be one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class.
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then averaged over samples.
+              The computation for each sample is done by treating the flattened extra axes ``...``
+              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              and computing the metric for the sample based on that.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
+              (see :ref:`references/modules:input types`)
+              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
+            or ``'none'``, the score for the ignored class will be returned as ``nan``.
+
+        top_k:
+            Number of highest probability entries for each sample to convert to 1s - relevant
+            only for inputs with probability predictions. If this parameter is set for multi-label
+            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
+            this parameter defaults to 1.
+
+            Should be left unset (``None``) for inputs with label predictions.
+        is_multiclass:
+            Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be. See the parameter's
+            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            for a more detailed explanation and examples.
+
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather.
 
     Example:
 
@@ -74,17 +126,20 @@ class FBeta(Metric):
         tensor(0.3333)
 
     """
-
     def __init__(
         self,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         beta: float = 1.0,
         threshold: float = 0.5,
         average: str = "micro",
-        multilabel: bool = False,
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        is_multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -96,7 +151,6 @@ class FBeta(Metric):
         self.beta = beta
         self.threshold = threshold
         self.average = average
-        self.multilabel = multilabel
 
         allowed_average = ("micro", "macro", "weighted", "none", None)
         if self.average not in allowed_average:
@@ -154,25 +208,74 @@ class F1(FBeta):
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
     Args:
-        num_classes: Number of classes in the dataset.
+        num_classes:
+            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold value for binary or multi-label logits. default: 0.5
-
+            Threshold probability value for transforming probability predictions to binary
+            (0,1) predictions, in the case of binary or multi-label inputs.
         average:
-            - ``'micro'`` computes metric globally
-            - ``'macro'`` computes metric for each class and uniformly averages them
-            - ``'weighted'`` computes metric for each class and does a weighted-average,
-              where each class is weighted by their support (accounts for class imbalance)
-            - ``'none'`` or ``None`` computes and returns the metric per class
+            Defines the reduction that is applied. Should be one of the following:
 
-        multilabel: If predictions are from multilabel classification.
+            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'macro'``: Calculate the metric for each class separately, and average the
+              metrics accross classes (with equal weights for each class).
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics accross classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
+            - ``'samples'``: Calculate the metric for each sample, and average the metrics
+              across samples (with equal weights for each sample).
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
+
+        mdmc_average:
+            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter). Should be one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class.
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then averaged over samples.
+              The computation for each sample is done by treating the flattened extra axes ``...``
+              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              and computing the metric for the sample based on that.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
+              (see :ref:`references/modules:input types`)
+              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
+            or ``'none'``, the score for the ignored class will be returned as ``nan``.
+
+        top_k:
+            Number of highest probability entries for each sample to convert to 1s - relevant
+            only for inputs with probability predictions. If this parameter is set for multi-label
+            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
+            this parameter defaults to 1.
+
+            Should be left unset (``None``) for inputs with label predictions.
+        is_multiclass:
+            Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be. See the parameter's
+            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            for a more detailed explanation and examples.
+
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather.
 
     Example:
         >>> from torchmetrics import F1
@@ -185,24 +288,31 @@ class F1(FBeta):
 
     def __init__(
         self,
-        num_classes: int,
+        num_classes: Optional[int] = None,
+        beta: float = 1.0,
         threshold: float = 0.5,
         average: str = "micro",
-        multilabel: bool = False,
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        is_multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
     ):
-        if multilabel is not False:
-            rank_zero_warn(f'The `multilabel={multilabel}` parameter is unused and will not have any effect.')
 
         super().__init__(
             num_classes=num_classes,
             beta=1.0,
             threshold=threshold,
             average=average,
-            multilabel=multilabel,
+            mdmc_average=mdmc_average,
+            ignore_index=ignore_index,
+            top_k=top_k,
+            is_multiclass=is_multiclass,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
+            dist_sync_fn=dist_sync_fn
         )
