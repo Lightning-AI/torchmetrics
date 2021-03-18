@@ -191,7 +191,7 @@ def test_iou(half_ones, reduction, ignore_index, expected):
 )
 def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes, expected):
     iou_val = iou(
-        pred=tensor(pred),
+        preds=tensor(pred),
         target=tensor(target),
         ignore_index=ignore_index,
         absent_score=absent_score,
@@ -221,7 +221,7 @@ def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes,
 )
 def test_iou_ignore_index(pred, target, ignore_index, num_classes, reduction, expected):
     iou_val = iou(
-        pred=tensor(pred),
+        preds=tensor(pred),
         target=tensor(target),
         ignore_index=ignore_index,
         num_classes=num_classes,
