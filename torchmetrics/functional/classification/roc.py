@@ -14,6 +14,7 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_clf_curve,
@@ -22,22 +23,21 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 
 
 def _roc_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, int, int]:
+) -> Tuple[Tensor, Tensor, int, int]:
     return _precision_recall_curve_update(preds, target, num_classes, pos_label)
 
 
 def _roc_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
 
     if num_classes == 1:
         fps, tps, thresholds = _binary_clf_curve(
@@ -78,13 +78,12 @@ def _roc_compute(
 
 
 def roc(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """
     Computes the Receiver Operating Characteristic (ROC).
 

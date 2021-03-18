@@ -20,6 +20,7 @@ from typing import Callable
 import numpy as np
 import pytest
 import torch
+from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
@@ -51,7 +52,7 @@ def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
         a certain tolerance
     """
     # single output compare
-    if isinstance(pl_result, torch.Tensor):
+    if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.numpy(), sk_result, atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, (tuple, list)):
@@ -69,14 +70,14 @@ def _assert_tensor(pl_result):
         for plr in pl_result:
             _assert_tensor(plr)
     else:
-        assert isinstance(pl_result, torch.Tensor)
+        assert isinstance(pl_result, Tensor)
 
 
 def _class_test(
     rank: int,
     worldsize: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     metric_class: Metric,
     sk_metric: Callable,
     dist_sync_on_step: bool,
@@ -140,8 +141,8 @@ def _class_test(
 
 
 def _functional_test(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     metric_functional: Callable,
     sk_metric: Callable,
     metric_args: dict = {},
@@ -195,8 +196,8 @@ class MetricTester:
 
     def run_functional_metric_test(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_functional: Callable,
         sk_metric: Callable,
         metric_args: dict = {},
@@ -223,8 +224,8 @@ class MetricTester:
     def run_class_metric_test(
         self,
         ddp: bool,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_class: Metric,
         sk_metric: Callable,
         dist_sync_on_step: bool,
@@ -289,7 +290,7 @@ class DummyMetric(Metric):
 
     def __init__(self):
         super().__init__()
-        self.add_state("x", torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("x", tensor(0.0), dist_reduce_fx=None)
 
     def update(self):
         pass

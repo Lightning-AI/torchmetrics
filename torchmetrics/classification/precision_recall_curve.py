@@ -14,6 +14,7 @@
 from typing import Any, List, Optional, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _precision_recall_curve_compute,
@@ -108,7 +109,7 @@ class PrecisionRecallCurve(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -124,10 +125,7 @@ class PrecisionRecallCurve(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-    def compute(
-        self
-    ) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                      List[torch.Tensor]]]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """
         Compute the precision-recall curve
 

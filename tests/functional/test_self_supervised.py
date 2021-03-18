@@ -14,6 +14,7 @@
 import pytest
 import torch
 from sklearn.metrics import pairwise
+from torch import tensor
 
 from torchmetrics.functional import embedding_similarity
 
@@ -40,6 +41,6 @@ def test_against_sklearn(similarity, reduction):
         return dist
 
     sk_dist = sklearn_embedding_distance(batch.cpu().detach().numpy(), similarity=similarity, reduction=reduction)
-    sk_dist = torch.tensor(sk_dist, dtype=torch.float, device=device)
+    sk_dist = tensor(sk_dist, dtype=torch.float, device=device)
 
     assert torch.allclose(sk_dist, pl_dist)

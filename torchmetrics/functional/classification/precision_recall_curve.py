@@ -15,21 +15,22 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 import torch.nn.functional as F
+from torch import Tensor, tensor
 
 from torchmetrics.utilities import rank_zero_warn
 
 
 def _binary_clf_curve(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1.,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor]:
     """
     adapted from https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
     """
-    if sample_weights is not None and not isinstance(sample_weights, torch.Tensor):
-        sample_weights = torch.tensor(sample_weights, device=preds.device, dtype=torch.float)
+    if sample_weights is not None and not isinstance(sample_weights, Tensor):
+        sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
 
     # remove class dimension if necessary
     if preds.ndim > target.ndim:
@@ -63,11 +64,11 @@ def _binary_clf_curve(
 
 
 def _precision_recall_curve_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, int, int]:
+) -> Tuple[Tensor, Tensor, int, int]:
     if not (len(preds.shape) == len(target.shape) or len(preds.shape) == len(target.shape) + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
     # single class evaluation
@@ -99,13 +100,12 @@ def _precision_recall_curve_update(
 
 
 def _precision_recall_curve_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
 
     if num_classes == 1:
         fps, tps, thresholds = _binary_clf_curve(
@@ -149,13 +149,12 @@ def _precision_recall_curve_compute(
 
 
 def precision_recall_curve(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """
     Computes precision-recall pairs for different thresholds.
 

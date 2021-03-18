@@ -15,6 +15,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import numpy as np
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
@@ -175,7 +176,7 @@ class StatScores(Metric):
         for s in ("tp", "fp", "tn", "fn"):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
@@ -209,7 +210,7 @@ class StatScores(Metric):
             self.tn.append(tn)
             self.fn.append(fn)
 
-    def _get_final_stats(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """Performs concatenation on the stat scores if neccesary,
         before passing them to a compute function.
         """
@@ -224,7 +225,7 @@ class StatScores(Metric):
 
         return tp, fp, tn, fn
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes the stat scores based on inputs passed in to ``update`` previously.
 
@@ -262,13 +263,13 @@ class StatScores(Metric):
 
 
 def _reduce_stat_scores(
-    numerator: torch.Tensor,
-    denominator: torch.Tensor,
-    weights: Optional[torch.Tensor],
+    numerator: Tensor,
+    denominator: Tensor,
+    weights: Optional[Tensor],
     average: str,
     mdmc_average: Optional[str],
     zero_division: int = 0,
-) -> torch.Tensor:
+) -> Tensor:
     """
     Reduces scores of type ``numerator/denominator`` or
     ``weights * (numerator/denominator)``, if ``average='weighted'``.
@@ -303,9 +304,9 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
     else:
         weights = weights.float()
 
-    numerator = torch.where(zero_div_mask, torch.tensor(float(zero_division), device=numerator.device), numerator)
-    denominator = torch.where(zero_div_mask | ignore_mask, torch.tensor(1.0, device=denominator.device), denominator)
-    weights = torch.where(ignore_mask, torch.tensor(0.0, device=weights.device), weights)
+    numerator = torch.where(zero_div_mask, tensor(float(zero_division), device=numerator.device), numerator)
+    denominator = torch.where(zero_div_mask | ignore_mask, tensor(1.0, device=denominator.device), denominator)
+    weights = torch.where(ignore_mask, tensor(0.0, device=weights.device), weights)
 
     if average not in (AverageMethod.MICRO, AverageMethod.NONE, None):
         weights = weights / weights.sum(dim=-1, keepdim=True)
@@ -313,14 +314,14 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
     scores = weights * (numerator / denominator)
 
     # This is in case where sum(weights) = 0, which happens if we ignore the only present class with average='weighted'
-    scores = torch.where(torch.isnan(scores), torch.tensor(float(zero_division), device=scores.device), scores)
+    scores = torch.where(torch.isnan(scores), tensor(float(zero_division), device=scores.device), scores)
 
     if mdmc_average == MDMCAverageMethod.SAMPLEWISE:
         scores = scores.mean(dim=0)
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, torch.tensor(np.nan, device=scores.device), scores)
+        scores = torch.where(ignore_mask, tensor(np.nan, device=scores.device), scores)
     else:
         scores = scores.sum()
 

@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import multilabel_confusion_matrix
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob, _input_multiclass
 from tests.classification.inputs import _input_multiclass_prob as _input_mccls_prob
@@ -159,8 +160,8 @@ class TestStatScores(MetricTester):
         ddp: bool,
         dist_sync_on_step: bool,
         sk_fn: Callable,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         reduce: str,
         mdmc_reduce: Optional[str],
         num_classes: Optional[int],
@@ -202,8 +203,8 @@ class TestStatScores(MetricTester):
     def test_stat_scores_fn(
         self,
         sk_fn: Callable,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         reduce: str,
         mdmc_reduce: Optional[str],
         num_classes: Optional[int],
@@ -239,26 +240,26 @@ class TestStatScores(MetricTester):
         )
 
 
-_mc_k_target = torch.tensor([0, 1, 2])
-_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
-_ml_k_target = torch.tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
-_ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
+_mc_k_target = tensor([0, 1, 2])
+_mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_ml_k_target = tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
+_ml_k_preds = tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
     "k, preds, target, reduce, expected",
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor([2, 1, 5, 1, 3])),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 3, 3, 0, 3])),
-        (1, _ml_k_preds, _ml_k_target, "micro", torch.tensor([0, 3, 3, 3, 3])),
-        (2, _ml_k_preds, _ml_k_target, "micro", torch.tensor([1, 5, 1, 2, 3])),
-        (1, _mc_k_preds, _mc_k_target, "macro", torch.tensor([[0, 1, 1], [0, 1, 0], [2, 1, 2], [1, 0, 0], [1, 1, 1]])),
-        (2, _mc_k_preds, _mc_k_target, "macro", torch.tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
-        (1, _ml_k_preds, _ml_k_target, "macro", torch.tensor([[0, 0, 0], [1, 0, 2], [1, 1, 1], [1, 2, 0], [1, 2, 0]])),
-        (2, _ml_k_preds, _ml_k_target, "macro", torch.tensor([[0, 1, 0], [2, 0, 3], [0, 1, 0], [1, 1, 0], [1, 2, 0]])),
+        (1, _mc_k_preds, _mc_k_target, "micro", tensor([2, 1, 5, 1, 3])),
+        (2, _mc_k_preds, _mc_k_target, "micro", tensor([3, 3, 3, 0, 3])),
+        (1, _ml_k_preds, _ml_k_target, "micro", tensor([0, 3, 3, 3, 3])),
+        (2, _ml_k_preds, _ml_k_target, "micro", tensor([1, 5, 1, 2, 3])),
+        (1, _mc_k_preds, _mc_k_target, "macro", tensor([[0, 1, 1], [0, 1, 0], [2, 1, 2], [1, 0, 0], [1, 1, 1]])),
+        (2, _mc_k_preds, _mc_k_target, "macro", tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
+        (1, _ml_k_preds, _ml_k_target, "macro", tensor([[0, 0, 0], [1, 0, 2], [1, 1, 1], [1, 2, 0], [1, 2, 0]])),
+        (2, _ml_k_preds, _ml_k_target, "macro", tensor([[0, 1, 0], [2, 0, 3], [0, 1, 0], [1, 1, 0], [1, 2, 0]])),
     ],
 )
-def test_top_k(k: int, preds: torch.Tensor, target: torch.Tensor, reduce: str, expected: torch.Tensor):
+def test_top_k(k: int, preds: Tensor, target: Tensor, reduce: str, expected: Tensor):
     """ A simple test to check that top_k works as expected """
 
     class_metric = StatScores(top_k=k, reduce=reduce, num_classes=3)

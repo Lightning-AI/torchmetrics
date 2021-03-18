@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import fbeta_score
+from torch import tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -152,8 +153,8 @@ class TestFBeta(MetricTester):
     pytest.param([1., 0., 1., 0.], [0., 1., 1., 0.], 2, [0.5, 0.5]),
 ])
 def test_fbeta_score(pred, target, beta, exp_score):
-    score = fbeta(torch.tensor(pred), torch.tensor(target), num_classes=1, beta=beta, average='none')
-    assert torch.allclose(score, torch.tensor(exp_score))
+    score = fbeta(tensor(pred), tensor(target), num_classes=1, beta=beta, average='none')
+    assert torch.allclose(score, tensor(exp_score))
 
 
 @pytest.mark.parametrize(['pred', 'target', 'exp_score'], [
@@ -162,5 +163,5 @@ def test_fbeta_score(pred, target, beta, exp_score):
     pytest.param([1., 0., 1., 0.], [1., 0., 1., 0.], [1.0, 1.0]),
 ])
 def test_f1_score(pred, target, exp_score):
-    score = f1(torch.tensor(pred), torch.tensor(target), num_classes=1, average='none')
-    assert torch.allclose(score, torch.tensor(exp_score))
+    score = f1(tensor(pred), tensor(target), num_classes=1, average='none')
+    assert torch.allclose(score, tensor(exp_score))

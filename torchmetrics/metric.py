@@ -19,7 +19,7 @@ from copy import deepcopy
 from typing import Any, Callable, Optional, Union
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
@@ -122,7 +122,7 @@ class Metric(nn.Module, ABC):
 
         """
         if (
-            not isinstance(default, torch.Tensor) and not isinstance(default, list)  # noqa: W503
+            not isinstance(default, Tensor) and not isinstance(default, list)  # noqa: W503
             or (isinstance(default, list) and len(default) != 0)  # noqa: W503
         ):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
@@ -175,14 +175,14 @@ class Metric(nn.Module, ABC):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
         output_dict = apply_to_collection(
             input_dict,
-            torch.Tensor,
+            Tensor,
             dist_sync_fn,
             group=self.process_group,
         )
 
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
-            if isinstance(output_dict[attr][0], torch.Tensor):
+            if isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
@@ -253,7 +253,7 @@ class Metric(nn.Module, ABC):
         """
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
-            if isinstance(default, torch.Tensor):
+            if isinstance(default, Tensor):
                 setattr(self, attr, deepcopy(default).to(current_val.device))
             else:
                 setattr(self, attr, deepcopy(default))
@@ -280,14 +280,14 @@ class Metric(nn.Module, ABC):
         # Also apply fn to metric states
         for key in self._defaults.keys():
             current_val = getattr(self, key)
-            if isinstance(current_val, torch.Tensor):
+            if isinstance(current_val, Tensor):
                 setattr(self, key, fn(current_val))
             elif isinstance(current_val, Sequence):
                 setattr(self, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a torch.Tensor"
-                    f"or a list of torch.Tensor, but encountered {current_val}"
+                    "Expected metric state to be either a Tensor"
+                    f"or a list of Tensor, but encountered {current_val}"
                 )
         return self
 
@@ -336,7 +336,7 @@ class Metric(nn.Module, ABC):
             val = getattr(self, key)
             # Special case: allow list values, so long
             # as their elements are hashable
-            if hasattr(val, '__iter__') and not isinstance(val, torch.Tensor):
+            if hasattr(val, '__iter__') and not isinstance(val, Tensor):
                 hash_vals.extend(val)
             else:
                 hash_vals.append(val)
@@ -444,7 +444,7 @@ class Metric(nn.Module, ABC):
         return CompositionalMetric(torch.abs, self, None)
 
 
-def _neg(tensor: torch.Tensor):
+def _neg(tensor: Tensor):
     return -torch.abs(tensor)
 
 
@@ -454,8 +454,8 @@ class CompositionalMetric(Metric):
     def __init__(
         self,
         operator: Callable,
-        metric_a: Union[Metric, int, float, torch.Tensor],
-        metric_b: Union[Metric, int, float, torch.Tensor, None],
+        metric_a: Union[Metric, int, float, Tensor],
+        metric_b: Union[Metric, int, float, Tensor, None],
     ):
         """
         Args:
@@ -470,12 +470,12 @@ class CompositionalMetric(Metric):
 
         self.op = operator
 
-        if isinstance(metric_a, torch.Tensor):
+        if isinstance(metric_a, Tensor):
             self.register_buffer("metric_a", metric_a)
         else:
             self.metric_a = metric_a
 
-        if isinstance(metric_b, torch.Tensor):
+        if isinstance(metric_b, Tensor):
             self.register_buffer("metric_b", metric_b)
         else:
             self.metric_b = metric_b
