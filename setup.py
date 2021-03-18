@@ -9,8 +9,7 @@ _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 try:
     from torchmetrics import info, setup_tools
 except ImportError:
-    sys.path.append(os.path.join(_PATH_ROOT, "torchmetrics", "info.py"))
-    sys.path.append(os.path.join(_PATH_ROOT, "torchmetrics", "setup_tools.py"))
+    sys.path.append("torchmetrics")
     import info, setup_tools
 
 long_description = setup_tools._load_readme_description(
