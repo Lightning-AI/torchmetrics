@@ -124,8 +124,6 @@ def _class_test(
                 sk_batch_result = sk_metric(ddp_preds, ddp_target)
                 # assert for dist_sync_on_step
                 if check_dist_sync_on_step:
-                    import pdb
-                    pdb.set_trace()
                     _assert_allclose(batch_result, sk_batch_result, atol=atol)
         else:
             sk_batch_result = sk_metric(preds[i], target[i])
