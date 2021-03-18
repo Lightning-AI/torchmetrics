@@ -134,7 +134,7 @@ class BootStrapper(Metric):
                              f"but received {generator}")
         self.generator = generator
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any):
         """ Updates the state of the base metric. Any tensor passed in will be bootstrapped
         along dimension 0
         """
