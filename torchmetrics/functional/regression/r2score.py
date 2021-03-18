@@ -25,10 +25,10 @@ def _r2score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tens
     if preds.ndim > 2:
         raise ValueError(
             'Expected both prediction and target to be 1D or 2D tensors,'
-            f' but recevied tensors with dimension {preds.shape}'
+            f' but received tensors with dimension {preds.shape}'
         )
     if len(preds) < 2:
-        raise ValueError('Needs atleast two samples to calculate r2 score.')
+        raise ValueError('Needs at least two samples to calculate r2 score.')
 
     sum_error = torch.sum(target, dim=0)
     sum_squared_error = torch.sum(torch.pow(target, 2.0), dim=0)
@@ -69,7 +69,7 @@ def _r2score_compute(
     if adjusted != 0:
         if adjusted > total - 1:
             rank_zero_warn(
-                "More independent regressions than datapoints in"
+                "More independent regressions than data points in"
                 " adjusted r2 score. Falls back to standard r2 score.", UserWarning
             )
         elif adjusted == total - 1:

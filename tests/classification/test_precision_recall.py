@@ -345,8 +345,7 @@ def test_top_k(
 ):
     """A simple test to check that top_k works as expected.
 
-    Just a sanity check, the tests in StatScores should already guarantee
-    the corectness of results.
+    Just a sanity check, the tests in StatScores should already guarantee the correctness of results.
     """
 
     class_metric = metric_class(top_k=k, average=average, num_classes=3)

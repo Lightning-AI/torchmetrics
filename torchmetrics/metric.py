@@ -95,7 +95,7 @@ class Metric(nn.Module, ABC):
             name: The name of the state variable. The variable will then be accessible at ``self.name``.
             default: Default value of the state; can either be a ``torch.Tensor`` or an empty list. The state will be
                 reset to this value when ``self.reset()`` is called.
-            dist_reduce_fx (Optional): Function to reduce state accross mutliple processes in distributed mode.
+            dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
                 If value is ``"sum"``, ``"mean"``, or ``"cat"``, we will use ``torch.sum``, ``torch.mean``,
                 and ``torch.cat`` respectively, each with argument ``dim=0``. Note that the ``"cat"`` reduction
                 only makes sense if the state is a list, and not a tensor. The user can also pass a custom
@@ -449,7 +449,7 @@ def _neg(tensor: Tensor):
 
 
 class CompositionalMetric(Metric):
-    """Composition of two metrics with a specific operator which will be executed upon metric's compute """
+    """Composition of two metrics with a specific operator which will be executed upon metrics compute """
 
     def __init__(
         self,

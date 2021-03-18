@@ -39,7 +39,7 @@ THRESHOLD = 0.5
 
 
 def setup_ddp(rank, world_size):
-    """ Setup ddp enviroment """
+    """ Setup ddp environment """
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "8088"
 

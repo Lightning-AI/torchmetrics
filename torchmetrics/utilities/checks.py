@@ -221,8 +221,8 @@ def _check_classification_inputs(
 
     In case where preds are floats (probabilities), it is checked whether they are in [0,1] interval.
 
-    When ``num_classes`` is given, it is checked that it is consitent with input cases (binary,
-    multi-label, ...), and that, if availible, the implied number of classes in the ``C``
+    When ``num_classes`` is given, it is checked that it is consistent with input cases (binary,
+    multi-label, ...), and that, if available, the implied number of classes in the ``C``
     dimension is consistent with it (as well as that max label in target is smaller than it).
 
     When ``num_classes`` is not specified in these cases, consistency of the highest target
@@ -242,13 +242,13 @@ def _check_classification_inputs(
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
         num_classes:
-            Number of classes. If not explicitly set, the number of classes will be infered
+            Number of classes. If not explicitly set, the number of classes will be inferred
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
             Number of highest probability entries for each sample to convert to 1s - relevant
             only for inputs with probability predictions. The default value (``None``) will be
-            interepreted as 1 for these inputs. If this parameter is set for multi-label inputs,
+            interpreted as 1 for these inputs. If this parameter is set for multi-label inputs,
             it will take precedence over threshold.
 
             Should be left unset (``None``) for inputs with label predictions.
@@ -264,7 +264,7 @@ def _check_classification_inputs(
             'multi-dim multi-class'
     """
 
-    # Baisc validation (that does not need case/type information)
+    # Basic validation (that does not need case/type information)
     _basic_input_validation(preds, target, threshold, is_multiclass)
 
     # Check that shape/types fall into one of the cases
@@ -273,7 +273,7 @@ def _check_classification_inputs(
     # For (multi-dim) multi-class case with prob preds, check that preds sum up to 1
     if case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and preds.is_floating_point():
         if not torch.isclose(preds.sum(dim=1), torch.ones_like(preds.sum(dim=1))).all():
-            raise ValueError("Probabilities in `preds` must sum up to 1 accross the `C` dimension.")
+            raise ValueError("Probabilities in `preds` must sum up to 1 across the `C` dimension.")
 
     # Check consistency with the `C` dimension in case of multi-class data
     if preds.shape != target.shape:
@@ -370,7 +370,7 @@ def _input_format_classification(
             Threshold probability value for transforming probability predictions to binary
             (0 or 1) predictions, in the case of binary or multi-label inputs.
         num_classes:
-            Number of classes. If not explicitly set, the number of classes will be infered
+            Number of classes. If not explicitly set, the number of classes will be inferred
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
@@ -438,7 +438,7 @@ def _input_format_classification(
         target = target.reshape(target.shape[0], -1)
         preds = preds.reshape(preds.shape[0], -1)
 
-    # Some operatins above create an extra dimension for MC/binary case - this removes it
+    # Some operations above create an extra dimension for MC/binary case - this removes it
     if preds.ndim > 2:
         preds, target = preds.squeeze(-1), target.squeeze(-1)
 
@@ -469,7 +469,7 @@ def _input_format_classification_one_hot(
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
 
     if preds.ndim == target.ndim + 1:
-        # multi class probabilites
+        # multi class probabilities
         preds = torch.argmax(preds, dim=1)
 
     if preds.ndim == target.ndim and preds.dtype in (torch.long, torch.int) and num_classes > 1 and not multilabel:
@@ -478,7 +478,7 @@ def _input_format_classification_one_hot(
         target = to_onehot(target, num_classes=num_classes)
 
     elif preds.ndim == target.ndim and preds.is_floating_point():
-        # binary or multilabel probablities
+        # binary or multilabel probabilities
         preds = (preds >= threshold).long()
 
     # transpose class as first dim and reshape
