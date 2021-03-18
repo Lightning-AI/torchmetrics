@@ -294,7 +294,7 @@ PACKAGES = [
 #     for pkg in PACKAGES:
 #         argv = ['-e',
 #                 '-o', apidoc_output_folder,
-#                 os.path.join(PATH_ROOT, pkg),
+#                 os.path.join(_PATH_ROOT, pkg),
 #                 '**/test_*',
 #                 '--force',
 #                 '--private',
