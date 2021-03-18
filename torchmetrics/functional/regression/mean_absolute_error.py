@@ -35,7 +35,7 @@ def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
     Computes mean absolute error
 
     Args:
-        pred: estimated labels
+        preds: estimated labels
         target: ground truth labels
 
     Return:

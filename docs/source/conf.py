@@ -373,7 +373,7 @@ def linkcode_resolve(domain, info):
         return None
     try:
         filename = "%s#L%d-L%d" % find_source()
-    except Exception:
+    except Exception:  # todo: specify the exception
         filename = info["module"].replace(".", "/") + ".py"
     # import subprocess
     # tag = subprocess.Popen(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE,

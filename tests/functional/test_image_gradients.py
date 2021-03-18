@@ -66,16 +66,7 @@ def test_multi_batch_image_gradients():
         [5., 5., 5., 5., 5.],
         [0., 0., 0., 0., 0.],
     ]
-
-    true_dx = [
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-    ]
     true_dy = Tensor(true_dy)
-    true_dx = Tensor(true_dx)
 
     dy, dx = image_gradients(image)
 

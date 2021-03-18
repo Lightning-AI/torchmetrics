@@ -122,7 +122,7 @@ def to_categorical(tensor: Tensor, argmax_dim: int = 1) -> Tensor:
 
 
 def get_num_classes(
-    pred: Tensor,
+    preds: Tensor,
     target: Tensor,
     num_classes: Optional[int] = None,
 ) -> int:
@@ -130,7 +130,7 @@ def get_num_classes(
     Calculates the number of classes for a given prediction and target tensor.
 
     Args:
-        pred: predicted values
+        preds: predicted values
         target: true labels
         num_classes: number of classes if known
 
@@ -138,7 +138,7 @@ def get_num_classes(
         An integer that represents the number of classes.
     """
     num_target_classes = int(target.max().detach().item() + 1)
-    num_pred_classes = int(pred.max().detach().item() + 1)
+    num_pred_classes = int(preds.max().detach().item() + 1)
     num_all_classes = max(num_target_classes, num_pred_classes)
 
     if num_classes is None:

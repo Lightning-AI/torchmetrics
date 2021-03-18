@@ -35,6 +35,7 @@ torch.manual_seed(42)
 
 
 def _sk_fbeta_binary_prob(preds, target, average='micro', beta=1.0):
+    # todo: `average` is unused
     sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
     sk_target = target.view(-1).numpy()
 
@@ -42,6 +43,7 @@ def _sk_fbeta_binary_prob(preds, target, average='micro', beta=1.0):
 
 
 def _sk_fbeta_binary(preds, target, average='micro', beta=1.0):
+    # todo: `average` is unused
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 

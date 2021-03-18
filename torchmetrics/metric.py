@@ -187,7 +187,7 @@ class Metric(nn.Module, ABC):
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
 
-            assert isinstance(reduction_fn, (Callable)) or reduction_fn is None
+            assert isinstance(reduction_fn, Callable) or reduction_fn is None
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
@@ -214,6 +214,7 @@ class Metric(nn.Module, ABC):
                 dist_sync_fn = gather_all_tensors
 
             synced = False
+            cache = []
             if self._to_sync and dist_sync_fn is not None:
                 # cache prior to syncing
                 cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
@@ -276,20 +277,20 @@ class Metric(nn.Module, ABC):
         """Overwrite _apply function such that we can also move metric states
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
-        self = super()._apply(fn)
+        this = super()._apply(fn)
         # Also apply fn to metric states
-        for key in self._defaults.keys():
-            current_val = getattr(self, key)
+        for key in this._defaults.keys():
+            current_val = getattr(this, key)
             if isinstance(current_val, Tensor):
-                setattr(self, key, fn(current_val))
+                setattr(this, key, fn(current_val))
             elif isinstance(current_val, Sequence):
-                setattr(self, key, [fn(cur_v) for cur_v in current_val])
+                setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
                     "Expected metric state to be either a Tensor"
                     f"or a list of Tensor, but encountered {current_val}"
                 )
-        return self
+        return this
 
     def persistent(self, mode: bool = False):
         """Method for post-init to change if metric states should be saved to

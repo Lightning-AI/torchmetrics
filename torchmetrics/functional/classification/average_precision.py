@@ -38,6 +38,7 @@ def _average_precision_compute(
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[List[Tensor], Tensor]:
+    # todo: `sample_weights` is unused
     precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
     # Return the step function integral
     # The following works because the last entry of precision is

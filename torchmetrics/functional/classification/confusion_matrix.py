@@ -38,6 +38,7 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
         f"Argument average needs to one of the following: {allowed_normalize}"
     confmat = confmat.float()
     if normalize is not None and normalize != 'none':
+        cm = None
         if normalize == 'true':
             cm = confmat / confmat.sum(axis=1, keepdim=True)
         elif normalize == 'pred':

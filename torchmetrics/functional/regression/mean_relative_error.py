@@ -37,7 +37,7 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
     Computes mean relative error
 
     Args:
-        pred: estimated labels
+        preds: estimated labels
         target: ground truth labels
 
     Return:

@@ -35,6 +35,7 @@ torch.manual_seed(42)
 
 
 def _sk_stat_scores(preds, target, reduce, num_classes, is_multiclass, ignore_index, top_k, mdmc_reduce=None):
+    # todo: `mdmc_reduce` is unused
     preds, target, _ = _input_format_classification(
         preds, target, threshold=THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
     )
