@@ -62,7 +62,10 @@ def test_bootstrap_sampler():
 )
 def test_bootstrap(metric, sk_metric):
     """ Test that the different bootstraps gets updated as we expected and that the compute method works """
-    bootstrapper = TestBootStrapper(metric)
+    if _TORCH_GREATER_EQUAL_1_7:
+        bootstrapper = TestBootStrapper(metric, mean=True, std=True, quantile=torch.tensor([0.05, 0.95]), raw=True)
+    else:
+        bootstrapper = TestBootStrapper(metric, mean=True, std=True, raw=True)
 
     collected_preds = [[] for _ in range(10)]
     collected_target = [[] for _ in range(10)]
@@ -79,18 +82,15 @@ def test_bootstrap(metric, sk_metric):
 
     sk_scores = [sk_metric(ct, cp, average='micro') for ct, cp in zip(collected_target, collected_preds)]
 
+    output = bootstrapper.compute()
     # quantile only avaible for pytorch v1.7 and forward
     if _TORCH_GREATER_EQUAL_1_7:
-        pl_mean, pl_std, pl_quantile, pl_raw = bootstrapper.compute(
-            mean=True, std=True, quantile=torch.tensor([0.05, 0.95]), raw=True
-        )
+        pl_mean, pl_std, pl_quantile, pl_raw = output
         assert np.allclose(pl_quantile[0], np.quantile(sk_scores, 0.05))
         assert np.allclose(pl_quantile[1], np.quantile(sk_scores, 0.95))
     else:
-        pl_mean, pl_std, pl_raw = bootstrapper.compute(mean=True, std=True, raw=True)
+        pl_mean, pl_std, pl_raw = output
 
     assert np.allclose(pl_mean, np.mean(sk_scores))
-    import pdb
-    pdb.set_trace()
     assert np.allclose(pl_std, np.std(sk_scores, ddof=1))
     assert np.allclose(pl_raw, sk_scores)
