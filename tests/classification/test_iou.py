@@ -143,12 +143,12 @@ class TestIoU(MetricTester):
     pytest.param(True, 'none', 0, Tensor([0.5, 0.5])),
 ])
 def test_iou(half_ones, reduction, ignore_index, expected):
-    pred = (torch.arange(120) % 3).view(-1, 1)
+    preds = (torch.arange(120) % 3).view(-1, 1)
     target = (torch.arange(120) % 3).view(-1, 1)
     if half_ones:
-        pred[:60] = 1
+        preds[:60] = 1
     iou_val = iou(
-        pred=pred,
+        preds=preds,
         target=target,
         ignore_index=ignore_index,
         reduction=reduction,
