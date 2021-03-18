@@ -15,38 +15,33 @@ from typing import Optional, Tuple
 
 import torch
 
-from torchmetrics.utilities.checks import _input_format_classification_one_hot
-from torchmetrics.utilities.distributed import class_reduce
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
+from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+
+
 
 def _fbeta_compute(
     tp: torch.Tensor,
     fp: torch.Tensor,
     tn: torch.Tensor,
     fn: torch.Tensor,
+    beta: float,
     average: str,
     mdmc_average: Optional[str],
 ) -> torch.Tensor:
-    precision = _reduce_stat_scores(
-        numerator=tp,
-        denominator=tp + fp,
-        weights=None if average != "weighted" else tp + fn,
-        average=average,
-        mdmc_average=mdmc_average,
-    )
-    recall = _reduce_stat_scores(
-        numerator=tp,
-        denominator=tp + fn,
-        weights=None if average != "weighted" else tp + fn,
-        average=average,
-        mdmc_average=mdmc_average,
-    )
+    if average == "micro":
+        precision = tp.sum().float() / (tp + fp).sum()
+        recall = tp.sum().float() / (tp + fn).sum()
+    else:
+        precision = tp.float() / (tp + fp)
+        recall = tp.float() / (tp + fn)
+    
     num = (1 + beta**2) * precision * recall
     denom = beta**2 * precision + recall
     
-    return = _reduce_stat_scores(
+    return  _reduce_stat_scores(
         numerator=num,
-        denominator=decom,
+        denominator=denom,
         weights=None if average != "weighted" else tp + fn,
         average=average,
         mdmc_average=mdmc_average,
@@ -181,7 +176,7 @@ def fbeta(
         ignore_index=ignore_index,
     )
 
-    return _fbeta_compute(tp, fp, tn, fn, average, mdmc_average)
+    return _fbeta_compute(tp, fp, tn, fn, beta, average, mdmc_average)
 
 
 def f1(

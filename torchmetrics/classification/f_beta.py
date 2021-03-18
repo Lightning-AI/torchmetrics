@@ -15,9 +15,8 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from torchmetrics.functional.classification.f_beta import _fbeta_compute, _fbeta_update
+from torchmetrics.functional.classification.f_beta import _fbeta_compute
 from torchmetrics.classification.stat_scores import StatScores
-from torchmetrics.utilities import rank_zero_warn
 
 
 class FBeta(StatScores):
@@ -141,51 +140,33 @@ class FBeta(StatScores):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ):
+        self.beta = beta
+        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        if average not in allowed_average:
+            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
         super().__init__(
+            reduce="macro" if average in ["weighted", "none", None] else average,
+            mdmc_reduce=mdmc_average,
+            threshold=threshold,
+            top_k=top_k,
+            num_classes=num_classes,
+            is_multiclass=is_multiclass,
+            ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
         )
 
-        self.num_classes = num_classes
-        self.beta = beta
-        self.threshold = threshold
         self.average = average
-
-        allowed_average = ("micro", "macro", "weighted", "none", None)
-        if self.average not in allowed_average:
-            raise ValueError(
-                'Argument `average` expected to be one of the following:'
-                f' {allowed_average} but got {self.average}'
-            )
-
-        self.add_state("true_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
-        self.add_state("predicted_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
-        self.add_state("actual_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
-
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
-        """
-        Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        true_positives, predicted_positives, actual_positives = _fbeta_update(
-            preds, target, self.num_classes, self.threshold, self.multilabel
-        )
-
-        self.true_positives += true_positives
-        self.predicted_positives += predicted_positives
-        self.actual_positives += actual_positives
 
     def compute(self) -> torch.Tensor:
         """
         Computes fbeta over state.
         """
-        return _fbeta_compute(
-            self.true_positives, self.predicted_positives, self.actual_positives, self.beta, self.average
-        )
+        tp, fp, tn, fn = self._get_final_stats()
+        return _fbeta_compute(tp, fp, tn, fn, self.beta, self.average, self.mdmc_reduce)
 
 
 class F1(FBeta):
@@ -289,7 +270,6 @@ class F1(FBeta):
     def __init__(
         self,
         num_classes: Optional[int] = None,
-        beta: float = 1.0,
         threshold: float = 0.5,
         average: str = "micro",
         mdmc_average: Optional[str] = None,

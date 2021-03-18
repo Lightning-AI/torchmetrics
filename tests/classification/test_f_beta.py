@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+from typing import Callable, Optional
 
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import fbeta_score
+from sklearn.metrics import fbeta_score, f1_score
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -24,143 +25,235 @@ from tests.classification.inputs import _input_multiclass_prob as _input_mcls_pr
 from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
-from tests.classification.inputs import _input_multilabel_no_match as _input_mlb_nomatch
-from tests.classification.inputs import _input_multilabel_prob as _mlb_prob_inputs
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics import F1, FBeta
-from torchmetrics.functional import f1, fbeta
+from torchmetrics import Metric, FBeta, F1
+from torchmetrics.functional import fbeta, f1
+from torchmetrics.utilities.checks import _input_format_classification
 
 torch.manual_seed(42)
 
 
-def _sk_fbeta_binary_prob(preds, target, average='micro', beta=1.0):
-    sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
-    sk_target = target.view(-1).numpy()
+def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average=None):
+    if average == "none":
+        average = None
+    if num_classes == 1:
+        average = "binary"
 
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average='binary', beta=beta)
+    labels = list(range(num_classes))
+    try:
+        labels.remove(ignore_index)
+    except ValueError:
+        pass
 
+    sk_preds, sk_target, _ = _input_format_classification(
+        preds, target, THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
+    )
+    sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
 
-def _sk_fbeta_binary(preds, target, average='micro', beta=1.0):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
+    sk_scores = sk_fn(sk_target, sk_preds, average=average, zero_division=0, labels=labels)
 
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average='binary', beta=beta)
+    if len(labels) != num_classes and not average:
+        sk_scores = np.insert(sk_scores, ignore_index, np.nan)
 
-
-def _sk_fbeta_multilabel_prob(preds, target, average='micro', beta=1.0):
-    sk_preds = (preds.view(-1, NUM_CLASSES).numpy() >= THRESHOLD).astype(np.uint8)
-    sk_target = target.view(-1, NUM_CLASSES).numpy()
-
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average=average, beta=beta)
-
-
-def _sk_fbeta_multilabel(preds, target, average='micro', beta=1.0):
-    sk_preds = preds.view(-1, NUM_CLASSES).numpy()
-    sk_target = target.view(-1, NUM_CLASSES).numpy()
-
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average=average, beta=beta)
+    return sk_scores
 
 
-def _sk_fbeta_multiclass_prob(preds, target, average='micro', beta=1.0):
-    sk_preds = torch.argmax(preds, dim=len(preds.shape) - 1).view(-1).numpy()
-    sk_target = target.view(-1).numpy()
+def _sk_fbeta_f1_multidim_multiclass(
+    preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average
+):
+    preds, target, _ = _input_format_classification(
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
+    )
 
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average=average, beta=beta)
+    if mdmc_average == "global":
+        preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
+        target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
+        return _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, False, ignore_index)
+    elif mdmc_average == "samplewise":
+        scores = []
 
-def _sk_fbeta_multiclass(preds, target, average='micro', beta=1.0):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
+        for i in range(preds.shape[0]):
+            pred_i = preds[i, ...].T
+            target_i = target[i, ...].T
+            scores_i = _sk_fbeta_f1(pred_i, target_i, sk_fn, num_classes, average, False, ignore_index)
 
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average=average, beta=beta)
+            scores.append(np.expand_dims(scores_i, 0))
 
-
-def _sk_fbeta_multidim_multiclass_prob(preds, target, average='micro', beta=1.0):
-    sk_preds = torch.argmax(preds, dim=len(preds.shape) - 2).view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average=average, beta=beta)
-
-
-def _sk_fbeta_multidim_multiclass(preds, target, average='micro', beta=1.0):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-
-    return fbeta_score(y_true=sk_target, y_pred=sk_preds, average=average, beta=beta)
+        return np.concatenate(scores).mean(axis=0)
 
 
+@pytest.mark.parametrize("metric_class, metric_fn, sk_fn", [
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), 
+    (F1, f1, f1_score)
+])
+@pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
+@pytest.mark.parametrize("ignore_index", [None, 0])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes, multilabel",
+    "preds, target, num_classes, is_multiclass, mdmc_average, sk_wrapper",
     [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_fbeta_binary_prob, 1, False),
-        (_input_binary.preds, _input_binary.target, _sk_fbeta_binary, 1, False),
-        (_mlb_prob_inputs.preds, _mlb_prob_inputs.target, _sk_fbeta_multilabel_prob, NUM_CLASSES, True),
-        (_input_mlb.preds, _input_mlb.target, _sk_fbeta_multilabel, NUM_CLASSES, True),
-        (_input_mlb_nomatch.preds, _input_mlb_nomatch.target, _sk_fbeta_multilabel, NUM_CLASSES, True),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_fbeta_multiclass_prob, NUM_CLASSES, False),
-        (_input_mcls.preds, _input_mcls.target, _sk_fbeta_multiclass, NUM_CLASSES, False),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_fbeta_multidim_multiclass_prob, NUM_CLASSES, False),
-        (_input_mdmc.preds, _input_mdmc.target, _sk_fbeta_multidim_multiclass, NUM_CLASSES, False),
+        (_input_binary_prob.preds, _input_binary_prob.target, 1, None, None, _sk_fbeta_f1),
+        (_input_binary.preds, _input_binary.target, 1, False, None, _sk_fbeta_f1),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
+        (_input_mlb.preds, _input_mlb.target, NUM_CLASSES, False, None, _sk_fbeta_f1),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
+        (_input_mcls.preds, _input_mcls.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
+        (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "global", _sk_fbeta_f1_multidim_multiclass),
+        (
+            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "global",
+            _sk_fbeta_f1_multidim_multiclass
+        ),
+        (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "samplewise", _sk_fbeta_f1_multidim_multiclass),
+        (
+            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "samplewise",
+            _sk_fbeta_f1_multidim_multiclass
+        ),
     ],
 )
-@pytest.mark.parametrize("average", ['micro', 'macro', 'weighted', None])
-@pytest.mark.parametrize("beta", [0.5, 1.0, 2.0])
 class TestFBeta(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_fbeta(self, preds, target, sk_metric, num_classes, multilabel, average, beta, ddp, dist_sync_on_step):
-        metric_class = F1 if beta == 1.0 else partial(FBeta, beta=beta)
+    def test_fbeta_f1(
+        self,
+        ddp: bool,
+        dist_sync_on_step: bool,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        sk_wrapper: Callable,
+        metric_class: Metric,
+        metric_fn: Callable,
+        sk_fn: Callable,
+        is_multiclass: Optional[bool],
+        num_classes: Optional[int],
+        average: str,
+        mdmc_average: Optional[str],
+        ignore_index: Optional[int],
+    ):
+        if num_classes == 1 and average != "micro":
+            pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
+
+        if ignore_index is not None and preds.ndim == 2:
+            pytest.skip("Skipping ignore_index test with binary inputs.")
+
+        if average == "weighted" and ignore_index is not None and mdmc_average is not None:
+            pytest.skip("Ignore special case where we are ignoring entire sample for 'weighted' average")
 
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=partial(sk_metric, average=average, beta=beta),
+            sk_metric=partial(
+                sk_wrapper,
+                sk_fn=sk_fn,
+                average=average,
+                num_classes=num_classes,
+                is_multiclass=is_multiclass,
+                ignore_index=ignore_index,
+                mdmc_average=mdmc_average,
+            ),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={
                 "num_classes": num_classes,
                 "average": average,
-                "multilabel": multilabel,
                 "threshold": THRESHOLD,
+                "is_multiclass": is_multiclass,
+                "ignore_index": ignore_index,
+                "mdmc_average": mdmc_average,
             },
-            check_dist_sync_on_step=False,
-            check_batch=False,
+            check_dist_sync_on_step=True,
+            check_batch=True,
         )
 
-    def test_fbeta_functional(self, preds, target, sk_metric, num_classes, multilabel, average, beta):
-        metric_functional = f1 if beta == 1.0 else partial(fbeta, beta=beta)
+    def test_fbeta_f1_functional(
+        self,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        sk_wrapper: Callable,
+        metric_class: Metric,
+        metric_fn: Callable,
+        sk_fn: Callable,
+        is_multiclass: Optional[bool],
+        num_classes: Optional[int],
+        average: str,
+        mdmc_average: Optional[str],
+        ignore_index: Optional[int],
+    ):
+        if num_classes == 1 and average != "micro":
+            pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
+
+        if ignore_index is not None and preds.ndim == 2:
+            pytest.skip("Skipping ignore_index test with binary inputs.")
+
+        if average == "weighted" and ignore_index is not None and mdmc_average is not None:
+            pytest.skip("Ignore special case where we are ignoring entire sample for 'weighted' average")
 
         self.run_functional_metric_test(
-            preds=preds,
-            target=target,
-            metric_functional=metric_functional,
-            sk_metric=partial(sk_metric, average=average, beta=beta),
+            preds,
+            target,
+            metric_functional=metric_fn,
+            sk_metric=partial(
+                sk_wrapper,
+                sk_fn=sk_fn,
+                average=average,
+                num_classes=num_classes,
+                is_multiclass=is_multiclass,
+                ignore_index=ignore_index,
+                mdmc_average=mdmc_average,
+            ),
             metric_args={
                 "num_classes": num_classes,
                 "average": average,
-                "multilabel": multilabel,
-                "threshold": THRESHOLD
-            }
+                "threshold": THRESHOLD,
+                "is_multiclass": is_multiclass,
+                "ignore_index": ignore_index,
+                "mdmc_average": mdmc_average,
+            },
         )
 
+_mc_k_target = torch.tensor([0, 1, 2])
+_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_ml_k_target = torch.tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
+_ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 
-@pytest.mark.parametrize(['pred', 'target', 'beta', 'exp_score'], [
-    pytest.param([1., 0., 1., 0.], [0., 1., 1., 0.], 0.5, [0.5, 0.5]),
-    pytest.param([1., 0., 1., 0.], [0., 1., 1., 0.], 1, [0.5, 0.5]),
-    pytest.param([1., 0., 1., 0.], [0., 1., 1., 0.], 2, [0.5, 0.5]),
+@pytest.mark.parametrize("metric_class, metric_fn", [
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)), 
+    (F1, fbeta)
 ])
-def test_fbeta_score(pred, target, beta, exp_score):
-    score = fbeta(torch.tensor(pred), torch.tensor(target), num_classes=1, beta=beta, average='none')
-    assert torch.allclose(score, torch.tensor(exp_score))
+@pytest.mark.parametrize(
+    "k, preds, target, average, expected_fbeta, expected_f1",
+    [
+        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6), torch.tensor(2 / 3)),
+        (1, _ml_k_preds, _ml_k_target, "micro", torch.tensor(0.0), torch.tensor(0.0)),
+        (2, _ml_k_preds, _ml_k_target, "micro", torch.tensor(5 / 18), torch.tensor(2 / 9)),
+    ],
+)
+def test_top_k(
+    metric_class,
+    metric_fn,
+    k: int,
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    average: str,
+    expected_fbeta: torch.Tensor,
+    expected_f1: torch.Tensor,
+):
+    """A simple test to check that top_k works as expected.
 
+    Just a sanity check, the tests in StatScores should already guarantee
+    the corectness of results.
+    """
 
-@pytest.mark.parametrize(['pred', 'target', 'exp_score'], [
-    pytest.param([0., 0., 0., 0.], [1., 1., 1., 1.], [0.0, 0.0]),
-    pytest.param([1., 0., 1., 0.], [0., 1., 1., 0.], [0.5, 0.5]),
-    pytest.param([1., 0., 1., 0.], [1., 0., 1., 0.], [1.0, 1.0]),
-])
-def test_f1_score(pred, target, exp_score):
-    score = f1(torch.tensor(pred), torch.tensor(target), num_classes=1, average='none')
-    assert torch.allclose(score, torch.tensor(exp_score))
+    class_metric = metric_class(top_k=k, average=average, num_classes=3)
+    class_metric.update(preds, target)
+
+    if class_metric.beta != 1.0:
+        result = expected_fbeta
+    else:
+        result = expected_f1
+       
+    assert torch.isclose(class_metric.compute(), result)
+    assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
