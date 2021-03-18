@@ -28,7 +28,7 @@ def _fbeta_compute(
     beta: float,
     average: str,
     mdmc_average: Optional[str],
-) -> torch.Tensor:
+) -> torch.Tensor:   
     if average == "micro":
         precision = tp.sum().float() / (tp + fp).sum()
         recall = tp.sum().float() / (tp + fn).sum()
