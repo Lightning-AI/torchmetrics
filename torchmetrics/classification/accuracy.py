@@ -14,7 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.accuracy import _accuracy_compute, _accuracy_update
 from torchmetrics.metric import Metric
@@ -113,8 +113,8 @@ class Accuracy(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
         if not 0 < threshold < 1:
             raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")

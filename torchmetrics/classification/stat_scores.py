@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import numpy as np
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
@@ -304,9 +304,9 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
     else:
         weights = weights.float()
 
-    numerator = torch.where(zero_div_mask, torch.tensor(float(zero_division), device=numerator.device), numerator)
-    denominator = torch.where(zero_div_mask | ignore_mask, torch.tensor(1.0, device=denominator.device), denominator)
-    weights = torch.where(ignore_mask, torch.tensor(0.0, device=weights.device), weights)
+    numerator = torch.where(zero_div_mask, tensor(float(zero_division), device=numerator.device), numerator)
+    denominator = torch.where(zero_div_mask | ignore_mask, tensor(1.0, device=denominator.device), denominator)
+    weights = torch.where(ignore_mask, tensor(0.0, device=weights.device), weights)
 
     if average not in (AverageMethod.MICRO, AverageMethod.NONE, None):
         weights = weights / weights.sum(dim=-1, keepdim=True)
@@ -314,14 +314,14 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
     scores = weights * (numerator / denominator)
 
     # This is in case where sum(weights) = 0, which happens if we ignore the only present class with average='weighted'
-    scores = torch.where(torch.isnan(scores), torch.tensor(float(zero_division), device=scores.device), scores)
+    scores = torch.where(torch.isnan(scores), tensor(float(zero_division), device=scores.device), scores)
 
     if mdmc_average == MDMCAverageMethod.SAMPLEWISE:
         scores = scores.mean(dim=0)
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, torch.tensor(np.nan, device=scores.device), scores)
+        scores = torch.where(ignore_mask, tensor(np.nan, device=scores.device), scores)
     else:
         scores = scores.sum()
 

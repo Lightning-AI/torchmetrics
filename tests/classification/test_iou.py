@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import jaccard_score as sk_jaccard_score
-from torch import Tensor
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -191,14 +191,14 @@ def test_iou(half_ones, reduction, ignore_index, expected):
 )
 def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes, expected):
     iou_val = iou(
-        pred=torch.tensor(pred),
-        target=torch.tensor(target),
+        pred=tensor(pred),
+        target=tensor(target),
         ignore_index=ignore_index,
         absent_score=absent_score,
         num_classes=num_classes,
         reduction='none',
     )
-    assert torch.allclose(iou_val, torch.tensor(expected).to(iou_val))
+    assert torch.allclose(iou_val, tensor(expected).to(iou_val))
 
 
 # example data taken from
@@ -221,10 +221,10 @@ def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes,
 )
 def test_iou_ignore_index(pred, target, ignore_index, num_classes, reduction, expected):
     iou_val = iou(
-        pred=torch.tensor(pred),
-        target=torch.tensor(target),
+        pred=tensor(pred),
+        target=tensor(target),
         ignore_index=ignore_index,
         num_classes=num_classes,
         reduction=reduction,
     )
-    assert torch.allclose(iou_val, torch.tensor(expected).to(iou_val))
+    assert torch.allclose(iou_val, tensor(expected).to(iou_val))

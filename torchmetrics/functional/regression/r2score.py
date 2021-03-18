@@ -21,7 +21,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _r2score_update(
-    preds: torch.tensor,
+    preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     _check_same_shape(preds, target)

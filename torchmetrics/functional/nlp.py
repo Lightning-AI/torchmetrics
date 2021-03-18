@@ -20,7 +20,7 @@ from collections import Counter
 from typing import List, Sequence
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 
 def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
@@ -94,20 +94,20 @@ def bleu_score(
         for counter in translation_counter:
             denominator[len(counter) - 1] += translation_counter[counter]
 
-    trans_len = torch.tensor(c)
-    ref_len = torch.tensor(r)
+    trans_len = tensor(c)
+    ref_len = tensor(r)
 
     if min(numerator) == 0.0:
-        return torch.tensor(0.0)
+        return tensor(0.0)
 
     if smooth:
         precision_scores = torch.add(numerator, torch.ones(n_gram)) / torch.add(denominator, torch.ones(n_gram))
     else:
         precision_scores = numerator / denominator
 
-    log_precision_scores = torch.tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
+    log_precision_scores = tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = torch.tensor(1.0) if c > r else torch.exp(1 - (ref_len / trans_len))
+    brevity_penalty = tensor(1.0) if c > r else torch.exp(1 - (ref_len / trans_len))
     bleu = brevity_penalty * geometric_mean
 
     return bleu

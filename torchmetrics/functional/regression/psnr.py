@@ -14,7 +14,7 @@
 from typing import Optional, Tuple, Union
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities import rank_zero_warn, reduce
 
@@ -27,7 +27,7 @@ def _psnr_compute(
     reduction: str = 'elementwise_mean',
 ) -> Tensor:
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / n_obs)
-    psnr = psnr_base_e * (10 / torch.log(torch.tensor(base)))
+    psnr = psnr_base_e * (10 / torch.log(tensor(base)))
     return reduce(psnr, reduction=reduction)
 
 
@@ -36,7 +36,7 @@ def _psnr_update(preds: Tensor,
                  dim: Optional[Union[int, Tuple[int, ...]]] = None) -> Tuple[Tensor, Tensor]:
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
-        n_obs = torch.tensor(target.numel(), device=target.device)
+        n_obs = tensor(target.numel(), device=target.device)
         return sum_squared_error, n_obs
 
     sum_squared_error = torch.sum(torch.pow(preds - target, 2), dim=dim)
@@ -46,9 +46,9 @@ def _psnr_update(preds: Tensor,
     else:
         dim_list = list(dim)
     if not dim_list:
-        n_obs = torch.tensor(target.numel(), device=target.device)
+        n_obs = tensor(target.numel(), device=target.device)
     else:
-        n_obs = torch.tensor(target.size(), device=target.device)[dim_list].prod()
+        n_obs = tensor(target.size(), device=target.device)[dim_list].prod()
         n_obs = n_obs.expand_as(sum_squared_error)
 
     return sum_squared_error, n_obs
@@ -103,6 +103,6 @@ def psnr(
 
         data_range = target.max() - target.min()
     else:
-        data_range = torch.tensor(float(data_range))
+        data_range = tensor(float(data_range))
     sum_squared_error, n_obs = _psnr_update(preds, target, dim=dim)
     return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)

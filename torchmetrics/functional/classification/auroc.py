@@ -14,7 +14,7 @@
 from typing import Optional, Sequence, Tuple
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.roc import roc
@@ -110,7 +110,7 @@ def _auroc_compute(
 
         return auc(fpr, tpr)
 
-    max_fpr = torch.tensor(max_fpr, device=fpr.device)
+    max_fpr = tensor(max_fpr, device=fpr.device)
     # Add a single point at max_fpr and interpolate its tpr value
     stop = torch.bucketize(max_fpr, fpr, out_int32=True, right=True)
     weight = (max_fpr - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])

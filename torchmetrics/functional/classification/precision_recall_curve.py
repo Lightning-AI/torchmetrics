@@ -15,7 +15,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 import torch.nn.functional as F
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities import rank_zero_warn
 
@@ -30,7 +30,7 @@ def _binary_clf_curve(
     adapted from https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
     """
     if sample_weights is not None and not isinstance(sample_weights, Tensor):
-        sample_weights = torch.tensor(sample_weights, device=preds.device, dtype=torch.float)
+        sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
 
     # remove class dimension if necessary
     if preds.ndim > target.ndim:

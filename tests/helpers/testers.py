@@ -20,7 +20,7 @@ from typing import Callable
 import numpy as np
 import pytest
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
@@ -290,7 +290,7 @@ class DummyMetric(Metric):
 
     def __init__(self):
         super().__init__()
-        self.add_state("x", torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("x", tensor(0.0), dist_reduce_fx=None)
 
     def update(self):
         pass

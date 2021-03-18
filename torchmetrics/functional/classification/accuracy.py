@@ -14,7 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
@@ -30,17 +30,17 @@ def _accuracy_update(preds: Tensor, target: Tensor, threshold: float, top_k: Opt
 
     if mode == DataType.BINARY or (mode == DataType.MULTILABEL and subset_accuracy):
         correct = (preds == target).all(dim=1).sum()
-        total = torch.tensor(target.shape[0], device=target.device)
+        total = tensor(target.shape[0], device=target.device)
     elif mode == DataType.MULTILABEL and not subset_accuracy:
         correct = (preds == target).sum()
-        total = torch.tensor(target.numel(), device=target.device)
+        total = tensor(target.numel(), device=target.device)
     elif mode == DataType.MULTICLASS or (mode == DataType.MULTIDIM_MULTICLASS and not subset_accuracy):
         correct = (preds * target).sum()
         total = target.sum()
     elif mode == DataType.MULTIDIM_MULTICLASS and subset_accuracy:
         sample_correct = (preds * target).sum(dim=(1, 2))
         correct = (sample_correct == target.shape[2]).sum()
-        total = torch.tensor(target.shape[0], device=target.device)
+        total = tensor(target.shape[0], device=target.device)
 
     return correct, total
 

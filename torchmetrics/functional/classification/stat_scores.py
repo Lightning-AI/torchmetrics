@@ -14,7 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 
@@ -132,7 +132,7 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
     ]
     outputs = torch.cat(outputs, -1)
-    outputs = torch.where(outputs < 0, torch.tensor(-1, device=outputs.device), outputs)
+    outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
     return outputs
 

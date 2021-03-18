@@ -14,7 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.hamming_distance import _hamming_distance_compute, _hamming_distance_update
 from torchmetrics.metric import Metric
@@ -80,8 +80,8 @@ class HammingDistance(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
         if not 0 < threshold < 1:
             raise ValueError("The `threshold` should lie in the (0,1) interval.")

@@ -18,7 +18,7 @@ import cloudpickle
 import numpy as np
 import pytest
 import torch
-from torch import nn
+from torch import nn, tensor
 
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
@@ -33,23 +33,23 @@ def test_inherit():
 def test_add_state():
     a = DummyMetric()
 
-    a.add_state("a", torch.tensor(0), "sum")
-    assert a._reductions["a"](torch.tensor([1, 1])) == 2
+    a.add_state("a", tensor(0), "sum")
+    assert a._reductions["a"](tensor([1, 1])) == 2
 
-    a.add_state("b", torch.tensor(0), "mean")
-    assert np.allclose(a._reductions["b"](torch.tensor([1.0, 2.0])).numpy(), 1.5)
+    a.add_state("b", tensor(0), "mean")
+    assert np.allclose(a._reductions["b"](tensor([1.0, 2.0])).numpy(), 1.5)
 
-    a.add_state("c", torch.tensor(0), "cat")
-    assert a._reductions["c"]([torch.tensor([1]), torch.tensor([1])]).shape == (2, )
-
-    with pytest.raises(ValueError):
-        a.add_state("d1", torch.tensor(0), 'xyz')
+    a.add_state("c", tensor(0), "cat")
+    assert a._reductions["c"]([tensor([1]), tensor([1])]).shape == (2, )
 
     with pytest.raises(ValueError):
-        a.add_state("d2", torch.tensor(0), 42)
+        a.add_state("d1", tensor(0), 'xyz')
 
     with pytest.raises(ValueError):
-        a.add_state("d3", [torch.tensor(0)], 'sum')
+        a.add_state("d2", tensor(0), 42)
+
+    with pytest.raises(ValueError):
+        a.add_state("d3", [tensor(0)], 'sum')
 
     with pytest.raises(ValueError):
         a.add_state("d4", 42, 'sum')
@@ -57,17 +57,17 @@ def test_add_state():
     def custom_fx(x):
         return -1
 
-    a.add_state("e", torch.tensor(0), custom_fx)
-    assert a._reductions["e"](torch.tensor([1, 1])) == -1
+    a.add_state("e", tensor(0), custom_fx)
+    assert a._reductions["e"](tensor([1, 1])) == -1
 
 
 def test_add_state_persistent():
     a = DummyMetric()
 
-    a.add_state("a", torch.tensor(0), "sum", persistent=True)
+    a.add_state("a", tensor(0), "sum", persistent=True)
     assert "a" in a.state_dict()
 
-    a.add_state("b", torch.tensor(0), "sum", persistent=False)
+    a.add_state("b", tensor(0), "sum", persistent=False)
 
     if _TORCH_LOWER_1_6:
         assert "b" not in a.state_dict()
@@ -83,13 +83,13 @@ def test_reset():
 
     a = A()
     assert a.x == 0
-    a.x = torch.tensor(5)
+    a.x = tensor(5)
     a.reset()
     assert a.x == 0
 
     b = B()
     assert isinstance(b.x, list) and len(b.x) == 0
-    b.x = torch.tensor(5)
+    b.x = tensor(5)
     b.reset()
     assert isinstance(b.x, list) and len(b.x) == 0
 
@@ -155,10 +155,10 @@ def test_hash():
     b2 = B()
     assert hash(b1) == hash(b2)
     assert isinstance(b1.x, list) and len(b1.x) == 0
-    b1.x.append(torch.tensor(5))
+    b1.x.append(tensor(5))
     assert isinstance(hash(b1), int)  # <- check that nothing crashes
     assert isinstance(b1.x, list) and len(b1.x) == 1
-    b2.x.append(torch.tensor(5))
+    b2.x.append(tensor(5))
     # Sanity:
     assert isinstance(b2.x, list) and len(b2.x) == 1
     # Now that they have tensor contents, they should have different hashes:
@@ -222,15 +222,15 @@ def test_child_metric_state_dict():
         def __init__(self):
             super().__init__()
             self.metric = DummyMetric()
-            self.metric.add_state('a', torch.tensor(0), persistent=True)
+            self.metric.add_state('a', tensor(0), persistent=True)
             self.metric.add_state('b', [], persistent=True)
-            self.metric.register_buffer('c', torch.tensor(0))
+            self.metric.register_buffer('c', tensor(0))
 
     module = TestModule()
     expected_state_dict = {
-        'metric.a': torch.tensor(0),
+        'metric.a': tensor(0),
         'metric.b': [],
-        'metric.c': torch.tensor(0),
+        'metric.c': tensor(0),
     }
     assert module.state_dict() == expected_state_dict
 
