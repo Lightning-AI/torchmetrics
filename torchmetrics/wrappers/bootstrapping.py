@@ -52,6 +52,10 @@ class BootStrapper(Metric):
             self,
             base_metric: Metric,
             num_bootstraps: int = 10,
+            mean: bool = True,
+            std: bool = True,
+            quantile: Optional[Union[float, torch.Tensor]] = None,
+            raw: bool = False,
             generator: Optional[torch.Generator] = None,
             compute_on_step: bool = True,
             dist_sync_on_step: bool = False,
@@ -64,14 +68,20 @@ class BootStrapper(Metric):
         in memory and whenever ``update`` or ``forward`` is called, all input tensors are resampled
         (with replacement) along the first dimension.
 
-        .. note:: Different from all other metrics, bootstrapped metrics has additional
-            arguments in its ``compute``  method determining what should be returned.
-
         Args:
             base_metric:
                 base metric class to wrap
             num_bootstraps:
                 number of copies to make of the base metric for bootstrapping
+            mean:
+                if ``True`` return the mean of the bootstraps
+            std:
+                if ``True`` return the standard diviation of the bootstraps
+            quantile:
+                if given, returns the quantile of the bootstraps. Can only be used with
+                pytorch version 1.6 or higher
+            raw:
+                if ``True``, return all bootstrapped values
             generator:
                 A pytorch random number generator for the bootstrap sampler
             compute_on_step:
@@ -89,14 +99,14 @@ class BootStrapper(Metric):
         Example::
             >>> from torchmetrics.wrappers import BootStrapper
             >>> from torchmetrics import Accuracy
-            >>> _ = torch.manual_seed(0)
+            >>> generator = torch.manual_seed(0)
             >>> base_metric = Accuracy()
-            >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
+            >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20, generator=generator)
             >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
-            >>> output = bootstrap.compute(mean=True, std=True)
+            >>> output = bootstrap.compute()
             >>> mean, std = output
             >>> print(mean, std)
-            tensor(0.4950) tensor(0.1677)
+            tensor(0.2175) tensor(0.0950)
 
         """
         super().__init__(
@@ -112,6 +122,13 @@ class BootStrapper(Metric):
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
         self.num_bootstraps = num_bootstraps
 
+        self.mean = mean
+        self.std = std
+        if quantile is not None and not _TORCH_GREATER_EQUAL_1_7:
+            raise ValueError('quantile argument can only be used with pytorch v1.6 or higher')
+        self.quantile = quantile
+        self.raw = raw
+
         if generator is not None and not isinstance(generator, torch.Generator):
             raise ValueError("Expected argument ``generator`` to be an instance of ``torch.Generator``"
                              f"but received {generator}")
@@ -126,32 +143,18 @@ class BootStrapper(Metric):
             new_kwargs = apply_to_collection(kwargs, torch.Tensor, _bootstrap_sampler, generator=self.generator)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
-    def compute(
-            self,
-            mean: bool = True,
-            std: bool = True,
-            quantile: Optional[Union[float, torch.Tensor]] = None,
-            raw: bool = False
-    ) -> List[torch.Tensor]:
-        """ Computes the metric value.
-        Args:
-            mean: if `True` return the mean of the bootstraps
-            std: if `True` return the standard diviation of the bootstraps
-            quantile:
-                if given, returns the quantile of the bootstraps. Can only be used when pytorch version
-                1.6 or higher
-            raw: if `True`, return all bootstrapped values
+    def compute(self) -> List[torch.Tensor]:
+        """ Computes the bootstrapped metric values. Allways returns a list of tensors, but the content of
+        the list depends on how the class was initialized
         """
         computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
         output = []
-        if mean:
+        if self.mean:
             output.append(computed_vals.mean(dim=0))
-        if std:
+        if self.std:
             output.append(computed_vals.std(dim=0))
-        if quantile is not None:
-            if not _TORCH_GREATER_EQUAL_1_7:
-                raise ValueError('quantial argument can only be used with pytorch v1.6 or higher')
-            output.append(torch.quantile(computed_vals, quantile))
-        if raw:
+        if self.quantile is not None:
+            output.append(torch.quantile(computed_vals, self.quantile))
+        if self.raw:
             output.append(computed_vals)
         return output
