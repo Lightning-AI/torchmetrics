@@ -2,7 +2,15 @@
 import logging as __logging
 import os
 
-from torchmetrics.info import *
+from torchmetrics.info import (
+    __author__,
+    __author_email__,
+    __copyright__,
+    __docs__,
+    __homepage__,
+    __license__,
+    __version__,
+)
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
