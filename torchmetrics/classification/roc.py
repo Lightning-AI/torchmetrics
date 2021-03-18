@@ -135,7 +135,7 @@ class ROC(Metric):
                 tensor with true positive rates.
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
-                thresholds used for computing false- and true postive rates
+                thresholds used for computing false- and true positive rates
 
         """
         preds = torch.cat(self.preds, dim=0)

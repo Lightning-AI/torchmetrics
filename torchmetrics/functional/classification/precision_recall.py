@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -28,6 +28,7 @@ def _precision_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    # todo: `tn` is unused
     return _reduce_stat_scores(
         numerator=tp,
         denominator=tp + fp,
@@ -178,6 +179,8 @@ def _recall_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    # todo: `tp` is unused
+    # todo: `tn` is unused
     return _reduce_stat_scores(
         numerator=tp,
         denominator=tp + fn,
@@ -330,7 +333,7 @@ def precision_recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> Tensor:
+) -> Tuple[Tensor, Tensor]:
     r"""
     Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
 

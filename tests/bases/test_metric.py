@@ -54,7 +54,7 @@ def test_add_state():
     with pytest.raises(ValueError):
         a.add_state("d4", 42, 'sum')
 
-    def custom_fx(x):
+    def custom_fx(_):
         return -1
 
     a.add_state("e", tensor(0), custom_fx)

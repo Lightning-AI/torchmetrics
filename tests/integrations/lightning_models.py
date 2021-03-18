@@ -68,7 +68,8 @@ class BoringModel(LightningModule):
     def forward(self, x):
         return self.layer(x)
 
-    def loss(self, batch, prediction):
+    @staticmethod
+    def loss(_, prediction):
         # An arbitrary loss to have a loss that updates the model weights during `Trainer.fit` calls
         return torch.nn.functional.mse_loss(prediction, torch.ones_like(prediction))
 

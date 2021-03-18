@@ -31,6 +31,7 @@ torch.manual_seed(42)
 
 
 def _sk_auroc_binary_prob(preds, target, num_classes, average='macro', max_fpr=None, multi_class='ovr'):
+    # todo: `multi_class` is unused
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     return sk_roc_auc_score(y_true=sk_target, y_score=sk_preds, average=average, max_fpr=max_fpr)

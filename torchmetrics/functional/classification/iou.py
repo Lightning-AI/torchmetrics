@@ -36,7 +36,7 @@ def _iou_from_confmat(
     scores[union == 0] = absent_score
 
     # Remove the ignored class index from the scores.
-    if ignore_index is not None and ignore_index >= 0 and ignore_index < num_classes:
+    if ignore_index is not None and 0 <= ignore_index < num_classes:
         scores = torch.cat([
             scores[:ignore_index],
             scores[ignore_index + 1:],
@@ -45,7 +45,7 @@ def _iou_from_confmat(
 
 
 def iou(
-    pred: Tensor,
+    preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
@@ -107,6 +107,6 @@ def iou(
 
     """
 
-    num_classes = get_num_classes(pred=pred, target=target, num_classes=num_classes)
-    confmat = _confusion_matrix_update(pred, target, num_classes, threshold)
+    num_classes = get_num_classes(preds=preds, target=target, num_classes=num_classes)
+    confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
     return _iou_from_confmat(confmat, num_classes, ignore_index, absent_score, reduction)

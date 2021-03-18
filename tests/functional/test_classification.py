@@ -59,13 +59,13 @@ def test_to_categorical():
     assert torch.allclose(result, expected.to(result.dtype))
 
 
-@pytest.mark.parametrize(['pred', 'target', 'num_classes', 'expected_num_classes'], [
+@pytest.mark.parametrize(['preds', 'target', 'num_classes', 'expected_num_classes'], [
     pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), 10, 10),
     pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
     pytest.param(torch.rand(32, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
 ])
-def test_get_num_classes(pred, target, num_classes, expected_num_classes):
-    assert get_num_classes(pred, target, num_classes) == expected_num_classes
+def test_get_num_classes(preds, target, num_classes, expected_num_classes):
+    assert get_num_classes(preds, target, num_classes) == expected_num_classes
 
 
 @pytest.mark.parametrize(['sample_weight', 'pos_label', "exp_shape"], [

@@ -29,6 +29,7 @@ def _accuracy_update(
 ) -> Tuple[Tensor, Tensor]:
 
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
+    correct, total = None, None
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")

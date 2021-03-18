@@ -118,7 +118,7 @@ class AUROC(Metric):
             )
 
         if self.max_fpr is not None:
-            if (not isinstance(max_fpr, float) and 0 < max_fpr <= 1):
+            if not isinstance(max_fpr, float) or not 0 < max_fpr <= 1:
                 raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
 
             if _TORCH_LOWER_1_6:

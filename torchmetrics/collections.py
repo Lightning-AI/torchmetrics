@@ -137,7 +137,8 @@ class MetricCollection(nn.ModuleDict):
     def _set_prefix(self, k: str) -> str:
         return k if self.prefix is None else self.prefix + k
 
-    def _check_prefix_arg(self, prefix: str) -> Optional[str]:
+    @staticmethod
+    def _check_prefix_arg(prefix: str) -> Optional[str]:
         if prefix is not None:
             if isinstance(prefix, str):
                 return prefix

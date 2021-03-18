@@ -31,7 +31,7 @@ class AUC(Metric):
     Args:
         reorder: AUC expects its first input to be sorted. If this is not the case,
             setting this argument to ``True`` will use a stable sorting algorithm to
-            sort the input in decending order
+            sort the input in descending order
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
@@ -40,8 +40,8 @@ class AUC(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
         dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Callback that performs the ``allgather`` operation on the metric state. When ``None``, DDP
+            will be used to perform the ``allgather``.
     """
 
     def __init__(

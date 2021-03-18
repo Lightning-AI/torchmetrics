@@ -55,7 +55,7 @@ def _auroc_compute(
 
     # check max_fpr parameter
     if max_fpr is not None:
-        if (not isinstance(max_fpr, float) and 0 < max_fpr <= 1):
+        if not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
             raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
 
         if _TORCH_LOWER_1_6:
@@ -157,7 +157,7 @@ def auroc(
         max_fpr:
             If not ``None``, calculates standardized partial AUC over the
             range [0, max_fpr]. Should be a float between 0 and 1.
-        sample_weight: sample weights for each data point
+        sample_weights: sample weights for each data point
 
     Example (binary case):
 

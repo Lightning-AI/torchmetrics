@@ -36,6 +36,7 @@ torch.manual_seed(42)
 
 
 def _sk_prec_recall(preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average=None):
+    # todo: `mdmc_average` is unused
     if average == "none":
         average = None
     if num_classes == 1:
@@ -211,6 +212,7 @@ class TestPrecisionRecall(MetricTester):
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
     ):
+        # todo: `metric_fn` is unused
         if num_classes == 1 and average != "micro":
             pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
 
@@ -261,6 +263,7 @@ class TestPrecisionRecall(MetricTester):
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
     ):
+        # todo: `metric_class` is unused
         if num_classes == 1 and average != "micro":
             pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
 
@@ -345,8 +348,7 @@ def test_top_k(
 ):
     """A simple test to check that top_k works as expected.
 
-    Just a sanity check, the tests in StatScores should already guarantee
-    the corectness of results.
+    Just a sanity check, the tests in StatScores should already guarantee the correctness of results.
     """
 
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
