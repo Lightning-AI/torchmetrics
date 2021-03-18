@@ -97,4 +97,11 @@ def explained_variance(
         tensor([0.9677, 1.0000])
     """
     n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
-    return _explained_variance_compute(n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target, multioutput,)
+    return _explained_variance_compute(
+        n_obs,
+        sum_error,
+        sum_squared_error,
+        sum_target,
+        sum_squared_target,
+        multioutput,
+    )

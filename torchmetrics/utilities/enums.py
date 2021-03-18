@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from enum import Enum
-from typing import Union, Optional
+from typing import Optional, Union
 
 
 class EnumStr(str, Enum):
