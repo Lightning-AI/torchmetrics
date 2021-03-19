@@ -3,7 +3,7 @@ TorchMetrics is a collection of Machine learning metrics for distributed, scalab
 * Optimized for distributed-training
 * A standardized interface to increase reproducibility
 * Reduces Boilerplate
-* Distrubuted-training compatible
+* Distributed-training compatible
 * Rigorously tested
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices

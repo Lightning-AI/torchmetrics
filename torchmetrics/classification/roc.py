@@ -14,6 +14,7 @@
 from typing import Any, List, Optional, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.roc import _roc_compute, _roc_update
 from torchmetrics.metric import Metric
@@ -107,7 +108,7 @@ class ROC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -121,10 +122,7 @@ class ROC(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-    def compute(
-        self
-    ) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                      List[torch.Tensor]]]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """
         Compute the receiver operating characteristic
 
@@ -137,7 +135,7 @@ class ROC(Metric):
                 tensor with true positive rates.
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
-                thresholds used for computing false- and true postive rates
+                thresholds used for computing false- and true positive rates
 
         """
         preds = torch.cat(self.preds, dim=0)

@@ -60,10 +60,11 @@ class MetricCollection(nn.ModuleDict):
         >>> metrics.persistent()
 
     """
+
     def __init__(
-            self,
-            metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]],
-            prefix: Optional[str] = None
+        self,
+        metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]],
+        prefix: Optional[str] = None,
     ):
         super().__init__()
         if isinstance(metrics, dict):
@@ -136,7 +137,8 @@ class MetricCollection(nn.ModuleDict):
     def _set_prefix(self, k: str) -> str:
         return k if self.prefix is None else self.prefix + k
 
-    def _check_prefix_arg(self, prefix: str) -> Optional[str]:
+    @staticmethod
+    def _check_prefix_arg(prefix: str) -> Optional[str]:
         if prefix is not None:
             if isinstance(prefix, str):
                 return prefix

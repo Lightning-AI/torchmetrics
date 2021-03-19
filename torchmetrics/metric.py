@@ -19,7 +19,7 @@ from copy import deepcopy
 from typing import Any, Callable, Optional, Union
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
@@ -95,7 +95,7 @@ class Metric(nn.Module, ABC):
             name: The name of the state variable. The variable will then be accessible at ``self.name``.
             default: Default value of the state; can either be a ``torch.Tensor`` or an empty list. The state will be
                 reset to this value when ``self.reset()`` is called.
-            dist_reduce_fx (Optional): Function to reduce state accross mutliple processes in distributed mode.
+            dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
                 If value is ``"sum"``, ``"mean"``, or ``"cat"``, we will use ``torch.sum``, ``torch.mean``,
                 and ``torch.cat`` respectively, each with argument ``dim=0``. Note that the ``"cat"`` reduction
                 only makes sense if the state is a list, and not a tensor. The user can also pass a custom
@@ -122,7 +122,7 @@ class Metric(nn.Module, ABC):
 
         """
         if (
-            not isinstance(default, torch.Tensor) and not isinstance(default, list)  # noqa: W503
+            not isinstance(default, Tensor) and not isinstance(default, list)  # noqa: W503
             or (isinstance(default, list) and len(default) != 0)  # noqa: W503
         ):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
@@ -175,19 +175,19 @@ class Metric(nn.Module, ABC):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
         output_dict = apply_to_collection(
             input_dict,
-            torch.Tensor,
+            Tensor,
             dist_sync_fn,
             group=self.process_group,
         )
 
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
-            if isinstance(output_dict[attr][0], torch.Tensor):
+            if isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
 
-            assert isinstance(reduction_fn, (Callable)) or reduction_fn is None
+            assert isinstance(reduction_fn, Callable) or reduction_fn is None
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
@@ -214,6 +214,7 @@ class Metric(nn.Module, ABC):
                 dist_sync_fn = gather_all_tensors
 
             synced = False
+            cache = []
             if self._to_sync and dist_sync_fn is not None:
                 # cache prior to syncing
                 cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
@@ -253,7 +254,7 @@ class Metric(nn.Module, ABC):
         """
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
-            if isinstance(default, torch.Tensor):
+            if isinstance(default, Tensor):
                 setattr(self, attr, deepcopy(default).to(current_val.device))
             else:
                 setattr(self, attr, deepcopy(default))
@@ -276,20 +277,20 @@ class Metric(nn.Module, ABC):
         """Overwrite _apply function such that we can also move metric states
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
-        self = super()._apply(fn)
+        this = super()._apply(fn)
         # Also apply fn to metric states
-        for key in self._defaults.keys():
-            current_val = getattr(self, key)
-            if isinstance(current_val, torch.Tensor):
-                setattr(self, key, fn(current_val))
+        for key in this._defaults.keys():
+            current_val = getattr(this, key)
+            if isinstance(current_val, Tensor):
+                setattr(this, key, fn(current_val))
             elif isinstance(current_val, Sequence):
-                setattr(self, key, [fn(cur_v) for cur_v in current_val])
+                setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a torch.Tensor"
-                    f"or a list of torch.Tensor, but encountered {current_val}"
+                    "Expected metric state to be either a Tensor"
+                    f"or a list of Tensor, but encountered {current_val}"
                 )
-        return self
+        return this
 
     def persistent(self, mode: bool = False):
         """Method for post-init to change if metric states should be saved to
@@ -336,7 +337,7 @@ class Metric(nn.Module, ABC):
             val = getattr(self, key)
             # Special case: allow list values, so long
             # as their elements are hashable
-            if hasattr(val, '__iter__') and not isinstance(val, torch.Tensor):
+            if hasattr(val, '__iter__') and not isinstance(val, Tensor):
                 hash_vals.extend(val)
             else:
                 hash_vals.append(val)
@@ -444,18 +445,18 @@ class Metric(nn.Module, ABC):
         return CompositionalMetric(torch.abs, self, None)
 
 
-def _neg(tensor: torch.Tensor):
+def _neg(tensor: Tensor):
     return -torch.abs(tensor)
 
 
 class CompositionalMetric(Metric):
-    """Composition of two metrics with a specific operator which will be executed upon metric's compute """
+    """Composition of two metrics with a specific operator which will be executed upon metrics compute """
 
     def __init__(
         self,
         operator: Callable,
-        metric_a: Union[Metric, int, float, torch.Tensor],
-        metric_b: Union[Metric, int, float, torch.Tensor, None],
+        metric_a: Union[Metric, int, float, Tensor],
+        metric_b: Union[Metric, int, float, Tensor, None],
     ):
         """
         Args:
@@ -470,12 +471,12 @@ class CompositionalMetric(Metric):
 
         self.op = operator
 
-        if isinstance(metric_a, torch.Tensor):
+        if isinstance(metric_a, Tensor):
             self.register_buffer("metric_a", metric_a)
         else:
             self.metric_a = metric_a
 
-        if isinstance(metric_b, torch.Tensor):
+        if isinstance(metric_b, Tensor):
             self.register_buffer("metric_b", metric_b)
         else:
             self.metric_b = metric_b
