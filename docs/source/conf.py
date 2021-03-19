@@ -18,6 +18,7 @@ import inspect
 import os
 import shutil
 import sys
+from importlib.util import spec_from_file_location, module_from_spec
 
 import pt_lightning_sphinx_theme
 
@@ -29,11 +30,12 @@ FOLDER_GENERATED = 'generated'
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
 try:
-    from pytorch_lightning import info
+    from torchmetrics import info
 except ImportError:
     # alternative https://stackoverflow.com/a/67692/4521646
-    sys.path.append(os.path.join(_PATH_ROOT, "torchmetrics"))
-    import info
+    spec = spec_from_file_location("torchmetrics/info.py", os.path.join(_PATH_ROOT, "torchmetrics", "info.py"))
+    info = module_from_spec(spec)
+    spec.loader.exec_module(info)
 
 html_favicon = '_static/images/icon.svg'
 
