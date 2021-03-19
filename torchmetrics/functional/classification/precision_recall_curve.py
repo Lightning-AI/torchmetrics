@@ -14,8 +14,8 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
-from torch.nn import functional as F
 from torch import Tensor, tensor
+from torch.nn import functional as F
 
 from torchmetrics.utilities import rank_zero_warn
 
