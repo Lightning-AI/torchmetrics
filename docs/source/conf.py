@@ -23,7 +23,7 @@ import pt_lightning_sphinx_theme
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.join(_PATH_HERE, "..", "..")
-sys.path.insert(0, os.path.abspath(_PATH_ROOT))
+# sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 
 FOLDER_GENERATED = 'generated'
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
