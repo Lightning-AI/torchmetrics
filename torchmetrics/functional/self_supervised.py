@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
+from torch import Tensor
 
 
 def embedding_similarity(
-    batch: torch.Tensor,
-    similarity: str = 'cosine',
-    reduction: str = 'none',
-    zero_diagonal: bool = True
-) -> torch.Tensor:
+    batch: Tensor, similarity: str = 'cosine', reduction: str = 'none', zero_diagonal: bool = True
+) -> Tensor:
     """
     Computes representation similarity
 

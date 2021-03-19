@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.explained_variance import (
     _explained_variance_compute,
@@ -94,13 +95,13 @@ class ExplainedVariance(Metric):
                 f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
             )
         self.multioutput = multioutput
-        self.add_state("sum_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("sum_squared_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("sum_target", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("sum_squared_target", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("n_obs", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 

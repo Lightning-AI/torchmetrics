@@ -14,18 +14,19 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _input_format_classification_one_hot
 from torchmetrics.utilities.distributed import class_reduce
 
 
 def _fbeta_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     threshold: float = 0.5,
-    multilabel: bool = False
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    multilabel: bool = False,
+) -> Tuple[Tensor, Tensor, Tensor]:
     preds, target = _input_format_classification_one_hot(num_classes, preds, target, threshold, multilabel)
     true_positives = torch.sum(preds * target, dim=1)
     predicted_positives = torch.sum(preds, dim=1)
@@ -34,12 +35,12 @@ def _fbeta_update(
 
 
 def _fbeta_compute(
-    true_positives: torch.Tensor,
-    predicted_positives: torch.Tensor,
-    actual_positives: torch.Tensor,
+    true_positives: Tensor,
+    predicted_positives: Tensor,
+    actual_positives: Tensor,
     beta: float = 1.0,
-    average: str = "micro"
-) -> torch.Tensor:
+    average: str = "micro",
+) -> Tensor:
     if average == "micro":
         precision = true_positives.sum().float() / predicted_positives.sum()
         recall = true_positives.sum().float() / actual_positives.sum()
@@ -53,14 +54,14 @@ def _fbeta_compute(
 
 
 def fbeta(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     beta: float = 1.0,
     threshold: float = 0.5,
     average: str = "micro",
     multilabel: bool = False
-) -> torch.Tensor:
+) -> Tensor:
     """
     Computes f_beta metric.
 
@@ -106,13 +107,13 @@ def fbeta(
 
 
 def f1(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     threshold: float = 0.5,
     average: str = "micro",
     multilabel: bool = False
-) -> torch.Tensor:
+) -> Tensor:
     """
     Computes F1 metric. F1 metrics correspond to a equally weighted average of the
     precision and recall scores.

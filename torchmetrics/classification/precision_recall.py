@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.precision_recall import _precision_compute, _recall_compute
@@ -151,7 +152,7 @@ class Precision(StatScores):
 
         self.average = average
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes the precision score based on inputs passed in to ``update`` previously.
 
@@ -299,7 +300,7 @@ class Recall(StatScores):
 
         self.average = average
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes the recall score based on inputs passed in to ``update`` previously.
 

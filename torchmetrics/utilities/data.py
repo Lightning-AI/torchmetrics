@@ -14,6 +14,7 @@
 from typing import Any, Callable, Mapping, Optional, Sequence, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -38,9 +39,9 @@ def _flatten(x):
 
 
 def to_onehot(
-    label_tensor: torch.Tensor,
+    label_tensor: Tensor,
     num_classes: Optional[int] = None,
-) -> torch.Tensor:
+) -> Tensor:
     """
     Converts a dense label tensor to one-hot format
 
@@ -74,7 +75,7 @@ def to_onehot(
     return tensor_onehot.scatter_(1, index, 1.0)
 
 
-def select_topk(prob_tensor: torch.Tensor, topk: int = 1, dim: int = 1) -> torch.Tensor:
+def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
     """
     Convert a probability tensor to binary by selecting top-k highest entries.
 
@@ -99,7 +100,7 @@ def select_topk(prob_tensor: torch.Tensor, topk: int = 1, dim: int = 1) -> torch
     return topk_tensor.int()
 
 
-def to_categorical(tensor: torch.Tensor, argmax_dim: int = 1) -> torch.Tensor:
+def to_categorical(tensor: Tensor, argmax_dim: int = 1) -> Tensor:
     """
     Converts a tensor of probabilities to a dense label tensor
 
@@ -121,15 +122,15 @@ def to_categorical(tensor: torch.Tensor, argmax_dim: int = 1) -> torch.Tensor:
 
 
 def get_num_classes(
-    pred: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
 ) -> int:
     """
     Calculates the number of classes for a given prediction and target tensor.
 
     Args:
-        pred: predicted values
+        preds: predicted values
         target: true labels
         num_classes: number of classes if known
 
@@ -137,7 +138,7 @@ def get_num_classes(
         An integer that represents the number of classes.
     """
     num_target_classes = int(target.max().detach().item() + 1)
-    num_pred_classes = int(pred.max().detach().item() + 1)
+    num_pred_classes = int(preds.max().detach().item() + 1)
     num_all_classes = max(num_target_classes, num_pred_classes)
 
     if num_classes is None:
@@ -202,7 +203,7 @@ def apply_to_collection(
         the resulting collection
 
     Example:
-        >>> apply_to_collection(torch.tensor([8, 0, 2, 6, 7]), dtype=torch.Tensor, function=lambda x: x ** 2)
+        >>> apply_to_collection(torch.tensor([8, 0, 2, 6, 7]), dtype=Tensor, function=lambda x: x ** 2)
         tensor([64,  0,  4, 36, 49])
         >>> apply_to_collection([8, 0, 2, 6, 7], dtype=int, function=lambda x: x ** 2)
         [64, 0, 4, 36, 49]
