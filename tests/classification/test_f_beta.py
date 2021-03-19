@@ -17,7 +17,7 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import fbeta_score, f1_score
+from sklearn.metrics import f1_score, fbeta_score
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -27,8 +27,8 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics import Metric, FBeta, F1
-from torchmetrics.functional import fbeta, f1
+from torchmetrics import F1, FBeta, Metric
+from torchmetrics.functional import f1, fbeta
 from torchmetrics.utilities.checks import _input_format_classification
 
 torch.manual_seed(42)
@@ -84,8 +84,87 @@ def _sk_fbeta_f1_multidim_multiclass(
         return np.concatenate(scores).mean(axis=0)
 
 
+@pytest.mark.parametrize("metric_class, metric_fn", [
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
+    (F1, f1)
+])
+@pytest.mark.parametrize(
+    "average, mdmc_average, num_classes, ignore_index, match_str",
+    [
+        ("wrong", None, None, None, "`average`"),
+        ("micro", "wrong", None, None, "`mdmc"),
+        ("macro", None, None, None, "number of classes"),
+        ("macro", None, 1, 0, "ignore_index"),
+    ],
+)
+def test_wrong_params(metric_class, metric_fn, average, mdmc_average, num_classes, ignore_index, match_str):
+    with pytest.raises(ValueError, match=match_str):
+        metric_class(
+            average=average,
+            mdmc_average=mdmc_average,
+            num_classes=num_classes,
+            ignore_index=ignore_index,
+        )
+
+    with pytest.raises(ValueError, match=match_str):
+        metric_fn(
+            _input_binary.preds[0],
+            _input_binary.target[0],
+            average=average,
+            mdmc_average=mdmc_average,
+            num_classes=num_classes,
+            ignore_index=ignore_index,
+        )
+
+
+@pytest.mark.parametrize("metric_class, metric_fn", [
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
+    (F1, f1)
+])
+def test_zero_division(metric_class, metric_fn):
+    """ Test that zero_division works correctly (currently should just set to 0). """
+
+    preds = torch.tensor([1, 2, 1, 1])
+    target = torch.tensor([2, 1, 2, 1])
+
+    cl_metric = metric_class(average="none", num_classes=3)
+    cl_metric(preds, target)
+
+    result_cl = cl_metric.compute()
+    result_fn = metric_fn(preds, target, average="none", num_classes=3)
+
+    assert result_cl[0] == result_fn[0] == 0
+
+
+@pytest.mark.parametrize("metric_class, metric_fn", [
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
+    (F1, f1)
+])
+def test_no_support(metric_class, metric_fn):
+    """This tests a rare edge case, where there is only one class present
+    in target, and ignore_index is set to exactly that class - and the
+    average method is equal to 'weighted'.
+
+    This would mean that the sum of weights equals zero, and would, without
+    taking care of this case, return NaN. However, the reduction function
+    should catch that and set the metric to equal the value of zero_division
+    in this case (zero_division is for now not configurable and equals 0).
+    """
+
+    preds = torch.tensor([1, 1, 0, 0])
+    target = torch.tensor([0, 0, 0, 0])
+
+    cl_metric = metric_class(average="weighted", num_classes=2, ignore_index=0)
+    cl_metric(preds, target)
+
+    result_cl = cl_metric.compute()
+    result_fn = metric_fn(preds, target, average="weighted", num_classes=2, ignore_index=0)
+
+    assert result_cl == result_fn == 0
+
+
 @pytest.mark.parametrize("metric_class, metric_fn, sk_fn", [
-    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), 
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)),
     (F1, f1, f1_score)
 ])
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
@@ -213,13 +292,15 @@ class TestFBeta(MetricTester):
             },
         )
 
+
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 _ml_k_target = torch.tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
 _ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 
+
 @pytest.mark.parametrize("metric_class, metric_fn", [
-    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)), 
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
     (F1, fbeta)
 ])
 @pytest.mark.parametrize(
@@ -246,7 +327,6 @@ def test_top_k(
     Just a sanity check, the tests in StatScores should already guarantee
     the corectness of results.
     """
-
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
@@ -254,6 +334,6 @@ def test_top_k(
         result = expected_fbeta
     else:
         result = expected_f1
-       
+
     assert torch.isclose(class_metric.compute(), result)
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)

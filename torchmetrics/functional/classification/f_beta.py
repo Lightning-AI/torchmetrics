@@ -11,13 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
+
+def _safe_divide(num: torch.Tensor, denom: torch.Tensor):
+    """ prevent zero division """
+    denom[denom == 0.] = 1
+    return num / denom
 
 
 def _fbeta_compute(
@@ -26,20 +32,36 @@ def _fbeta_compute(
     tn: torch.Tensor,
     fn: torch.Tensor,
     beta: float,
+    ignore_index: Optional[int],
     average: str,
     mdmc_average: Optional[str],
-) -> torch.Tensor:   
-    if average == "micro":
-        precision = tp.sum().float() / (tp + fp).sum()
-        recall = tp.sum().float() / (tp + fn).sum()
+) -> torch.Tensor:
+
+    if average == "micro" and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        mask = tp >= 0
+        precision = _safe_divide(tp[mask].sum().float(), (tp[mask] + fp[mask]).sum())
+        recall = _safe_divide(tp[mask].sum().float(), (tp[mask] + fn[mask]).sum())
+
     else:
-        precision = tp.float() / (tp + fp)
-        recall = tp.float() / (tp + fn)
-    
+        precision = _safe_divide(tp.float(), tp + fp)
+        recall = _safe_divide(tp.float(), tp + fn)
+
     num = (1 + beta**2) * precision * recall
     denom = beta**2 * precision + recall
-    
-    return  _reduce_stat_scores(
+    denom[denom == 0.] = 1  # avoid division by 0
+
+    if ignore_index is not None:
+        if (
+            average not in (AverageMethod.MICRO.value, AverageMethod.SAMPLES.value)
+            and mdmc_average == MDMCAverageMethod.SAMPLEWISE  # noqa: W503
+        ):
+            num[..., ignore_index] = -1
+            denom[..., ignore_index] = -1
+        elif average not in (AverageMethod.MICRO.value, AverageMethod.SAMPLES.value):
+            num[ignore_index, ...] = -1
+            denom[ignore_index, ...] = -1
+
+    return _reduce_stat_scores(
         numerator=num,
         denominator=denom,
         weights=None if average != "weighted" else tp + fn,
@@ -62,11 +84,11 @@ def fbeta(
 ) -> torch.Tensor:
     """
     Computes f_beta metric.
-    
+
     .. math::
         F_\beta = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
-    
+
     Works with binary, multiclass, and multilabel data.
     Accepts probabilities from a model output or integer class values in prediction.
     Works with multi-dimensional preds and target.
@@ -176,7 +198,7 @@ def fbeta(
         ignore_index=ignore_index,
     )
 
-    return _fbeta_compute(tp, fp, tn, fn, beta, average, mdmc_average)
+    return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
 def f1(

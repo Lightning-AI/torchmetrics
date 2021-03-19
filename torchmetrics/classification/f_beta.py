@@ -15,8 +15,8 @@ from typing import Any, Callable, Optional
 
 import torch
 
-from torchmetrics.functional.classification.f_beta import _fbeta_compute
 from torchmetrics.classification.stat_scores import StatScores
+from torchmetrics.functional.classification.f_beta import _fbeta_compute
 
 
 class FBeta(StatScores):
@@ -41,12 +41,10 @@ class FBeta(StatScores):
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
-
-
     Args:
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        beta: 
+        beta:
             Beta coefficient in the F measure.
         threshold:
             Threshold probability value for transforming probability predictions to binary
@@ -166,7 +164,7 @@ class FBeta(StatScores):
         Computes fbeta over state.
         """
         tp, fp, tn, fn = self._get_final_stats()
-        return _fbeta_compute(tp, fp, tn, fn, self.beta, self.average, self.mdmc_reduce)
+        return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
 class F1(FBeta):
