@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.auc import _auc_compute, _auc_update
 from torchmetrics.metric import Metric
@@ -30,7 +31,7 @@ class AUC(Metric):
     Args:
         reorder: AUC expects its first input to be sorted. If this is not the case,
             setting this argument to ``True`` will use a stable sorting algorithm to
-            sort the input in decending order
+            sort the input in descending order
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
@@ -39,8 +40,8 @@ class AUC(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
         dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Callback that performs the ``allgather`` operation on the metric state. When ``None``, DDP
+            will be used to perform the ``allgather``.
     """
 
     def __init__(
@@ -68,7 +69,7 @@ class AUC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, x: torch.Tensor, y: torch.Tensor):
+    def update(self, x: Tensor, y: Tensor):
         """
         Update state with predictions and targets.
 
@@ -81,7 +82,7 @@ class AUC(Metric):
         self.x.append(x)
         self.y.append(y)
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes AUC based on inputs passed in to ``update`` previously.
         """

@@ -14,6 +14,7 @@
 from typing import Any, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_compute, _confusion_matrix_update
 from torchmetrics.metric import Metric
@@ -96,7 +97,7 @@ class ConfusionMatrix(Metric):
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -107,7 +108,7 @@ class ConfusionMatrix(Metric):
         confmat = _confusion_matrix_update(preds, target, self.num_classes, self.threshold)
         self.confmat += confmat
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes confusion matrix
         """

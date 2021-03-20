@@ -82,6 +82,7 @@ class TestR2Score(MetricTester):
         )
 
     def test_r2_functional(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+        # todo: `num_outputs` is unused
         self.run_functional_metric_test(
             preds,
             target,
@@ -102,14 +103,14 @@ def test_error_on_multidim_tensors(metric_class=R2Score):
     with pytest.raises(
         ValueError,
         match=r'Expected both prediction and target to be 1D or 2D tensors,'
-        r' but recevied tensors with dimension .'
+        r' but received tensors with dimension .'
     ):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))
 
 
 def test_error_on_too_few_samples(metric_class=R2Score):
     metric = metric_class()
-    with pytest.raises(ValueError, match='Needs atleast two samples to calculate r2 score.'):
+    with pytest.raises(ValueError, match='Needs at least two samples to calculate r2 score.'):
         metric(torch.randn(1, ), torch.randn(1, ))
 
 
@@ -118,7 +119,7 @@ def test_warning_on_too_large_adjusted(metric_class=R2Score):
 
     with pytest.warns(
         UserWarning,
-        match="More independent regressions than datapoints in"
+        match="More independent regressions than data points in"
         " adjusted r2 score. Falls back to standard r2 score."
     ):
         metric(torch.randn(10, ), torch.randn(10, ))

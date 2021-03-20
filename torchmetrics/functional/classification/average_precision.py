@@ -14,6 +14,7 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _precision_recall_curve_compute,
@@ -22,21 +23,22 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 
 
 def _average_precision_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, int, int]:
+) -> Tuple[Tensor, Tensor, int, int]:
     return _precision_recall_curve_update(preds, target, num_classes, pos_label)
 
 
 def _average_precision_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     pos_label: int,
-    sample_weights: Optional[Sequence] = None
-) -> Union[List[torch.Tensor], torch.Tensor]:
+    sample_weights: Optional[Sequence] = None,
+) -> Union[List[Tensor], Tensor]:
+    # todo: `sample_weights` is unused
     precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
     # Return the step function integral
     # The following works because the last entry of precision is
@@ -51,12 +53,12 @@ def _average_precision_compute(
 
 
 def average_precision(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
-) -> Union[List[torch.Tensor], torch.Tensor]:
+) -> Union[List[Tensor], Tensor]:
     """
     Computes the average precision score.
 

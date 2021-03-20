@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import average_precision_score as sk_average_precision_score
+from torch import tensor
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -101,9 +102,9 @@ class TestAveragePrecision(MetricTester):
         # And a constant score
         # The precision is then the fraction of positive whatever the recall
         # is, as there is only one threshold:
-        pytest.param(torch.tensor([1, 1, 1, 1]), torch.tensor([0, 0, 0, 1]), .25),
+        pytest.param(tensor([1, 1, 1, 1]), tensor([0, 0, 0, 1]), .25),
         # With threshold 0.8 : 1 TP and 2 TN and one FN
-        pytest.param(torch.tensor([.6, .7, .8, 9]), torch.tensor([1, 0, 0, 1]), .75),
+        pytest.param(tensor([.6, .7, .8, 9]), tensor([1, 0, 0, 1]), .75),
     ]
 )
 def test_average_precision(scores, target, expected_score):

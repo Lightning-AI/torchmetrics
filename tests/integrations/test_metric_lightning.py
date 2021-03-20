@@ -13,6 +13,7 @@
 # limitations under the License.
 import torch
 from pytorch_lightning import Trainer
+from torch import tensor
 
 from tests.integrations.lightning_models import BoringModel
 from torchmetrics import Metric
@@ -22,7 +23,7 @@ class SumMetric(Metric):
 
     def __init__(self):
         super().__init__()
-        self.add_state("x", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, x):
         self.x += x
@@ -35,7 +36,7 @@ class DiffMetric(Metric):
 
     def __init__(self):
         super().__init__()
-        self.add_state("x", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, x):
         self.x -= x
@@ -116,8 +117,8 @@ def test_metric_lightning(tmpdir):
 #     trainer.fit(model)
 #
 #     logged = trainer.logged_metrics
-#     assert torch.allclose(torch.tensor(logged["sum_step"]), model.sum)
-#     assert torch.allclose(torch.tensor(logged["sum_epoch"]), model.sum)
+#     assert torch.allclose(tensor(logged["sum_step"]), model.sum)
+#     assert torch.allclose(tensor(logged["sum_epoch"]), model.sum)
 
 # todo: need to be fixed
 # def test_scriptable(tmpdir):
@@ -193,5 +194,5 @@ def test_metric_lightning(tmpdir):
 #     trainer.fit(model)
 #
 #     logged = trainer.logged_metrics
-#     assert torch.allclose(torch.tensor(logged["SumMetric_epoch"]), model.sum)
-#     assert torch.allclose(torch.tensor(logged["DiffMetric_epoch"]), model.diff)
+#     assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum)
+#     assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff)

@@ -14,6 +14,7 @@
 from typing import Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
 from torchmetrics.utilities.data import get_num_classes
@@ -21,7 +22,7 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _iou_from_confmat(
-    confmat: torch.Tensor,
+    confmat: Tensor,
     num_classes: int,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
@@ -35,7 +36,7 @@ def _iou_from_confmat(
     scores[union == 0] = absent_score
 
     # Remove the ignored class index from the scores.
-    if ignore_index is not None and ignore_index >= 0 and ignore_index < num_classes:
+    if ignore_index is not None and 0 <= ignore_index < num_classes:
         scores = torch.cat([
             scores[:ignore_index],
             scores[ignore_index + 1:],
@@ -44,14 +45,14 @@ def _iou_from_confmat(
 
 
 def iou(
-    pred: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
     num_classes: Optional[int] = None,
     reduction: str = 'elementwise_mean',
-) -> torch.Tensor:
+) -> Tensor:
     r"""
     Computes `Intersection over union, or Jaccard index calculation <https://en.wikipedia.org/wiki/Jaccard_index>`_:
 
@@ -106,6 +107,6 @@ def iou(
 
     """
 
-    num_classes = get_num_classes(pred=pred, target=target, num_classes=num_classes)
-    confmat = _confusion_matrix_update(pred, target, num_classes, threshold)
+    num_classes = get_num_classes(preds=preds, target=target, num_classes=num_classes)
+    confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
     return _iou_from_confmat(confmat, num_classes, ignore_index, absent_score, reduction)
