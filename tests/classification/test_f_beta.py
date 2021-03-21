@@ -17,6 +17,7 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
+from torch import tensor
 from sklearn.metrics import f1_score, fbeta_score
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
@@ -198,8 +199,8 @@ class TestFBeta(MetricTester):
         self,
         ddp: bool,
         dist_sync_on_step: bool,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         sk_wrapper: Callable,
         metric_class: Metric,
         metric_fn: Callable,
@@ -248,8 +249,8 @@ class TestFBeta(MetricTester):
 
     def test_fbeta_f1_functional(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         sk_wrapper: Callable,
         metric_class: Metric,
         metric_fn: Callable,

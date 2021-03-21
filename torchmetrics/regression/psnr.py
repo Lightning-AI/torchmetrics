@@ -14,6 +14,7 @@
 from typing import Any, Optional, Sequence, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.regression.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
@@ -103,7 +104,7 @@ class PSNR(Metric):
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 

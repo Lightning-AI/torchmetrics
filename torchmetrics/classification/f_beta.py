@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
@@ -157,9 +158,7 @@ class FBeta(StatScores):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.average = average
-
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes fbeta over state.
         """

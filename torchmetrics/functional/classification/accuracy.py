@@ -14,48 +14,54 @@
 from typing import Optional, Tuple
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
 def _accuracy_update(
-    preds: torch.Tensor, target: torch.Tensor, threshold: float, top_k: Optional[int], subset_accuracy: bool
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    preds: Tensor,
+    target: Tensor,
+    threshold: float,
+    top_k: Optional[int],
+    subset_accuracy: bool,
+) -> Tuple[Tensor, Tensor]:
 
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
+    correct, total = None, None
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
 
     if mode == DataType.BINARY or (mode == DataType.MULTILABEL and subset_accuracy):
         correct = (preds == target).all(dim=1).sum()
-        total = torch.tensor(target.shape[0], device=target.device)
+        total = tensor(target.shape[0], device=target.device)
     elif mode == DataType.MULTILABEL and not subset_accuracy:
         correct = (preds == target).sum()
-        total = torch.tensor(target.numel(), device=target.device)
+        total = tensor(target.numel(), device=target.device)
     elif mode == DataType.MULTICLASS or (mode == DataType.MULTIDIM_MULTICLASS and not subset_accuracy):
         correct = (preds * target).sum()
         total = target.sum()
     elif mode == DataType.MULTIDIM_MULTICLASS and subset_accuracy:
         sample_correct = (preds * target).sum(dim=(1, 2))
         correct = (sample_correct == target.shape[2]).sum()
-        total = torch.tensor(target.shape[0], device=target.device)
+        total = tensor(target.shape[0], device=target.device)
 
     return correct, total
 
 
-def _accuracy_compute(correct: torch.Tensor, total: torch.Tensor) -> torch.Tensor:
+def _accuracy_compute(correct: Tensor, total: Tensor) -> Tensor:
     return correct.float() / total
 
 
 def accuracy(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     subset_accuracy: bool = False,
-) -> torch.Tensor:
+) -> Tensor:
     r"""Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`_:
 
     .. math::

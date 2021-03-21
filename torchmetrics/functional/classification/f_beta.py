@@ -14,6 +14,7 @@
 from typing import Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
@@ -27,21 +28,20 @@ def _safe_divide(num: torch.Tensor, denom: torch.Tensor):
 
 
 def _fbeta_compute(
-    tp: torch.Tensor,
-    fp: torch.Tensor,
-    tn: torch.Tensor,
-    fn: torch.Tensor,
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
     beta: float,
     ignore_index: Optional[int],
     average: str,
     mdmc_average: Optional[str],
-) -> torch.Tensor:
+) -> Tensor:
 
     if average == "micro" and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         mask = tp >= 0
         precision = _safe_divide(tp[mask].sum().float(), (tp[mask] + fp[mask]).sum())
         recall = _safe_divide(tp[mask].sum().float(), (tp[mask] + fn[mask]).sum())
-
     else:
         precision = _safe_divide(tp.float(), tp + fp)
         recall = _safe_divide(tp.float(), tp + fn)
@@ -71,8 +71,8 @@ def _fbeta_compute(
 
 
 def fbeta(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     beta: float = 1.0,
     average: str = "micro",
     mdmc_average: Optional[str] = None,
@@ -81,7 +81,7 @@ def fbeta(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> torch.Tensor:
+) -> Tensor:
     """
     Computes f_beta metric.
 
@@ -202,8 +202,8 @@ def fbeta(
 
 
 def f1(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     beta: float = 1.0,
     average: str = "micro",
     mdmc_average: Optional[str] = None,
@@ -212,7 +212,7 @@ def f1(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> torch.Tensor:
+) -> Tensor:
     """
     Computes F1 metric. F1 metrics correspond to a equally weighted average of the
     precision and recall scores.
