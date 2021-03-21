@@ -70,16 +70,28 @@ def _precision_recall_curve_update(
 ) -> Tuple[torch.Tensor, torch.Tensor, int, int]:
     if not (len(preds.shape) == len(target.shape) or len(preds.shape) == len(target.shape) + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
-    # single class evaluation
+
     if len(preds.shape) == len(target.shape):
-        num_classes = 1
         if pos_label is None:
             rank_zero_warn('`pos_label` automatically set 1.')
             pos_label = 1
-        preds = preds.flatten()
-        target = target.flatten()
+        if num_classes is not None and num_classes != 1:
+            # multilabel problem
+            if num_classes != preds.shape[1]:
+                raise ValueError(
+                    f'Argument `num_classes` was set to {num_classes} in'
+                    f' metric `precision_recall_curve` but detected {preds.shape[1]}'
+                    ' number of classes from predictions'
+                )
+            preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
+            target = target.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
+        else:
+            # binary problem
+            preds = preds.flatten()
+            target = target.flatten()
+            num_classes = 1
 
-    # multi class evaluation
+    # multi class problem
     if len(preds.shape) == len(target.shape) + 1:
         if pos_label is not None:
             rank_zero_warn(
