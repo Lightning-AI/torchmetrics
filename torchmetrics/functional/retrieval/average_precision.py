@@ -21,7 +21,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
     `here <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`__.
 
     `preds` and `target` should be of the same shape and live on the same device. If no `target` is ``True``,
-    0 is returned. Target must be of type `bool` or `int`, otherwise an error is raised.
+    `0` is returned. Target must be of type `bool` or `int`, otherwise an error is raised.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
@@ -51,7 +51,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
         raise ValueError("`target` must be a tensor of booleans or integers")
 
     if target.sum() == 0:
-        return torch.tensor(0, device=preds.device)
+        return torch.tensor(0.0, device=preds.device)
 
     if target.dtype is not torch.bool:
         target = target.bool()

@@ -128,29 +128,46 @@ def test_input_data() -> None:
         except Exception as e:
             assert isinstance(e, ValueError)
 
+
+def test_functional_version() -> None:
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    seed_everything(0)
+
     # check input dtypes
-    NOT_ALLOWED_INDEXES_DTYPE = (torch.bool, torch.float)
-    NOT_ALLOWED_PREDS_DTYPE = (torch.bool, )
-    NOW_ALLOWED_TARGET_DTYPE = (torch.float, )
+    NOT_ALLOWED_DTYPE = (torch.bool, torch.float16, torch.float32, torch.float64)
 
     length = 10  # not important in this case
-    for dtype in NOT_ALLOWED_INDEXES_DTYPE + NOT_ALLOWED_PREDS_DTYPE + NOW_ALLOWED_TARGET_DTYPE:
+    for dtype in NOT_ALLOWED_DTYPE:
 
         # check error input dtypes error is raised correctly
-        indexes = torch.tensor([0] * length, device=device, dtype=dtype)
         preds = torch.tensor([0] * length, device=device, dtype=dtype)
         target = torch.tensor([0] * length, device=device, dtype=dtype)
-
-        metric = RetrievalMRR(query_without_relevant_docs='skip')
-
-        try:
-            metric(indexes, preds, target)
-            assert False  # assert exception is raised
-        except Exception as e:
-            assert isinstance(e, ValueError)
 
         try:
             retrieval_reciprocal_rank(preds=preds, target=target)
             assert False  # assert exception is raised
         except Exception as e:
             assert isinstance(e, ValueError)
+
+    # test checks in shapes
+    for _ in range(20):
+
+        # check error input dtypes error is raised correctly
+        preds = torch.tensor([0] * random.randint(1, 20), device=device, dtype=torch.float)
+        target = torch.tensor([0] * random.randint(1, 20), device=device, dtype=torch.int64)
+
+        try:
+            retrieval_reciprocal_rank(preds=preds, target=target)
+            assert False  # assert exception is raised
+        except Exception as e:
+            assert isinstance(e, ValueError)
+
+    # test checks on empty targets
+    for _ in range(10):
+
+        # check error input dtypes error is raised correctly
+        preds = torch.tensor([0] * length, device=device, dtype=torch.float)
+        target = torch.tensor([0] * length, device=device, dtype=torch.int64)
+
+        assert torch.allclose(retrieval_reciprocal_rank(preds=preds, target=target), torch.tensor(0.0))
