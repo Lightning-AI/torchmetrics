@@ -127,6 +127,7 @@ class FBeta(StatScores):
         tensor(0.3333)
 
     """
+
     def __init__(
         self,
         num_classes: Optional[int] = None,

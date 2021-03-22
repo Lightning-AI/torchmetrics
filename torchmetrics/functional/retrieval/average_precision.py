@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 
 def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
@@ -47,7 +47,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
         target = target.bool()
 
     if target.sum() == 0:
-        return torch.tensor(0, device=preds.device)
+        return tensor(0, device=preds.device)
 
     target = target[torch.argsort(preds, dim=-1, descending=True)]
     positions = torch.arange(1, len(target) + 1, device=target.device, dtype=torch.float32)[target > 0]

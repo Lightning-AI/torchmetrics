@@ -17,8 +17,8 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
-from torch import tensor
 from sklearn.metrics import f1_score, fbeta_score
+from torch import Tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -87,7 +87,7 @@ def _sk_fbeta_f1_multidim_multiclass(
 
 @pytest.mark.parametrize("metric_class, metric_fn", [
     (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-    (F1, f1)
+    (F1, f1),
 ])
 @pytest.mark.parametrize(
     "average, mdmc_average, num_classes, ignore_index, match_str",
@@ -120,7 +120,7 @@ def test_wrong_params(metric_class, metric_fn, average, mdmc_average, num_classe
 
 @pytest.mark.parametrize("metric_class, metric_fn", [
     (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-    (F1, f1)
+    (F1, f1),
 ])
 def test_zero_division(metric_class, metric_fn):
     """ Test that zero_division works correctly (currently should just set to 0). """
@@ -139,7 +139,7 @@ def test_zero_division(metric_class, metric_fn):
 
 @pytest.mark.parametrize("metric_class, metric_fn", [
     (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-    (F1, f1)
+    (F1, f1),
 ])
 def test_no_support(metric_class, metric_fn):
     """This tests a rare edge case, where there is only one class present
@@ -164,10 +164,12 @@ def test_no_support(metric_class, metric_fn):
     assert result_cl == result_fn == 0
 
 
-@pytest.mark.parametrize("metric_class, metric_fn, sk_fn", [
-    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)),
-    (F1, f1, f1_score)
-])
+@pytest.mark.parametrize(
+    "metric_class, metric_fn, sk_fn", [
+        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)),
+        (F1, f1, f1_score),
+    ]
+)
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
 @pytest.mark.parametrize(
@@ -300,10 +302,12 @@ _ml_k_target = torch.tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
 _ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 
 
-@pytest.mark.parametrize("metric_class, metric_fn", [
-    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-    (F1, fbeta)
-])
+@pytest.mark.parametrize(
+    "metric_class, metric_fn", [
+        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
+        (F1, fbeta),
+    ]
+)
 @pytest.mark.parametrize(
     "k, preds, target, average, expected_fbeta, expected_f1",
     [
