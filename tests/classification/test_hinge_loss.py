@@ -19,8 +19,7 @@ import torch
 from sklearn.metrics import hinge_loss as sk_hinge_loss
 
 from tests.classification.inputs import Input
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
-from tests.helpers.testers import MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
 from torchmetrics import HingeLoss
 from torchmetrics.functional import hinge_loss
 
