@@ -19,6 +19,7 @@ from torchmetrics.classification.cohen_kappa import CohenKappa  # noqa: F401
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
 from torchmetrics.classification.f_beta import F1, FBeta  # noqa: F401
 from torchmetrics.classification.hamming_distance import HammingDistance  # noqa: F401
+from torchmetrics.classification.hinge_loss import HingeLoss  # noqa: F401
 from torchmetrics.classification.iou import IoU  # noqa: F401
 from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401

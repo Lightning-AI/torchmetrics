@@ -17,38 +17,79 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import hinge_loss as sk_hinge_loss
-from torch import tensor
 
-from tests.classification.inputs import _input_binary, _input_binary_prob
-from tests.classification.inputs import _input_multiclass as _input_mcls
-from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
-from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.classification.inputs import _input_multilabel as _input_mlb
-from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
-from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
-from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.helpers.testers import THRESHOLD, MetricTester
-from torchmetrics import Accuracy
-from torchmetrics.functional import accuracy
+from tests.classification.inputs import Input
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
+from tests.helpers.testers import MetricTester
+from torchmetrics import HingeLoss
 from torchmetrics.functional import hinge_loss
-from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import DataType
 
 torch.manual_seed(42)
 
 
-def _sk_hinge_loss(preds, target):
+_input_binary = Input(
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
+)
+
+_input_multiclass = Input(
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
+    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))
+)
+
+
+def _sk_hinge_loss(preds, target, squared):
     sk_preds, sk_target = preds.numpy(), target.numpy()
+
+    if sk_preds.ndim == 1:
+        sk_target = 2 * sk_target - 1
+
+    if squared:  # Squared not an option in sklearn, so adapted from source
+        if sk_preds.ndim == 1:
+            margin = sk_target * sk_preds
+        else:
+            mask = np.ones_like(sk_preds, dtype=bool)
+            mask[np.arange(sk_target.shape[0]), sk_target] = False
+            margin = sk_preds[~mask]
+            margin -= np.max(sk_preds[mask].reshape(sk_target.shape[0], -1), axis=1)
+        losses = 1 - margin
+        np.clip(losses, 0, None, out=losses)
+        losses = losses ** 2
+        return losses.mean()
 
     return sk_hinge_loss(y_true=sk_target, pred_decision=sk_preds)
 
 
-def test_hinge_loss():
-    pred = tensor([[-2.5, 1.2, 0.1], [-0.6, 1.3, 1.5], [-3.2, 0.8, -1.7]])
-    target = tensor([0, 2, 1])
+@pytest.mark.parametrize(
+    "preds, target, squared",
+    [
+        (_input_binary.preds, _input_binary.target, False),
+        (_input_binary.preds, _input_binary.target, True),
+        (_input_multiclass.preds, _input_multiclass.target, False),
+        (_input_multiclass.preds, _input_multiclass.target, True),
+    ],
+)
+class TestHingeLoss(MetricTester):
 
-    sk_res = _sk_hinge_loss(pred, target)
-    tm_res = hinge_loss(pred, target)
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    def test_hinge_loss_class(self, ddp, dist_sync_on_step, preds, target, squared):
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=HingeLoss,
+            sk_metric=partial(_sk_hinge_loss, squared=squared),
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args={
+                "squared": squared
+            },
+        )
 
-    assert torch.allclose(torch.tensor(sk_res), tm_res)
+    def test_hinge_loss_fn(self, preds, target, squared):
+        self.run_functional_metric_test(
+            preds,
+            target,
+            metric_functional=partial(hinge_loss, squared=squared),
+            sk_metric=partial(_sk_hinge_loss, squared=squared),
+        )
