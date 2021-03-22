@@ -206,20 +206,6 @@ StatScores
     :noindex:
 
 
-RetrievalMAP
-~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.RetrievalMAP
-    :noindex:
-
-
-RetrievalMRR
-~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.RetrievalMRR
-    :noindex:
-
-
 ******************
 Regression Metrics
 ******************
@@ -270,4 +256,21 @@ R2Score
 ~~~~~~~
 
 .. autoclass:: torchmetrics.R2Score
+    :noindex:
+
+*********
+Retrieval
+*********
+
+RetrievalMAP
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalMAP
+    :noindex:
+
+
+RetrievalMRR
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalMRR
     :noindex:
