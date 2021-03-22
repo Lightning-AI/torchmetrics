@@ -21,7 +21,6 @@ from torchmetrics.functional.classification.dice import dice_score  # noqa: F401
 from torchmetrics.functional.classification.f_beta import f1, fbeta  # noqa: F401
 from torchmetrics.functional.classification.hamming_distance import hamming_distance  # noqa: F401
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
-from torchmetrics.functional.classification.ir_average_precision import retrieval_average_precision  # noqa: F401
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
 from torchmetrics.functional.classification.roc import roc  # noqa: F401

@@ -35,4 +35,5 @@ from torchmetrics.functional.regression.mean_squared_log_error import mean_squar
 from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
 from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
+from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
