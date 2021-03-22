@@ -7,7 +7,7 @@ from torch import Tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.data import get_group_indexes
 
-#: get_group_indexes is used to group predictions belonging to the same query
+#: get_group_indexes is used to group predictions belonging to the same document
 IGNORE_IDX = -100
 
 
