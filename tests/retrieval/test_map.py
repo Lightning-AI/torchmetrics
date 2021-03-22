@@ -113,3 +113,23 @@ def test_input_data() -> None:
             metric = RetrievalMAP(query_without_relevant_docs='casual_argument')
         except Exception as e:
             assert isinstance(e, ValueError)
+
+    # check input dtypes
+    NOT_ALLOWED_INDEXES_DTYPE = (torch.bool, torch.float)
+    NOT_ALLOWED_PREDS_DTYPE = (torch.bool, )
+    NOW_ALLOWED_TARGET_DTYPE = (torch.float, )
+
+    length = 10  # not important in this case
+    for dtype in NOT_ALLOWED_INDEXES_DTYPE + NOT_ALLOWED_PREDS_DTYPE + NOW_ALLOWED_TARGET_DTYPE:
+
+        # check error input dtypes error is raised correctly
+        indexes = torch.tensor([0] * length, device=device, dtype=dtype)
+        preds = torch.tensor([0] * length, device=device, dtype=dtype)
+        target = torch.tensor([0] * length, device=device, dtype=dtype)
+
+        metric = RetrievalMAP(query_without_relevant_docs='skip')
+
+        try:
+            metric(indexes, preds, target)
+        except Exception as e:
+            assert isinstance(e, ValueError)
