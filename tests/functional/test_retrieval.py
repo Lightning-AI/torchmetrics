@@ -5,7 +5,7 @@ import pytest
 import torch
 from sklearn.metrics import average_precision_score as sk_average_precision
 
-from torchmetrics.functional.classification.ir_average_precision import retrieval_average_precision
+from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 
 
 @pytest.mark.parametrize(['sklearn_metric', 'torch_metric'], [
