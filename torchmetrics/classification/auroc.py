@@ -48,6 +48,7 @@ class AUROC(Metric):
            this argument should not be set as we iteratively change it in the
            range [0,num_classes-1]
        average:
+           - ``'micro'`` computes metric globally. Only works for multilabel problems
            - ``'macro'`` computes metric for each class and uniformly averages them
            - ``'weighted'`` computes metric for each class and does a weighted-average,
              where each class is weighted by their support (accounts for class imbalance)
