@@ -6,6 +6,7 @@ import torch
 from pytorch_lightning import seed_everything
 from torch import Tensor
 
+from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
 
 
@@ -144,5 +145,12 @@ def test_input_data() -> None:
 
         try:
             metric(indexes, preds, target)
+            assert False  # assert exception is raised
+        except Exception as e:
+            assert isinstance(e, ValueError)
+
+        try:
+            retrieval_reciprocal_rank(preds=preds, target=target)
+            assert False  # assert exception is raised
         except Exception as e:
             assert isinstance(e, ValueError)

@@ -152,7 +152,8 @@ class RetrievalMetric(Metric, ABC):
                 elif self.query_without_relevant_docs == 'neg':
                     res.append(torch.tensor(0.0, **kwargs))
             else:
-                res.append(self._metric(mini_preds, mini_target))
+                # ensure list containt only float tensors
+                res.append(self._metric(mini_preds, mini_target).to(**kwargs))
 
         if len(res) > 0:
             return torch.stack(res).mean()

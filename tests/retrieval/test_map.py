@@ -7,6 +7,7 @@ from pytorch_lightning import seed_everything
 from sklearn.metrics import average_precision_score as sk_average_precision
 from torch import Tensor
 
+from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
 
 
@@ -131,5 +132,12 @@ def test_input_data() -> None:
 
         try:
             metric(indexes, preds, target)
+            assert False  # assert exception is raised
+        except Exception as e:
+            assert isinstance(e, ValueError)
+
+        try:
+            retrieval_average_precision(preds=preds, target=target)
+            assert False  # assert exception is raised
         except Exception as e:
             assert isinstance(e, ValueError)
