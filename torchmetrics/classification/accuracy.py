@@ -79,8 +79,13 @@ class Accuracy(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    Example:
+    Raises:
+        ValueError:
+            If ``threshold`` is not between ``0`` and ``1``.
+        ValueError:
+            If ``top_k`` is not an ``integer`` larger than ``0``.
 
+    Example:
         >>> from torchmetrics import Accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])

@@ -82,7 +82,6 @@ def confusion_matrix(
             Threshold value for binary or multi-label probabilities. default: 0.5
 
     Example:
-
         >>> from torchmetrics.functional import confusion_matrix
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])

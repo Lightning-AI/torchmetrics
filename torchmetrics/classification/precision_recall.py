@@ -104,8 +104,11 @@ class Precision(StatScores):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
 
+    Example:
         >>> from torchmetrics import Precision
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -252,8 +255,11 @@ class Recall(StatScores):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
 
+    Example:
         >>> from torchmetrics import Recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])

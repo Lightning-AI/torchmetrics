@@ -64,8 +64,16 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     Return:
         Tensor containing AUC score (float)
 
-    Example:
+    Raises:
+        ValueError:
+            If both ``x`` and ``y`` tensors are not ``1d``.
+        ValueError:
+            If both ``x`` and ``y`` don't have the same numnber of elements.
+        ValueError:
+            If ``x`` tesnsor is neither increasing or decreasing.
 
+    Example:
+        >>> from torchmetrics.functional import auc
         >>> x = torch.tensor([0, 1, 2, 3])
         >>> y = torch.tensor([0, 1, 2, 2])
         >>> auc(x, y)
