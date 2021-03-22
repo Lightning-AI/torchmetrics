@@ -114,8 +114,11 @@ class FBeta(StatScores):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``, ``None``.
 
+    Example:
         >>> from torchmetrics import FBeta
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])

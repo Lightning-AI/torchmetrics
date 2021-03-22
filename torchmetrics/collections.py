@@ -38,7 +38,16 @@ class MetricCollection(nn.ModuleDict):
 
         prefix: a string to append in front of the keys of the output dict
 
-    Example (input as list):
+    Raises:
+        ValueError:
+            If one of the elements of ``metrics`` is not an instance of ``pl.metrics.Metric``.
+        ValueError:
+            If two elements in ``metrics`` have the same ``name``.
+        ValueError:
+            If ``metrics`` is not a ``list``, ``tuple`` or a ``dict``.
+
+    Example:
+        >>> # input as list
         >>> import torch
         >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall
         >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
@@ -49,7 +58,7 @@ class MetricCollection(nn.ModuleDict):
         >>> metrics(preds, target)
         {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
 
-    Example (input as dict):
+        >>> # input as dict
         >>> metrics = MetricCollection({'micro_recall': Recall(num_classes=3, average='micro'),
         ...                             'macro_recall': Recall(num_classes=3, average='macro')})
         >>> same_metric = metrics.clone()

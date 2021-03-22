@@ -52,8 +52,9 @@ class PrecisionRecallCurve(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example (binary case):
-
+    Example:
+        >>> # binary case
+        >>> from torchmetrics import PrecisionRecallCurve
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> pr_curve = PrecisionRecallCurve(pos_label=1)
@@ -65,8 +66,7 @@ class PrecisionRecallCurve(Metric):
         >>> thresholds
         tensor([1, 2, 3])
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -129,7 +129,8 @@ class PrecisionRecallCurve(Metric):
         """
         Compute the precision-recall curve
 
-        Returns: 3-element tuple containing
+        Returns:
+            3-element tuple containing
 
             precision:
                 tensor where element i is the precision of predictions with
@@ -141,7 +142,6 @@ class PrecisionRecallCurve(Metric):
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
                 Thresholds used for computing precision/recall scores
-
         """
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)

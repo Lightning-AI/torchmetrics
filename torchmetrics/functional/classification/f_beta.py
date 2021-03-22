@@ -170,6 +170,13 @@ def fbeta(
         - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
           of classes
 
+    Example:
+        >>> from torchmetrics.functional import fbeta
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> fbeta(preds, target, num_classes=3, beta=0.5)
+        tensor(0.3333)
+
     """
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:

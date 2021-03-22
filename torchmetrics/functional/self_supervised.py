@@ -22,7 +22,7 @@ def embedding_similarity(
     Computes representation similarity
 
     Example:
-
+        >>> from torchmetrics.functional import embedding_similarity
         >>> embeddings = torch.tensor([[1., 2., 3., 4.], [1., 2., 3., 4.], [4., 5., 6., 7.]])
         >>> embedding_similarity(embeddings)
         tensor([[0.0000, 1.0000, 0.9759],
