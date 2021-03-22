@@ -28,8 +28,8 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Precision, Recall
-from torchmetrics.classification.checks import _input_format_classification
 from torchmetrics.functional import precision, precision_recall, recall
+from torchmetrics.utilities.checks import _input_format_classification
 
 torch.manual_seed(42)
 

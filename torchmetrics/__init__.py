@@ -48,6 +48,7 @@ else:
         ROC,
         Accuracy,
         AveragePrecision,
+        CohenKappa,
         ConfusionMatrix,
         FBeta,
         HammingDistance,

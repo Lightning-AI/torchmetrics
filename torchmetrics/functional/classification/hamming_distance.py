@@ -15,7 +15,7 @@ from typing import Tuple, Union
 
 import torch
 
-from torchmetrics.classification.checks import _input_format_classification
+from torchmetrics.utilities.checks import _input_format_classification
 
 
 def _hamming_distance_update(

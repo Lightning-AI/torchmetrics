@@ -138,6 +138,12 @@ AUROC
 .. autoclass:: torchmetrics.AUROC
     :noindex:
 
+CohenKappa
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CohenKappa
+    :noindex:
+
 ConfusionMatrix
 ~~~~~~~~~~~~~~~
 

@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from torchmetrics.classification.checks import _input_format_classification
+from torchmetrics.utilities.checks import _input_format_classification
 
 
 def _del_column(tensor: torch.Tensor, index: int):
@@ -181,8 +181,8 @@ def stat_scores(
             - ``'samples'``: Counts the statistics for each sample separately (over all classes).
               Each statistic is represented by a ``(N, )`` 1d tensor.
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_reduce``.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_reduce``.
 
         num_classes:
             Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.

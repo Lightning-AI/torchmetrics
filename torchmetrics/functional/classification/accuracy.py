@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from torchmetrics.classification.checks import _input_format_classification
+from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
