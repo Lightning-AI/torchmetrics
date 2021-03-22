@@ -4,10 +4,24 @@ from typing import List
 import numpy as np
 import torch
 from pytorch_lightning import seed_everything
-from sklearn.metrics import average_precision_score as sk_average_precision
 from torch import Tensor
 
-from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
+from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
+
+
+def reciprocal_rank(target: np.array, preds: np.array):
+    """
+    Implementation of reciprocal rank because couldn't find a good implementation.
+    `sklearn.metrics.label_ranking_average_precision_score` is similar but works in a different way
+    then the number of positive labels is greater than 1.
+    """
+
+    assert target.shape == preds.shape
+    assert len(target.shape) == 1 # works only with single dimension inputs
+
+    target = target[np.argsort(preds, axis=-1)][::-1]
+    rank = np.nonzero(target)[0][0] + 1
+    return 1.0 / rank
 
 
 def test_against_sklearn() -> None:
@@ -21,7 +35,7 @@ def test_against_sklearn() -> None:
     query_without_relevant_docs_options = ['skip', 'pos', 'neg']
 
     def compute_sklearn_metric(target: List[np.ndarray], preds: List[np.ndarray], behaviour: str) -> Tensor:
-        """ Compute sk metric with multiple iterations using the base `sk_average_precision`. """
+        """ Compute sk metric with multiple iterations using the base `reciprocal_rank`. """
         sk_results = []
         kwargs = {'device': device, 'dtype': torch.float32}
 
@@ -35,9 +49,9 @@ def test_against_sklearn() -> None:
                 else:
                     sk_results.append(0.0)
             else:
-                res = sk_average_precision(b, a)
+                res = reciprocal_rank(b, a)
                 sk_results.append(res)
-
+        
         sk_results = torch.tensor(sk_results, **kwargs)
 
         if sk_results.numel() > 0:
@@ -50,8 +64,7 @@ def test_against_sklearn() -> None:
     def do_test(batch_size: int, size: int) -> None:
         """ For each possible behaviour of the metric, check results are correct. """
         for behaviour in query_without_relevant_docs_options:
-
-            metric = RetrievalMAP(query_without_relevant_docs=behaviour)
+            metric = RetrievalMRR(query_without_relevant_docs=behaviour)
             shape = (size, )
 
             indexes = []
@@ -101,7 +114,7 @@ def test_input_data() -> None:
         preds = torch.rand(size=(length, ), device=device, dtype=torch.float32)
         target = torch.tensor([False] * length, device=device, dtype=torch.bool)
 
-        metric = RetrievalMAP(query_without_relevant_docs='error')
+        metric = RetrievalMRR(query_without_relevant_docs='error')
 
         try:
             metric(indexes, preds, target)
@@ -110,6 +123,6 @@ def test_input_data() -> None:
 
         # check ValueError with invalid `query_without_relevant_docs` argument
         try:
-            metric = RetrievalMAP(query_without_relevant_docs='casual_argument')
+            metric = RetrievalMRR(query_without_relevant_docs='casual_argument')
         except Exception as e:
             assert isinstance(e, ValueError)
