@@ -1,13 +1,13 @@
 from torch import Tensor
 
-from torchmetrics.functional.classification.ir_average_precision import retrieval_average_precision
+from torchmetrics.functional.classification.ir_reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
-class RetrievalMAP(RetrievalMetric):
+class RetrievalMRR(RetrievalMetric):
     r"""
-    Computes `Mean Average Precision
-    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision>`_.
+    Computes `Mean Reciprocal Rank
+    <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`_.
 
     Works with binary data. Accepts integer or float predictions from a model output.
 
@@ -18,8 +18,8 @@ class RetrievalMAP(RetrievalMetric):
 
     `indexes`, `preds` and `target` must have the same dimension.
     `indexes` indicate to which query a prediction belongs.
-    Predictions will be first grouped by indexes and then MAP will be computed as the mean
-    of the Average Precisions over each query.
+    Predictions will be first grouped by indexes and then MRR will be computed as the mean
+    of the Reciprocal Rank over each query.
 
     Args:
         query_without_relevant_docs:
@@ -44,18 +44,18 @@ class RetrievalMAP(RetrievalMetric):
             will be used to perform the allgather. default: None
 
     Example:
-        >>> from torchmetrics import RetrievalMAP
+        >>> from torchmetrics import RetrievalMRR
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = torch.tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = torch.tensor([False, False, True, False, True, False, True])
 
-        >>> map = RetrievalMAP()
-        >>> map(indexes, preds, target)
-        tensor(0.7917)
-        >>> map.compute()
-        tensor(0.7917)
+        >>> mrr = RetrievalMRR()
+        >>> mrr(indexes, preds, target)
+        tensor(0.75)
+        >>> mrr.compute()
+        tensor(0.75)
     """
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         valid_indexes = target != self.exclude
-        return retrieval_average_precision(preds[valid_indexes], target[valid_indexes])
+        return retrieval_reciprocal_rank(preds[valid_indexes], target[valid_indexes])
