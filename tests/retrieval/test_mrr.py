@@ -17,7 +17,7 @@ def reciprocal_rank(target: np.array, preds: np.array):
     """
 
     assert target.shape == preds.shape
-    assert len(target.shape) == 1 # works only with single dimension inputs
+    assert len(target.shape) == 1  # works only with single dimension inputs
 
     target = target[np.argsort(preds, axis=-1)][::-1]
     rank = np.nonzero(target)[0][0] + 1
@@ -51,7 +51,7 @@ def test_against_sklearn() -> None:
             else:
                 res = reciprocal_rank(b, a)
                 sk_results.append(res)
-        
+
         sk_results = torch.tensor(sk_results, **kwargs)
 
         if sk_results.numel() > 0:
