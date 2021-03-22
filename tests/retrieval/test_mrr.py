@@ -128,6 +128,27 @@ def test_input_data() -> None:
         except Exception as e:
             assert isinstance(e, ValueError)
 
+    # check input dtypes
+    NOT_ALLOWED_DTYPE = (
+        torch.bool, torch.float16, torch.float32, torch.float64, torch.int16, torch.int32, torch.int64
+    )
+
+    length = 10  # not important in this case
+    for dtype in NOT_ALLOWED_DTYPE:
+
+        # check error input dtypes error is raised correctly
+        indexes = torch.tensor([0] * length, device=device, dtype=dtype)
+        preds = torch.tensor([0] * length, device=device, dtype=dtype)
+        target = torch.tensor([0] * length, device=device, dtype=dtype)
+
+        metric = RetrievalMRR(query_without_relevant_docs='error')
+
+        try:
+            metric(indexes, preds, target)
+            assert False  # assert exception is raised
+        except Exception as e:
+            assert isinstance(e, ValueError)
+
 
 def test_functional_version() -> None:
 
