@@ -137,6 +137,13 @@ stat_scores [func]
     :noindex:
 
 
+retrieval_average_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_average_precision
+    :noindex:
+
+
 to_categorical [func]
 ~~~~~~~~~~~~~~~~~~~~~
 

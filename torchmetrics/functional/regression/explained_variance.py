@@ -84,7 +84,6 @@ def explained_variance(
             * `'variance_weighted'` scores are weighted by their individual variances
 
     Example:
-
         >>> from torchmetrics.functional import explained_variance
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])

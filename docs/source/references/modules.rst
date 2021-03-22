@@ -212,6 +212,13 @@ StatScores
     :noindex:
 
 
+RetrievalMAP
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalMAP
+    :noindex:
+
+
 ******************
 Regression Metrics
 ******************
