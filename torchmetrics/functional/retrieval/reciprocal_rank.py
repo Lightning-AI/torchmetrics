@@ -18,7 +18,7 @@ from torch import Tensor
 def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
     r"""
     Computes reciprocal rank (for information retrieval), as explained
-    `here <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`_.
+    `here <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`__.
 
     `preds` and `target` should be of the same shape and live on the same device. If no `target` is ``True``,
     0 is returned. Target must be of type `bool` or `int`, otherwise an error is raised.

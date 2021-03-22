@@ -99,6 +99,19 @@ class RetrievalMetric(Metric, ABC):
         if not (idx.shape == target.shape == preds.shape):
             raise ValueError("`idx`, `preds` and `target` must be of the same shape")
 
+        ALLOWED_BOOL_TYPES = (torch.bool,)
+        ALLOWED_INT_TYPES = (torch.int8, torch.int16, torch.int32, torch.int64)
+        ALLOWED_FLOAT_TYPES = (torch.float16, torch.bfloat16, torch.float32, torch.float64)
+
+        if idx.dtype not in ALLOWED_INT_TYPES:
+            raise ValueError("`idx` argument requires an integer tensor")
+
+        if preds.dtype not in ALLOWED_FLOAT_TYPES + ALLOWED_INT_TYPES:
+            raise ValueError("`preds` argument requires a float or integer tensor")
+
+        if target.dtype not in ALLOWED_BOOL_TYPES + ALLOWED_INT_TYPES:
+            raise ValueError("`target` argument requires a float or boolean tensor")
+
         idx = idx.to(dtype=torch.int64).flatten()
         preds = preds.to(dtype=torch.float32).flatten()
         target = target.to(dtype=torch.int64).flatten()

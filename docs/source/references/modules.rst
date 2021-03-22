@@ -213,6 +213,13 @@ RetrievalMAP
     :noindex:
 
 
+RetrievalMRR
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalMRR
+    :noindex:
+
+
 ******************
 Regression Metrics
 ******************
