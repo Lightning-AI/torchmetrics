@@ -33,10 +33,10 @@ class HingeLoss(Metric):
     metric will compute the multi-class hinge loss defined by Crammer and Singer as:
 
     .. math::
-        \text{Hinge loss} = \max(0, 1 - \hat{y}_y + \max_{i \ne y} \hat{y}_i)
+        \text{Hinge loss} = \max\left(0, 1 - \hat{y}_y + \max_{i \ne y} (\hat{y}_i)\right)
 
-    Where :math:`y \in {0, ..., C}` is the target class, and :math:`\hat{y} \in \mathbb{R}^C` is the predicted output
-    per class.
+    Where :math:`y \in {0, ..., \mathrm{C}}` is the target class (where :math:`\mathrm{C}` is the number of classes),
+    and :math:`\hat{y} \in \mathbb{R}^\mathrm{C}` is the predicted output per class.
 
     In the multi-class case when ``multiclass_mode='one_vs_all'``, this metric will use a one-vs-all approach to compute
     the hinge loss, giving a vector of C outputs where each entry pits that class against all remaining classes.
