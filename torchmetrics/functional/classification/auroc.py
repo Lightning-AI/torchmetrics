@@ -74,19 +74,24 @@ def _auroc_compute(
 
     # calculate fpr, tpr
     if mode == 'multi-label':
-        # for multilabel we iteratively evaluate roc in a binary fashion
-        output = [
-            roc(preds[:, i], target[:, i], num_classes=1, pos_label=1, sample_weights=sample_weights)
-            for i in range(num_classes)
-        ]
-        fpr = [o[0] for o in output]
-        tpr = [o[1] for o in output]
+        if average == AverageMethod.MICRO:
+            fpr, tpr, _ = roc(preds.flatten(), target.flatten(), num_classes, pos_label, sample_weights)
+        else:
+            # for multilabel we iteratively evaluate roc in a binary fashion
+            output = [
+                roc(preds[:, i], target[:, i], num_classes=1, pos_label=1, sample_weights=sample_weights)
+                for i in range(num_classes)
+            ]
+            fpr = [o[0] for o in output]
+            tpr = [o[1] for o in output]
     else:
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
     if max_fpr is None or max_fpr == 1:
-        if num_classes != 1:
+        if mode == 'multi-label' and average == AverageMethod.MICRO:
+            pass
+        elif num_classes != 1:
             # calculate auc scores per class
             auc_scores = [auc(x, y) for x, y in zip(fpr, tpr)]
 
@@ -150,6 +155,7 @@ def auroc(
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
         average:
+            - ``'micro'`` computes metric globally. Only works for multilabel problems
             - ``'macro'`` computes metric for each class and uniformly averages them
             - ``'weighted'`` computes metric for each class and does a weighted-average,
               where each class is weighted by their support (accounts for class imbalance)

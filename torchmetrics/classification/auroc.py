@@ -48,6 +48,7 @@ class AUROC(Metric):
            this argument should not be set as we iteratively change it in the
            range [0,num_classes-1]
        average:
+           - ``'micro'`` computes metric globally. Only works for multilabel problems
            - ``'macro'`` computes metric for each class and uniformly averages them
            - ``'weighted'`` computes metric for each class and does a weighted-average,
              where each class is weighted by their support (accounts for class imbalance)
@@ -122,7 +123,7 @@ class AUROC(Metric):
         self.average = average
         self.max_fpr = max_fpr
 
-        allowed_average = (None, 'macro', 'weighted')
+        allowed_average = (None, 'macro', 'weighted', 'micro')
         if self.average not in allowed_average:
             raise ValueError(
                 f'Argument `average` expected to be one of the following: {allowed_average} but got {average}'

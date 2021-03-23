@@ -93,7 +93,7 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average='macr
      (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
      (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
 )
-@pytest.mark.parametrize("average", ['macro', 'weighted'])
+@pytest.mark.parametrize("average", ['macro', 'weighted', 'micro'])
 @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
 class TestAUROC(MetricTester):
 
@@ -107,6 +107,10 @@ class TestAUROC(MetricTester):
         # max_fpr only supported for torch v1.6 or higher
         if max_fpr is not None and _TORCH_LOWER_1_6:
             pytest.skip('requires torch v1.6 or higher to test max_fpr argument')
+
+        # average='micro' only supported for multilabel
+        if average == 'micro' and preds.ndim > 2 and preds.ndim == target.ndim + 1:
+            pytest.skip('micro argument only support for multilabel input')
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -130,6 +134,10 @@ class TestAUROC(MetricTester):
         # max_fpr only supported for torch v1.6 or higher
         if max_fpr is not None and _TORCH_LOWER_1_6:
             pytest.skip('requires torch v1.6 or higher to test max_fpr argument')
+
+        # average='micro' only supported for multilabel
+        if average == 'micro' and preds.ndim > 2 and preds.ndim == target.ndim + 1:
+            pytest.skip('micro argument only support for multilabel input')
 
         self.run_functional_metric_test(
             preds,
