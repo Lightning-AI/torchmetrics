@@ -14,6 +14,7 @@
 from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.roc import _roc_compute, _roc_update
 from torchmetrics.metric import Metric
@@ -99,8 +100,10 @@ class ROC(Metric):
         [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
          tensor([0., 0., 0., 1., 1.]),
          tensor([0.0000, 0.0000, 0.3333, 0.6667, 1.0000])]
-        >>> tpr
-        [tensor([0., 0., 1., 1., 1.]), tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]), tensor([0., 1., 1., 1., 1.])]
+        >>> tpr  # doctest: +NORMALIZE_WHITESPACE
+        [tensor([0., 0., 1., 1., 1.]),
+         tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]),
+         tensor([0., 1., 1., 1., 1.])]
         >>> thresholds # doctest: +NORMALIZE_WHITESPACE
         [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
@@ -134,7 +137,7 @@ class ROC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -148,14 +151,12 @@ class ROC(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-    def compute(
-        self
-    ) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                      List[torch.Tensor]]]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """
         Compute the receiver operating characteristic
 
-        Returns: 3-element tuple containing
+        Returns:
+            3-element tuple containing
 
             fpr:
                 tensor with false positive rates.
@@ -165,7 +166,6 @@ class ROC(Metric):
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
                 thresholds used for computing false- and true postive rates
-
         """
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)

@@ -14,22 +14,23 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
-import torch.nn.functional as F
+from torch import Tensor, tensor
+from torch.nn import functional as F
 
 from torchmetrics.utilities import rank_zero_warn
 
 
 def _binary_clf_curve(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1.,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor]:
     """
     adapted from https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
     """
-    if sample_weights is not None and not isinstance(sample_weights, torch.Tensor):
-        sample_weights = torch.tensor(sample_weights, device=preds.device, dtype=torch.float)
+    if sample_weights is not None and not isinstance(sample_weights, Tensor):
+        sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
 
     # remove class dimension if necessary
     if preds.ndim > target.ndim:
@@ -48,7 +49,7 @@ def _binary_clf_curve(
     # the indices associated with the distinct values. We also
     # concatenate a value for the end of the curve.
     distinct_value_indices = torch.where(preds[1:] - preds[:-1])[0]
-    threshold_idxs = F.pad(distinct_value_indices, (0, 1), value=target.size(0) - 1)
+    threshold_idxs = F.pad(distinct_value_indices, [0, 1], value=target.size(0) - 1)
     target = (target == pos_label).to(torch.long)
     tps = torch.cumsum(target * weight, dim=0)[threshold_idxs]
 
@@ -63,11 +64,11 @@ def _binary_clf_curve(
 
 
 def _precision_recall_curve_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, int, int]:
+) -> Tuple[Tensor, Tensor, int, int]:
     if not (len(preds.shape) == len(target.shape) or len(preds.shape) == len(target.shape) + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
 
@@ -111,13 +112,12 @@ def _precision_recall_curve_update(
 
 
 def _precision_recall_curve_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
 
     if num_classes == 1:
         fps, tps, thresholds = _binary_clf_curve(
@@ -161,13 +161,12 @@ def _precision_recall_curve_compute(
 
 
 def precision_recall_curve(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """
     Computes precision-recall pairs for different thresholds.
 
@@ -182,7 +181,8 @@ def precision_recall_curve(
             range [0,num_classes-1]
         sample_weights: sample weights for each data point
 
-    Returns: 3-element tuple containing
+    Returns:
+        3-element tuple containing
 
         precision:
             tensor where element i is the precision of predictions with
@@ -195,8 +195,17 @@ def precision_recall_curve(
         thresholds:
             Thresholds used for computing precision/recall scores
 
-    Example (binary case):
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same number of dimensions,
+            or one additional dimension for ``preds``.
+        ValueError:
+            If the number of classes deduced from ``preds`` is not the same as the
+            ``num_classes`` provided.
 
+    Example:
+        >>> # binary case
+        >>> from torchmetrics.functional import precision_recall_curve
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> precision, recall, thresholds = precision_recall_curve(pred, target, pos_label=1)
@@ -207,8 +216,7 @@ def precision_recall_curve(
         >>> thresholds
         tensor([1, 2, 3])
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -222,7 +230,6 @@ def precision_recall_curve(
         [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
-
     """
     preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes, pos_label)
     return _precision_recall_curve_compute(preds, target, num_classes, pos_label, sample_weights)

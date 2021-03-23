@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import roc_curve as sk_roc_curve
+from torch import tensor
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -138,9 +139,9 @@ class TestROC(MetricTester):
     pytest.param([0.5, 0.5], [0, 1], [0, 1], [0, 1]),
 ])
 def test_roc_curve(pred, target, expected_tpr, expected_fpr):
-    fpr, tpr, thresh = roc(torch.tensor(pred), torch.tensor(target))
+    fpr, tpr, thresh = roc(tensor(pred), tensor(target))
 
     assert fpr.shape == tpr.shape
     assert fpr.size(0) == thresh.size(0)
-    assert torch.allclose(fpr, torch.tensor(expected_fpr).to(fpr))
-    assert torch.allclose(tpr, torch.tensor(expected_tpr).to(tpr))
+    assert torch.allclose(fpr, tensor(expected_fpr).to(fpr))
+    assert torch.allclose(tpr, tensor(expected_tpr).to(tpr))

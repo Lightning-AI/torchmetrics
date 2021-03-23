@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mean_absolute_error import (
     _mean_absolute_error_compute,
@@ -40,7 +41,6 @@ class MeanAbsoluteError(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-
         >>> from torchmetrics import MeanAbsoluteError
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
@@ -63,10 +63,10 @@ class MeanAbsoluteError(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_abs_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("sum_abs_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 

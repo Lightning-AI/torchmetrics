@@ -14,6 +14,7 @@
 from typing import Any, Optional, Sequence
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.regression.ssim import _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
@@ -82,7 +83,7 @@ class SSIM(Metric):
         self.k2 = k2
         self.reduction = reduction
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 

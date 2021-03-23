@@ -14,6 +14,7 @@
 from typing import Any, List, Optional, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.average_precision import (
     _average_precision_compute,
@@ -51,16 +52,16 @@ class AveragePrecision(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example (binary case):
-
+    Example:
+        >>> # binary case
+        >>> from torchmetrics import AveragePrecision
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> average_precision = AveragePrecision(pos_label=1)
         >>> average_precision(pred, target)
         tensor(1.)
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -97,7 +98,7 @@ class AveragePrecision(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -113,7 +114,7 @@ class AveragePrecision(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-    def compute(self) -> Union[torch.Tensor, List[torch.Tensor]]:
+    def compute(self) -> Union[Tensor, List[Tensor]]:
         """
         Compute the average precision score
 

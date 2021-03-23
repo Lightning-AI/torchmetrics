@@ -14,9 +14,10 @@
 from typing import Any, Optional, Union
 
 import torch
+from torch import Tensor
 
 
-def reduce(to_reduce: torch.Tensor, reduction: str) -> torch.Tensor:
+def reduce(to_reduce: Tensor, reduction: str) -> Tensor:
     """
     Reduces a given tensor by a given reduction method
 
@@ -39,9 +40,7 @@ def reduce(to_reduce: torch.Tensor, reduction: str) -> torch.Tensor:
     raise ValueError("Reduction parameter unknown.")
 
 
-def class_reduce(
-    num: torch.Tensor, denom: torch.Tensor, weights: torch.Tensor, class_reduction: str = "none"
-) -> torch.Tensor:
+def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: str = "none") -> Tensor:
     """
     Function used to reduce classification metrics of the form `num / denom * weights`.
     For example for calculating standard accuracy the num would be number of
@@ -58,6 +57,10 @@ def class_reduce(
             - ``'macro'``: calculate metrics for each label, and find their unweighted mean.
             - ``'weighted'``: calculate metrics for each label, and find their weighted mean.
             - ``'none'`` or ``None``: returns calculated metric per class
+
+    Raises:
+        ValueError:
+            If ``class_reduction`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"`` or ``None``.
 
     """
     valid_reduction = ("micro", "macro", "weighted", "none", None)
@@ -85,7 +88,7 @@ def class_reduce(
     )
 
 
-def gather_all_tensors(result: Union[torch.Tensor], group: Optional[Any] = None):
+def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     """
     Function to gather all tensors from several ddp processes onto a list that
     is broadcasted to all processes
