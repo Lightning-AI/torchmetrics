@@ -113,7 +113,7 @@ Metrics in Dataparallel (DP) mode
 =================================
 
 When using metrics in `Dataparallel (DP) <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel>`_
-mode, one should be aware DP will both create and destroy replicates of ones metric during a single forward pass. 
+mode, one should be aware DP will both create and clean-up replicas of Metric objects during a single forward pass. 
 This has the consequence, that the metric state of the replicas will as default be destroyed before we can sync 
 them. It is therefore recommended, when using metrics in DP mode, to initialize them with ``dist_sync_on_step=True``
 such that metric states are synchonized between the main process and the replicas before they are destroyed.
@@ -122,7 +122,7 @@ Metrics in Distributed Data Parallel (DDP) mode
 ===============================================
 
 When using metrics in `Distributed Data Parallel (DPP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`_
-mode, one should be aware that DPP will add addtional samples to your dataset if the size of your dataset is 
+mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is 
 not equally divisible by ``batch_size * num_processors``. The added samples will always be replicates of datapoints 
 already in your dataset. This is done to secure an equal load for all processes. However, this has the consequence 
 that the calculated metric value will be sligtly bias towards those replicated samples, leading to a wrong result.
