@@ -83,6 +83,11 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
+matthews_corrcoef [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.matthews_corrcoef
+    :noindex:
 
 roc [func]
 ~~~~~~~~~~~~~~~~~~~~~
