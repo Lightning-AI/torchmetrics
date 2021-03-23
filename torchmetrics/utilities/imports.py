@@ -20,43 +20,29 @@ from importlib.util import find_spec
 from pkg_resources import DistributionNotFound
 
 
-def _module_available(module_path: str) -> bool:
-    """
-    Check if a path is available in your environment
-    >>> _module_available('os')
-    True
-    >>> _module_available('bla.bla')
-    False
-    """
-    try:
-        return find_spec(module_path) is not None
-    except AttributeError:
-        # Python 3.6
-        return False
-    except ModuleNotFoundError:
-        # Python 3.7+
-        return False
-
-
 def _compare_version(package: str, op, version) -> bool:
-    """Compare package version with some requirements
+    """
+    Compare package version with some requirements
+
     >>> _compare_version("torch", operator.ge, "0.1")
     True
     """
-    if not _module_available(package):
-        return False
     try:
         pkg = importlib.import_module(package)
-        assert hasattr(pkg, '__version__')
-        pkg_version = pkg.__version__
-        return op(pkg_version, LooseVersion(version))
-    except DistributionNotFound:
+    except (ModuleNotFoundError, DistributionNotFound):
         return False
+    try:
+        pkg_version = LooseVersion(pkg.__version__)
+    except AttributeError:
+        return False
+    if not (hasattr(pkg_version, "vstring") and hasattr(pkg_version, "version")):
+        # this is mock by sphinx, so it shall return True ro generate all summaries
+        return True
+    return op(pkg_version, LooseVersion(version))
 
 
+_TORCH_LOWER_1_4 = _compare_version("torch", operator.lt, "1.4.0")
+_TORCH_LOWER_1_5 = _compare_version("torch", operator.lt, "1.5.0")
+_TORCH_LOWER_1_6 = _compare_version("torch", operator.lt, "1.6.0")
 _TORCH_GREATER_EQUAL_1_6 = _compare_version("torch", operator.ge, "1.6.0")
 _TORCH_GREATER_EQUAL_1_7 = _compare_version("torch", operator.ge, "1.7.0")
-
-_TORCH_LOWER_1_4 = LooseVersion(torch.__version__) < LooseVersion("1.4.0")
-_TORCH_LOWER_1_5 = LooseVersion(torch.__version__) < LooseVersion("1.5.0")
-_TORCH_LOWER_1_6 = LooseVersion(torch.__version__) < LooseVersion("1.6.0")
