@@ -184,22 +184,11 @@ def _assert_half_support(
         target: torch tensor with targets
         device: determine device, either "cpu" or "cuda"
     """
-    if device == 'cpu':
-        # test half-cpu
-        p = preds[0].half() if preds[0].is_floating_point() else preds[0]
-        t = target[0].half() if target[0].is_floating_point() else target[0]
-        assert metric_module(p, t)
-        assert metric_functional(p, t)
-
-    elif device == 'cuda':
-        # test half-gpu
-        p = preds[0].half().cuda() if preds[0].is_floating_point() else preds[0].cuda()
-        t = target[0].half().cuda() if target[0].is_floating_point() else target[0].cuda()
-        metric_module = metric_module.cuda()
-        assert metric_module(p, t)
-        assert metric_functional(p, t)
-    else:
-        raise ValueError('Unknown deivce input')
+    p = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
+    t = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
+    metric_module = metric_module.to(device)
+    assert metric_module(p, t)
+    assert metric_functional(p, t)
 
 
 class MetricTester:
