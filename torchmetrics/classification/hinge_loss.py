@@ -64,6 +64,7 @@ class HingeLoss(Metric):
             If ``multiclass_mode`` is not: None, ``"crammer_singer"``, or ``"one_vs_all"``.
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional import hinge_loss
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
