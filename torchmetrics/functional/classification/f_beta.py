@@ -92,7 +92,6 @@ def fbeta(
         multilabel: If predictions are from multilabel classification.
 
     Example:
-
         >>> from torchmetrics.functional import fbeta
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])

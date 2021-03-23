@@ -461,6 +461,11 @@ def _input_format_classification_one_hot(
         threshold: float used for thresholding multilabel input
         multilabel: boolean flag indicating if input is multilabel
 
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same number of dimensions
+            or one additional dimension for ``preds``.
+
     Returns:
         preds: one hot tensor of shape [num_classes, -1] with predicted labels
         target: one hot tensors of shape [num_classes, -1] with true labels

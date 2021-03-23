@@ -120,6 +120,11 @@ class Metric(nn.Module, ABC):
             When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
             the format discussed in the above note.
 
+        Raises:
+            ValueError:
+                If ``default`` is not a ``tensor`` or an ``empty list``.
+            ValueError:
+                If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``None``.
         """
         if (
             not isinstance(default, Tensor) and not isinstance(default, list)  # noqa: W503
