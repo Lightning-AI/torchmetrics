@@ -26,10 +26,14 @@ from torchmetrics.functional import hinge_loss
 
 torch.manual_seed(42)
 
-
 _input_binary = Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
+)
+
+_input_binary_single = Input(
+    preds=torch.randn((NUM_BATCHES, 1)),
+    target=torch.randint(high=2, size=(NUM_BATCHES, 1))
 )
 
 _input_multiclass = Input(
@@ -49,7 +53,8 @@ def _sk_hinge_loss(preds, target, squared, multiclass_mode):
     if sk_preds.ndim == 1 or multiclass_mode == 'one_vs_all':
         sk_target = 2 * sk_target - 1
 
-    if squared:  # Squared not an option in sklearn, so adapted from source
+    if squared or sk_preds.shape[0] == 1:
+        # Squared not an option in sklearn and infers classes incorrectly with single element, so adapted from source
         if sk_preds.ndim == 1 or multiclass_mode == 'one_vs_all':
             margin = sk_target * sk_preds
         else:
@@ -59,7 +64,9 @@ def _sk_hinge_loss(preds, target, squared, multiclass_mode):
             margin -= np.max(sk_preds[mask].reshape(sk_target.shape[0], -1), axis=1)
         losses = 1 - margin
         np.clip(losses, 0, None, out=losses)
-        losses = losses ** 2
+
+        if squared:
+            losses = losses ** 2
         return losses.mean(axis=0)
     else:
         if multiclass_mode == 'one_vs_all':
@@ -76,6 +83,8 @@ def _sk_hinge_loss(preds, target, squared, multiclass_mode):
     [
         (_input_binary.preds, _input_binary.target, False, None),
         (_input_binary.preds, _input_binary.target, True, None),
+        (_input_binary_single.preds, _input_binary_single.target, False, None),
+        (_input_binary_single.preds, _input_binary_single.target, True, None),
         (_input_multiclass.preds, _input_multiclass.target, False, 'crammer_singer'),
         (_input_multiclass.preds, _input_multiclass.target, True, 'crammer_singer'),
         (_input_multiclass.preds, _input_multiclass.target, False, 'one_vs_all'),
