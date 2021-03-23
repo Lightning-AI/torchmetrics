@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.matthews_corrcoef import (
     _matthews_corrcoef_compute,
@@ -95,7 +96,7 @@ class MatthewsCorrcoef(Metric):
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -106,7 +107,7 @@ class MatthewsCorrcoef(Metric):
         confmat = _matthews_corrcoef_update(preds, target, self.num_classes, self.threshold)
         self.confmat += confmat
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes matthews correlation coefficient
         """

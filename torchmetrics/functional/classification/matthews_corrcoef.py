@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
 
 _matthews_corrcoef_update = _confusion_matrix_update
 
 
-def _matthews_corrcoef_compute(confmat: torch.Tensor) -> torch.Tensor:
+def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
     tk = confmat.sum(dim=0).float()
     pk = confmat.sum(dim=1).float()
     c = torch.trace(confmat).float()
@@ -27,11 +28,11 @@ def _matthews_corrcoef_compute(confmat: torch.Tensor) -> torch.Tensor:
 
 
 def matthews_corrcoef(
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         num_classes: int,
         threshold: float = 0.5
-) -> torch.Tensor:
+) -> Tensor:
     r"""
     Calculates `Matthews correlation coefficient
     <https://en.wikipedia.org/wiki/Matthews_correlation_coefficient>`_ that measures
