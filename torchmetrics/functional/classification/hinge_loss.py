@@ -56,6 +56,11 @@ def _hinge_loss_update(
         squared: bool = False,
         multiclass_mode: Optional[str] = None,
 ) -> Tuple[Tensor, Tensor]:
+    if preds.shape[0] == 1:
+        preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
+    else:
+        preds, target = preds.squeeze(), target.squeeze()
+
     mode = _check_shape_and_type_consistency_hinge_loss(preds, target)
 
     if mode == DataType.MULTICLASS:
