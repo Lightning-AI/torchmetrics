@@ -24,6 +24,7 @@ class HingeLoss(Metric):
     def __init__(
         self,
         squared: bool = False,
+        multiclass_mode: Optional[str] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -40,12 +41,13 @@ class HingeLoss(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
         self.squared = squared
+        self.multiclass_mode = multiclass_mode
 
     def update(self, preds: Tensor, target: Tensor):
-        loss, total = _hinge_loss_update(preds, target, squared=self.squared)
+        loss, total = _hinge_loss_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
-        self.loss += loss
-        self.total += total
+        self.loss = loss + self.loss
+        self.total = total + self.total
 
     def compute(self) -> Tensor:
         return _hinge_loss_compute(self.loss, self.total)
