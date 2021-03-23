@@ -77,15 +77,15 @@ def average_precision(
         tensor with average precision. If multiclass will return list
         of such tensors, one for each class
 
-    Example (binary case):
-
+    Example:
+        >>> # binary case
+        >>> from torchmetrics.functional import average_precision
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> average_precision(pred, target, pos_label=1)
         tensor(1.)
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
