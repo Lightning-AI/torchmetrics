@@ -78,7 +78,7 @@ hamming_distance [func]
     :noindex:
 
 hinge_loss [func]
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.hinge_loss
     :noindex:

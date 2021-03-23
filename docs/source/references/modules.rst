@@ -169,7 +169,7 @@ Hamming Distance
     :noindex:
 
 HingeLoss
-~~~~~
+~~~~~~~~~
 
 .. autoclass:: torchmetrics.HingeLoss
     :noindex:
