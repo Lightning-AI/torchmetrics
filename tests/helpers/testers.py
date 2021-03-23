@@ -107,7 +107,11 @@ def _class_test(
     if not metric_args:
         metric_args = {}
     # Instanciate lightning metric
-    metric = metric_class(compute_on_step=True, dist_sync_on_step=dist_sync_on_step, **metric_args)
+    metric = metric_class(
+        compute_on_step=check_dist_sync_on_step or check_batch,
+        dist_sync_on_step=dist_sync_on_step,
+        **metric_args
+    )
 
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
@@ -116,19 +120,15 @@ def _class_test(
     for i in range(rank, NUM_BATCHES, worldsize):
         batch_result = metric(preds[i], target[i])
 
-        if metric.dist_sync_on_step:
-            if rank == 0:
-                ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
-                ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
-                sk_batch_result = sk_metric(ddp_preds, ddp_target)
-                # assert for dist_sync_on_step
-                if check_dist_sync_on_step:
-                    _assert_allclose(batch_result, sk_batch_result, atol=atol)
-        else:
-            sk_batch_result = sk_metric(preds[i], target[i])
+        if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
+            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
+            ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
+            sk_batch_result = sk_metric(ddp_preds, ddp_target)
+            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+        elif check_batch:
             # assert for batch
-            if check_batch:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            sk_batch_result = sk_metric(preds[i], target[i])
+            _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check on all batches on all ranks
     result = metric.compute()
