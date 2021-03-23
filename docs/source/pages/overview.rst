@@ -171,7 +171,7 @@ This pattern is implemented for the following operators (with ``a`` being metric
 * Inequality (``a != b``)
 * Bitwise OR (``a | b``)
 * Power (``a ** b``)
-* Substraction (``a - b``)
+* Subtraction (``a - b``)
 * True Division (``a / b``)
 * Bitwise XOR (``a ^ b``)
 * Absolute Value (``abs(a)``)

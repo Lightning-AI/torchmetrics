@@ -14,6 +14,7 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_clf_curve,
@@ -22,22 +23,21 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 
 
 def _roc_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, int, int]:
+) -> Tuple[Tensor, Tensor, int, int]:
     return _precision_recall_curve_update(preds, target, num_classes, pos_label)
 
 
 def _roc_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
 
     if num_classes == 1:
         fps, tps, thresholds = _binary_clf_curve(
@@ -78,13 +78,12 @@ def _roc_compute(
 
 
 def roc(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """
     Computes the Receiver Operating Characteristic (ROC).
 
@@ -99,7 +98,8 @@ def roc(
             range [0,num_classes-1]
         sample_weights: sample weights for each data point
 
-    Returns: 3-element tuple containing
+    Returns:
+        3-element tuple containing
 
         fpr:
             tensor with false positive rates.
@@ -110,8 +110,9 @@ def roc(
         thresholds:
             thresholds used for computing false- and true postive rates
 
-    Example (binary case):
-
+    Example:
+        >>> # binary case
+        >>> from torchmetrics.functional import roc
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> fpr, tpr, thresholds = roc(pred, target, pos_label=1)
@@ -122,8 +123,7 @@ def roc(
         >>> thresholds
         tensor([4, 3, 2, 1, 0])
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05],
@@ -139,7 +139,6 @@ def roc(
          tensor([1.7500, 0.7500, 0.0500]),
          tensor([1.7500, 0.7500, 0.0500]),
          tensor([1.7500, 0.7500, 0.0500])]
-
     """
     preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes, pos_label)
     return _roc_compute(preds, target, num_classes, pos_label, sample_weights)

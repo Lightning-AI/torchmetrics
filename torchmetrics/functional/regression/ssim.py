@@ -14,6 +14,7 @@
 from typing import Optional, Sequence, Tuple
 
 import torch
+from torch import Tensor
 from torch.nn import functional as F
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -36,10 +37,7 @@ def _gaussian_kernel(
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1])
 
 
-def _ssim_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
@@ -55,8 +53,8 @@ def _ssim_update(
 
 
 def _ssim_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: str = "elementwise_mean",
@@ -114,15 +112,15 @@ def _ssim_compute(
 
 
 def ssim(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: str = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-) -> torch.Tensor:
+) -> Tensor:
     """
     Computes Structual Similarity Index Measure
 
@@ -144,7 +142,20 @@ def ssim(
     Return:
         Tensor with SSIM score
 
+    Raises:
+        TypeError:
+            If ``preds`` and ``target`` don't have the same data type.
+        ValueError:
+            If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
+        ValueError:
+            If the length of ``kernel_size`` or ``sigma`` is not ``2``.
+        ValueError:
+            If one of the elements of ``kernel_size`` is not an ``odd positive number``.
+        ValueError:
+            If one of the elements of ``sigma`` is not a ``positive number``.
+
     Example:
+        >>> from torchmetrics.functional import ssim
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ssim(preds, target)

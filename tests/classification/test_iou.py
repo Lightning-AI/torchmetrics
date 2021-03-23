@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import jaccard_score as sk_jaccard_score
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -134,20 +135,20 @@ class TestIoU(MetricTester):
 
 
 @pytest.mark.parametrize(['half_ones', 'reduction', 'ignore_index', 'expected'], [
-    pytest.param(False, 'none', None, torch.Tensor([1, 1, 1])),
-    pytest.param(False, 'elementwise_mean', None, torch.Tensor([1])),
-    pytest.param(False, 'none', 0, torch.Tensor([1, 1])),
-    pytest.param(True, 'none', None, torch.Tensor([0.5, 0.5, 0.5])),
-    pytest.param(True, 'elementwise_mean', None, torch.Tensor([0.5])),
-    pytest.param(True, 'none', 0, torch.Tensor([0.5, 0.5])),
+    pytest.param(False, 'none', None, Tensor([1, 1, 1])),
+    pytest.param(False, 'elementwise_mean', None, Tensor([1])),
+    pytest.param(False, 'none', 0, Tensor([1, 1])),
+    pytest.param(True, 'none', None, Tensor([0.5, 0.5, 0.5])),
+    pytest.param(True, 'elementwise_mean', None, Tensor([0.5])),
+    pytest.param(True, 'none', 0, Tensor([0.5, 0.5])),
 ])
 def test_iou(half_ones, reduction, ignore_index, expected):
-    pred = (torch.arange(120) % 3).view(-1, 1)
+    preds = (torch.arange(120) % 3).view(-1, 1)
     target = (torch.arange(120) % 3).view(-1, 1)
     if half_ones:
-        pred[:60] = 1
+        preds[:60] = 1
     iou_val = iou(
-        pred=pred,
+        preds=preds,
         target=target,
         ignore_index=ignore_index,
         reduction=reduction,
@@ -190,14 +191,14 @@ def test_iou(half_ones, reduction, ignore_index, expected):
 )
 def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes, expected):
     iou_val = iou(
-        pred=torch.tensor(pred),
-        target=torch.tensor(target),
+        preds=tensor(pred),
+        target=tensor(target),
         ignore_index=ignore_index,
         absent_score=absent_score,
         num_classes=num_classes,
         reduction='none',
     )
-    assert torch.allclose(iou_val, torch.tensor(expected).to(iou_val))
+    assert torch.allclose(iou_val, tensor(expected).to(iou_val))
 
 
 # example data taken from
@@ -220,10 +221,10 @@ def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes,
 )
 def test_iou_ignore_index(pred, target, ignore_index, num_classes, reduction, expected):
     iou_val = iou(
-        pred=torch.tensor(pred),
-        target=torch.tensor(target),
+        preds=tensor(pred),
+        target=tensor(target),
         ignore_index=ignore_index,
         num_classes=num_classes,
         reduction=reduction,
     )
-    assert torch.allclose(iou_val, torch.tensor(expected).to(iou_val))
+    assert torch.allclose(iou_val, tensor(expected).to(iou_val))

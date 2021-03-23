@@ -14,39 +14,39 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_absolute_error_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, int]:
+def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
     _check_same_shape(preds, target)
     sum_abs_error = torch.sum(torch.abs(preds - target))
     n_obs = target.numel()
     return sum_abs_error, n_obs
 
 
-def _mean_absolute_error_compute(sum_abs_error: torch.Tensor, n_obs: int) -> torch.Tensor:
+def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
     return sum_abs_error / n_obs
 
 
-def mean_absolute_error(preds: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     Computes mean absolute error
 
     Args:
-        pred: estimated labels
+        preds: estimated labels
         target: ground truth labels
 
     Return:
         Tensor with MAE
 
     Example:
-
+        >>> from torchmetrics.functional import mean_absolute_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_absolute_error(x, y)
         tensor(0.2500)
-
     """
     sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
     return _mean_absolute_error_compute(sum_abs_error, n_obs)

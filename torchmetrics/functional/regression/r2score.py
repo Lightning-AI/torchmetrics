@@ -14,23 +14,21 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _r2score_update(
-    preds: torch.tensor,
-    target: torch.Tensor,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+def _r2score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     _check_same_shape(preds, target)
     if preds.ndim > 2:
         raise ValueError(
             'Expected both prediction and target to be 1D or 2D tensors,'
-            f' but recevied tensors with dimension {preds.shape}'
+            f' but received tensors with dimension {preds.shape}'
         )
     if len(preds) < 2:
-        raise ValueError('Needs atleast two samples to calculate r2 score.')
+        raise ValueError('Needs at least two samples to calculate r2 score.')
 
     sum_error = torch.sum(target, dim=0)
     sum_squared_error = torch.sum(torch.pow(target, 2.0), dim=0)
@@ -41,13 +39,13 @@ def _r2score_update(
 
 
 def _r2score_compute(
-    sum_squared_error: torch.Tensor,
-    sum_error: torch.Tensor,
-    residual: torch.Tensor,
-    total: torch.Tensor,
+    sum_squared_error: Tensor,
+    sum_error: Tensor,
+    residual: Tensor,
+    total: Tensor,
     adjusted: int = 0,
-    multioutput: str = "uniform_average"
-) -> torch.Tensor:
+    multioutput: str = "uniform_average",
+) -> Tensor:
     mean_error = sum_error / total
     diff = sum_squared_error - sum_error * mean_error
     raw_scores = 1 - (residual / diff)
@@ -71,7 +69,7 @@ def _r2score_compute(
     if adjusted != 0:
         if adjusted > total - 1:
             rank_zero_warn(
-                "More independent regressions than datapoints in"
+                "More independent regressions than data points in"
                 " adjusted r2 score. Falls back to standard r2 score.", UserWarning
             )
         elif adjusted == total - 1:
@@ -82,11 +80,11 @@ def _r2score_compute(
 
 
 def r2score(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     adjusted: int = 0,
     multioutput: str = "uniform_average",
-) -> torch.Tensor:
+) -> Tensor:
     r"""
     Computes r2 score also known as `coefficient of determination
     <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
@@ -114,8 +112,19 @@ def r2score(
             * ``'uniform_average'`` scores are uniformly averaged
             * ``'variance_weighted'`` scores are weighted by their individual variances
 
-    Example:
+    Raises:
+        ValueError:
+            If both ``preds`` and ``targets`` are not ``1D`` or ``2D`` tensors.
+        ValueError:
+            If ``len(preds)`` is less than ``2``
+            since at least ``2`` sampels are needed to calculate r2 score.
+        ValueError:
+            If ``multioutput`` is not one of ``raw_values``,
+            ``uniform_average`` or ``variance_weighted``.
+        ValueError:
+            If ``adjusted`` is not an ``integer`` greater than ``0``.
 
+    Example:
         >>> from torchmetrics.functional import r2score
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])

@@ -14,17 +14,18 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.data import to_categorical
 from torchmetrics.utilities.distributed import reduce
 
 
 def _stat_scores(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     class_index: int,
     argmax_dim: int = 1,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
     """
     Calculates the number of true positive, false positive, true negative
     and false negative for a specific class
@@ -40,7 +41,6 @@ def _stat_scores(
         True Positive, False Positive, True Negative, False Negative, Support
 
     Example:
-
         >>> x = torch.tensor([1, 2, 3])
         >>> y = torch.tensor([0, 2, 3])
         >>> tp, fp, tn, fn, sup = _stat_scores(x, y, class_index=1)
@@ -61,13 +61,13 @@ def _stat_scores(
 
 
 def dice_score(
-    pred: torch.Tensor,
-    target: torch.Tensor,
+    pred: Tensor,
+    target: Tensor,
     bg: bool = False,
     nan_score: float = 0.0,
     no_fg_score: float = 0.0,
     reduction: str = 'elementwise_mean',
-) -> torch.Tensor:
+) -> Tensor:
     """
     Compute dice score from prediction scores
 
@@ -87,7 +87,7 @@ def dice_score(
         Tensor containing dice score
 
     Example:
-
+        >>> from torchmetrics.functional import dice_score
         >>> pred = torch.tensor([[0.85, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.85, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.85, 0.05],

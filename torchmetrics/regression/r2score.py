@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.r2score import _r2score_compute, _r2score_update
 from torchmetrics.metric import Metric
@@ -66,8 +67,13 @@ class R2Score(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example:
+    Raises:
+        ValueError:
+            If ``adjusted`` parameter is not an integer larger or equal to 0.
+        ValueError:
+            If ``multioutput`` is not one of ``"raw_values"``, ``"uniform_average"`` or ``"variance_weighted"``.
 
+    Example:
         >>> from torchmetrics import R2Score
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
@@ -102,7 +108,7 @@ class R2Score(Metric):
         self.num_outputs = num_outputs
 
         if adjusted < 0 or not isinstance(adjusted, int):
-            raise ValueError('`adjusted` parameter should be an integer larger or' ' equal to 0.')
+            raise ValueError('`adjusted` parameter should be an integer larger or equal to 0.')
         self.adjusted = adjusted
 
         allowed_multioutput = ('raw_values', 'uniform_average', 'variance_weighted')
@@ -115,9 +121,9 @@ class R2Score(Metric):
         self.add_state("sum_squared_error", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
         self.add_state("sum_error", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
         self.add_state("residual", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -132,7 +138,7 @@ class R2Score(Metric):
         self.residual += residual
         self.total += total
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes r2 score over the metric states.
         """

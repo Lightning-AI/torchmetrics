@@ -11,18 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from distutils.version import LooseVersion
 from typing import Optional, Sequence, Tuple
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, DataType
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
-def _auroc_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, str]:
+def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, str]:
     # use _input_format_classification for validating the input and get the mode of data
     _, _, mode = _input_format_classification(preds, target)
 
@@ -39,25 +40,25 @@ def _auroc_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tens
 
 
 def _auroc_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     mode: str,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = 'macro',
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
-) -> torch.Tensor:
+) -> Tensor:
     # binary mode override num_classes
     if mode == 'binary':
         num_classes = 1
 
     # check max_fpr parameter
     if max_fpr is not None:
-        if (not isinstance(max_fpr, float) and 0 < max_fpr <= 1):
+        if not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
             raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
 
-        if LooseVersion(torch.__version__) < LooseVersion('1.6.0'):
+        if _TORCH_LOWER_1_6:
             raise RuntimeError(
                 "`max_fpr` argument requires `torch.bucketize` which"
                 " is not available below PyTorch version 1.6"
@@ -109,7 +110,7 @@ def _auroc_compute(
 
         return auc(fpr, tpr)
 
-    max_fpr = torch.tensor(max_fpr, device=fpr.device)
+    max_fpr = tensor(max_fpr, device=fpr.device)
     # Add a single point at max_fpr and interpolate its tpr value
     stop = torch.bucketize(max_fpr, fpr, out_int32=True, right=True)
     weight = (max_fpr - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
@@ -128,14 +129,14 @@ def _auroc_compute(
 
 
 def auroc(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = 'macro',
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
-) -> torch.Tensor:
+) -> Tensor:
     """ Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
     <https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Further_interpretations>`_
 
@@ -156,17 +157,29 @@ def auroc(
         max_fpr:
             If not ``None``, calculates standardized partial AUC over the
             range [0, max_fpr]. Should be a float between 0 and 1.
-        sample_weight: sample weights for each data point
+        sample_weights: sample weights for each data point
 
-    Example (binary case):
+    Raises:
+        ValueError:
+            If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
+        RuntimeError:
+            If ``PyTorch version`` is ``below 1.6`` since max_fpr requires `torch.bucketize`
+            which is not available below 1.6.
+        ValueError:
+            If ``max_fpr`` is not set to ``None`` and the mode is ``not binary``
+            since partial AUC computation is not available in multilabel/multiclass.
+        ValueError:
+            If ``average`` is none of ``None``, ``"macro"`` or ``"weighted"``.
 
+    Example:
+        >>> # binary case
+        >>> from torchmetrics.functional import auroc
         >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> auroc(preds, target, pos_label=1)
         tensor(0.5000)
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> preds = torch.tensor([[0.90, 0.05, 0.05],
         ...                       [0.05, 0.90, 0.05],
         ...                       [0.05, 0.05, 0.90],

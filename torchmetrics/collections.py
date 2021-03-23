@@ -38,7 +38,16 @@ class MetricCollection(nn.ModuleDict):
 
         prefix: a string to append in front of the keys of the output dict
 
-    Example (input as list):
+    Raises:
+        ValueError:
+            If one of the elements of ``metrics`` is not an instance of ``pl.metrics.Metric``.
+        ValueError:
+            If two elements in ``metrics`` have the same ``name``.
+        ValueError:
+            If ``metrics`` is not a ``list``, ``tuple`` or a ``dict``.
+
+    Example:
+        >>> # input as list
         >>> import torch
         >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall
         >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
@@ -49,7 +58,7 @@ class MetricCollection(nn.ModuleDict):
         >>> metrics(preds, target)
         {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
 
-    Example (input as dict):
+        >>> # input as dict
         >>> metrics = MetricCollection({'micro_recall': Recall(num_classes=3, average='micro'),
         ...                             'macro_recall': Recall(num_classes=3, average='macro')})
         >>> same_metric = metrics.clone()
@@ -60,10 +69,11 @@ class MetricCollection(nn.ModuleDict):
         >>> metrics.persistent()
 
     """
+
     def __init__(
-            self,
-            metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]],
-            prefix: Optional[str] = None
+        self,
+        metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]],
+        prefix: Optional[str] = None,
     ):
         super().__init__()
         if isinstance(metrics, dict):
@@ -136,7 +146,8 @@ class MetricCollection(nn.ModuleDict):
     def _set_prefix(self, k: str) -> str:
         return k if self.prefix is None else self.prefix + k
 
-    def _check_prefix_arg(self, prefix: str) -> Optional[str]:
+    @staticmethod
+    def _check_prefix_arg(prefix: str) -> Optional[str]:
         if prefix is not None:
             if isinstance(prefix, str):
                 return prefix

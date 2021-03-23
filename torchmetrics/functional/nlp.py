@@ -20,6 +20,7 @@ from collections import Counter
 from typing import List, Sequence
 
 import torch
+from torch import Tensor, tensor
 
 
 def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
@@ -45,11 +46,8 @@ def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
 
 
 def bleu_score(
-    translate_corpus: Sequence[str],
-    reference_corpus: Sequence[str],
-    n_gram: int = 4,
-    smooth: bool = False
-) -> torch.Tensor:
+    translate_corpus: Sequence[str], reference_corpus: Sequence[str], n_gram: int = 4, smooth: bool = False
+) -> Tensor:
     """
     Calculate BLEU score of machine translated text with one or more references
 
@@ -63,12 +61,11 @@ def bleu_score(
         Tensor with BLEU Score
 
     Example:
-
+        >>> from torchmetrics.functional import bleu_score
         >>> translate_corpus = ['the cat is on the mat'.split()]
         >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
         >>> bleu_score(translate_corpus, reference_corpus)
         tensor(0.7598)
-
     """
 
     assert len(translate_corpus) == len(reference_corpus)
@@ -96,20 +93,20 @@ def bleu_score(
         for counter in translation_counter:
             denominator[len(counter) - 1] += translation_counter[counter]
 
-    trans_len = torch.tensor(c)
-    ref_len = torch.tensor(r)
+    trans_len = tensor(c)
+    ref_len = tensor(r)
 
     if min(numerator) == 0.0:
-        return torch.tensor(0.0)
+        return tensor(0.0)
 
     if smooth:
         precision_scores = torch.add(numerator, torch.ones(n_gram)) / torch.add(denominator, torch.ones(n_gram))
     else:
         precision_scores = numerator / denominator
 
-    log_precision_scores = torch.tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
+    log_precision_scores = tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = torch.tensor(1.0) if c > r else torch.exp(1 - (ref_len / trans_len))
+    brevity_penalty = tensor(1.0) if c > r else torch.exp(1 - (ref_len / trans_len))
     bleu = brevity_penalty * geometric_mean
 
     return bleu
