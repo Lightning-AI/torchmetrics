@@ -77,6 +77,12 @@ hamming_distance [func]
 .. autofunction:: torchmetrics.functional.hamming_distance
     :noindex:
 
+hinge_loss [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.hinge_loss
+    :noindex:
+
 iou [func]
 ~~~~~~~~~~
 
