@@ -82,7 +82,7 @@ def fbeta(
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
 ) -> Tensor:
-    """
+    r"""
     Computes f_beta metric.
 
     .. math::
