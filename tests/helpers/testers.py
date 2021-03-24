@@ -125,7 +125,7 @@ def _class_test(
             ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
             sk_batch_result = sk_metric(ddp_preds, ddp_target)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
-        elif check_batch:
+        elif check_batch and not metric.dist_sync_on_step:
             # assert for batch
             sk_batch_result = sk_metric(preds[i], target[i])
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
