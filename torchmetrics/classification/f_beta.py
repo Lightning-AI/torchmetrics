@@ -162,6 +162,8 @@ class FBeta(StatScores):
             dist_sync_fn=dist_sync_fn,
         )
 
+        self.average = average
+
     def compute(self) -> Tensor:
         """
         Computes fbeta over state.
