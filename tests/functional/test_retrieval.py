@@ -16,7 +16,7 @@ from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciproc
     [sk_average_precision, retrieval_average_precision],
     [reciprocal_rank, retrieval_reciprocal_rank],
 ])
-@pytest.mark.parametrize("size", [1, 3, 8, 33])
+@pytest.mark.parametrize("size", [1, 4, 10])
 def test_metrics_output_values(sklearn_metric, torch_metric, size):
     """ Compare PL metrics to sklearn version. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'

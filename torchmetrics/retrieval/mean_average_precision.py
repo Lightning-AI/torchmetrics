@@ -66,8 +66,6 @@ class RetrievalMAP(RetrievalMetric):
         >>> map = RetrievalMAP()
         >>> map(indexes, preds, target)
         tensor(0.7917)
-        >>> map.compute()
-        tensor(0.7917)
     """
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:

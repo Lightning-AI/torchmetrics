@@ -14,7 +14,7 @@ from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
     [sk_average_precision, RetrievalMAP],
     [reciprocal_rank, RetrievalMRR],
 ])
-@pytest.mark.parametrize('size', [1, 4, 10, 100])
+@pytest.mark.parametrize('size', [1, 4, 10])
 @pytest.mark.parametrize('rounds', [20])
 @pytest.mark.parametrize('n_documents', [1, 5])
 @pytest.mark.parametrize('query_without_relevant_docs_options', ['skip', 'pos', 'neg'])
