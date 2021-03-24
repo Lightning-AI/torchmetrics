@@ -92,18 +92,18 @@ def _hinge_update(
             f" got {multiclass_mode}."
         )
 
-    losses = 1 - margin
-    losses = torch.clamp(losses, 0)
+    measures = 1 - margin
+    measures = torch.clamp(measures, 0)
 
     if squared:
-        losses = losses.pow(2)
+        measures = measures.pow(2)
 
     total = tensor(target.shape[0], device=target.device)
-    return losses.sum(dim=0), total
+    return measures.sum(dim=0), total
 
 
-def _hinge_compute(loss: Tensor, total: Tensor) -> Tensor:
-    return loss / total
+def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
+    return measure / total
 
 
 def hinge(
@@ -176,5 +176,5 @@ def hinge(
         >>> hinge(preds, target, multiclass_mode="one-vs-all")
         tensor([2.2333, 1.5000, 1.2333])
     """
-    loss, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
-    return _hinge_compute(loss, total)
+    measure, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
+    return _hinge_compute(measure, total)

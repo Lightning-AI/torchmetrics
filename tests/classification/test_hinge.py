@@ -63,12 +63,12 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
             mask[np.arange(sk_target.shape[0]), sk_target] = False
             margin = sk_preds[~mask]
             margin -= np.max(sk_preds[mask].reshape(sk_target.shape[0], -1), axis=1)
-        losses = 1 - margin
-        np.clip(losses, 0, None, out=losses)
+        measures = 1 - margin
+        np.clip(measures, 0, None, out=measures)
 
         if squared:
-            losses = losses ** 2
-        return losses.mean(axis=0)
+            measures = measures ** 2
+        return measures.mean(axis=0)
     else:
         if multiclass_mode == MulticlassMode.ONE_VS_ALL:
             result = np.zeros(sk_preds.shape[1])

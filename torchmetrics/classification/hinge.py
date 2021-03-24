@@ -98,7 +98,7 @@ class Hinge(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("loss", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("measure", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
         if multiclass_mode not in (None, MulticlassMode.CRAMMER_SINGER, MulticlassMode.ONE_VS_ALL):
@@ -112,10 +112,10 @@ class Hinge(Metric):
         self.multiclass_mode = multiclass_mode
 
     def update(self, preds: Tensor, target: Tensor):
-        loss, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
+        measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
-        self.loss = loss + self.loss
+        self.measure = measure + self.measure
         self.total = total + self.total
 
     def compute(self) -> Tensor:
-        return _hinge_compute(self.loss, self.total)
+        return _hinge_compute(self.measure, self.total)
