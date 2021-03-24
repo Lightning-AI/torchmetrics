@@ -75,7 +75,7 @@ def _auroc_compute(
     # calculate fpr, tpr
     if mode == 'multi-label':
         if average == AverageMethod.MICRO:
-            fpr, tpr, _ = roc(preds.flatten(), target.flatten(), num_classes, pos_label, sample_weights)
+            fpr, tpr, _ = roc(preds.flatten(), target.flatten(), 1, pos_label, sample_weights)
         else:
             # for multilabel we iteratively evaluate roc in a binary fashion
             output = [
