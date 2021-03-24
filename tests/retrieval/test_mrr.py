@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from tests.retrieval.test_utils import _test_against_sklearn, _test_dtypes, _test_input_shapes
+from tests.retrieval.helpers import _test_against_sklearn, _test_dtypes, _test_input_shapes
 from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
 
 

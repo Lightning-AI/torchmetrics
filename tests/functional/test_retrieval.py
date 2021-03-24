@@ -6,8 +6,8 @@ import torch
 from pytorch_lightning import seed_everything
 from sklearn.metrics import average_precision_score as sk_average_precision
 
+from tests.retrieval.helpers import _assert_error
 from tests.retrieval.test_mrr import _reciprocal_rank as reciprocal_rank
-from tests.retrieval.test_utils import _assert_error
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 

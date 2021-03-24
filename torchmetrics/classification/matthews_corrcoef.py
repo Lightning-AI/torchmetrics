@@ -75,6 +75,7 @@ class MatthewsCorrcoef(Metric):
         tensor(0.5774)
 
     """
+
     def __init__(
         self,
         num_classes: int,

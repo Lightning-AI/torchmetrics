@@ -1,7 +1,7 @@
 import pytest
 from sklearn.metrics import average_precision_score as sk_average_precision
 
-from tests.retrieval.test_utils import _test_against_sklearn, _test_dtypes, _test_input_shapes
+from tests.retrieval.helpers import _test_against_sklearn, _test_dtypes, _test_input_shapes
 from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
 
 
