@@ -86,7 +86,7 @@ def fbeta(
     Computes f_beta metric.
 
     .. math::
-        F_\beta = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
+        F_{\beta} = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}
         {(\beta^2 * \text{precision}) + \text{recall}}
 
     Works with binary, multiclass, and multilabel data.
@@ -108,15 +108,15 @@ def fbeta(
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
-            - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
+                - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+                - ``'macro'``: Calculate the metric for each class separately, and average the
+                  metrics accross classes (with equal weights for each class).
+                - ``'weighted'``: Calculate the metric for each class separately, and average the
+                  metrics accross classes, weighting each class by its support (``tp + fn``).
+                - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+                  the metric for every class.
+                - ``'samples'``: Calculate the metric for each sample, and average the metrics
+                  across samples (with equal weights for each sample).
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
@@ -125,28 +125,24 @@ def fbeta(
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter). Should be one of the following:
 
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then averaged over samples.
-              The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
-              and computing the metric for the sample based on that.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`references/modules:input types`)
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+                - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+                  multi-class.
+                - ``'samplewise'``: In this case, the statistics are computed separately for each
+                  sample on the ``N`` axis, and then averaged over samples.
+                  The computation for each sample is done by treating the flattened extra axes ``...``
+                  (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+                  and computing the metric for the sample based on that.
+                - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
+                  (see :ref:`references/modules:input types`)
+                  are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+                  were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
         ignore_index:
             Integer specifying a target class to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
-
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-
         threshold:
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
@@ -154,9 +150,7 @@ def fbeta(
             Number of highest probability entries for each sample to convert to 1s - relevant
             only for inputs with probability predictions. If this parameter is set for multi-label
             inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
-
-            Should be left unset (``None``) for inputs with label predictions.
+            this parameter defaults to 1. Should be left unset (``None``) for inputs with label predictions.
         is_multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
