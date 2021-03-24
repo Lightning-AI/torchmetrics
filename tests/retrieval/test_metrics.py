@@ -59,7 +59,11 @@ def test_against_sklearn(
         # shuffle ids to require also sorting of documents ability from the lightning metric
         pl_result = metric(indexes_tensor, preds_tensor, target_tensor)
 
-        assert torch.allclose(sk_results.float(), pl_result.float(), equal_nan=True)
+        assert torch.allclose(sk_results.float(), pl_result.float(), equal_nan=False), (
+            f"Test failed comparing metric {sklearn_metric} with {torch_metric}: "
+            f"{sk_results.float()} vs {pl_result.float()}. "
+            f"indexes: {indexes}, preds: {preds}, target: {target}"
+        )
 
 
 @pytest.mark.parametrize('torchmetric', [RetrievalMAP, RetrievalMRR])
