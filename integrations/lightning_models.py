@@ -11,9 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from unittest.mock import MagicMock
+
 import torch
-from pytorch_lightning import LightningModule
 from torch.utils.data import Dataset
+
+from integrations import _PL_AVAILABLE
+
+if _PL_AVAILABLE:
+    import pytorch_lightning as pl
+else:
+    pl = MagicMock()
 
 
 class RandomDictStringDataset(Dataset):
@@ -42,7 +50,7 @@ class RandomDataset(Dataset):
         return self.len
 
 
-class BoringModel(LightningModule):
+class BoringModel(pl.LightningModule):
 
     def __init__(self):
         """
