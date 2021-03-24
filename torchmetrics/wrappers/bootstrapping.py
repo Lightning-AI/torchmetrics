@@ -96,8 +96,7 @@ class BootStrapper(Metric):
                 will be used to perform the allgather.
 
         Example::
-            >>> from torchmetrics.wrappers import BootStrapper
-            >>> from torchmetrics import Accuracy
+            >>> from torchmetrics import Accuracy, BootStrapper
             >>> generator = torch.manual_seed(0)
             >>> base_metric = Accuracy()
             >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20, generator=generator)
