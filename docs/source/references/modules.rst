@@ -275,9 +275,8 @@ R2Score
 Wrappers
 ********
 
-Modular wrapper metrics are not metrics in themself, but instead the take in other metrics and alter 
+Modular wrapper metrics are not metrics in themself, but instead take a metric and alter 
 the internal logic of the base metric.
 
 .. autoclass:: torchmetrics.BootStrapper
     :noindex:
-
