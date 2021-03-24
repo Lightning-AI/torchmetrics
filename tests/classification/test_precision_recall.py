@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import precision_score, recall_score
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -28,13 +29,14 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Precision, Recall
-from torchmetrics.classification.checks import _input_format_classification
 from torchmetrics.functional import precision, precision_recall, recall
+from torchmetrics.utilities.checks import _input_format_classification
 
 torch.manual_seed(42)
 
 
 def _sk_prec_recall(preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average=None):
+    # todo: `mdmc_average` is unused
     if average == "none":
         average = None
     if num_classes == 1:
@@ -128,8 +130,8 @@ def test_wrong_params(metric, fn_metric, average, mdmc_average, num_classes, ign
 def test_zero_division(metric_class, metric_fn):
     """ Test that zero_division works correctly (currently should just set to 0). """
 
-    preds = torch.tensor([1, 2, 1, 1])
-    target = torch.tensor([2, 1, 2, 1])
+    preds = tensor([1, 2, 1, 1])
+    target = tensor([2, 1, 2, 1])
 
     cl_metric = metric_class(average="none", num_classes=3)
     cl_metric(preds, target)
@@ -152,8 +154,8 @@ def test_no_support(metric_class, metric_fn):
     in this case (zero_division is for now not configurable and equals 0).
     """
 
-    preds = torch.tensor([1, 1, 0, 0])
-    target = torch.tensor([0, 0, 0, 0])
+    preds = tensor([1, 1, 0, 0])
+    target = tensor([0, 0, 0, 0])
 
     cl_metric = metric_class(average="weighted", num_classes=2, ignore_index=0)
     cl_metric(preds, target)
@@ -198,8 +200,8 @@ class TestPrecisionRecall(MetricTester):
         self,
         ddp: bool,
         dist_sync_on_step: bool,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         sk_wrapper: Callable,
         metric_class: Metric,
         metric_fn: Callable,
@@ -210,6 +212,7 @@ class TestPrecisionRecall(MetricTester):
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
     ):
+        # todo: `metric_fn` is unused
         if num_classes == 1 and average != "micro":
             pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
 
@@ -248,8 +251,8 @@ class TestPrecisionRecall(MetricTester):
 
     def test_precision_recall_fn(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         sk_wrapper: Callable,
         metric_class: Metric,
         metric_fn: Callable,
@@ -260,6 +263,7 @@ class TestPrecisionRecall(MetricTester):
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
     ):
+        # todo: `metric_class` is unused
         if num_classes == 1 and average != "micro":
             pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
 
@@ -316,36 +320,35 @@ def test_precision_recall_joint(average):
     assert torch.equal(recall_result, prec_recall_result[1])
 
 
-_mc_k_target = torch.tensor([0, 1, 2])
-_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
-_ml_k_target = torch.tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
-_ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
+_mc_k_target = tensor([0, 1, 2])
+_mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_ml_k_target = tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
+_ml_k_preds = tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Recall, recall), (Precision, precision)])
 @pytest.mark.parametrize(
     "k, preds, target, average, expected_prec, expected_recall",
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1 / 2), torch.tensor(1.0)),
-        (1, _ml_k_preds, _ml_k_target, "micro", torch.tensor(0.0), torch.tensor(0.0)),
-        (2, _ml_k_preds, _ml_k_target, "micro", torch.tensor(1 / 6), torch.tensor(1 / 3)),
+        (1, _mc_k_preds, _mc_k_target, "micro", tensor(2 / 3), tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2), tensor(1.0)),
+        (1, _ml_k_preds, _ml_k_target, "micro", tensor(0.0), tensor(0.0)),
+        (2, _ml_k_preds, _ml_k_target, "micro", tensor(1 / 6), tensor(1 / 3)),
     ],
 )
 def test_top_k(
     metric_class,
     metric_fn,
     k: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     average: str,
-    expected_prec: torch.Tensor,
-    expected_recall: torch.Tensor,
+    expected_prec: Tensor,
+    expected_recall: Tensor,
 ):
     """A simple test to check that top_k works as expected.
 
-    Just a sanity check, the tests in StatScores should already guarantee
-    the corectness of results.
+    Just a sanity check, the tests in StatScores should already guarantee the correctness of results.
     """
 
     class_metric = metric_class(top_k=k, average=average, num_classes=3)

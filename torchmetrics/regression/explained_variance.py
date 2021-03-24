@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.explained_variance import (
     _explained_variance_compute,
@@ -58,8 +59,11 @@ class ExplainedVariance(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example:
+    Raises:
+        ValueError:
+            If ``multioutput`` is not one of ``"raw_values"``, ``"uniform_average"`` or ``"variance_weighted"``.
 
+    Example:
         >>> from torchmetrics import ExplainedVariance
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
@@ -94,13 +98,13 @@ class ExplainedVariance(Metric):
                 f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
             )
         self.multioutput = multioutput
-        self.add_state("sum_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("sum_squared_error", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("sum_target", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("sum_squared_target", default=torch.tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("n_obs", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 

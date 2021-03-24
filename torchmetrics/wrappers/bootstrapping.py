@@ -16,16 +16,16 @@ from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import nn
+from torch import Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _TORCH_GREATER_EQUAL_1_7, apply_to_collection
+from torchmetrics.utilities import apply_to_collection
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 
 def _bootstrap_sampler(
-        tensor: torch.Tensor,
-        size: Optional[int] = None,
-        generator: Optional[torch.Generator] = None
-) -> torch.Tensor:
+    tensor: Tensor, size: Optional[int] = None, generator: Optional[torch.Generator] = None
+) -> Tensor:
     """ Resample a tensor along its first dimension with replacement
     Args:
         tensor: tensor to resample
@@ -49,18 +49,18 @@ def _bootstrap_sampler(
 
 class BootStrapper(Metric):
     def __init__(
-            self,
-            base_metric: Metric,
-            num_bootstraps: int = 10,
-            mean: bool = True,
-            std: bool = True,
-            quantile: Optional[Union[float, torch.Tensor]] = None,
-            raw: bool = False,
-            generator: Optional[torch.Generator] = None,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
-            dist_sync_fn: Callable = None
+        self,
+        base_metric: Metric,
+        num_bootstraps: int = 10,
+        mean: bool = True,
+        std: bool = True,
+        quantile: Optional[Union[float, Tensor]] = None,
+        raw: bool = False,
+        generator: Optional[torch.Generator] = None,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None
     ) -> None:
         """
         Use to turn a metric into a bootstrapped metric that can automate the process of getting confidence
@@ -130,8 +130,10 @@ class BootStrapper(Metric):
         self.raw = raw
 
         if generator is not None and not isinstance(generator, torch.Generator):
-            raise ValueError("Expected argument ``generator`` to be an instance of ``torch.Generator``"
-                             f"but received {generator}")
+            raise ValueError(
+                "Expected argument ``generator`` to be an instance of ``torch.Generator``"
+                f"but received {generator}"
+            )
         self.generator = generator
 
     def update(self, *args: Any, **kwargs: Any) -> None:
@@ -139,11 +141,11 @@ class BootStrapper(Metric):
         along dimension 0
         """
         for idx in range(self.num_bootstraps):
-            new_args = apply_to_collection(args, torch.Tensor, _bootstrap_sampler, generator=self.generator)
-            new_kwargs = apply_to_collection(kwargs, torch.Tensor, _bootstrap_sampler, generator=self.generator)
+            new_args = apply_to_collection(args, Tensor, _bootstrap_sampler, generator=self.generator)
+            new_kwargs = apply_to_collection(kwargs, Tensor, _bootstrap_sampler, generator=self.generator)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
-    def compute(self) -> List[torch.Tensor]:
+    def compute(self) -> List[Tensor]:
         """ Computes the bootstrapped metric values. Allways returns a list of tensors, but the content of
         the list depends on how the class was initialized
         """

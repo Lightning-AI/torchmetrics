@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.precision_recall import _precision_compute, _recall_compute
@@ -52,10 +53,8 @@ class Precision(StatScores):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
-        multilabel:
-            .. warning :: This parameter is deprecated and has no effect. Will be removed in v1.4.0.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -105,8 +104,11 @@ class Precision(StatScores):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
 
+    Example:
         >>> from torchmetrics import Precision
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -124,7 +126,6 @@ class Precision(StatScores):
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: str = "micro",
-        multilabel: bool = False,
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -154,7 +155,7 @@ class Precision(StatScores):
 
         self.average = average
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes the precision score based on inputs passed in to ``update`` previously.
 
@@ -202,10 +203,8 @@ class Recall(StatScores):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            Note that what is considered a sample in the multi-dimensional multi-class case
-            depends on the value of ``mdmc_average``.
-        multilabel:
-            .. warning :: This parameter is deprecated and has no effect. Will be removed in v1.4.0.
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -256,8 +255,11 @@ class Recall(StatScores):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
 
+    Example:
         >>> from torchmetrics import Recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -275,7 +277,6 @@ class Recall(StatScores):
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: str = "micro",
-        multilabel: bool = False,
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -305,7 +306,7 @@ class Recall(StatScores):
 
         self.average = average
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes the recall score based on inputs passed in to ``update`` previously.
 

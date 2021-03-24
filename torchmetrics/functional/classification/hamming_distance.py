@@ -14,15 +14,16 @@
 from typing import Tuple, Union
 
 import torch
+from torch import Tensor
 
-from torchmetrics.classification.checks import _input_format_classification
+from torchmetrics.utilities.checks import _input_format_classification
 
 
 def _hamming_distance_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float = 0.5,
-) -> Tuple[torch.Tensor, int]:
+) -> Tuple[Tensor, int]:
     preds, target, _ = _input_format_classification(preds, target, threshold=threshold)
 
     correct = (preds == target).sum()
@@ -31,11 +32,11 @@ def _hamming_distance_update(
     return correct, total
 
 
-def _hamming_distance_compute(correct: torch.Tensor, total: Union[int, torch.Tensor]) -> torch.Tensor:
+def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Tensor:
     return 1 - correct.float() / total
 
 
-def hamming_distance(preds: torch.Tensor, target: torch.Tensor, threshold: float = 0.5) -> torch.Tensor:
+def hamming_distance(preds: Tensor, target: Tensor, threshold: float = 0.5) -> Tensor:
     r"""
     Computes the average `Hamming distance <https://en.wikipedia.org/wiki/Hamming_distance>`_ (also
     known as Hamming loss) between targets and predictions:
@@ -61,7 +62,6 @@ def hamming_distance(preds: torch.Tensor, target: torch.Tensor, threshold: float
             (0 or 1) predictions, in the case of binary or multi-label inputs.
 
     Example:
-
         >>> from torchmetrics.functional import hamming_distance
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])

@@ -168,6 +168,12 @@ IoU
 .. autoclass:: torchmetrics.IoU
     :noindex:
 
+MatthewsCorrcoef
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MatthewsCorrcoef
+    :noindex:
+
 Hamming Distance
 ~~~~~~~~~~~~~~~~
 
@@ -203,6 +209,13 @@ StatScores
 ~~~~~~~~~~
 
 .. autoclass:: torchmetrics.StatScores
+    :noindex:
+
+
+RetrievalMAP
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalMAP
     :noindex:
 
 
@@ -262,9 +275,8 @@ R2Score
 Wrappers
 ********
 
-Modular wrapper metrics are not metrics in themself, but instead the take in other metrics and alter 
-the internal logic of the base metric.
+Modular wrapper metrics are not metrics in themself, but instead take a metric and alter the internal logic 
+of the base metric.
 
 .. autoclass:: torchmetrics.BootStrapper
     :noindex:
-

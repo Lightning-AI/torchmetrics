@@ -14,6 +14,7 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_clf_curve,
@@ -22,24 +23,24 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 
 
 def _roc_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, int, int]:
-    return _precision_recall_curve_update(preds, target, num_classes, pos_label)
+) -> Tuple[Tensor, Tensor, int, int, str]:
+    preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes, pos_label)
+    return preds, target, num_classes, pos_label
 
 
 def _roc_compute(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: int,
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
 
-    if num_classes == 1:
+    if num_classes == 1 and preds.ndim == 1:  # binary
         fps, tps, thresholds = _binary_clf_curve(
             preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
         )
@@ -62,12 +63,19 @@ def _roc_compute(
     # Recursively call per class
     fpr, tpr, thresholds = [], [], []
     for c in range(num_classes):
-        preds_c = preds[:, c]
+        if preds.shape == target.shape:
+            preds_c = preds[:, c]
+            target_c = target[:, c]
+            pos_label = 1
+        else:
+            preds_c = preds[:, c]
+            target_c = target
+            pos_label = c
         res = roc(
             preds=preds_c,
-            target=target,
+            target=target_c,
             num_classes=1,
-            pos_label=c,
+            pos_label=pos_label,
             sample_weights=sample_weights,
         )
         fpr.append(res[0])
@@ -78,15 +86,15 @@ def _roc_compute(
 
 
 def roc(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                  List[torch.Tensor]]]:
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """
     Computes the Receiver Operating Characteristic (ROC).
+    Works with both binary, multiclass and multilabel input.
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -99,19 +107,22 @@ def roc(
             range [0,num_classes-1]
         sample_weights: sample weights for each data point
 
-    Returns: 3-element tuple containing
+    Returns:
+        3-element tuple containing
 
         fpr:
             tensor with false positive rates.
-            If multiclass, this is a list of such tensors, one for each class.
+            If multiclass or multilabel, this is a list of such tensors, one for each class/label.
         tpr:
             tensor with true positive rates.
-            If multiclass, this is a list of such tensors, one for each class.
+            If multiclass or multilabel, this is a list of such tensors, one for each class/label.
         thresholds:
-            thresholds used for computing false- and true postive rates
+            tensor with thresholds used for computing false- and true postive rates
+            If multiclass or multilabel, this is a list of such tensors, one for each class/label.
 
     Example (binary case):
 
+        >>> from torchmetrics.functional import roc
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> fpr, tpr, thresholds = roc(pred, target, pos_label=1)
@@ -124,6 +135,7 @@ def roc(
 
     Example (multiclass case):
 
+        >>> from torchmetrics.functional import roc
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05],
@@ -139,6 +151,26 @@ def roc(
          tensor([1.7500, 0.7500, 0.0500]),
          tensor([1.7500, 0.7500, 0.0500]),
          tensor([1.7500, 0.7500, 0.0500])]
+
+    Example (multilabel case):
+
+        >>> from torchmetrics.functional import roc
+        >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
+        ...                      [0.3584, 0.7576, 0.1183],
+        ...                      [0.2286, 0.3468, 0.1338],
+        ...                      [0.8603, 0.0745, 0.1837]])
+        >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
+        >>> fpr, tpr, thresholds = roc(pred, target, num_classes=3, pos_label=1)
+        >>> fpr # doctest: +NORMALIZE_WHITESPACE
+        [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
+         tensor([0., 0., 0., 1., 1.]),
+         tensor([0.0000, 0.0000, 0.3333, 0.6667, 1.0000])]
+        >>> tpr
+        [tensor([0., 0., 1., 1., 1.]), tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]), tensor([0., 1., 1., 1., 1.])]
+        >>> thresholds # doctest: +NORMALIZE_WHITESPACE
+        [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
+         tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
+         tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
 
     """
     preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes, pos_label)

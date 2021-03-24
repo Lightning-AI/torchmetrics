@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
+from torch import Tensor
 
 
 def embedding_similarity(
-    batch: torch.Tensor,
-    similarity: str = 'cosine',
-    reduction: str = 'none',
-    zero_diagonal: bool = True
-) -> torch.Tensor:
+    batch: Tensor, similarity: str = 'cosine', reduction: str = 'none', zero_diagonal: bool = True
+) -> Tensor:
     """
     Computes representation similarity
 
     Example:
-
+        >>> from torchmetrics.functional import embedding_similarity
         >>> embeddings = torch.tensor([[1., 2., 3., 4.], [1., 2., 3., 4.], [4., 5., 6., 7.]])
         >>> embedding_similarity(embeddings)
         tensor([[0.0000, 1.0000, 0.9759],

@@ -17,7 +17,8 @@ import torch
 from sklearn.metrics import precision_score, recall_score
 
 from torchmetrics.classification import Precision, Recall
-from torchmetrics.utilities import _TORCH_GREATER_EQUAL_1_7, apply_to_collection
+from torchmetrics.utilities import apply_to_collection
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
 
 _preds = torch.randint(10, (10, 32))

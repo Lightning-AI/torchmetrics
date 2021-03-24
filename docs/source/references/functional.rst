@@ -83,6 +83,11 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
+matthews_corrcoef [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.matthews_corrcoef
+    :noindex:
 
 roc [func]
 ~~~~~~~~~~~~~~~~~~~~~
@@ -129,6 +134,13 @@ stat_scores [func]
 ~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.stat_scores
+    :noindex:
+
+
+retrieval_average_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_average_precision
     :noindex:
 
 

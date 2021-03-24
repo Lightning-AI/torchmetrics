@@ -131,7 +131,7 @@ and tests gets formatted in the following way:
 
 4. Remember to add binding to the different relevant ``__init__`` files.
 
-5. Testing is key to keeping ``torchmetrics`` trustworty. This is why we have a very rigid testing protocol. This means
+5. Testing is key to keeping ``torchmetrics`` trustworthy. This is why we have a very rigid testing protocol. This means
    that we in most cases require the metric to be tested against some other common framework (``sklearn``, ``scipy`` etc).
 
   1. Create a testing file in ``tests/"domain"/test_"new_metric".py``. Only one file is needed as it is intended to test
