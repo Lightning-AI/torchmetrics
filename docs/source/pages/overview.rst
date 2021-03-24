@@ -109,6 +109,29 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             val3 = self.metric3['accuracy'](preds, target)
             val4 = self.metric4(preds, target)
 
+Metrics in Dataparallel (DP) mode
+=================================
+
+When using metrics in `Dataparallel (DP) <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel>`_
+mode, one should be aware DP will both create and clean-up replicas of Metric objects during a single forward pass. 
+This has the consequence, that the metric state of the replicas will as default be destroyed before we can sync 
+them. It is therefore recommended, when using metrics in DP mode, to initialize them with ``dist_sync_on_step=True``
+such that metric states are synchonized between the main process and the replicas before they are destroyed.
+
+Metrics in Distributed Data Parallel (DDP) mode
+===============================================
+
+When using metrics in `Distributed Data Parallel (DPP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`_
+mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is 
+not equally divisible by ``batch_size * num_processors``. The added samples will always be replicates of datapoints 
+already in your dataset. This is done to secure an equal load for all processes. However, this has the consequence 
+that the calculated metric value will be sligtly bias towards those replicated samples, leading to a wrong result.
+
+During training and/or validation this may not be important, however it is highly recommended when evaluating
+the test dataset to only run on a single gpu or use a `join <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel.join>`_
+context in conjunction with DDP to prevent this behaviour. 
+
+
 ******************
 Metric Arithmetics
 ******************
