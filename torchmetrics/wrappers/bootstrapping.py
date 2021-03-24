@@ -133,9 +133,7 @@ class BootStrapper(Metric):
         self.generator = generator
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """ Updates the state of the base metric. Any tensor passed in will be bootstrapped
-        along dimension 0
-        """
+        """ Updates the state of the base metric. Any tensor passed in will be bootstrapped along dimension 0 """
         for idx in range(self.num_bootstraps):
             new_args = apply_to_collection(args, Tensor, _bootstrap_sampler, generator=self.generator)
             new_kwargs = apply_to_collection(kwargs, Tensor, _bootstrap_sampler, generator=self.generator)
