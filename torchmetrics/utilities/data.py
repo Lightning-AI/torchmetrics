@@ -14,7 +14,7 @@
 from typing import Any, Callable, List, Mapping, Optional, Sequence, Union
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -256,4 +256,4 @@ def get_group_indexes(idx: Tensor) -> List[Tensor]:
             indexes[_id] += [i]
         else:
             indexes[_id] = [i]
-    return [torch.tensor(x, dtype=torch.int64) for x in indexes.values()]
+    return [tensor(x, dtype=torch.int64) for x in indexes.values()]
