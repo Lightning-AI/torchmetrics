@@ -14,6 +14,10 @@
 import torch
 from torch import Tensor
 
+ALLOWED_BOOL_TYPES = (torch.bool,)
+ALLOWED_INT_TYPES = (torch.int8, torch.int16, torch.int32, torch.int64)
+ALLOWED_FLOAT_TYPES = (torch.float16, torch.bfloat16, torch.float32, torch.float64)
+
 
 def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
     r"""
@@ -37,12 +41,11 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.5000)
     """
 
-    ALLOWED_BOOL_TYPES = (torch.bool,)
-    ALLOWED_INT_TYPES = (torch.int8, torch.int16, torch.int32, torch.int64)
-    ALLOWED_FLOAT_TYPES = (torch.float16, torch.bfloat16, torch.float32, torch.float64)
-
     if preds.shape != target.shape or preds.device != target.device:
         raise ValueError("`preds` and `target` must have the same shape and live on the same device")
+
+    if target.numel() == 0 or preds.numel() == 0:
+        raise ValueError("`target` and `preds` must be non-empty tensors")
 
     if preds.dtype not in ALLOWED_INT_TYPES + ALLOWED_FLOAT_TYPES:
         raise ValueError("`target` must be a tensor of floats or integers")

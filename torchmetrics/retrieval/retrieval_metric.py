@@ -22,6 +22,9 @@ from torchmetrics.utilities.data import get_group_indexes
 
 #: get_group_indexes is used to group predictions belonging to the same document
 IGNORE_IDX = -100
+ALLOWED_BOOL_TYPES = (torch.bool,)
+ALLOWED_INT_TYPES = (torch.int8, torch.int16, torch.int32, torch.int64)
+ALLOWED_FLOAT_TYPES = (torch.float16, torch.bfloat16, torch.float32, torch.float64)
 
 
 class RetrievalMetric(Metric, ABC):
@@ -98,10 +101,6 @@ class RetrievalMetric(Metric, ABC):
     def update(self, idx: Tensor, preds: Tensor, target: Tensor) -> None:
         if not (idx.shape == target.shape == preds.shape):
             raise ValueError("`idx`, `preds` and `target` must be of the same shape")
-
-        ALLOWED_BOOL_TYPES = (torch.bool,)
-        ALLOWED_INT_TYPES = (torch.int8, torch.int16, torch.int32, torch.int64)
-        ALLOWED_FLOAT_TYPES = (torch.float16, torch.bfloat16, torch.float32, torch.float64)
 
         if idx.dtype not in ALLOWED_INT_TYPES:
             raise ValueError("`idx` argument requires an integer tensor")
