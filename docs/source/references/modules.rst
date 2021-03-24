@@ -163,7 +163,7 @@ FBeta
     :noindex:
 
 HammingDistance
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
