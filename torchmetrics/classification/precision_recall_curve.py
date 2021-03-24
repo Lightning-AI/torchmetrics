@@ -14,6 +14,7 @@
 from typing import Any, List, Optional, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.precision_recall_curve import (
     _precision_recall_curve_compute,
@@ -51,8 +52,9 @@ class PrecisionRecallCurve(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example (binary case):
-
+    Example:
+        >>> # binary case
+        >>> from torchmetrics import PrecisionRecallCurve
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> pr_curve = PrecisionRecallCurve(pos_label=1)
@@ -64,8 +66,7 @@ class PrecisionRecallCurve(Metric):
         >>> thresholds
         tensor([1, 2, 3])
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -108,7 +109,7 @@ class PrecisionRecallCurve(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -124,14 +125,12 @@ class PrecisionRecallCurve(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-    def compute(
-        self
-    ) -> Union[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[List[torch.Tensor], List[torch.Tensor],
-                                                                      List[torch.Tensor]]]:
+    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """
         Compute the precision-recall curve
 
-        Returns: 3-element tuple containing
+        Returns:
+            3-element tuple containing
 
             precision:
                 tensor where element i is the precision of predictions with
@@ -143,7 +142,6 @@ class PrecisionRecallCurve(Metric):
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
                 Thresholds used for computing precision/recall scores
-
         """
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)

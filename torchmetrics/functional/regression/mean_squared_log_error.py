@@ -14,22 +14,23 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_squared_log_error_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, int]:
+def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
     _check_same_shape(preds, target)
     sum_squared_log_error = torch.sum(torch.pow(torch.log1p(preds) - torch.log1p(target), 2))
     n_obs = target.numel()
     return sum_squared_log_error, n_obs
 
 
-def _mean_squared_log_error_compute(sum_squared_log_error: torch.Tensor, n_obs: int) -> torch.Tensor:
+def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -> Tensor:
     return sum_squared_log_error / n_obs
 
 
-def mean_squared_log_error(preds: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     Computes mean squared log error
 
@@ -41,7 +42,7 @@ def mean_squared_log_error(preds: torch.Tensor, target: torch.Tensor) -> torch.T
         Tensor with RMSLE
 
     Example:
-
+        >>> from torchmetrics.functional import mean_squared_log_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_squared_log_error(x, y)

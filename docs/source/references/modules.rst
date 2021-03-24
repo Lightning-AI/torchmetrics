@@ -168,6 +168,12 @@ IoU
 .. autoclass:: torchmetrics.IoU
     :noindex:
 
+MatthewsCorrcoef
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MatthewsCorrcoef
+    :noindex:
+
 Hamming Distance
 ~~~~~~~~~~~~~~~~
 
@@ -203,6 +209,13 @@ StatScores
 ~~~~~~~~~~
 
 .. autoclass:: torchmetrics.StatScores
+    :noindex:
+
+
+RetrievalMAP
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalMAP
     :noindex:
 
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 import pytest
 import torch
+from torch import Tensor
 
 from torchmetrics.functional import image_gradients
 
@@ -65,16 +66,7 @@ def test_multi_batch_image_gradients():
         [5., 5., 5., 5., 5.],
         [0., 0., 0., 0., 0.],
     ]
-
-    true_dx = [
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-    ]
-    true_dy = torch.Tensor(true_dy)
-    true_dx = torch.Tensor(true_dx)
+    true_dy = Tensor(true_dy)
 
     dy, dx = image_gradients(image)
 
@@ -113,8 +105,8 @@ def test_image_gradients():
         [1., 1., 1., 1., 0.],
     ]
 
-    true_dy = torch.Tensor(true_dy)
-    true_dx = torch.Tensor(true_dx)
+    true_dy = Tensor(true_dy)
+    true_dx = Tensor(true_dx)
 
     dy, dx = image_gradients(image)
 

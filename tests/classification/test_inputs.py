@@ -13,7 +13,7 @@
 # limitations under the License.
 import pytest
 import torch
-from torch import rand, randint
+from torch import Tensor, rand, randint, tensor
 
 from tests.classification.inputs import Input
 from tests.classification.inputs import _input_binary as _bin
@@ -52,7 +52,7 @@ _mdmc_prob_2cls_preds /= _mdmc_prob_2cls_preds.sum(dim=2, keepdim=True)
 _mdmc_prob_2cls = Input(_mdmc_prob_2cls_preds, randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)))
 
 # Some utils
-T = torch.Tensor
+T = Tensor
 
 
 def _idn(x):
@@ -209,7 +209,7 @@ def test_threshold():
 
     preds_probs_out, _, _ = _input_format_classification(preds_probs, target, threshold=0.5)
 
-    assert torch.equal(torch.tensor([0, 1, 1], dtype=torch.int), preds_probs_out.squeeze().int())
+    assert torch.equal(tensor([0, 1, 1], dtype=torch.int), preds_probs_out.squeeze().int())
 
 
 ########################################################################

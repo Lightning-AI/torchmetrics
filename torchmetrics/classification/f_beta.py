@@ -14,6 +14,7 @@
 from typing import Any, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.f_beta import _fbeta_compute, _fbeta_update
 from torchmetrics.metric import Metric
@@ -64,8 +65,11 @@ class FBeta(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``, ``None``.
 
+    Example:
         >>> from torchmetrics import FBeta
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
@@ -109,7 +113,7 @@ class FBeta(Metric):
         self.add_state("predicted_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
         self.add_state("actual_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -125,7 +129,7 @@ class FBeta(Metric):
         self.predicted_positives += predicted_positives
         self.actual_positives += actual_positives
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes fbeta over state.
         """
