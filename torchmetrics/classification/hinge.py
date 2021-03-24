@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.hinge_loss import _hinge_compute, _hinge_update
+from torchmetrics.functional.classification.hinge import _hinge_compute, _hinge_update
 from torchmetrics.metric import Metric
 
 
