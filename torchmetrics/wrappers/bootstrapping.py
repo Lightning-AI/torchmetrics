@@ -15,8 +15,7 @@ from copy import deepcopy
 from typing import Any, Callable, List, Optional, Union
 
 import torch
-from torch import nn
-from torch import Tensor
+from torch import Tensor, nn
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
