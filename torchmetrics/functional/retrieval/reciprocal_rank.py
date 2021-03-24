@@ -14,7 +14,7 @@
 import torch
 from torch import Tensor
 
-ALLOWED_BOOL_TYPES = (torch.bool,)
+ALLOWED_BOOL_TYPES = (torch.bool, )
 ALLOWED_INT_TYPES = (torch.int8, torch.int16, torch.int32, torch.int64)
 ALLOWED_FLOAT_TYPES = (torch.float16, torch.bfloat16, torch.float32, torch.float64)
 

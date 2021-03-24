@@ -4,8 +4,8 @@ import torch
 from pytorch_lightning import seed_everything
 from sklearn.metrics import average_precision_score as sk_average_precision
 
-from tests.retrieval.utils import _assert_error, _compute_sklearn_metric
-from tests.retrieval.utils import _reciprocal_rank as reciprocal_rank
+from tests.retrieval.helpers import _assert_error, _compute_sklearn_metric
+from tests.retrieval.helpers import _reciprocal_rank as reciprocal_rank
 from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
 from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
 
@@ -19,12 +19,7 @@ from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
 @pytest.mark.parametrize('n_documents', [1, 5])
 @pytest.mark.parametrize('query_without_relevant_docs_options', ['skip', 'pos', 'neg'])
 def test_against_sklearn(
-    sklearn_metric,
-    torch_metric,
-    size,
-    rounds,
-    n_documents,
-    query_without_relevant_docs_options
+    sklearn_metric, torch_metric, size, rounds, n_documents, query_without_relevant_docs_options
 ) -> None:
     """ Compare PL metrics to standard version. """
     seed_everything(0)
