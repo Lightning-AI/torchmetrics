@@ -131,7 +131,7 @@ import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torchmetrics
 
-def metric_ddp(rank, world_size)
+def metric_ddp(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12355'
 
@@ -178,8 +178,9 @@ def metric_ddp(rank, world_size)
     # cleanup
     dist.destroy_process_group()
 
-world_size = 2   # number of gpus to parallize over
-mp.spawn(metric_dpp, args=(world_size,), nprocs=world_size, join=True)
+if __name__ == "__main__":
+    world_size = 2   # number of gpus to parallize over
+    mp.spawn(metric_ddp, args=(world_size,), nprocs=world_size, join=True)
 
 ```
 </details>
