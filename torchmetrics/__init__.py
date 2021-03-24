@@ -30,7 +30,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     ConfusionMatrix,
     FBeta,
     HammingDistance,
-    HingeLoss,
+    Hinge,
     IoU,
     MatthewsCorrcoef,
     Precision,

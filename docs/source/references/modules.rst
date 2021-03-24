@@ -162,16 +162,16 @@ FBeta
 .. autoclass:: torchmetrics.FBeta
     :noindex:
 
-Hamming Distance
+HammingDistance
 ~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
 
-HingeLoss
-~~~~~~~~~
+Hinge
+~~~~~
 
-.. autoclass:: torchmetrics.HingeLoss
+.. autoclass:: torchmetrics.Hinge
     :noindex:
 
 IoU

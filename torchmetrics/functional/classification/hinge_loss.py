@@ -20,7 +20,7 @@ from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
-def _check_shape_and_type_consistency_hinge_loss(
+def _check_shape_and_type_consistency_hinge(
         preds: Tensor,
         target: Tensor,
 ) -> DataType:
@@ -50,7 +50,7 @@ def _check_shape_and_type_consistency_hinge_loss(
     return mode
 
 
-def _hinge_loss_update(
+def _hinge_update(
         preds: Tensor,
         target: Tensor,
         squared: bool = False,
@@ -61,7 +61,7 @@ def _hinge_loss_update(
     else:
         preds, target = preds.squeeze(), target.squeeze()
 
-    mode = _check_shape_and_type_consistency_hinge_loss(preds, target)
+    mode = _check_shape_and_type_consistency_hinge(preds, target)
 
     if mode == DataType.MULTICLASS:
         target = to_onehot(target, max(2, preds.shape[1])).bool()
@@ -90,11 +90,11 @@ def _hinge_loss_update(
     return losses.sum(dim=0), total
 
 
-def _hinge_loss_compute(loss: Tensor, total: Tensor) -> Tensor:
+def _hinge_compute(loss: Tensor, total: Tensor) -> Tensor:
     return loss / total
 
 
-def hinge_loss(
+def hinge(
         preds: Tensor,
         target: Tensor,
         squared: bool = False,
@@ -105,7 +105,7 @@ def hinge_loss(
     Machines (SVMs). In the binary case it is defined as:
 
     .. math::
-        \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
+        \text{Hinge} = \max(0, 1 - y \times \hat{y})
 
     Where :math:`y \in {-1, 1}` is the target, and :math:`\hat{y} \in \mathbb{R}` is the prediction.
 
@@ -113,7 +113,7 @@ def hinge_loss(
     metric will compute the multi-class hinge loss defined by Crammer and Singer as:
 
     .. math::
-        \text{Hinge loss} = \max\left(0, 1 - \hat{y}_y + \max_{i \ne y} (\hat{y}_i)\right)
+        \text{Hinge} = \max\left(0, 1 - \hat{y}_y + \max_{i \ne y} (\hat{y}_i)\right)
 
     Where :math:`y \in {0, ..., \mathrm{C}}` is the target class (where :math:`\mathrm{C}` is the number of classes),
     and :math:`\hat{y} \in \mathbb{R}^\mathrm{C}` is the predicted output per class.
@@ -144,16 +144,16 @@ def hinge_loss(
             If ``multiclass_mode`` is not: None, ``"crammer_singer"``, or ``"one_vs_all"``.
 
     Example:
-        >>> from torchmetrics.functional import hinge_loss
+        >>> from torchmetrics.functional import hinge
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge_loss(preds, target)
+        >>> hinge(preds, target)
         tensor(0.3000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge_loss(preds, target)
+        >>> hinge(preds, target)
         tensor(2.9000)
     """
-    loss, total = _hinge_loss_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
-    return _hinge_loss_compute(loss, total)
+    loss, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
+    return _hinge_compute(loss, total)

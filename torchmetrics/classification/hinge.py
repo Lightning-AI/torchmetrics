@@ -15,11 +15,11 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.hinge_loss import _hinge_loss_compute, _hinge_loss_update
+from torchmetrics.functional.classification.hinge_loss import _hinge_compute, _hinge_update
 from torchmetrics.metric import Metric
 
 
-class HingeLoss(Metric):
+class Hinge(Metric):
     r"""
     Computes the mean `Hinge loss <https://en.wikipedia.org/wiki/Hinge_loss>`_, typically used for Support Vector
     Machines (SVMs). In the binary case it is defined as:
@@ -46,8 +46,6 @@ class HingeLoss(Metric):
     Only accepts inputs with preds shape of (N) (binary) or (N, C) (multi-class) and target shape of (N).
 
     Args:
-        preds: Predictions from model (as float outputs from decision function).
-        target: Ground truth labels.
         squared:
             If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss (default).
         multiclass_mode:
@@ -57,23 +55,21 @@ class HingeLoss(Metric):
 
     Raises:
         ValueError:
-            If preds shape is not of size (N) or (N, C).
-        ValueError:
-            If target shape is not of size (N).
-        ValueError:
             If ``multiclass_mode`` is not: None, ``"crammer_singer"``, or ``"one_vs_all"``.
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import hinge_loss
+        >>> from torchmetrics import Hinge
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge_loss(preds, target)
+        >>> hinge = Hinge()
+        >>> hinge(preds, target)
         tensor(0.3000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge_loss(preds, target)
+        >>> hinge = Hinge()
+        >>> hinge(preds, target)
         tensor(2.9000)
     """
 
@@ -100,10 +96,10 @@ class HingeLoss(Metric):
         self.multiclass_mode = multiclass_mode
 
     def update(self, preds: Tensor, target: Tensor):
-        loss, total = _hinge_loss_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
+        loss, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
         self.loss = loss + self.loss
         self.total = total + self.total
 
     def compute(self) -> Tensor:
-        return _hinge_loss_compute(self.loss, self.total)
+        return _hinge_compute(self.loss, self.total)

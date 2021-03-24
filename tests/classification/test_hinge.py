@@ -16,13 +16,13 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import hinge_loss as sk_hinge_loss
+from sklearn.metrics import hinge_loss as sk_hinge
 from sklearn.preprocessing import OneHotEncoder
 
 from tests.classification.inputs import Input
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
-from torchmetrics import HingeLoss
-from torchmetrics.functional import hinge_loss
+from torchmetrics import Hinge
+from torchmetrics.functional import hinge
 
 torch.manual_seed(42)
 
@@ -42,7 +42,7 @@ _input_multiclass = Input(
 )
 
 
-def _sk_hinge_loss(preds, target, squared, multiclass_mode):
+def _sk_hinge(preds, target, squared, multiclass_mode):
     sk_preds, sk_target = preds.numpy(), target.numpy()
 
     if multiclass_mode == 'one_vs_all':
@@ -72,10 +72,10 @@ def _sk_hinge_loss(preds, target, squared, multiclass_mode):
         if multiclass_mode == 'one_vs_all':
             result = np.zeros(sk_preds.shape[1])
             for i in range(result.shape[0]):
-                result[i] = sk_hinge_loss(y_true=sk_target[:, i], pred_decision=sk_preds[:, i])
+                result[i] = sk_hinge(y_true=sk_target[:, i], pred_decision=sk_preds[:, i])
             return result
 
-        return sk_hinge_loss(y_true=sk_target, pred_decision=sk_preds)
+        return sk_hinge(y_true=sk_target, pred_decision=sk_preds)
 
 
 @pytest.mark.parametrize(
@@ -100,8 +100,8 @@ class TestHingeLoss(MetricTester):
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=HingeLoss,
-            sk_metric=partial(_sk_hinge_loss, squared=squared, multiclass_mode=multiclass_mode),
+            metric_class=Hinge,
+            sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={
                 "squared": squared,
@@ -113,8 +113,8 @@ class TestHingeLoss(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            metric_functional=partial(hinge_loss, squared=squared, multiclass_mode=multiclass_mode),
-            sk_metric=partial(_sk_hinge_loss, squared=squared, multiclass_mode=multiclass_mode),
+            metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode),
+            sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
         )
 
 
@@ -151,4 +151,4 @@ _input_extra_dim = Input(
 )
 def test_bad_inputs(preds, target, multiclass_mode):
     with pytest.raises(ValueError):
-        _ = hinge_loss(preds, target, multiclass_mode=multiclass_mode)
+        _ = hinge(preds, target, multiclass_mode=multiclass_mode)
