@@ -41,12 +41,13 @@ def _bootstrap_sampler(
         torch.ones(tensor.shape[0], device=tensor.device),
         num_samples=size,
         replacement=True,
-        generator=generator
+        generator=generator,
     )
     return tensor[idx]
 
 
 class BootStrapper(Metric):
+
     def __init__(
         self,
         base_metric: Metric,
@@ -107,15 +108,12 @@ class BootStrapper(Metric):
             tensor(0.2175) tensor(0.0950)
 
         """
-        super().__init__(
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn
-        )
+        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
         if not isinstance(base_metric, Metric):
-            raise ValueError("Expected base metric to be an instance of torchmetrics.Metric"
-                             f" but received {base_metric}")
+            raise ValueError(
+                "Expected base metric to be an instance of torchmetrics.Metric"
+                f" but received {base_metric}"
+            )
 
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
         self.num_bootstraps = num_bootstraps
