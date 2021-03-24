@@ -11,13 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.data import to_onehot
-from torchmetrics.utilities.enums import DataType
+from torchmetrics.utilities.enums import DataType, EnumStr
+
+
+class MulticlassMode(EnumStr):
+    """Enum to represent possible multiclass modes of hinge.
+
+    >>> "Crammer-Singer" in list(MulticlassMode)
+    True
+    """
+
+    CRAMMER_SINGER = "crammer-singer"
+    ONE_VS_ALL = "one-vs-all"
 
 
 def _check_shape_and_type_consistency_hinge(
@@ -54,7 +65,7 @@ def _hinge_update(
         preds: Tensor,
         target: Tensor,
         squared: bool = False,
-        multiclass_mode: Optional[str] = None,
+        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tuple[Tensor, Tensor]:
     if preds.shape[0] == 1:
         preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
@@ -66,17 +77,18 @@ def _hinge_update(
     if mode == DataType.MULTICLASS:
         target = to_onehot(target, max(2, preds.shape[1])).bool()
 
-    if mode == DataType.MULTICLASS and (multiclass_mode is None or multiclass_mode == 'crammer_singer'):
+    if mode == DataType.MULTICLASS and (multiclass_mode is None or multiclass_mode == MulticlassMode.CRAMMER_SINGER):
         margin = preds[target]
         margin -= torch.max(preds[~target].view(preds.shape[0], -1), dim=1)[0]
-    elif mode == DataType.BINARY or multiclass_mode == 'one_vs_all':
+    elif mode == DataType.BINARY or multiclass_mode == MulticlassMode.ONE_VS_ALL:
         target = target.bool()
         margin = torch.zeros_like(preds)
         margin[target] = preds[target]
         margin[~target] = - preds[~target]
     else:
         raise ValueError(
-            "The `multiclass_mode` should be either None / 'crammer_singer' (default) or 'one_vs_all',"
+            "The `multiclass_mode` should be either None / 'crammer-singer' / MulticlassMode.CRAMMER_SINGER"
+            "(default) or 'one-vs-all' / MulticlassMode.ONE_VS_ALL,"
             f" got {multiclass_mode}."
         )
 
@@ -98,28 +110,30 @@ def hinge(
         preds: Tensor,
         target: Tensor,
         squared: bool = False,
-        multiclass_mode: Optional[str] = None,
+        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tensor:
     r"""
     Computes the mean `Hinge loss <https://en.wikipedia.org/wiki/Hinge_loss>`_, typically used for Support Vector
     Machines (SVMs). In the binary case it is defined as:
 
     .. math::
-        \text{Hinge} = \max(0, 1 - y \times \hat{y})
+        \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
 
     Where :math:`y \in {-1, 1}` is the target, and :math:`\hat{y} \in \mathbb{R}` is the prediction.
 
-    In the multi-class case, when ``multiclass_mode=None`` (default) or ``multiclass_mode="crammer_singer"``, this
-    metric will compute the multi-class hinge loss defined by Crammer and Singer as:
+    In the multi-class case, when ``multiclass_mode=None`` (default), ``multiclass_mode=MulticlassMode.CRAMMER_SINGER``
+    or ``multiclass_mode="crammer-singer"``, this metric will compute the multi-class hinge loss defined by Crammer and
+    Singer as:
 
     .. math::
-        \text{Hinge} = \max\left(0, 1 - \hat{y}_y + \max_{i \ne y} (\hat{y}_i)\right)
+        \text{Hinge loss} = \max\left(0, 1 - \hat{y}_y + \max_{i \ne y} (\hat{y}_i)\right)
 
     Where :math:`y \in {0, ..., \mathrm{C}}` is the target class (where :math:`\mathrm{C}` is the number of classes),
     and :math:`\hat{y} \in \mathbb{R}^\mathrm{C}` is the predicted output per class.
 
-    In the multi-class case when ``multiclass_mode='one_vs_all'``, this metric will use a one-vs-all approach to compute
-    the hinge loss, giving a vector of C outputs where each entry pits that class against all remaining classes.
+    In the multi-class case when ``multiclass_mode=MulticlassMode.ONE_VS_ALL`` or ``multiclass_mode='one-vs-all'``, this
+    metric will use a one-vs-all approach to compute the hinge loss, giving a vector of C outputs where each entry pits
+    that class against all remaining classes.
 
     This metric can optionally output the mean of the squared hinge loss by setting ``squared=True``
 
@@ -131,9 +145,9 @@ def hinge(
         squared:
             If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss (default).
         multiclass_mode:
-            Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default) or
-            ``"crammer_singer"``, uses the Crammer Singer multi-class hinge loss. ``"one_vs_all"`` computes the hinge
-            loss in a one-vs-all fashion.
+            Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default),
+            ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
+            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
 
     Raises:
         ValueError:
@@ -141,9 +155,11 @@ def hinge(
         ValueError:
             If target shape is not of size (N).
         ValueError:
-            If ``multiclass_mode`` is not: None, ``"crammer_singer"``, or ``"one_vs_all"``.
+            If ``multiclass_mode`` is not: None, ``MulticlassMode.CRAMMER_SINGER``, ``"crammer-singer"``,
+            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"``.
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional import hinge
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
@@ -154,6 +170,11 @@ def hinge(
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge(preds, target)
         tensor(2.9000)
+
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> hinge(preds, target, multiclass_mode="one-vs-all")
+        tensor([2.2333, 1.5000, 1.2333])
     """
     loss, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
     return _hinge_compute(loss, total)

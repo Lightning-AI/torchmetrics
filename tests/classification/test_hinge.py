@@ -23,6 +23,7 @@ from tests.classification.inputs import Input
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
 from torchmetrics import Hinge
 from torchmetrics.functional import hinge
+from torchmetrics.functional.classification.hinge import MulticlassMode
 
 torch.manual_seed(42)
 
@@ -45,17 +46,17 @@ _input_multiclass = Input(
 def _sk_hinge(preds, target, squared, multiclass_mode):
     sk_preds, sk_target = preds.numpy(), target.numpy()
 
-    if multiclass_mode == 'one_vs_all':
+    if multiclass_mode == MulticlassMode.ONE_VS_ALL:
         enc = OneHotEncoder()
         enc.fit(sk_target.reshape(-1, 1))
         sk_target = enc.transform(sk_target.reshape(-1, 1)).toarray()
 
-    if sk_preds.ndim == 1 or multiclass_mode == 'one_vs_all':
+    if sk_preds.ndim == 1 or multiclass_mode == MulticlassMode.ONE_VS_ALL:
         sk_target = 2 * sk_target - 1
 
     if squared or sk_preds.shape[0] == 1:
         # Squared not an option in sklearn and infers classes incorrectly with single element, so adapted from source
-        if sk_preds.ndim == 1 or multiclass_mode == 'one_vs_all':
+        if sk_preds.ndim == 1 or multiclass_mode == MulticlassMode.ONE_VS_ALL:
             margin = sk_target * sk_preds
         else:
             mask = np.ones_like(sk_preds, dtype=bool)
@@ -69,7 +70,7 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
             losses = losses ** 2
         return losses.mean(axis=0)
     else:
-        if multiclass_mode == 'one_vs_all':
+        if multiclass_mode == MulticlassMode.ONE_VS_ALL:
             result = np.zeros(sk_preds.shape[1])
             for i in range(result.shape[0]):
                 result[i] = sk_hinge(y_true=sk_target[:, i], pred_decision=sk_preds[:, i])
@@ -85,10 +86,10 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
         (_input_binary.preds, _input_binary.target, True, None),
         (_input_binary_single.preds, _input_binary_single.target, False, None),
         (_input_binary_single.preds, _input_binary_single.target, True, None),
-        (_input_multiclass.preds, _input_multiclass.target, False, 'crammer_singer'),
-        (_input_multiclass.preds, _input_multiclass.target, True, 'crammer_singer'),
-        (_input_multiclass.preds, _input_multiclass.target, False, 'one_vs_all'),
-        (_input_multiclass.preds, _input_multiclass.target, True, 'one_vs_all'),
+        (_input_multiclass.preds, _input_multiclass.target, False, MulticlassMode.CRAMMER_SINGER),
+        (_input_multiclass.preds, _input_multiclass.target, True, MulticlassMode.CRAMMER_SINGER),
+        (_input_multiclass.preds, _input_multiclass.target, False, MulticlassMode.ONE_VS_ALL),
+        (_input_multiclass.preds, _input_multiclass.target, True, MulticlassMode.ONE_VS_ALL),
     ],
 )
 class TestHingeLoss(MetricTester):
