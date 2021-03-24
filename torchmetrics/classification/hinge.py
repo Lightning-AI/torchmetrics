@@ -92,6 +92,12 @@ class Hinge(Metric):
         self.add_state("loss", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
+        if multiclass_mode not in (None, 'crammer_singer', 'one_vs_all'):
+            raise ValueError(
+                "The `multiclass_mode` should be either None / 'crammer_singer' (default) or 'one_vs_all',"
+                f" got {multiclass_mode}."
+            )
+
         self.squared = squared
         self.multiclass_mode = multiclass_mode
 

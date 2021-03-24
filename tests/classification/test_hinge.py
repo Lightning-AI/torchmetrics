@@ -149,6 +149,11 @@ _input_extra_dim = Input(
         (_input_multiclass.preds[0], _input_multiclass.target[0], 'invalid_mode')
     ],
 )
-def test_bad_inputs(preds, target, multiclass_mode):
+def test_bad_inputs_fn(preds, target, multiclass_mode):
     with pytest.raises(ValueError):
         _ = hinge(preds, target, multiclass_mode=multiclass_mode)
+
+
+def test_bad_inputs_class():
+    with pytest.raises(ValueError):
+        Hinge(multiclass_mode='invalid_mode')
