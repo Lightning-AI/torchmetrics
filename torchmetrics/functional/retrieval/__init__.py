@@ -13,3 +13,4 @@
 # limitations under the License.
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
+from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401

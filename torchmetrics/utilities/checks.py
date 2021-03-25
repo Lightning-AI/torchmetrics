@@ -492,3 +492,71 @@ def _input_format_classification_one_hot(
         target = target.transpose(1, 0)
 
     return preds.reshape(num_classes, -1), target.reshape(num_classes, -1)
+
+
+def _check_retrieval_functional_inputs(preds: Tensor, target: Tensor) -> None:
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+
+    Args:
+        preds: either tensor with scores/logits
+        target: tensor with ground true labels
+
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same shape, if they are empty
+            or not of the correct ``dtypes``.
+
+    Returns:
+        preds: as torch.float32
+        target: as torch.long
+    """
+    if preds.shape != target.shape:
+        raise ValueError("`preds` and `target` must be of the same shape")
+
+    if not preds.numel() or not target.numel():
+        raise ValueError("`preds` and `target` must be non-empty")
+
+    if target.dtype not in (torch.bool, torch.long, torch.int):
+        raise ValueError("`target` must be a tensor of booleans or integers")
+
+    if target.max() > 1 or target.min() < 0:
+        raise ValueError("`target` must be of type `binary`")
+
+    if not preds.is_floating_point():
+        raise ValueError("`preds` must be a tensor of floats")
+
+    return preds.float(), target.long()
+
+
+def _check_retrieval_inputs(
+    indexes: Tensor, preds: Tensor, target: Tensor, ignore: int = None
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+
+    Args:
+        indexes: tensor with queries indexes
+        preds: tensor with scores/logits
+        target: tensor with ground true labels
+        ignore: ignore target with this value
+
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same shape, if they are empty
+            or not of the correct ``dtypes``.
+
+    Returns:
+        indexes: as torch.long
+        preds: as torch.float32
+        target: as torch.long
+    """
+    if ignore is not None:
+        target = target[target != ignore]  # ignore check on values that are ignored
+    preds, target = _check_retrieval_functional_inputs(preds, target)
+
+    if indexes.shape != target.shape:
+        raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
+
+    if indexes.dtype is not torch.long:
+        raise ValueError("`indexes` must be a tensor of long integers")
+
+    return indexes, preds, target
