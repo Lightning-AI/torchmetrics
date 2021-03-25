@@ -52,7 +52,7 @@ jobs:
             req = re.sub(r'torch>=[\d\.]+', f'torch>={torch_lut[py_ver]}', open(fpath).read())
             open(fpath, 'w').write(req)
 
-        for fpath in ('requirements.txt', 'requirements/test.txt'):
+        for fpath in ('requirements.txt', 'requirements/test.txt', 'requirements/integrate.txt'):
             req = open(fpath).read().replace('>=', '==')
             open(fpath, 'w').write(req)
       shell: python
