@@ -1,6 +1,7 @@
 from typing import Callable, List
 
 import numpy as np
+import pytest
 import torch
 from pytorch_lightning import seed_everything
 from torch import Tensor
@@ -87,10 +88,12 @@ def _test_dtypes(torchmetric) -> None:
     target = torch.tensor([False] * length, device=device, dtype=torch.bool)
 
     metric = torchmetric(query_without_relevant_docs='error')
-    _assert_error(metric, ValueError, indexes, preds, target)
+    with pytest.raises(ValueError):
+        metric(indexes, preds, target)
 
     # check ValueError with invalid `query_without_relevant_docs` argument
-    _assert_error(torchmetric, ValueError, query_without_relevant_docs='casual_argument')
+    with pytest.raises(ValueError):
+        torchmetric(query_without_relevant_docs='casual_argument')
 
     # check input dtypes
     indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
@@ -100,9 +103,12 @@ def _test_dtypes(torchmetric) -> None:
     metric = torchmetric(query_without_relevant_docs='error')
 
     # check error on input dtypes are raised correctly
-    _assert_error(metric, ValueError, indexes.bool(), preds, target)
-    _assert_error(metric, ValueError, indexes, preds.bool(), target)
-    _assert_error(metric, ValueError, indexes, preds, target.float())
+    with pytest.raises(ValueError):
+        metric(indexes.bool(), preds, target)
+    with pytest.raises(ValueError):
+        metric(indexes, preds.bool(), target)
+    with pytest.raises(ValueError):
+        metric(indexes, preds, target.float())
 
 
 def _test_input_shapes(torchmetric) -> None:
@@ -118,13 +124,5 @@ def _test_input_shapes(torchmetric) -> None:
     preds = torch.tensor([0] * elements_2, device=device, dtype=torch.float32)
     target = torch.tensor([0] * elements_3, device=device, dtype=torch.int64)
 
-    _assert_error(metric, ValueError, indexes, preds, target)
-
-
-def _assert_error(function, error, *args, **kwargs):
-    """ Assert that `function(*args, **kwargs)` raises `error`. """
-    try:
-        function(*args, **kwargs)
-        assert False  # assert exception is raised
-    except Exception as e:
-        assert isinstance(e, error)
+    with pytest.raises(ValueError):
+        metric(indexes, preds, target)

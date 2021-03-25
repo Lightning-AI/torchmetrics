@@ -6,7 +6,6 @@ import torch
 from pytorch_lightning import seed_everything
 from sklearn.metrics import average_precision_score as sk_average_precision
 
-from tests.retrieval.helpers import _assert_error
 from tests.retrieval.test_mrr import _reciprocal_rank as reciprocal_rank
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
@@ -56,8 +55,10 @@ def test_input_dtypes(torch_metric) -> None:
     target = torch.tensor([0] * length, device=device, dtype=torch.int64)
 
     # check error on input dtypes are raised correctly
-    _assert_error(torch_metric, ValueError, preds.bool(), target)
-    _assert_error(torch_metric, ValueError, preds, target.float())
+    with pytest.raises(ValueError):
+        torch_metric(preds.bool(), target)
+    with pytest.raises(ValueError):
+        torch_metric(preds, target.float())
 
     # test checks on empty targets
     assert torch.allclose(torch_metric(preds=preds, target=target), torch.tensor(0.0))
@@ -75,10 +76,13 @@ def test_input_shapes(torch_metric) -> None:
     # test with empty tensors
     preds = torch.tensor([0] * 0, device=device, dtype=torch.float)
     target = torch.tensor([0] * 0, device=device, dtype=torch.int64)
-    _assert_error(torch_metric, ValueError, preds, target)
+    with pytest.raises(ValueError):
+        torch_metric(preds, target)
 
     # test checks when shapes are different
     elements_1, elements_2 = np.random.choice(np.arange(1, 20), size=2, replace=False)  # ensure sizes are different
     preds = torch.tensor([0] * elements_1, device=device, dtype=torch.float)
     target = torch.tensor([0] * elements_2, device=device, dtype=torch.int64)
-    _assert_error(torch_metric, ValueError, preds, target)
+
+    with pytest.raises(ValueError):
+        torch_metric(preds, target)
