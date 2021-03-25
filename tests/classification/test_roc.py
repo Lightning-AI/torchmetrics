@@ -24,11 +24,12 @@ from tests.classification.inputs import _input_multiclass_prob as _input_mcls_pr
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.roc import ROC
 from torchmetrics.functional import roc
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_roc_curve(y_true, probas_pred, num_classes: int = 1, multilabel: bool = False):

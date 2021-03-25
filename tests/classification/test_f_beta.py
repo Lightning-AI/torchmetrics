@@ -27,12 +27,13 @@ from tests.classification.inputs import _input_multidim_multiclass as _input_mdm
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import F1, FBeta, Metric
 from torchmetrics.functional import f1, fbeta
 from torchmetrics.utilities.checks import _input_format_classification
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average=None):

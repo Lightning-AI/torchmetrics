@@ -15,18 +15,18 @@ from functools import partial
 
 import numpy as np
 import pytest
-import torch
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torch import tensor
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.average_precision import AveragePrecision
 from torchmetrics.functional import average_precision
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_average_precision_score(y_true, probas_pred, num_classes=1):
