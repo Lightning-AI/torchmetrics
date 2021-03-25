@@ -67,7 +67,7 @@ class BinnedPrecisionRecallCurve(Metric):
         for name in ("TPs", "FPs", "FNs"):
             self.add_state(
                 name=name,
-                default=torch.zeros(num_classes, num_thresholds, dtype=torch.long),
+                default=torch.zeros(num_classes, num_thresholds),
                 dist_reduce_fx="sum",
             )
 
@@ -140,7 +140,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         )
         thresholds_at_p = (
             torch.where(
-                condition, thresholds, torch.scalar_tensor(1e6, device=condition.device)
+                condition, thresholds, torch.scalar_tensor(1e6, device=condition.device, dtype=thresholds.dtype)
             )
             .min(dim=1)
             .values
