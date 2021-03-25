@@ -14,8 +14,8 @@
 import numpy as np
 import pytest
 import torch
-from torch import Tensor
 from sklearn.metrics import precision_score, recall_score
+from torch import Tensor
 
 from torchmetrics.classification import Precision, Recall
 from torchmetrics.utilities import apply_to_collection
