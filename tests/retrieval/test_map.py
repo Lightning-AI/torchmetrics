@@ -86,7 +86,7 @@ def test_input_data(torch_class_metric: Metric) -> None:
     """Check PL metrics inputs are controlled correctly. """
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    length = random.randint(0, 20)
+    length = random.randint(1, 20)
 
     # check error when `query_without_relevant_docs='error'` is raised correctly
     indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
