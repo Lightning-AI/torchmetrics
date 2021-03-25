@@ -13,7 +13,7 @@ jobs:
   #    with:
   #      # git is required to clone the docs theme
   #      # before custom requirement are resolved https://github.com/ammaraskar/sphinx-action/issues/16
-  #      pre-build-command: "apt-get update -y && apt-get install -y git && pip install -r docs/requirements.txt --use-feature=2020-resolver"
+  #      pre-build-command: "apt-get update -y && apt-get install -y git && pip install -r requirements/docs.txt --use-feature=2020-resolver"
   #      docs-folder: "docs/"
   #      repo-token: "${{ secrets.GITHUB_TOKEN }}"
 
@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt -U -f https://download.pytorch.org/whl/cpu/torch_stable.html -q --use-feature=2020-resolver
-          pip install -r docs/requirements.txt --use-feature=2020-resolver
+          pip install -r requirements/docs.txt --use-feature=2020-resolver
           python --version ; pip --version ; pip list
         shell: bash
 
@@ -68,14 +68,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('test.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt -U -f https://download.pytorch.org/whl/torch_stable.html -q --use-feature=2020-resolver
-          pip install -r docs/requirements.txt --use-feature=2020-resolver
+          pip install -r requirements/docs.txt --use-feature=2020-resolver
           # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
           sudo apt-get update
           sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures
