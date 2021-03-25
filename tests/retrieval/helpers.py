@@ -30,7 +30,7 @@ def _compute_sklearn_metric(
     return np.array(0.0)
 
 
-def _test_against_sklearn(
+def _test_retrieval_against_sklearn(
     sklearn_metric,
     torch_metric,
     size,

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from tests.retrieval.helpers import _test_against_sklearn, _test_dtypes, _test_input_shapes
+from tests.retrieval.helpers import _test_dtypes, _test_input_shapes, _test_retrieval_against_sklearn
 from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
 
 
@@ -27,7 +27,7 @@ def _reciprocal_rank(target: np.array, preds: np.array):
 @pytest.mark.parametrize('query_without_relevant_docs_options', ['skip', 'pos', 'neg'])
 def test_results(size, n_documents, query_without_relevant_docs_options):
     """ Test metrics are computed correctly. """
-    _test_against_sklearn(
+    _test_retrieval_against_sklearn(
         _reciprocal_rank,
         RetrievalMRR,
         size,
