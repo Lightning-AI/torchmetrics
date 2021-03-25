@@ -17,10 +17,11 @@ import pytest
 import torch
 from torch import tensor
 
+from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _test_ddp_sum(rank, worldsize):

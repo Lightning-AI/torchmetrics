@@ -16,10 +16,11 @@ import pickle
 import pytest
 import torch
 
+from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
 from torchmetrics.collections import MetricCollection
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def test_metric_collection(tmpdir):

@@ -19,11 +19,12 @@ import torch
 from sklearn.metrics import auc as _sk_auc
 from torch import tensor
 
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.classification.auc import AUC
 from torchmetrics.functional import auc
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def sk_auc(x, y):

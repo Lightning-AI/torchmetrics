@@ -24,12 +24,13 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import THRESHOLD, MetricTester
 from torchmetrics import HammingDistance
 from torchmetrics.functional import hamming_distance
 from torchmetrics.utilities.checks import _input_format_classification
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_hamming_loss(preds, target):
