@@ -69,8 +69,7 @@ jobs:
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
         key: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-
+        restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-
 
     - name: Install dependencies
       run: |
@@ -111,3 +110,7 @@ jobs:
         env_vars: OS,PYTHON
         name: codecov-umbrella
         fail_ci_if_error: false
+
+    - name: Integrations
+      run: |
+        python -m pytest integrations -v --durations=25
