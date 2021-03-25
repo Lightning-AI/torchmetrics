@@ -557,6 +557,6 @@ def _check_retrieval_inputs(
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
 
     if indexes.dtype is not torch.long:
-        raise ValueError("`indexes` must be a tensor or integers")
+        raise ValueError("`indexes` must be a tensor of long integers")
 
     return indexes, preds, target

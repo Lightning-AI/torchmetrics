@@ -55,9 +55,9 @@ def _test_retrieval_against_sklearn(
     sk_results = _compute_sklearn_metric(sklearn_metric, target, preds, query_without_relevant_docs_options)
     sk_results = torch.tensor(sk_results)
 
-    indexes_tensor = torch.cat([torch.tensor(i) for i in indexes])
-    preds_tensor = torch.cat([torch.tensor(p) for p in preds])
-    target_tensor = torch.cat([torch.tensor(t) for t in target])
+    indexes_tensor = torch.cat([torch.tensor(i) for i in indexes]).long()
+    preds_tensor = torch.cat([torch.tensor(p) for p in preds]).float()
+    target_tensor = torch.cat([torch.tensor(t) for t in target]).long()
 
     # lets assume data are not ordered
     perm = torch.randperm(indexes_tensor.nelement())
@@ -104,7 +104,7 @@ def _test_dtypes(torchmetric) -> None:
     metric = torchmetric(query_without_relevant_docs='error')
 
     # check error on input dtypes are raised correctly
-    with pytest.raises(ValueError, match="`indexes` must be a tensor or integers"):
+    with pytest.raises(ValueError, match="`indexes` must be a tensor of long integers"):
         metric(indexes.bool(), preds, target)
     with pytest.raises(ValueError, match="`preds` must be a tensor of floats"):
         metric(indexes, preds.bool(), target)
