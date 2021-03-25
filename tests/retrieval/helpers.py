@@ -3,8 +3,11 @@ from typing import Callable, List
 import numpy as np
 import pytest
 import torch
-from pytorch_lightning import seed_everything
 from torch import Tensor
+
+from tests.helpers import seed_all
+
+seed_all(1337)
 
 
 def _compute_sklearn_metric(
@@ -38,8 +41,6 @@ def _test_retrieval_against_sklearn(
     query_without_relevant_docs_options
 ) -> None:
     """ Compare PL metrics to standard version. """
-    seed_everything(0)
-
     metric = torch_metric(query_without_relevant_docs=query_without_relevant_docs_options)
     shape = (size, )
 
@@ -78,8 +79,6 @@ def _test_retrieval_against_sklearn(
 def _test_dtypes(torchmetric) -> None:
     """Check PL metrics inputs are controlled correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    seed_everything(0)
-
     length = 10  # not important in this test
 
     # check error when `query_without_relevant_docs='error'` is raised correctly
@@ -115,8 +114,6 @@ def _test_dtypes(torchmetric) -> None:
 def _test_input_shapes(torchmetric) -> None:
     """Check PL metrics inputs are controlled correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    seed_everything(0)
-
     metric = torchmetric(query_without_relevant_docs='error')
 
     # check input shapes are checked correclty

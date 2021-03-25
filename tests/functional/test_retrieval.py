@@ -5,15 +5,12 @@ import pytest
 import torch
 from sklearn.metrics import average_precision_score as sk_average_precision
 
+from tests.helpers import seed_all
 from tests.retrieval.test_mrr import _reciprocal_rank as reciprocal_rank
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 
-
-def _init_seeds(seed):
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
+seed_all(1337)
 
 
 @pytest.mark.parametrize(['sklearn_metric', 'torch_metric'], [
@@ -24,7 +21,6 @@ def _init_seeds(seed):
 def test_metrics_output_values(sklearn_metric, torch_metric, size):
     """ Compare PL metrics to sklearn version. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    _init_seeds(0)
 
     # test results are computed correctly wrt std implementation
     for i in range(6):
@@ -53,8 +49,6 @@ def test_metrics_output_values(sklearn_metric, torch_metric, size):
 def test_input_dtypes(torch_metric) -> None:
     """ Check wrong input dtypes are managed correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    _init_seeds(0)
-
     length = 10  # not important in this case
 
     # check target is binary
@@ -85,7 +79,6 @@ def test_input_dtypes(torch_metric) -> None:
 def test_input_shapes(torch_metric) -> None:
     """ Check wrong input shapes are managed correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    _init_seeds(0)
 
     # test with empty tensors
     preds = torch.tensor([0] * 0, device=device, dtype=torch.float)
