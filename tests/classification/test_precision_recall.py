@@ -43,8 +43,10 @@ def _sk_prec_recall(preds, target, sk_fn, num_classes, average, is_multiclass, i
         average = "binary"
 
     labels = list(range(num_classes))
-    with pytest.raises(ValueError):
+    try:
         labels.remove(ignore_index)
+    except ValueError:
+        pass
 
     sk_preds, sk_target, _ = _input_format_classification(
         preds, target, THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
