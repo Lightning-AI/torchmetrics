@@ -61,6 +61,7 @@ class Hinge(Metric):
             ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"``.
 
     Example:
+        # binary example
         >>> import torch
         >>> from torchmetrics import Hinge
         >>> target = torch.tensor([0, 1, 1])
