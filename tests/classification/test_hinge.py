@@ -54,7 +54,7 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
     if sk_preds.ndim == 1 or multiclass_mode == MulticlassMode.ONE_VS_ALL:
         sk_target = 2 * sk_target - 1
 
-    if squared or sk_preds.shape[0] == 1:
+    if squared or sk_target.max() != 1 or sk_target.min() != -1:
         # Squared not an option in sklearn and infers classes incorrectly with single element, so adapted from source
         if sk_preds.ndim == 1 or multiclass_mode == MulticlassMode.ONE_VS_ALL:
             margin = sk_target * sk_preds
@@ -64,7 +64,7 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
             margin = sk_preds[~mask]
             margin -= np.max(sk_preds[mask].reshape(sk_target.shape[0], -1), axis=1)
         measures = 1 - margin
-        np.clip(measures, 0, None, out=measures)
+        measures = np.clip(measures, 0, None)
 
         if squared:
             measures = measures ** 2
@@ -92,11 +92,11 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
         (_input_multiclass.preds, _input_multiclass.target, True, MulticlassMode.ONE_VS_ALL),
     ],
 )
-class TestHingeLoss(MetricTester):
+class TestHinge(MetricTester):
 
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_hinge_loss_class(self, ddp, dist_sync_on_step, preds, target, squared, multiclass_mode):
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_hinge_class(self, ddp, dist_sync_on_step, preds, target, squared, multiclass_mode):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -110,7 +110,7 @@ class TestHingeLoss(MetricTester):
             },
         )
 
-    def test_hinge_loss_fn(self, preds, target, squared, multiclass_mode):
+    def test_hinge_fn(self, preds, target, squared, multiclass_mode):
         self.run_functional_metric_test(
             preds,
             target,
