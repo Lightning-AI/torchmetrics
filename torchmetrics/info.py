@@ -5,6 +5,7 @@ __license__ = 'Apache-2.0'
 __copyright__ = f'Copyright (c) 2020-2021, {__author__}.'
 __homepage__ = 'https://github.com/PyTorchLightning/metrics'
 __docs__ = "PyTorch native Metrics"
+__docs_url__ = "https://torchmetrics.readthedocs.io/en/stable/"
 __long_doc__ = """
 Torchmetrics is a metrics API created for easy metric development and usage in both PyTorch and
 [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/). It was originally a part of

@@ -23,18 +23,14 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 
 def _bootstrap_sampler(
-    tensor: Tensor, 
-    size: Optional[int] = None, 
-    generator: Optional[torch.Generator] = None,
+    size: int,
     sampling_strategy: str = 'poisson'
 ) -> Tensor:
     """ Resample a tensor along its first dimension with replacement
     Args:
-        tensor: tensor to resample
-        size: number of samples in new tensor. Defauls to same size as input tensor. Only applies when
-            sampling strategy is ``'multinomial'``
-        generator: a instance of ``torch.Generator`` that controls the sampling
+        size: number of samples
         sampling_strategy: the strategy to use for sampling, either ``'poisson'`` or ``'multinomial'``
+        generator: a instance of ``torch.Generator`` that controls the sampling
 
     Returns:
         resampled tensor
@@ -42,22 +38,20 @@ def _bootstrap_sampler(
     """
     if sampling_strategy == 'poisson':
         p = torch.distributions.Poisson(1)
-        n = p.sample((tensor.shape[0],))
-        return tensor.repeat_interleave(n.long(), dim=0)
+        n = p.sample((size,))
+        return torch.arange(size).repeat_interleave(n.long(), dim=0)
     elif sampling_strategy == 'multinomial':
-        if size is None:
-            size = tensor.shape[0]
         idx = torch.multinomial(
-            torch.ones(tensor.shape[0], device=tensor.device),
+            torch.ones(size),
             num_samples=size,
-            replacement=True,
-            generator=generator
+            replacement=True
         )
-        return tensor[idx]
+        return idx
     raise ValueError('Unknown sampling strategy')
 
 
 class BootStrapper(Metric):
+
     def __init__(
         self,
         base_metric: Metric,
@@ -67,7 +61,6 @@ class BootStrapper(Metric):
         quantile: Optional[Union[float, Tensor]] = None,
         raw: bool = False,
         sampling_strategy: str = 'poisson',
-        generator: Optional[torch.Generator] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -99,8 +92,6 @@ class BootStrapper(Metric):
                 will be given by :math:`n~Poisson(1)`, which approximates the true bootstrap distribution when
                 the number of samples is large. If ``'multinomial'`` is chosen, we will apply true bootstrapping
                 at the batch level to approximate bootstrapping over the hole dataset.
-            generator:
-                A pytorch random number generator for the bootstrap sampler
             compute_on_step:
                 Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
             dist_sync_on_step:
@@ -114,11 +105,9 @@ class BootStrapper(Metric):
                 will be used to perform the allgather.
 
         Example::
-            >>> from torchmetrics.wrappers import BootStrapper
-            >>> from torchmetrics import Accuracy
-            >>> generator = torch.manual_seed(0)
+            >>> from torchmetrics import Accuracy, BootStrapper
             >>> base_metric = Accuracy()
-            >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20, generator=generator)
+            >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
             >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
             >>> output = bootstrap.compute()
             >>> mean, std = output
@@ -126,15 +115,12 @@ class BootStrapper(Metric):
             tensor(0.2175) tensor(0.0950)
 
         """
-        super().__init__(
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn
-        )
+        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
         if not isinstance(base_metric, Metric):
-            raise ValueError("Expected base metric to be an instance of torchmetrics.Metric"
-                             f" but received {base_metric}")
+            raise ValueError(
+                "Expected base metric to be an instance of torchmetrics.Metric"
+                f" but received {base_metric}"
+            )
 
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
         self.num_bootstraps = num_bootstraps
@@ -154,24 +140,20 @@ class BootStrapper(Metric):
             )
         self.sampling_strategy = sampling_strategy
 
-        if generator is not None and not isinstance(generator, torch.Generator):
-            raise ValueError(
-                "Expected argument ``generator`` to be an instance of ``torch.Generator``"
-                f"but received {generator}"
-            )
-        self.generator = generator
-
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """ Updates the state of the base metric. Any tensor passed in will be bootstrapped
-        along dimension 0
-        """
+        """ Updates the state of the base metric. Any tensor passed in will be bootstrapped along dimension 0 """
         for idx in range(self.num_bootstraps):
-            new_args = apply_to_collection(
-                args, Tensor, _bootstrap_sampler, generator=self.generator, sampling_strategy=self.sampling_strategy
-            )
-            new_kwargs = apply_to_collection(
-                kwargs, Tensor, _bootstrap_sampler, generator=self.generator, sampling_strategy=self.sampling_strategy
-            )
+            args_sizes = apply_to_collection(args, Tensor, len)
+            kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
+            if len(args_sizes) > 0:
+                size = args_sizes[0]
+            elif len(kwargs_sizes) > 0:
+                size = kwargs_sizes[0]
+            else:
+                raise ValueError('None of the input contained tensors, so could not determine the sampling size')
+            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy)
+            new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
+            new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
     def compute(self) -> List[Tensor]:
