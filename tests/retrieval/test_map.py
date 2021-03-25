@@ -95,15 +95,9 @@ def test_input_data(torch_class_metric: Metric) -> None:
 
     metric = torch_class_metric(query_without_relevant_docs='error')
 
-    try:
+    with pytest.raises(ValueError):
         metric(indexes, preds, target)
-    except ValueError:
-        # this is expected error
-        pass
 
     # check ValueError with non-accepted argument
-    try:
+    with pytest.raises(ValueError):
         torch_class_metric(query_without_relevant_docs='casual_argument')
-    except ValueError:
-        # this is expected error
-        pass

@@ -42,10 +42,8 @@ def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, igno
         average = "binary"
 
     labels = list(range(num_classes))
-    try:
+    with pytest.raises(ValueError):
         labels.remove(ignore_index)
-    except ValueError:
-        pass
 
     sk_preds, sk_target, _ = _input_format_classification(
         preds, target, THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
