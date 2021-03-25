@@ -117,7 +117,7 @@ def _test_input_shapes(torchmetric) -> None:
     metric = torchmetric(query_without_relevant_docs='error')
 
     # check input shapes are checked correclty
-    elements_1, elements_2 = np.random.choice(20, size=2, replace=False)
+    elements_1, elements_2 = np.random.choice(np.arange(1, 20), size=2, replace=False)
     indexes = torch.tensor([0] * elements_1, device=device, dtype=torch.int64)
     preds = torch.tensor([0] * elements_2, device=device, dtype=torch.float32)
     target = torch.tensor([0] * elements_2, device=device, dtype=torch.int64)
