@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.utilities.data import get_group_indexes
@@ -135,15 +135,15 @@ class RetrievalMetric(Metric, ABC):
                         f"a query without positive targets, indexes: {group}"
                     )
                 if self.query_without_relevant_docs == 'pos':
-                    res.append(torch.tensor(1.0, **kwargs))
+                    res.append(tensor(1.0, **kwargs))
                 elif self.query_without_relevant_docs == 'neg':
-                    res.append(torch.tensor(0.0, **kwargs))
+                    res.append(tensor(0.0, **kwargs))
             else:
                 res.append(self._metric(mini_preds, mini_target))
 
         if len(res) > 0:
             return torch.stack(res).mean()
-        return torch.tensor(0.0, **kwargs)
+        return tensor(0.0, **kwargs)
 
     @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
