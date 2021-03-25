@@ -47,7 +47,7 @@ jobs:
         #sudo apt-get install -y cmake
         # python -m pip install "pip==20.1"
         pip install --requirement requirements.txt
-        pip install --requirement ./tests/requirements.txt --upgrade-strategy only-if-needed
+        pip install --requirement ./requirements/test.txt --upgrade-strategy only-if-needed
         pip list
       displayName: 'Install dependencies'
 
