@@ -2,7 +2,7 @@
 -r ../requirements.txt
 
 # add the testing dependencies
--r tests.txt
+-r test.txt
 
 # add the integration dependencies
 -r integrate.txt
