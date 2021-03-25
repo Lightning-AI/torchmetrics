@@ -15,6 +15,7 @@ def _init_seeds(seed):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
+
 @pytest.mark.parametrize(['sklearn_metric', 'torch_metric'], [
     [sk_average_precision, retrieval_average_precision],
     [reciprocal_rank, retrieval_reciprocal_rank],

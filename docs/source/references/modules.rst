@@ -303,7 +303,6 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
     res = []
     for idx in groups(indexes): # provides [0, 1] and [2, 3, 4]
         res.append(retrieval_metric(preds[idx], target[idx])
-
     torch.stack(res).mean() # result
 
 
