@@ -281,11 +281,11 @@ For the purposes of retrieval metrics, inputs (indexes, predictions and targets)
     "``long``", "(N,...)", "``float``", "(N,...)", "``long`` or ``bool``", "(N,...)"
 
 .. note::
-    All dimensions are "squeezed out" at the beginning, so
+    All dimensions are flattened at the beginning, so
     that, for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``.
 
 In Information Retrieval you have a query that is compared with a variable number of documents. For each pair ``(Q_i, D_j)``,
-a score is computed that measures the relevance of document ``D`` wrt query ``Q``. Documents are then sorted by score
+a score is computed that measures the relevance of document ``D`` w.r.t. query ``Q``. Documents are then sorted by score
 and you hope that relevant documents are scored higher. ``target`` contains the labels for the documents (relevant or not).
 
 Since a query may be compared with a variable number of documents, we use ``indexes`` to keep track of which scores belong to
