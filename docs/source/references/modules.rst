@@ -162,6 +162,18 @@ FBeta
 .. autoclass:: torchmetrics.FBeta
     :noindex:
 
+HammingDistance
+~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.HammingDistance
+    :noindex:
+
+Hinge
+~~~~~
+
+.. autoclass:: torchmetrics.Hinge
+    :noindex:
+
 IoU
 ~~~
 
@@ -172,12 +184,6 @@ MatthewsCorrcoef
 ~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MatthewsCorrcoef
-    :noindex:
-
-Hamming Distance
-~~~~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.HammingDistance
     :noindex:
 
 Precision
