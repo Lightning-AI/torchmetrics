@@ -93,7 +93,7 @@ def _test_dtypes(torchmetric) -> None:
 
     # check ValueError with invalid `query_without_relevant_docs` argument
     with pytest.raises(ValueError):
-        torchmetric(query_without_relevant_docs='casual_argument')
+        metric = torchmetric(query_without_relevant_docs='casual_argument')
 
     # check input dtypes
     indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
