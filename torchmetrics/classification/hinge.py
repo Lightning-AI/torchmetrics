@@ -70,6 +70,8 @@ class Hinge(Metric):
         >>> hinge(preds, target)
         tensor(0.3000)
 
+
+        # multiclass example, default mode
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge = Hinge()
