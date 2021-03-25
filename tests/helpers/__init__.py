@@ -13,6 +13,5 @@ _MARK_TORCH_MIN_1_6 = dict(condition=_TORCH_LOWER_1_6, reason='required PT >= 1.
 def seed_all(seed):
     random.seed(seed)
     numpy.random.seed(seed)
-    seed_all(seed)
+    torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-

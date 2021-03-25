@@ -108,9 +108,7 @@ def _class_test(
         metric_args = {}
     # Instanciate lightning metric
     metric = metric_class(
-        compute_on_step=check_dist_sync_on_step or check_batch,
-        dist_sync_on_step=dist_sync_on_step,
-        **metric_args
+        compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
     )
 
     # verify metrics work after being loaded from pickled state
