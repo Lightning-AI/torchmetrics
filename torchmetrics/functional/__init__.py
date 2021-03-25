@@ -20,6 +20,7 @@ from torchmetrics.functional.classification.confusion_matrix import confusion_ma
 from torchmetrics.functional.classification.dice import dice_score  # noqa: F401
 from torchmetrics.functional.classification.f_beta import f1, fbeta  # noqa: F401
 from torchmetrics.functional.classification.hamming_distance import hamming_distance  # noqa: F401
+from torchmetrics.functional.classification.hinge import hinge  # noqa: F401
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401

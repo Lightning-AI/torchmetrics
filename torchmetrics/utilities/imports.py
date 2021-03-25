@@ -12,22 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Import utilities"""
-import importlib
-import operator
 from distutils.version import LooseVersion
+from importlib import import_module
+from importlib.util import find_spec
 
+import torch
 from pkg_resources import DistributionNotFound
+
+
+def _module_available(module_path: str) -> bool:
+    """
+    Check if a path is available in your environment
+
+    >>> _module_available('os')
+    True
+    >>> _module_available('bla.bla')
+    False
+    """
+    try:
+        return find_spec(module_path) is not None
+    except AttributeError:
+        # Python 3.6
+        return False
+    except ModuleNotFoundError:
+        # Python 3.7+
+        return False
 
 
 def _compare_version(package: str, op, version) -> bool:
     """
     Compare package version with some requirements
 
+    >>> import operator
     >>> _compare_version("torch", operator.ge, "0.1")
     True
     """
     try:
-        pkg = importlib.import_module(package)
+        pkg = import_module(package)
     except (ModuleNotFoundError, DistributionNotFound):
         return False
     try:
@@ -39,7 +60,7 @@ def _compare_version(package: str, op, version) -> bool:
         return True
     return op(pkg_version, LooseVersion(version))
 
-
+  
 _TORCH_LOWER_1_4 = _compare_version("torch", operator.lt, "1.4.0")
 _TORCH_LOWER_1_5 = _compare_version("torch", operator.lt, "1.5.0")
 _TORCH_LOWER_1_6 = _compare_version("torch", operator.lt, "1.6.0")
