@@ -77,6 +77,7 @@ jobs:
         python --version
         pip --version
         pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip uninstall -y torchmetrics
         pip list
       shell: bash
 
