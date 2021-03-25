@@ -23,7 +23,8 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
     `here <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`__.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
-    ``0`` is returned. ``target`` must be either `bool` or `integers`, otherwise an error is raised. ``preds`` must be `float`.
+    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
+    otherwise an error is raised.
 
     Args:
         preds: estimated probabilities of each document to be relevant.

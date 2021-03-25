@@ -27,7 +27,12 @@ def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
     return (c * s - sum(tk * pk)) / (torch.sqrt(s**2 - sum(pk * pk)) * torch.sqrt(s**2 - sum(tk * tk)))
 
 
-def matthews_corrcoef(preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5) -> Tensor:
+def matthews_corrcoef(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    threshold: float = 0.5,
+) -> Tensor:
     r"""
     Calculates `Matthews correlation coefficient
     <https://en.wikipedia.org/wiki/Matthews_correlation_coefficient>`_ that measures

@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.utilities.checks import _check_retrieval_inputs
@@ -63,7 +63,6 @@ class RetrievalMetric(Metric, ABC):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
-
     """
 
     def __init__(
@@ -128,16 +127,16 @@ class RetrievalMetric(Metric, ABC):
                         "`compute` method was provided with a query with no positive target."
                     )
                 if self.query_without_relevant_docs == 'pos':
-                    res.append(torch.tensor(1.0, **kwargs))
+                    res.append(tensor(1.0, **kwargs))
                 elif self.query_without_relevant_docs == 'neg':
-                    res.append(torch.tensor(0.0, **kwargs))
+                    res.append(tensor(0.0, **kwargs))
             else:
                 # ensure list containt only float tensors
                 res.append(self._metric(mini_preds, mini_target).to(**kwargs))
 
         if len(res) > 0:
             return torch.stack(res).mean()
-        return torch.tensor(0.0, **kwargs)
+        return tensor(0.0, **kwargs)
 
     @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
