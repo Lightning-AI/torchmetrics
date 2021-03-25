@@ -13,7 +13,6 @@
 # limitations under the License.
 import pytest
 import torch
-from pytorch_lightning import seed_everything
 from torch import Tensor, tensor
 
 from torchmetrics.functional import dice_score
@@ -76,7 +75,8 @@ def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
     # TODO: move back the pred and target to test func arguments
     #  if you fix the array inside the function, you'd also have fix the shape,
     #  because when the array changes, you also have to fix the shape
-    seed_everything(0)
+    torch.manual_seed(0)
+    torch.cuda.manual_seed_all(0)
     pred = torch.randint(low=51, high=99, size=(100, ), dtype=torch.float) / 100
     target = tensor([0, 1] * 50, dtype=torch.int)
     if sample_weight is not None:
