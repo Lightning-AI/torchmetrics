@@ -22,8 +22,7 @@ from torch import tensor
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
-from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.classification.inputs import _input_multilabel_multidim_prob, _input_multilabel_prob
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.roc import ROC
 from torchmetrics.functional import roc
