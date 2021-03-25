@@ -20,11 +20,12 @@ import pytest
 import torch
 from skimage.metrics import peak_signal_noise_ratio
 
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import psnr
 from torchmetrics.regression import PSNR
 
-torch.manual_seed(42)
+seed_all(42)
 
 Input = namedtuple('Input', ["preds", "target"])
 

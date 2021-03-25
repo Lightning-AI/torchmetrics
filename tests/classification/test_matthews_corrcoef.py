@@ -23,11 +23,12 @@ from tests.classification.inputs import _input_multidim_multiclass as _input_mdm
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics.classification.matthews_corrcoef import MatthewsCorrcoef
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_matthews_corrcoef_binary_prob(preds, target):
@@ -98,6 +99,7 @@ def _sk_matthews_corrcoef_multidim_multiclass(preds, target):
      (_input_mdmc.preds, _input_mdmc.target, _sk_matthews_corrcoef_multidim_multiclass, NUM_CLASSES)]
 )
 class TestMatthewsCorrCoef(MetricTester):
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_matthews_corrcoef(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):

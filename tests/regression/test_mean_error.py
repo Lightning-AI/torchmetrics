@@ -20,12 +20,13 @@ from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import mean_absolute_error, mean_squared_error, mean_squared_log_error
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
-torch.manual_seed(42)
+seed_all(42)
 
 num_targets = 5
 

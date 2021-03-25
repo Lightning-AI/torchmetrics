@@ -22,12 +22,14 @@ from torch import tensor
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.classification.inputs import _input_multilabel_multidim_prob, _input_multilabel_prob
+from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.roc import ROC
 from torchmetrics.functional import roc
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_roc_curve(y_true, probas_pred, num_classes: int = 1, multilabel: bool = False):
@@ -73,38 +75,22 @@ def _sk_roc_multidim_multiclass_prob(preds, target, num_classes=1):
 def _sk_roc_multilabel_prob(preds, target, num_classes=1):
     sk_preds = preds.numpy()
     sk_target = target.numpy()
-    return _sk_roc_curve(
-        y_true=sk_target,
-        probas_pred=sk_preds,
-        num_classes=num_classes,
-        multilabel=True
-    )
+    return _sk_roc_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes, multilabel=True)
 
 
 def _sk_roc_multilabel_multidim_prob(preds, target, num_classes=1):
     sk_preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1).numpy()
     sk_target = target.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1).numpy()
-    return _sk_roc_curve(
-        y_true=sk_target,
-        probas_pred=sk_preds,
-        num_classes=num_classes,
-        multilabel=True
-    )
+    return _sk_roc_curve(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes, multilabel=True)
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes", [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_roc_binary_prob, 1),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_roc_multiclass_prob, NUM_CLASSES),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_roc_multidim_multiclass_prob, NUM_CLASSES),
-        (_input_multilabel_prob.preds, _input_multilabel_prob.target, _sk_roc_multilabel_prob, NUM_CLASSES),
-        (
-            _input_multilabel_multidim_prob.preds,
-            _input_multilabel_multidim_prob.target,
-            _sk_roc_multilabel_multidim_prob,
-            NUM_CLASSES
-        )
-    ]
+    "preds, target, sk_metric, num_classes",
+    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_roc_binary_prob, 1),
+     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_roc_multiclass_prob, NUM_CLASSES),
+     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_roc_multidim_multiclass_prob, NUM_CLASSES),
+     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_roc_multilabel_prob, NUM_CLASSES),
+     (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_roc_multilabel_multidim_prob, NUM_CLASSES)]
 )
 class TestROC(MetricTester):
 

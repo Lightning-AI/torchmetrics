@@ -82,3 +82,7 @@ jobs:
         reportDirectory: '$(Build.SourcesDirectory)/htmlcov'
         testRunTitle: '$(Agent.OS) - $(Build.BuildNumber)[$(Agent.JobName)] - Python $(python.version)'
       condition: succeededOrFailed()
+
+    - bash: |
+        python -m pytest integrations -v --durations=25
+      displayName: 'Integrations'
