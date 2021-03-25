@@ -22,7 +22,8 @@ from torch import tensor
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.classification.inputs import _input_multilabel_multidim_prob, _input_multilabel_prob
+from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.roc import ROC
 from torchmetrics.functional import roc
@@ -87,11 +88,8 @@ def _sk_roc_multilabel_multidim_prob(preds, target, num_classes=1):
     [(_input_binary_prob.preds, _input_binary_prob.target, _sk_roc_binary_prob, 1),
      (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_roc_multiclass_prob, NUM_CLASSES),
      (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_roc_multidim_multiclass_prob, NUM_CLASSES),
-     (_input_multilabel_prob.preds, _input_multilabel_prob.target, _sk_roc_multilabel_prob, NUM_CLASSES),
-     (
-         _input_multilabel_multidim_prob.preds, _input_multilabel_multidim_prob.target,
-         _sk_roc_multilabel_multidim_prob, NUM_CLASSES
-     )]
+     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_roc_multilabel_prob, NUM_CLASSES),
+     (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_roc_multilabel_multidim_prob, NUM_CLASSES)]
 )
 class TestROC(MetricTester):
 
