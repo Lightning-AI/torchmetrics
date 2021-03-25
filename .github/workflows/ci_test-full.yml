@@ -65,6 +65,11 @@ jobs:
         python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
 
     - run: |
+        import time
+        print(time.strftime("%W", time.gmtime()))
+      shell: python
+
+    - run: |
         echo "::set-output name=WEEK::$(python -c 'import time ; print(time.strftime("%W", time.gmtime()))' 2>&1)"
       id: date
 
