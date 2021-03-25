@@ -1,8 +1,0 @@
-# use mandatory dependencies
--r requirements.txt
-
-# add the testing dependencies
--r tests/requirements.txt
-
-# add the integration dependencies
--r integrations/requirements.txt
