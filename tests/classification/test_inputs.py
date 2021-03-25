@@ -26,12 +26,13 @@ from tests.classification.inputs import _input_multilabel as _ml
 from tests.classification.inputs import _input_multilabel_multidim as _mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _ml_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, THRESHOLD
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
-torch.manual_seed(42)
+seed_all(42)
 
 # Some additional inputs to test on
 _ml_prob_half = Input(_ml_prob.preds.half(), _ml_prob.target)
