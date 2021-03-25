@@ -56,7 +56,7 @@ jobs:
         conda list
         pip --version
         pip install --requirement requirements.txt --upgrade-strategy only-if-needed --quiet
-        pip install --requirement tests/requirements.txt --upgrade-strategy only-if-needed --quiet
+        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet
         pip list
         python -c "import torch; assert torch.__version__[:3] == '${{ matrix.pytorch-version }}', torch.__version__"
       shell: bash -l {0}
