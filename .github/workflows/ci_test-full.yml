@@ -70,12 +70,10 @@ jobs:
 
     - name: Cache pip
       uses: actions/cache@v2
-      env:
-        CACHE_COUNT: steps.date.outputs.WEEK
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: w${{ CACHE_COUNT }}-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
-        restore-keys: w${{ CACHE_COUNT }}-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-
+        key: w${{ steps.date.outputs.WEEK }}-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
+        restore-keys: w${{ steps.date.outputs.WEEK }}-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-
 
     - name: Install dependencies
       run: |
