@@ -111,3 +111,7 @@ jobs:
         env_vars: OS,PYTHON
         name: codecov-umbrella
         fail_ci_if_error: false
+
+    - name: Integrations
+      run: |
+        python -m pytest integrations -v --durations=25
