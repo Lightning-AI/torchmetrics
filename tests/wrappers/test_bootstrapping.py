@@ -39,12 +39,13 @@ class TestBootStrapper(BootStrapper):
             self.out.append(new_args)
 
 
-def test_bootstrap_sampler():
+@pytest.mark.parametrize("sampling_strategy", ['poisson', 'multinomial'])
+def test_bootstrap_sampler(sampling_strategy):
     """ make sure that the bootstrap sampler works as intended """
     old_samples = torch.randn(5, 2)
 
     # make sure that the new samples are only made up of old samples
-    new_samples = _bootstrap_sampler(old_samples)
+    new_samples = _bootstrap_sampler(old_samples, sampling_strategy=sampling_strategy)
     for ns in new_samples:
         assert ns in old_samples
 
@@ -52,11 +53,22 @@ def test_bootstrap_sampler():
     found_one = False
     for os in old_samples:
         cond = os == new_samples
-        print(cond.sum())
         if cond.sum() > 2:
             found_one = True
+            break
+    
     assert found_one, "resampling did not work because no samples were sampled twice"
-
+        
+    # make sure some samples are never sampled
+    found_zero = False
+    for os in old_samples:
+        cond = os != new_samples
+        if cond.sum() > 0:
+            found_zero = True
+            break
+    
+    assert found_zero, "resampling did not work because all samples were atleast sampled once"
+    
 
 @pytest.mark.parametrize(
     "metric, sk_metric", [[Precision(average='micro'), precision_score], [Recall(average='micro'), recall_score]]

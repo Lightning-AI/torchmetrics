@@ -23,27 +23,38 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 
 def _bootstrap_sampler(
-    tensor: Tensor, size: Optional[int] = None, generator: Optional[torch.Generator] = None
+    tensor: Tensor, 
+    size: Optional[int] = None, 
+    generator: Optional[torch.Generator] = None,
+    sampling_strategy: str = 'poisson'
 ) -> Tensor:
     """ Resample a tensor along its first dimension with replacement
     Args:
         tensor: tensor to resample
-        size: number of samples in new tensor. Defauls to same size as input tensor
+        size: number of samples in new tensor. Defauls to same size as input tensor. Only applies when
+            sampling strategy is ``'multinomial'``
         generator: a instance of ``torch.Generator`` that controls the sampling
+        sampling_strategy: the strategy to use for sampling, either ``'poisson'`` or ``'multinomial'``
 
     Returns:
         resampled tensor
 
     """
-    if size is None:
-        size = tensor.shape[0]
-    idx = torch.multinomial(
-        torch.ones(tensor.shape[0], device=tensor.device),
-        num_samples=size,
-        replacement=True,
-        generator=generator
-    )
-    return tensor[idx]
+    if sampling_strategy == 'poisson':
+        p = torch.distributions.Poisson(1)
+        n = p.sample((tensor.shape[0],))
+        return tensor.repeat_interleave(n.long(), dim=0)
+    elif sampling_strategy == 'multinomial':
+        if size is None:
+            size = tensor.shape[0]
+        idx = torch.multinomial(
+            torch.ones(tensor.shape[0], device=tensor.device),
+            num_samples=size,
+            replacement=True,
+            generator=generator
+        )
+        return tensor[idx]
+    raise ValueError('Unknown sampling strategy')
 
 
 class BootStrapper(Metric):
@@ -55,13 +66,14 @@ class BootStrapper(Metric):
         std: bool = True,
         quantile: Optional[Union[float, Tensor]] = None,
         raw: bool = False,
+        sampling_strategy: str = 'poisson',
         generator: Optional[torch.Generator] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None
     ) -> None:
-        """
+        r"""
         Use to turn a metric into a bootstrapped metric that can automate the process of getting confidence
         intervals for metric values. This wrapper class basically keeps multiple copies of the same base metric
         in memory and whenever ``update`` or ``forward`` is called, all input tensors are resampled
@@ -81,6 +93,12 @@ class BootStrapper(Metric):
                 pytorch version 1.6 or higher
             raw:
                 if ``True``, return all bootstrapped values
+            sampling_strategy:
+                Determines how to produce bootstrapped samplings. Either ``'poisson'`` or ``multinomial``.
+                If ``'possion'`` is chosen, the number of times each sample will be included in the bootstrap
+                will be given by :math:`n~Poisson(1)`, which approximates the true bootstrap distribution when
+                the number of samples is large. If ``'multinomial'`` is chosen, we will apply true bootstrapping
+                at the batch level to approximate bootstrapping over the hole dataset.
             generator:
                 A pytorch random number generator for the bootstrap sampler
             compute_on_step:
@@ -124,9 +142,17 @@ class BootStrapper(Metric):
         self.mean = mean
         self.std = std
         if quantile is not None and not _TORCH_GREATER_EQUAL_1_7:
-            raise ValueError('quantile argument can only be used with pytorch v1.6 or higher')
+            raise ValueError('quantile argument can only be used with pytorch v1.7 or higher')
         self.quantile = quantile
         self.raw = raw
+
+        allowed_sampling = ('poisson', 'multinomial')
+        if sampling_strategy not in allowed_sampling:
+            raise ValueError(
+                f"Expected argument ``sampling_strategy`` to be one of {allowed_sampling}"
+                f" but recieved {sampling_strategy}"
+            )
+        self.sampling_strategy = sampling_strategy
 
         if generator is not None and not isinstance(generator, torch.Generator):
             raise ValueError(
@@ -140,8 +166,12 @@ class BootStrapper(Metric):
         along dimension 0
         """
         for idx in range(self.num_bootstraps):
-            new_args = apply_to_collection(args, Tensor, _bootstrap_sampler, generator=self.generator)
-            new_kwargs = apply_to_collection(kwargs, Tensor, _bootstrap_sampler, generator=self.generator)
+            new_args = apply_to_collection(
+                args, Tensor, _bootstrap_sampler, generator=self.generator, sampling_strategy=self.sampling_strategy
+            )
+            new_kwargs = apply_to_collection(
+                kwargs, Tensor, _bootstrap_sampler, generator=self.generator, sampling_strategy=self.sampling_strategy
+            )
             self.metrics[idx].update(*new_args, **new_kwargs)
 
     def compute(self) -> List[Tensor]:
