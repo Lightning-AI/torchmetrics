@@ -19,32 +19,32 @@ from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalMRR(RetrievalMetric):
-    r"""
+    """
     Computes `Mean Reciprocal Rank
     <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`_.
 
-    Works with binary data. Accepts integer or float predictions from a model output.
+    Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts
     - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
 
-    `indexes`, `preds` and `target` must have the same dimension.
-    `indexes` indicate to which query a prediction belongs.
-    Predictions will be first grouped by indexes and then MRR will be computed as the mean
+    ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    ``indexes`` indicate to which query a prediction belongs.
+    Predictions will be first grouped by ``indexes`` and then MRR will be computed as the mean
     of the Reciprocal Rank over each query.
 
     Args:
         query_without_relevant_docs:
-            Specify what to do with queries that do not have at least a positive target. Choose from:
+            Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
             - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
             - ``'pos'``: score on those queries is counted as ``1.0``
             - ``'neg'``: score on those queries is counted as ``0.0``
         exclude:
-            Do not take into account predictions where the target is equal to this value. default `-100`
+            Do not take into account predictions where the ``target`` is equal to this value. default `-100`
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -69,5 +69,5 @@ class RetrievalMRR(RetrievalMetric):
     """
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        valid_indexes = target != self.exclude
+        valid_indexes = (target != self.exclude)
         return retrieval_reciprocal_rank(preds[valid_indexes], target[valid_indexes])

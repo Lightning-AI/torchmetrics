@@ -51,13 +51,22 @@ def test_input_dtypes(torch_metric) -> None:
     seed_everything(0)
 
     length = 10  # not important in this case
+
+    # check target is binary
+    preds = torch.tensor([0.0, 1.0] * length, device=device, dtype=torch.float32)
+    target = torch.tensor([-1, 2] * length, device=device, dtype=torch.int64)
+
+    with pytest.raises(ValueError, match="`target` must be of type `binary`"):
+        torch_metric(preds, target)
+
+    # check dtypes and empty target
     preds = torch.tensor([0] * length, device=device, dtype=torch.float32)
     target = torch.tensor([0] * length, device=device, dtype=torch.int64)
 
     # check error on input dtypes are raised correctly
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`preds` must be a tensor of floats"):
         torch_metric(preds.bool(), target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`target` must be a tensor of booleans or integers"):
         torch_metric(preds, target.float())
 
     # test checks on empty targets
@@ -76,7 +85,7 @@ def test_input_shapes(torch_metric) -> None:
     # test with empty tensors
     preds = torch.tensor([0] * 0, device=device, dtype=torch.float)
     target = torch.tensor([0] * 0, device=device, dtype=torch.int64)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`preds` and `target` must be non-empty"):
         torch_metric(preds, target)
 
     # test checks when shapes are different
@@ -84,5 +93,5 @@ def test_input_shapes(torch_metric) -> None:
     preds = torch.tensor([0] * elements_1, device=device, dtype=torch.float)
     target = torch.tensor([0] * elements_2, device=device, dtype=torch.int64)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`preds` and `target` must be of the same shape"):
         torch_metric(preds, target)

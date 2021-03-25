@@ -18,22 +18,20 @@ import torch
 from torch import Tensor
 
 from torchmetrics import Metric
+from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import get_group_indexes
 
 #: get_group_indexes is used to group predictions belonging to the same document
 IGNORE_IDX = -100
-ALLOWED_BOOL_TYPES = (torch.bool, )
-ALLOWED_INT_TYPES = (torch.int8, torch.int16, torch.int32, torch.int64)
-ALLOWED_FLOAT_TYPES = (torch.float16, torch.bfloat16, torch.float32, torch.float64)
 
 
 class RetrievalMetric(Metric, ABC):
-    r"""
-    Works with binary data. Accepts integer or float predictions from a model output.
+    """
+    Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts
     - ``indexes`` (long tensor): ``(N, ...)``
-    - ``preds`` (float or int tensor): ``(N, ...)``
+    - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
 
     `indexes`, `preds` and `target` must have the same dimension and will be flatten
@@ -87,8 +85,7 @@ class RetrievalMetric(Metric, ABC):
         query_without_relevant_docs_options = ('error', 'skip', 'pos', 'neg')
         if query_without_relevant_docs not in query_without_relevant_docs_options:
             raise ValueError(
-                f"`query_without_relevant_docs` received a wrong value {query_without_relevant_docs}. "
-                f"Allowed values are {query_without_relevant_docs_options}"
+                f"`query_without_relevant_docs` received a wrong value {query_without_relevant_docs}."
             )
 
         self.query_without_relevant_docs = query_without_relevant_docs
@@ -99,34 +96,19 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, idx: Tensor, preds: Tensor, target: Tensor) -> None:
-        if not (idx.shape == target.shape == preds.shape):
-            raise ValueError("`idx`, `preds` and `target` must be of the same shape")
-
-        if idx.dtype not in ALLOWED_INT_TYPES:
-            raise ValueError("`idx` argument requires an integer tensor")
-
-        if preds.dtype not in ALLOWED_FLOAT_TYPES + ALLOWED_INT_TYPES:
-            raise ValueError("`preds` argument requires a float or integer tensor")
-
-        if target.dtype not in ALLOWED_BOOL_TYPES + ALLOWED_INT_TYPES:
-            raise ValueError("`target` argument requires a float or boolean tensor")
-
-        idx = idx.to(dtype=torch.int64).flatten()
-        preds = preds.to(dtype=torch.float32).flatten()
-        target = target.to(dtype=torch.int64).flatten()
-
-        self.idx.append(idx)
-        self.preds.append(preds)
-        self.target.append(target)
+        """ Check shape, check and convert dtypes, flatten and add to accumulators. """
+        idx, preds, target = _check_retrieval_inputs(idx, preds, target, ignore=IGNORE_IDX)
+        self.idx.append(idx.flatten())
+        self.preds.append(preds.flatten())
+        self.target.append(target.flatten())
 
     def compute(self) -> Tensor:
-        r"""
+        """
         First concat state `idx`, `preds` and `target` since they were stored as lists. After that,
         compute list of groups that will help in keeping together predictions about the same query.
         Finally, for each group compute the `_metric` if the number of positive targets is at least
         1, otherwise behave as specified by `self.query_without_relevant_docs`.
         """
-
         idx = torch.cat(self.idx, dim=0)
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
@@ -143,8 +125,7 @@ class RetrievalMetric(Metric, ABC):
             if not mini_target.sum():
                 if self.query_without_relevant_docs == 'error':
                     raise ValueError(
-                        f"`{self.__class__.__name__}.compute()` was provided with "
-                        f"a query without positive targets, indexes: {group}"
+                        "`compute` method was provided with a query with no positive target."
                     )
                 if self.query_without_relevant_docs == 'pos':
                     res.append(torch.tensor(1.0, **kwargs))
@@ -160,7 +141,7 @@ class RetrievalMetric(Metric, ABC):
 
     @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        r"""
+        """
         Compute a metric over a predictions and target of a single group.
         This method should be overridden by subclasses.
         """

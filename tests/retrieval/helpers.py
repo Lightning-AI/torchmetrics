@@ -10,7 +10,7 @@ from torch import Tensor
 def _compute_sklearn_metric(
     metric: Callable, target: List[np.ndarray], preds: List[np.ndarray], behaviour: str
 ) -> Tensor:
-    """ Compute metric with multiple iterations over documents predictions. """
+    """ Compute metric with multiple iterations over every query predictions set. """
     sk_results = []
 
     for b, a in zip(target, preds):
@@ -48,7 +48,7 @@ def _test_against_sklearn(
     target = []
 
     for i in range(n_documents):
-        indexes.append(np.ones(shape, dtype=int) * i)
+        indexes.append(np.ones(shape, dtype=np.long) * i)
         preds.append(np.random.randn(*shape))
         target.append(np.random.randn(*shape) > 0)
 
@@ -88,12 +88,13 @@ def _test_dtypes(torchmetric) -> None:
     target = torch.tensor([False] * length, device=device, dtype=torch.bool)
 
     metric = torchmetric(query_without_relevant_docs='error')
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`compute` method was provided with a query with no positive target."):
         metric(indexes, preds, target)
 
     # check ValueError with invalid `query_without_relevant_docs` argument
-    with pytest.raises(ValueError):
-        metric = torchmetric(query_without_relevant_docs='casual_argument')
+    casual_argument = 'casual_argument'
+    with pytest.raises(ValueError, match=f"`query_without_relevant_docs` received a wrong value {casual_argument}."):
+        metric = torchmetric(query_without_relevant_docs=casual_argument)
 
     # check input dtypes
     indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
@@ -103,11 +104,11 @@ def _test_dtypes(torchmetric) -> None:
     metric = torchmetric(query_without_relevant_docs='error')
 
     # check error on input dtypes are raised correctly
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`indexes` must be a tensor or integers"):
         metric(indexes.bool(), preds, target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`preds` must be a tensor of floats"):
         metric(indexes, preds.bool(), target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`target` must be a tensor of booleans or integers"):
         metric(indexes, preds, target.float())
 
 
@@ -119,10 +120,10 @@ def _test_input_shapes(torchmetric) -> None:
     metric = torchmetric(query_without_relevant_docs='error')
 
     # check input shapes are checked correclty
-    elements_1, elements_2, elements_3 = np.random.choice(20, size=3, replace=False)
+    elements_1, elements_2 = np.random.choice(20, size=2, replace=False)
     indexes = torch.tensor([0] * elements_1, device=device, dtype=torch.int64)
     preds = torch.tensor([0] * elements_2, device=device, dtype=torch.float32)
-    target = torch.tensor([0] * elements_3, device=device, dtype=torch.int64)
+    target = torch.tensor([0] * elements_2, device=device, dtype=torch.int64)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`indexes`, `preds` and `target` must be of the same shape"):
         metric(indexes, preds, target)
