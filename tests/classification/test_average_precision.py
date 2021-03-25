@@ -15,7 +15,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-import torch
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torch import tensor
 

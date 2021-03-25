@@ -15,7 +15,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
 

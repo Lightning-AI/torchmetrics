@@ -15,7 +15,6 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
-import torch
 from sklearn.metrics import auc as _sk_auc
 from torch import tensor
 

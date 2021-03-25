@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pytest
-import torch
 from sklearn.metrics import hamming_loss as sk_hamming_loss
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
