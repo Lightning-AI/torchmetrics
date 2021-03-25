@@ -20,10 +20,11 @@ import pytest
 import torch
 from torch import nn, tensor
 
+from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def test_inherit():
