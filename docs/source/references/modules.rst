@@ -294,7 +294,7 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
 .. doctest::
 
     >>> from torchmetrics import RetrievalMAP
-    >>> # functional version works on a single document at a time
+    >>> # functional version works on a single query at a time
     >>> from torchmetrics.functional import retrieval_average_precision
 
     >>> # the first query was compared with two documents, the second with three
@@ -310,7 +310,7 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
     >>> res = []
     >>> # iterate over indexes of first and second query
     >>> for idx in ([0, 1], [2, 3, 4]):
-    >>>     res.append(retrieval_average_precision(preds[idx], target[idx]))
+    ...     res.append(retrieval_average_precision(preds[idx], target[idx]))
     >>> torch.stack(res).mean()
     tensor(0.6667)
 
