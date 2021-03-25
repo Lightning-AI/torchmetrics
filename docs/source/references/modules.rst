@@ -291,19 +291,26 @@ and you hope that relevant documents are scored higher. ``target`` contains the 
 Since a query may be compared with a variable number of documents, we use ``indexes`` to keep track of which scores belong to
 the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
 
-.. testcode::
+.. doctest::
 
-    # the first query was compared with two documents, the second with three
-    indexes = torch.tensor([0, 0, 1, 1, 1])
-    preds = torch.tensor([0.8, -0.4, 1.0, 1.4, 0.0])
-    target = torch.tensor([0, 1, 0, -100, 1])
+    >>> from torchmetrics import RetrievalMAP
+    >>> # functional version works on a single document at a time
+    >>> from torchmetrics.functional import retrieval_average_precision
 
-    retrieval_metric = SomeRetrievalMetric()
-    # following code is equivalent to `retrieval_metric(indexes, preds, target)`
-    res = []
-    for idx in groups(indexes): # provides [0, 1] and [2, 3, 4]
-        res.append(retrieval_metric(preds[idx], target[idx]))
-    torch.stack(res).mean() # result
+    >>> # the first query was compared with two documents, the second with three
+    >>> indexes = torch.tensor([0, 0, 1, 1, 1])
+    >>> preds = torch.tensor([0.8, -0.4, 1.0, 1.4, 0.0])
+    >>> target = torch.tensor([0, 1, 0, 1, 1])
+
+    >>> map = RetrievalMAP() # or some other retrieval metric
+    >>> map(indexes, preds, target)
+    tensor(0.6667)
+    >>> # the previous instruction is roughly equivalent to
+    >>> res = []
+    >>> for idx in ([0, 1], [2, 3, 4]): # indexes of first and second query
+    >>>     res.append(retrieval_average_precision(preds[idx], target[idx]))
+    >>> torch.stack(res).mean()
+    tensor(0.6667)
 
 
 RetrievalMAP

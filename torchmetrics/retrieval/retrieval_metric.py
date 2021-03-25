@@ -30,6 +30,7 @@ class RetrievalMetric(Metric, ABC):
     Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts
+
     - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``

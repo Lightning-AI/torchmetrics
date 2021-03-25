@@ -65,7 +65,7 @@ def _test_retrieval_against_sklearn(
     preds_tensor = preds_tensor.view(-1)[perm].view(preds_tensor.size())
     target_tensor = target_tensor.view(-1)[perm].view(target_tensor.size())
 
-    # shuffle ids to require also sorting of documents ability from the lightning metric
+    # shuffle ids to require also sorting of documents ability from the torch metric
     pl_result = metric(indexes_tensor, preds_tensor, target_tensor)
 
     assert torch.allclose(sk_results.float(), pl_result.float(), equal_nan=False), (

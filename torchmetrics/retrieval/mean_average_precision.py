@@ -26,6 +26,7 @@ class RetrievalMAP(RetrievalMetric):
     Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts
+
     - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
@@ -62,7 +63,6 @@ class RetrievalMAP(RetrievalMetric):
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = torch.tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = torch.tensor([False, False, True, False, True, False, True])
-
         >>> map = RetrievalMAP()
         >>> map(indexes, preds, target)
         tensor(0.7917)
