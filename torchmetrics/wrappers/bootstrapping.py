@@ -67,10 +67,10 @@ class BootStrapper(Metric):
         dist_sync_fn: Callable = None
     ) -> None:
         r"""
-        Use to turn a metric into a bootstrapped metric that can automate the process of getting confidence
-        intervals for metric values. This wrapper class basically keeps multiple copies of the same base metric
-        in memory and whenever ``update`` or ``forward`` is called, all input tensors are resampled
-        (with replacement) along the first dimension.
+        Use to turn a metric into a `bootstrapped <https://en.wikipedia.org/wiki/Bootstrapping_(statistics)>`_
+        metric that can automate the process of getting confidence intervals for metric values. This wrapper
+        class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
+        ``forward`` is called, all input tensors are resampled (with replacement) along the first dimension.
 
         Args:
             base_metric:
@@ -89,8 +89,8 @@ class BootStrapper(Metric):
             sampling_strategy:
                 Determines how to produce bootstrapped samplings. Either ``'poisson'`` or ``multinomial``.
                 If ``'possion'`` is chosen, the number of times each sample will be included in the bootstrap
-                will be given by :math:`n~Poisson(1)`, which approximates the true bootstrap distribution when
-                the number of samples is large. If ``'multinomial'`` is chosen, we will apply true bootstrapping
+                will be given by :math:`n\sim Poisson(\lambda=1)`, which approximates the true bootstrap distribution
+                when the number of samples is large. If ``'multinomial'`` is chosen, we will apply true bootstrapping
                 at the batch level to approximate bootstrapping over the hole dataset.
             compute_on_step:
                 Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
@@ -106,13 +106,14 @@ class BootStrapper(Metric):
 
         Example::
             >>> from torchmetrics import Accuracy, BootStrapper
+            >>> _ = torch.manual_seed(123)
             >>> base_metric = Accuracy()
             >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
             >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
             >>> output = bootstrap.compute()
             >>> mean, std = output
             >>> print(mean, std)
-            tensor(0.2175) tensor(0.0950)
+            tensor(0.2205) tensor(0.0859)
 
         """
         super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
