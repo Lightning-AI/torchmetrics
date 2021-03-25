@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
@@ -42,7 +42,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
     if target.sum() == 0:
-        return torch.tensor(0.0, device=preds.device)
+        return tensor(0.0, device=preds.device)
 
     target = target[torch.argsort(preds, dim=-1, descending=True)]
     position = torch.nonzero(target).view(-1)
