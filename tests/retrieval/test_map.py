@@ -5,7 +5,6 @@ from typing import Callable, List
 import numpy as np
 import pytest
 import torch
-from pytorch_lightning import seed_everything
 from sklearn.metrics import average_precision_score as sk_average_precision
 from torch import Tensor
 
@@ -19,7 +18,6 @@ from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
 def test_against_sklearn(sklearn_metric: Callable, torch_class_metric: Metric) -> None:
     """Compare PL metrics to sklearn version. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    seed_everything(0)
 
     rounds = 20
     sizes = [1, 4, 10, 100]
