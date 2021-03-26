@@ -61,7 +61,7 @@ class BinnedPrecisionRecallCurve(Metric):
         super().__init__(compute_on_step=False, **kwargs)
         self.num_classes = num_classes
         self.num_thresholds = num_thresholds
-        thresholds = torch.arange(num_thresholds) / num_thresholds
+        thresholds = torch.linspace(0, 1, num_thresholds)
         self.register_buffer("thresholds", thresholds)
 
         for name in ("TPs", "FPs", "FNs"):
