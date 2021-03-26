@@ -85,6 +85,7 @@ def _class_test(
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
+    extra_update_args: dict = None,
 ):
     """Utility function doing the actual comparison between lightning class metric
     and reference metric.
@@ -103,9 +104,14 @@ def _class_test(
             calculated per batch per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        extra_update_args: dict of tensors with additional arguments passed when updating
+            the metric calculation.
     """
     if not metric_args:
         metric_args = {}
+    
+    if not extra_update_args:
+        extra_update_args = {}
     # Instanciate lightning metric
     metric = metric_class(compute_on_step=True, dist_sync_on_step=dist_sync_on_step, **metric_args)
 
@@ -114,18 +120,22 @@ def _class_test(
     metric = pickle.loads(pickled_metric)
 
     for i in range(rank, NUM_BATCHES, worldsize):
-        batch_result = metric(preds[i], target[i])
+        add_args = {k:v[i] for k,v in extra_update_args.items()}
+
+        batch_result = metric(preds[i], target[i], **add_args)
 
         if metric.dist_sync_on_step:
             if rank == 0:
                 ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
                 ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
-                sk_batch_result = sk_metric(ddp_preds, ddp_target)
+                ddp_add_args = {k:torch.cat([v[i + r] for r in range(worldsize)]) for k,v in add_args.items()}
+                
+                sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_add_args)
                 # assert for dist_sync_on_step
                 if check_dist_sync_on_step:
                     _assert_allclose(batch_result, sk_batch_result, atol=atol)
         else:
-            sk_batch_result = sk_metric(preds[i], target[i])
+            sk_batch_result = sk_metric(preds[i], target[i], **add_args)
             # assert for batch
             if check_batch:
                 _assert_allclose(batch_result, sk_batch_result, atol=atol)
@@ -136,7 +146,8 @@ def _class_test(
 
     total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)])
     total_target = torch.cat([target[i] for i in range(NUM_BATCHES)])
-    sk_result = sk_metric(total_preds, total_target)
+    total_add_args = {k:torch.cat([v[i] for i in range(NUM_BATCHES)]) for k,v in extra_update_args.items()}
+    sk_result = sk_metric(total_preds, total_target, **total_add_args)
 
     # assert after aggregation
     _assert_allclose(result, sk_result, atol=atol)
@@ -149,6 +160,7 @@ def _functional_test(
     sk_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
+    extra_update_args: dict = None,
 ):
     """Utility function doing the actual comparison between lightning functional metric
     and reference metric.
@@ -159,13 +171,19 @@ def _functional_test(
         metric_functional: lightning metric functional that should be tested
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        extra_update_args: dict of tensors with additional arguments passed when updating
+            the metric calculation.
     """
     if not metric_args:
         metric_args = {}
+
+    if not extra_update_args:
+        extra_update_args = {}
+
     metric = partial(metric_functional, **metric_args)
 
     for i in range(NUM_BATCHES):
-        lightning_result = metric(preds[i], target[i])
+        lightning_result = metric(preds[i], target[i], **{k:v[i] for k,v in extra_update_args.items()})
         sk_result = sk_metric(preds[i], target[i])
 
         # assert its the same
@@ -205,6 +223,7 @@ class MetricTester:
         metric_functional: Callable,
         sk_metric: Callable,
         metric_args: dict = None,
+        extra_update_args: dict = None,
     ):
         """Main method that should be used for testing functions. Call this inside
         testing method
@@ -215,6 +234,8 @@ class MetricTester:
             metric_functional: lightning metric class that should be tested
             sk_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
+            extra_update_args: dict of tensors with additional arguments passed when updating
+                the metric calculation.
         """
         _functional_test(
             preds=preds,
@@ -223,6 +244,7 @@ class MetricTester:
             sk_metric=sk_metric,
             metric_args=metric_args,
             atol=self.atol,
+            extra_update_args=extra_update_args,
         )
 
     def run_class_metric_test(
@@ -236,6 +258,7 @@ class MetricTester:
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
+        extra_update_args: dict = None,
     ):
         """Main method that should be used for testing class. Call this inside testing
         methods.
@@ -253,6 +276,8 @@ class MetricTester:
                 calculated per batch per device (and not just at the end)
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
+            extra_update_args: dict of tensors with additional arguments passed when updating
+                the metric calculation.
         """
         if not metric_args:
             metric_args = {}
@@ -272,6 +297,7 @@ class MetricTester:
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
                     atol=self.atol,
+                    extra_update_args=extra_update_args,
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
@@ -288,6 +314,7 @@ class MetricTester:
                 check_dist_sync_on_step=check_dist_sync_on_step,
                 check_batch=check_batch,
                 atol=self.atol,
+                extra_update_args=extra_update_args,
             )
 
 
