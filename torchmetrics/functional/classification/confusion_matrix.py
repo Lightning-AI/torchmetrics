@@ -132,14 +132,9 @@ def confusion_matrix(
         ...                       [1, 0, 1]])
         >>> confmat = ConfusionMatrix(num_classes=3, is_multilabel=True)
         >>> confmat(preds, target)
-        tensor([[[1., 0.],
-                 [0., 1.]],
-        <BLANKLINE>
-                [[1., 0.],
-                 [1., 0.]],
-        <BLANKLINE>
-                [[0., 1.],
-                 [0., 1.]]])
+        tensor([[[1., 0.], [0., 1.]],
+                [[1., 0.], [1., 0.]],
+                [[0., 1.], [0., 1.]]])
     """
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold, is_multilabel)
     return _confusion_matrix_compute(confmat, normalize)
