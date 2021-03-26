@@ -90,6 +90,15 @@ class TestSSIM(MetricTester):
             partial(_sk_metric, data_range=1.0, multichannel=multichannel),
             metric_args={"data_range": 1.0},
         )
+    
+    # SSIM half + cpu does not work due to missing support in torch.log
+    @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
+    def test_ssim_half_cpu(self, preds, target, multichannel):
+        self.run_precision_test_cpu(preds, target, SSIM, ssim, {"data_range": 1.0})
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    def test_ssim_half_gpu(self, preds, target, multichannel):
+        self.run_precision_test_gpu( preds, target, SSIM, ssim, {"data_range": 1.0})
 
 
 @pytest.mark.parametrize(
