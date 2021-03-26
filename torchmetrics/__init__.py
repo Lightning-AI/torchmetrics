@@ -19,6 +19,7 @@ _logger.setLevel(__logging.INFO)
 _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
+from torchmetrics.average import AverageMeter  # noqa: F401 E402
 from torchmetrics.classification import (  # noqa: F401 E402
     AUC,
     AUROC,
