@@ -131,7 +131,7 @@ def confusion_matrix(
         >>> preds = torch.tensor([[0, 0, 1],
         ...                       [1, 0, 1]])
         >>> confmat = ConfusionMatrix(num_classes=3, is_multilabel=True)
-        >>> confmat(preds, target)
+        >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         tensor([[[1., 0.], [0., 1.]],
                 [[1., 0.], [1., 0.]],
                 [[0., 1.], [0., 1.]]])
