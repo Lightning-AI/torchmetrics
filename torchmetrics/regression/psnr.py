@@ -64,6 +64,9 @@ class PSNR(Metric):
         >>> psnr(preds, target)
         tensor(2.5527)
 
+    .. note::
+        Half precision is only support on GPU for this metric
+
     """
 
     def __init__(

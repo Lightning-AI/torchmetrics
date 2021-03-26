@@ -34,11 +34,7 @@ def _compute_sklearn_metric(
 
 
 def _test_retrieval_against_sklearn(
-    sklearn_metric,
-    torch_metric,
-    size,
-    n_documents,
-    query_without_relevant_docs_options
+    sklearn_metric, torch_metric, size, n_documents, query_without_relevant_docs_options
 ) -> None:
     """ Compare PL metrics to standard version. """
     metric = torch_metric(query_without_relevant_docs=query_without_relevant_docs_options)

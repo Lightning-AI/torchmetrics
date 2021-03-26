@@ -17,7 +17,6 @@ from distutils.version import LooseVersion
 from importlib import import_module
 from importlib.util import find_spec
 
-import torch  # noqa: F401
 from pkg_resources import DistributionNotFound
 
 

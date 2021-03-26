@@ -11,11 +11,7 @@ from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
 def test_results(size, n_documents, query_without_relevant_docs_options):
     """ Test metrics are computed correctly. """
     _test_retrieval_against_sklearn(
-        sk_average_precision,
-        RetrievalMAP,
-        size,
-        n_documents,
-        query_without_relevant_docs_options
+        sk_average_precision, RetrievalMAP, size, n_documents, query_without_relevant_docs_options
     )
 
 
