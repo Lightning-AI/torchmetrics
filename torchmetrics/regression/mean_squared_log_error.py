@@ -50,6 +50,9 @@ class MeanSquaredLogError(Metric):
         >>> mean_squared_log_error(preds, target)
         tensor(0.0397)
 
+    .. note::
+        Half precision is only support on GPU for this metric
+
     """
 
     def __init__(

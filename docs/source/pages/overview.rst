@@ -131,6 +131,20 @@ During training and/or validation this may not be important, however it is highl
 the test dataset to only run on a single gpu or use a `join <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel.join>`_
 context in conjunction with DDP to prevent this behaviour. 
 
+****************************
+Metrics and 16-bit precision
+****************************
+
+Most metrics in our collection can be used with 16-bit precision (``torch.half``) tensors. However, we have found
+the following limitations:
+
+* In general ``pytorch`` had better support for 16-bit precision much earlier on GPU than CPU. Therefore, we
+  recommend that anyone that want to use metrics with half precision on CPU, upgrade to atleast pytorch v1.6
+  where support for operations such as addition, subtraction, multiplication ect. was added.
+* Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
+  but they are also listed below:
+  
+  - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
 
 ******************
 Metric Arithmetics

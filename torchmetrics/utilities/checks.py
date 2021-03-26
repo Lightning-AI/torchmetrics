@@ -529,7 +529,10 @@ def _check_retrieval_functional_inputs(preds: Tensor, target: Tensor) -> None:
 
 
 def _check_retrieval_inputs(
-    indexes: Tensor, preds: Tensor, target: Tensor, ignore: int = None
+    indexes: Tensor,
+    preds: Tensor,
+    target: Tensor,
+    ignore: int = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
