@@ -143,13 +143,6 @@ stat_scores [func]
     :noindex:
 
 
-retrieval_average_precision [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.retrieval_average_precision
-    :noindex:
-
-
 to_categorical [func]
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -241,4 +234,21 @@ embedding_similarity [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.embedding_similarity
+    :noindex:
+
+*********
+Retrieval
+*********
+
+retrieval_average_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_average_precision
+    :noindex:
+
+
+retrieval_reciprocal_rank [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_reciprocal_rank
     :noindex:
