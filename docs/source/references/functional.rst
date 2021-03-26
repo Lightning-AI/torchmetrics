@@ -77,6 +77,12 @@ hamming_distance [func]
 .. autofunction:: torchmetrics.functional.hamming_distance
     :noindex:
 
+hinge [func]
+~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.hinge
+    :noindex:
+
 iou [func]
 ~~~~~~~~~~
 
@@ -134,13 +140,6 @@ stat_scores [func]
 ~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.stat_scores
-    :noindex:
-
-
-retrieval_average_precision [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.retrieval_average_precision
     :noindex:
 
 
@@ -235,4 +234,21 @@ embedding_similarity [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.embedding_similarity
+    :noindex:
+
+*********
+Retrieval
+*********
+
+retrieval_average_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_average_precision
+    :noindex:
+
+
+retrieval_reciprocal_rank [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_reciprocal_rank
     :noindex:

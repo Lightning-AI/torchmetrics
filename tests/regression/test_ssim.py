@@ -18,11 +18,12 @@ import pytest
 import torch
 from skimage.metrics import structural_similarity
 
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import ssim
 from torchmetrics.regression import SSIM
 
-torch.manual_seed(42)
+seed_all(42)
 
 Input = namedtuple('Input', ["preds", "target", "multichannel"])
 
