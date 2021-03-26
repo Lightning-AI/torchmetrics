@@ -83,6 +83,13 @@ class TestExplainedVariance(MetricTester):
             partial(sk_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
             metric_args=dict(multioutput=multioutput),
         )
+        
+    def test_explained_variance_half_cpu(self, multioutput, preds, target, sk_metric):
+        self.run_precision_test_cpu(preds, target, ExplainedVariance, explained_variance)
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    def test_explained_variance_half_gpu(self, multioutput, preds, target, sk_metric):
+        self.run_precision_test_gpu(preds, target, ExplainedVariance, explained_variance)
 
 
 def test_error_on_different_shape(metric_class=ExplainedVariance):

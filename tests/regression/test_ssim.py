@@ -98,7 +98,7 @@ class TestSSIM(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_ssim_half_gpu(self, preds, target, multichannel):
-        self.run_precision_test_gpu( preds, target, SSIM, ssim, {"data_range": 1.0})
+        self.run_precision_test_gpu(preds, target, SSIM, ssim, {"data_range": 1.0})
 
 
 @pytest.mark.parametrize(
