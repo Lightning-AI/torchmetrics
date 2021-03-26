@@ -48,8 +48,8 @@ def setup_ddp(rank, world_size):
 
 
 def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
-    """ Utility function for recursively asserting that two results are within
-        a certain tolerance
+    """Utility function for recursively asserting that two results are within
+    a certain tolerance
     """
     # single output compare
     if isinstance(pl_result, Tensor):
@@ -59,12 +59,12 @@ def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
         for pl_res, sk_res in zip(pl_result, sk_result):
             _assert_allclose(pl_res, sk_res, atol=atol)
     else:
-        raise ValueError('Unknown format for comparison')
+        raise ValueError("Unknown format for comparison")
 
 
 def _assert_tensor(pl_result):
-    """ Utility function for recursively checking that some input only consist of
-        torch tensors
+    """Utility function for recursively checking that some input only consist of
+    torch tensors
     """
     if isinstance(pl_result, (list, tuple)):
         for plr in pl_result:
@@ -109,7 +109,7 @@ def _class_test(
     """
     if not metric_args:
         metric_args = {}
-    
+
     if not extra_update_args:
         extra_update_args = {}
     # Instanciate lightning metric
@@ -120,7 +120,7 @@ def _class_test(
     metric = pickle.loads(pickled_metric)
 
     for i in range(rank, NUM_BATCHES, worldsize):
-        add_args = {k:v[i] for k,v in extra_update_args.items()}
+        add_args = {k: v[i] for k, v in extra_update_args.items()}
 
         batch_result = metric(preds[i], target[i], **add_args)
 
@@ -128,8 +128,8 @@ def _class_test(
             if rank == 0:
                 ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
                 ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
-                ddp_add_args = {k:torch.cat([v[i + r] for r in range(worldsize)]) for k,v in add_args.items()}
-                
+                ddp_add_args = {k: torch.cat([v[i + r] for r in range(worldsize)]) for k, v in add_args.items()}
+
                 sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_add_args)
                 # assert for dist_sync_on_step
                 if check_dist_sync_on_step:
@@ -146,7 +146,7 @@ def _class_test(
 
     total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)])
     total_target = torch.cat([target[i] for i in range(NUM_BATCHES)])
-    total_add_args = {k:torch.cat([v[i] for i in range(NUM_BATCHES)]) for k,v in extra_update_args.items()}
+    total_add_args = {k: torch.cat([v[i] for i in range(NUM_BATCHES)]) for k, v in extra_update_args.items()}
     sk_result = sk_metric(total_preds, total_target, **total_add_args)
 
     # assert after aggregation
@@ -183,7 +183,7 @@ def _functional_test(
     metric = partial(metric_functional, **metric_args)
 
     for i in range(NUM_BATCHES):
-        lightning_result = metric(preds[i], target[i], **{k:v[i] for k,v in extra_update_args.items()})
+        lightning_result = metric(preds[i], target[i], **{k: v[i] for k, v in extra_update_args.items()})
         sk_result = sk_metric(preds[i], target[i])
 
         # assert its the same
@@ -347,7 +347,6 @@ class DummyListMetric(Metric):
 
 
 class DummyMetricSum(DummyMetric):
-
     def update(self, x):
         self.x += x
 
@@ -356,7 +355,6 @@ class DummyMetricSum(DummyMetric):
 
 
 class DummyMetricDiff(DummyMetric):
-
     def update(self, y):
         self.x -= y
 
