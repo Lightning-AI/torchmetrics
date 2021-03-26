@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UnReleased] - 2021-MM-DD
 
-### Added
+### [UnReleased] - Added
 
 - Added `prefix` argument to `MetricCollection` ([#70](https://github.com/PyTorchLightning/metrics/pull/70))
 
@@ -27,20 +27,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added multilabel support to `ROC` metric ([#114](https://github.com/PyTorchLightning/metrics/pull/114))
 
 
-### Changed
+### [UnReleased] - Changed
 
 - Changed `ExplainedVariance` from storing all preds/targets to tracking 5 statistics ([#68](https://github.com/PyTorchLightning/metrics/pull/68))
 
 
 - Changed behaviour of `confusionmatrix` for multilabel data to better match `multilabel_confusion_matrix` from sklearn (())
 
-### Deprecated
+### [UnReleased] - Deprecated
 
 
-### Removed
+### [UnReleased] - Removed
 
 
-### Fixed
+### [UnReleased] - Fixed
 
 - Fixed when `_stable_1d_sort` to work when n >= N ([#6177](https://github.com/PyTorchLightning/pytorch-lightning/pull/6177))
 
@@ -48,14 +48,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2021-03-12
 
 
-### Changed
+### [0.2.0] - Changed
 
 - Decoupled PL dependency ([#13](https://github.com/PyTorchLightning/metrics/pull/13))
 - Refactored functional - mimic the module-like structure: classification, regression, etc. ([#16](https://github.com/PyTorchLightning/metrics/pull/16))
 - Refactored utilities -  split to topics/submodules ([#14](https://github.com/PyTorchLightning/metrics/pull/14))
 - Refactored `MetricCollection` ([#19](https://github.com/PyTorchLightning/metrics/pull/19))
 
-### Removed
+### [0.2.0] - Removed
 
 - Removed deprecated metrics from PL base ([#12](https://github.com/PyTorchLightning/metrics/pull/12),
     [#15](https://github.com/PyTorchLightning/metrics/pull/15))
