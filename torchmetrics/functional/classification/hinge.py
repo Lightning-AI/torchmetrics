@@ -32,13 +32,11 @@ class MulticlassMode(EnumStr):
 
 
 def _check_shape_and_type_consistency_hinge(
-        preds: Tensor,
-        target: Tensor,
+    preds: Tensor,
+    target: Tensor,
 ) -> DataType:
     if target.ndim > 1:
-        raise ValueError(
-            f"The `target` should be one dimensional, got `target` with shape={target.shape}.",
-        )
+        raise ValueError(f"The `target` should be one dimensional, got `target` with shape={target.shape}.", )
 
     if preds.ndim == 1:
         if preds.shape != target.shape:
@@ -55,17 +53,15 @@ def _check_shape_and_type_consistency_hinge(
             )
         mode = DataType.MULTICLASS
     else:
-        raise ValueError(
-            f"The `preds` should be one or two dimensional, got `preds` with shape={preds.shape}."
-        )
+        raise ValueError(f"The `preds` should be one or two dimensional, got `preds` with shape={preds.shape}.")
     return mode
 
 
 def _hinge_update(
-        preds: Tensor,
-        target: Tensor,
-        squared: bool = False,
-        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+    preds: Tensor,
+    target: Tensor,
+    squared: bool = False,
+    multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tuple[Tensor, Tensor]:
     if preds.shape[0] == 1:
         preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
@@ -84,7 +80,7 @@ def _hinge_update(
         target = target.bool()
         margin = torch.zeros_like(preds)
         margin[target] = preds[target]
-        margin[~target] = - preds[~target]
+        margin[~target] = -preds[~target]
     else:
         raise ValueError(
             "The `multiclass_mode` should be either None / 'crammer-singer' / MulticlassMode.CRAMMER_SINGER"
@@ -107,10 +103,10 @@ def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
 
 
 def hinge(
-        preds: Tensor,
-        target: Tensor,
-        squared: bool = False,
-        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+    preds: Tensor,
+    target: Tensor,
+    squared: bool = False,
+    multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tensor:
     r"""
     Computes the mean `Hinge loss <https://en.wikipedia.org/wiki/Hinge_loss>`_, typically used for Support Vector

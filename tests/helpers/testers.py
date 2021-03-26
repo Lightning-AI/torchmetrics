@@ -175,7 +175,7 @@ def _assert_half_support(
     metric_functional: Callable,
     preds: torch.Tensor,
     target: torch.Tensor,
-    device: str = 'cpu'
+    device: str = 'cpu',
 ):
     """
     Test if an metric can be used with half precision tensors
@@ -313,8 +313,12 @@ class MetricTester:
             )
 
     def run_precision_test_cpu(
-        self, preds: torch.Tensor, target: torch.Tensor,
-        metric_module: Metric, metric_functional: Callable, metric_args: dict = {}
+        self,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = {}
     ):
         """ Test if an metric can be used with half precision tensors on cpu
         Args:
@@ -325,16 +329,16 @@ class MetricTester:
             metric_args: dict with additional arguments used for class initialization
         """
         _assert_half_support(
-            metric_module(**metric_args),
-            partial(metric_functional, **metric_args),
-            preds,
-            target,
-            device='cpu'
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cpu'
         )
 
     def run_precision_test_gpu(
-        self, preds: torch.Tensor, target: torch.Tensor,
-        metric_module: Metric, metric_functional: Callable, metric_args: dict = {}
+        self,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = {}
     ):
         """ Test if an metric can be used with half precision tensors on gpu
         Args:
@@ -345,11 +349,7 @@ class MetricTester:
             metric_args: dict with additional arguments used for class initialization
         """
         _assert_half_support(
-            metric_module(**metric_args),
-            partial(metric_functional, **metric_args),
-            preds,
-            target,
-            device='cuda'
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cuda'
         )
 
 

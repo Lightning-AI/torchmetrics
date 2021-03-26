@@ -97,8 +97,7 @@ class TestMeanError(MetricTester):
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6,
-        reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
     )
     def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
         if metric_class == MeanSquaredLogError:

@@ -28,11 +28,7 @@ def _reciprocal_rank(target: np.array, preds: np.array):
 def test_results(size, n_documents, query_without_relevant_docs_options):
     """ Test metrics are computed correctly. """
     _test_retrieval_against_sklearn(
-        _reciprocal_rank,
-        RetrievalMRR,
-        size,
-        n_documents,
-        query_without_relevant_docs_options
+        _reciprocal_rank, RetrievalMRR, size, n_documents, query_without_relevant_docs_options
     )
 
 
