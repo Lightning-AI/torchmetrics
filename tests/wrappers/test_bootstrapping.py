@@ -80,9 +80,9 @@ def test_bootstrap(sampling_strategy, metric, sk_metric):
     """ Test that the different bootstraps gets updated as we expected and that the compute method works """
     _kwargs = {'base_metric': metric, 'mean': True, 'std': True, 'raw': True, 'sampling_strategy': sampling_strategy}
     if _TORCH_GREATER_EQUAL_1_7:
-        bootstrapper = TestBootStrapper(**_kwargs, quantile=torch.tensor([0.05, 0.95]))
-    else:
-        bootstrapper = TestBootStrapper(**_kwargs)
+        _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95])))
+
+    bootstrapper = TestBootStrapper(**_kwargs)
 
     collected_preds = [[] for _ in range(10)]
     collected_target = [[] for _ in range(10)]
