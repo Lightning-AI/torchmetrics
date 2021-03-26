@@ -18,7 +18,6 @@ from typing import Tuple
 
 import pytest
 import torch
-import torch.multiprocessing as mp
 from sklearn.metrics import average_precision_score as _sk_average_precision_score
 from torchmetrics.classification.binned_precision_recall import (
     BinnedAveragePrecision,
@@ -31,7 +30,6 @@ from tests.helpers.testers import (
     NUM_CLASSES,
     NUM_BATCHES,
     BATCH_SIZE,
-    NUM_PROCESSES,
     MetricTester,
 )
 
