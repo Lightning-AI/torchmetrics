@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
+import torch
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -34,7 +35,7 @@ from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
-seed_all(42)
+seed_all(45)
 
 
 def _sk_accuracy(preds, target, subset_accuracy):
@@ -102,6 +103,18 @@ class TestAccuracies(MetricTester):
                 "subset_accuracy": subset_accuracy
             },
         )
+        
+    #@pytest.mark.skipif(
+    #    not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+    #)
+    def test_accuracy_half_cpu(self, preds, target, subset_accuracy):
+        self.run_precision_test_cpu(preds, target, Accuracy, accuracy,
+                                    {"threshold": THRESHOLD, "subset_accuracy": subset_accuracy})
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    def test_accuracy_half_gpu(self, preds, target, subset_accuracy):
+        self.run_precision_test_gpu(preds, target, Accuracy, accuracy,
+                                    {"threshold": THRESHOLD, "subset_accuracy": subset_accuracy})
 
 
 _l1to4 = [0.1, 0.2, 0.3, 0.4]
