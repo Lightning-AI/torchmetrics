@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Import utilities"""
+import operator
 from distutils.version import LooseVersion
 from importlib import import_module
 from importlib.util import find_spec
