@@ -26,9 +26,19 @@ def _confusion_matrix_update(preds: Tensor, target: Tensor, num_classes: int, th
     if mode not in (DataType.BINARY, DataType.MULTILABEL):
         preds = preds.argmax(dim=1)
         target = target.argmax(dim=1)
-    unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
+    
+    if mode == DataType.MULTILABEL:
+        unique_mapping = ((2*target + preds) + 4*torch.arange(num_classes, device=preds.device)).flatten()
+        bins = 4 * num_classes
+    else:
+        unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
+        bins = num_classes ** 2
+
     bins = torch.bincount(unique_mapping, minlength=num_classes**2)
-    confmat = bins.reshape(num_classes, num_classes)
+    if mode == DataType.MULTILABEL:
+        confmat = bins.reshape(num_classes, 2, 2)
+    else:
+        confmat = bins.reshape(num_classes, num_classes)
     return confmat
 
 
@@ -54,7 +64,7 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
 
 
 def confusion_matrix(
-    preds: Tensor, target: Tensor, num_classes: int, normalize: Optional[str] = None, threshold: float = 0.5
+    preds: Tensor, target: Tensor, num_classes: int, normalize: Optional[str] = None, threshold: float = 0.5, is_multilabel: bool = False,
 ) -> Tensor:
     """
     Computes the confusion matrix. Works with binary, multiclass, and multilabel data.
@@ -89,5 +99,5 @@ def confusion_matrix(
         tensor([[2., 0.],
                 [1., 1.]])
     """
-    confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
+    confmat = _confusion_matrix_update(preds, target, num_classes, threshold, is_multilabel)
     return _confusion_matrix_compute(confmat, normalize)
