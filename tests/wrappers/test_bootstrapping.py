@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import operator
+
 import numpy as np
 import pytest
 import torch
@@ -40,6 +42,16 @@ class TestBootStrapper(BootStrapper):
             self.out.append(new_args)
 
 
+def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
+    found_one = False
+    for os in old_samples:
+        cond = op(os, new_samples)
+        if cond.sum() > threshold:
+            found_one = True
+            break
+    return found_one
+
+
 @pytest.mark.parametrize("sampling_strategy", ['poisson', 'multinomial'])
 def test_bootstrap_sampler(sampling_strategy):
     """ make sure that the bootstrap sampler works as intended """
@@ -51,24 +63,10 @@ def test_bootstrap_sampler(sampling_strategy):
     for ns in new_samples:
         assert ns in old_samples
 
-    # make sure some samples are also sampled twice
-    found_one = False
-    for os in old_samples:
-        cond = os == new_samples
-        if cond.sum() > 2:
-            found_one = True
-            break
-
+    found_one = _sample_checker(old_samples, new_samples, operator.eq, 2)
     assert found_one, "resampling did not work because no samples were sampled twice"
 
-    # make sure some samples are never sampled
-    found_zero = False
-    for os in old_samples:
-        cond = os != new_samples
-        if cond.sum() > 0:
-            found_zero = True
-            break
-
+    found_zero = _sample_checker(old_samples, new_samples, operator.ne, 0)
     assert found_zero, "resampling did not work because all samples were atleast sampled once"
 
 
@@ -102,12 +100,9 @@ def test_bootstrap(sampling_strategy, metric, sk_metric):
     output = bootstrapper.compute()
     # quantile only avaible for pytorch v1.7 and forward
     if _TORCH_GREATER_EQUAL_1_7:
-        pl_mean, pl_std, pl_quantile, pl_raw = output
-        assert np.allclose(pl_quantile[0], np.quantile(sk_scores, 0.05))
-        assert np.allclose(pl_quantile[1], np.quantile(sk_scores, 0.95))
-    else:
-        pl_mean, pl_std, pl_raw = output
+        assert np.allclose(output['quantile'][0], np.quantile(sk_scores, 0.05))
+        assert np.allclose(output['quantile'][1], np.quantile(sk_scores, 0.95))
 
-    assert np.allclose(pl_mean, np.mean(sk_scores))
-    assert np.allclose(pl_std, np.std(sk_scores, ddof=1))
-    assert np.allclose(pl_raw, sk_scores)
+    assert np.allclose(output['mean'], np.mean(sk_scores))
+    assert np.allclose(output['std'], np.std(sk_scores, ddof=1))
+    assert np.allclose(output['raw'], sk_scores)

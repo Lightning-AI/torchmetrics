@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -111,9 +111,8 @@ class BootStrapper(Metric):
             >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
             >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
             >>> output = bootstrap.compute()
-            >>> mean, std = output
-            >>> print(mean, std)
-            tensor(0.2205) tensor(0.0859)
+            >>> print(output)
+            {'mean': tensor(0.2205), 'std': tensor(0.0859)}
 
         """
         super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
@@ -157,18 +156,18 @@ class BootStrapper(Metric):
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
-    def compute(self) -> List[Tensor]:
-        """ Computes the bootstrapped metric values. Allways returns a list of tensors, but the content of
-        the list depends on how the class was initialized
+    def compute(self) -> Dict[str, Tensor]:
+        """ Computes the bootstrapped metric values. Allways returns a dict of tensors, which can contain the
+        following keys: ``mean``, ``std``, ``quantile`` and ``raw`` depending on how the class was initialized
         """
         computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
-        output = []
+        output_dict = {}
         if self.mean:
-            output.append(computed_vals.mean(dim=0))
+            output_dict['mean'] = computed_vals.mean(dim=0)
         if self.std:
-            output.append(computed_vals.std(dim=0))
+            output_dict['std'] = computed_vals.std(dim=0)
         if self.quantile is not None:
-            output.append(torch.quantile(computed_vals, self.quantile))
+            output_dict['quantile'] = torch.quantile(computed_vals, self.quantile)
         if self.raw:
-            output.append(computed_vals)
-        return output
+            output_dict['raw'] = computed_vals
+        return output_dict
