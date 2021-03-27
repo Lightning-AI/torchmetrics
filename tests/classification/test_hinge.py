@@ -28,14 +28,10 @@ from torchmetrics.functional.classification.hinge import MulticlassMode
 torch.manual_seed(42)
 
 _input_binary = Input(
-    preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
-    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
 )
 
-_input_binary_single = Input(
-    preds=torch.randn((NUM_BATCHES, 1)),
-    target=torch.randint(high=2, size=(NUM_BATCHES, 1))
-)
+_input_binary_single = Input(preds=torch.randn((NUM_BATCHES, 1)), target=torch.randint(high=2, size=(NUM_BATCHES, 1)))
 
 _input_multiclass = Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
@@ -67,7 +63,7 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
         measures = np.clip(measures, 0, None)
 
         if squared:
-            measures = measures ** 2
+            measures = measures**2
         return measures.mean(axis=0)
     else:
         if multiclass_mode == MulticlassMode.ONE_VS_ALL:
@@ -119,36 +115,28 @@ class TestHinge(MetricTester):
         )
 
 
-_input_multi_target = Input(
-    preds=torch.randn(BATCH_SIZE),
-    target=torch.randint(high=2, size=(BATCH_SIZE, 2))
-)
+_input_multi_target = Input(preds=torch.randn(BATCH_SIZE), target=torch.randint(high=2, size=(BATCH_SIZE, 2)))
 
 _input_binary_different_sizes = Input(
-    preds=torch.randn(BATCH_SIZE * 2),
-    target=torch.randint(high=2, size=(BATCH_SIZE,))
+    preds=torch.randn(BATCH_SIZE * 2), target=torch.randint(high=2, size=(BATCH_SIZE, ))
 )
 
 _input_multi_different_sizes = Input(
-    preds=torch.randn(BATCH_SIZE * 2, NUM_CLASSES),
-    target=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE,))
+    preds=torch.randn(BATCH_SIZE * 2, NUM_CLASSES), target=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE, ))
 )
 
 _input_extra_dim = Input(
-    preds=torch.randn(BATCH_SIZE, NUM_CLASSES, 2),
-    target=torch.randint(high=2, size=(BATCH_SIZE,))
+    preds=torch.randn(BATCH_SIZE, NUM_CLASSES, 2), target=torch.randint(high=2, size=(BATCH_SIZE, ))
 )
 
 
 @pytest.mark.parametrize(
     "preds, target, multiclass_mode",
-    [
-        (_input_multi_target.preds, _input_multi_target.target, None),
-        (_input_binary_different_sizes.preds, _input_binary_different_sizes.target, None),
-        (_input_multi_different_sizes.preds, _input_multi_different_sizes.target, None),
-        (_input_extra_dim.preds, _input_extra_dim.target, None),
-        (_input_multiclass.preds[0], _input_multiclass.target[0], 'invalid_mode')
-    ],
+    [(_input_multi_target.preds, _input_multi_target.target, None),
+     (_input_binary_different_sizes.preds, _input_binary_different_sizes.target, None),
+     (_input_multi_different_sizes.preds, _input_multi_different_sizes.target, None),
+     (_input_extra_dim.preds, _input_extra_dim.target, None),
+     (_input_multiclass.preds[0], _input_multiclass.target[0], 'invalid_mode')],
 )
 def test_bad_inputs_fn(preds, target, multiclass_mode):
     with pytest.raises(ValueError):

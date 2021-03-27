@@ -84,9 +84,7 @@ class RetrievalMetric(Metric, ABC):
 
         query_without_relevant_docs_options = ('error', 'skip', 'pos', 'neg')
         if query_without_relevant_docs not in query_without_relevant_docs_options:
-            raise ValueError(
-                f"`query_without_relevant_docs` received a wrong value {query_without_relevant_docs}."
-            )
+            raise ValueError(f"`query_without_relevant_docs` received a wrong value {query_without_relevant_docs}.")
 
         self.query_without_relevant_docs = query_without_relevant_docs
         self.exclude = exclude
@@ -124,9 +122,7 @@ class RetrievalMetric(Metric, ABC):
 
             if not mini_target.sum():
                 if self.query_without_relevant_docs == 'error':
-                    raise ValueError(
-                        "`compute` method was provided with a query with no positive target."
-                    )
+                    raise ValueError("`compute` method was provided with a query with no positive target.")
                 if self.query_without_relevant_docs == 'pos':
                     res.append(tensor(1.0, **kwargs))
                 elif self.query_without_relevant_docs == 'neg':

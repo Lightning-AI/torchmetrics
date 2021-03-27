@@ -63,3 +63,4 @@ def _compare_version(package: str, op, version) -> bool:
 _TORCH_LOWER_1_4 = LooseVersion(torch.__version__) < LooseVersion("1.4.0")
 _TORCH_LOWER_1_5 = LooseVersion(torch.__version__) < LooseVersion("1.5.0")
 _TORCH_LOWER_1_6 = LooseVersion(torch.__version__) < LooseVersion("1.6.0")
+_TORCH_GREATER_EQUAL_1_6 = LooseVersion(torch.__version__) >= LooseVersion("1.6.0")
