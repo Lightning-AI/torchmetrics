@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
@@ -33,8 +32,8 @@ class RetrievalMAP(RetrievalMetric):
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then MAP will be computed as the mean
-    of the Average Precisions over each query.
+    Predictions will be first grouped by ``indexes`` and then `MAP` will be computed as the mean
+    of the `Average Precisions` over each query.
 
     Args:
         query_without_relevant_docs:
@@ -60,9 +59,9 @@ class RetrievalMAP(RetrievalMetric):
 
     Example:
         >>> from torchmetrics import RetrievalMAP
-        >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
-        >>> preds = torch.tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
-        >>> target = torch.tensor([False, False, True, False, True, False, True])
+        >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
+        >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
+        >>> target = tensor([False, False, True, False, True, False, True])
         >>> map = RetrievalMAP()
         >>> map(indexes, preds, target)
         tensor(0.7917)

@@ -13,14 +13,14 @@
 # limitations under the License.
 from torch import Tensor, tensor
 
-from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
+from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
-class RetrievalMRR(RetrievalMetric):
+class RetrievalPrecision(RetrievalMetric):
     """
-    Computes `Mean Reciprocal Rank
-    <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`_.
+    Computes `Precision
+    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision>`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
@@ -32,8 +32,8 @@ class RetrievalMRR(RetrievalMetric):
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `MRR` will be computed as the mean
-    of the `Reciprocal Rank` over each query.
+    Predictions will be first grouped by ``indexes`` and then `Precision` will be computed as the mean
+    of the `Precision` over each query.
 
     Args:
         query_without_relevant_docs:
@@ -59,15 +59,22 @@ class RetrievalMRR(RetrievalMetric):
             will be used to perform the allgather. default: None
 
     Example:
-        >>> from torchmetrics import RetrievalMRR
+        >>> from torchmetrics import RetrievalPrecision
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
-        >>> mrr = RetrievalMRR()
-        >>> mrr(indexes, preds, target)
-        tensor(0.7500)
+        >>> p2 = RetrievalPrecision(k=2)
+        >>> p2(indexes, preds, target)
+        tensor(0.5000)
     """
+
+    def __init__(self, *args, k: int = None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if (k is not None) and not (isinstance(k, int) and k > 0):
+            raise ValueError("`k` has to be a positive integer or None")
+        self.k = k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         valid_indexes = (target != self.exclude)
-        return retrieval_reciprocal_rank(preds[valid_indexes], target[valid_indexes])
+        return retrieval_precision(preds[valid_indexes], target[valid_indexes], k=self.k)

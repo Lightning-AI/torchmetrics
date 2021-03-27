@@ -11,7 +11,7 @@ seed_all(1337)
 
 
 def _compute_sklearn_metric(
-    metric: Callable, target: List[np.ndarray], preds: List[np.ndarray], behaviour: str
+    metric: Callable, target: List[np.ndarray], preds: List[np.ndarray], behaviour: str, **kwargs
 ) -> Tensor:
     """ Compute metric with multiple iterations over every query predictions set. """
     sk_results = []
@@ -25,7 +25,7 @@ def _compute_sklearn_metric(
             else:
                 sk_results.append(0.0)
         else:
-            res = metric(b, a)
+            res = metric(b, a, **kwargs)
             sk_results.append(res)
 
     if len(sk_results) > 0:
@@ -38,10 +38,11 @@ def _test_retrieval_against_sklearn(
     torch_metric,
     size,
     n_documents,
-    query_without_relevant_docs_options
+    query_without_relevant_docs_options,
+    **kwargs
 ) -> None:
     """ Compare PL metrics to standard version. """
-    metric = torch_metric(query_without_relevant_docs=query_without_relevant_docs_options)
+    metric = torch_metric(query_without_relevant_docs=query_without_relevant_docs_options, **kwargs)
     shape = (size, )
 
     indexes = []
@@ -53,7 +54,7 @@ def _test_retrieval_against_sklearn(
         preds.append(np.random.randn(*shape))
         target.append(np.random.randn(*shape) > 0)
 
-    sk_results = _compute_sklearn_metric(sklearn_metric, target, preds, query_without_relevant_docs_options)
+    sk_results = _compute_sklearn_metric(sklearn_metric, target, preds, query_without_relevant_docs_options, **kwargs)
     sk_results = torch.tensor(sk_results)
 
     indexes_tensor = torch.cat([torch.tensor(i) for i in indexes]).long()
@@ -124,3 +125,9 @@ def _test_input_shapes(torchmetric) -> None:
 
     with pytest.raises(ValueError, match="`indexes`, `preds` and `target` must be of the same shape"):
         metric(indexes, preds, target)
+
+
+def _test_input_args(torchmetric, message, **kwargs) -> None:
+    """Check invalid args are managed correctly. """
+    with pytest.raises(ValueError, match=message):
+        torchmetric(**kwargs)

@@ -13,4 +13,5 @@
 # limitations under the License.
 from torchmetrics.retrieval.mean_average_precision import RetrievalMAP  # noqa: F401
 from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR  # noqa: F401
+from torchmetrics.retrieval.precision import RetrievalPrecision  # noqa: F401
 from torchmetrics.retrieval.retrieval_metric import RetrievalMetric  # noqa: F401
