@@ -105,13 +105,14 @@ class BootStrapper(Metric):
                 will be used to perform the allgather.
 
         Example::
+            >>> from pprint import pprint
             >>> from torchmetrics import Accuracy, BootStrapper
             >>> _ = torch.manual_seed(123)
             >>> base_metric = Accuracy()
             >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
             >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
             >>> output = bootstrap.compute()
-            >>> print(output)
+            >>> pprint(output)
             {'mean': tensor(0.2205), 'std': tensor(0.0859)}
 
         """
