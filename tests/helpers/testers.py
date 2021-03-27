@@ -48,9 +48,7 @@ def setup_ddp(rank, world_size):
 
 
 def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
-    """Utility function for recursively asserting that two results are within
-    a certain tolerance
-    """
+    """Utility function for recursively asserting that two results are within a certain tolerance """
     # single output compare
     if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.numpy(), sk_result, atol=atol, equal_nan=True)
@@ -63,9 +61,7 @@ def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
 
 
 def _assert_tensor(pl_result):
-    """Utility function for recursively checking that some input only consist of
-    torch tensors
-    """
+    """ Utility function for recursively checking that some input only consists of torch tensors """
     if isinstance(pl_result, (list, tuple)):
         for plr in pl_result:
             _assert_tensor(plr)
