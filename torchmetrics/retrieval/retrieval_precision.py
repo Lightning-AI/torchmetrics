@@ -11,16 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any, Callable, Optional
+
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.precision import retrieval_precision
-from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
+from torchmetrics.retrieval.retrieval_metric import IGNORE_IDX, RetrievalMetric
 
 
 class RetrievalPrecision(RetrievalMetric):
     """
     Computes `Precision
-    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision>`_.
+    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision>`__.
 
     Works with binary target data. Accepts float predictions from a model output.
 
@@ -57,6 +59,7 @@ class RetrievalPrecision(RetrievalMetric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
+        k: consider only the top k elements for each query. default: None
 
     Example:
         >>> from torchmetrics import RetrievalPrecision
@@ -68,8 +71,24 @@ class RetrievalPrecision(RetrievalMetric):
         tensor(0.5000)
     """
 
-    def __init__(self, *args, k: int = None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        query_without_relevant_docs: str = 'skip',
+        exclude: int = IGNORE_IDX,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+        k: int = None
+    ):
+        super().__init__(
+            query_without_relevant_docs=query_without_relevant_docs,
+            exclude=exclude,
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn
+        )
 
         if (k is not None) and not (isinstance(k, int) and k > 0):
             raise ValueError("`k` has to be a positive integer or None")

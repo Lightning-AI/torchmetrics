@@ -334,3 +334,10 @@ RetrievalMRR
 
 .. autoclass:: torchmetrics.RetrievalMRR
     :noindex:
+
+
+RetrievalPrecision
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalPrecision
+    :noindex:

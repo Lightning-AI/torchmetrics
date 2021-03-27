@@ -1,10 +1,8 @@
 import numpy as np
 import pytest
 
-from tests.retrieval.helpers import (
-    _test_dtypes, _test_input_shapes, _test_retrieval_against_sklearn, _test_input_args
-)
-from torchmetrics.retrieval.precision import RetrievalPrecision
+from tests.retrieval.helpers import _test_dtypes, _test_input_args, _test_input_shapes, _test_retrieval_against_sklearn
+from torchmetrics.retrieval.retrieval_precision import RetrievalPrecision
 
 
 def _precision_at_k(target: np.array, preds: np.array, k: int = None):
