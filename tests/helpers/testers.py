@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 import pytest
@@ -81,7 +81,7 @@ def _class_test(
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
-    extra_update_args: dict = None,
+    **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric
     and reference metric.
@@ -100,14 +100,12 @@ def _class_test(
             calculated per batch per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
-        extra_update_args: dict of tensors with additional arguments passed when updating
-            the metric calculation.
+        kwargs_update: Additional keyword arguments that will be passed with preds and
+            target when running update on the metric.
     """
     if not metric_args:
         metric_args = {}
 
-    if not extra_update_args:
-        extra_update_args = {}
     # Instanciate lightning metric
     metric = metric_class(compute_on_step=True, dist_sync_on_step=dist_sync_on_step, **metric_args)
 
@@ -116,22 +114,24 @@ def _class_test(
     metric = pickle.loads(pickled_metric)
 
     for i in range(rank, NUM_BATCHES, worldsize):
-        add_args = {k: v[i] for k, v in extra_update_args.items()}
+        b_kwargs_update = {k: v[i] for k, v in kwargs_update.items()}
 
-        batch_result = metric(preds[i], target[i], **add_args)
+        batch_result = metric(preds[i], target[i], **b_kwargs_update)
 
         if metric.dist_sync_on_step:
             if rank == 0:
                 ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
                 ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
-                ddp_add_args = {k: torch.cat([v[i + r] for r in range(worldsize)]) for k, v in add_args.items()}
+                ddp_kwargs_upd = {
+                    k: torch.cat([v[i + r] for r in range(worldsize)]) for k, v in b_kwargs_update.items()
+                }
 
-                sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_add_args)
+                sk_batch_result = sk_metric(ddp_preds, ddp_target, *ddp_args_upd, **ddp_kwargs_upd)
                 # assert for dist_sync_on_step
                 if check_dist_sync_on_step:
                     _assert_allclose(batch_result, sk_batch_result, atol=atol)
         else:
-            sk_batch_result = sk_metric(preds[i], target[i], **add_args)
+            sk_batch_result = sk_metric(preds[i], target[i], **b_kwargs_update)
             # assert for batch
             if check_batch:
                 _assert_allclose(batch_result, sk_batch_result, atol=atol)
@@ -142,8 +142,8 @@ def _class_test(
 
     total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)])
     total_target = torch.cat([target[i] for i in range(NUM_BATCHES)])
-    total_add_args = {k: torch.cat([v[i] for i in range(NUM_BATCHES)]) for k, v in extra_update_args.items()}
-    sk_result = sk_metric(total_preds, total_target, **total_add_args)
+    total_kwargs_update = {k: torch.cat([v[i] for i in range(NUM_BATCHES)]) for k, v in kwargs_update.items()}
+    sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
     _assert_allclose(result, sk_result, atol=atol)
@@ -156,7 +156,7 @@ def _functional_test(
     sk_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
-    extra_update_args: dict = None,
+    **kwargs_update,
 ):
     """Utility function doing the actual comparison between lightning functional metric
     and reference metric.
@@ -167,19 +167,17 @@ def _functional_test(
         metric_functional: lightning metric functional that should be tested
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
-        extra_update_args: dict of tensors with additional arguments passed when updating
-            the metric calculation.
+        kwargs_update: Additional keyword arguments that will be passed with preds and
+            target when running update on the metric.
     """
     if not metric_args:
         metric_args = {}
 
-    if not extra_update_args:
-        extra_update_args = {}
-
     metric = partial(metric_functional, **metric_args)
 
     for i in range(NUM_BATCHES):
-        lightning_result = metric(preds[i], target[i], **{k: v[i] for k, v in extra_update_args.items()})
+        extra_kwargs = {k: v[i] for k, v in kwargs_update.items()}
+        lightning_result = metric(preds[i], target[i], **extra_kwargs)
         sk_result = sk_metric(preds[i], target[i])
 
         # assert its the same
@@ -219,7 +217,7 @@ class MetricTester:
         metric_functional: Callable,
         sk_metric: Callable,
         metric_args: dict = None,
-        extra_update_args: dict = None,
+        **kwargs_update,
     ):
         """Main method that should be used for testing functions. Call this inside
         testing method
@@ -230,8 +228,8 @@ class MetricTester:
             metric_functional: lightning metric class that should be tested
             sk_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
-            extra_update_args: dict of tensors with additional arguments passed when updating
-                the metric calculation.
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
         _functional_test(
             preds=preds,
@@ -240,7 +238,7 @@ class MetricTester:
             sk_metric=sk_metric,
             metric_args=metric_args,
             atol=self.atol,
-            extra_update_args=extra_update_args,
+            **kwargs_update,
         )
 
     def run_class_metric_test(
@@ -254,7 +252,7 @@ class MetricTester:
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
-        extra_update_args: dict = None,
+        **kwargs_update,
     ):
         """Main method that should be used for testing class. Call this inside testing
         methods.
@@ -272,8 +270,8 @@ class MetricTester:
                 calculated per batch per device (and not just at the end)
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
-            extra_update_args: dict of tensors with additional arguments passed when updating
-                the metric calculation.
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
         if not metric_args:
             metric_args = {}
@@ -293,7 +291,7 @@ class MetricTester:
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
                     atol=self.atol,
-                    extra_update_args=extra_update_args,
+                    **kwargs_update,
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
@@ -310,7 +308,7 @@ class MetricTester:
                 check_dist_sync_on_step=check_dist_sync_on_step,
                 check_batch=check_batch,
                 atol=self.atol,
-                extra_update_args=extra_update_args,
+                **kwargs_update,
             )
 
 
