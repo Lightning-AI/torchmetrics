@@ -21,50 +21,70 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import _TORCHVISION_AVAILABLE, MisconfigurationException
 
 if _TORCHVISION_AVAILABLE:
-    from torchvision import models
+    import torchvision
     from torchvision import transforms
+      
+    class _Identity(nn.Module):
+        """ Module that does nothing. Use to overwrite layers to be no-op layers """
 
+        def __init__(self):
+            super().__init__()
+        
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return x
 
-class _Identity(nn.Module):
-    """ Module that does nothing. Use to overwrite layers to be no-op layers """
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x
-
-
-def _notrain(func):
-    """ Used wrap the `.train` method of any model, such that it will always stay in evaluation mode """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(False)
-
-    return wrapper
-
-
-# def _matrix_sqrt(matrix: torch.Tensor) -> torch.Tensor:
-#     """ Calculates the matrix square root of a single 2D matrix of size [N,N] (needs to be square) """
-#     eigval, eigvec = torch.eig(matrix, eigenvectors=True)
-#     eigval = torch.view_as_complex(eigval.contiguous())
-#     eigval_sqrt = eigval.sqrt()
-#     eigval_sqrt = torch.view_as_real(eigval_sqrt)[:, 0]
-#     return eigvec @ torch.diag(eigval_sqrt) @ torch.inverse(eigvec)
-
+    
+    class CustomInception3(torchvision.models.Inception3):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.fc =_Identity()
+            self.eval()
+            
+        def train(self, mode):
+            # disable going into training mode
+            super().train(False)
+    
+    def inception_v3(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> CustomInception3:
+        r"""Adjusted from 
+        https://github.com/pytorch/vision/blob/master/torchvision/models/inception.py
+        """
+        if pretrained:
+            if 'transform_input' not in kwargs:
+                kwargs['transform_input'] = True
+            if 'aux_logits' in kwargs:
+                original_aux_logits = kwargs['aux_logits']
+                kwargs['aux_logits'] = True
+            else:
+                original_aux_logits = True
+            kwargs['init_weights'] = False  # we are loading weights from a pretrained model
+            model = CustomInception3(**kwargs)
+            state_dict = torchvision.models.utils.load_state_dict_from_url(
+                'https://download.pytorch.org/models/inception_v3_google-1a9a5a14.pth', progress=progress
+            )
+            model.load_state_dict(state_dict)
+            if not original_aux_logits:
+                model.aux_logits = False
+                model.AuxLogits = None
+            return model
+        
+        return CustomInception3(**kwargs)
+    
 
 def _approximation_error(matrix: torch.Tensor, s_matrix: torch.Tensor) -> torch.Tensor:
+    """
+    Credit to: https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
+    """
     norm_of_matrix = torch.norm(matrix)
     error = matrix - torch.mm(s_matrix, s_matrix)
     error = torch.norm(error) / norm_of_matrix
     return error
 
-#https://discuss.pytorch.org/t/pytorch-square-root-of-a-positive-semi-definite-matrix/100138/5
+
 def _matrix_sqrt(matrix: torch.Tensor, num_iters: int = 100):
     r"""
     Square root of matrix using Newton-Schulz Iterative method
-    Source: https://github.com/msubhransu/matrix-sqrt/blob/master/matrix_sqrt.py
+    
+    Credit to: https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
     Args:
         matrix: matrix or batch of matrices
         num_iters: Number of iteration of the method
@@ -97,9 +117,6 @@ def _matrix_sqrt(matrix: torch.Tensor, num_iters: int = 100):
         error = _approximation_error(matrix, s_matrix)
         if torch.isclose(error, torch.tensor([0.]).to(error), atol=1e-5):
             break
-        
-        import pdb
-        pdb.set_trace()
 
     return s_matrix, error
 
@@ -197,23 +214,23 @@ class FID(Metric):
         if images_or_features not in allowed_input:
             raise MisconfigurationException("Expected argument `images_or_features` to be one of the following"
                                             " {allowed")
+        
         self.images_or_features = images_or_features
+        self.perform_normalization = perform_normalization
+        self.normalizer = None
         
         if self.images_or_features == 'images' and not _TORCHVISION_AVAILABLE:
             raise MisconfigurationException("FID metric requires torchvision to be installed for downloading"
                                             " inception v3 network")
-            
+        
         if self.images_or_features == 'images':
-            if perform_normalization:
+            if self.perform_normalization:
                 self.normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            self.perform_normalization = perform_normalization
-            self.inception = models.inception_v3(pretrained=True)
-            # remove the classification layer
-            self.inception.fc = _Identity()
-            # disable going into training mode
-            self.inception.eval()
-            self.inception.train = _notrain(self.inception.train)           
+            
+            self.inception = inception_v3(pretrained=True)
             feature_size = 2048
+        else:
+            self.inception = None
             
         self.add_state("real_mean", torch.zeros(feature_size), dist_reduce_fx="mean")
         self.add_state("real_cov", torch.zeros(feature_size, feature_size), dist_reduce_fx="mean")

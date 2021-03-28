@@ -49,15 +49,22 @@ def test_update_functions(tmpdir):
     assert torch.allclose(mean, mean_update), "updated mean does not correspond to mean of all data"
     assert torch.allclose(cov, cov_update), "updated covariance does not correspond to covariance of all data"
 
-@pytest.mark.parametrize("matrix_size", [2, 10, 100, 2048])
+
+@pytest.mark.parametrize("matrix_size", [2, 10, 100])#, 2048])
 def test_matrix_sqrt(matrix_size):
     """ test that metrix sqrt function works as expected """    
-    matrix = torch.randn(matrix_size, matrix_size)
-    scipy_res = sqrtm(matrix.numpy()).real
-    tm_res, _ = _matrix_sqrt(matrix)
-    import pdb
-    pdb.set_trace()
-    assert torch.allclose(torch.tensor(scipy_res), tm_res)
+    def generate_cov(n):
+        data = torch.randn(2*n, n)
+        return (data-data.mean(dim=0)).T @ (data-data.mean(dim=0))
+    
+    cov1 = generate_cov(matrix_size)
+    cov2 = generate_cov(matrix_size)
+    
+    scipy_res = sqrtm((cov1 @ cov2).numpy()).real
+    tm_res, _ = _matrix_sqrt(cov1 @ cov2)
+    
+    assert torch.allclose(torch.tensor(scipy_res), tm_res, atol=1e-2)
+
 
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason='test requires torchvision')
 def test_fid_pickle():
@@ -74,7 +81,6 @@ def test_fid_pickle():
 def test_fid_same_input():
     """ # if real and fake are update on the same data the fid score should be 0 """
     metric = FID()
-    
     
     for _ in range(2):
         img = torch.rand(5, 3, 299, 299)
