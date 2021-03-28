@@ -6,6 +6,7 @@ import torch
 from torch import Tensor
 
 from tests.helpers import seed_all
+from torchmetrics import Metric
 
 seed_all(1337)
 
