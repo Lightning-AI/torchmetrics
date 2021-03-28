@@ -152,29 +152,48 @@ class Metric(nn.Module, ABC):
         """
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
-        # add current step
-        with torch.no_grad():
-            self.update(*args, **kwargs)
-        self._forward_cache = None
 
-        if self.compute_on_step:
-            self._to_sync = self.dist_sync_on_step
+        if not self.compute_on_step:
+            with torch.no_grad():
+                self.update(*args, **kwargs)
+            self._forward_cache = None
+            return
 
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+        self._to_sync = self.dist_sync_on_step
 
-            # call reset, update, compute, on single batch
-            self.reset()
-            self.update(*args, **kwargs)
-            self._forward_cache = self.compute()
+        # save context before switch
+        cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
 
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._to_sync = True
-            self._computed = None
+        # call reset, update, compute, on single batch
+        self.reset()
+        self.update(*args, **kwargs)
+        self._forward_cache = self.compute()
 
-            return self._forward_cache
+        # restore context
+        for attr, val in cache.items():
+            reduction_fn = self._reductions[attr]
+            current_val = getattr(self, attr)
+
+            if isinstance(val, Tensor):
+                # TODO: DOES NOT WORK WITH CURRENT TESTS
+                if reduction_fn is None and val.ndim > 0:
+                    # we accumulate items in the last dimension
+                    if current_val.ndim + 1 == val.ndim:
+                        current_val = current_val.unsqueeze(0)
+                    val = torch.cat((val, current_val))
+                else:
+                    val = torch.stack((val, current_val))
+            elif isinstance(val, list):
+                val.append(val, current_val)
+
+            assert isinstance(reduction_fn, Callable) or reduction_fn is None
+            reduced = reduction_fn(val) if reduction_fn is not None else val
+            setattr(self, attr, reduced)
+
+        self._to_sync = True
+        self._computed = None
+
+        return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn=gather_all_tensors):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
