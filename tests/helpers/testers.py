@@ -114,7 +114,7 @@ def _class_test(
     metric = pickle.loads(pickled_metric)
 
     for i in range(rank, NUM_BATCHES, worldsize):
-        b_kwargs_update = {k: v[i] for k, v in kwargs_update.items()}
+        b_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
         batch_result = metric(preds[i], target[i], **b_kwargs_update)
 
@@ -123,10 +123,11 @@ def _class_test(
                 ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
                 ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
                 ddp_kwargs_upd = {
-                    k: torch.cat([v[i + r] for r in range(worldsize)]) for k, v in b_kwargs_update.items()
+                    k: torch.cat([v[i + r] for r in range(worldsize)]) if isinstance(v, Tensor) else v
+                    for k, v in b_kwargs_update.items()
                 }
 
-                sk_batch_result = sk_metric(ddp_preds, ddp_target, *ddp_args_upd, **ddp_kwargs_upd)
+                sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
                 # assert for dist_sync_on_step
                 if check_dist_sync_on_step:
                     _assert_allclose(batch_result, sk_batch_result, atol=atol)
@@ -142,7 +143,10 @@ def _class_test(
 
     total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)])
     total_target = torch.cat([target[i] for i in range(NUM_BATCHES)])
-    total_kwargs_update = {k: torch.cat([v[i] for i in range(NUM_BATCHES)]) for k, v in kwargs_update.items()}
+    total_kwargs_update = {
+        k: torch.cat([v[i] for i in range(NUM_BATCHES)]) if isinstance(v, Tensor) else v
+        for k, v in kwargs_update.items()
+    }
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
@@ -176,7 +180,7 @@ def _functional_test(
     metric = partial(metric_functional, **metric_args)
 
     for i in range(NUM_BATCHES):
-        extra_kwargs = {k: v[i] for k, v in kwargs_update.items()}
+        extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         lightning_result = metric(preds[i], target[i], **extra_kwargs)
         sk_result = sk_metric(preds[i], target[i])
 
