@@ -107,7 +107,9 @@ def _class_test(
         metric_args = {}
 
     # Instanciate lightning metric
-    metric = metric_class(compute_on_step=True, dist_sync_on_step=dist_sync_on_step, **metric_args)
+    metric = metric_class(
+        compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
+    )
 
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
@@ -118,24 +120,20 @@ def _class_test(
 
         batch_result = metric(preds[i], target[i], **b_kwargs_update)
 
-        if metric.dist_sync_on_step:
-            if rank == 0:
-                ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
-                ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
-                ddp_kwargs_upd = {
-                    k: torch.cat([v[i + r] for r in range(worldsize)]) if isinstance(v, Tensor) else v
-                    for k, v in b_kwargs_update.items()
-                }
+        if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
+            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
+            ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
+            ddp_kwargs_upd = {
+                        k: torch.cat([v[i + r] for r in range(worldsize)]) if isinstance(v, Tensor) else v
+                        for k, v in b_kwargs_update.items()
+                    }
 
-                sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
-                # assert for dist_sync_on_step
-                if check_dist_sync_on_step:
-                    _assert_allclose(batch_result, sk_batch_result, atol=atol)
-        else:
+            sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
+            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+
+        elif check_batch and not metric.dist_sync_on_step:
             sk_batch_result = sk_metric(preds[i], target[i], **b_kwargs_update)
-            # assert for batch
-            if check_batch:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check on all batches on all ranks
     result = metric.compute()
@@ -186,6 +184,30 @@ def _functional_test(
 
         # assert its the same
         _assert_allclose(lightning_result, sk_result, atol=atol)
+
+
+def _assert_half_support(
+    metric_module: Metric,
+    metric_functional: Callable,
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    device: str = 'cpu',
+):
+    """
+    Test if an metric can be used with half precision tensors
+
+    Args:
+        metric_module: the metric module to test
+        metric_functional: the metric functional to test
+        preds: torch tensor with predictions
+        target: torch tensor with targets
+        device: determine device, either "cpu" or "cuda"
+    """
+    y_hat = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
+    y = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
+    metric_module = metric_module.to(device)
+    assert metric_module(y_hat, y)
+    assert metric_functional(y_hat, y)
 
 
 class MetricTester:
@@ -314,6 +336,46 @@ class MetricTester:
                 atol=self.atol,
                 **kwargs_update,
             )
+
+    def run_precision_test_cpu(
+        self,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = {}
+    ):
+        """ Test if an metric can be used with half precision tensors on cpu
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_functional: the metric functional to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        _assert_half_support(
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cpu'
+        )
+
+    def run_precision_test_gpu(
+        self,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = {}
+    ):
+        """ Test if an metric can be used with half precision tensors on gpu
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_functional: the metric functional to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        _assert_half_support(
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cuda'
+        )
 
 
 class DummyMetric(Metric):

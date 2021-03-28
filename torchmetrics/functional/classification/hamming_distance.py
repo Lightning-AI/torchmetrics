@@ -62,7 +62,6 @@ def hamming_distance(preds: Tensor, target: Tensor, threshold: float = 0.5) -> T
             (0 or 1) predictions, in the case of binary or multi-label inputs.
 
     Example:
-
         >>> from torchmetrics.functional import hamming_distance
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])

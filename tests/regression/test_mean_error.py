@@ -20,11 +20,13 @@ from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import mean_absolute_error, mean_squared_error, mean_squared_log_error
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
-torch.manual_seed(42)
+seed_all(42)
 
 num_targets = 5
 
@@ -93,6 +95,19 @@ class TestMeanError(MetricTester):
             metric_functional=metric_functional,
             sk_metric=partial(sk_metric, sk_fn=sk_fn),
         )
+
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+    )
+    def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+        if metric_class == MeanSquaredLogError:
+            # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
+            pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
+        self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+        self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 
 @pytest.mark.parametrize("metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError])

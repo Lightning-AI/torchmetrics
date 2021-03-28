@@ -54,8 +54,11 @@ class HammingDistance(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the all gather.
 
-    Example:
+    Raises:
+        ValueError:
+            If ``threshold`` is not between ``0`` and ``1``.
 
+    Example:
         >>> from torchmetrics import HammingDistance
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])

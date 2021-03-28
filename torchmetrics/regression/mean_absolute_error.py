@@ -41,7 +41,6 @@ class MeanAbsoluteError(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-
         >>> from torchmetrics import MeanAbsoluteError
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])

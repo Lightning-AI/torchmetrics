@@ -25,6 +25,7 @@ exclude docs
 
 # Include the Requirements
 include requirements.txt
+recursive-exclude requirements *.txt
 
 # Exclude build configs
 exclude *.yml
@@ -37,3 +38,4 @@ prune notebook*
 prune temp*
 prune test*
 prune benchmark*
+prune integration*

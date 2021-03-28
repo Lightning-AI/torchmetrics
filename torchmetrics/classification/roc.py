@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -24,13 +24,13 @@ from torchmetrics.utilities import rank_zero_warn
 class ROC(Metric):
     """
     Computes the Receiver Operating Characteristic (ROC). Works for both
-    binary and multiclass problems. In the case of multiclass, the values will
+    binary, multiclass and multilabel problems. In the case of multiclass, the values will
     be calculated based on a one-vs-the-rest approach.
 
     Forward accepts
 
-    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
-      with probabilities, where C is the number of classes.
+    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass/multilabel) tensor
+      with probabilities, where C is the number of classes/labels.
 
     - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
 
@@ -48,9 +48,13 @@ class ROC(Metric):
             before returning the value at the step. default: False
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
 
     Example (binary case):
 
+        >>> from torchmetrics import ROC
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> roc = ROC(pos_label=1)
@@ -64,6 +68,7 @@ class ROC(Metric):
 
     Example (multiclass case):
 
+        >>> from torchmetrics import ROC
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05],
@@ -81,6 +86,29 @@ class ROC(Metric):
          tensor([1.7500, 0.7500, 0.0500]),
          tensor([1.7500, 0.7500, 0.0500])]
 
+    Example (multilabel case):
+
+        >>> from torchmetrics import ROC
+        >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
+        ...                      [0.3584, 0.7576, 0.1183],
+        ...                      [0.2286, 0.3468, 0.1338],
+        ...                      [0.8603, 0.0745, 0.1837]])
+        >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
+        >>> roc = ROC(num_classes=3, pos_label=1)
+        >>> fpr, tpr, thresholds = roc(pred, target)
+        >>> fpr # doctest: +NORMALIZE_WHITESPACE
+        [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
+         tensor([0., 0., 0., 1., 1.]),
+         tensor([0.0000, 0.0000, 0.3333, 0.6667, 1.0000])]
+        >>> tpr  # doctest: +NORMALIZE_WHITESPACE
+        [tensor([0., 0., 1., 1., 1.]),
+         tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]),
+         tensor([0., 1., 1., 1., 1.])]
+        >>> thresholds # doctest: +NORMALIZE_WHITESPACE
+        [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
+         tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
+         tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
+
     """
 
     def __init__(
@@ -90,11 +118,13 @@ class ROC(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
         )
 
         self.num_classes = num_classes
@@ -126,7 +156,8 @@ class ROC(Metric):
         """
         Compute the receiver operating characteristic
 
-        Returns: 3-element tuple containing
+        Returns:
+            3-element tuple containing
 
             fpr:
                 tensor with false positive rates.
@@ -135,8 +166,7 @@ class ROC(Metric):
                 tensor with true positive rates.
                 If multiclass, this is a list of such tensors, one for each class.
             thresholds:
-                thresholds used for computing false- and true positive rates
-
+                thresholds used for computing false- and true postive rates
         """
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)

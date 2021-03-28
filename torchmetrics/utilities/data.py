@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, List, Mapping, Optional, Sequence, Union
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -49,11 +49,10 @@ def to_onehot(
         label_tensor: dense label tensor, with shape [N, d1, d2, ...]
         num_classes: number of classes C
 
-    Output:
+    Returns:
         A sparse label tensor with shape [N, C, d1, d2, ...]
 
     Example:
-
         >>> x = torch.tensor([1, 2, 3])
         >>> to_onehot(x)
         tensor([[0, 1, 0, 0],
@@ -85,11 +84,10 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
         topk: number of highest entries to turn into 1s
         dim: dimension on which to compare entries
 
-    Output:
+    Returns:
         A binary tensor of the same shape as the input tensor of type torch.int32
 
     Example:
-
         >>> x = torch.tensor([[1.1, 2.0, 3.0], [2.0, 1.0, 0.5]])
         >>> select_topk(x, topk=2)
         tensor([[0, 1, 1],
@@ -112,7 +110,6 @@ def to_categorical(tensor: Tensor, argmax_dim: int = 1) -> Tensor:
         A tensor with categorical labels [N, d2, ...]
 
     Example:
-
         >>> x = torch.tensor([[0.2, 0.5], [0.9, 0.1]])
         >>> to_categorical(x)
         tensor([1, 0])
@@ -160,23 +157,26 @@ def _stable_1d_sort(x: torch, nb: int = 2049):
     makes the sort and returns the sorted array (with the padding removed)
     See this discussion: https://discuss.pytorch.org/t/is-torch-sort-stable/20714
 
+    Raises:
+        ValueError:
+            If dim of ``x`` is greater than 1 since stable sort works with only 1d tensors.
+
     Example:
         >>> data = torch.tensor([8, 7, 2, 6, 4, 5, 3, 1, 9, 0])
         >>> _stable_1d_sort(data)
         (tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), tensor([9, 7, 2, 6, 4, 5, 3, 1, 0, 8]))
         >>> _stable_1d_sort(data, nb=5)
-        (tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), tensor([9, 7, 2, 6, 4, 5, 3, 1, 0, 8]))
+        (tensor([0, 1, 2, 3, 4]), tensor([9, 7, 2, 6, 4]))
     """
     if x.ndim > 1:
         raise ValueError('Stable sort only works on 1d tensors')
     n = x.numel()
     if n < nb:
         x_max = x.max()
-        x_pad = torch.cat([x, (x_max + 1) * torch.ones(2049 - n, dtype=x.dtype, device=x.device)], 0)
-        x_sort = x_pad.sort()
-    else:
-        x_sort = x.sort()
-    return x_sort.values[:n], x_sort.indices[:n]
+        x = torch.cat([x, (x_max + 1) * torch.ones(nb - n, dtype=x.dtype, device=x.device)], 0)
+    x_sort = x.sort()
+    i = min(nb, n)
+    return x_sort.values[:i], x_sort.indices[:i]
 
 
 def apply_to_collection(
@@ -228,3 +228,32 @@ def apply_to_collection(
 
     # data is neither of dtype, nor a collection
     return data
+
+
+def get_group_indexes(idx: Tensor) -> List[Tensor]:
+    """
+    Given an integer `torch.Tensor` `idx`, return a `torch.Tensor` of indexes for
+    each different value in `idx`.
+
+    Args:
+        idx: a `torch.Tensor` of integers
+
+    Return:
+        A list of integer `torch.Tensor`s
+
+    Example:
+
+        >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
+        >>> groups = get_group_indexes(indexes)
+        >>> groups
+        [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
+    """
+
+    indexes = dict()
+    for i, _id in enumerate(idx):
+        _id = _id.item()
+        if _id in indexes:
+            indexes[_id] += [i]
+        else:
+            indexes[_id] = [i]
+    return [tensor(x, dtype=torch.int64) for x in indexes.values()]

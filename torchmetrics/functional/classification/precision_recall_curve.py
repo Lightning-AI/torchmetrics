@@ -14,8 +14,8 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
-from torch.nn import functional as F
 from torch import Tensor, tensor
+from torch.nn import functional as F
 
 from torchmetrics.utilities import rank_zero_warn
 
@@ -71,16 +71,28 @@ def _precision_recall_curve_update(
 ) -> Tuple[Tensor, Tensor, int, int]:
     if not (len(preds.shape) == len(target.shape) or len(preds.shape) == len(target.shape) + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
-    # single class evaluation
+
     if len(preds.shape) == len(target.shape):
-        num_classes = 1
         if pos_label is None:
             rank_zero_warn('`pos_label` automatically set 1.')
             pos_label = 1
-        preds = preds.flatten()
-        target = target.flatten()
+        if num_classes is not None and num_classes != 1:
+            # multilabel problem
+            if num_classes != preds.shape[1]:
+                raise ValueError(
+                    f'Argument `num_classes` was set to {num_classes} in'
+                    f' metric `precision_recall_curve` but detected {preds.shape[1]}'
+                    ' number of classes from predictions'
+                )
+            preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
+            target = target.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
+        else:
+            # binary problem
+            preds = preds.flatten()
+            target = target.flatten()
+            num_classes = 1
 
-    # multi class evaluation
+    # multi class problem
     if len(preds.shape) == len(target.shape) + 1:
         if pos_label is not None:
             rank_zero_warn(
@@ -169,7 +181,8 @@ def precision_recall_curve(
             range [0,num_classes-1]
         sample_weights: sample weights for each data point
 
-    Returns: 3-element tuple containing
+    Returns:
+        3-element tuple containing
 
         precision:
             tensor where element i is the precision of predictions with
@@ -182,8 +195,17 @@ def precision_recall_curve(
         thresholds:
             Thresholds used for computing precision/recall scores
 
-    Example (binary case):
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same number of dimensions,
+            or one additional dimension for ``preds``.
+        ValueError:
+            If the number of classes deduced from ``preds`` is not the same as the
+            ``num_classes`` provided.
 
+    Example:
+        >>> # binary case
+        >>> from torchmetrics.functional import precision_recall_curve
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> precision, recall, thresholds = precision_recall_curve(pred, target, pos_label=1)
@@ -194,8 +216,7 @@ def precision_recall_curve(
         >>> thresholds
         tensor([1, 2, 3])
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -209,7 +230,6 @@ def precision_recall_curve(
         [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
-
     """
     preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes, pos_label)
     return _precision_recall_curve_compute(preds, target, num_classes, pos_label, sample_weights)
