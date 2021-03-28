@@ -55,11 +55,11 @@ def _sk_cm_multilabel_prob(preds, target, normalize=None):
     cm = sk_multilabel_confusion_matrix(y_true=sk_target, y_pred=sk_preds)
     if normalize is not None:
         if normalize == 'true':
-            cm /= cm.sum(axis=1, keepdims=True)
+            cm = cm / cm.sum(axis=1, keepdims=True)
         elif normalize == 'pred':
-            cm /= cm.sum(axis=0, keepdims=True)
+            cm = cm / cm.sum(axis=0, keepdims=True)
         elif normalize == 'all':
-            cm /= cm.sum()
+            cm = cm / cm.sum()
         cm[np.isnan(cm)] = 0
     return cm
 
