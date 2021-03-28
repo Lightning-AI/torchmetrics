@@ -34,11 +34,11 @@ def _compute_sklearn_metric(
 
 
 def _test_retrieval_against_sklearn(
-    sklearn_metric,
-    torch_metric,
-    size,
-    n_documents,
-    query_without_relevant_docs_options,
+    sklearn_metric: Callable,
+    torch_metric: Metric,
+    size: int,
+    n_documents: int,
+    query_without_relevant_docs_options: str,
     **kwargs
 ) -> None:
     """ Compare PL metrics to standard version. """
@@ -127,7 +127,7 @@ def _test_input_shapes(torchmetric) -> None:
         metric(indexes, preds, target)
 
 
-def _test_input_args(torchmetric, message, **kwargs) -> None:
+def _test_input_args(torchmetric: Metric, message: str, **kwargs) -> None:
     """Check invalid args are managed correctly. """
     with pytest.raises(ValueError, match=message):
         torchmetric(**kwargs)
