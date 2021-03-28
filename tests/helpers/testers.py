@@ -124,9 +124,9 @@ def _class_test(
             ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
             ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
             ddp_kwargs_upd = {
-                        k: torch.cat([v[i + r] for r in range(worldsize)]) if isinstance(v, Tensor) else v
-                        for k, v in b_kwargs_update.items()
-                    }
+                k: torch.cat([v[i + r] for r in range(worldsize)]) if isinstance(v, Tensor) else v
+                for k, v in b_kwargs_update.items()
+            }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
@@ -191,7 +191,7 @@ def _assert_half_support(
     metric_functional: Callable,
     preds: torch.Tensor,
     target: torch.Tensor,
-    device: str = 'cpu',
+    device: str = "cpu",
 ):
     """
     Test if an metric can be used with half precision tensors
@@ -343,9 +343,9 @@ class MetricTester:
         target: torch.Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {}
+        metric_args: dict = {},
     ):
-        """ Test if an metric can be used with half precision tensors on cpu
+        """Test if an metric can be used with half precision tensors on cpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -354,7 +354,7 @@ class MetricTester:
             metric_args: dict with additional arguments used for class initialization
         """
         _assert_half_support(
-            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cpu'
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device="cpu"
         )
 
     def run_precision_test_gpu(
@@ -363,9 +363,9 @@ class MetricTester:
         target: torch.Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {}
+        metric_args: dict = {},
     ):
-        """ Test if an metric can be used with half precision tensors on gpu
+        """Test if an metric can be used with half precision tensors on gpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -374,7 +374,7 @@ class MetricTester:
             metric_args: dict with additional arguments used for class initialization
         """
         _assert_half_support(
-            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cuda'
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device="cuda"
         )
 
 
