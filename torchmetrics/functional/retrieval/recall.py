@@ -36,6 +36,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
         a single-value tensor with the recall (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Example:
+        >>> from  torchmetrics.functional import retrieval_recall
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
         >>> retrieval_recall(preds, target, k=2)

@@ -48,7 +48,7 @@ def test_metrics_output_values(sklearn_metric, torch_metric, size):
 
 @pytest.mark.parametrize(['sklearn_metric', 'torch_metric'], [
     [precision_at_k, retrieval_precision],
-    [recall_at_k, retrieval_recall]
+    [recall_at_k, retrieval_recall],
 ])
 @pytest.mark.parametrize("size", [1, 4, 10])
 @pytest.mark.parametrize("k", [None, 1, 4, 10])
@@ -80,7 +80,7 @@ def test_metrics_output_values_with_k(sklearn_metric, torch_metric, size, k):
     [retrieval_average_precision],
     [retrieval_reciprocal_rank],
     [retrieval_precision],
-    [retrieval_recall]
+    [retrieval_recall],
 ])
 def test_input_dtypes(torch_metric) -> None:
     """ Check wrong input dtypes are managed correctly. """
@@ -112,7 +112,7 @@ def test_input_dtypes(torch_metric) -> None:
     [retrieval_average_precision],
     [retrieval_reciprocal_rank],
     [retrieval_precision],
-    [retrieval_recall]
+    [retrieval_recall],
 ])
 def test_input_shapes(torch_metric) -> None:
     """ Check wrong input shapes are managed correctly. """
@@ -136,7 +136,7 @@ def test_input_shapes(torch_metric) -> None:
 # test metrics using top K parameter
 @pytest.mark.parametrize(['torch_metric'], [
     [retrieval_precision],
-    [retrieval_recall]
+    [retrieval_recall],
 ])
 @pytest.mark.parametrize('k', [-1, 1.0])
 def test_input_params(torch_metric, k) -> None:
