@@ -31,6 +31,18 @@ repos:
         language: system
         types: [python]
 
+      - id: yapf
+        name: yapf
+        entry: yapf
+        language: system
+        types: [python]
+
+      - id: flake8
+        name: PEP8
+        entry: flake8
+        language: system
+        types: [python]
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.790
     hooks:
