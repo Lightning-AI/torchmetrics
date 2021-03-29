@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed when `_stable_1d_sort` to work when n >= N ([#6177](https://github.com/PyTorchLightning/pytorch-lightning/pull/6177))
 
 
-- Fixed `_computed` attibute not being correctly reset ([#147](https://github.com/PyTorchLightning/metrics/pull/147))
+- Fixed `_computed` attribute not being correctly reset ([#147](https://github.com/PyTorchLightning/metrics/pull/147))
 
 
 ## [0.2.0] - 2021-03-12
