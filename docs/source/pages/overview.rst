@@ -145,6 +145,7 @@ the following limitations:
   but they are also listed below:
   
   - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
+  - :ref:`references/modules:SSIM` and :ref:`references/functional:ssim [func]`
 
 ******************
 Metric Arithmetics

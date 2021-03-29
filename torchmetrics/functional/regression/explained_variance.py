@@ -24,10 +24,11 @@ def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tens
 
     n_obs = preds.size(0)
     sum_error = torch.sum(target - preds, dim=0)
-    sum_squared_error = torch.sum((target - preds)**2, dim=0)
+    diff = target - preds
+    sum_squared_error = torch.sum(diff * diff, dim=0)
 
     sum_target = torch.sum(target, dim=0)
-    sum_squared_target = torch.sum(target**2, dim=0)
+    sum_squared_target = torch.sum(target * target, dim=0)
 
     return n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target
 
@@ -41,10 +42,10 @@ def _explained_variance_compute(
     multioutput: str = "uniform_average",
 ) -> Union[Tensor, Sequence[Tensor]]:
     diff_avg = sum_error / n_obs
-    numerator = sum_squared_error / n_obs - diff_avg**2
+    numerator = sum_squared_error / n_obs - (diff_avg * diff_avg)
 
     target_avg = sum_target / n_obs
-    denominator = sum_squared_target / n_obs - target_avg**2
+    denominator = sum_squared_target / n_obs - (target_avg * target_avg)
 
     # Take care of division by zero
     nonzero_numerator = numerator != 0
