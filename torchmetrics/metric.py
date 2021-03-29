@@ -254,6 +254,8 @@ class Metric(nn.Module, ABC):
         """
         This method automatically resets the metric state variables to their default value.
         """
+        self._computed = None
+
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
             if isinstance(default, Tensor):
