@@ -127,9 +127,8 @@ class Metric(nn.Module, ABC):
                 If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``None``.
         """
         if (
-            not isinstance(default, Tensor)
-            and not isinstance(default, list)  # noqa: W503
-            or (isinstance(default, list) and len(default) != 0)  # noqa: W503
+            not isinstance(default, (Tensor, list))
+            or (isinstance(default, list) and default)
         ):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
 
