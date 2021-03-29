@@ -127,7 +127,8 @@ class Metric(nn.Module, ABC):
                 If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``None``.
         """
         if (
-            not isinstance(default, Tensor) and not isinstance(default, list)  # noqa: W503
+            not isinstance(default, Tensor)
+            and not isinstance(default, list)  # noqa: W503
             or (isinstance(default, list) and len(default) != 0)  # noqa: W503
         ):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
@@ -197,7 +198,6 @@ class Metric(nn.Module, ABC):
             setattr(self, attr, reduced)
 
     def _wrap_update(self, update):
-
         @functools.wraps(update)
         def wrapped_func(*args, **kwargs):
             self._computed = None
@@ -206,7 +206,6 @@ class Metric(nn.Module, ABC):
         return wrapped_func
 
     def _wrap_compute(self, compute):
-
         @functools.wraps(compute)
         def wrapped_func(*args, **kwargs):
             # return cached value
@@ -292,8 +291,7 @@ class Metric(nn.Module, ABC):
                 setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a Tensor"
-                    f"or a list of Tensor, but encountered {current_val}"
+                    "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
                 )
         return this
 
@@ -304,7 +302,7 @@ class Metric(nn.Module, ABC):
         for key in self._persistent.keys():
             self._persistent[key] = mode
 
-    def state_dict(self, destination=None, prefix='', keep_vars=False):
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         for key in self._defaults.keys():
@@ -326,8 +324,7 @@ class Metric(nn.Module, ABC):
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         _sign_params = self._update_signature.parameters
         filtered_kwargs = {
-            k: v
-            for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
+            k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
         }
 
         # if no kwargs filtered, return al kwargs as default
@@ -342,7 +339,7 @@ class Metric(nn.Module, ABC):
             val = getattr(self, key)
             # Special case: allow list values, so long
             # as their elements are hashable
-            if hasattr(val, '__iter__') and not isinstance(val, Tensor):
+            if hasattr(val, "__iter__") and not isinstance(val, Tensor):
                 hash_vals.extend(val)
             else:
                 hash_vals.append(val)
@@ -448,7 +445,7 @@ class Metric(nn.Module, ABC):
 
     def __pos__(self):
         return CompositionalMetric(torch.abs, self, None)
-    
+
     def __getitem__(self, idx):
         return CompositionalMetric(lambda x: x[idx], self, None)
 
@@ -533,6 +530,6 @@ class CompositionalMetric(Metric):
 
     def __repr__(self) -> str:
         _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
-        repr_str = (self.__class__.__name__ + _op_metrics)
+        repr_str = self.__class__.__name__ + _op_metrics
 
         return repr_str

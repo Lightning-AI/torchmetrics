@@ -22,7 +22,6 @@ from torchmetrics.metric import CompositionalMetric, Metric
 
 
 class DummyMetric(Metric):
-
     def __init__(self, val_to_return):
         super().__init__()
         self._num_updates = 0
@@ -304,7 +303,7 @@ def test_metrics_or(second_operand, expected_result):
 def test_metrics_pow(second_operand, expected_result):
     first_metric = DummyMetric(2)
 
-    final_pow = first_metric**second_operand
+    final_pow = first_metric ** second_operand
 
     assert isinstance(final_pow, CompositionalMetric)
 
@@ -325,8 +324,10 @@ def test_metrics_rfloordiv(first_operand, expected_result):
     assert torch.allclose(expected_result, final_rfloordiv.compute())
 
 
-@pytest.mark.parametrize(["first_operand", "expected_result"],
-                         [pytest.param(tensor([2, 2, 2]), tensor(12), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4))])
+@pytest.mark.parametrize(
+    ["first_operand", "expected_result"],
+    [pytest.param(tensor([2, 2, 2]), tensor(12), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4))],
+)
 def test_metrics_rmatmul(first_operand, expected_result):
     second_operand = DummyMetric([2, 2, 2])
 
@@ -337,8 +338,10 @@ def test_metrics_rmatmul(first_operand, expected_result):
     assert torch.allclose(expected_result, final_rmatmul.compute())
 
 
-@pytest.mark.parametrize(["first_operand", "expected_result"],
-                         [pytest.param(tensor(2), tensor(2), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4))])
+@pytest.mark.parametrize(
+    ["first_operand", "expected_result"],
+    [pytest.param(tensor(2), tensor(2), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_4))],
+)
 def test_metrics_rmod(first_operand, expected_result):
     second_operand = DummyMetric(5)
 
@@ -360,7 +363,7 @@ def test_metrics_rmod(first_operand, expected_result):
 def test_metrics_rpow(first_operand, expected_result):
     second_operand = DummyMetric(2)
 
-    final_rpow = first_operand**second_operand
+    final_rpow = first_operand ** second_operand
 
     assert isinstance(final_rpow, CompositionalMetric)
 
@@ -496,10 +499,10 @@ def test_metrics_pos():
     assert isinstance(final_pos, CompositionalMetric)
     assert torch.allclose(tensor(1), final_pos.compute())
 
+
 @pytest.mark.parametrize(
     ["value", "idx", "expected_result"],
-    [([1, 2, 3], 1, tensor(2)), ([[0,1],[2,3]], (1,0), tensor(2)),
-    ([[0,1],[2,3]], 1, tensor([2,3]))],
+    [([1, 2, 3], 1, tensor(2)), ([[0, 1], [2, 3]], (1, 0), tensor(2)), ([[0, 1], [2, 3]], 1, tensor([2, 3]))],
 )
 def test_metrics_getitem(value, idx, expected_result):
     first_metric = DummyMetric(value)
@@ -507,6 +510,7 @@ def test_metrics_getitem(value, idx, expected_result):
     final_getitem = first_metric[idx]
     assert isinstance(final_getitem, CompositionalMetric)
     assert torch.allclose(expected_result, final_getitem.compute())
+
 
 def test_compositional_metrics_update():
 
