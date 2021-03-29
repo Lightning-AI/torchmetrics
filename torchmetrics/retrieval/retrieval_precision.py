@@ -26,7 +26,7 @@ class RetrievalPrecision(RetrievalMetric):
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts
+    Forward accepts:
 
     - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
@@ -41,10 +41,10 @@ class RetrievalPrecision(RetrievalMetric):
         query_without_relevant_docs:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
-            - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
-            - ``'error'``: raise a ``ValueError``
-            - ``'pos'``: score on those queries is counted as ``1.0``
-            - ``'neg'``: score on those queries is counted as ``0.0``
+                - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
+                - ``'error'``: raise a ``ValueError``
+                - ``'pos'``: score on those queries is counted as ``1.0``
+                - ``'neg'``: score on those queries is counted as ``0.0``
 
         exclude:
             Do not take into account predictions where the ``target`` is equal to this value. default `-100`
