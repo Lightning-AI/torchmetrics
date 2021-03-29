@@ -154,8 +154,7 @@ def hinge(
             If ``multiclass_mode`` is not: None, ``MulticlassMode.CRAMMER_SINGER``, ``"crammer-singer"``,
             ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"``.
 
-    Example:
-        # binary example
+    Example (binary case):
         >>> import torch
         >>> from torchmetrics.functional import hinge
         >>> target = torch.tensor([0, 1, 1])
@@ -163,15 +162,13 @@ def hinge(
         >>> hinge(preds, target)
         tensor(0.3000)
 
-
-        # multiclass example, default mode
+    Example (default / multiclass case):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge(preds, target)
         tensor(2.9000)
 
-
-        # multiclass example, one vs all mode
+    Example (multiclass example, one vs all mode):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge(preds, target, multiclass_mode="one-vs-all")
