@@ -193,6 +193,7 @@ This pattern is implemented for the following operators (with ``a`` being metric
 * Inversion (``~a``)
 * Negative Value (``neg(a)``)
 * Positive Value (``pos(a)``)
+* Indexing (``a[0]``)
 
 .. note::
 
