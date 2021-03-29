@@ -407,6 +407,7 @@ class DummyListMetric(Metric):
 
 
 class DummyMetricSum(DummyMetric):
+
     def update(self, x):
         self.x += x
 
@@ -415,6 +416,7 @@ class DummyMetricSum(DummyMetric):
 
 
 class DummyMetricDiff(DummyMetric):
+
     def update(self, y):
         self.x -= y
 
