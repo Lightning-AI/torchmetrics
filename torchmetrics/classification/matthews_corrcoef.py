@@ -66,7 +66,6 @@ class MatthewsCorrcoef(Metric):
             will be used to perform the allgather
 
     Example:
-
         >>> from torchmetrics import MatthewsCorrcoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])

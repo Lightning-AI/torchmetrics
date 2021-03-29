@@ -34,6 +34,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
         a single-value tensor with the average precision (AP) of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Example:
+        >>> from torchmetrics.functional import retrieval_average_precision
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
         >>> retrieval_average_precision(preds, target)
