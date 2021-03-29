@@ -248,7 +248,14 @@ retrieval_average_precision [func]
 
 
 retrieval_reciprocal_rank [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_reciprocal_rank
+    :noindex:
+
+
+retrieval_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_precision
     :noindex:

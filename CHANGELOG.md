@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RetrievalMRR` metric for Information Retrieval ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
 
 
+- Added `RetrievalPrecision` metric for Information Retrieval ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
+
+
 - Added `average='micro'` as an option in AUROC for multilabel problems ([#110](https://github.com/PyTorchLightning/metrics/pull/110))
 
 
@@ -33,10 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added multilabel support to `ROC` metric ([#114](https://github.com/PyTorchLightning/metrics/pull/114))
 
 
-- Added testing for `half` precision ([#77](https://github.com/PyTorchLightning/metrics/pull/77))
+- Added testing for `half` precision ([#77](https://github.com/PyTorchLightning/metrics/pull/77),
+    [#135](https://github.com/PyTorchLightning/metrics/pull/135)
+)
 
 
 - Added `BootStrapper` to easely calculate confidence intervals for metrics ([#101](https://github.com/PyTorchLightning/metrics/pull/101))
+
+
+- Added `__getitem__` as metric arithmetic operation ([#142](https://github.com/PyTorchLightning/metrics/pull/142))
 
 
 - Added `FID` metric for image generation ([#90](https://github.com/PyTorchLightning/metrics/pull/90))

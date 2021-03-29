@@ -31,8 +31,9 @@ def _r2score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tens
         raise ValueError('Needs at least two samples to calculate r2 score.')
 
     sum_error = torch.sum(target, dim=0)
-    sum_squared_error = torch.sum(torch.pow(target, 2.0), dim=0)
-    residual = torch.sum(torch.pow(target - preds, 2.0), dim=0)
+    sum_squared_error = torch.sum(target * target, dim=0)
+    diff = target - preds
+    residual = torch.sum(diff * diff, dim=0)
     total = target.size(0)
 
     return sum_squared_error, sum_error, residual, total

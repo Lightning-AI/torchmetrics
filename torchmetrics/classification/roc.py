@@ -53,7 +53,6 @@ class ROC(Metric):
             will be used to perform the allgather
 
     Example (binary case):
-
         >>> from torchmetrics import ROC
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
@@ -67,8 +66,6 @@ class ROC(Metric):
         tensor([4, 3, 2, 1, 0])
 
     Example (multiclass case):
-
-        >>> from torchmetrics import ROC
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05],
@@ -87,8 +84,6 @@ class ROC(Metric):
          tensor([1.7500, 0.7500, 0.0500])]
 
     Example (multilabel case):
-
-        >>> from torchmetrics import ROC
         >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
         ...                      [0.3584, 0.7576, 0.1183],
         ...                      [0.2286, 0.3468, 0.1338],

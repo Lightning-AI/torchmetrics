@@ -145,6 +145,7 @@ the following limitations:
   but they are also listed below:
   
   - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
+  - :ref:`references/modules:SSIM` and :ref:`references/functional:ssim [func]`
 
 ******************
 Metric Arithmetics
@@ -192,6 +193,7 @@ This pattern is implemented for the following operators (with ``a`` being metric
 * Inversion (``~a``)
 * Negative Value (``neg(a)``)
 * Positive Value (``pos(a)``)
+* Indexing (``a[0]``)
 
 .. note::
 

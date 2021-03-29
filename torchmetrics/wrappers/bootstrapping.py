@@ -22,10 +22,7 @@ from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 
-def _bootstrap_sampler(
-    size: int,
-    sampling_strategy: str = 'poisson'
-) -> Tensor:
+def _bootstrap_sampler(size: int, sampling_strategy: str = 'poisson') -> Tensor:
     """ Resample a tensor along its first dimension with replacement
     Args:
         size: number of samples
@@ -38,14 +35,10 @@ def _bootstrap_sampler(
     """
     if sampling_strategy == 'poisson':
         p = torch.distributions.Poisson(1)
-        n = p.sample((size,))
+        n = p.sample((size, ))
         return torch.arange(size).repeat_interleave(n.long(), dim=0)
     elif sampling_strategy == 'multinomial':
-        idx = torch.multinomial(
-            torch.ones(size),
-            num_samples=size,
-            replacement=True
-        )
+        idx = torch.multinomial(torch.ones(size), num_samples=size, replacement=True)
         return idx
     raise ValueError('Unknown sampling strategy')
 
