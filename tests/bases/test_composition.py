@@ -496,6 +496,17 @@ def test_metrics_pos():
     assert isinstance(final_pos, CompositionalMetric)
     assert torch.allclose(tensor(1), final_pos.compute())
 
+@pytest.mark.parametrize(
+    ["value", "idx", "expected_result"],
+    [([1, 2, 3], 1, tensor(2)), ([[0,1],[2,3]], (1,0), tensor(2)),
+    ([[0,1],[2,3]], 1, tensor([2,3]))],
+)
+def test_metrics_getitem(value, idx, expected_result):
+    first_metric = DummyMetric(value)
+
+    final_getitem = first_metric[idx]
+    assert isinstance(final_getitem, CompositionalMetric)
+    assert torch.allclose(expected_result, final_getitem.compute())
 
 def test_compositional_metrics_update():
 

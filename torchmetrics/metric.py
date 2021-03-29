@@ -448,6 +448,9 @@ class Metric(nn.Module, ABC):
 
     def __pos__(self):
         return CompositionalMetric(torch.abs, self, None)
+    
+    def __getitem__(self, idx):
+        return CompositionalMetric(lambda x: x[idx], self, None)
 
 
 def _neg(tensor: Tensor):
