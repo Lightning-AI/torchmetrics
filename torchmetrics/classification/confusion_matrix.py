@@ -72,7 +72,6 @@ class ConfusionMatrix(Metric):
                 [1., 1.]])
 
     Example (multiclass data):
-        >>> from torchmetrics import ConfusionMatrix
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> confmat = ConfusionMatrix(num_classes=3)
@@ -82,11 +81,8 @@ class ConfusionMatrix(Metric):
                 [0., 0., 1.]])
 
     Example (multilabel data):
-        >>> from torchmetrics import ConfusionMatrix
-        >>> target = torch.tensor([[0, 1, 0],
-        ...                        [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1],
-        ...                       [1, 0, 1]])
+        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> confmat = ConfusionMatrix(num_classes=3, is_multilabel=True)
         >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         tensor([[[1., 0.], [0., 1.]],
@@ -119,10 +115,8 @@ class ConfusionMatrix(Metric):
         assert self.normalize in allowed_normalize, \
             f"Argument average needs to one of the following: {allowed_normalize}"
 
-        if is_multilabel:
-            self.add_state("confmat", default=torch.zeros(num_classes, 2, 2), dist_reduce_fx="sum")
-        else:
-            self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
+        default = torch.zeros(num_classes, 2, 2) if is_multilabel else torch.zeros(num_classes, num_classes)
+        self.add_state("confmat", default=default, dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor):
         """
