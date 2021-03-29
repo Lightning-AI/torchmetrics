@@ -126,9 +126,7 @@ class Metric(nn.Module, ABC):
             ValueError:
                 If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``None``.
         """
-        if (
-            not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default)
-        ):
+        if (not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default)):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
 
         if dist_reduce_fx == "sum":
@@ -196,6 +194,7 @@ class Metric(nn.Module, ABC):
             setattr(self, attr, reduced)
 
     def _wrap_update(self, update):
+
         @functools.wraps(update)
         def wrapped_func(*args, **kwargs):
             self._computed = None
@@ -204,6 +203,7 @@ class Metric(nn.Module, ABC):
         return wrapped_func
 
     def _wrap_compute(self, compute):
+
         @functools.wraps(compute)
         def wrapped_func(*args, **kwargs):
             # return cached value
@@ -289,7 +289,8 @@ class Metric(nn.Module, ABC):
                 setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
+                    "Expected metric state to be either a Tensor"
+                    f"or a list of Tensor, but encountered {current_val}"
                 )
         return this
 
@@ -322,7 +323,8 @@ class Metric(nn.Module, ABC):
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         _sign_params = self._update_signature.parameters
         filtered_kwargs = {
-            k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
+            k: v
+            for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
         }
 
         # if no kwargs filtered, return al kwargs as default
