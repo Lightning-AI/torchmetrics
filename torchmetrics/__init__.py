@@ -30,6 +30,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     ConfusionMatrix,
     FBeta,
     HammingDistance,
+    Hinge,
     IoU,
     MatthewsCorrcoef,
     Precision,
@@ -48,4 +49,5 @@ from torchmetrics.regression import (  # noqa: F401 E402
     MeanSquaredLogError,
     R2Score,
 )
-from torchmetrics.retrieval import RetrievalMAP  # noqa: F401 E402
+from torchmetrics.retrieval import RetrievalMAP, RetrievalMRR, RetrievalPrecision  # noqa: F401 E402
+from torchmetrics.wrappers import BootStrapper  # noqa: F401 E402

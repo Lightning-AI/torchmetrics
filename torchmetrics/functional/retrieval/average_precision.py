@@ -12,42 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
+
+from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
-    r"""
+    """
     Computes average precision (for information retrieval), as explained
-    `here <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_.
+    `here <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`__.
 
-    `preds` and `target` should be of the same shape and live on the same device. If no `target` is ``True``,
-    0 is returned. Target must be of type `bool` or `int`, otherwise an error is raised.
+    ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
+    ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
+    otherwise an error is raised.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
-        target: ground truth about each document being relevant or not. Requires `bool` or `int` tensor.
+        target: ground truth about each document being relevant or not.
 
     Return:
-        a single-value tensor with the average precision (AP) of the predictions `preds` wrt the labels `target`.
+        a single-value tensor with the average precision (AP) of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Example:
-        >>> preds = torch.tensor([0.2, 0.3, 0.5])
-        >>> target = torch.tensor([True, False, True])
+        >>> from torchmetrics.functional import retrieval_average_precision
+        >>> preds = tensor([0.2, 0.3, 0.5])
+        >>> target = tensor([True, False, True])
         >>> retrieval_average_precision(preds, target)
         tensor(0.8333)
     """
-
-    if preds.shape != target.shape or preds.device != target.device:
-        raise ValueError("`preds` and `target` must have the same shape and live on the same device")
-
-    if target.dtype not in (torch.bool, torch.int16, torch.int32, torch.int64):
-        raise ValueError("`target` must be a tensor of booleans or integers")
-
-    if target.dtype is not torch.bool:
-        target = target.bool()
+    preds, target = _check_retrieval_functional_inputs(preds, target)
 
     if target.sum() == 0:
-        return torch.tensor(0, device=preds.device)
+        return tensor(0.0, device=preds.device)
 
     target = target[torch.argsort(preds, dim=-1, descending=True)]
     positions = torch.arange(1, len(target) + 1, device=target.device, dtype=torch.float32)[target > 0]

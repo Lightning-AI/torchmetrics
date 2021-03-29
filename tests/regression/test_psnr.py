@@ -20,11 +20,12 @@ import pytest
 import torch
 from skimage.metrics import peak_signal_noise_ratio
 
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import psnr
 from torchmetrics.regression import PSNR
 
-torch.manual_seed(42)
+seed_all(42)
 
 Input = namedtuple('Input', ["preds", "target"])
 
@@ -112,6 +113,29 @@ class TestPSNR(MetricTester):
             psnr,
             partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
+        )
+
+    # PSNR half + cpu does not work due to missing support in torch.log
+    @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
+    def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+        self.run_precision_test_cpu(
+            preds, target, PSNR, psnr, {
+                "data_range": data_range,
+                "base": base,
+                "reduction": reduction,
+                "dim": dim
+            }
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+        self.run_precision_test_gpu(
+            preds, target, PSNR, psnr, {
+                "data_range": data_range,
+                "base": base,
+                "reduction": reduction,
+                "dim": dim
+            }
         )
 
 

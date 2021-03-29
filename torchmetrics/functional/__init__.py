@@ -20,6 +20,7 @@ from torchmetrics.functional.classification.confusion_matrix import confusion_ma
 from torchmetrics.functional.classification.dice import dice_score  # noqa: F401
 from torchmetrics.functional.classification.f_beta import f1, fbeta  # noqa: F401
 from torchmetrics.functional.classification.hamming_distance import hamming_distance  # noqa: F401
+from torchmetrics.functional.classification.hinge import hinge  # noqa: F401
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401
@@ -37,4 +38,6 @@ from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
 from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
+from torchmetrics.functional.retrieval.precision import retrieval_precision  # noqa: F401
+from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401

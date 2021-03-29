@@ -121,7 +121,6 @@ def roc(
             If multiclass or multilabel, this is a list of such tensors, one for each class/label.
 
     Example (binary case):
-
         >>> from torchmetrics.functional import roc
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
@@ -134,7 +133,6 @@ def roc(
         tensor([4, 3, 2, 1, 0])
 
     Example (multiclass case):
-
         >>> from torchmetrics.functional import roc
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05],
@@ -153,7 +151,6 @@ def roc(
          tensor([1.7500, 0.7500, 0.0500])]
 
     Example (multilabel case):
-
         >>> from torchmetrics.functional import roc
         >>> pred = torch.tensor([[0.8191, 0.3680, 0.1138],
         ...                      [0.3584, 0.7576, 0.1183],
