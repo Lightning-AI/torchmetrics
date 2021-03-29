@@ -52,7 +52,7 @@ class ConfusionMatrix(Metric):
 
         threshold:
             Threshold value for binary or multi-label probabilites. default: 0.5
-        is_multiclass:
+        multilabel:
             determines if data is multilabel or not.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
@@ -83,7 +83,7 @@ class ConfusionMatrix(Metric):
     Example (multilabel data):
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> confmat = ConfusionMatrix(num_classes=3, is_multilabel=True)
+        >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
         >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         tensor([[[1., 0.], [0., 1.]],
                 [[1., 0.], [1., 0.]],
@@ -95,7 +95,7 @@ class ConfusionMatrix(Metric):
         num_classes: int,
         normalize: Optional[str] = None,
         threshold: float = 0.5,
-        is_multilabel: bool = False,
+        multilabel: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -109,13 +109,13 @@ class ConfusionMatrix(Metric):
         self.num_classes = num_classes
         self.normalize = normalize
         self.threshold = threshold
-        self.is_multilabel = is_multilabel
+        self.multilabel = multilabel
 
         allowed_normalize = ('true', 'pred', 'all', 'none', None)
         assert self.normalize in allowed_normalize, \
             f"Argument average needs to one of the following: {allowed_normalize}"
 
-        default = torch.zeros(num_classes, 2, 2) if is_multilabel else torch.zeros(num_classes, num_classes)
+        default = torch.zeros(num_classes, 2, 2) if multilabel else torch.zeros(num_classes, num_classes)
         self.add_state("confmat", default=default, dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor):
@@ -126,7 +126,7 @@ class ConfusionMatrix(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        confmat = _confusion_matrix_update(preds, target, self.num_classes, self.threshold, self.is_multilabel)
+        confmat = _confusion_matrix_update(preds, target, self.num_classes, self.threshold, self.multilabel)
         self.confmat += confmat
 
     def compute(self) -> Tensor:
@@ -134,7 +134,7 @@ class ConfusionMatrix(Metric):
         Computes confusion matrix.
 
         Returns:
-            If `is_multiclass=False` this will be a `[n_classes, n_classes]` tensor and if `is_multiclass=True`
+            If `multilabel=False` this will be a `[n_classes, n_classes]` tensor and if `multilabel=True`
             this will be a `[n_classes, 2, 2]` tensor
         """
         return _confusion_matrix_compute(self.confmat, self.normalize)

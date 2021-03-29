@@ -22,14 +22,14 @@ from torchmetrics.utilities.enums import DataType
 
 
 def _confusion_matrix_update(
-        preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, is_multilabel: bool = False
+        preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
 ) -> Tensor:
     preds, target, mode = _input_format_classification(preds, target, threshold)
     if mode not in (DataType.BINARY, DataType.MULTILABEL):
         preds = preds.argmax(dim=1)
         target = target.argmax(dim=1)
 
-    if is_multilabel:
+    if multilabel:
         unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_classes, device=preds.device)).flatten()
         minlength = 4 * num_classes
     else:
@@ -37,7 +37,7 @@ def _confusion_matrix_update(
         minlength = num_classes ** 2
 
     bins = torch.bincount(unique_mapping, minlength=minlength)
-    if is_multilabel:
+    if multilabel:
         confmat = bins.reshape(num_classes, 2, 2)
     else:
         confmat = bins.reshape(num_classes, num_classes)
@@ -71,7 +71,7 @@ def confusion_matrix(
     num_classes: int,
     normalize: Optional[str] = None,
     threshold: float = 0.5,
-    is_multilabel: bool = False
+    multilabel: bool = False
 ) -> Tensor:
     """
     Computes the `confusion matrix
@@ -102,7 +102,7 @@ def confusion_matrix(
 
         threshold:
             Threshold value for binary or multi-label probabilities. default: 0.5
-        is_multiclass:
+        multilabel:
             determines if data is multilabel or not.
 
     Example (binary data):
@@ -126,11 +126,11 @@ def confusion_matrix(
     Example (multilabel data):
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
-        >>> confmat = ConfusionMatrix(num_classes=3, is_multilabel=True)
+        >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
         >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         tensor([[[1., 0.], [0., 1.]],
                 [[1., 0.], [1., 0.]],
                 [[0., 1.], [0., 1.]]])
     """
-    confmat = _confusion_matrix_update(preds, target, num_classes, threshold, is_multilabel)
+    confmat = _confusion_matrix_update(preds, target, num_classes, threshold, multilabel)
     return _confusion_matrix_compute(confmat, normalize)

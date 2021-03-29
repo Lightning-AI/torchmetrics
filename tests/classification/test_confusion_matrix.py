@@ -110,7 +110,7 @@ def _sk_cm_multidim_multiclass(preds, target, normalize=None):
 
 @pytest.mark.parametrize("normalize", ['true', 'pred', 'all', None])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes, is_multilabel",
+    "preds, target, sk_metric, num_classes, multilabel",
     [(_input_binary_prob.preds, _input_binary_prob.target, _sk_cm_binary_prob, 2, False),
      (_input_binary.preds, _input_binary.target, _sk_cm_binary, 2, False),
      (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
@@ -125,7 +125,7 @@ class TestConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_confusion_matrix(
-            self, normalize, preds, target, sk_metric, num_classes, is_multilabel, ddp, dist_sync_on_step
+            self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step
     ):
         self.run_class_metric_test(
             ddp=ddp,
@@ -138,11 +138,11 @@ class TestConfusionMatrix(MetricTester):
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
                 "normalize": normalize,
-                "is_multilabel": is_multilabel
+                "multilabel": multilabel
             }
         )
 
-    def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, is_multilabel):
+    def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel):
         self.run_functional_metric_test(
             preds,
             target,
@@ -152,7 +152,7 @@ class TestConfusionMatrix(MetricTester):
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
                 "normalize": normalize,
-                "is_multilabel": is_multilabel
+                "multilabel": multilabel
             }
         )
 
