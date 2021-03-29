@@ -118,6 +118,7 @@ def _matrix_sqrt(matrix: torch.Tensor, num_iters: int = 100, epsilon: float = 0)
     
     return s_matrix
 
+
 def _matrix_sqrt_fid(matrix1, matrix2, init_scale: float = 1e-6):
     stable = False
     eye = torch.eye(matrix1.shape[0], dtype=matrix1.dtype, device=matrix1.device)
@@ -184,6 +185,10 @@ class FID(Metric):
 
 
     Args:
+        images_or_features: string indicating if input will be ``'images'`` from which we will calculate
+            features from or ``'features'`` which will be used directly to update the estimates.
+        feature_size: size of features, will only have an effect if ``images_or_features='features'``, else
+            it will be forced to be 2048 (size of the output from inceptionv3 net).
         perform_nomalization: if ``True`` will normalize the input by mean [0.485, 0.456, 0.406] 
             and std = [0.229, 0.224, 0.225] ()
         compute_on_step:
@@ -205,6 +210,13 @@ class FID(Metric):
     [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
     Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
     https://arxiv.org/abs/1706.08500
+    
+    Raises:
+        MisconfigurationException:
+            If `images_or_features` is not one of `images` or `features
+            If `images_or_features='images'` and torchvision is not installed
+            
+            
     """
     def __init__(
         self,
@@ -225,7 +237,7 @@ class FID(Metric):
         allowed_input = ('images', 'features')
         if images_or_features not in allowed_input:
             raise MisconfigurationException("Expected argument `images_or_features` to be one of the following"
-                                            " {allowed")
+                                            f" {allowed_input} but got {images_or_features}")
         
         self.images_or_features = images_or_features
         self.perform_normalization = perform_normalization
@@ -241,15 +253,16 @@ class FID(Metric):
             
             self.inception = inception_v3(pretrained=True)
             self.inception.fc = _Identity()
-            feature_size = 2048
+            self.feature_size = 2048
         else:
             self.inception = None
+            self.feature_size = feature_size
             
-        self.add_state("real_mean", torch.zeros(feature_size), dist_reduce_fx="mean")
-        self.add_state("real_cov", torch.zeros(feature_size, feature_size), dist_reduce_fx="mean")
+        self.add_state("real_mean", torch.zeros(self.feature_size), dist_reduce_fx="mean")
+        self.add_state("real_cov", torch.zeros(self.feature_size, self.feature_size), dist_reduce_fx="mean")
         self.add_state("real_nobs", torch.zeros(1), dist_reduce_fx="sum")
-        self.add_state("fake_mean", torch.zeros(feature_size), dist_reduce_fx="mean")
-        self.add_state("fake_cov", torch.zeros(feature_size, feature_size), dist_reduce_fx="mean")
+        self.add_state("fake_mean", torch.zeros(self.feature_size), dist_reduce_fx="mean")
+        self.add_state("fake_cov", torch.zeros(self.feature_size, self.feature_size), dist_reduce_fx="mean")
         self.add_state("fake_nobs", torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, imgs_or_feature: torch.Tensor, real: bool = True) -> None:
@@ -304,3 +317,6 @@ class FID(Metric):
         else:
             if img_or_feature.ndim != 2:
                 raise ValueError('input should be a [B,D] feature tensor (B=batch size, D=feature size)')
+            if img_or_feature.shape[-1] != self.feature_size:
+                raise ValueError(f'FID metric was initialized with feature size {self.feature_size}'
+                                 f'but got input with size {img_or_feature.shape[-1]}.')

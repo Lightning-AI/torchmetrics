@@ -77,7 +77,52 @@ def test_fid_pickle():
     metric = pickle.loads(pickled_metric)
 
 
-# @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason='test requires torchvision')
+def test_invalid_args():
+    """ test errors raised on wrong initialization """
+    
+    with pytest.raises:
+        FID(images_or_features='tensor')
+
+    if not _TORCHVISION_AVAILABLE:
+        with pytest.raises:
+            FID()
+            
+def test_invalid_input():
+    metric = FID(images_or_features='images')
+    
+    # wrong number of dims
+    with pytest.raises:
+        metric(torch.rand(2,2))
+        
+    # wrong number of channels
+    with pytest.raises:
+        metric(torch.rand(1,2,299,299))
+        
+    # wrong height
+    with pytest.raises:
+        metric(torch.rand(1,3,200,299))
+    
+    # wrong width
+    with pytest.raises:
+        metric(torch.rand(1,3,299,200))
+    
+    # wrong data scale
+    with pytest.raises(
+        metric(torch.randn(1,3,299,299)))
+    
+    metric = FID(images_or_features='features')
+    
+    # wrong number of dims
+    with pytest.raises():
+        metric(torch.randn(10))
+    
+    # mismatch in number of features
+    with pytest.raises():
+        metric(torch.randn(10, 100))
+
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason='test requires torchvision')
+def test_fid()
+
 # def test_fid_same_input():
 #     """ # if real and fake are update on the same data the fid score should be 0 """
 #     metric = FID()
@@ -94,4 +139,6 @@ def test_fid_pickle():
 #     pdb.set_trace()
 #     val = metric.compute()
 #     assert val == 0
+
+
         
