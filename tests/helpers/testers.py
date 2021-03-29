@@ -116,16 +116,16 @@ def _class_test(
     metric = pickle.loads(pickled_metric)
 
     for i in range(rank, NUM_BATCHES, worldsize):
-        b_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+        batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
-        batch_result = metric(preds[i], target[i], **b_kwargs_update)
+        batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
             ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
             ddp_kwargs_upd = {
                 k: torch.cat([v[i + r] for r in range(worldsize)]) if isinstance(v, Tensor) else v
-                for k, v in b_kwargs_update.items()
+                for k, v in batch_kwargs_update.items()
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
