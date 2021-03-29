@@ -32,6 +32,7 @@ class TestBootStrapper(BootStrapper):
     """ For testing purpose, we subclass the bootstrapper class so we can get the exact permutation
         the class is creating
     """
+
     def update(self, *args) -> None:
         self.out = []
         for idx in range(self.num_bootstraps):
