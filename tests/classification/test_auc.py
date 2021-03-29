@@ -15,14 +15,15 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
-import torch
 from sklearn.metrics import auc as _sk_auc
+from torch import tensor
 
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.classification.auc import AUC
 from torchmetrics.functional import auc
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def sk_auc(x, y):
@@ -43,7 +44,7 @@ for i in range(4):
     y = y[idx] if i % 2 == 0 else x[idx[::-1]]
     x = x.reshape(NUM_BATCHES, 8)
     y = y.reshape(NUM_BATCHES, 8)
-    _examples.append(Input(x=torch.tensor(x), y=torch.tensor(y)))
+    _examples.append(Input(x=tensor(x), y=tensor(y)))
 
 
 @pytest.mark.parametrize("x, y", _examples)
@@ -74,4 +75,4 @@ class TestAUC(MetricTester):
 ])
 def test_auc(x, y, expected):
     # Test Area Under Curve (AUC) computation
-    assert auc(torch.tensor(x), torch.tensor(y)) == expected
+    assert auc(tensor(x), tensor(y), reorder=True) == expected

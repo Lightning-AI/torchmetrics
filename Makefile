@@ -21,10 +21,10 @@ test: clean env
 	python -m coverage report
 
 docs: clean
-	pip install --quiet -r docs/requirements.txt
-	python -m sphinx -b html -W docs/source docs/build
+	pip install --quiet -r requirements/docs.txt
+	python -m sphinx -b html -W --keep-going docs/source docs/build
 
 env:
 	pip install -r requirements.txt
-	pip install -r tests/requirements.txt
+	pip install -r requirements/test.txt
 

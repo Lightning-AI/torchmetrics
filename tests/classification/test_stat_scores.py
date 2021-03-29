@@ -18,22 +18,25 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import multilabel_confusion_matrix
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob, _input_multiclass
-from tests.classification.inputs import _input_multiclass_prob as _input_mccls_prob
+from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mcls
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import StatScores
 from torchmetrics.functional import stat_scores
 from torchmetrics.utilities.checks import _input_format_classification
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_stat_scores(preds, target, reduce, num_classes, is_multiclass, ignore_index, top_k, mdmc_reduce=None):
+    # todo: `mdmc_reduce` is unused
     preds, target, _ = _input_format_classification(
         preds, target, threshold=THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
     )
@@ -101,8 +104,8 @@ def _sk_stat_scores_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, i
         ["macro", None, None, _input_binary, None],
         ["micro", None, None, _input_mdmc_prob, None],
         ["micro", None, None, _input_binary_prob, 0],
-        ["micro", None, None, _input_mccls_prob, NUM_CLASSES],
-        ["micro", None, NUM_CLASSES, _input_mccls_prob, NUM_CLASSES],
+        ["micro", None, None, _input_mcls_prob, NUM_CLASSES],
+        ["micro", None, NUM_CLASSES, _input_mcls_prob, NUM_CLASSES],
     ],
 )
 def test_wrong_params(reduce, mdmc_reduce, num_classes, inputs, ignore_index):
@@ -138,8 +141,8 @@ def test_wrong_threshold():
         (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_stat_scores, None, NUM_CLASSES, None, None),
         (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_stat_scores, None, NUM_CLASSES, None, 2),
         (_input_mcls.preds, _input_mcls.target, _sk_stat_scores, None, NUM_CLASSES, False, None),
-        (_input_mccls_prob.preds, _input_mccls_prob.target, _sk_stat_scores, None, NUM_CLASSES, None, None),
-        (_input_mccls_prob.preds, _input_mccls_prob.target, _sk_stat_scores, None, NUM_CLASSES, None, 2),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_stat_scores, None, NUM_CLASSES, None, None),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_stat_scores, None, NUM_CLASSES, None, 2),
         (_input_multiclass.preds, _input_multiclass.target, _sk_stat_scores, None, NUM_CLASSES, None, None),
         (_input_mdmc.preds, _input_mdmc.target, _sk_stat_scores_mdim_mcls, "samplewise", NUM_CLASSES, None, None),
         (
@@ -159,8 +162,8 @@ class TestStatScores(MetricTester):
         ddp: bool,
         dist_sync_on_step: bool,
         sk_fn: Callable,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         reduce: str,
         mdmc_reduce: Optional[str],
         num_classes: Optional[int],
@@ -202,8 +205,8 @@ class TestStatScores(MetricTester):
     def test_stat_scores_fn(
         self,
         sk_fn: Callable,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         reduce: str,
         mdmc_reduce: Optional[str],
         num_classes: Optional[int],
@@ -239,26 +242,26 @@ class TestStatScores(MetricTester):
         )
 
 
-_mc_k_target = torch.tensor([0, 1, 2])
-_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
-_ml_k_target = torch.tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
-_ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
+_mc_k_target = tensor([0, 1, 2])
+_mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_ml_k_target = tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
+_ml_k_preds = tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
     "k, preds, target, reduce, expected",
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor([2, 1, 5, 1, 3])),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 3, 3, 0, 3])),
-        (1, _ml_k_preds, _ml_k_target, "micro", torch.tensor([0, 3, 3, 3, 3])),
-        (2, _ml_k_preds, _ml_k_target, "micro", torch.tensor([1, 5, 1, 2, 3])),
-        (1, _mc_k_preds, _mc_k_target, "macro", torch.tensor([[0, 1, 1], [0, 1, 0], [2, 1, 2], [1, 0, 0], [1, 1, 1]])),
-        (2, _mc_k_preds, _mc_k_target, "macro", torch.tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
-        (1, _ml_k_preds, _ml_k_target, "macro", torch.tensor([[0, 0, 0], [1, 0, 2], [1, 1, 1], [1, 2, 0], [1, 2, 0]])),
-        (2, _ml_k_preds, _ml_k_target, "macro", torch.tensor([[0, 1, 0], [2, 0, 3], [0, 1, 0], [1, 1, 0], [1, 2, 0]])),
+        (1, _mc_k_preds, _mc_k_target, "micro", tensor([2, 1, 5, 1, 3])),
+        (2, _mc_k_preds, _mc_k_target, "micro", tensor([3, 3, 3, 0, 3])),
+        (1, _ml_k_preds, _ml_k_target, "micro", tensor([0, 3, 3, 3, 3])),
+        (2, _ml_k_preds, _ml_k_target, "micro", tensor([1, 5, 1, 2, 3])),
+        (1, _mc_k_preds, _mc_k_target, "macro", tensor([[0, 1, 1], [0, 1, 0], [2, 1, 2], [1, 0, 0], [1, 1, 1]])),
+        (2, _mc_k_preds, _mc_k_target, "macro", tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
+        (1, _ml_k_preds, _ml_k_target, "macro", tensor([[0, 0, 0], [1, 0, 2], [1, 1, 1], [1, 2, 0], [1, 2, 0]])),
+        (2, _ml_k_preds, _ml_k_target, "macro", tensor([[0, 1, 0], [2, 0, 3], [0, 1, 0], [1, 1, 0], [1, 2, 0]])),
     ],
 )
-def test_top_k(k: int, preds: torch.Tensor, target: torch.Tensor, reduce: str, expected: torch.Tensor):
+def test_top_k(k: int, preds: Tensor, target: Tensor, reduce: str, expected: Tensor):
     """ A simple test to check that top_k works as expected """
 
     class_metric = StatScores(top_k=k, reduce=reduce, num_classes=3)

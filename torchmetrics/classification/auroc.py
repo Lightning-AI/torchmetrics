@@ -11,18 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from distutils.version import LooseVersion
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 class AUROC(Metric):
-    r"""Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC)
+    r"""Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
     <https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Further_interpretations>`_.
     Works for both binary, multilabel and multiclass problems. In the case of
     multiclass, the values will be calculated based on a one-vs-the-rest approach.
@@ -39,42 +40,54 @@ class AUROC(Metric):
     dimension more than the ``target`` tensor the input will be interpretated as
     multiclass.
 
-     Args:
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
-        average:
-            - ``'macro'`` computes metric for each class and uniformly averages them
-            - ``'weighted'`` computes metric for each class and does a weighted-average,
-              where each class is weighted by their support (accounts for class imbalance)
-            - ``None`` computes and returns the metric per class
-        max_fpr:
-            If not ``None``, calculates standardized partial AUC over the
-            range [0, max_fpr]. Should be a float between 0 and 1.
-        compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+    Args:
+       num_classes: integer with number of classes. Not nessesary to provide
+           for binary problems.
+       pos_label: integer determining the positive class. Default is ``None``
+           which for binary problem is translate to 1. For multiclass problems
+           this argument should not be set as we iteratively change it in the
+           range [0,num_classes-1]
+       average:
+           - ``'micro'`` computes metric globally. Only works for multilabel problems
+           - ``'macro'`` computes metric for each class and uniformly averages them
+           - ``'weighted'`` computes metric for each class and does a weighted-average,
+             where each class is weighted by their support (accounts for class imbalance)
+           - ``None`` computes and returns the metric per class
+       max_fpr:
+           If not ``None``, calculates standardized partial AUC over the
+           range [0, max_fpr]. Should be a float between 0 and 1.
+       compute_on_step:
+           Forward only calls ``update()`` and return None if this is set to False. default: True
+       dist_sync_on_step:
+           Synchronize metric state across processes at each ``forward()``
+           before returning the value at the step.
+       process_group:
+           Specify the process group on which synchronization is called. default: None (which selects the entire world)
+       dist_sync_fn:
+           Callback that performs the allgather operation on the metric state. When ``None``, DDP
+           will be used to perform the allgather
 
-    Example (binary case):
+    Raises:
+        ValueError:
+            If ``average`` is none of ``None``, ``"macro"`` or ``"weighted"``.
+        ValueError:
+            If ``max_fpr`` is not a ``float`` in the range ``(0, 1]``.
+        RuntimeError:
+            If ``PyTorch version`` is ``below 1.6`` since max_fpr requires ``torch.bucketize``
+            which is not available below 1.6.
+        ValueError:
+            If the mode of data (binary, multi-label, multi-class) changes between batches.
 
+    Example:
+        >>> # binary case
+        >>> from torchmetrics import AUROC
         >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
         >>> auroc = AUROC(pos_label=1)
         >>> auroc(preds, target)
         tensor(0.5000)
 
-    Example (multiclass case):
-
+        >>> # multiclass case
         >>> preds = torch.tensor([[0.90, 0.05, 0.05],
         ...                       [0.05, 0.90, 0.05],
         ...                       [0.05, 0.05, 0.90],
@@ -110,17 +123,17 @@ class AUROC(Metric):
         self.average = average
         self.max_fpr = max_fpr
 
-        allowed_average = (None, 'macro', 'weighted')
+        allowed_average = (None, 'macro', 'weighted', 'micro')
         if self.average not in allowed_average:
             raise ValueError(
                 f'Argument `average` expected to be one of the following: {allowed_average} but got {average}'
             )
 
         if self.max_fpr is not None:
-            if (not isinstance(max_fpr, float) and 0 < max_fpr <= 1):
+            if not isinstance(max_fpr, float) or not 0 < max_fpr <= 1:
                 raise ValueError(f"`max_fpr` should be a float in range (0, 1], got: {max_fpr}")
 
-            if LooseVersion(torch.__version__) < LooseVersion('1.6.0'):
+            if _TORCH_LOWER_1_6:
                 raise RuntimeError(
                     '`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6'
                 )
@@ -134,7 +147,7 @@ class AUROC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets.
 
@@ -154,7 +167,7 @@ class AUROC(Metric):
             )
         self.mode = mode
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes AUROC based on inputs passed in to ``update`` previously.
         """

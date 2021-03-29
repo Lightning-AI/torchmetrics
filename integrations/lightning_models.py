@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import torch
 from pytorch_lightning import LightningModule
 from torch.utils.data import Dataset
@@ -68,7 +69,8 @@ class BoringModel(LightningModule):
     def forward(self, x):
         return self.layer(x)
 
-    def loss(self, batch, prediction):
+    @staticmethod
+    def loss(_, prediction):
         # An arbitrary loss to have a loss that updates the model weights during `Trainer.fit` calls
         return torch.nn.functional.mse_loss(prediction, torch.ones_like(prediction))
 

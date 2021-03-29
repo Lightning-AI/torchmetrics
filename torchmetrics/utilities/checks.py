@@ -14,18 +14,19 @@
 from typing import Optional, Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
-def _check_same_shape(pred: torch.Tensor, target: torch.Tensor):
+def _check_same_shape(pred: Tensor, target: Tensor):
     """ Check that predictions and target have the same shape, else raise error """
     if pred.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: torch.Tensor, target: torch.Tensor, threshold: float, is_multiclass: bool):
+def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, is_multiclass: bool):
     """
     Perform basic validation of inputs that does not require deducing any information
     of the type of inputs.
@@ -56,7 +57,7 @@ def _basic_input_validation(preds: torch.Tensor, target: torch.Tensor, threshold
         raise ValueError("If you set `is_multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
 
 
-def _check_shape_and_type_consistency(preds: torch.Tensor, target: torch.Tensor) -> Tuple[str, int]:
+def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[str, int]:
     """
     This checks that the shape and type of inputs are consistent with
     each other and fall into one of the allowed input types (see the
@@ -139,9 +140,7 @@ def _check_num_classes_binary(num_classes: int, is_multiclass: bool):
         )
 
 
-def _check_num_classes_mc(
-    preds: torch.Tensor, target: torch.Tensor, num_classes: int, is_multiclass: bool, implied_classes: int
-):
+def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, is_multiclass: bool, implied_classes: int):
     """
     This checks that the consistency of `num_classes` with the data
     and `is_multiclass` param for (multi-dimensional) multi-class data.
@@ -206,8 +205,8 @@ def _check_top_k(top_k: int, case: str, implied_classes: int, is_multiclass: Opt
 
 
 def _check_classification_inputs(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float,
     num_classes: Optional[int],
     is_multiclass: bool,
@@ -222,8 +221,8 @@ def _check_classification_inputs(
 
     In case where preds are floats (probabilities), it is checked whether they are in [0,1] interval.
 
-    When ``num_classes`` is given, it is checked that it is consitent with input cases (binary,
-    multi-label, ...), and that, if availible, the implied number of classes in the ``C``
+    When ``num_classes`` is given, it is checked that it is consistent with input cases (binary,
+    multi-label, ...), and that, if available, the implied number of classes in the ``C``
     dimension is consistent with it (as well as that max label in target is smaller than it).
 
     When ``num_classes`` is not specified in these cases, consistency of the highest target
@@ -243,13 +242,13 @@ def _check_classification_inputs(
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
         num_classes:
-            Number of classes. If not explicitly set, the number of classes will be infered
+            Number of classes. If not explicitly set, the number of classes will be inferred
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
             Number of highest probability entries for each sample to convert to 1s - relevant
             only for inputs with probability predictions. The default value (``None``) will be
-            interepreted as 1 for these inputs. If this parameter is set for multi-label inputs,
+            interpreted as 1 for these inputs. If this parameter is set for multi-label inputs,
             it will take precedence over threshold.
 
             Should be left unset (``None``) for inputs with label predictions.
@@ -265,7 +264,7 @@ def _check_classification_inputs(
             'multi-dim multi-class'
     """
 
-    # Baisc validation (that does not need case/type information)
+    # Basic validation (that does not need case/type information)
     _basic_input_validation(preds, target, threshold, is_multiclass)
 
     # Check that shape/types fall into one of the cases
@@ -274,7 +273,7 @@ def _check_classification_inputs(
     # For (multi-dim) multi-class case with prob preds, check that preds sum up to 1
     if case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and preds.is_floating_point():
         if not torch.isclose(preds.sum(dim=1), torch.ones_like(preds.sum(dim=1))).all():
-            raise ValueError("Probabilities in `preds` must sum up to 1 accross the `C` dimension.")
+            raise ValueError("Probabilities in `preds` must sum up to 1 across the `C` dimension.")
 
     # Check consistency with the `C` dimension in case of multi-class data
     if preds.shape != target.shape:
@@ -305,13 +304,13 @@ def _check_classification_inputs(
 
 
 def _input_format_classification(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, str]:
+) -> Tuple[Tensor, Tensor, str]:
     """Convert preds and target tensors into common format.
 
     Preds and targets are supposed to fall into one of these categories (and are
@@ -371,7 +370,7 @@ def _input_format_classification(
             Threshold probability value for transforming probability predictions to binary
             (0 or 1) predictions, in the case of binary or multi-label inputs.
         num_classes:
-            Number of classes. If not explicitly set, the number of classes will be infered
+            Number of classes. If not explicitly set, the number of classes will be inferred
             either from the shape of inputs, or the maximum label in the ``target`` and ``preds``
             tensor, where applicable.
         top_k:
@@ -439,7 +438,7 @@ def _input_format_classification(
         target = target.reshape(target.shape[0], -1)
         preds = preds.reshape(preds.shape[0], -1)
 
-    # Some operatins above create an extra dimension for MC/binary case - this removes it
+    # Some operations above create an extra dimension for MC/binary case - this removes it
     if preds.ndim > 2:
         preds, target = preds.squeeze(-1), target.squeeze(-1)
 
@@ -448,11 +447,11 @@ def _input_format_classification(
 
 def _input_format_classification_one_hot(
     num_classes: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     threshold: float = 0.5,
     multilabel: bool = False,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor]:
     """Convert preds and target tensors into one hot spare label tensors
 
     Args:
@@ -462,6 +461,11 @@ def _input_format_classification_one_hot(
         threshold: float used for thresholding multilabel input
         multilabel: boolean flag indicating if input is multilabel
 
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same number of dimensions
+            or one additional dimension for ``preds``.
+
     Returns:
         preds: one hot tensor of shape [num_classes, -1] with predicted labels
         target: one hot tensors of shape [num_classes, -1] with true labels
@@ -470,7 +474,7 @@ def _input_format_classification_one_hot(
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
 
     if preds.ndim == target.ndim + 1:
-        # multi class probabilites
+        # multi class probabilities
         preds = torch.argmax(preds, dim=1)
 
     if preds.ndim == target.ndim and preds.dtype in (torch.long, torch.int) and num_classes > 1 and not multilabel:
@@ -479,7 +483,7 @@ def _input_format_classification_one_hot(
         target = to_onehot(target, num_classes=num_classes)
 
     elif preds.ndim == target.ndim and preds.is_floating_point():
-        # binary or multilabel probablities
+        # binary or multilabel probabilities
         preds = (preds >= threshold).long()
 
     # transpose class as first dim and reshape
@@ -488,3 +492,74 @@ def _input_format_classification_one_hot(
         target = target.transpose(1, 0)
 
     return preds.reshape(num_classes, -1), target.reshape(num_classes, -1)
+
+
+def _check_retrieval_functional_inputs(preds: Tensor, target: Tensor) -> None:
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+
+    Args:
+        preds: either tensor with scores/logits
+        target: tensor with ground true labels
+
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same shape, if they are empty
+            or not of the correct ``dtypes``.
+
+    Returns:
+        preds: as torch.float32
+        target: as torch.long
+    """
+    if preds.shape != target.shape:
+        raise ValueError("`preds` and `target` must be of the same shape")
+
+    if not preds.numel() or not target.numel():
+        raise ValueError("`preds` and `target` must be non-empty")
+
+    if target.dtype not in (torch.bool, torch.long, torch.int):
+        raise ValueError("`target` must be a tensor of booleans or integers")
+
+    if target.max() > 1 or target.min() < 0:
+        raise ValueError("`target` must be of type `binary`")
+
+    if not preds.is_floating_point():
+        raise ValueError("`preds` must be a tensor of floats")
+
+    return preds.float(), target.long()
+
+
+def _check_retrieval_inputs(
+    indexes: Tensor,
+    preds: Tensor,
+    target: Tensor,
+    ignore: int = None,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+
+    Args:
+        indexes: tensor with queries indexes
+        preds: tensor with scores/logits
+        target: tensor with ground true labels
+        ignore: ignore target with this value
+
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same shape, if they are empty
+            or not of the correct ``dtypes``.
+
+    Returns:
+        indexes: as torch.long
+        preds: as torch.float32
+        target: as torch.long
+    """
+    if ignore is not None:
+        target = target[target != ignore]  # ignore check on values that are ignored
+    preds, target = _check_retrieval_functional_inputs(preds, target)
+
+    if indexes.shape != target.shape:
+        raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
+
+    if indexes.dtype is not torch.long:
+        raise ValueError("`indexes` must be a tensor of long integers")
+
+    return indexes, preds, target

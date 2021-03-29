@@ -14,6 +14,7 @@
 from typing import Any, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.iou import _iou_from_confmat
@@ -100,7 +101,7 @@ class IoU(ConfusionMatrix):
         self.ignore_index = ignore_index
         self.absent_score = absent_score
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes intersection over union (IoU)
         """

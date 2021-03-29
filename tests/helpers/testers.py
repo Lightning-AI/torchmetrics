@@ -20,6 +20,7 @@ from typing import Callable
 import numpy as np
 import pytest
 import torch
+from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
@@ -38,7 +39,7 @@ THRESHOLD = 0.5
 
 
 def setup_ddp(rank, world_size):
-    """ Setup ddp enviroment """
+    """ Setup ddp environment """
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "8088"
 
@@ -51,7 +52,7 @@ def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
         a certain tolerance
     """
     # single output compare
-    if isinstance(pl_result, torch.Tensor):
+    if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.numpy(), sk_result, atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, (tuple, list)):
@@ -69,18 +70,18 @@ def _assert_tensor(pl_result):
         for plr in pl_result:
             _assert_tensor(plr)
     else:
-        assert isinstance(pl_result, torch.Tensor)
+        assert isinstance(pl_result, Tensor)
 
 
 def _class_test(
     rank: int,
     worldsize: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     metric_class: Metric,
     sk_metric: Callable,
     dist_sync_on_step: bool,
-    metric_args: dict = {},
+    metric_args: dict = None,
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
@@ -103,8 +104,12 @@ def _class_test(
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
     """
+    if not metric_args:
+        metric_args = {}
     # Instanciate lightning metric
-    metric = metric_class(compute_on_step=True, dist_sync_on_step=dist_sync_on_step, **metric_args)
+    metric = metric_class(
+        compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
+    )
 
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
@@ -113,19 +118,15 @@ def _class_test(
     for i in range(rank, NUM_BATCHES, worldsize):
         batch_result = metric(preds[i], target[i])
 
-        if metric.dist_sync_on_step:
-            if rank == 0:
-                ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
-                ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
-                sk_batch_result = sk_metric(ddp_preds, ddp_target)
-                # assert for dist_sync_on_step
-                if check_dist_sync_on_step:
-                    _assert_allclose(batch_result, sk_batch_result, atol=atol)
-        else:
-            sk_batch_result = sk_metric(preds[i], target[i])
+        if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
+            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
+            ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
+            sk_batch_result = sk_metric(ddp_preds, ddp_target)
+            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+        elif check_batch and not metric.dist_sync_on_step:
             # assert for batch
-            if check_batch:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            sk_batch_result = sk_metric(preds[i], target[i])
+            _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check on all batches on all ranks
     result = metric.compute()
@@ -140,11 +141,11 @@ def _class_test(
 
 
 def _functional_test(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     metric_functional: Callable,
     sk_metric: Callable,
-    metric_args: dict = {},
+    metric_args: dict = None,
     atol: float = 1e-8,
 ):
     """Utility function doing the actual comparison between lightning functional metric
@@ -157,6 +158,8 @@ def _functional_test(
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
     """
+    if not metric_args:
+        metric_args = {}
     metric = partial(metric_functional, **metric_args)
 
     for i in range(NUM_BATCHES):
@@ -165,6 +168,30 @@ def _functional_test(
 
         # assert its the same
         _assert_allclose(lightning_result, sk_result, atol=atol)
+
+
+def _assert_half_support(
+    metric_module: Metric,
+    metric_functional: Callable,
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    device: str = 'cpu',
+):
+    """
+    Test if an metric can be used with half precision tensors
+
+    Args:
+        metric_module: the metric module to test
+        metric_functional: the metric functional to test
+        preds: torch tensor with predictions
+        target: torch tensor with targets
+        device: determine device, either "cpu" or "cuda"
+    """
+    y_hat = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
+    y = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
+    metric_module = metric_module.to(device)
+    assert metric_module(y_hat, y)
+    assert metric_functional(y_hat, y)
 
 
 class MetricTester:
@@ -195,11 +222,11 @@ class MetricTester:
 
     def run_functional_metric_test(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_functional: Callable,
         sk_metric: Callable,
-        metric_args: dict = {},
+        metric_args: dict = None,
     ):
         """Main method that should be used for testing functions. Call this inside
         testing method
@@ -223,12 +250,12 @@ class MetricTester:
     def run_class_metric_test(
         self,
         ddp: bool,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_class: Metric,
         sk_metric: Callable,
         dist_sync_on_step: bool,
-        metric_args: dict = {},
+        metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
     ):
@@ -249,6 +276,8 @@ class MetricTester:
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
         """
+        if not metric_args:
+            metric_args = {}
         if ddp:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
@@ -283,13 +312,53 @@ class MetricTester:
                 atol=self.atol,
             )
 
+    def run_precision_test_cpu(
+        self,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = {}
+    ):
+        """ Test if an metric can be used with half precision tensors on cpu
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_functional: the metric functional to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        _assert_half_support(
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cpu'
+        )
+
+    def run_precision_test_gpu(
+        self,
+        preds: torch.Tensor,
+        target: torch.Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = {}
+    ):
+        """ Test if an metric can be used with half precision tensors on gpu
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_functional: the metric functional to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        _assert_half_support(
+            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cuda'
+        )
+
 
 class DummyMetric(Metric):
     name = "Dummy"
 
     def __init__(self):
         super().__init__()
-        self.add_state("x", torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("x", tensor(0.0), dist_reduce_fx=None)
 
     def update(self):
         pass

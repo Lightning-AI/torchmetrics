@@ -14,22 +14,24 @@
 from typing import Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_squared_error_update(preds: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, int]:
+def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
     _check_same_shape(preds, target)
-    sum_squared_error = torch.sum(torch.pow(preds - target, 2))
+    diff = preds - target
+    sum_squared_error = torch.sum(diff * diff)
     n_obs = target.numel()
     return sum_squared_error, n_obs
 
 
-def _mean_squared_error_compute(sum_squared_error: torch.Tensor, n_obs: int) -> torch.Tensor:
+def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int) -> Tensor:
     return sum_squared_error / n_obs
 
 
-def mean_squared_error(preds: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+def mean_squared_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     Computes mean squared error
 
@@ -41,12 +43,11 @@ def mean_squared_error(preds: torch.Tensor, target: torch.Tensor) -> torch.Tenso
         Tensor with MSE
 
     Example:
-
+        >>> from torchmetrics.functional import mean_squared_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_squared_error(x, y)
         tensor(0.2500)
-
     """
     sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
     return _mean_squared_error_compute(sum_squared_error, n_obs)

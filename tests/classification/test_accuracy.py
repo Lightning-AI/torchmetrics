@@ -15,8 +15,8 @@ from functools import partial
 
 import numpy as np
 import pytest
-import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
+from torch import tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -27,13 +27,14 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_multidim as _input_mlmd
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import THRESHOLD, MetricTester
 from torchmetrics import Accuracy
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_accuracy(preds, target, subset_accuracy):
@@ -109,12 +110,12 @@ _l1to4t3_mcls = [_l1to4t3.T, _l1to4t3.T, _l1to4t3.T]
 
 # The preds in these examples always put highest probability on class 3, second highest on class 2,
 # third highest on class 1, and lowest on class 0
-_topk_preds_mcls = torch.tensor([_l1to4t3, _l1to4t3]).float()
-_topk_target_mcls = torch.tensor([[1, 2, 3], [2, 1, 0]])
+_topk_preds_mcls = tensor([_l1to4t3, _l1to4t3]).float()
+_topk_target_mcls = tensor([[1, 2, 3], [2, 1, 0]])
 
 # This is like for MC case, but one sample in each batch is sabotaged with 0 class prediction :)
-_topk_preds_mdmc = torch.tensor([_l1to4t3_mcls, _l1to4t3_mcls]).float()
-_topk_target_mdmc = torch.tensor([[[1, 1, 0], [2, 2, 2], [3, 3, 3]], [[2, 2, 0], [1, 1, 1], [0, 0, 0]]])
+_topk_preds_mdmc = tensor([_l1to4t3_mcls, _l1to4t3_mcls]).float()
+_topk_target_mdmc = tensor([[[1, 1, 0], [2, 2, 2], [3, 3, 3]], [[2, 2, 0], [1, 1, 1], [0, 0, 0]]])
 
 
 # Replace with a proper sk_metric test once sklearn 0.24 hits :)

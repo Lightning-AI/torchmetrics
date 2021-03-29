@@ -44,7 +44,7 @@ help you or finish it with you :]_
 
 Want to keep Torchmetrics healthy? Love seeing those green tests? So do we! How to we keep it that way? 
 We write tests! We value tests contribution even more than new features. One of the core values of torchmetrics
-is that our users can trust our metric implementation. We can only garantee this if our metrics are well tested.
+is that our users can trust our metric implementation. We can only guarantee this if our metrics are well tested.
 
 ---
 
@@ -129,7 +129,7 @@ When you send a PR the continuous integration will run tests and build the docs.
 To setup a local development environment, install both local and test dependencies:
 
 ```bash
-python -m pip install -r requirements/devel.txt
+python -m pip install -r requirements/test.txt
 python -m pip install pre-commit
 ```
 

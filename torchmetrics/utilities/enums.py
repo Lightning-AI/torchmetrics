@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from enum import Enum
-from typing import Union
+from typing import Optional, Union
 
 
 class EnumStr(str, Enum):
@@ -28,7 +28,7 @@ class EnumStr(str, Enum):
     """
 
     @classmethod
-    def from_str(cls, value: str) -> 'EnumStr':
+    def from_str(cls, value: str) -> Optional['EnumStr']:
         statuses = [status for status in dir(cls) if not status.startswith('_')]
         for st in statuses:
             if st.lower() == value.lower():
@@ -63,7 +63,9 @@ class AverageMethod(EnumStr):
 
     >>> None in list(AverageMethod)
     True
-    >>> 'none' == AverageMethod.NONE == None
+    >>> AverageMethod.NONE == None
+    True
+    >>> AverageMethod.NONE == 'none'
     True
     """
 

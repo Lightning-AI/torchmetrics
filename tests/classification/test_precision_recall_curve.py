@@ -17,15 +17,17 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
+from torch import tensor
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
 from torchmetrics.functional import precision_recall_curve
 
-torch.manual_seed(42)
+seed_all(42)
 
 
 def _sk_precision_recall_curve(y_true, probas_pred, num_classes=1):
@@ -101,10 +103,10 @@ class TestPrecisionRecallCurve(MetricTester):
     [pytest.param([1, 2, 3, 4], [1, 0, 0, 1], [0.5, 1 / 3, 0.5, 1., 1.], [1, 0.5, 0.5, 0.5, 0.], [1, 2, 3, 4])]
 )
 def test_pr_curve(pred, target, expected_p, expected_r, expected_t):
-    p, r, t = precision_recall_curve(torch.tensor(pred), torch.tensor(target))
+    p, r, t = precision_recall_curve(tensor(pred), tensor(target))
     assert p.size() == r.size()
     assert p.size(0) == t.size(0) + 1
 
-    assert torch.allclose(p, torch.tensor(expected_p).to(p))
-    assert torch.allclose(r, torch.tensor(expected_r).to(r))
-    assert torch.allclose(t, torch.tensor(expected_t).to(t))
+    assert torch.allclose(p, tensor(expected_p).to(p))
+    assert torch.allclose(r, tensor(expected_r).to(r))
+    assert torch.allclose(t, tensor(expected_t).to(t))

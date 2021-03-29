@@ -11,22 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
+from torch import Tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
 
 
 def _precision_compute(
-    tp: torch.Tensor,
-    fp: torch.Tensor,
-    tn: torch.Tensor,
-    fn: torch.Tensor,
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
     average: str,
     mdmc_average: Optional[str],
-) -> torch.Tensor:
+) -> Tensor:
+    # todo: `tn` is unused
     return _reduce_stat_scores(
         numerator=tp,
         denominator=tp + fp,
@@ -37,8 +39,8 @@ def _precision_compute(
 
 
 def precision(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     average: str = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
@@ -46,7 +48,7 @@ def precision(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> torch.Tensor:
+) -> Tensor:
     r"""
     Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
 
@@ -128,8 +130,19 @@ def precision(
         - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
           of classes
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
+            ``"samples"``, ``"none"`` or ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
+    Example:
         >>> from torchmetrics.functional import precision
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -170,13 +183,15 @@ def precision(
 
 
 def _recall_compute(
-    tp: torch.Tensor,
-    fp: torch.Tensor,
-    tn: torch.Tensor,
-    fn: torch.Tensor,
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
     average: str,
     mdmc_average: Optional[str],
-) -> torch.Tensor:
+) -> Tensor:
+    # todo: `tp` is unused
+    # todo: `tn` is unused
     return _reduce_stat_scores(
         numerator=tp,
         denominator=tp + fn,
@@ -187,8 +202,8 @@ def _recall_compute(
 
 
 def recall(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     average: str = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
@@ -196,7 +211,7 @@ def recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> torch.Tensor:
+) -> Tensor:
     r"""
     Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
 
@@ -278,8 +293,19 @@ def recall(
         - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
           of classes
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
+            ``"samples"``, ``"none"`` or ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
+    Example:
         >>> from torchmetrics.functional import recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -320,8 +346,8 @@ def recall(
 
 
 def precision_recall(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     average: str = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
@@ -329,7 +355,7 @@ def precision_recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     is_multiclass: Optional[bool] = None,
-) -> torch.Tensor:
+) -> Tuple[Tensor, Tensor]:
     r"""
     Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
 
@@ -415,8 +441,19 @@ def precision_recall(
         - If ``average in ['none', None]``, they are a tensor of shape ``(C, )``, where ``C`` stands for
           the number of classes
 
-    Example:
+    Raises:
+        ValueError:
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``,
+            ``"samples"``, ``"none"`` or ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
 
+    Example:
         >>> from torchmetrics.functional import precision_recall
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])

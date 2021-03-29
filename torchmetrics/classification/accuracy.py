@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.accuracy import _accuracy_compute, _accuracy_update
 from torchmetrics.metric import Metric
@@ -78,8 +79,13 @@ class Accuracy(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    Example:
+    Raises:
+        ValueError:
+            If ``threshold`` is not between ``0`` and ``1``.
+        ValueError:
+            If ``top_k`` is not an ``integer`` larger than ``0``.
 
+    Example:
         >>> from torchmetrics import Accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
@@ -112,8 +118,8 @@ class Accuracy(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
         if not 0 < threshold < 1:
             raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
@@ -125,7 +131,7 @@ class Accuracy(Metric):
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
@@ -142,7 +148,7 @@ class Accuracy(Metric):
         self.correct += correct
         self.total += total
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """
         Computes accuracy based on inputs passed in to ``update`` previously.
         """

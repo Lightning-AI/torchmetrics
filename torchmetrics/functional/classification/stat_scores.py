@@ -14,21 +14,22 @@
 from typing import Optional, Tuple
 
 import torch
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 
 
-def _del_column(tensor: torch.Tensor, index: int):
+def _del_column(tensor: Tensor, index: int):
     """ Delete the column at index."""
 
     return torch.cat([tensor[:, :index], tensor[:, (index + 1):]], 1)
 
 
 def _stat_scores(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     reduce: str = "micro",
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate the number of tp, fp, tn, fn.
 
     Args:
@@ -74,8 +75,8 @@ def _stat_scores(
 
 
 def _stat_scores_update(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     reduce: str = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
@@ -83,7 +84,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     is_multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
 
     preds, target, _ = _input_format_classification(
         preds, target, threshold=threshold, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
@@ -121,7 +122,7 @@ def _stat_scores_update(
     return tp, fp, tn, fn
 
 
-def _stat_scores_compute(tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
+def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
 
     outputs = [
         tp.unsqueeze(-1),
@@ -131,14 +132,14 @@ def _stat_scores_compute(tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, f
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
     ]
     outputs = torch.cat(outputs, -1)
-    outputs = torch.where(outputs < 0, torch.tensor(-1, device=outputs.device), outputs)
+    outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
     return outputs
 
 
 def stat_scores(
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     reduce: str = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
@@ -146,7 +147,7 @@ def stat_scores(
     threshold: float = 0.5,
     is_multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-) -> torch.Tensor:
+) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
     and the `confusion matrix <https://en.wikipedia.org/wiki/Confusion_matrix#Table_of_confusion>`__.
@@ -244,8 +245,22 @@ def stat_scores(
           - If ``reduce='macro'``, the shape will be ``(N, C, 5)``
           - If ``reduce='samples'``, the shape will be ``(N, X, 5)``
 
-    Example:
+    Raises:
+        ValueError:
+            If ``reduce`` is none of ``"micro"``, ``"macro"`` or ``"samples"``.
+        ValueError:
+            If ``mdmc_reduce`` is none of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``reduce`` is set to ``"macro"`` and ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+        ValueError:
+            If ``ignore_index`` is used with ``binary data``.
+        ValueError:
+            If inputs are ``multi-dimensional multi-class`` and ``mdmc_reduce`` is not provided.
 
+    Example:
         >>> from torchmetrics.functional import stat_scores
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
@@ -255,7 +270,6 @@ def stat_scores(
                 [1, 0, 3, 0, 1]])
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
-
     """
 
     if reduce not in ["micro", "macro", "samples"]:
