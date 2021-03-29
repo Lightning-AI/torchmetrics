@@ -132,7 +132,7 @@ def _class_test(
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
         elif check_batch and not metric.dist_sync_on_step:
-            sk_batch_result = sk_metric(preds[i], target[i], **b_kwargs_update)
+            sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check on all batches on all ranks
