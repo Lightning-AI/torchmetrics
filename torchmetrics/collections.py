@@ -46,8 +46,7 @@ class MetricCollection(nn.ModuleDict):
         ValueError:
             If ``metrics`` is not a ``list``, ``tuple`` or a ``dict``.
 
-    Example:
-        >>> # input as list
+    Example (input as list):
         >>> import torch
         >>> from pprint import pprint
         >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall
@@ -59,7 +58,7 @@ class MetricCollection(nn.ModuleDict):
         >>> metrics(preds, target)
         {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
 
-        >>> # input as dict
+    Example (input as dict):
         >>> metrics = MetricCollection({'micro_recall': Recall(num_classes=3, average='micro'),
         ...                             'macro_recall': Recall(num_classes=3, average='macro')})
         >>> same_metric = metrics.clone()
