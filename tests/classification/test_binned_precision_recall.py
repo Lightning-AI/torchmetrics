@@ -12,27 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from torchmetrics.functional import precision_recall_curve
 from functools import partial
 from typing import Tuple
 
 import pytest
 import torch
 from sklearn.metrics import average_precision_score as _sk_average_precision_score
-from torchmetrics.classification.binned_precision_recall import (
-    BinnedAveragePrecision,
-    BinnedRecallAtFixedPrecision,
-)
-from tests.classification.inputs import (
-    Input,
-)
-from tests.helpers.testers import (
-    NUM_CLASSES,
-    NUM_BATCHES,
-    BATCH_SIZE,
-    MetricTester,
-)
 
+from tests.classification.inputs import Input
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision, BinnedRecallAtFixedPrecision
+from torchmetrics.functional import precision_recall_curve
 
 torch.manual_seed(42)
 
