@@ -206,8 +206,8 @@ def _assert_half_support(
     y_hat = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
     y = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
     metric_module = metric_module.to(device)
-    assert metric_module(y_hat, y)
-    assert metric_functional(y_hat, y)
+    _assert_tensor(metric_module(y_hat, y))
+    _assert_tensor(metric_functional(y_hat, y))
 
 
 class MetricTester:
