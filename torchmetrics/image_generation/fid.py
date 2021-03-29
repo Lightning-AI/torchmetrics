@@ -11,35 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import wraps
 from typing import Any, Callable, Optional
 
 import torch
 from torch import nn
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _TORCHVISION_AVAILABLE, MisconfigurationException
+from torchmetrics.utilities import MisconfigurationException
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+
+class _Identity(nn.Module):
+    """ Module that does nothing. Use to overwrite layers to be no-op layers """
+
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x
 
 if _TORCHVISION_AVAILABLE:
     import torchvision
     from torchvision import transforms
       
-    class _Identity(nn.Module):
-        """ Module that does nothing. Use to overwrite layers to be no-op layers """
-
-        def __init__(self):
-            super().__init__()
-        
-        def forward(self, x: torch.Tensor) -> torch.Tensor:
-            return x
-
-    
     class CustomInception3(torchvision.models.Inception3):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self.fc =_Identity()
             self.eval()
-            
+
         def train(self, mode):
             # disable going into training mode
             super().train(False)
@@ -80,7 +78,7 @@ def _approximation_error(matrix: torch.Tensor, s_matrix: torch.Tensor) -> torch.
     return error
 
 
-def _matrix_sqrt(matrix: torch.Tensor, num_iters: int = 100):
+def _matrix_sqrt(matrix: torch.Tensor, num_iters: int = 100, epsilon: float = 0):
     r"""
     Square root of matrix using Newton-Schulz Iterative method
     
@@ -117,10 +115,24 @@ def _matrix_sqrt(matrix: torch.Tensor, num_iters: int = 100):
         error = _approximation_error(matrix, s_matrix)
         if torch.isclose(error, torch.tensor([0.]).to(error), atol=1e-5):
             break
+    
+    return s_matrix
 
-    return s_matrix, error
-
-
+def _matrix_sqrt_fid(matrix1, matrix2, init_scale: float = 1e-6):
+    stable = False
+    eye = torch.eye(matrix1.shape[0], dtype=matrix1.dtype, device=matrix1.device)
+    count, reg = 0, 0
+    while not stable:
+        print(count, reg)
+        matrix_sqrt = _matrix_sqrt((matrix1 + reg) @ (matrix2 + reg))
+        if not torch.isfinite(matrix_sqrt).all():
+            count += 1
+            reg = (10**count * init_scale) * eye
+        else:
+            stable = True
+    return matrix_sqrt
+    
+    
 def _update_mean(old_mean: torch.Tensor, old_nobs: torch.Tensor, data: torch.Tensor) -> torch.Tensor:
     """ Update a mean estimate given new data
     Args:
@@ -228,6 +240,7 @@ class FID(Metric):
                 self.normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             
             self.inception = inception_v3(pretrained=True)
+            self.inception.fc = _Identity()
             feature_size = 2048
         else:
             self.inception = None
@@ -235,7 +248,7 @@ class FID(Metric):
         self.add_state("real_mean", torch.zeros(feature_size), dist_reduce_fx="mean")
         self.add_state("real_cov", torch.zeros(feature_size, feature_size), dist_reduce_fx="mean")
         self.add_state("real_nobs", torch.zeros(1), dist_reduce_fx="sum")
-        self.add_state("fake_mean", torch.zeros(feature_size, feature_size), dist_reduce_fx="mean")
+        self.add_state("fake_mean", torch.zeros(feature_size), dist_reduce_fx="mean")
         self.add_state("fake_cov", torch.zeros(feature_size, feature_size), dist_reduce_fx="mean")
         self.add_state("fake_nobs", torch.zeros(1), dist_reduce_fx="sum")
 
@@ -252,6 +265,7 @@ class FID(Metric):
             if self.perform_normalization:
                 imgs = self.normalizer(imgs_or_feature)
             incep_score = self.inception(imgs)
+            
         else:
             incep_score = imgs_or_feature
         
@@ -271,7 +285,7 @@ class FID(Metric):
     def compute(self) -> torch.Tensor:
         """ Returns the FID score """
         mean_diff = torch.abs(self.real_mean - self.fake_mean)
-        cov_diff = torch.trace(self.real_cov + self.fake_cov - 2 * _matrix_sqrt(self.real_cov @ self.fake_cov))
+        cov_diff = torch.trace(self.real_cov + self.fake_cov - 2 * _matrix_sqrt_fid(self.real_cov, self.fake_cov))
         return (mean_diff * mean_diff).sum() + cov_diff
     
     def _check_valid_input(self, img_or_feature):
