@@ -242,7 +242,6 @@ def get_group_indexes(idx: Tensor) -> List[Tensor]:
         A list of integer `torch.Tensor`s
 
     Example:
-
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> groups = get_group_indexes(indexes)
         >>> groups

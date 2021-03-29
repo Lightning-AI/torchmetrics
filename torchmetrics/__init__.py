@@ -49,4 +49,5 @@ from torchmetrics.regression import (  # noqa: F401 E402
     MeanSquaredLogError,
     R2Score,
 )
-from torchmetrics.retrieval import RetrievalMAP, RetrievalMRR  # noqa: F401 E402
+from torchmetrics.retrieval import RetrievalMAP, RetrievalMRR, RetrievalPrecision  # noqa: F401 E402
+from torchmetrics.wrappers import BootStrapper  # noqa: F401 E402

@@ -78,8 +78,7 @@ class AUROC(Metric):
         ValueError:
             If the mode of data (binary, multi-label, multi-class) changes between batches.
 
-    Example:
-        >>> # binary case
+    Example (binary case):
         >>> from torchmetrics import AUROC
         >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
         >>> target = torch.tensor([0, 0, 1, 1, 1])
@@ -87,7 +86,7 @@ class AUROC(Metric):
         >>> auroc(preds, target)
         tensor(0.5000)
 
-        >>> # multiclass case
+    Example (multiclass case):
         >>> preds = torch.tensor([[0.90, 0.05, 0.05],
         ...                       [0.05, 0.90, 0.05],
         ...                       [0.05, 0.05, 0.90],
