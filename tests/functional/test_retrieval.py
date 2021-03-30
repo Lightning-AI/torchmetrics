@@ -73,11 +73,11 @@ def test_metrics_output_values_with_k(sklearn_metric, torch_metric, size, k):
             assert torch.allclose(sk.float(), tm.float())
 
 
-@pytest.mark.parametrize(['torch_metric'], [
+@pytest.mark.parametrize(['torch_metric'], (
     [retrieval_average_precision],
     [retrieval_reciprocal_rank],
-    [retrieval_precision]
-])
+    [retrieval_precision],
+))
 def test_input_dtypes(torch_metric) -> None:
     """ Check wrong input dtypes are managed correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -104,11 +104,11 @@ def test_input_dtypes(torch_metric) -> None:
     assert torch.allclose(torch_metric(preds=preds, target=target), torch.tensor(0.0))
 
 
-@pytest.mark.parametrize(['torch_metric'], [
+@pytest.mark.parametrize(['torch_metric'], (
     [retrieval_average_precision],
     [retrieval_reciprocal_rank],
-    [retrieval_precision]
-])
+    [retrieval_precision],
+))
 def test_input_shapes(torch_metric) -> None:
     """ Check wrong input shapes are managed correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -129,9 +129,7 @@ def test_input_shapes(torch_metric) -> None:
 
 
 # test metrics using top K parameter
-@pytest.mark.parametrize(['torch_metric'], [
-    [retrieval_precision]
-])
+@pytest.mark.parametrize(['torch_metric'], ([retrieval_precision], ))
 @pytest.mark.parametrize('k', [-1, 1.0])
 def test_input_params(torch_metric, k) -> None:
     """ Check wrong input shapes are managed correctly. """
