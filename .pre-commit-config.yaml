@@ -25,15 +25,16 @@ repos:
   - repo: local
     hooks:
       - id: isort
-        name: isort
-        entry: python -m isort
+        name: imports
+        entry: isort
         args: [--settings-path, ./pyproject.toml]
         language: system
         types: [python]
 
       - id: yapf
-        name: yapf
+        name: formatting
         entry: yapf
+        args: [ --parallel ]
         language: system
         types: [python]
 
