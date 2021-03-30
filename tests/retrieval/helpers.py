@@ -39,11 +39,11 @@ def _test_retrieval_against_sklearn(
     torch_metric: Metric,
     size: int,
     n_documents: int,
-    query_without_relevant_docs_options: str,
-    **kwargs,
+    empty_target_action: str,
+    **kwargs
 ) -> None:
     """ Compare PL metrics to standard version. """
-    metric = torch_metric(query_without_relevant_docs=query_without_relevant_docs_options, **kwargs)
+    metric = torch_metric(empty_target_action=empty_target_action, **kwargs)
     shape = (size, )
 
     indexes = []
@@ -55,7 +55,7 @@ def _test_retrieval_against_sklearn(
         preds.append(np.random.randn(*shape))
         target.append(np.random.randn(*shape) > 0)
 
-    sk_results = _compute_sklearn_metric(sklearn_metric, target, preds, query_without_relevant_docs_options, **kwargs)
+    sk_results = _compute_sklearn_metric(sklearn_metric, target, preds, empty_target_action, **kwargs)
     sk_results = torch.tensor(sk_results)
 
     indexes_tensor = torch.cat([torch.tensor(i) for i in indexes]).long()
@@ -83,26 +83,26 @@ def _test_dtypes(torchmetric) -> None:
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     length = 10  # not important in this test
 
-    # check error when `query_without_relevant_docs='error'` is raised correctly
+    # check error when `empty_target_action='error'` is raised correctly
     indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
     preds = torch.rand(size=(length, ), device=device, dtype=torch.float32)
     target = torch.tensor([False] * length, device=device, dtype=torch.bool)
 
-    metric = torchmetric(query_without_relevant_docs='error')
+    metric = torchmetric(empty_target_action='error')
     with pytest.raises(ValueError, match="`compute` method was provided with a query with no positive target."):
         metric(indexes, preds, target)
 
-    # check ValueError with invalid `query_without_relevant_docs` argument
+    # check ValueError with invalid `empty_target_action` argument
     casual_argument = 'casual_argument'
-    with pytest.raises(ValueError, match=f"`query_without_relevant_docs` received a wrong value {casual_argument}."):
-        metric = torchmetric(query_without_relevant_docs=casual_argument)
+    with pytest.raises(ValueError, match=f"`empty_target_action` received a wrong value {casual_argument}."):
+        metric = torchmetric(empty_target_action=casual_argument)
 
     # check input dtypes
     indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
     preds = torch.tensor([0] * length, device=device, dtype=torch.float32)
     target = torch.tensor([0] * length, device=device, dtype=torch.int64)
 
-    metric = torchmetric(query_without_relevant_docs='error')
+    metric = torchmetric(empty_target_action='error')
 
     # check error on input dtypes are raised correctly
     with pytest.raises(ValueError, match="`indexes` must be a tensor of long integers"):
@@ -116,7 +116,7 @@ def _test_dtypes(torchmetric) -> None:
 def _test_input_shapes(torchmetric) -> None:
     """Check PL metrics inputs are controlled correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    metric = torchmetric(query_without_relevant_docs='error')
+    metric = torchmetric(empty_target_action='error')
 
     # check input shapes are checked correclty
     elements_1, elements_2 = np.random.choice(np.arange(1, 20), size=2, replace=False)

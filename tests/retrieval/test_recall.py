@@ -2,14 +2,13 @@ import numpy as np
 import pytest
 
 from tests.retrieval.helpers import _test_dtypes, _test_input_args, _test_input_shapes, _test_retrieval_against_sklearn
-from torchmetrics.retrieval.retrieval_precision import RetrievalPrecision
+from torchmetrics.retrieval.retrieval_recall import RetrievalRecall
 
 
-def _precision_at_k(target: np.array, preds: np.array, k: int = None):
+def _recall_at_k(target: np.array, preds: np.array, k: int = None):
     """
-    Didn't find a reliable implementation of Precision in Information Retrieval, so,
-    reimplementing here. A good explanation can be found
-    `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+    Didn't find a reliable implementation of Recall in Information Retrieval, so,
+    reimplementing here. See wikipedia for more information about definition.
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -20,7 +19,7 @@ def _precision_at_k(target: np.array, preds: np.array, k: int = None):
     if target.sum() > 0:
         order_indexes = np.argsort(preds, axis=0)[::-1]
         relevant = np.sum(target[order_indexes][:k])
-        return relevant * 1.0 / k
+        return relevant * 1.0 / target.sum()
     else:
         return np.NaN
 
@@ -32,21 +31,26 @@ def _precision_at_k(target: np.array, preds: np.array, k: int = None):
 def test_results(size, n_documents, empty_target_action, k):
     """ Test metrics are computed correctly. """
     _test_retrieval_against_sklearn(
-        _precision_at_k, RetrievalPrecision, size, n_documents, empty_target_action, k=k
+        _recall_at_k,
+        RetrievalRecall,
+        size,
+        n_documents,
+        empty_target_action,
+        k=k
     )
 
 
 def test_dtypes():
     """ Check dypes are managed correctly. """
-    _test_dtypes(RetrievalPrecision)
+    _test_dtypes(RetrievalRecall)
 
 
 def test_input_shapes() -> None:
     """Check inputs shapes are managed correctly. """
-    _test_input_shapes(RetrievalPrecision)
+    _test_input_shapes(RetrievalRecall)
 
 
 @pytest.mark.parametrize('k', [-1, 1.0])
 def test_input_params(k) -> None:
     """Check invalid args are managed correctly. """
-    _test_input_args(RetrievalPrecision, "`k` has to be a positive integer or None", k=k)
+    _test_input_args(RetrievalRecall, "`k` has to be a positive integer or None", k=k)

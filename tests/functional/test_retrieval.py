@@ -8,8 +8,10 @@ from sklearn.metrics import average_precision_score as sk_average_precision
 from tests.helpers import seed_all
 from tests.retrieval.test_mrr import _reciprocal_rank as reciprocal_rank
 from tests.retrieval.test_precision import _precision_at_k as precision_at_k
+from tests.retrieval.test_recall import _recall_at_k as recall_at_k
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.precision import retrieval_precision
+from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 
 seed_all(1337)
@@ -46,6 +48,7 @@ def test_metrics_output_values(sklearn_metric, torch_metric, size):
 
 @pytest.mark.parametrize(['sklearn_metric', 'torch_metric'], [
     [precision_at_k, retrieval_precision],
+    [recall_at_k, retrieval_recall],
 ])
 @pytest.mark.parametrize("size", [1, 4, 10])
 @pytest.mark.parametrize("k", [None, 1, 4, 10])
@@ -73,11 +76,12 @@ def test_metrics_output_values_with_k(sklearn_metric, torch_metric, size, k):
             assert torch.allclose(sk.float(), tm.float())
 
 
-@pytest.mark.parametrize(['torch_metric'], (
+@pytest.mark.parametrize(['torch_metric'], [
     [retrieval_average_precision],
     [retrieval_reciprocal_rank],
     [retrieval_precision],
-))
+    [retrieval_recall],
+])
 def test_input_dtypes(torch_metric) -> None:
     """ Check wrong input dtypes are managed correctly. """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -108,6 +112,7 @@ def test_input_dtypes(torch_metric) -> None:
     [retrieval_average_precision],
     [retrieval_reciprocal_rank],
     [retrieval_precision],
+    [retrieval_recall],
 ))
 def test_input_shapes(torch_metric) -> None:
     """ Check wrong input shapes are managed correctly. """
@@ -129,7 +134,10 @@ def test_input_shapes(torch_metric) -> None:
 
 
 # test metrics using top K parameter
-@pytest.mark.parametrize(['torch_metric'], ([retrieval_precision], ))
+@pytest.mark.parametrize(['torch_metric'], [
+    [retrieval_precision],
+    [retrieval_recall],
+])
 @pytest.mark.parametrize('k', [-1, 1.0])
 def test_input_params(torch_metric, k) -> None:
     """ Check wrong input shapes are managed correctly. """
