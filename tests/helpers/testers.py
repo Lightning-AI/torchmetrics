@@ -274,10 +274,7 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
-        if torch.cuda.is_available():
-            device = 'cuda'
-        else:
-            device = 'cpu'
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         _functional_test(
             preds=preds,
@@ -345,10 +342,7 @@ class MetricTester:
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
         else:
-            if torch.cuda.is_available():
-                device = 'cuda'
-            else:
-                device = 'cpu'
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
             _class_test(
                 0,
