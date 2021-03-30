@@ -53,11 +53,11 @@ class FBeta(StatScores):
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -200,11 +200,11 @@ class F1(FBeta):
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
