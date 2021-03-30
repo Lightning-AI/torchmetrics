@@ -38,7 +38,7 @@ class RetrievalPrecision(RetrievalMetric):
     of the `Precision` over each query.
 
     Args:
-        query_without_relevant_docs:
+        empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
                 - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
@@ -73,7 +73,7 @@ class RetrievalPrecision(RetrievalMetric):
 
     def __init__(
         self,
-        query_without_relevant_docs: str = 'skip',
+        empty_target_action: str = 'skip',
         exclude: int = IGNORE_IDX,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -82,7 +82,7 @@ class RetrievalPrecision(RetrievalMetric):
         k: int = None
     ):
         super().__init__(
-            query_without_relevant_docs=query_without_relevant_docs,
+            empty_target_action=empty_target_action,
             exclude=exclude,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
