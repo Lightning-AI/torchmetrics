@@ -36,7 +36,7 @@ class RetrievalMRR(RetrievalMetric):
     of the `Reciprocal Rank` over each query.
 
     Args:
-        query_without_relevant_docs:
+        empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
             - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned

@@ -30,11 +30,11 @@ def _reciprocal_rank(target: np.array, preds: np.array):
 
 @pytest.mark.parametrize('size', [1, 4, 10])
 @pytest.mark.parametrize('n_documents', [1, 5])
-@pytest.mark.parametrize('query_without_relevant_docs_options', ['skip', 'pos', 'neg'])
-def test_results(size, n_documents, query_without_relevant_docs_options):
+@pytest.mark.parametrize('empty_target_action', ['skip', 'pos', 'neg'])
+def test_results(size, n_documents, empty_target_action):
     """ Test metrics are computed correctly. """
     _test_retrieval_against_sklearn(
-        _reciprocal_rank, RetrievalMRR, size, n_documents, query_without_relevant_docs_options
+        _reciprocal_rank, RetrievalMRR, size, n_documents, empty_target_action
     )
 
 
