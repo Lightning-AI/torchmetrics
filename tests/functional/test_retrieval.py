@@ -76,7 +76,7 @@ def test_metrics_output_values_with_k(sklearn_metric, torch_metric, size, k):
             assert torch.allclose(sk.float(), tm.float())
 
 
-@pytest.mark.parametrize(['torch_metric'], (
+@pytest.mark.parametrize(['torch_metric'], [
     [retrieval_average_precision],
     [retrieval_reciprocal_rank],
     [retrieval_precision],
