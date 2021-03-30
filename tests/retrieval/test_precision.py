@@ -32,12 +32,7 @@ def _precision_at_k(target: np.array, preds: np.array, k: int = None):
 def test_results(size, n_documents, empty_target_action, k):
     """ Test metrics are computed correctly. """
     _test_retrieval_against_sklearn(
-        _precision_at_k,
-        RetrievalPrecision,
-        size,
-        n_documents,
-        empty_target_action,
-        k=k
+        _precision_at_k, RetrievalPrecision, size, n_documents, empty_target_action, k=k
     )
 
 
