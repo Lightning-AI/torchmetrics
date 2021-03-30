@@ -81,7 +81,7 @@ def _class_test(
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
-    device: str = 'cuda',
+    device: str = 'cpu',
     **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric
@@ -167,7 +167,7 @@ def _functional_test(
     sk_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
-    device: str = 'cuda',
+    device: str = 'cpu',
     **kwargs_update,
 ):
     """Utility function doing the actual comparison between lightning functional metric
