@@ -47,9 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `__getitem__` as metric arithmetic operation ([#142](https://github.com/PyTorchLightning/metrics/pull/142))
 
 
-- Added testing on single gpu for all metrics ([#150](https://github.com/PyTorchLightning/metrics/pull/150))
-
-
 ### Changed
 
 - Changed `ExplainedVariance` from storing all preds/targets to tracking 5 statistics ([#68](https://github.com/PyTorchLightning/metrics/pull/68))
