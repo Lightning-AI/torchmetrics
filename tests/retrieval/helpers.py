@@ -1,4 +1,18 @@
-from typing import Callable, List
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from torchmetrics.utilities.data import get_group_indexes
+from typing import Callable, Union
 
 import numpy as np
 import pytest
@@ -7,26 +21,43 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from torchmetrics import Metric
+from tests.helpers.testers import MetricTester
 
 seed_all(1337)
 
 
 def _compute_sklearn_metric(
-    metric: Callable, target: List[np.ndarray], preds: List[np.ndarray], behaviour: str, **kwargs
+    preds: Union[Tensor, np.ndarray],
+    target: Union[Tensor, np.ndarray],
+    idx: np.ndarray = None,
+    metric: Callable = None,
+    empty_target_action: str = "skip",
+    **kwargs
 ) -> Tensor:
     """ Compute metric with multiple iterations over every query predictions set. """
-    sk_results = []
 
-    for b, a in zip(target, preds):
-        if b.sum() == 0:
-            if behaviour == 'skip':
+    if isinstance(preds, Tensor):
+        preds = preds.cpu().numpy()
+    if isinstance(target, Tensor):
+        target = target.cpu().numpy()
+
+    if idx is None:
+        idx = np.full_like(preds, fill_value=0, dtype=np.int64)
+
+    groups = get_group_indexes(idx)
+    sk_results = []
+    for group in groups:
+        trg, pds = target[group], preds[group]
+
+        if trg.sum() == 0:
+            if empty_target_action == 'skip':
                 pass
-            elif behaviour == 'pos':
+            elif empty_target_action == 'pos':
                 sk_results.append(1.0)
             else:
                 sk_results.append(0.0)
         else:
-            res = metric(b, a, **kwargs)
+            res = metric(trg, pds, **kwargs)
             sk_results.append(res)
 
     if len(sk_results) > 0:
@@ -44,23 +75,20 @@ def _test_retrieval_against_sklearn(
 ) -> None:
     """ Compare PL metrics to standard version. """
     metric = torch_metric(empty_target_action=empty_target_action, **kwargs)
-    shape = (size, )
+    shape = (n_documents, size)
 
-    indexes = []
-    preds = []
-    target = []
+    indexes = np.ones(shape, dtype=np.int64) * np.arange(n_documents)
+    preds = np.random.randn(*shape)
+    target = np.random.randint(0, 2, size=shape)
 
-    for i in range(n_documents):
-        indexes.append(np.ones(shape, dtype=np.long) * i)
-        preds.append(np.random.randn(*shape))
-        target.append(np.random.randn(*shape) > 0)
-
-    sk_results = _compute_sklearn_metric(sklearn_metric, target, preds, empty_target_action, **kwargs)
+    sk_results = _compute_sklearn_metric(
+        preds, target, metric=sklearn_metric, empty_target_action=empty_target_action, **kwargs
+    )
     sk_results = torch.tensor(sk_results)
 
-    indexes_tensor = torch.cat([torch.tensor(i) for i in indexes]).long()
-    preds_tensor = torch.cat([torch.tensor(p) for p in preds]).float()
-    target_tensor = torch.cat([torch.tensor(t) for t in target]).long()
+    indexes_tensor = torch.tensor(indexes).long()
+    preds_tensor = torch.tensor(preds).float()
+    target_tensor = torch.tensor(target).long()
 
     # lets assume data are not ordered
     perm = torch.randperm(indexes_tensor.nelement())
@@ -69,7 +97,7 @@ def _test_retrieval_against_sklearn(
     target_tensor = target_tensor.view(-1)[perm].view(target_tensor.size())
 
     # shuffle ids to require also sorting of documents ability from the torch metric
-    pl_result = metric(indexes_tensor, preds_tensor, target_tensor)
+    pl_result = metric(preds_tensor, target_tensor, idx=indexes_tensor)
 
     assert torch.allclose(sk_results.float(), pl_result.float(), equal_nan=False), (
         f"Test failed comparing metric {sklearn_metric} with {torch_metric}: "
@@ -90,7 +118,7 @@ def _test_dtypes(torchmetric) -> None:
 
     metric = torchmetric(empty_target_action='error')
     with pytest.raises(ValueError, match="`compute` method was provided with a query with no positive target."):
-        metric(indexes, preds, target)
+        metric(preds, target, idx=indexes)
 
     # check ValueError with invalid `empty_target_action` argument
     casual_argument = 'casual_argument'
@@ -106,11 +134,11 @@ def _test_dtypes(torchmetric) -> None:
 
     # check error on input dtypes are raised correctly
     with pytest.raises(ValueError, match="`indexes` must be a tensor of long integers"):
-        metric(indexes.bool(), preds, target)
+        metric(preds, target, idx=indexes.bool())
     with pytest.raises(ValueError, match="`preds` must be a tensor of floats"):
-        metric(indexes, preds.bool(), target)
+        metric(preds.bool(), target, idx=indexes)
     with pytest.raises(ValueError, match="`target` must be a tensor of booleans or integers"):
-        metric(indexes, preds, target.float())
+        metric(preds, target.float(), idx=indexes)
 
 
 def _test_input_shapes(torchmetric) -> None:
@@ -125,10 +153,43 @@ def _test_input_shapes(torchmetric) -> None:
     target = torch.tensor([0] * elements_2, device=device, dtype=torch.int64)
 
     with pytest.raises(ValueError, match="`indexes`, `preds` and `target` must be of the same shape"):
-        metric(indexes, preds, target)
+        metric(preds, target, idx=indexes)
 
 
 def _test_input_args(torchmetric: Metric, message: str, **kwargs) -> None:
     """Check invalid args are managed correctly. """
     with pytest.raises(ValueError, match=message):
         torchmetric(**kwargs)
+
+
+
+
+
+
+
+class RetrievalMetricTester(MetricTester):
+
+    """
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_average_precision(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=RetrievalMAP,
+            sk_metric=sk_metric,
+            dist_sync_on_step=dist_sync_on_step,
+        )
+    """
+
+    def test_average_precision_functional(self, preds, target, sk_metric):
+        self.run_functional_metric_test(
+            preds,
+            target,
+            metric_functional=retrieval_average_precision,
+            sk_metric=sk_metric,
+        )
+
+    def test_a_caso(self, preds, target, sk_metric):
+        assert False

@@ -88,13 +88,22 @@ class RetrievalMetric(Metric, ABC):
 
         self.empty_target_action = empty_target_action
         self.exclude = exclude
+        self.next_index = 0
 
         self.add_state("idx", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, idx: Tensor, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor, idx: Tensor = None) -> None:
         """ Check shape, check and convert dtypes, flatten and add to accumulators. """
+        if idx is None:
+            idx = torch.full(preds.shape, fill_value=self.next_index,  dtype=torch.long, device=preds.device)
+
+        # update index
+        actual_max_id = torch.max(idx).item()
+        if actual_max_id > self.next_index:
+            self.next_index = actual_max_id
+
         idx, preds, target = _check_retrieval_inputs(idx, preds, target, ignore=IGNORE_IDX)
         self.idx.append(idx.flatten())
         self.preds.append(preds.flatten())

@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Any, Callable, List, Mapping, Optional, Sequence, Union
 
+import numpy as np
 import torch
 from torch import Tensor, tensor
 
@@ -232,21 +233,32 @@ def apply_to_collection(
 
 def get_group_indexes(idx: Tensor) -> List[Tensor]:
     """
-    Given an integer `torch.Tensor` `idx`, return a `torch.Tensor` of indexes for
+    Given an integer `torch.Tensor` or `np.array` `idx`, return a `torch.Tensor` or `np.array` of indexes for
     each different value in `idx`.
 
     Args:
-        idx: a `torch.Tensor` of integers
+        idx: a `torch.Tensor` or `np.array` of integers
 
     Return:
-        A list of integer `torch.Tensor`s
+        A list of integer `torch.Tensor`s or `np.array`s
 
     Example:
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> groups = get_group_indexes(indexes)
         >>> groups
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
+        >>>
+        >>> indexes = np.ndarray([0, 0, 0, 1, 1, 1, 1])
+        >>> groups = get_group_indexes(indexes)
+        >>> groups
+        [array([0, 1, 2]), array([3, 4, 5, 6])]
     """
+
+    if not isinstance(idx, (Tensor, np.ndarray)):
+        raise ValueError("`idx` must be a torch tensor or numpy array")
+
+    structure = tensor if isinstance(idx, Tensor) else np.array
+    dtype = torch.long if isinstance(idx, Tensor) else np.int64
 
     indexes = dict()
     for i, _id in enumerate(idx):
@@ -255,4 +267,4 @@ def get_group_indexes(idx: Tensor) -> List[Tensor]:
             indexes[_id] += [i]
         else:
             indexes[_id] = [i]
-    return [tensor(x, dtype=torch.int64) for x in indexes.values()]
+    return [structure(x, dtype=dtype) for x in indexes.values()]
