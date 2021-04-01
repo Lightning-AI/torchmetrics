@@ -261,7 +261,7 @@ class Metric(nn.Module, ABC):
             if isinstance(default, Tensor):
                 setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
-                setattr(self, attr, deepcopy(default))
+                setattr(self, attr, [])
 
     def clone(self):
         """ Make a copy of the metric """
