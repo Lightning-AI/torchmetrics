@@ -22,7 +22,10 @@ from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 
-def _bootstrap_sampler(size: int, sampling_strategy: str = 'poisson') -> Tensor:
+def _bootstrap_sampler(
+    size: int,
+    sampling_strategy: str = 'poisson',
+) -> Tensor:
     """ Resample a tensor along its first dimension with replacement
     Args:
         size: number of samples

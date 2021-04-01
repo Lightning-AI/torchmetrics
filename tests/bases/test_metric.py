@@ -95,6 +95,15 @@ def test_reset():
     assert isinstance(b.x, list) and len(b.x) == 0
 
 
+def test_reset_compute():
+    a = DummyMetricSum()
+    assert a.x == 0
+    a.update(tensor(5))
+    assert a.compute() == 5
+    a.reset()
+    assert a.compute() == 0
+
+
 def test_update():
 
     class A(DummyMetric):

@@ -44,7 +44,7 @@ class RetrievalMetric(Metric, ABC):
     will be computed as the mean of the scores over each query.
 
     Args:
-        query_without_relevant_docs:
+        empty_target_action:
             Specify what to do with queries that do not have at least a positive target. Choose from:
 
             - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
@@ -68,7 +68,7 @@ class RetrievalMetric(Metric, ABC):
 
     def __init__(
         self,
-        query_without_relevant_docs: str = 'skip',
+        empty_target_action: str = 'skip',
         exclude: int = IGNORE_IDX,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -82,11 +82,11 @@ class RetrievalMetric(Metric, ABC):
             dist_sync_fn=dist_sync_fn
         )
 
-        query_without_relevant_docs_options = ('error', 'skip', 'pos', 'neg')
-        if query_without_relevant_docs not in query_without_relevant_docs_options:
-            raise ValueError(f"`query_without_relevant_docs` received a wrong value {query_without_relevant_docs}.")
+        empty_target_action_options = ('error', 'skip', 'pos', 'neg')
+        if empty_target_action not in empty_target_action_options:
+            raise ValueError(f"`empty_target_action` received a wrong value {empty_target_action}.")
 
-        self.query_without_relevant_docs = query_without_relevant_docs
+        self.empty_target_action = empty_target_action
         self.exclude = exclude
 
         self.add_state("idx", default=[], dist_reduce_fx=None)
@@ -105,7 +105,7 @@ class RetrievalMetric(Metric, ABC):
         First concat state `idx`, `preds` and `target` since they were stored as lists. After that,
         compute list of groups that will help in keeping together predictions about the same query.
         Finally, for each group compute the `_metric` if the number of positive targets is at least
-        1, otherwise behave as specified by `self.query_without_relevant_docs`.
+        1, otherwise behave as specified by `self.empty_target_action`.
         """
         idx = torch.cat(self.idx, dim=0)
         preds = torch.cat(self.preds, dim=0)
@@ -121,11 +121,11 @@ class RetrievalMetric(Metric, ABC):
             mini_target = target[group]
 
             if not mini_target.sum():
-                if self.query_without_relevant_docs == 'error':
+                if self.empty_target_action == 'error':
                     raise ValueError("`compute` method was provided with a query with no positive target.")
-                if self.query_without_relevant_docs == 'pos':
+                if self.empty_target_action == 'pos':
                     res.append(tensor(1.0, **kwargs))
-                elif self.query_without_relevant_docs == 'neg':
+                elif self.empty_target_action == 'neg':
                     res.append(tensor(0.0, **kwargs))
             else:
                 # ensure list containt only float tensors
