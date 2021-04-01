@@ -259,7 +259,7 @@ class Metric(nn.Module, ABC):
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
             if isinstance(default, Tensor):
-                setattr(self, attr, deepcopy(default).to(current_val.device))
+                setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
                 setattr(self, attr, deepcopy(default))
 
