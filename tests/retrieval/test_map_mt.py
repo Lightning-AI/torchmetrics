@@ -29,9 +29,10 @@ from tests.helpers.testers import MetricTester
 seed_all(42)
 
 
+@pytest.mark.parametrize("sk_metric", [sk_average_precision_score])
 @pytest.mark.parametrize(
-    "preds, target, idx, sk_metric", [
-        (_input_retrieval_scores.preds, _input_retrieval_scores.target, _input_retrieval_scores.idx, sk_average_precision_score),
+    "preds, target, idx", [
+        (_input_retrieval_scores.preds, _input_retrieval_scores.target, _input_retrieval_scores.idx),
     ]
 )
 class TestRetrievalMetric(MetricTester):

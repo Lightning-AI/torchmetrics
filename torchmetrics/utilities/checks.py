@@ -554,6 +554,8 @@ def _check_retrieval_inputs(
     """
     if ignore is not None:
         target = target[target != ignore]  # ignore check on values that are ignored
+        preds = preds[target != ignore]
+
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
     if indexes.shape != target.shape:
