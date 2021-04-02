@@ -96,7 +96,7 @@ class TestMeanError(MetricTester):
             sk_metric=partial(sk_metric, sk_fn=sk_fn),
         )
 
-    def test_differentiability(self, pred, target):
+    def test_differentiability(self, preds, target):
         metric = MeanSquaredError()
         out = metric(preds, target)
         assert metric.is_differentiable == out.requires_grad
