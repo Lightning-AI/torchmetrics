@@ -103,7 +103,7 @@ class TestAccuracies(MetricTester):
             },
         )
 
-    def test_metrics_differentiability(self, preds, target):
+    def test_metrics_differentiability(self, preds, target, *args):
         metric = Accuracy()
         self.test_differentiability(
             preds=preds,
