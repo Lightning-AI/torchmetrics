@@ -96,11 +96,13 @@ class TestMeanError(MetricTester):
             sk_metric=partial(sk_metric, sk_fn=sk_fn),
         )
 
-    def test_differentiability(self, preds, target):
-        preds.requires_grad = True
+    def test_metrics_differentiability(self, preds, target):
         metric = MeanSquaredError()
-        out = metric(preds, target)
-        assert metric.is_differentiable == out.requires_grad
+        self.test_differentiability(
+            preds=preds,
+            target=target,
+            metric_module=metric,
+        )
 
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'

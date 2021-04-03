@@ -368,7 +368,7 @@ class MetricTester:
         metric_functional: Callable,
         metric_args: dict = {},
     ):
-        """Test if an metric can be used with half precision tensors on cpu
+        """Test if a metric can be used with half precision tensors on cpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -388,7 +388,7 @@ class MetricTester:
         metric_functional: Callable,
         metric_args: dict = {},
     ):
-        """Test if an metric can be used with half precision tensors on gpu
+        """Test if a metric can be used with half precision tensors on gpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -400,6 +400,21 @@ class MetricTester:
             metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device="cuda"
         )
 
+    def test_differentiability(
+        self, 
+        preds: torch.Tensor, 
+        target: torch.Tensor,
+        metric_module: Metric,
+    ):
+        """Test if a metric is differentiable or not
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+        """
+        preds.requires_grad = True
+        out = metric_module(preds, target)
+        assert metric_module.is_differentiable == out.requires_grad
 
 class DummyMetric(Metric):
     name = "Dummy"

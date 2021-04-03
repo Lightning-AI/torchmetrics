@@ -103,11 +103,13 @@ class TestAccuracies(MetricTester):
             },
         )
 
-    def test_differentiability(self, preds, target):
-        preds.requires_grad = True
+    def test_metrics_differentiability(self, preds, target):
         metric = Accuracy()
-        out = metric(preds, target)
-        assert metric.is_differentiable != out.requires_grad
+        self.test_differentiability(
+            preds=preds,
+            target=target,
+            metric_module=metric,
+        )
 
 
 _l1to4 = [0.1, 0.2, 0.3, 0.4]
