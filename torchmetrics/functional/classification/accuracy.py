@@ -16,9 +16,9 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-from torchmetrics.functional.classification.stat_scores import _del_column
 
 
 def _accuracy_update(
