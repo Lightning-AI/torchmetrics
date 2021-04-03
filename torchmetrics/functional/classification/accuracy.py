@@ -18,6 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
+from torchmetrics.functional.classification.stat_scores import _del_column
 
 
 def _accuracy_update(
@@ -25,6 +26,7 @@ def _accuracy_update(
     target: Tensor,
     threshold: float,
     top_k: Optional[int],
+    ignore_index: Optional[int],
     subset_accuracy: bool,
 ) -> Tuple[Tensor, Tensor]:
 
@@ -33,6 +35,17 @@ def _accuracy_update(
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
+
+    if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
+        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[0]} classes")
+
+    if ignore_index is not None and preds.shape[1] == 1:
+        raise ValueError("You can not use `ignore_index` with binary data.")
+
+    # Delete what is in ignore_index, if applicable (and classes don't matter):
+    if ignore_index is not None:
+        preds = _del_column(preds, ignore_index)
+        target = _del_column(target, ignore_index)
 
     if mode == DataType.BINARY or (mode == DataType.MULTILABEL and subset_accuracy):
         correct = (preds == target).all(dim=1).sum()
@@ -60,6 +73,7 @@ def accuracy(
     target: Tensor,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
+    ignore_index: Optional[int] = None,
     subset_accuracy: bool = False,
 ) -> Tensor:
     r"""Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`_:
@@ -87,6 +101,10 @@ def accuracy(
         threshold:
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
+            or ``'none'``, the score for the ignored class will be returned as ``nan``.
         top_k:
             Number of highest probability predictions considered to find the correct label, relevant
             only for (multi-dimensional) multi-class inputs with probability predictions. The
@@ -126,5 +144,5 @@ def accuracy(
         tensor(0.6667)
     """
 
-    correct, total = _accuracy_update(preds, target, threshold, top_k, subset_accuracy)
+    correct, total = _accuracy_update(preds, target, threshold, top_k, ignore_index, subset_accuracy)
     return _accuracy_compute(correct, total)
