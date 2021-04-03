@@ -231,7 +231,7 @@ def apply_to_collection(
     return data
 
 
-def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
+def get_group_indexes(indexes: Union[Tensor, np.array]) -> List[Union[Tensor, np.array]]:
     """
     Given an integer `torch.Tensor` or `np.array` `indexes`, return a `torch.Tensor` or `np.array` of indexes for
     each different value in `indexes`.
@@ -247,12 +247,12 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
         >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
         >>>
-        >>> indexes = np.ndarray([0, 0, 0, 1, 1, 1, 1])
+        >>> indexes = np.array([0, 0, 0, 1, 1, 1, 1])
         >>> get_group_indexes(indexes)
         [array([0, 1, 2]), array([3, 4, 5, 6])]
     """
 
-    if not isinstance(indexes, (Tensor, np.ndarray)):
+    if not isinstance(indexes, (Tensor, np.array)):
         raise ValueError("`indexes` must be a torch tensor or numpy array")
 
     if not len(indexes.shape) == 1:

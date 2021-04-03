@@ -39,7 +39,7 @@ seed_all(42)
 def _compute_sklearn_metric(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
-    indexes: np.ndarray = None,
+    indexes: np.array = None,
     metric: Callable = None,
     empty_target_action: str = "skip",
     **kwargs
@@ -55,9 +55,9 @@ def _compute_sklearn_metric(
     if isinstance(target, Tensor):
         target = target.cpu().numpy()
 
-    assert isinstance(indexes, np.ndarray)
-    assert isinstance(preds, np.ndarray)
-    assert isinstance(target, np.ndarray)
+    assert isinstance(indexes, np.array)
+    assert isinstance(preds, np.array)
+    assert isinstance(target, np.array)
 
     indexes = indexes.flatten()
     preds = preds.flatten()
