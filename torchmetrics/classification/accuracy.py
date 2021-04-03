@@ -45,6 +45,10 @@ class Accuracy(Metric):
         threshold:
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
+            or ``'none'``, the score for the ignored class will be returned as ``nan``.
         top_k:
             Number of highest probability predictions considered to find the correct label, relevant
             only for (multi-dimensional) multi-class inputs with probability predictions. The
@@ -105,6 +109,7 @@ class Accuracy(Metric):
         self,
         threshold: float = 0.5,
         top_k: Optional[int] = None,
+        ignore_index: Optional[int] = None,
         subset_accuracy: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -129,6 +134,7 @@ class Accuracy(Metric):
 
         self.threshold = threshold
         self.top_k = top_k
+        self.ignore_index = ignore_index
         self.subset_accuracy = subset_accuracy
 
     def update(self, preds: Tensor, target: Tensor):
@@ -142,7 +148,8 @@ class Accuracy(Metric):
         """
 
         correct, total = _accuracy_update(
-            preds, target, threshold=self.threshold, top_k=self.top_k, subset_accuracy=self.subset_accuracy
+            preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index,
+            subset_accuracy=self.subset_accuracy
         )
 
         self.correct += correct
