@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.recall import retrieval_recall
-from torchmetrics.retrieval.retrieval_metric import IGNORE_IDX, RetrievalMetric
+from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalRecall(RetrievalMetric):
@@ -46,8 +46,6 @@ class RetrievalRecall(RetrievalMetric):
                 - ``'pos'``: score on those queries is counted as ``1.0``
                 - ``'neg'``: score on those queries is counted as ``0.0``
 
-        exclude:
-            Do not take into account predictions where the ``target`` is equal to this value. default `-100`
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -74,7 +72,6 @@ class RetrievalRecall(RetrievalMetric):
     def __init__(
         self,
         empty_target_action: str = 'skip',
-        exclude: int = IGNORE_IDX,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -83,7 +80,6 @@ class RetrievalRecall(RetrievalMetric):
     ):
         super().__init__(
             empty_target_action=empty_target_action,
-            exclude=exclude,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
@@ -95,5 +91,4 @@ class RetrievalRecall(RetrievalMetric):
         self.k = k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        valid_indexes = (target != self.exclude)
-        return retrieval_recall(preds[valid_indexes], target[valid_indexes], k=self.k)
+        return retrieval_recall(preds, target, k=self.k)

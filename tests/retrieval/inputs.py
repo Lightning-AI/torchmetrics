@@ -15,12 +15,50 @@ from collections import namedtuple
 
 import torch
 
-from tests.helpers.testers import NUM_BATCHES, BATCH_SIZE
+from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 
-Input = namedtuple('InputMultiple', ["preds", "target", "idx"])
+Input = namedtuple('InputMultiple', ["indexes", "preds", "target"])
 
+# correct
 _input_retrieval_scores = Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
-    idx=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE))
+)
+
+_input_retrieval_scores_extra = Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
+)
+
+# with errors
+_input_retrieval_scores_no_target = Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+    target=torch.randint(high=1, size=(NUM_BATCHES, BATCH_SIZE)),
+)
+
+_input_retrieval_scores_empty = Input(
+    indexes=torch.randint(high=10, size=[0]),
+    preds=torch.rand(0),
+    target=torch.randint(high=2, size=[0]),
+)
+
+_input_retrieval_scores_mismatching_sizes = Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE - 2)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+)
+
+_input_retrieval_scores_mismatching_sizes_func = Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE - 2),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+)
+
+_input_retrieval_scores_wrong_targets = Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+    target=torch.randint(low=-2**31, high=2**31, size=(NUM_BATCHES, BATCH_SIZE)),
 )

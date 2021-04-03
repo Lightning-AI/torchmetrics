@@ -11,40 +11,59 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.utilities.data import get_group_indexes
+from functools import partial
 from typing import Callable, Union
 
 import numpy as np
 import pytest
 import torch
+from numpy import array
 from torch import Tensor
 
 from tests.helpers import seed_all
-from torchmetrics import Metric
-from tests.helpers.testers import MetricTester
+from tests.helpers.testers import Metric, MetricTester
+from tests.retrieval.inputs import (
+    _input_retrieval_scores,
+    _input_retrieval_scores_empty,
+    _input_retrieval_scores_extra,
+    _input_retrieval_scores_mismatching_sizes,
+    _input_retrieval_scores_mismatching_sizes_func,
+    _input_retrieval_scores_no_target,
+    _input_retrieval_scores_wrong_targets,
+)
+from torchmetrics.utilities.data import get_group_indexes
 
-seed_all(1337)
+seed_all(42)
 
 
 def _compute_sklearn_metric(
-    preds: Union[Tensor, np.ndarray],
-    target: Union[Tensor, np.ndarray],
-    idx: np.ndarray = None,
+    preds: Union[Tensor, array],
+    target: Union[Tensor, array],
+    indexes: np.ndarray = None,
     metric: Callable = None,
     empty_target_action: str = "skip",
     **kwargs
 ) -> Tensor:
     """ Compute metric with multiple iterations over every query predictions set. """
 
+    if indexes is None:
+        indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
+    if isinstance(indexes, Tensor):
+        indexes = indexes.cpu().numpy()
     if isinstance(preds, Tensor):
         preds = preds.cpu().numpy()
     if isinstance(target, Tensor):
         target = target.cpu().numpy()
+    
+    assert isinstance(indexes, np.ndarray)
+    assert isinstance(preds, np.ndarray)
+    assert isinstance(target, np.ndarray)
 
-    if idx is None:
-        idx = np.full_like(preds, fill_value=0, dtype=np.int64)
+    indexes = indexes.flatten()
+    preds = preds.flatten()
+    target = target.flatten()
+    groups = get_group_indexes(indexes)
 
-    groups = get_group_indexes(idx)
     sk_results = []
     for group in groups:
         trg, pds = target[group], preds[group]
@@ -65,131 +84,336 @@ def _compute_sklearn_metric(
     return np.array(0.0)
 
 
-def _test_retrieval_against_sklearn(
-    sklearn_metric: Callable,
-    torch_metric: Metric,
-    size: int,
-    n_documents: int,
-    empty_target_action: str,
-    **kwargs
-) -> None:
-    """ Compare PL metrics to standard version. """
-    metric = torch_metric(empty_target_action=empty_target_action, **kwargs)
-    shape = (n_documents, size)
-
-    indexes = np.ones(shape, dtype=np.int64) * np.arange(n_documents)
-    preds = np.random.randn(*shape)
-    target = np.random.randint(0, 2, size=shape)
-
-    sk_results = _compute_sklearn_metric(
-        preds, target, metric=sklearn_metric, empty_target_action=empty_target_action, **kwargs
-    )
-    sk_results = torch.tensor(sk_results)
-
-    indexes_tensor = torch.tensor(indexes).long()
-    preds_tensor = torch.tensor(preds).float()
-    target_tensor = torch.tensor(target).long()
-
-    # lets assume data are not ordered
-    perm = torch.randperm(indexes_tensor.nelement())
-    indexes_tensor = indexes_tensor.view(-1)[perm].view(indexes_tensor.size())
-    preds_tensor = preds_tensor.view(-1)[perm].view(preds_tensor.size())
-    target_tensor = target_tensor.view(-1)[perm].view(target_tensor.size())
-
-    # shuffle ids to require also sorting of documents ability from the torch metric
-    pl_result = metric(preds_tensor, target_tensor, idx=indexes_tensor)
-
-    assert torch.allclose(sk_results.float(), pl_result.float(), equal_nan=False), (
-        f"Test failed comparing metric {sklearn_metric} with {torch_metric}: "
-        f"{sk_results.float()} vs {pl_result.float()}. "
-        f"indexes: {indexes}, preds: {preds}, target: {target}"
-    )
+_errors_test_functional_metric_parameters = [
+    "preds, target, message", [
+        # check input shapes are consistent (func)
+        (
+            _input_retrieval_scores_mismatching_sizes_func.preds,
+            _input_retrieval_scores_mismatching_sizes_func.target,
+            "`preds` and `target` must be of the same shape",
+        ),
+        # check input tensors are not empty
+        (
+            _input_retrieval_scores_empty.preds,
+            _input_retrieval_scores_empty.target,
+            "`preds` and `target` must be non-empty and non-scalar tensors",
+        ),
+        # check on input dtypes
+        (
+            _input_retrieval_scores.preds.bool(),
+            _input_retrieval_scores.target,
+            "`preds` must be a tensor of floats",
+        ),
+        (
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target.float(),
+            "`target` must be a tensor of booleans or integers",
+        ),
+        # check targets are between 0 and 1
+        (
+            _input_retrieval_scores_wrong_targets.preds,
+            _input_retrieval_scores_wrong_targets.target,
+            "`target` must contain `binary` values",
+        ),
+    ]
+]
 
 
-def _test_dtypes(torchmetric) -> None:
-    """Check PL metrics inputs are controlled correctly. """
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    length = 10  # not important in this test
-
-    # check error when `empty_target_action='error'` is raised correctly
-    indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
-    preds = torch.rand(size=(length, ), device=device, dtype=torch.float32)
-    target = torch.tensor([False] * length, device=device, dtype=torch.bool)
-
-    metric = torchmetric(empty_target_action='error')
-    with pytest.raises(ValueError, match="`compute` method was provided with a query with no positive target."):
-        metric(preds, target, idx=indexes)
-
-    # check ValueError with invalid `empty_target_action` argument
-    casual_argument = 'casual_argument'
-    with pytest.raises(ValueError, match=f"`empty_target_action` received a wrong value {casual_argument}."):
-        metric = torchmetric(empty_target_action=casual_argument)
-
-    # check input dtypes
-    indexes = torch.tensor([0] * length, device=device, dtype=torch.int64)
-    preds = torch.tensor([0] * length, device=device, dtype=torch.float32)
-    target = torch.tensor([0] * length, device=device, dtype=torch.int64)
-
-    metric = torchmetric(empty_target_action='error')
-
-    # check error on input dtypes are raised correctly
-    with pytest.raises(ValueError, match="`indexes` must be a tensor of long integers"):
-        metric(preds, target, idx=indexes.bool())
-    with pytest.raises(ValueError, match="`preds` must be a tensor of floats"):
-        metric(preds.bool(), target, idx=indexes)
-    with pytest.raises(ValueError, match="`target` must be a tensor of booleans or integers"):
-        metric(preds, target.float(), idx=indexes)
+_errors_test_class_metric_parameters_k = [
+    "indexes, preds, target, message, metric_args", [
+        (
+            _input_retrieval_scores.index,
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target,
+            "`k` has to be a positive integer or None",
+            {'k': -10},
+        ),
+    ]
+]
 
 
-def _test_input_shapes(torchmetric) -> None:
-    """Check PL metrics inputs are controlled correctly. """
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    metric = torchmetric(empty_target_action='error')
+_errors_test_class_metric_parameters = [
+    "indexes, preds, target, message, metric_args", [
+        (
+            None,
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target,
+            "`indexes` cannot be None",
+            {'empty_target_action': "error"},
+        ),
+        # check when error when there are not positive targets
+        (
+            _input_retrieval_scores_no_target.indexes,
+            _input_retrieval_scores_no_target.preds,
+            _input_retrieval_scores_no_target.target,
+            "`compute` method was provided with a query with no positive target.",
+            {'empty_target_action': "error"},
+        ),
+        # check when input arguments are invalid
+        (
+            _input_retrieval_scores.indexes,
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target,
+            "`empty_target_action` received a wrong value `casual_argument`.",
+            {'empty_target_action': "casual_argument"},
+        ),
+        # check input shapes are consistent
+        (
+            _input_retrieval_scores_mismatching_sizes.indexes,
+            _input_retrieval_scores_mismatching_sizes.preds,
+            _input_retrieval_scores_mismatching_sizes.target,
+            "`indexes`, `preds` and `target` must be of the same shape",
+            {'empty_target_action': "skip"},
+        ),
+        # check input tensors are not empty
+        (
+            _input_retrieval_scores_empty.indexes,
+            _input_retrieval_scores_empty.preds,
+            _input_retrieval_scores_empty.target,
+            "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
+            {'empty_target_action': "skip"},
+        ),
+        # check on input dtypes
+        (
+            _input_retrieval_scores.indexes.bool(),
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target,
+            "`indexes` must be a tensor of long integers",
+            {'empty_target_action': "skip"},
+        ),
+        (
+            _input_retrieval_scores.indexes,
+            _input_retrieval_scores.preds.bool(),
+            _input_retrieval_scores.target,
+            "`preds` must be a tensor of floats",
+            {'empty_target_action': "skip"},
+        ),
+        (
+            _input_retrieval_scores.indexes,
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target.float(),
+            "`target` must be a tensor of booleans or integers",
+            {'empty_target_action': "skip"},
+        ),
+        # check targets are between 0 and 1
+        (
+            _input_retrieval_scores_wrong_targets.indexes,
+            _input_retrieval_scores_wrong_targets.preds,
+            _input_retrieval_scores_wrong_targets.target,
+            "`target` must contain `binary` values",
+            {'empty_target_action': "skip"},
+        ),
+    ]
+]
 
-    # check input shapes are checked correclty
-    elements_1, elements_2 = np.random.choice(np.arange(1, 20), size=2, replace=False)
-    indexes = torch.tensor([0] * elements_1, device=device, dtype=torch.int64)
-    preds = torch.tensor([0] * elements_2, device=device, dtype=torch.float32)
-    target = torch.tensor([0] * elements_2, device=device, dtype=torch.int64)
 
-    with pytest.raises(ValueError, match="`indexes`, `preds` and `target` must be of the same shape"):
-        metric(preds, target, idx=indexes)
-
-
-def _test_input_args(torchmetric: Metric, message: str, **kwargs) -> None:
-    """Check invalid args are managed correctly. """
-    with pytest.raises(ValueError, match=message):
-        torchmetric(**kwargs)
-
-
-
+_default_metric_class_input_arguments = [
+    "indexes, preds, target", [
+        (
+            _input_retrieval_scores.indexes,
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target
+        ),
+        (
+            _input_retrieval_scores_extra.indexes,
+            _input_retrieval_scores_extra.preds,
+            _input_retrieval_scores_extra.target,
+        ),
+    ]
+]
 
 
+_default_metric_functional_input_arguments = [
+    "preds, target", [
+        (
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target
+        ),
+        (
+            _input_retrieval_scores_extra.preds,
+            _input_retrieval_scores_extra.target
+        ),
+    ]
+]
+
+
+def _errors_test_class_metric(
+    indexes: Tensor,
+    preds: Tensor,
+    target: Tensor,
+    metric_class: Metric,
+    message: str = "",
+    metric_args: dict = {},
+    exception_type: Exception = ValueError,
+    kwargs_update: dict = {},
+):
+    """Utility function doing checks about types, parameters and errors.
+
+    Args:
+        indexes: torch tensor with indexes
+        preds: torch tensor with predictions
+        target: torch tensor with targets
+        metric_class: lightning metric class that should be tested
+        message: message that exception should return
+        metric_args: arguments for class initialization
+        exception_type: callable function that is used for comparison
+        kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
+            target when running update on the metric.
+    """
+    with pytest.raises(exception_type, match=message):
+        metric = metric_class(**metric_args)
+        metric(preds, target, indexes=indexes, **kwargs_update)
+
+
+def _errors_test_functional_metric(
+    preds: Tensor,
+    target: Tensor,
+    metric_functional: Metric,
+    message: str = "",
+    exception_type: Exception = ValueError,
+    kwargs_update: dict = {},
+):
+    """Utility function doing checks about types, parameters and errors.
+
+    Args:
+        preds: torch tensor with predictions
+        target: torch tensor with targets
+        metric_functional: lightning functional metric that should be tested
+        message: message that exception should return
+        exception_type: callable function that is used for comparison
+        kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
+            target when running update on the metric.
+    """
+    with pytest.raises(exception_type, match=message):
+        metric_functional(preds, target, **kwargs_update)
 
 
 class RetrievalMetricTester(MetricTester):
 
-    """
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_average_precision(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
-        self.run_class_metric_test(
+    def run_class_metric_test(
+        self,
+        ddp: bool,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        metric_class: Metric,
+        sk_metric: Callable,
+        dist_sync_on_step: bool,
+        metric_args: dict,
+    ):
+        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, **metric_args)
+
+        super().run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=RetrievalMAP,
-            sk_metric=sk_metric,
+            metric_class=metric_class,
+            sk_metric=_sk_metric_adapted,
             dist_sync_on_step=dist_sync_on_step,
-        )
-    """
-
-    def test_average_precision_functional(self, preds, target, sk_metric):
-        self.run_functional_metric_test(
-            preds,
-            target,
-            metric_functional=retrieval_average_precision,
-            sk_metric=sk_metric,
+            metric_args=metric_args,
+            indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
         )
 
-    def test_a_caso(self, preds, target, sk_metric):
-        assert False
+    def run_functional_metric_test(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        metric_functional: Callable,
+        sk_metric: Callable,
+        metric_args: dict,
+        **kwargs,
+    ):
+        # action on functional version of IR metrics is to return `tensor(0.0)` if not target is positive.
+        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, **metric_args)
+
+        super().run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=metric_functional,
+            sk_metric=_sk_metric_adapted,
+            metric_args=metric_args,
+            **kwargs,
+        )
+
+    def run_precision_test_cpu(
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+    ):
+        # action on functional version of IR metrics is to return `tensor(0.0)` if not target is positive.
+        metric_functional_ignore_indexes = lambda preds, target, indexes: metric_functional(preds, target)
+
+        super().run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=metric_module,
+            metric_functional=metric_functional_ignore_indexes,
+            metric_args={'empty_target_action': 'neg'},
+            indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
+        )
+
+    def run_precision_test_gpu(
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+    ):
+        if not torch.cuda.is_available():
+            pytest.skip()
+
+        # action on functional version of IR metrics is to return `tensor(0.0)` if not target is positive.
+        metric_functional_ignore_indexes = lambda preds, target, indexes: metric_functional(preds, target)
+
+        super().run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=metric_module,
+            metric_functional=metric_functional_ignore_indexes,
+            metric_args={'empty_target_action': 'neg'},
+            indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
+        )
+
+    def run_metric_class_arguments_test(
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        metric_class: Metric,
+        message: str = "",
+        metric_args: dict = {},
+        exception_type: Exception = ValueError,
+        kwargs_update: dict = {},
+    ):
+        _errors_test_class_metric(
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_class=metric_class,
+            message=message,
+            metric_args=metric_args,
+            exception_type=exception_type,
+            **kwargs_update,
+        )
+
+    def run_functional_metric_arguments_test(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        metric_functional: Callable,
+        message: str = "",
+        exception_type: Exception = ValueError,
+        kwargs_update: dict = {},
+    ):
+        _errors_test_functional_metric(
+            preds=preds,
+            target=target,
+            metric_functional=metric_functional,
+            message=message,
+            exception_type=exception_type,
+            **kwargs_update,
+        )

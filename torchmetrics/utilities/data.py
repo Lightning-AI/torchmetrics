@@ -231,40 +231,42 @@ def apply_to_collection(
     return data
 
 
-def get_group_indexes(idx: Tensor) -> List[Tensor]:
+def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
     """
-    Given an integer `torch.Tensor` or `np.array` `idx`, return a `torch.Tensor` or `np.array` of indexes for
-    each different value in `idx`.
+    Given an integer `torch.Tensor` or `np.array` `indexes`, return a `torch.Tensor` or `np.array` of indexes for
+    each different value in `indexes`.
 
     Args:
-        idx: a `torch.Tensor` or `np.array` of integers
+        indexes: a `torch.Tensor` or `np.array` of integers
 
     Return:
         A list of integer `torch.Tensor`s or `np.array`s
 
     Example:
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
-        >>> groups = get_group_indexes(indexes)
-        >>> groups
+        >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
         >>>
         >>> indexes = np.ndarray([0, 0, 0, 1, 1, 1, 1])
-        >>> groups = get_group_indexes(indexes)
-        >>> groups
+        >>> get_group_indexes(indexes)
         [array([0, 1, 2]), array([3, 4, 5, 6])]
     """
 
-    if not isinstance(idx, (Tensor, np.ndarray)):
-        raise ValueError("`idx` must be a torch tensor or numpy array")
+    if not isinstance(indexes, (Tensor, np.ndarray)):
+        raise ValueError("`indexes` must be a torch tensor or numpy array")
 
-    structure = tensor if isinstance(idx, Tensor) else np.array
-    dtype = torch.long if isinstance(idx, Tensor) else np.int64
+    if not len(indexes.shape) == 1:
+        raise ValueError("`indexes` must have a single dimension")
 
-    indexes = dict()
-    for i, _id in enumerate(idx):
+    structure = tensor if isinstance(indexes, Tensor) else np.array
+    dtype = torch.long if isinstance(indexes, Tensor) else np.int64
+
+    res = dict()
+    for i, _id in enumerate(indexes):
         _id = _id.item()
-        if _id in indexes:
-            indexes[_id] += [i]
+        if _id in res:
+            res[_id] += [i]
         else:
-            indexes[_id] = [i]
-    return [structure(x, dtype=dtype) for x in indexes.values()]
+            res[_id] = [i]
+
+    return [structure(x, dtype=dtype) for x in res.values()]

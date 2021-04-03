@@ -13,9 +13,22 @@
 # limitations under the License.
 import numpy as np
 import pytest
+from torch import Tensor
 
-from tests.retrieval.helpers import _test_dtypes, _test_input_args, _test_input_shapes, _test_retrieval_against_sklearn
+from tests.helpers import seed_all
+from tests.retrieval.helpers import (
+    RetrievalMetricTester,
+    _default_metric_class_input_arguments,
+    _default_metric_functional_input_arguments,
+    _errors_test_class_metric_parameters,
+    _errors_test_functional_metric_parameters,
+    _errors_test_class_metric_parameters_k,
+)
+
+from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.retrieval_precision import RetrievalPrecision
+
+seed_all(42)
 
 
 def _precision_at_k(target: np.array, preds: np.array, k: int = None):
@@ -38,28 +51,135 @@ def _precision_at_k(target: np.array, preds: np.array, k: int = None):
         return np.NaN
 
 
-@pytest.mark.parametrize('size', [1, 4, 10])
-@pytest.mark.parametrize('n_documents', [1, 5])
-@pytest.mark.parametrize('empty_target_action', ['skip', 'pos', 'neg'])
-@pytest.mark.parametrize('k', [None, 1, 4, 10])
-def test_results(size, n_documents, empty_target_action, k):
-    """ Test metrics are computed correctly. """
-    _test_retrieval_against_sklearn(
-        _precision_at_k, RetrievalPrecision, size, n_documents, empty_target_action, k=k
-    )
+class TestPrecision(RetrievalMetricTester):
 
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
+    @pytest.mark.parametrize("k", [None, 1, 4, 10])
+    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    def test_class_metric(
+        self,
+        ddp: bool,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        dist_sync_on_step: bool,
+        empty_target_action: str,
+        k: int,
+    ):
+        metric_args = {'empty_target_action': empty_target_action, 'k': k}
 
-def test_dtypes():
-    """ Check dypes are managed correctly. """
-    _test_dtypes(RetrievalPrecision)
+        self.run_class_metric_test(
+            ddp=ddp,
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_class=RetrievalPrecision,
+            sk_metric=_precision_at_k,
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args=metric_args,
+        )
 
+    @pytest.mark.parametrize(*_default_metric_functional_input_arguments)
+    @pytest.mark.parametrize("k", [None, 1, 4, 10])
+    def test_functional_metric(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        k: int,
+    ):
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=retrieval_precision,
+            sk_metric=_precision_at_k,
+            metric_args={},
+            k=k,
+        )
 
-def test_input_shapes() -> None:
-    """Check inputs shapes are managed correctly. """
-    _test_input_shapes(RetrievalPrecision)
+    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    def test_precision_cpu(
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+    ):
+        self.run_precision_test_cpu(
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_module=RetrievalPrecision,
+            metric_functional=retrieval_precision,
+        )
+    
+    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    def test_precision_gpu(
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+    ):
+        self.run_precision_test_gpu(
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_module=RetrievalPrecision,
+            metric_functional=retrieval_precision,
+        )
 
+    @pytest.mark.parametrize(*_errors_test_class_metric_parameters)
+    def test_arguments_class_metric(
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        message: str,
+        metric_args: dict,
+    ):
+        self.run_metric_class_arguments_test(
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_class=RetrievalPrecision,
+            message=message,
+            metric_args=metric_args,
+            exception_type=ValueError,
+            kwargs_update={},
+        )
 
-@pytest.mark.parametrize('k', [-1, 1.0])
-def test_input_params(k) -> None:
-    """Check invalid args are managed correctly. """
-    _test_input_args(RetrievalPrecision, "`k` has to be a positive integer or None", k=k)
+    @pytest.mark.parametrize(*_errors_test_class_metric_parameters_k)
+    def test_additional_arguments_class_metric(
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        message: str,
+        metric_args: dict,
+    ):
+        self.run_metric_class_arguments_test(
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_class=RetrievalPrecision,
+            message=message,
+            metric_args=metric_args,
+            exception_type=ValueError,
+            kwargs_update={},
+        )
+
+    @pytest.mark.parametrize(*_errors_test_functional_metric_parameters)
+    def test_arguments_class_metric(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        message: str,
+    ):
+        self.run_functional_metric_arguments_test(
+            preds=preds,
+            target=target,
+            metric_functional=retrieval_precision,
+            message=message,
+            exception_type=ValueError,
+            kwargs_update={},
+        )

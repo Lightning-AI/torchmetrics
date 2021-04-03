@@ -22,7 +22,6 @@ from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import get_group_indexes
 
 #: get_group_indexes is used to group predictions belonging to the same document
-IGNORE_IDX = -100
 
 
 class RetrievalMetric(Metric, ABC):
@@ -51,8 +50,6 @@ class RetrievalMetric(Metric, ABC):
             - ``'error'``: raise a ``ValueError``
             - ``'pos'``: score on those queries is counted as ``1.0``
             - ``'neg'``: score on those queries is counted as ``0.0``
-        exclude:
-            Do not take into account predictions where the target is equal to this value. default `-100`
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -69,7 +66,6 @@ class RetrievalMetric(Metric, ABC):
     def __init__(
         self,
         empty_target_action: str = 'skip',
-        exclude: int = IGNORE_IDX,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -84,46 +80,40 @@ class RetrievalMetric(Metric, ABC):
 
         empty_target_action_options = ('error', 'skip', 'pos', 'neg')
         if empty_target_action not in empty_target_action_options:
-            raise ValueError(f"`empty_target_action` received a wrong value {empty_target_action}.")
+            raise ValueError(f"`empty_target_action` received a wrong value `{empty_target_action}`.")
 
         self.empty_target_action = empty_target_action
-        self.exclude = exclude
-        self.next_index = 0
 
-        self.add_state("idx", default=[], dist_reduce_fx=None)
+        self.add_state("indexes", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, idx: Tensor = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor = None) -> None:
         """ Check shape, check and convert dtypes, flatten and add to accumulators. """
-        if idx is None:
-            idx = torch.full(preds.shape, fill_value=self.next_index,  dtype=torch.long, device=preds.device)
+        if indexes is None:
+            raise ValueError("`indexes` cannot be None")
 
-        # update index
-        actual_max_id = torch.max(idx).item()
-        if actual_max_id > self.next_index:
-            self.next_index = actual_max_id
+        indexes, preds, target = _check_retrieval_inputs(indexes, preds, target)
 
-        idx, preds, target = _check_retrieval_inputs(idx, preds, target, ignore=IGNORE_IDX)
-        self.idx.append(idx.flatten())
-        self.preds.append(preds.flatten())
-        self.target.append(target.flatten())
+        self.indexes.append(indexes)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self) -> Tensor:
         """
-        First concat state `idx`, `preds` and `target` since they were stored as lists. After that,
+        First concat state `indexes`, `preds` and `target` since they were stored as lists. After that,
         compute list of groups that will help in keeping together predictions about the same query.
         Finally, for each group compute the `_metric` if the number of positive targets is at least
         1, otherwise behave as specified by `self.empty_target_action`.
         """
-        idx = torch.cat(self.idx, dim=0)
+        indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
 
         res = []
-        kwargs = {'device': idx.device, 'dtype': torch.float32}
+        kwargs = {'device': indexes.device, 'dtype': torch.float32}
 
-        groups = get_group_indexes(idx)
+        groups = get_group_indexes(indexes)
         for group in groups:
 
             mini_preds = preds[group]

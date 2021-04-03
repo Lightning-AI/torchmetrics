@@ -43,8 +43,7 @@ class RetrievalMAP(RetrievalMetric):
             - ``'error'``: raise a ``ValueError``
             - ``'pos'``: score on those queries is counted as ``1.0``
             - ``'neg'``: score on those queries is counted as ``0.0``
-        exclude:
-            Do not take into account predictions where the ``target`` is equal to this value. default `-100`
+
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -68,5 +67,4 @@ class RetrievalMAP(RetrievalMetric):
     """
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        valid_indexes = (target != self.exclude)
-        return retrieval_average_precision(preds[valid_indexes], target[valid_indexes])
+        return retrieval_average_precision(preds, target)

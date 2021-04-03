@@ -129,18 +129,20 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
-            ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
+            rank_indexes = [i + r for r in range(worldsize)]
+
+            ddp_preds = preds[rank_indexes].cpu()
+            ddp_target = target[rank_indexes].cpu()
             ddp_kwargs_upd = {
-                k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
-                for k, v in batch_kwargs_update.items()
+                k: v[rank_indexes].cpu() if isinstance(v, Tensor) else v
+                for k, v in kwargs_update.items()
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
         elif check_batch and not metric.dist_sync_on_step:
-            batch_kwargs_update = {k: v.cpu() for k, v in kwargs_update.items()}
+            batch_kwargs_update = {k: v.cpu() for k, v in batch_kwargs_update.items()}
             sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
@@ -196,7 +198,6 @@ def _functional_test(
     for i in range(NUM_BATCHES):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         lightning_result = metric(preds[i], target[i], **extra_kwargs)
-        extra_kwargs = {k: v.cpu() for k, v in kwargs_update.items()}
         sk_result = sk_metric(preds[i].cpu(), target[i].cpu(), **extra_kwargs)
 
         # assert its the same
@@ -209,6 +210,7 @@ def _assert_half_support(
     preds: torch.Tensor,
     target: torch.Tensor,
     device: str = "cpu",
+    **kwargs_update
 ):
     """
     Test if an metric can be used with half precision tensors
@@ -219,12 +221,18 @@ def _assert_half_support(
         preds: torch tensor with predictions
         target: torch tensor with targets
         device: determine device, either "cpu" or "cuda"
+        kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
     """
     y_hat = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
     y = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
+    kwargs_update = {
+        k: (v[0].half() if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
+        for k, v in kwargs_update.items()
+    }
     metric_module = metric_module.to(device)
-    _assert_tensor(metric_module(y_hat, y))
-    _assert_tensor(metric_functional(y_hat, y))
+    _assert_tensor(metric_module(y_hat, y, **kwargs_update))
+    _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
 class MetricTester:
@@ -367,6 +375,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = {},
+        **kwargs_update,
     ):
         """Test if an metric can be used with half precision tensors on cpu
         Args:
@@ -375,9 +384,16 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
         _assert_half_support(
-            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device="cpu"
+            metric_module(**metric_args),
+            metric_functional,
+            preds,
+            target,
+            device="cpu",
+            **kwargs_update
         )
 
     def run_precision_test_gpu(
@@ -387,6 +403,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = {},
+        **kwargs_update,
     ):
         """Test if an metric can be used with half precision tensors on gpu
         Args:
@@ -395,9 +412,16 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
         _assert_half_support(
-            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device="cuda"
+            metric_module(**metric_args),
+            metric_functional,
+            preds,
+            target,
+            device="cuda",
+            **kwargs_update
         )
 
 
