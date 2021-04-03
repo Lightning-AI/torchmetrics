@@ -246,10 +246,6 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
-        >>>
-        >>> indexes = np.array([0, 0, 0, 1, 1, 1, 1])
-        >>> get_group_indexes(indexes)
-        [array([0, 1, 2]), array([3, 4, 5, 6])]
     """
 
     if not isinstance(indexes, (Tensor, np.ndarray)):
