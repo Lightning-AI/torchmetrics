@@ -97,6 +97,7 @@ class TestMeanError(MetricTester):
         )
 
     def test_differentiability(self, preds, target):
+        preds.requires_grad = True
         metric = MeanSquaredError()
         out = metric(preds, target)
         assert metric.is_differentiable == out.requires_grad

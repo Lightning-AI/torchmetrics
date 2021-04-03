@@ -281,3 +281,17 @@ They simply compute the metric value based on the given inputs.
 Also, the integration within other parts of PyTorch Lightning will never be as tight as with the Module-based interface.
 If you look for just computing the values, the functional metrics are the way to go.
 However, if you are looking for the best integration and user experience, please consider also using the Module interface.
+
+
+*****************************
+Metrics and Differentiability
+*****************************
+
+All Metric have a property that determines if a metric is differentiable or not. 
+
+.. code-block:: python
+
+    @property
+    def is_differentiable(self):
+        return True/False
+        
