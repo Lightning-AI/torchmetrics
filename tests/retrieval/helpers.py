@@ -54,7 +54,7 @@ def _compute_sklearn_metric(
         preds = preds.cpu().numpy()
     if isinstance(target, Tensor):
         target = target.cpu().numpy()
-    
+
     assert isinstance(indexes, np.ndarray)
     assert isinstance(preds, np.ndarray)
     assert isinstance(target, np.ndarray)

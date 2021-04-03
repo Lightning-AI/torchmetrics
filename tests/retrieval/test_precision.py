@@ -21,10 +21,9 @@ from tests.retrieval.helpers import (
     _default_metric_class_input_arguments,
     _default_metric_functional_input_arguments,
     _errors_test_class_metric_parameters,
-    _errors_test_functional_metric_parameters,
     _errors_test_class_metric_parameters_k,
+    _errors_test_functional_metric_parameters,
 )
-
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.retrieval_precision import RetrievalPrecision
 
@@ -112,7 +111,7 @@ class TestPrecision(RetrievalMetricTester):
             metric_module=RetrievalPrecision,
             metric_functional=retrieval_precision,
         )
-    
+
     @pytest.mark.parametrize(*_default_metric_class_input_arguments)
     def test_precision_gpu(
         self,
@@ -169,7 +168,7 @@ class TestPrecision(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(*_errors_test_functional_metric_parameters)
-    def test_arguments_class_metric(
+    def test_arguments_functional_metric(
         self,
         preds: Tensor,
         target: Tensor,

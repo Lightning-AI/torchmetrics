@@ -25,7 +25,6 @@ from tests.retrieval.helpers import (
     _errors_test_class_metric_parameters,
     _errors_test_functional_metric_parameters,
 )
-
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
 
@@ -110,7 +109,7 @@ class TestMRR(RetrievalMetricTester):
             metric_module=RetrievalMRR,
             metric_functional=retrieval_reciprocal_rank,
         )
-    
+
     @pytest.mark.parametrize(*_default_metric_class_input_arguments)
     def test_precision_gpu(
         self,
@@ -147,7 +146,7 @@ class TestMRR(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(*_errors_test_functional_metric_parameters)
-    def test_arguments_class_metric(
+    def test_arguments_functional_metric(
         self,
         preds: Tensor,
         target: Tensor,

@@ -85,7 +85,7 @@ class TestMAP(RetrievalMetricTester):
             metric_module=RetrievalMAP,
             metric_functional=retrieval_average_precision,
         )
-    
+
     @pytest.mark.parametrize(*_default_metric_class_input_arguments)
     def test_precision_gpu(
         self,
@@ -122,7 +122,7 @@ class TestMAP(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(*_errors_test_functional_metric_parameters)
-    def test_arguments_class_metric(
+    def test_arguments_functional_metric(
         self,
         preds: Tensor,
         target: Tensor,

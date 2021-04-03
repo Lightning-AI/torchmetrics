@@ -14,7 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
