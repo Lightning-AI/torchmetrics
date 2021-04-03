@@ -344,7 +344,8 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
     ):
         # action on functional version of IR metrics is to return `tensor(0.0)` if not target is positive.
-        metric_functional_ignore_indexes = lambda preds, target, indexes: metric_functional(preds, target)
+        def metric_functional_ignore_indexes(preds, target, indexes):
+            metric_functional(preds, target)
 
         super().run_precision_test_cpu(
             preds=preds,
@@ -367,7 +368,8 @@ class RetrievalMetricTester(MetricTester):
             pytest.skip()
 
         # action on functional version of IR metrics is to return `tensor(0.0)` if not target is positive.
-        metric_functional_ignore_indexes = lambda preds, target, indexes: metric_functional(preds, target)
+        def metric_functional_ignore_indexes(preds, target, indexes):
+            metric_functional(preds, target)
 
         super().run_precision_test_gpu(
             preds=preds,
