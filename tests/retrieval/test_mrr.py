@@ -31,7 +31,7 @@ from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
 seed_all(42)
 
 
-def _reciprocal_rank(target: np.array, preds: np.array):
+def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
     """
     Adaptation of `sklearn.metrics.label_ranking_average_precision_score`.
     Since the original sklearn metric works as RR only when the number of positive

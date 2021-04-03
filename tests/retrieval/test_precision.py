@@ -30,7 +30,7 @@ from torchmetrics.retrieval.retrieval_precision import RetrievalPrecision
 seed_all(42)
 
 
-def _precision_at_k(target: np.array, preds: np.array, k: int = None):
+def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     """
     Didn't find a reliable implementation of Precision in Information Retrieval, so,
     reimplementing here. A good explanation can be found
