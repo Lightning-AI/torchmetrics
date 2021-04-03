@@ -65,7 +65,7 @@ class RetrievalRecall(RetrievalMetric):
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
         >>> r2 = RetrievalRecall(k=2)
-        >>> r2(indexes, preds, target)
+        >>> r2(preds, target, indexes=indexes)
         tensor(0.7500)
     """
 

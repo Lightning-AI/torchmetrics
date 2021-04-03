@@ -65,7 +65,7 @@ class RetrievalPrecision(RetrievalMetric):
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
         >>> p2 = RetrievalPrecision(k=2)
-        >>> p2(indexes, preds, target)
+        >>> p2(preds, target, indexes=indexes)
         tensor(0.5000)
     """
 

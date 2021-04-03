@@ -62,7 +62,7 @@ class RetrievalMRR(RetrievalMetric):
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
         >>> mrr = RetrievalMRR()
-        >>> mrr(indexes, preds, target)
+        >>> mrr(preds, target, indexes=indexes)
         tensor(0.7500)
     """
 
