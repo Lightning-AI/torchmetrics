@@ -237,6 +237,11 @@ _default_metric_class_input_arguments = [
             _input_retrieval_scores_extra.preds,
             _input_retrieval_scores_extra.target,
         ),
+        (
+            _input_retrieval_scores_no_target.indexes,
+            _input_retrieval_scores_no_target.preds,
+            _input_retrieval_scores_no_target.target,
+        ),
     ]
 ]
 
