@@ -23,6 +23,7 @@ from tests.retrieval.helpers import (
     _errors_test_class_metric_parameters,
     _errors_test_class_metric_parameters_k,
     _errors_test_functional_metric_parameters,
+    _errors_test_functional_metric_parameters_k,
 )
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.retrieval.retrieval_recall import RetrievalRecall
@@ -180,4 +181,21 @@ class TestRecall(RetrievalMetricTester):
             message=message,
             exception_type=ValueError,
             kwargs_update={},
+        )
+
+    @pytest.mark.parametrize(*_errors_test_functional_metric_parameters_k)
+    def test_additional_arguments_functional_metric(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        message: str,
+        metric_args: dict,
+    ):
+        self.run_functional_metric_arguments_test(
+            preds=preds,
+            target=target,
+            metric_functional=retrieval_recall,
+            message=message,
+            exception_type=ValueError,
+            kwargs_update=metric_args,
         )

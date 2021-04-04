@@ -247,15 +247,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
         >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
     """
-
-    if not isinstance(indexes, (Tensor, np.ndarray)):
-        raise ValueError("`indexes` must be a torch tensor or numpy array")
-
-    if not len(indexes.shape) == 1:
-        raise ValueError("`indexes` must have a single dimension")
-
-    structure = tensor if isinstance(indexes, Tensor) else np.array
-    dtype = torch.long if isinstance(indexes, Tensor) else np.int64
+    structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
 
     res = dict()
     for i, _id in enumerate(indexes):

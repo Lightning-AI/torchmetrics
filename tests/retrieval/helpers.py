@@ -119,14 +119,19 @@ _errors_test_functional_metric_parameters = [
 ]
 
 
-_errors_test_class_metric_parameters_k = [
-    "indexes, preds, target, message, metric_args", [
+_errors_test_functional_metric_parameters_k = [
+    "preds, target, message, metric_args", [
         (
-            _input_retrieval_scores.index,
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`k` has to be a positive integer or None",
             {'k': -10},
+        ),
+        (
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target,
+            "`k` has to be a positive integer or None",
+            {'k': 4.0},
         ),
     ]
 ]
@@ -207,6 +212,19 @@ _errors_test_class_metric_parameters = [
 ]
 
 
+_errors_test_class_metric_parameters_k = [
+    "indexes, preds, target, message, metric_args", [
+        (
+            _input_retrieval_scores.index,
+            _input_retrieval_scores.preds,
+            _input_retrieval_scores.target,
+            "`k` has to be a positive integer or None",
+            {'k': -10},
+        ),
+    ]
+]
+
+
 _default_metric_class_input_arguments = [
     "indexes, preds, target", [
         (
@@ -232,6 +250,10 @@ _default_metric_functional_input_arguments = [
         (
             _input_retrieval_scores_extra.preds,
             _input_retrieval_scores_extra.target
+        ),
+        (
+            _input_retrieval_scores_no_target.preds,
+            _input_retrieval_scores_no_target.target
         ),
     ]
 ]
@@ -419,5 +441,5 @@ class RetrievalMetricTester(MetricTester):
             metric_functional=metric_functional,
             message=message,
             exception_type=exception_type,
-            **kwargs_update,
+            kwargs_update=kwargs_update,
         )
