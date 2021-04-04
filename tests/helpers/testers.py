@@ -203,8 +203,7 @@ def _functional_test(
     for i in range(NUM_BATCHES):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         lightning_result = metric(preds[i], target[i], **extra_kwargs)
-        if not fragment_kwargs:
-            extra_kwargs = {k: v.cpu() for k, v in kwargs_update.items()}
+        extra_kwargs = {k: v.cpu() for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()}
         sk_result = sk_metric(preds[i].cpu(), target[i].cpu(), **extra_kwargs)
 
         # assert its the same
