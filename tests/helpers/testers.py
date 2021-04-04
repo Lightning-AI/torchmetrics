@@ -143,7 +143,7 @@ def _class_test(
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
-                k: v.cpu()
+                k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
             sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
