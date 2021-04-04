@@ -82,6 +82,7 @@ def _class_test(
     check_batch: bool = True,
     atol: float = 1e-8,
     device: str = 'cpu',
+    fragment_kwargs: bool = False,
     **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric
@@ -102,6 +103,7 @@ def _class_test(
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
         device: determine which device to run on, either 'cuda' or 'cpu'
+        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -129,20 +131,21 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            rank_indexes = [i + r for r in range(worldsize)]
-
-            ddp_preds = preds[rank_indexes].cpu()
-            ddp_target = target[rank_indexes].cpu()
+            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
+            ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
             ddp_kwargs_upd = {
-                k: v[rank_indexes].cpu() if isinstance(v, Tensor) else v
-                for k, v in kwargs_update.items()
+                k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
+                for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
         elif check_batch and not metric.dist_sync_on_step:
-            batch_kwargs_update = {k: v.cpu() for k, v in batch_kwargs_update.items()}
+            batch_kwargs_update = {
+                k: v.cpu()
+                for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
+            }
             sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
@@ -170,6 +173,7 @@ def _functional_test(
     metric_args: dict = None,
     atol: float = 1e-8,
     device: str = 'cpu',
+    fragment_kwargs: bool = False,
     **kwargs_update,
 ):
     """Utility function doing the actual comparison between lightning functional metric
@@ -182,6 +186,7 @@ def _functional_test(
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
         device: determine which device to run on, either 'cuda' or 'cpu'
+        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -198,6 +203,8 @@ def _functional_test(
     for i in range(NUM_BATCHES):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         lightning_result = metric(preds[i], target[i], **extra_kwargs)
+        if not fragment_kwargs:
+            extra_kwargs = {k: v.cpu() for k, v in kwargs_update.items()}
         sk_result = sk_metric(preds[i].cpu(), target[i].cpu(), **extra_kwargs)
 
         # assert its the same
@@ -268,6 +275,7 @@ class MetricTester:
         metric_functional: Callable,
         sk_metric: Callable,
         metric_args: dict = None,
+        fragment_kwargs: bool = False,
         **kwargs_update,
     ):
         """Main method that should be used for testing functions. Call this inside
@@ -279,6 +287,7 @@ class MetricTester:
             metric_functional: lightning metric class that should be tested
             sk_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
+            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
@@ -292,6 +301,7 @@ class MetricTester:
             metric_args=metric_args,
             atol=self.atol,
             device=device,
+            fragment_kwargs=fragment_kwargs,
             **kwargs_update,
         )
 
@@ -306,6 +316,7 @@ class MetricTester:
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
+        fragment_kwargs: bool = False,
         **kwargs_update,
     ):
         """Main method that should be used for testing class. Call this inside testing
@@ -324,6 +335,7 @@ class MetricTester:
                 calculated per batch per device (and not just at the end)
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
+            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
@@ -345,6 +357,7 @@ class MetricTester:
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
                     atol=self.atol,
+                    fragment_kwargs=fragment_kwargs,
                     **kwargs_update,
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
@@ -365,6 +378,7 @@ class MetricTester:
                 check_batch=check_batch,
                 atol=self.atol,
                 device=device,
+                fragment_kwargs=fragment_kwargs,
                 **kwargs_update,
             )
 

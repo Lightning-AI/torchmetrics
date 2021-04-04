@@ -311,6 +311,7 @@ class RetrievalMetricTester(MetricTester):
             sk_metric=_sk_metric_adapted,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
+            fragment_kwargs=True,
             indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
         )
 
@@ -332,6 +333,7 @@ class RetrievalMetricTester(MetricTester):
             metric_functional=metric_functional,
             sk_metric=_sk_metric_adapted,
             metric_args=metric_args,
+            fragment_kwargs=True,
             **kwargs,
         )
 

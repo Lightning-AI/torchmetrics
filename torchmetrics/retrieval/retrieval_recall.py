@@ -41,10 +41,10 @@ class RetrievalRecall(RetrievalMetric):
         empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
-                - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
-                - ``'error'``: raise a ``ValueError``
-                - ``'pos'``: score on those queries is counted as ``1.0``
-                - ``'neg'``: score on those queries is counted as ``0.0``
+            - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
+            - ``'error'``: raise a ``ValueError``
+            - ``'pos'``: score on those queries is counted as ``1.0``
+            - ``'neg'``: score on those queries is counted as ``0.0``
 
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
