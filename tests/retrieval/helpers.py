@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Union
+from typing import Callable, Tuple, Union
 
 import numpy as np
 import pytest
@@ -24,6 +24,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import Metric, MetricTester
 from tests.retrieval.inputs import (
     _input_retrieval_scores,
+    _input_retrieval_scores_all_target,
     _input_retrieval_scores_empty,
     _input_retrieval_scores_extra,
     _input_retrieval_scores_mismatching_sizes,
@@ -84,36 +85,48 @@ def _compute_sklearn_metric(
     return np.array(0.0)
 
 
-_errors_test_functional_metric_parameters = [
-    "preds, target, message", [
+def _concat_tests(*tests: Tuple[str, Tuple]) -> Tuple[str, Tuple]:
+    """Concat tests composed by a string and a list of arguments."""
+    assert len(tests), "cannot concatenate "
+    assert all([tests[0][0] == x[0] for x in tests[1:]]), "the header must be the same for all tests"
+    return (tests[0][0], sum([x[1] for x in tests], []))
+
+
+_errors_test_functional_metric_parameters_default = [
+    "preds, target, message, metric_args", [
         # check input shapes are consistent (func)
         (
             _input_retrieval_scores_mismatching_sizes_func.preds,
             _input_retrieval_scores_mismatching_sizes_func.target,
             "`preds` and `target` must be of the same shape",
+            {},
         ),
         # check input tensors are not empty
         (
             _input_retrieval_scores_empty.preds,
             _input_retrieval_scores_empty.target,
             "`preds` and `target` must be non-empty and non-scalar tensors",
+            {},
         ),
         # check on input dtypes
         (
             _input_retrieval_scores.preds.bool(),
             _input_retrieval_scores.target,
             "`preds` must be a tensor of floats",
+            {},
         ),
         (
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target.float(),
             "`target` must be a tensor of booleans or integers",
+            {},
         ),
         # check targets are between 0 and 1
         (
             _input_retrieval_scores_wrong_targets.preds,
             _input_retrieval_scores_wrong_targets.target,
             "`target` must contain `binary` values",
+            {},
         ),
     ]
 ]
@@ -137,21 +150,41 @@ _errors_test_functional_metric_parameters_k = [
 ]
 
 
-_errors_test_class_metric_parameters = [
+_errors_test_class_metric_parameters_no_pos_target = [
+    "indexes, preds, target, message, metric_args", [
+        # check when error when there are no positive targets
+        (
+            _input_retrieval_scores_no_target.indexes,
+            _input_retrieval_scores_no_target.preds,
+            _input_retrieval_scores_no_target.target,
+            "`compute` method was provided with a query with no positive target.",
+            {'empty_target_action': "error"},
+        ),
+    ]
+]
+
+
+_errors_test_class_metric_parameters_no_neg_target = [
+    "indexes, preds, target, message, metric_args", [
+        # check when error when there are no negative targets
+        (
+            _input_retrieval_scores_all_target.indexes,
+            _input_retrieval_scores_all_target.preds,
+            _input_retrieval_scores_all_target.target,
+            "`compute` method was provided with a query with no negative target.",
+            {'empty_target_action': "error"},
+        ),
+    ]
+]
+
+
+_errors_test_class_metric_parameters_default = [
     "indexes, preds, target, message, metric_args", [
         (
             None,
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`indexes` cannot be None",
-            {'empty_target_action': "error"},
-        ),
-        # check when error when there are not positive targets
-        (
-            _input_retrieval_scores_no_target.indexes,
-            _input_retrieval_scores_no_target.preds,
-            _input_retrieval_scores_no_target.target,
-            "`compute` method was provided with a query with no positive target.",
             {'empty_target_action': "error"},
         ),
         # check when input arguments are invalid
