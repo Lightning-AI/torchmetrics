@@ -49,7 +49,7 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     if not (isinstance(k, int) and k > 0):
         raise ValueError("`k` has to be a positive integer or None")
 
-    if target.sum() == 0:
+    if not target.sum():
         return tensor(0.0, device=preds.device)
 
     relevant = target[torch.argsort(preds, dim=-1, descending=True)][:k].sum().float()

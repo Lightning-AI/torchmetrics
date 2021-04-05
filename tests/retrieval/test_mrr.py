@@ -20,10 +20,12 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.retrieval.helpers import (
     RetrievalMetricTester,
+    _concat_tests,
     _default_metric_class_input_arguments,
     _default_metric_functional_input_arguments,
-    _errors_test_class_metric_parameters,
-    _errors_test_functional_metric_parameters,
+    _errors_test_class_metric_parameters_default,
+    _errors_test_class_metric_parameters_no_pos_target,
+    _errors_test_functional_metric_parameters_default,
 )
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR
@@ -125,7 +127,10 @@ class TestMRR(RetrievalMetricTester):
             metric_functional=retrieval_reciprocal_rank,
         )
 
-    @pytest.mark.parametrize(*_errors_test_class_metric_parameters)
+    @pytest.mark.parametrize(*_concat_tests(
+        _errors_test_class_metric_parameters_default,
+        _errors_test_class_metric_parameters_no_pos_target,
+    ))
     def test_arguments_class_metric(
         self,
         indexes: Tensor,
@@ -145,12 +150,13 @@ class TestMRR(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(*_errors_test_functional_metric_parameters)
+    @pytest.mark.parametrize(*_errors_test_functional_metric_parameters_default)
     def test_arguments_functional_metric(
         self,
         preds: Tensor,
         target: Tensor,
         message: str,
+        metric_args: dict,
     ):
         self.run_functional_metric_arguments_test(
             preds=preds,
@@ -158,5 +164,5 @@ class TestMRR(RetrievalMetricTester):
             metric_functional=retrieval_reciprocal_rank,
             message=message,
             exception_type=ValueError,
-            kwargs_update={},
+            kwargs_update=metric_args,
         )
