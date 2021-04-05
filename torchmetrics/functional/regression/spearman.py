@@ -15,18 +15,28 @@ import torch
 from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
+
 def _find_repeats(data: Tensor):
+    """ find and return values which have repeats i.e. the same value are more than once in the tensor """
     temp = data.detach().clone()
     temp = temp.sort()[0]
     
     change = torch.cat([torch.tensor([True]), temp[1:] != temp[:-1]])
     unique = temp[change]
-    change_idx = torch.cat([torch.nonzero(change), torch.tensor([[n]])]).flatten()
+    change_idx = torch.cat([torch.nonzero(change), torch.tensor([[temp.numel()]])]).flatten()
     freq = change_idx[1:] - change_idx[:-1]
     atleast2 = freq > 1
     return unique[atleast2]
 
+
 def _rank_data(data: Tensor):
+    """ Calculate the rank for each element of a tensor. The rank refers to the indices of an element in the
+    corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of
+    their rank 
+    
+    Adopted from:
+        https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
+    """
     n = data.numel()
     rank = torch.empty_like(data)
     idx = data.argsort()
@@ -60,6 +70,9 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor):
     
     
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
+    """
+    
+    """
     preds, target = _spearman_corrcoef_update(preds, target)
     return _spearman_corrcoef_compute(preds, target)
     
