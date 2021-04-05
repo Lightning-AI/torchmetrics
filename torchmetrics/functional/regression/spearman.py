@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import torch
 from torch import Tensor
-
+from torchmetrics.utilities.checks import _check_same_shape
 
 def _find_repeats(data: Tensor):
     temp = data.detach().clone()
@@ -38,7 +39,17 @@ def _rank_data(data: Tensor):
     return rank
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor):
-
+    if preds.dtype != target.dtype:
+        raise TypeError(
+            "Expected `preds` and `target` to have the same data type."
+            f" Got pred: {preds.dtype} and target: {target.dtype}."
+        )
+    _check_same_shape(preds, target)
+    
+    if preds.ndim > 1 or target.ndim > 1:
+        raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
+    
+    return preds, target
     
 def _spearman_corrcoef_compute(preds: Tensor, target: Tensor):
     rank_preds = _rank_data(preds)
@@ -48,6 +59,8 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor):
     return cov / (rank_preds.std() * rank_target.std())
     
     
-def spearman_corrcoef()
+def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
+    preds, target = _spearman_corrcoef_update(preds, target)
+    return _spearman_corrcoef_compute(preds, target)
     
     

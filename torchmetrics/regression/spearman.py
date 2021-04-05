@@ -11,77 +11,68 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Callable
 
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.ssim import _ssim_compute, _ssim_update
+from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
 
-class SpearmanCorrCoef(Metric):
+class SpearmanCorrcoef(Metric):
     """
-    Computes `Structual Similarity Index Measure
-    <https://en.wikipedia.org/wiki/Structural_similarity>`_ (SSIM).
+    Computes `spearmans rank correlation coefficient
+    <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_.
+
+    .. math:
+        r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
+
+    where rg_x and rg_y are the rank associated to the variables x and y. Spearmans correlations coefficient
+    corresponds to the standard pearsons correlation coefficient calculated on the rank variables.
 
     Args:
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of SSIM. Default: 0.01
-        k2: Parameter of SSIM. Default: 0.03
-
-    Return:
-        Tensor with SSIM score
-
+        compute_on_step:
+            Forward only calls ``update()`` and return None if this is set to False. default: True
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step. default: False
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
     Example:
-        >>> from torchmetrics import SSIM
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> ssim = SSIM()
-        >>> ssim(preds, target)
-        tensor(0.9219)
+        >>> from torchmetrics import SpearmanCorrcoef
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> spearman = SpearmanCorrcoef()
+        >>> spearman(preds, target)
+        tensor(0.9849)
     """
 
     def __init__(
         self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
-        reduction: str = "elementwise_mean",
-        data_range: Optional[float] = None,
-        k1: float = 0.01,
-        k2: float = 0.03,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
         )
         rank_zero_warn(
-            'Metric `SSIM` will save all targets and'
+            'Metric `SpearmanCorrcoef` will save all targets and'
             ' predictions in buffer. For large datasets this may lead'
             ' to large memory footprint.'
         )
 
-        self.add_state("y", default=[], dist_reduce_fx=None)
-        self.add_state("y_pred", default=[], dist_reduce_fx=None)
-        self.kernel_size = kernel_size
-        self.sigma = sigma
-        self.data_range = data_range
-        self.k1 = k1
-        self.k2 = k2
-        self.reduction = reduction
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -91,16 +82,14 @@ class SpearmanCorrCoef(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _ssim_update(preds, target)
-        self.y_pred.append(preds)
-        self.y.append(target)
+        preds, target = _spearman_corrcoef_update(preds, target)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self):
         """
-        Computes explained variance over state.
+        Computes spearmans correlation coefficient
         """
         preds = torch.cat(self.y_pred, dim=0)
         target = torch.cat(self.y, dim=0)
-        return _ssim_compute(
-            preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
-        )
+        return _spearman_corrcoef_compute(preds, target)
