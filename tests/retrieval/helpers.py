@@ -42,6 +42,7 @@ def _compute_sklearn_metric(
     indexes: np.ndarray = None,
     metric: Callable = None,
     empty_target_action: str = "skip",
+    reverse: bool = False,
     **kwargs
 ) -> Tensor:
     """ Compute metric with multiple iterations over every query predictions set. """
@@ -68,7 +69,7 @@ def _compute_sklearn_metric(
     for group in groups:
         trg, pds = target[group], preds[group]
 
-        if trg.sum() == 0:
+        if ((1 - trg) if reverse else trg).sum() == 0:
             if empty_target_action == 'skip':
                 pass
             elif empty_target_action == 'pos':
@@ -327,8 +328,9 @@ class RetrievalMetricTester(MetricTester):
         sk_metric: Callable,
         dist_sync_on_step: bool,
         metric_args: dict,
+        reverse: bool = True,
     ):
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, **metric_args)
+        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, reverse=reverse,  **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
@@ -349,10 +351,11 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
         sk_metric: Callable,
         metric_args: dict,
+        reverse: bool = True,
         **kwargs,
     ):
         # action on functional version of IR metrics is to return `tensor(0.0)` if not target is positive.
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, **metric_args)
+        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, reverse=reverse, **metric_args)
 
         super().run_functional_metric_test(
             preds=preds,
