@@ -494,12 +494,13 @@ def _input_format_classification_one_hot(
     return preds.reshape(num_classes, -1), target.reshape(num_classes, -1)
 
 
-def _check_retrieval_functional_inputs(preds: Tensor, target: Tensor) -> None:
+def _check_retrieval_functional_inputs(preds: Tensor, target: Tensor, allow_non_binary_target=False) -> None:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
     Args:
         preds: either tensor with scores/logits
         target: tensor with ground true labels
+        allow_non_binary_target: whether to allow target to contain non-binary values
 
     Raises:
         ValueError:
@@ -522,7 +523,7 @@ def _check_retrieval_functional_inputs(preds: Tensor, target: Tensor) -> None:
     if not preds.is_floating_point():
         raise ValueError("`preds` must be a tensor of floats")
 
-    if target.max() > 1 or target.min() < 0:
+    if (target.max() > 1 and not allow_non_binary_target) or target.min() < 0:
         raise ValueError("`target` must contain `binary` values")
 
     return preds.float().flatten(), target.long().flatten()
