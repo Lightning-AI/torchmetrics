@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Union, Callable, Any, Optional
+from typing import Any, Callable, Optional
 
 import torch
 from torch import Tensor
@@ -76,11 +76,14 @@ class AverageMeter(Metric):
         self.add_state("value", torch.zeros(()), dist_reduce_fx="sum")
         self.add_state("weight", torch.zeros(()), dist_reduce_fx="sum")
 
-    def update(self, value: Union[Tensor, float], weight: Union[Tensor, float] = 1.0) -> None:
-        """Updates the average with a (scalar) value and a weight
+    # TODO: these should be Union[Tensor, float], but Unions are not picklable
+    # in Python 3.6. https://github.com/python/cpython/pull/6216 fixed this in
+    # Python 3.7+
+    def update(self, value: Tensor, weight: Tensor = 1.0) -> None:
+        """Updates the average with.
 
         Args:
-            value: A tensor of observations
+            value: A tensor of observations (can also be a scalar value)
             weight: The weight of each observation (automatically broadcasted
                 to fit ``value``)
         """
