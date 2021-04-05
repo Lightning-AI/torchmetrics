@@ -51,7 +51,7 @@ def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
     """Utility function for recursively asserting that two results are within a certain tolerance """
     # single output compare
     if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.numpy(), sk_result, atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, (tuple, list)):
         for pl_res, sk_res in zip(pl_result, sk_result):
@@ -81,6 +81,7 @@ def _class_test(
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
+    device: str = 'cpu',
     **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric
@@ -100,6 +101,7 @@ def _class_test(
             calculated per batch per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        device: determine which device to run on, either 'cuda' or 'cpu'
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -111,6 +113,12 @@ def _class_test(
         compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
     )
 
+    # move to device
+    metric = metric.to(device)
+    preds = preds.to(device)
+    target = target.to(device)
+    kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
     metric = pickle.loads(pickled_metric)
@@ -121,10 +129,10 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
-            ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
+            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
+            ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
             ddp_kwargs_upd = {
-                k: torch.cat([v[i + r] for r in range(worldsize)]) if isinstance(v, Tensor) else v
+                k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in batch_kwargs_update.items()
             }
 
@@ -132,17 +140,18 @@ def _class_test(
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
         elif check_batch and not metric.dist_sync_on_step:
-            sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
+            batch_kwargs_update = {k: v.cpu() for k, v in kwargs_update.items()}
+            sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check on all batches on all ranks
     result = metric.compute()
     _assert_tensor(result)
 
-    total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)])
-    total_target = torch.cat([target[i] for i in range(NUM_BATCHES)])
+    total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)]).cpu()
+    total_target = torch.cat([target[i] for i in range(NUM_BATCHES)]).cpu()
     total_kwargs_update = {
-        k: torch.cat([v[i] for i in range(NUM_BATCHES)]) if isinstance(v, Tensor) else v
+        k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
@@ -158,6 +167,7 @@ def _functional_test(
     sk_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
+    device: str = 'cpu',
     **kwargs_update,
 ):
     """Utility function doing the actual comparison between lightning functional metric
@@ -169,6 +179,7 @@ def _functional_test(
         metric_functional: lightning metric functional that should be tested
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        device: determine which device to run on, either 'cuda' or 'cpu'
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
@@ -177,10 +188,16 @@ def _functional_test(
 
     metric = partial(metric_functional, **metric_args)
 
+    # move to device
+    preds = preds.to(device)
+    target = target.to(device)
+    kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+
     for i in range(NUM_BATCHES):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         lightning_result = metric(preds[i], target[i], **extra_kwargs)
-        sk_result = sk_metric(preds[i], target[i])
+        extra_kwargs = {k: v.cpu() for k, v in kwargs_update.items()}
+        sk_result = sk_metric(preds[i].cpu(), target[i].cpu(), **extra_kwargs)
 
         # assert its the same
         _assert_allclose(lightning_result, sk_result, atol=atol)
@@ -257,6 +274,8 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
+        device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
+
         _functional_test(
             preds=preds,
             target=target,
@@ -264,6 +283,7 @@ class MetricTester:
             sk_metric=sk_metric,
             metric_args=metric_args,
             atol=self.atol,
+            device=device,
             **kwargs_update,
         )
 
@@ -322,6 +342,8 @@ class MetricTester:
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
         else:
+            device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
+
             _class_test(
                 0,
                 1,
@@ -334,6 +356,7 @@ class MetricTester:
                 check_dist_sync_on_step=check_dist_sync_on_step,
                 check_batch=check_batch,
                 atol=self.atol,
+                device=device,
                 **kwargs_update,
             )
 

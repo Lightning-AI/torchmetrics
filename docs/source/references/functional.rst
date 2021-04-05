@@ -266,3 +266,10 @@ retrieval_precision [func]
 
 .. autofunction:: torchmetrics.functional.retrieval_precision
     :noindex:
+
+
+retrieval_recall [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_recall
+    :noindex:
