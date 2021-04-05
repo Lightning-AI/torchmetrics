@@ -39,6 +39,12 @@ _input_retrieval_scores_no_target = Input(
     target=torch.randint(high=1, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
+_input_retrieval_scores_all_target = Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+    target=torch.randint(low=1, high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+)
+
 _input_retrieval_scores_empty = Input(
     indexes=torch.randint(high=10, size=[0]),
     preds=torch.rand(0),
