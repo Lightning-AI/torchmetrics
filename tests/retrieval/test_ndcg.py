@@ -13,17 +13,19 @@
 # limitations under the License.
 import numpy as np
 import pytest
-from torch import Tensor
 from sklearn.metrics import ndcg_score
+from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.retrieval.helpers import (
     RetrievalMetricTester,
+    _concat_tests,
     _default_metric_class_input_arguments,
     _default_metric_functional_input_arguments,
-    _errors_test_class_metric_parameters,
+    _errors_test_class_metric_parameters_default,
     _errors_test_class_metric_parameters_k,
-    _errors_test_functional_metric_parameters,
+    _errors_test_class_metric_parameters_no_pos_target,
+    _errors_test_functional_metric_parameters_default,
     _errors_test_functional_metric_parameters_k,
 )
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
@@ -42,7 +44,7 @@ def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     if target.shape[0] < 2:  # ranking is equal to ideal ranking with a single document
         return np.array(1.0)
 
-    preds =  np.expand_dims(preds, axis=0)
+    preds = np.expand_dims(preds, axis=0)
     target = np.expand_dims(target, axis=0)
 
     return ndcg_score(target, preds, k=k)
@@ -125,7 +127,11 @@ class TestNDCG(RetrievalMetricTester):
             metric_functional=retrieval_normalized_dcg,
         )
 
-    @pytest.mark.parametrize(*_errors_test_class_metric_parameters)
+    @pytest.mark.parametrize(*_concat_tests(
+        _errors_test_class_metric_parameters_default,
+        _errors_test_class_metric_parameters_no_pos_target,
+        _errors_test_class_metric_parameters_k,
+    ))
     def test_arguments_class_metric(
         self,
         indexes: Tensor,
@@ -145,44 +151,11 @@ class TestNDCG(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(*_errors_test_class_metric_parameters_k)
-    def test_additional_arguments_class_metric(
-        self,
-        indexes: Tensor,
-        preds: Tensor,
-        target: Tensor,
-        message: str,
-        metric_args: dict,
-    ):
-        self.run_metric_class_arguments_test(
-            indexes=indexes,
-            preds=preds,
-            target=target,
-            metric_class=RetrievalNormalizedDCG,
-            message=message,
-            metric_args=metric_args,
-            exception_type=ValueError,
-            kwargs_update={},
-        )
-
-    @pytest.mark.parametrize(*_errors_test_functional_metric_parameters)
+    @pytest.mark.parametrize(*_concat_tests(
+        _errors_test_functional_metric_parameters_default,
+        _errors_test_functional_metric_parameters_k,
+    ))
     def test_arguments_functional_metric(
-        self,
-        preds: Tensor,
-        target: Tensor,
-        message: str,
-    ):
-        self.run_functional_metric_arguments_test(
-            preds=preds,
-            target=target,
-            metric_functional=retrieval_normalized_dcg,
-            message=message,
-            exception_type=ValueError,
-            kwargs_update={},
-        )
-
-    @pytest.mark.parametrize(*_errors_test_functional_metric_parameters_k)
-    def test_additional_arguments_functional_metric(
         self,
         preds: Tensor,
         target: Tensor,

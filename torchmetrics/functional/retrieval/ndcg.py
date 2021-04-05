@@ -55,7 +55,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: int = None) -> Te
     sorted_target = target[torch.argsort(preds, dim=-1, descending=True)][:k]
     ideal_target = torch.sort(target, descending=True)[0][:k]
 
-    def dcg(target): 
+    def dcg(target):
         return (target / torch.log2(torch.arange(target.shape[-1]) + 2.0)).sum()
 
     return dcg(sorted_target) / dcg(ideal_target)
