@@ -57,7 +57,7 @@ def _pearson_corrcoef_update(
     preds = preds.squeeze()
     target = target.squeeze()
     if preds.ndim > 1 or target.ndim > 1:
-        raise ValueError('Expected both predictions and target to be 1 dimensional tensors. Please flatten.')
+        raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
     data = torch.stack([preds, target], dim=1)
 
     if old_mean is None:
@@ -74,13 +74,29 @@ def _pearson_corrcoef_update(
     return new_mean, new_cov, new_size
     
     
-def _pearson_corrcoef_compute(c: torch.Tensor):
+def _pearson_corrcoef_compute(c: Tensor, nobs: Tensor):
+    c /= (nobs-1)
     x_var = c[0,0]
     y_var = c[1,1]
-    cov = c[1,1]
-    return cov / (x_var * y_var)
+    cov = c[0,1]
+    corrcoef = cov / (x_var * y_var).sqrt()
+    return torch.clip(corrcoef, -1.0, 1.0)
 
 
 def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    _, c, _ = _pearson_corrcoef_update(preds, target)
-    return _pearson_corrcoef_compute(c)
+    """
+    Computes pearson correlation coefficient.
+
+    Args:
+        preds: estimated scores
+        target: ground truth scores
+
+    Example:
+        >>> from torchmetrics.functional import pearson_corrcoef
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> pearson_corrcoef(preds, target)
+        tensor(0.9849)
+    """
+    _, c, nobs = _pearson_corrcoef_update(preds, target)
+    return _pearson_corrcoef_compute(c, nobs)

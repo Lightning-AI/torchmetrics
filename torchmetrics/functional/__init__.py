@@ -34,6 +34,7 @@ from torchmetrics.functional.regression.mean_absolute_error import mean_absolute
 from torchmetrics.functional.regression.mean_relative_error import mean_relative_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_error import mean_squared_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error  # noqa: F401
+from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
 from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
