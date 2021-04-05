@@ -11,17 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
-import pickle
 from collections import namedtuple
-from functools import partial
+
+import pytest
 import torch
-from tests.helpers import seed_all
 from scipy.stats import pearsonr
 
-from torchmetrics.regression.pearson import PearsonCorrcoef
-from torchmetrics.functional.regression.pearson import  pearson_corrcoef, _update_cov, _update_mean
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.functional.regression.pearson import _update_cov, _update_mean, pearson_corrcoef
+from torchmetrics.regression.pearson import PearsonCorrcoef
+
 seed_all(42)
 
 
@@ -36,9 +36,9 @@ def test_update_functions(tmpdir):
         cov = diff.T @ diff
         return mean, cov
 
-    mean_update, cov_update, size_update = torch.zeros(2), torch.zeros(2,2), torch.zeros(1)
+    mean_update, cov_update, size_update = torch.zeros(2), torch.zeros(2, 2), torch.zeros(1)
     for batch in [batch1, batch2]:
-        new_mean = _update_mean(mean_update, size_update, batch) 
+        new_mean = _update_mean(mean_update, size_update, batch)
         new_cov = _update_cov(cov_update, mean_update, new_mean, batch)
 
         assert not torch.allclose(new_mean, mean_update), "mean estimate did not update"
@@ -52,7 +52,7 @@ def test_update_functions(tmpdir):
 
     assert torch.allclose(mean, mean_update), "updated mean does not correspond to mean of all data"
     assert torch.allclose(cov, cov_update), "updated covariance does not correspond to covariance of all data"
-    
+
 
 Input = namedtuple('Input', ["preds", "target"])
 
@@ -73,14 +73,13 @@ def _sk_metric(preds, target):
     return pearsonr(sk_target, sk_preds)[0]
 
 
-@pytest.mark.parametrize("preds, target",
-    [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
-        (_single_target_inputs2.preds, _single_target_inputs2.target),
-    ],
-)
+@pytest.mark.parametrize("preds, target", [
+    (_single_target_inputs1.preds, _single_target_inputs1.target),
+    (_single_target_inputs2.preds, _single_target_inputs2.target),
+])
 class TestPearsonCorrcoef(MetricTester):
-    atol=1e-4
+    atol = 1e-4
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_explained_variance(self, preds, target, ddp, dist_sync_on_step):
@@ -89,7 +88,7 @@ class TestPearsonCorrcoef(MetricTester):
             preds,
             target,
             PearsonCorrcoef,
-            _sk_metric, 
+            _sk_metric,
             dist_sync_on_step,
         )
 
@@ -115,6 +114,6 @@ def test_error_on_different_shape():
     metric = PearsonCorrcoef()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
         metric(torch.randn(100, ), torch.randn(50, ))
-        
+
     with pytest.raises(ValueError, match='Expected both predictions and target to be 1 dimensional tensors.'):
         metric(torch.randn(100, 2), torch.randn(100, 2))

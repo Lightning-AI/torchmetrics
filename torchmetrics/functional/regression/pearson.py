@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Sequence, Tuple, Union, Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -46,11 +46,11 @@ def _update_cov(old_cov: torch.Tensor, old_mean: torch.Tensor, new_mean: torch.T
 
 
 def _pearson_corrcoef_update(
-        preds: Tensor, 
-        target: Tensor, 
-        old_mean: Optional[Tensor] = None, 
-        old_cov: Optional[Tensor] = None,
-        old_nobs: Optional[Tensor] = None
+    preds: Tensor,
+    target: Tensor,
+    old_mean: Optional[Tensor] = None,
+    old_cov: Optional[Tensor] = None,
+    old_nobs: Optional[Tensor] = None
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     # Data checking
     _check_same_shape(preds, target)
@@ -66,19 +66,19 @@ def _pearson_corrcoef_update(
         old_cov = 0
     if old_nobs is None:
         old_nobs = 0
-    
+
     new_mean = _update_mean(old_mean, old_nobs, data)
     new_cov = _update_cov(old_cov, old_mean, new_mean, data)
     new_size = old_nobs + preds.numel()
-    
+
     return new_mean, new_cov, new_size
-    
-    
+
+
 def _pearson_corrcoef_compute(c: Tensor, nobs: Tensor):
-    c /= (nobs-1)
-    x_var = c[0,0]
-    y_var = c[1,1]
-    cov = c[0,1]
+    c /= (nobs - 1)
+    x_var = c[0, 0]
+    y_var = c[1, 1]
+    cov = c[0, 1]
     corrcoef = cov / (x_var * y_var).sqrt()
     return torch.clip(corrcoef, -1.0, 1.0)
 

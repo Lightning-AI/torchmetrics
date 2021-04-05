@@ -14,12 +14,9 @@
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
-from torchmetrics.functional.regression.pearson import (
-    _pearson_corrcoef_compute,
-    _pearson_corrcoef_update
-)
+from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute, _pearson_corrcoef_update
 from torchmetrics.metric import Metric
 
 
@@ -35,7 +32,7 @@ class PearsonCorrcoef(Metric):
 
     Forward accepts
 
-    - ``preds`` (float tensor): ``(N,)`` 
+    - ``preds`` (float tensor): ``(N,)``
     - ``target``(float tensor): ``(N,)``
 
     Args:
@@ -72,7 +69,7 @@ class PearsonCorrcoef(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        self.add_state("cov", default=torch.zeros(2,2), dist_reduce_fx="sum")
+        self.add_state("cov", default=torch.zeros(2, 2), dist_reduce_fx="sum")
         self.add_state("mean", default=torch.zeros(2), dist_reduce_fx="sum")
         self.add_state("n_obs", default=torch.zeros(1), dist_reduce_fx="sum")
 
