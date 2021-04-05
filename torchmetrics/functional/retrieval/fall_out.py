@@ -39,7 +39,7 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
         >>> from  torchmetrics.functional import retrieval_fall_out
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_recall(preds, target, k=2)
+        >>> retrieval_fall_out(preds, target, k=2)
         tensor(1.)
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)

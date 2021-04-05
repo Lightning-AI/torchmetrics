@@ -21,7 +21,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     """
     Computes the recall metric (for information retrieval),
     as explained `here <https://en.wikipedia.org/wiki/Precision_and_recall#Recall>`__.
-    Recall is the fraction of relevant documents among all the relevant documents.
+    Recall is the fraction of relevant documents retrieved among all the relevant documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,

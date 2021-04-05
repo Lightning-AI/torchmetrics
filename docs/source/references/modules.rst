@@ -350,6 +350,13 @@ RetrievalRecall
     :noindex:
 
 
+RetrievalFallOut
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalFallOut
+    :noindex:
+
+
 ********
 Wrappers
 ********
