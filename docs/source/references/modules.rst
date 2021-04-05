@@ -350,6 +350,13 @@ RetrievalRecall
     :noindex:
 
 
+RetrievalNormalizedDCG
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalNormalizedDCG
+    :noindex:
+
+
 ********
 Wrappers
 ********

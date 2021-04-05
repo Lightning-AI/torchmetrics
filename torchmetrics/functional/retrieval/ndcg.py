@@ -43,10 +43,19 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: int = None) -> Te
     """
     preds, target = _check_retrieval_functional_inputs(preds, target, allow_non_binary_target=True)
 
+    if k is None:
+        k = preds.shape[-1]
+
+    if not (isinstance(k, int) and k > 0):
+        raise ValueError("`k` has to be a positive integer or None")
+
+    if not target.sum():
+        return tensor(0.0, device=preds.device)
+
     sorted_target = target[torch.argsort(preds, dim=-1, descending=True)][:k]
     ideal_target = torch.sort(target, descending=True)[0][:k]
 
-    def dcg(target):
+    def dcg(target): 
         return (target / torch.log2(torch.arange(target.shape[-1]) + 2.0)).sum()
 
     return dcg(sorted_target) / dcg(ideal_target)

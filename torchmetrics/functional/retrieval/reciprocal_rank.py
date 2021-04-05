@@ -42,7 +42,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
-    if target.sum() == 0:
+    if not target.sum():
         return tensor(0.0, device=preds.device)
 
     target = target[torch.argsort(preds, dim=-1, descending=True)]
