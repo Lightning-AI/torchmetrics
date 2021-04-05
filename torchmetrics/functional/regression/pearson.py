@@ -80,7 +80,7 @@ def _pearson_corrcoef_compute(c: Tensor, nobs: Tensor):
     y_var = c[1, 1]
     cov = c[0, 1]
     corrcoef = cov / (x_var * y_var).sqrt()
-    return torch.clip(corrcoef, -1.0, 1.0)
+    return torch.clamp(corrcoef, -1.0, 1.0)
 
 
 def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
