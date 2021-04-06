@@ -266,3 +266,10 @@ retrieval_recall [func]
 
 .. autofunction:: torchmetrics.functional.retrieval_recall
     :noindex:
+
+
+retrieval_fall_out [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_fall_out
+    :noindex:
