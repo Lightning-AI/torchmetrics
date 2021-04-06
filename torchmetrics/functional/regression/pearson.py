@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _update_mean(old_mean: torch.Tensor, old_nobs: torch.Tensor, data: torch.Tensor) -> torch.Tensor:
+def _update_mean(old_mean: Tensor, old_nobs: Tensor, data: Tensor) -> Tensor:
     """ Update a mean estimate given new data
     Args:
         old_mean: current mean estimate
@@ -32,7 +32,7 @@ def _update_mean(old_mean: torch.Tensor, old_nobs: torch.Tensor, data: torch.Ten
     return (old_mean * old_nobs + data.mean(dim=0) * data_size) / (old_nobs + data_size)
 
 
-def _update_cov(old_cov: torch.Tensor, old_mean: torch.Tensor, new_mean: torch.Tensor, data: torch.Tensor):
+def _update_cov(old_cov: Tensor, old_mean: Tensor, new_mean: Tensor, data: Tensor):
     """ Update a covariance estimate given new data
     Args:
         old_cov: current covariance estimate
@@ -63,12 +63,9 @@ def _pearson_corrcoef_update(
         raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
     data = torch.stack([preds, target], dim=1)
 
-    if old_mean is None:
-        old_mean = 0
-    if old_cov is None:
-        old_cov = 0
-    if old_nobs is None:
-        old_nobs = 0
+    old_mean = 0 if old_mean is None else old_mean
+    old_cov = 0 if old_cov is None else old_cov
+    old_nobs = 0 if old_nobs is None else old_nobs
 
     new_mean = _update_mean(old_mean, old_nobs, data)
     new_cov = _update_cov(old_cov, old_mean, new_mean, data)

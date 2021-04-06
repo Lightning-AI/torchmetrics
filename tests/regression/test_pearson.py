@@ -67,7 +67,7 @@ _single_target_inputs2 = Input(
 )
 
 
-def _sk_metric(preds, target):
+def _sk_pearsonr(preds, target):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     return pearsonr(sk_target, sk_preds)[0]
@@ -88,7 +88,7 @@ class TestPearsonCorrcoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=PearsonCorrcoef,
-            sk_metric=_sk_metric,
+            sk_metric=_sk_pearsonr,
             dist_sync_on_step=dist_sync_on_step,
         )
 
@@ -97,7 +97,7 @@ class TestPearsonCorrcoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=pearson_corrcoef,
-            sk_metric=_sk_metric
+            sk_metric=_sk_pearsonr
         )
 
     # Pearson half + cpu does not work due to missing support in torch.sqrt
