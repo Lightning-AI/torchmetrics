@@ -38,6 +38,7 @@ from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
 from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
+from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg  # noqa: F401
 from torchmetrics.functional.retrieval.precision import retrieval_precision  # noqa: F401
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
