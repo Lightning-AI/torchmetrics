@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _update_mean(old_mean: torch.Tensor, old_nobs: torch.Tensor, data: torch.Tensor) -> torch.Tensor:
+def _update_mean(old_mean: Tensor, old_nobs: Tensor, data: Tensor) -> Tensor:
     """ Update a mean estimate given new data
     Args:
         old_mean: current mean estimate
@@ -32,7 +32,7 @@ def _update_mean(old_mean: torch.Tensor, old_nobs: torch.Tensor, data: torch.Ten
     return (old_mean * old_nobs + data.mean(dim=0) * data_size) / (old_nobs + data_size)
 
 
-def _update_cov(old_cov: torch.Tensor, old_mean: torch.Tensor, new_mean: torch.Tensor, data: torch.Tensor):
+def _update_cov(old_cov: Tensor, old_mean: Tensor, new_mean: Tensor, data: Tensor):
     """ Update a covariance estimate given new data
     Args:
         old_cov: current covariance estimate
