@@ -56,7 +56,7 @@ class TestNDCG(RetrievalMetricTester):
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
         ddp: bool,
@@ -80,14 +80,9 @@ class TestNDCG(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize(*_default_metric_functional_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    def test_functional_metric(
-        self,
-        preds: Tensor,
-        target: Tensor,
-        k: int,
-    ):
+    def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -97,13 +92,8 @@ class TestNDCG(RetrievalMetricTester):
             k=k,
         )
 
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
-    def test_precision_cpu(
-        self,
-        indexes: Tensor,
-        preds: Tensor,
-        target: Tensor,
-    ):
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
+    def test_precision_cpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
         self.run_precision_test_cpu(
             indexes=indexes,
             preds=preds,
@@ -112,13 +102,8 @@ class TestNDCG(RetrievalMetricTester):
             metric_functional=retrieval_normalized_dcg,
         )
 
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
-    def test_precision_gpu(
-        self,
-        indexes: Tensor,
-        preds: Tensor,
-        target: Tensor,
-    ):
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
+    def test_precision_gpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
         self.run_precision_test_gpu(
             indexes=indexes,
             preds=preds,
@@ -127,18 +112,13 @@ class TestNDCG(RetrievalMetricTester):
             metric_functional=retrieval_normalized_dcg,
         )
 
-    @pytest.mark.parametrize(*_concat_tests(
+    @pytest.mark.parametrize(**_concat_tests(
         _errors_test_class_metric_parameters_default,
         _errors_test_class_metric_parameters_no_pos_target,
         _errors_test_class_metric_parameters_k,
     ))
     def test_arguments_class_metric(
-        self,
-        indexes: Tensor,
-        preds: Tensor,
-        target: Tensor,
-        message: str,
-        metric_args: dict,
+        self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict,
     ):
         self.run_metric_class_arguments_test(
             indexes=indexes,
@@ -151,16 +131,12 @@ class TestNDCG(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(*_concat_tests(
+    @pytest.mark.parametrize(**_concat_tests(
         _errors_test_functional_metric_parameters_default,
         _errors_test_functional_metric_parameters_k,
     ))
     def test_arguments_functional_metric(
-        self,
-        preds: Tensor,
-        target: Tensor,
-        message: str,
-        metric_args: dict,
+        self, preds: Tensor, target: Tensor, message: str, metric_args: dict,
     ):
         self.run_functional_metric_arguments_test(
             preds=preds,
