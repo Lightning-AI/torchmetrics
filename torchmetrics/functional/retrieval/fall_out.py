@@ -44,8 +44,7 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
-    if k is None:
-        k = preds.shape[-1]
+    k = preds.shape[-1] if k is None else k
 
     if not (isinstance(k, int) and k > 0):
         raise ValueError("`k` has to be a positive integer or None")
