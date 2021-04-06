@@ -18,7 +18,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def _dcg(target):
-        return (target / torch.log2(torch.arange(target.shape[-1]) + 2.0)).sum()
+    return (target / torch.log2(torch.arange(target.shape[-1]) + 2.0)).sum()
 
 
 def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
