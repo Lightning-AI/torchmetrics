@@ -169,7 +169,7 @@ def _mlmd_prob_to_mc_preds_tr(x):
         (_mdmc_prob_2cls, None, False, None, "multi-dim multi-class", lambda x: _top1(x)[:, 1], _idn),
     ],
 )
-def test_usual_cases(inputs, num_classes, is_multiclass, top_k, exp_mode, post_preds, post_target):
+def test_usual_cases(inputs, num_classes, multiclass, top_k, exp_mode, post_preds, post_target):
 
     def __get_data_type_enum(str_exp_mode):
         return next(DataType[n] for n in dir(DataType) if DataType[n] == str_exp_mode)
@@ -180,7 +180,7 @@ def test_usual_cases(inputs, num_classes, is_multiclass, top_k, exp_mode, post_p
             target=inputs.target[0],
             threshold=THRESHOLD,
             num_classes=num_classes,
-            multiclass=is_multiclass,
+            multiclass=multiclass,
             top_k=top_k,
         )
 
@@ -194,7 +194,7 @@ def test_usual_cases(inputs, num_classes, is_multiclass, top_k, exp_mode, post_p
             target=inputs.target[0][[0], ...],
             threshold=THRESHOLD,
             num_classes=num_classes,
-            multiclass=is_multiclass,
+            multiclass=multiclass,
             top_k=top_k,
         )
 
@@ -283,10 +283,10 @@ def test_incorrect_threshold(threshold):
         (rand(size=(7, )), randint(high=2, size=(7, )), 1, True),
     ],
 )
-def test_incorrect_inputs(preds, target, num_classes, is_multiclass):
+def test_incorrect_inputs(preds, target, num_classes, multiclass):
     with pytest.raises(ValueError):
         _input_format_classification(
-            preds=preds, target=target, threshold=THRESHOLD, num_classes=num_classes, multiclass=is_multiclass
+            preds=preds, target=target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass
         )
 
 
@@ -314,13 +314,13 @@ def test_incorrect_inputs(preds, target, num_classes, is_multiclass):
         (_ml_prob.preds[0], _ml_prob.target[0], None, True, NUM_CLASSES),
     ],
 )
-def test_incorrect_inputs_topk(preds, target, num_classes, is_multiclass, top_k):
+def test_incorrect_inputs_topk(preds, target, num_classes, multiclass, top_k):
     with pytest.raises(ValueError):
         _input_format_classification(
             preds=preds,
             target=target,
             threshold=THRESHOLD,
             num_classes=num_classes,
-            multiclass=is_multiclass,
+            multiclass=multiclass,
             top_k=top_k,
         )

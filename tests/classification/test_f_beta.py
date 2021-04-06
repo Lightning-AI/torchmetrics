@@ -36,7 +36,7 @@ from torchmetrics.utilities.checks import _input_format_classification
 seed_all(42)
 
 
-def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average=None):
+def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, multiclass, ignore_index, mdmc_average=None):
     if average == "none":
         average = None
     if num_classes == 1:
@@ -49,7 +49,7 @@ def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, igno
         pass
 
     sk_preds, sk_target, _ = _input_format_classification(
-        preds, target, THRESHOLD, num_classes=num_classes, multiclass=is_multiclass
+        preds, target, THRESHOLD, num_classes=num_classes, multiclass=multiclass
     )
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
 
@@ -62,10 +62,10 @@ def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, igno
 
 
 def _sk_fbeta_f1_multidim_multiclass(
-    preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average
+    preds, target, sk_fn, num_classes, average, multiclass, ignore_index, mdmc_average
 ):
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=is_multiclass
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass
     )
 
     if mdmc_average == "global":

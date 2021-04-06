@@ -35,10 +35,10 @@ from torchmetrics.utilities.checks import _input_format_classification
 seed_all(42)
 
 
-def _sk_stat_scores(preds, target, reduce, num_classes, is_multiclass, ignore_index, top_k, mdmc_reduce=None):
+def _sk_stat_scores(preds, target, reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce=None):
     # todo: `mdmc_reduce` is unused
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=is_multiclass, top_k=top_k
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
     sk_preds, sk_target = preds.numpy(), target.numpy()
 
@@ -73,9 +73,9 @@ def _sk_stat_scores(preds, target, reduce, num_classes, is_multiclass, ignore_in
     return sk_stats
 
 
-def _sk_stat_scores_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, is_multiclass, ignore_index, top_k):
+def _sk_stat_scores_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multiclass, ignore_index, top_k):
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=is_multiclass, top_k=top_k
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
 
     if mdmc_reduce == "global":

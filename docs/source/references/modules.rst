@@ -59,8 +59,8 @@ the possible class labels are 0, 1, 2, 3, etc. Below are some examples of differ
     ml_target = torch.tensor([[0, 1, 1], [1, 0, 0], [0, 0, 0]])
 
 
-Using the is_multiclass parameter
----------------------------------
+Using the multiclass parameter
+------------------------------
 
 In some cases, you might have inputs which appear to be (multi-dimensional) multi-class
 but are actually binary/multi-label - for example, if both predictions and targets are
@@ -68,7 +68,7 @@ integer (binary) tensors. Or it could be the other way around, you want to treat
 binary/multi-label inputs as 2-class (multi-dimensional) multi-class inputs.
 
 For these cases, the metrics where this distinction would make a difference, expose the
-``is_multiclass`` argument. Let's see how this is used on the example of
+``multiclass`` argument. Let's see how this is used on the example of
 :class:`~torchmetrics.StatScores` metric.
 
 First, let's consider the case with label predictions with 2 classes, which we want to
