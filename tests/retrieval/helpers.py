@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Tuple, Union
+from typing import Callable, Dict, Tuple, Union
 
 import numpy as np
 import pytest
@@ -83,11 +83,11 @@ def _compute_sklearn_metric(
     return np.array(0.0)
 
 
-def _concat_tests(*tests: Tuple[str, Tuple]) -> Tuple[str, Tuple]:
+def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
-    assert len(tests), "cannot concatenate "
-    assert all([tests[0][0] == x[0] for x in tests[1:]]), "the header must be the same for all tests"
-    return (tests[0][0], sum([x[1] for x in tests], []))
+    assert len(tests), "`_concat_tests` expects at least an argument"
+    assert all([tests[0]['argnames'] == x['argnames'] for x in tests[1:]]), "the header must be the same for all tests"
+    return dict(argnames=tests[0]['argnames'], argvalues=sum([x['argvalues'] for x in tests], []))
 
 
 _errors_test_functional_metric_parameters_default = dict(

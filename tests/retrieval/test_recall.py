@@ -115,7 +115,7 @@ class TestRecall(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(
-        *_concat_tests(
+        **_concat_tests(
             _errors_test_class_metric_parameters_default,
             _errors_test_class_metric_parameters_no_pos_target,
             _errors_test_class_metric_parameters_k,
@@ -136,7 +136,7 @@ class TestRecall(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(
-        *_concat_tests(
+        **_concat_tests(
             _errors_test_functional_metric_parameters_default,
             _errors_test_functional_metric_parameters_k,
         )
