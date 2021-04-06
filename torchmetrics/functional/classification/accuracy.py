@@ -33,15 +33,6 @@ def _accuracy_update(
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
     correct, total = None, None
 
-    if mode == DataType.MULTILABEL and top_k:
-        raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
-
-    if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
-        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[0]} classes")
-
-    if ignore_index is not None and preds.shape[1] == 1:
-        raise ValueError("You can not use `ignore_index` with binary data.")
-
     # Delete what is in ignore_index, if applicable (and classes don't matter):
     if ignore_index is not None:
         preds = _del_column(preds, ignore_index)
