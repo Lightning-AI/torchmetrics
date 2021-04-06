@@ -90,9 +90,9 @@ def _concat_tests(*tests: Tuple[str, Tuple]) -> Tuple[str, Tuple]:
     return (tests[0][0], sum([x[1] for x in tests], []))
 
 
-_errors_test_functional_metric_parameters_default = [
-    "preds, target, message, metric_args",
-    [
+_errors_test_functional_metric_parameters_default = dict(
+    argnames="preds,target,message,metric_args",
+    argvalues=[
         # check input shapes are consistent (func)
         (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
@@ -103,41 +103,41 @@ _errors_test_functional_metric_parameters_default = [
         # check targets are between 0 and 1
         (_irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values", {}),
     ]
-]
+)
 
-_errors_test_functional_metric_parameters_k = [
-    "preds, target, message, metric_args",
-    [
+_errors_test_functional_metric_parameters_k = dict(
+    argnames="preds,target,message,metric_args",
+    argvalues=[
         (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
         (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=4.0)),
     ]
-]
+)
 
-_errors_test_class_metric_parameters_no_pos_target = [
-    "indexes, preds, target, message, metric_args",
-    [
+_errors_test_class_metric_parameters_no_pos_target = dict(
+    argnames="indexes,preds,target,message,metric_args",
+    argvalues=[
         # check when error when there are no positive targets
         (
             _irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target,
             "`compute` method was provided with a query with no positive target.", dict(empty_target_action="error")
         ),
     ]
-]
+)
 
-_errors_test_class_metric_parameters_no_neg_target = [
-    "indexes, preds, target, message, metric_args",
-    [
+_errors_test_class_metric_parameters_no_neg_target = dict(
+    argnames="indexes,preds,target,message,metric_args",
+    argvalues=[
         # check when error when there are no negative targets
         (
             _irs_all.indexes, _irs_all.preds, _irs_all.target,
             "`compute` method was provided with a query with no negative target.", dict(empty_target_action="error")
         ),
     ]
-]
+)
 
-_errors_test_class_metric_parameters_default = [
-    "indexes, preds, target, message, metric_args",
-    [
+_errors_test_class_metric_parameters_default = dict(
+    argnames="indexes,preds,target,message,metric_args",
+    argvalues=[
         (None, _irs.preds, _irs.target, "`indexes` cannot be None", dict(empty_target_action="error")),
         # check when input arguments are invalid
         (
@@ -174,32 +174,32 @@ _errors_test_class_metric_parameters_default = [
             dict(empty_target_action="skip")
         ),
     ]
-]
+)
 
-_errors_test_class_metric_parameters_k = [
-    "indexes, preds, target, message, metric_args",
-    [
+_errors_test_class_metric_parameters_k = dict(
+    argnames="indexes,preds,target,message,metric_args",
+    argvalues=[
         (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
     ]
-]
+)
 
-_default_metric_class_input_arguments = [
-    "indexes, preds, target",
-    [
+_default_metric_class_input_arguments = dict(
+    argnames="indexes,preds,target",
+    argvalues=[
         (_irs.indexes, _irs.preds, _irs.target),
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
     ]
-]
+)
 
-_default_metric_functional_input_arguments = [
-    "preds, target",
-    [
+_default_metric_functional_input_arguments = dict(
+    argnames="preds,target",
+    argvalues=[
         (_irs.preds, _irs.target),
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
     ]
-]
+)
 
 
 def _errors_test_class_metric(

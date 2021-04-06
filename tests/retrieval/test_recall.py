@@ -58,7 +58,7 @@ class TestRecall(RetrievalMetricTester):
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
         ddp: bool,
@@ -82,7 +82,7 @@ class TestRecall(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize(*_default_metric_functional_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     def test_functional_metric(
         self,
@@ -99,7 +99,7 @@ class TestRecall(RetrievalMetricTester):
             k=k,
         )
 
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_cpu(
         self,
         indexes: Tensor,
@@ -114,7 +114,7 @@ class TestRecall(RetrievalMetricTester):
             metric_functional=retrieval_recall,
         )
 
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_gpu(
         self,
         indexes: Tensor,

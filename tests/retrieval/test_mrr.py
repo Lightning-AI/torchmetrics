@@ -59,7 +59,7 @@ class TestMRR(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
         ddp: bool,
@@ -82,7 +82,7 @@ class TestMRR(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize(*_default_metric_functional_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     def test_functional_metric(
         self,
         preds: Tensor,
@@ -96,7 +96,7 @@ class TestMRR(RetrievalMetricTester):
             metric_args={},
         )
 
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_cpu(
         self,
         indexes: Tensor,
@@ -111,7 +111,7 @@ class TestMRR(RetrievalMetricTester):
             metric_functional=retrieval_reciprocal_rank,
         )
 
-    @pytest.mark.parametrize(*_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_gpu(
         self,
         indexes: Tensor,
@@ -151,7 +151,7 @@ class TestMRR(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(*_errors_test_functional_metric_parameters_default)
+    @pytest.mark.parametrize(**_errors_test_functional_metric_parameters_default)
     def test_arguments_functional_metric(
         self,
         preds: Tensor,
