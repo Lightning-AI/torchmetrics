@@ -103,10 +103,12 @@ class TestMAP(RetrievalMetricTester):
             metric_functional=retrieval_average_precision,
         )
 
-    @pytest.mark.parametrize(*_concat_tests(
-        _errors_test_class_metric_parameters_default,
-        _errors_test_class_metric_parameters_no_pos_target,
-    ))
+    @pytest.mark.parametrize(
+        *_concat_tests(
+            _errors_test_class_metric_parameters_default,
+            _errors_test_class_metric_parameters_no_pos_target,
+        )
+    )
     def test_arguments_class_metric(
         self,
         indexes: Tensor,

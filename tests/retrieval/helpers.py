@@ -93,7 +93,8 @@ def _concat_tests(*tests: Tuple[str, Tuple]) -> Tuple[str, Tuple]:
 
 
 _errors_test_functional_metric_parameters_default = [
-    "preds, target, message, metric_args", [
+    "preds, target, message, metric_args",
+    [
         # check input shapes are consistent (func)
         (
             _input_retrieval_scores_mismatching_sizes_func.preds,
@@ -131,61 +132,71 @@ _errors_test_functional_metric_parameters_default = [
     ]
 ]
 
-
 _errors_test_functional_metric_parameters_k = [
-    "preds, target, message, metric_args", [
+    "preds, target, message, metric_args",
+    [
         (
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`k` has to be a positive integer or None",
-            {'k': -10},
+            {
+                'k': -10
+            },
         ),
         (
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`k` has to be a positive integer or None",
-            {'k': 4.0},
+            {
+                'k': 4.0
+            },
         ),
     ]
 ]
 
-
 _errors_test_class_metric_parameters_no_pos_target = [
-    "indexes, preds, target, message, metric_args", [
+    "indexes, preds, target, message, metric_args",
+    [
         # check when error when there are no positive targets
         (
             _input_retrieval_scores_no_target.indexes,
             _input_retrieval_scores_no_target.preds,
             _input_retrieval_scores_no_target.target,
             "`compute` method was provided with a query with no positive target.",
-            {'empty_target_action': "error"},
+            {
+                'empty_target_action': "error"
+            },
         ),
     ]
 ]
 
-
 _errors_test_class_metric_parameters_no_neg_target = [
-    "indexes, preds, target, message, metric_args", [
+    "indexes, preds, target, message, metric_args",
+    [
         # check when error when there are no negative targets
         (
             _input_retrieval_scores_all_target.indexes,
             _input_retrieval_scores_all_target.preds,
             _input_retrieval_scores_all_target.target,
             "`compute` method was provided with a query with no negative target.",
-            {'empty_target_action': "error"},
+            {
+                'empty_target_action': "error"
+            },
         ),
     ]
 ]
 
-
 _errors_test_class_metric_parameters_default = [
-    "indexes, preds, target, message, metric_args", [
+    "indexes, preds, target, message, metric_args",
+    [
         (
             None,
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`indexes` cannot be None",
-            {'empty_target_action': "error"},
+            {
+                'empty_target_action': "error"
+            },
         ),
         # check when input arguments are invalid
         (
@@ -193,7 +204,9 @@ _errors_test_class_metric_parameters_default = [
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`empty_target_action` received a wrong value `casual_argument`.",
-            {'empty_target_action': "casual_argument"},
+            {
+                'empty_target_action': "casual_argument"
+            },
         ),
         # check input shapes are consistent
         (
@@ -201,7 +214,9 @@ _errors_test_class_metric_parameters_default = [
             _input_retrieval_scores_mismatching_sizes.preds,
             _input_retrieval_scores_mismatching_sizes.target,
             "`indexes`, `preds` and `target` must be of the same shape",
-            {'empty_target_action': "skip"},
+            {
+                'empty_target_action': "skip"
+            },
         ),
         # check input tensors are not empty
         (
@@ -209,7 +224,9 @@ _errors_test_class_metric_parameters_default = [
             _input_retrieval_scores_empty.preds,
             _input_retrieval_scores_empty.target,
             "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
-            {'empty_target_action': "skip"},
+            {
+                'empty_target_action': "skip"
+            },
         ),
         # check on input dtypes
         (
@@ -217,21 +234,27 @@ _errors_test_class_metric_parameters_default = [
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`indexes` must be a tensor of long integers",
-            {'empty_target_action': "skip"},
+            {
+                'empty_target_action': "skip"
+            },
         ),
         (
             _input_retrieval_scores.indexes,
             _input_retrieval_scores.preds.bool(),
             _input_retrieval_scores.target,
             "`preds` must be a tensor of floats",
-            {'empty_target_action': "skip"},
+            {
+                'empty_target_action': "skip"
+            },
         ),
         (
             _input_retrieval_scores.indexes,
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target.float(),
             "`target` must be a tensor of booleans or integers",
-            {'empty_target_action': "skip"},
+            {
+                'empty_target_action': "skip"
+            },
         ),
         # check targets are between 0 and 1
         (
@@ -239,32 +262,32 @@ _errors_test_class_metric_parameters_default = [
             _input_retrieval_scores_wrong_targets.preds,
             _input_retrieval_scores_wrong_targets.target,
             "`target` must contain `binary` values",
-            {'empty_target_action': "skip"},
+            {
+                'empty_target_action': "skip"
+            },
         ),
     ]
 ]
 
-
 _errors_test_class_metric_parameters_k = [
-    "indexes, preds, target, message, metric_args", [
+    "indexes, preds, target, message, metric_args",
+    [
         (
             _input_retrieval_scores.index,
             _input_retrieval_scores.preds,
             _input_retrieval_scores.target,
             "`k` has to be a positive integer or None",
-            {'k': -10},
+            {
+                'k': -10
+            },
         ),
     ]
 ]
 
-
 _default_metric_class_input_arguments = [
-    "indexes, preds, target", [
-        (
-            _input_retrieval_scores.indexes,
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target
-        ),
+    "indexes, preds, target",
+    [
+        (_input_retrieval_scores.indexes, _input_retrieval_scores.preds, _input_retrieval_scores.target),
         (
             _input_retrieval_scores_extra.indexes,
             _input_retrieval_scores_extra.preds,
@@ -278,21 +301,12 @@ _default_metric_class_input_arguments = [
     ]
 ]
 
-
 _default_metric_functional_input_arguments = [
-    "preds, target", [
-        (
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target
-        ),
-        (
-            _input_retrieval_scores_extra.preds,
-            _input_retrieval_scores_extra.target
-        ),
-        (
-            _input_retrieval_scores_no_target.preds,
-            _input_retrieval_scores_no_target.target
-        ),
+    "preds, target",
+    [
+        (_input_retrieval_scores.preds, _input_retrieval_scores.target),
+        (_input_retrieval_scores_extra.preds, _input_retrieval_scores_extra.target),
+        (_input_retrieval_scores_no_target.preds, _input_retrieval_scores_no_target.target),
     ]
 ]
 

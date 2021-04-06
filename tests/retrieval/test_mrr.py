@@ -1,4 +1,3 @@
-
 # Copyright The PyTorch Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -127,10 +126,12 @@ class TestMRR(RetrievalMetricTester):
             metric_functional=retrieval_reciprocal_rank,
         )
 
-    @pytest.mark.parametrize(*_concat_tests(
-        _errors_test_class_metric_parameters_default,
-        _errors_test_class_metric_parameters_no_pos_target,
-    ))
+    @pytest.mark.parametrize(
+        *_concat_tests(
+            _errors_test_class_metric_parameters_default,
+            _errors_test_class_metric_parameters_no_pos_target,
+        )
+    )
     def test_arguments_class_metric(
         self,
         indexes: Tensor,

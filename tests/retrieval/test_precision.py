@@ -130,11 +130,13 @@ class TestPrecision(RetrievalMetricTester):
             metric_functional=retrieval_precision,
         )
 
-    @pytest.mark.parametrize(*_concat_tests(
-        _errors_test_class_metric_parameters_default,
-        _errors_test_class_metric_parameters_no_pos_target,
-        _errors_test_class_metric_parameters_k,
-    ))
+    @pytest.mark.parametrize(
+        *_concat_tests(
+            _errors_test_class_metric_parameters_default,
+            _errors_test_class_metric_parameters_no_pos_target,
+            _errors_test_class_metric_parameters_k,
+        )
+    )
     def test_arguments_class_metric(
         self,
         indexes: Tensor,
@@ -154,10 +156,12 @@ class TestPrecision(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(*_concat_tests(
-        _errors_test_functional_metric_parameters_default,
-        _errors_test_functional_metric_parameters_k,
-    ))
+    @pytest.mark.parametrize(
+        *_concat_tests(
+            _errors_test_functional_metric_parameters_default,
+            _errors_test_functional_metric_parameters_k,
+        )
+    )
     def test_arguments_functional_metric(
         self,
         preds: Tensor,
