@@ -41,8 +41,7 @@ def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
-    if k is None:
-        k = len(preds)
+    k = len(preds) if k is None else k
 
     target = 1 - target
     if target.sum():
