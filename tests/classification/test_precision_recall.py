@@ -50,7 +50,7 @@ def _sk_prec_recall(preds, target, sk_fn, num_classes, average, is_multiclass, i
         pass
 
     sk_preds, sk_target, _ = _input_format_classification(
-        preds, target, THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
+        preds, target, THRESHOLD, num_classes=num_classes, multiclass=is_multiclass
     )
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
 
@@ -66,7 +66,7 @@ def _sk_prec_recall_multidim_multiclass(
     preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average
 ):
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=is_multiclass
     )
 
     if mdmc_average == "global":
@@ -173,7 +173,7 @@ def test_no_support(metric_class, metric_fn):
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
 @pytest.mark.parametrize(
-    "preds, target, num_classes, is_multiclass, mdmc_average, sk_wrapper",
+    "preds, target, num_classes, multiclass, mdmc_average, sk_wrapper",
     [
         (_input_binary_prob.preds, _input_binary_prob.target, 1, None, None, _sk_prec_recall),
         (_input_binary.preds, _input_binary.target, 1, False, None, _sk_prec_recall),
@@ -207,7 +207,7 @@ class TestPrecisionRecall(MetricTester):
         metric_class: Metric,
         metric_fn: Callable,
         sk_fn: Callable,
-        is_multiclass: Optional[bool],
+        multiclass: Optional[bool],
         num_classes: Optional[int],
         average: str,
         mdmc_average: Optional[str],
@@ -233,7 +233,7 @@ class TestPrecisionRecall(MetricTester):
                 sk_fn=sk_fn,
                 average=average,
                 num_classes=num_classes,
-                is_multiclass=is_multiclass,
+                multiclass=multiclass,
                 ignore_index=ignore_index,
                 mdmc_average=mdmc_average,
             ),
@@ -242,7 +242,7 @@ class TestPrecisionRecall(MetricTester):
                 "num_classes": num_classes,
                 "average": average,
                 "threshold": THRESHOLD,
-                "is_multiclass": is_multiclass,
+                "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "mdmc_average": mdmc_average,
             },
@@ -258,7 +258,7 @@ class TestPrecisionRecall(MetricTester):
         metric_class: Metric,
         metric_fn: Callable,
         sk_fn: Callable,
-        is_multiclass: Optional[bool],
+        multiclass: Optional[bool],
         num_classes: Optional[int],
         average: str,
         mdmc_average: Optional[str],
@@ -283,7 +283,7 @@ class TestPrecisionRecall(MetricTester):
                 sk_fn=sk_fn,
                 average=average,
                 num_classes=num_classes,
-                is_multiclass=is_multiclass,
+                multiclass=multiclass,
                 ignore_index=ignore_index,
                 mdmc_average=mdmc_average,
             ),
@@ -291,7 +291,7 @@ class TestPrecisionRecall(MetricTester):
                 "num_classes": num_classes,
                 "average": average,
                 "threshold": THRESHOLD,
-                "is_multiclass": is_multiclass,
+                "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "mdmc_average": mdmc_average,
             },

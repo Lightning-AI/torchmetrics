@@ -82,12 +82,12 @@ def _stat_scores_update(
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
     threshold: float = 0.5,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
 
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=threshold, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
+        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
 
     if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
@@ -145,7 +145,7 @@ def stat_scores(
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
     threshold: float = 0.5,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
@@ -211,10 +211,10 @@ def stat_scores(
               flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
 
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -292,7 +292,7 @@ def stat_scores(
         top_k=top_k,
         threshold=threshold,
         num_classes=num_classes,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
     return _stat_scores_compute(tp, fp, tn, fn)

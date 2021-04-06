@@ -96,10 +96,10 @@ class FBeta(StatScores):
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -137,7 +137,7 @@ class FBeta(StatScores):
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -154,7 +154,7 @@ class FBeta(StatScores):
             threshold=threshold,
             top_k=top_k,
             num_classes=num_classes,
-            is_multiclass=is_multiclass,
+            multiclass=multiclass,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -243,10 +243,10 @@ class F1(FBeta):
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -278,7 +278,7 @@ class F1(FBeta):
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -293,7 +293,7 @@ class F1(FBeta):
             mdmc_average=mdmc_average,
             ignore_index=ignore_index,
             top_k=top_k,
-            is_multiclass=is_multiclass,
+            multiclass=multiclass,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,

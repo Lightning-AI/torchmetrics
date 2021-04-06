@@ -47,7 +47,7 @@ def precision(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
     Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -117,10 +117,10 @@ def precision(
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -175,7 +175,7 @@ def precision(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 
@@ -210,7 +210,7 @@ def recall(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
     Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -280,10 +280,10 @@ def recall(
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -338,7 +338,7 @@ def recall(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 
@@ -354,7 +354,7 @@ def precision_recall(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
 ) -> Tuple[Tensor, Tensor]:
     r"""
     Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -427,10 +427,10 @@ def precision_recall(
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -486,7 +486,7 @@ def precision_recall(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 

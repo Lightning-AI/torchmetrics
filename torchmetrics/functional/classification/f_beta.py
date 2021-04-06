@@ -80,7 +80,7 @@ def fbeta(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
     Computes f_beta metric.
@@ -151,10 +151,10 @@ def fbeta(
             only for inputs with probability predictions. If this parameter is set for multi-label
             inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
             this parameter defaults to 1. Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -195,7 +195,7 @@ def fbeta(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 
@@ -212,7 +212,7 @@ def f1(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
 ) -> Tensor:
     """
     Computes F1 metric. F1 metrics correspond to a equally weighted average of the
@@ -286,10 +286,10 @@ def f1(
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -306,4 +306,4 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, is_multiclass)
+    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
