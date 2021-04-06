@@ -351,7 +351,7 @@ RetrievalRecall
 
 
 RetrievalFallOut
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.RetrievalFallOut
     :noindex:
