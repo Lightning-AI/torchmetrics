@@ -63,12 +63,9 @@ def _pearson_corrcoef_update(
         raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
     data = torch.stack([preds, target], dim=1)
 
-    if old_mean is None:
-        old_mean = 0
-    if old_cov is None:
-        old_cov = 0
-    if old_nobs is None:
-        old_nobs = 0
+    old_mean = 0 if old_mean is None else old_mean
+    old_cov = 0 if old_cov is None else old_cov
+    old_nobs = 0 if old_nobs is None else old_nobs
 
     new_mean = _update_mean(old_mean, old_nobs, data)
     new_cov = _update_cov(old_cov, old_mean, new_mean, data)
