@@ -52,6 +52,9 @@ def _pearson_corrcoef_update(
     old_cov: Optional[Tensor] = None,
     old_nobs: Optional[Tensor] = None
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """ updates current estimates of the mean, cov and n_obs with new data for calculating
+        pearsons correlation
+    """
     # Data checking
     _check_same_shape(preds, target)
     preds = preds.squeeze()
@@ -75,6 +78,7 @@ def _pearson_corrcoef_update(
 
 
 def _pearson_corrcoef_compute(c: Tensor, nobs: Tensor):
+    """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
     c /= (nobs - 1)
     x_var = c[0, 0]
     y_var = c[1, 1]

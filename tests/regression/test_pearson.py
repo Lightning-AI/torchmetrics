@@ -82,26 +82,26 @@ class TestPearsonCorrcoef(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_explained_variance(self, preds, target, ddp, dist_sync_on_step):
+    def test_pearson_corrcoef(self, preds, target, ddp, dist_sync_on_step):
         self.run_class_metric_test(
-            ddp,
-            preds,
-            target,
-            PearsonCorrcoef,
-            _sk_metric,
-            dist_sync_on_step,
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=PearsonCorrcoef,
+            sk_metric=_sk_metric,
+            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
         self.run_functional_metric_test(
-            preds,
-            target,
-            pearson_corrcoef,
-            _sk_metric
+            preds=preds,
+            target=target,
+            metric_functional=pearson_corrcoef,
+            sk_metric=_sk_metric
         )
 
     # Pearson half + cpu does not work due to missing support in torch.sqrt
-    @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
+    @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
         self.run_precision_test_cpu(preds, target, PearsonCorrcoef, pearson_corrcoef)
 
