@@ -554,7 +554,7 @@ def _check_retrieval_inputs(
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
 
     if not indexes.numel() or not indexes.size():
-        raise ValueError("`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",)
+        raise ValueError("`indexes`, `preds` and `target` must be non-empty and non-scalar tensors", )
 
     if indexes.dtype is not torch.long:
         raise ValueError("`indexes` must be a tensor of long integers")
