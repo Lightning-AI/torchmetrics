@@ -43,9 +43,6 @@ class PearsonCorrcoef(Metric):
             before returning the value at the step. default: False
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
 
     Example:
         >>> from torchmetrics import PearsonCorrcoef
@@ -61,13 +58,11 @@ class PearsonCorrcoef(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable] = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
         )
         self.add_state("cov", default=torch.zeros(2, 2), dist_reduce_fx="sum")
         self.add_state("mean", default=torch.zeros(2), dist_reduce_fx="sum")
