@@ -10,9 +10,7 @@ from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
 @pytest.mark.parametrize('empty_target_action', ['skip', 'pos', 'neg'])
 def test_results(size, n_documents, empty_target_action):
     """ Test metrics are computed correctly. """
-    _test_retrieval_against_sklearn(
-        sk_average_precision, RetrievalMAP, size, n_documents, empty_target_action
-    )
+    _test_retrieval_against_sklearn(sk_average_precision, RetrievalMAP, size, n_documents, empty_target_action)
 
 
 def test_dtypes():
