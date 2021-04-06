@@ -53,6 +53,7 @@ from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalFallOut,
     RetrievalMAP,
     RetrievalMRR,
+    RetrievalNormalizedDCG,
     RetrievalPrecision,
     RetrievalRecall,
 )

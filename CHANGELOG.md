@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RetrievalRecall` metric for Information Retrieval ([#146](https://github.com/PyTorchLightning/metrics/pull/146))
 
 
+- Added `RetrievalNormalizedDCG` metric for Information Retrieval ([#160](https://github.com/PyTorchLightning/metrics/pull/160))
+
+
 - Added `RetrievalFallOut` metric for Information Retrieval ([#161](https://github.com/PyTorchLightning/metrics/pull/161))
 
 
