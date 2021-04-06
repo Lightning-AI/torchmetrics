@@ -50,6 +50,7 @@ from torchmetrics.regression import (  # noqa: F401 E402
     R2Score,
 )
 from torchmetrics.retrieval import (  # noqa: F401 E402
+    RetrievalFallOut,
     RetrievalMAP,
     RetrievalMRR,
     RetrievalNormalizedDCG,

@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RetrievalNormalizedDCG` metric for Information Retrieval ([#160](https://github.com/PyTorchLightning/metrics/pull/160))
 
 
+- Added `RetrievalFallOut` metric for Information Retrieval ([#161](https://github.com/PyTorchLightning/metrics/pull/161))
+
+
 - Added `average='micro'` as an option in AUROC for multilabel problems ([#110](https://github.com/PyTorchLightning/metrics/pull/110))
 
 

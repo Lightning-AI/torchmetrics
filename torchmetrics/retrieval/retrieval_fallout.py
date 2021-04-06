@@ -11,41 +11,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from abc import ABC, abstractmethod
 from typing import Any, Callable, Optional
 
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics import Metric
-from torchmetrics.utilities.checks import _check_retrieval_inputs
+from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
+from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 from torchmetrics.utilities.data import get_group_indexes
 
-#: get_group_indexes is used to group predictions belonging to the same document
 
-
-class RetrievalMetric(Metric, ABC):
+class RetrievalFallOut(RetrievalMetric):
     """
+    Computes `Fall-out
+    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out>`__.
+
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts
+    Forward accepts:
 
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
     - ``indexes`` (long tensor): ``(N, ...)``
 
-    `indexes`, `preds` and `target` must have the same dimension and will be flatten
-    to single dimension once provided.
-
-    `indexes` indicate to which query a prediction belongs.
-    Predictions will be first grouped by indexes. Then the
-    real metric, defined by overriding the `_metric` method,
-    will be computed as the mean of the scores over each query.
+    ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    ``indexes`` indicate to which query a prediction belongs.
+    Predictions will be first grouped by ``indexes`` and then `Fall-out` will be computed as the mean
+    of the `Fall-out` over each query.
 
     Args:
         empty_target_action:
-            Specify what to do with queries that do not have at least a positive
-            or negative (depend on metric) target. Choose from:
+            Specify what to do with queries that do not have at least a negative ``target``. Choose from:
 
             - ``'neg'``: those queries count as ``0.0`` (default)
             - ``'pos'``: those queries count as ``1.0``
@@ -63,49 +59,44 @@ class RetrievalMetric(Metric, ABC):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
+        k: consider only the top k elements for each query. default: None
+
+    Example:
+        >>> from torchmetrics import RetrievalFallOut
+        >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
+        >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
+        >>> target = tensor([False, False, True, False, True, False, True])
+        >>> fo = RetrievalFallOut(k=2)
+        >>> fo(preds, target, indexes=indexes)
+        tensor(0.5000)
     """
 
     def __init__(
         self,
-        empty_target_action: str = 'neg',
+        empty_target_action: str = 'pos',
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
+        k: int = None
     ):
         super().__init__(
+            empty_target_action=empty_target_action,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
             dist_sync_fn=dist_sync_fn
         )
 
-        empty_target_action_options = ('error', 'skip', 'neg', 'pos')
-        if empty_target_action not in empty_target_action_options:
-            raise ValueError(f"`empty_target_action` received a wrong value `{empty_target_action}`.")
-
-        self.empty_target_action = empty_target_action
-
-        self.add_state("indexes", default=[], dist_reduce_fx=None)
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
-
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor = None) -> None:
-        """ Check shape, check and convert dtypes, flatten and add to accumulators. """
-        if indexes is None:
-            raise ValueError("`indexes` cannot be None")
-
-        indexes, preds, target = _check_retrieval_inputs(indexes, preds, target)
-
-        self.indexes.append(indexes)
-        self.preds.append(preds)
-        self.target.append(target)
+        if (k is not None) and not (isinstance(k, int) and k > 0):
+            raise ValueError("`k` has to be a positive integer or None")
+        self.k = k
 
     def compute(self) -> Tensor:
         """
         First concat state `indexes`, `preds` and `target` since they were stored as lists. After that,
         compute list of groups that will help in keeping together predictions about the same query.
-        Finally, for each group compute the `_metric` if the number of positive targets is at least
+        Finally, for each group compute the `_metric` if the number of negative targets is at least
         1, otherwise behave as specified by `self.empty_target_action`.
         """
         indexes = torch.cat(self.indexes, dim=0)
@@ -119,9 +110,9 @@ class RetrievalMetric(Metric, ABC):
             mini_preds = preds[group]
             mini_target = target[group]
 
-            if not mini_target.sum():
+            if not (1 - mini_target).sum():
                 if self.empty_target_action == 'error':
-                    raise ValueError("`compute` method was provided with a query with no positive target.")
+                    raise ValueError("`compute` method was provided with a query with no negative target.")
                 if self.empty_target_action == 'pos':
                     res.append(tensor(1.0))
                 elif self.empty_target_action == 'neg':
@@ -132,9 +123,5 @@ class RetrievalMetric(Metric, ABC):
 
         return torch.stack([x.to(preds) for x in res]).mean() if len(res) else tensor(0.0).to(preds)
 
-    @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        """
-        Compute a metric over a predictions and target of a single group.
-        This method should be overridden by subclasses.
-        """
+        return retrieval_fall_out(preds, target, k=self.k)
