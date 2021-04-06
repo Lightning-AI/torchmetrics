@@ -190,19 +190,6 @@ def test_wrong_params(top_k, threshold):
         accuracy(preds, target, threshold=threshold, top_k=top_k)
 
 
-@pytest.mark.parametrize("top_k, threshold", [(0, 0.5), (None, 1.5)])
-def test_wrong_params(top_k, threshold):
-    preds, target = _input_mcls_prob.preds, _input_mcls_prob.target
-
-    with pytest.raises(ValueError):
-        acc = Accuracy(threshold=threshold, top_k=top_k)
-        acc(preds, target)
-        acc.compute()
-
-    with pytest.raises(ValueError):
-        accuracy(preds, target, threshold=threshold, top_k=top_k)
-
-
 _ignoreindex_binary_preds = tensor([1, 0, 1, 1, 0, 1, 0])
 _ignoreindex_target_preds = tensor([1, 1, 0, 1, 1, 1, 1])
 _ignoreindex_binary_preds_prob = tensor([0.3, 0.6, 0.1, 0.3, 0.7, 0.9, 0.4])
