@@ -310,14 +310,14 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
     >>> target = torch.tensor([0, 1, 0, 1, 1])
 
     >>> map = RetrievalMAP() # or some other retrieval metric
-    >>> map(indexes, preds, target)
+    >>> map(preds, target, indexes=indexes)
     tensor(0.6667)
 
     >>> # the previous instruction is roughly equivalent to
     >>> res = []
     >>> # iterate over indexes of first and second query
-    >>> for idx in ([0, 1], [2, 3, 4]):
-    ...     res.append(retrieval_average_precision(preds[idx], target[idx]))
+    >>> for indexes in ([0, 1], [2, 3, 4]):
+    ...     res.append(retrieval_average_precision(preds[indexes], target[indexes]))
     >>> torch.stack(res).mean()
     tensor(0.6667)
 
