@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.recall import retrieval_recall
-from torchmetrics.retrieval.retrieval_metric import IGNORE_IDX, RetrievalMetric
+from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalRecall(RetrievalMetric):
@@ -28,9 +28,9 @@ class RetrievalRecall(RetrievalMetric):
 
     Forward accepts:
 
-    - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
+    - ``indexes`` (long tensor): ``(N, ...)``
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
@@ -41,13 +41,11 @@ class RetrievalRecall(RetrievalMetric):
         empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
-                - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
-                - ``'error'``: raise a ``ValueError``
-                - ``'pos'``: score on those queries is counted as ``1.0``
-                - ``'neg'``: score on those queries is counted as ``0.0``
+            - ``'neg'``: those queries count as ``0.0`` (default)
+            - ``'pos'``: those queries count as ``1.0``
+            - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
+            - ``'error'``: raise a ``ValueError``
 
-        exclude:
-            Do not take into account predictions where the ``target`` is equal to this value. default `-100`
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -67,14 +65,13 @@ class RetrievalRecall(RetrievalMetric):
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
         >>> r2 = RetrievalRecall(k=2)
-        >>> r2(indexes, preds, target)
+        >>> r2(preds, target, indexes=indexes)
         tensor(0.7500)
     """
 
     def __init__(
         self,
-        empty_target_action: str = 'skip',
-        exclude: int = IGNORE_IDX,
+        empty_target_action: str = 'neg',
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -83,7 +80,6 @@ class RetrievalRecall(RetrievalMetric):
     ):
         super().__init__(
             empty_target_action=empty_target_action,
-            exclude=exclude,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
@@ -95,5 +91,4 @@ class RetrievalRecall(RetrievalMetric):
         self.k = k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        valid_indexes = (target != self.exclude)
-        return retrieval_recall(preds[valid_indexes], target[valid_indexes], k=self.k)
+        return retrieval_recall(preds, target, k=self.k)

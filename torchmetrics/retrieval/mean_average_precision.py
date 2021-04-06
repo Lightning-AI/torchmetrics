@@ -26,9 +26,9 @@ class RetrievalMAP(RetrievalMetric):
 
     Forward accepts
 
-    - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
+    - ``indexes`` (long tensor): ``(N, ...)``
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
@@ -39,12 +39,11 @@ class RetrievalMAP(RetrievalMetric):
         empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
-            - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
+            - ``'neg'``: those queries count as ``0.0`` (default)
+            - ``'pos'``: those queries count as ``1.0``
+            - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
-            - ``'pos'``: score on those queries is counted as ``1.0``
-            - ``'neg'``: score on those queries is counted as ``0.0``
-        exclude:
-            Do not take into account predictions where the ``target`` is equal to this value. default `-100`
+
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -63,10 +62,9 @@ class RetrievalMAP(RetrievalMetric):
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
         >>> map = RetrievalMAP()
-        >>> map(indexes, preds, target)
+        >>> map(preds, target, indexes=indexes)
         tensor(0.7917)
     """
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        valid_indexes = (target != self.exclude)
-        return retrieval_average_precision(preds[valid_indexes], target[valid_indexes])
+        return retrieval_average_precision(preds, target)

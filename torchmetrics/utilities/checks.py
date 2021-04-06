@@ -513,26 +513,25 @@ def _check_retrieval_functional_inputs(preds: Tensor, target: Tensor) -> None:
     if preds.shape != target.shape:
         raise ValueError("`preds` and `target` must be of the same shape")
 
-    if not preds.numel() or not target.numel():
-        raise ValueError("`preds` and `target` must be non-empty")
+    if not preds.numel() or not preds.size():
+        raise ValueError("`preds` and `target` must be non-empty and non-scalar tensors")
 
     if target.dtype not in (torch.bool, torch.long, torch.int):
         raise ValueError("`target` must be a tensor of booleans or integers")
 
-    if target.max() > 1 or target.min() < 0:
-        raise ValueError("`target` must be of type `binary`")
-
     if not preds.is_floating_point():
         raise ValueError("`preds` must be a tensor of floats")
 
-    return preds.float(), target.long()
+    if target.max() > 1 or target.min() < 0:
+        raise ValueError("`target` must contain `binary` values")
+
+    return preds.float().flatten(), target.long().flatten()
 
 
 def _check_retrieval_inputs(
     indexes: Tensor,
     preds: Tensor,
     target: Tensor,
-    ignore: int = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
@@ -540,7 +539,6 @@ def _check_retrieval_inputs(
         indexes: tensor with queries indexes
         preds: tensor with scores/logits
         target: tensor with ground true labels
-        ignore: ignore target with this value
 
     Raises:
         ValueError:
@@ -552,14 +550,22 @@ def _check_retrieval_inputs(
         preds: as torch.float32
         target: as torch.long
     """
-    if ignore is not None:
-        target = target[target != ignore]  # ignore check on values that are ignored
-    preds, target = _check_retrieval_functional_inputs(preds, target)
-
-    if indexes.shape != target.shape:
+    if indexes.shape != preds.shape or preds.shape != target.shape:
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
+
+    if not indexes.numel() or not indexes.size():
+        raise ValueError("`indexes`, `preds` and `target` must be non-empty and non-scalar tensors", )
 
     if indexes.dtype is not torch.long:
         raise ValueError("`indexes` must be a tensor of long integers")
 
-    return indexes, preds, target
+    if not preds.is_floating_point():
+        raise ValueError("`preds` must be a tensor of floats")
+
+    if target.dtype not in (torch.bool, torch.long, torch.int):
+        raise ValueError("`target` must be a tensor of booleans or integers")
+
+    if target.max() > 1 or target.min() < 0:
+        raise ValueError("`target` must contain `binary` values")
+
+    return indexes.long().flatten(), preds.float().flatten(), target.long().flatten()
