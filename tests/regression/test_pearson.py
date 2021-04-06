@@ -67,7 +67,7 @@ _single_target_inputs2 = Input(
 )
 
 
-def _sk_metric(preds, target):
+def _sk_pearsonr(preds, target):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     return pearsonr(sk_target, sk_preds)[0]
