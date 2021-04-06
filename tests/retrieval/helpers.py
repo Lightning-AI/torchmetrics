@@ -22,16 +22,14 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import Metric, MetricTester
-from tests.retrieval.inputs import (
-    _input_retrieval_scores,
-    _input_retrieval_scores_all_target,
-    _input_retrieval_scores_empty,
-    _input_retrieval_scores_extra,
-    _input_retrieval_scores_mismatching_sizes,
-    _input_retrieval_scores_mismatching_sizes_func,
-    _input_retrieval_scores_no_target,
-    _input_retrieval_scores_wrong_targets,
-)
+from tests.retrieval.inputs import _input_retrieval_scores as _irs
+from tests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_all
+from tests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
+from tests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
+from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
+from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
+from tests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
+from tests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 from torchmetrics.utilities.data import get_group_indexes
 
 seed_all(42)
@@ -96,61 +94,22 @@ _errors_test_functional_metric_parameters_default = [
     "preds, target, message, metric_args",
     [
         # check input shapes are consistent (func)
-        (
-            _input_retrieval_scores_mismatching_sizes_func.preds,
-            _input_retrieval_scores_mismatching_sizes_func.target,
-            "`preds` and `target` must be of the same shape",
-            {},
-        ),
+        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
-        (
-            _input_retrieval_scores_empty.preds,
-            _input_retrieval_scores_empty.target,
-            "`preds` and `target` must be non-empty and non-scalar tensors",
-            {},
-        ),
+        (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
-        (
-            _input_retrieval_scores.preds.bool(),
-            _input_retrieval_scores.target,
-            "`preds` must be a tensor of floats",
-            {},
-        ),
-        (
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target.float(),
-            "`target` must be a tensor of booleans or integers",
-            {},
-        ),
+        (_irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats", {}),
+        (_irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers", {}),
         # check targets are between 0 and 1
-        (
-            _input_retrieval_scores_wrong_targets.preds,
-            _input_retrieval_scores_wrong_targets.target,
-            "`target` must contain `binary` values",
-            {},
-        ),
+        (_irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values", {}),
     ]
 ]
 
 _errors_test_functional_metric_parameters_k = [
     "preds, target, message, metric_args",
     [
-        (
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target,
-            "`k` has to be a positive integer or None",
-            {
-                'k': -10
-            },
-        ),
-        (
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target,
-            "`k` has to be a positive integer or None",
-            {
-                'k': 4.0
-            },
-        ),
+        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
+        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=4.0)),
     ]
 ]
 
@@ -159,13 +118,8 @@ _errors_test_class_metric_parameters_no_pos_target = [
     [
         # check when error when there are no positive targets
         (
-            _input_retrieval_scores_no_target.indexes,
-            _input_retrieval_scores_no_target.preds,
-            _input_retrieval_scores_no_target.target,
-            "`compute` method was provided with a query with no positive target.",
-            {
-                'empty_target_action': "error"
-            },
+            _irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target,
+            "`compute` method was provided with a query with no positive target.", dict(empty_target_action="error")
         ),
     ]
 ]
@@ -175,13 +129,8 @@ _errors_test_class_metric_parameters_no_neg_target = [
     [
         # check when error when there are no negative targets
         (
-            _input_retrieval_scores_all_target.indexes,
-            _input_retrieval_scores_all_target.preds,
-            _input_retrieval_scores_all_target.target,
-            "`compute` method was provided with a query with no negative target.",
-            {
-                'empty_target_action': "error"
-            },
+            _irs_all.indexes, _irs_all.preds, _irs_all.target,
+            "`compute` method was provided with a query with no negative target.", dict(empty_target_action="error")
         ),
     ]
 ]
@@ -189,82 +138,40 @@ _errors_test_class_metric_parameters_no_neg_target = [
 _errors_test_class_metric_parameters_default = [
     "indexes, preds, target, message, metric_args",
     [
-        (
-            None,
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target,
-            "`indexes` cannot be None",
-            {
-                'empty_target_action': "error"
-            },
-        ),
+        (None, _irs.preds, _irs.target, "`indexes` cannot be None", dict(empty_target_action="error")),
         # check when input arguments are invalid
         (
-            _input_retrieval_scores.indexes,
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target,
-            "`empty_target_action` received a wrong value `casual_argument`.",
-            {
-                'empty_target_action': "casual_argument"
-            },
+            _irs.indexes, _irs.preds, _irs.target, "`empty_target_action` received a wrong value `casual_argument`.",
+            dict(empty_target_action="casual_argument")
         ),
         # check input shapes are consistent
         (
-            _input_retrieval_scores_mismatching_sizes.indexes,
-            _input_retrieval_scores_mismatching_sizes.preds,
-            _input_retrieval_scores_mismatching_sizes.target,
-            "`indexes`, `preds` and `target` must be of the same shape",
-            {
-                'empty_target_action': "skip"
-            },
+            _irs_mis_sz.indexes, _irs_mis_sz.preds, _irs_mis_sz.target,
+            "`indexes`, `preds` and `target` must be of the same shape", dict(empty_target_action="skip")
         ),
         # check input tensors are not empty
         (
-            _input_retrieval_scores_empty.indexes,
-            _input_retrieval_scores_empty.preds,
-            _input_retrieval_scores_empty.target,
-            "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
-            {
-                'empty_target_action': "skip"
-            },
+            _irs_empty.indexes, _irs_empty.preds,
+            _irs_empty.target, "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
+            dict(empty_target_action="skip")
         ),
         # check on input dtypes
         (
-            _input_retrieval_scores.indexes.bool(),
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target,
-            "`indexes` must be a tensor of long integers",
-            {
-                'empty_target_action': "skip"
-            },
+            _irs.indexes.bool(), _irs.preds, _irs.target, "`indexes` must be a tensor of long integers",
+            dict(empty_target_action="skip")
         ),
         (
-            _input_retrieval_scores.indexes,
-            _input_retrieval_scores.preds.bool(),
-            _input_retrieval_scores.target,
-            "`preds` must be a tensor of floats",
-            {
-                'empty_target_action': "skip"
-            },
+            _irs.indexes, _irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats",
+            dict(empty_target_action="skip")
         ),
         (
-            _input_retrieval_scores.indexes,
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target.float(),
-            "`target` must be a tensor of booleans or integers",
-            {
-                'empty_target_action': "skip"
-            },
+            _irs.indexes, _irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers",
+            dict(empty_target_action="skip")
         ),
         # check targets are between 0 and 1
         (
-            _input_retrieval_scores_wrong_targets.indexes,
-            _input_retrieval_scores_wrong_targets.preds,
-            _input_retrieval_scores_wrong_targets.target,
-            "`target` must contain `binary` values",
-            {
-                'empty_target_action': "skip"
-            },
+            _irs_bad_tgt.indexes, _irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values",
+            dict(empty_target_action="skip")
         ),
     ]
 ]
@@ -272,41 +179,25 @@ _errors_test_class_metric_parameters_default = [
 _errors_test_class_metric_parameters_k = [
     "indexes, preds, target, message, metric_args",
     [
-        (
-            _input_retrieval_scores.index,
-            _input_retrieval_scores.preds,
-            _input_retrieval_scores.target,
-            "`k` has to be a positive integer or None",
-            {
-                'k': -10
-            },
-        ),
+        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
     ]
 ]
 
 _default_metric_class_input_arguments = [
     "indexes, preds, target",
     [
-        (_input_retrieval_scores.indexes, _input_retrieval_scores.preds, _input_retrieval_scores.target),
-        (
-            _input_retrieval_scores_extra.indexes,
-            _input_retrieval_scores_extra.preds,
-            _input_retrieval_scores_extra.target,
-        ),
-        (
-            _input_retrieval_scores_no_target.indexes,
-            _input_retrieval_scores_no_target.preds,
-            _input_retrieval_scores_no_target.target,
-        ),
+        (_irs.indexes, _irs.preds, _irs.target),
+        (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
+        (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
     ]
 ]
 
 _default_metric_functional_input_arguments = [
     "preds, target",
     [
-        (_input_retrieval_scores.preds, _input_retrieval_scores.target),
-        (_input_retrieval_scores_extra.preds, _input_retrieval_scores_extra.target),
-        (_input_retrieval_scores_no_target.preds, _input_retrieval_scores_no_target.target),
+        (_irs.preds, _irs.target),
+        (_irs_extra.preds, _irs_extra.target),
+        (_irs_no_tgt.preds, _irs_no_tgt.target),
     ]
 ]
 
@@ -317,9 +208,9 @@ def _errors_test_class_metric(
     target: Tensor,
     metric_class: Metric,
     message: str = "",
-    metric_args: dict = {},
+    metric_args: dict = None,
     exception_type: Exception = ValueError,
-    kwargs_update: dict = {},
+    kwargs_update: dict = None,
 ):
     """Utility function doing checks about types, parameters and errors.
 
@@ -334,6 +225,8 @@ def _errors_test_class_metric(
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
     """
+    metric_args = metric_args or {}
+    kwargs_update = kwargs_update or {}
     with pytest.raises(exception_type, match=message):
         metric = metric_class(**metric_args)
         metric(preds, target, indexes=indexes, **kwargs_update)
@@ -345,7 +238,7 @@ def _errors_test_functional_metric(
     metric_functional: Metric,
     message: str = "",
     exception_type: Exception = ValueError,
-    kwargs_update: dict = {},
+    kwargs_update: dict = None,
 ):
     """Utility function doing checks about types, parameters and errors.
 
@@ -358,6 +251,7 @@ def _errors_test_functional_metric(
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
     """
+    kwargs_update = kwargs_update or {}
     with pytest.raises(exception_type, match=message):
         metric_functional(preds, target, **kwargs_update)
 
@@ -463,9 +357,9 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_class: Metric,
         message: str = "",
-        metric_args: dict = {},
+        metric_args: dict = None,
         exception_type: Exception = ValueError,
-        kwargs_update: dict = {},
+        kwargs_update: dict = None,
     ):
         _errors_test_class_metric(
             indexes=indexes,
@@ -485,7 +379,7 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
         message: str = "",
         exception_type: Exception = ValueError,
-        kwargs_update: dict = {},
+        kwargs_update: dict = None,
     ):
         _errors_test_functional_metric(
             preds=preds,
