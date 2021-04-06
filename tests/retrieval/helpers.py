@@ -315,6 +315,7 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
+
         def metric_functional_ignore_indexes(preds, target, indexes):
             return metric_functional(preds, target)
 

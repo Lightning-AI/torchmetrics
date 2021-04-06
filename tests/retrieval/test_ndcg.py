@@ -112,13 +112,15 @@ class TestNDCG(RetrievalMetricTester):
             metric_functional=retrieval_normalized_dcg,
         )
 
-    @pytest.mark.parametrize(**_concat_tests(
-        _errors_test_class_metric_parameters_default,
-        _errors_test_class_metric_parameters_no_pos_target,
-        _errors_test_class_metric_parameters_k,
-    ))
+    @pytest.mark.parametrize(
+        **_concat_tests(
+            _errors_test_class_metric_parameters_default,
+            _errors_test_class_metric_parameters_no_pos_target,
+            _errors_test_class_metric_parameters_k,
+        )
+    )
     def test_arguments_class_metric(
-        self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict,
+        self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
     ):
         self.run_metric_class_arguments_test(
             indexes=indexes,
@@ -131,13 +133,13 @@ class TestNDCG(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(**_concat_tests(
-        _errors_test_functional_metric_parameters_default,
-        _errors_test_functional_metric_parameters_k,
-    ))
-    def test_arguments_functional_metric(
-        self, preds: Tensor, target: Tensor, message: str, metric_args: dict,
-    ):
+    @pytest.mark.parametrize(
+        **_concat_tests(
+            _errors_test_functional_metric_parameters_default,
+            _errors_test_functional_metric_parameters_k,
+        )
+    )
+    def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,

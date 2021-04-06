@@ -495,7 +495,9 @@ def _input_format_classification_one_hot(
 
 
 def _check_retrieval_functional_inputs(
-    preds: Tensor, target: Tensor, allow_non_binary_target: bool = False
+    preds: Tensor,
+    target: Tensor,
+    allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor]:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
@@ -532,7 +534,10 @@ def _check_retrieval_functional_inputs(
 
 
 def _check_retrieval_inputs(
-    indexes: Tensor, preds: Tensor, target: Tensor, allow_non_binary_target: bool = False
+    indexes: Tensor,
+    preds: Tensor,
+    target: Tensor,
+    allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 

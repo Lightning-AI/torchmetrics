@@ -118,11 +118,13 @@ class TestFallOut(RetrievalMetricTester):
             metric_functional=retrieval_fall_out,
         )
 
-    @pytest.mark.parametrize(**_concat_tests(
-        _errors_test_class_metric_parameters_default,
-        _errors_test_class_metric_parameters_no_neg_target,
-        _errors_test_class_metric_parameters_k,
-    ))
+    @pytest.mark.parametrize(
+        **_concat_tests(
+            _errors_test_class_metric_parameters_default,
+            _errors_test_class_metric_parameters_no_neg_target,
+            _errors_test_class_metric_parameters_k,
+        )
+    )
     def test_arguments_class_metric(
         self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
     ):
@@ -137,10 +139,12 @@ class TestFallOut(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(**_concat_tests(
-        _errors_test_functional_metric_parameters_default,
-        _errors_test_functional_metric_parameters_k,
-    ))
+    @pytest.mark.parametrize(
+        **_concat_tests(
+            _errors_test_functional_metric_parameters_default,
+            _errors_test_functional_metric_parameters_k,
+        )
+    )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
         self.run_functional_metric_arguments_test(
             preds=preds,
