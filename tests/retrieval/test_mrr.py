@@ -33,9 +33,7 @@ def _reciprocal_rank(target: np.array, preds: np.array):
 @pytest.mark.parametrize('empty_target_action', ['skip', 'pos', 'neg'])
 def test_results(size, n_documents, empty_target_action):
     """ Test metrics are computed correctly. """
-    _test_retrieval_against_sklearn(
-        _reciprocal_rank, RetrievalMRR, size, n_documents, empty_target_action
-    )
+    _test_retrieval_against_sklearn(_reciprocal_rank, RetrievalMRR, size, n_documents, empty_target_action)
 
 
 def test_dtypes():

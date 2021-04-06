@@ -35,12 +35,7 @@ def _compute_sklearn_metric(
 
 
 def _test_retrieval_against_sklearn(
-    sklearn_metric: Callable,
-    torch_metric: Metric,
-    size: int,
-    n_documents: int,
-    empty_target_action: str,
-    **kwargs
+    sklearn_metric: Callable, torch_metric: Metric, size: int, n_documents: int, empty_target_action: str, **kwargs
 ) -> None:
     """ Compare PL metrics to standard version. """
     metric = torch_metric(empty_target_action=empty_target_action, **kwargs)

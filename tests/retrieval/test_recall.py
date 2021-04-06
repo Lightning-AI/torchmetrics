@@ -30,14 +30,7 @@ def _recall_at_k(target: np.array, preds: np.array, k: int = None):
 @pytest.mark.parametrize('k', [None, 1, 4, 10])
 def test_results(size, n_documents, empty_target_action, k):
     """ Test metrics are computed correctly. """
-    _test_retrieval_against_sklearn(
-        _recall_at_k,
-        RetrievalRecall,
-        size,
-        n_documents,
-        empty_target_action,
-        k=k
-    )
+    _test_retrieval_against_sklearn(_recall_at_k, RetrievalRecall, size, n_documents, empty_target_action, k=k)
 
 
 def test_dtypes():
