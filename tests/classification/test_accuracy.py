@@ -188,3 +188,51 @@ def test_wrong_params(top_k, threshold):
 
     with pytest.raises(ValueError):
         accuracy(preds, target, threshold=threshold, top_k=top_k)
+
+
+@pytest.mark.parametrize("top_k, threshold", [(0, 0.5), (None, 1.5)])
+def test_wrong_params(top_k, threshold):
+    preds, target = _input_mcls_prob.preds, _input_mcls_prob.target
+
+    with pytest.raises(ValueError):
+        acc = Accuracy(threshold=threshold, top_k=top_k)
+        acc(preds, target)
+        acc.compute()
+
+    with pytest.raises(ValueError):
+        accuracy(preds, target, threshold=threshold, top_k=top_k)
+
+
+_ignoreindex_binary_preds = tensor([1, 0, 1, 1, 0, 1, 0])
+_ignoreindex_target_preds = tensor([1, 1, 0, 1, 1, 1, 1])
+_ignoreindex_binary_preds_prob = tensor([0.3, 0.6, 0.1, 0.3, 0.7, 0.9, 0.4])
+_ignoreindex_mc_target = tensor([0, 1, 2])
+_ignoreindex_mc_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_ignoreindex_ml_target = tensor([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
+_ignoreindex_ml_preds = tensor([[0.9, 0.8, 0.75], [0.6, 0.7, 0.1], [0.6, 0.1, 0.2]])
+
+
+@pytest.mark.parametrize(
+    "preds, target, ignore_index, exp_result, subset_accuracy",
+    [
+        (_ignoreindex_binary_preds, _ignoreindex_target_preds, 0, 3 / 6, False),
+        (_ignoreindex_binary_preds, _ignoreindex_target_preds, 1, 0, False),
+        (_ignoreindex_binary_preds, _ignoreindex_target_preds, None, 3 / 6, False),
+        (_ignoreindex_binary_preds_prob, _ignoreindex_target_preds, 0, 3 / 6, False),
+        (_ignoreindex_binary_preds_prob, _ignoreindex_target_preds, 1, 1, False),
+        (_ignoreindex_mc_preds, _ignoreindex_mc_target, 0, 1, False),
+        (_ignoreindex_mc_preds, _ignoreindex_mc_target, 1, 1 / 2, False),
+        (_ignoreindex_mc_preds, _ignoreindex_mc_target, 2, 1 / 2, False),
+        (_ignoreindex_ml_preds, _ignoreindex_ml_target, 0, 2 / 3, False),
+        (_ignoreindex_ml_preds, _ignoreindex_ml_target, 1, 2 / 3, False),
+    ]
+)
+def test_ignore_index(preds, target, ignore_index, exp_result, subset_accuracy):
+    ignoreindex = Accuracy(ignore_index=ignore_index, subset_accuracy=subset_accuracy)
+
+    for batch in range(preds.shape[0]):
+        ignoreindex(preds[batch], target[batch])
+
+    assert ignoreindex.compute() == exp_result
+
+    assert accuracy(preds, target, ignore_index=ignore_index, subset_accuracy=subset_accuracy) == exp_result
