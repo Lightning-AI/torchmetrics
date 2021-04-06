@@ -191,6 +191,9 @@ Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](ht
 and implement the following methods:
 
 ```python
+import torch
+from torchmetrics import Metric
+
 class MyAccuracy(Metric):
     def __init__(self, dist_sync_on_step=False):
         # call `self.add_state`for every internal state that is needed for the metrics computations

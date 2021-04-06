@@ -404,12 +404,7 @@ class MetricTester:
                 target when running update on the metric.
         """
         _assert_half_support(
-            metric_module(**metric_args),
-            metric_functional,
-            preds,
-            target,
-            device="cpu",
-            **kwargs_update
+            metric_module(**metric_args), metric_functional, preds, target, device="cpu", **kwargs_update
         )
 
     def run_precision_test_gpu(
@@ -432,12 +427,7 @@ class MetricTester:
                 target when running update on the metric.
         """
         _assert_half_support(
-            metric_module(**metric_args),
-            metric_functional,
-            preds,
-            target,
-            device="cuda",
-            **kwargs_update
+            metric_module(**metric_args), metric_functional, preds, target, device="cuda", **kwargs_update
         )
 
 
