@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Dict, Tuple, Union
+from typing import Callable, Dict, Tuple, Type, Union
 
 import numpy as np
 import pytest
@@ -209,7 +209,7 @@ def _errors_test_class_metric(
     metric_class: Metric,
     message: str = "",
     metric_args: dict = None,
-    exception_type: Exception = ValueError,
+    exception_type: Type[Exception] = ValueError,
     kwargs_update: dict = None,
 ):
     """Utility function doing checks about types, parameters and errors.
@@ -237,7 +237,7 @@ def _errors_test_functional_metric(
     target: Tensor,
     metric_functional: Metric,
     message: str = "",
-    exception_type: Exception = ValueError,
+    exception_type: Type[Exception] = ValueError,
     kwargs_update: dict = None,
 ):
     """Utility function doing checks about types, parameters and errors.
@@ -358,7 +358,7 @@ class RetrievalMetricTester(MetricTester):
         metric_class: Metric,
         message: str = "",
         metric_args: dict = None,
-        exception_type: Exception = ValueError,
+        exception_type: Type[Exception] = ValueError,
         kwargs_update: dict = None,
     ):
         _errors_test_class_metric(
@@ -378,7 +378,7 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_functional: Callable,
         message: str = "",
-        exception_type: Exception = ValueError,
+        exception_type: Type[Exception] = ValueError,
         kwargs_update: dict = None,
     ):
         _errors_test_functional_metric(
