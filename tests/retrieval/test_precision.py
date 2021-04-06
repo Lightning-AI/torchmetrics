@@ -85,12 +85,7 @@ class TestPrecision(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    def test_functional_metric(
-        self,
-        preds: Tensor,
-        target: Tensor,
-        k: int,
-    ):
+    def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -101,12 +96,7 @@ class TestPrecision(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
-    def test_precision_cpu(
-        self,
-        indexes: Tensor,
-        preds: Tensor,
-        target: Tensor,
-    ):
+    def test_precision_cpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
         self.run_precision_test_cpu(
             indexes=indexes,
             preds=preds,
@@ -116,12 +106,7 @@ class TestPrecision(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
-    def test_precision_gpu(
-        self,
-        indexes: Tensor,
-        preds: Tensor,
-        target: Tensor,
-    ):
+    def test_precision_gpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
         self.run_precision_test_gpu(
             indexes=indexes,
             preds=preds,
@@ -138,12 +123,7 @@ class TestPrecision(RetrievalMetricTester):
         )
     )
     def test_arguments_class_metric(
-        self,
-        indexes: Tensor,
-        preds: Tensor,
-        target: Tensor,
-        message: str,
-        metric_args: dict,
+        self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
     ):
         self.run_metric_class_arguments_test(
             indexes=indexes,
@@ -162,13 +142,7 @@ class TestPrecision(RetrievalMetricTester):
             _errors_test_functional_metric_parameters_k,
         )
     )
-    def test_arguments_functional_metric(
-        self,
-        preds: Tensor,
-        target: Tensor,
-        message: str,
-        metric_args: dict,
-    ):
+    def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,
