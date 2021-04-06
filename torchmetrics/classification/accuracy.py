@@ -148,7 +148,11 @@ class Accuracy(Metric):
         """
 
         correct, total = _accuracy_update(
-            preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index,
+            preds,
+            target,
+            threshold=self.threshold,
+            top_k=self.top_k,
+            ignore_index=self.ignore_index,
             subset_accuracy=self.subset_accuracy,
         )
 
