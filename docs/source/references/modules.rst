@@ -344,9 +344,23 @@ RetrievalPrecision
 
 
 RetrievalRecall
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.RetrievalRecall
+    :noindex:
+
+
+RetrievalFallOut
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalFallOut
+    :noindex:
+
+
+RetrievalNormalizedDCG
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalNormalizedDCG
     :noindex:
 
 
