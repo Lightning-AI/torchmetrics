@@ -259,3 +259,31 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.half()
     assert metric.x.dtype == torch.float16
+
+
+def test_warning_on_compute_before_update():
+    metric = DummyMetricSum()
+    
+    # make sure everything is fine with forward
+    with pytest.warns(None) as record:
+        val = metric(1)
+    assert not record
+    
+    metric.reset()
+    
+    with pytest.warns(UserWarning, match=r'The ``compute`` method of metric .*'):
+        val = metric.compute()
+        assert val == 0.0
+    
+    # after update things should be fine
+    metric.update(2.0)
+    with pytest.warns(None) as record:
+        val = metric.compute()
+    assert not record
+    assert val == 2.0
+    
+        
+        
+    
+    
+    
