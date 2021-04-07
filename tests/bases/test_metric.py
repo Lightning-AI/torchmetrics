@@ -281,9 +281,3 @@ def test_warning_on_compute_before_update():
         val = metric.compute()
     assert not record
     assert val == 2.0
-    
-        
-        
-    
-    
-    
