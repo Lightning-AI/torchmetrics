@@ -20,6 +20,24 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import METRIC_EPS, to_onehot
 
 
+def _recall_at_precision(
+    precision: torch.Tensor, recall: torch.Tensor, thresholds: torch.Tensor, min_precision: float
+):
+    try:
+        max_recall, max_precision, best_threshold = max(
+            (r, p, t)
+            for p, r, t in zip(precision, recall, thresholds)
+            if p >= min_precision
+        )
+    except ValueError:
+        max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
+
+    if max_recall == 0.0:
+        best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
+
+    return max_recall, best_threshold
+
+
 class BinnedPrecisionRecallCurve(Metric):
     """Returns a tensor of recalls for a fixed precision threshold.
     It is a tensor instead of a single number, because it applies to multi-label inputs.
@@ -41,7 +59,7 @@ class BinnedPrecisionRecallCurve(Metric):
         super().__init__(compute_on_step=False, **kwargs)
         self.num_classes = num_classes
         self.num_thresholds = num_thresholds
-        thresholds = torch.linspace(0, 1.0 + METRIC_EPS, num_thresholds)
+        thresholds = torch.linspace(0, 1.0, num_thresholds)
         self.register_buffer("thresholds", thresholds)
 
         for name in ("TPs", "FPs", "FNs"):
@@ -115,32 +133,13 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
     def compute(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """Returns float tensor of size n_classes"""
         precisions, recalls, thresholds = super().compute()
-        condition = precisions >= self.min_precision
 
         if self.num_classes == 1:
-            recall_at_p, index = (
-                torch.where(
-                    condition, recalls, torch.scalar_tensor(0.0, device=condition.device)
-                )
-                .max(dim=0)
-            )
-            if recall_at_p == 0.0:
-                return recall_at_p, torch.scalar_tensor(1e6, device=condition.device)
-            else:
-                return recall_at_p, thresholds[index]
+            return _recall_at_precision(precisions, recalls, thresholds, self.min_precision)
 
-        recalls_at_p, indices = (
-            torch.where(
-                condition, recalls, torch.scalar_tensor(0.0, device=condition.device)
-            )
-            .max(dim=1)
-        )
-
-        thresholds_at_p = torch.zeros_like(recalls_at_p, device=condition.device, dtype=thresholds.dtype)
+        recalls_at_p = torch.zeros(self.num_classes, device=recalls.device, dtype=recalls.dtype)
+        thresholds_at_p = torch.zeros(self.num_classes, device=thresholds.device, dtype=thresholds.dtype)
         for i in range(self.num_classes):
-            if recalls_at_p[i] == 0.0:
-                thresholds_at_p[i] = 1e6
-            else:
-                thresholds_at_p[i] = thresholds[indices[i]]
-
+            recalls_at_p[i], thresholds_at_p[i] = _recall_at_precision(
+                precisions[i, :], recalls[i, :], thresholds, self.min_precision)
         return (recalls_at_p, thresholds_at_p)
