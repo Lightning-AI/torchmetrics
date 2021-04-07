@@ -121,7 +121,12 @@ class TestBinnedRecallAtPrecision(MetricTester):
     "preds, target, sk_metric, num_classes",
     [
         (_input_binary_prob.preds, _input_binary_prob.target, _multiclass_average_precision_sk_metric, 1),
-        (_input_binary_prob_plausible.preds, _input_binary_prob_plausible.target, _multiclass_average_precision_sk_metric, 1),
+        (
+            _input_binary_prob_plausible.preds,
+            _input_binary_prob_plausible.target,
+            _multiclass_average_precision_sk_metric,
+            1,
+        ),
         (
             _input_multilabel_prob_plausible.preds,
             _input_multilabel_prob_plausible.target,
