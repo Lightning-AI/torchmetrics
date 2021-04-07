@@ -41,7 +41,7 @@ class BinnedPrecisionRecallCurve(Metric):
         super().__init__(compute_on_step=False, **kwargs)
         self.num_classes = num_classes
         self.num_thresholds = num_thresholds
-        thresholds = torch.linspace(0, 1, num_thresholds)
+        thresholds = torch.linspace(0, 1.0 + METRIC_EPS, num_thresholds)
         self.register_buffer("thresholds", thresholds)
 
         for name in ("TPs", "FPs", "FNs"):
@@ -77,12 +77,20 @@ class BinnedPrecisionRecallCurve(Metric):
         """Returns float tensor of size n_classes"""
         precisions = self.TPs / (self.TPs + self.FPs + METRIC_EPS)
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
-        return (precisions, recalls, self.thresholds)
+        # Need to guarantee that last precision=1 and recall=0
+        precisions = torch.cat([precisions, torch.ones(self.num_classes, 1,
+                               dtype=precisions.dtype, device=precisions.device)], dim=1)
+        recalls = torch.cat([recalls, torch.zeros(self.num_classes, 1,
+                            dtype=recalls.dtype, device=recalls.device)], dim=1)
+        if self.num_classes == 1:
+            return (precisions[0, :], recalls[0, :], self.thresholds)
+        else:
+            return (precisions, recalls, self.thresholds)
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     def compute(self) -> Union[List[torch.Tensor], torch.Tensor]:
-        precisions, recalls, thresholds = super().compute()
+        precisions, recalls, _ = super().compute()
         return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes)
 
 
@@ -106,21 +114,29 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
     def compute(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """Returns float tensor of size n_classes"""
         precisions, recalls, thresholds = super().compute()
-
-        thresholds = thresholds.repeat(self.num_classes, 1)
         condition = precisions >= self.min_precision
-        recalls_at_p = (
+
+        if self.num_classes == 1:
+            recall_at_p, index = (
+                torch.where(
+                    condition, recalls, torch.scalar_tensor(0.0, device=condition.device)
+                )
+                .max(dim=0)
+            )
+            return recall_at_p, self.thresholds[index]
+
+        recalls_at_p, indices = (
             torch.where(
                 condition, recalls, torch.scalar_tensor(0.0, device=condition.device)
             )
             .max(dim=1)
-            .values
         )
-        thresholds_at_p = (
-            torch.where(
-                condition, thresholds, torch.scalar_tensor(1e6, device=condition.device, dtype=thresholds.dtype)
-            )
-            .min(dim=1)
-            .values
-        )
+
+        thresholds_at_p = torch.zeros_like(recalls_at_p, device=condition.device, dtype=thresholds.dtype)
+        for i in range(self.num_classes):
+            if recalls_at_p[i] == 0.0:
+                thresholds_at_p[i] = 1e6
+            else:
+                thresholds_at_p[i] = self.thresholds[indices[i]]
+
         return (recalls_at_p, thresholds_at_p)

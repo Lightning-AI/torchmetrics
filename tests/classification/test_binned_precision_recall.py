@@ -19,34 +19,27 @@ import pytest
 import torch
 from sklearn.metrics import average_precision_score as _sk_average_precision_score
 
-from tests.classification.inputs import Input
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+from tests.classification.inputs import (
+    _input_binary_prob,
+    _input_binary_prob_plausible,
+    _input_multilabel_prob,
+    _input_multilabel_prob_plausible,
+)
+from tests.helpers import seed_all
+from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision, BinnedRecallAtFixedPrecision
 from torchmetrics.functional import precision_recall_curve
 
-torch.manual_seed(42)
-
-
-def construct_not_terrible_input():
-    correct_targets = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
-    targets = torch.zeros_like(preds, dtype=torch.long)
-    for i in range(preds.shape[0]):
-        for j in range(preds.shape[1]):
-            targets[i, j, correct_targets[i, j]] = 1
-    preds += torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES) * targets / 3
-
-    preds = preds / preds.sum(dim=2, keepdim=True)
-
-    return Input(preds=preds, target=targets)
-
-
-__test_input = construct_not_terrible_input()
+seed_all(42)
 
 
 def recall_at_precision_x_multilabel(
-    precision: torch.Tensor, recall, thresholds: torch.Tensor, min_precision: float
+    predictions: torch.Tensor, targets: torch.Tensor, min_precision: float
 ) -> Tuple[float, float]:
+    precision, recall, thresholds = precision_recall_curve(
+        predictions, targets, pos_label=1
+    )
+
     try:
         max_recall, max_precision, best_threshold = max(
             (r, p, t)
@@ -64,13 +57,16 @@ def _multiclass_prob_sk_metric(predictions, targets, num_classes, min_precision)
     best_thresholds = torch.zeros(num_classes)
 
     for i in range(num_classes):
-        precisions, recalls, thresholds = precision_recall_curve(
-            predictions[:, i], targets[:, i], pos_label=1
-        )
         max_recalls[i], best_thresholds[i] = recall_at_precision_x_multilabel(
-            precisions, recalls, thresholds, min_precision
+            predictions[:, i], targets[:, i], min_precision
         )
     return max_recalls, best_thresholds
+
+
+def _binary_prob_sk_metric(predictions, targets, num_classes, min_precision):
+    return recall_at_precision_x_multilabel(
+        predictions, targets, min_precision
+    )
 
 
 def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
@@ -80,9 +76,17 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
     [
+        (_input_binary_prob.preds, _input_binary_prob.target, _binary_prob_sk_metric, 1),
+        (_input_binary_prob_plausible.preds, _input_binary_prob_plausible.target, _binary_prob_sk_metric, 1),
         (
-            __test_input.preds,
-            __test_input.target,
+            _input_multilabel_prob_plausible.preds,
+            _input_multilabel_prob_plausible.target,
+            _multiclass_prob_sk_metric,
+            NUM_CLASSES,
+        ),
+        (
+            _input_multilabel_prob.preds,
+            _input_multilabel_prob.target,
             _multiclass_prob_sk_metric,
             NUM_CLASSES,
         ),
@@ -90,20 +94,21 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
 )
 class TestBinnedRecallAtPrecision(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp):
-        self.atol = 0.05  # up to second decimal using 500 thresholds
+    @pytest.mark.parametrize("min_precision", [0.1, 0.3, 0.5])
+    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, min_precision):
+        self.atol = 0.05  # Binned and SKLearn implementations can produce different values
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=BinnedRecallAtFixedPrecision,
-            sk_metric=partial(sk_metric, num_classes=num_classes, min_precision=0.6),
+            sk_metric=partial(sk_metric, num_classes=num_classes, min_precision=min_precision),
             dist_sync_on_step=False,
             check_dist_sync_on_step=False,
             check_batch=False,
             metric_args={
                 "num_classes": num_classes,
-                "min_precision": 0.6,
+                "min_precision": min_precision,
                 "num_thresholds": 2000,
             },
         )
@@ -112,9 +117,17 @@ class TestBinnedRecallAtPrecision(MetricTester):
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
     [
+        (_input_binary_prob.preds, _input_binary_prob.target, _multiclass_average_precision_sk_metric, 1),
+        (_input_binary_prob_plausible.preds, _input_binary_prob_plausible.target, _multiclass_average_precision_sk_metric, 1),
         (
-            __test_input.preds,
-            __test_input.target,
+            _input_multilabel_prob_plausible.preds,
+            _input_multilabel_prob_plausible.target,
+            _multiclass_average_precision_sk_metric,
+            NUM_CLASSES,
+        ),
+        (
+            _input_multilabel_prob.preds,
+            _input_multilabel_prob.target,
             _multiclass_average_precision_sk_metric,
             NUM_CLASSES,
         ),
@@ -122,8 +135,9 @@ class TestBinnedRecallAtPrecision(MetricTester):
 )
 class TestBinnedAveragePrecision(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp):
-        self.atol = 0.01  # up to second decimal using 200 thresholds
+    @pytest.mark.parametrize("num_thresholds", [200, 300])
+    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, num_thresholds):
+        self.atol = 0.01
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -135,6 +149,6 @@ class TestBinnedAveragePrecision(MetricTester):
             check_batch=False,
             metric_args={
                 "num_classes": num_classes,
-                "num_thresholds": 200,
+                "num_thresholds": num_thresholds,
             },
         )

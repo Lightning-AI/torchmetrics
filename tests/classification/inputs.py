@@ -77,3 +77,29 @@ _input_multidim_multiclass = Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM))
 )
+
+
+# Generate plausible-looking inputs
+def generate_plausible_inputs_multilabel():
+    correct_targets = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))
+    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
+    targets = torch.zeros_like(preds, dtype=torch.long)
+    for i in range(preds.shape[0]):
+        for j in range(preds.shape[1]):
+            targets[i, j, correct_targets[i, j]] = 1
+    preds += torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES) * targets / 3
+
+    preds = preds / preds.sum(dim=2, keepdim=True)
+
+    return Input(preds=preds, target=targets)
+
+
+def generate_plausible_inputs_binary():
+    targets = torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
+    preds = torch.rand(NUM_BATCHES, BATCH_SIZE) + torch.rand(NUM_BATCHES, BATCH_SIZE) * targets / 3
+    return Input(preds=preds, target=targets)
+
+
+_input_multilabel_prob_plausible = generate_plausible_inputs_multilabel()
+
+_input_binary_prob_plausible = generate_plausible_inputs_binary()
