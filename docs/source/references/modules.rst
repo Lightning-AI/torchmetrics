@@ -59,8 +59,8 @@ the possible class labels are 0, 1, 2, 3, etc. Below are some examples of differ
     ml_target = torch.tensor([[0, 1, 1], [1, 0, 0], [0, 0, 0]])
 
 
-Using the is_multiclass parameter
----------------------------------
+Using the multiclass parameter
+------------------------------
 
 In some cases, you might have inputs which appear to be (multi-dimensional) multi-class
 but are actually binary/multi-label - for example, if both predictions and targets are
@@ -68,7 +68,7 @@ integer (binary) tensors. Or it could be the other way around, you want to treat
 binary/multi-label inputs as 2-class (multi-dimensional) multi-class inputs.
 
 For these cases, the metrics where this distinction would make a difference, expose the
-``is_multiclass`` argument. Let's see how this is used on the example of
+``multiclass`` argument. Let's see how this is used on the example of
 :class:`~torchmetrics.StatScores` metric.
 
 First, let's consider the case with label predictions with 2 classes, which we want to
@@ -83,7 +83,7 @@ treat as binary.
    target = torch.tensor([1, 1, 0])
 
 As you can see below, by default the inputs are treated
-as multi-class. We can set ``is_multiclass=False`` to treat the inputs as binary -
+as multi-class. We can set ``multiclass=False`` to treat the inputs as binary -
 which is the same as converting the predictions to float beforehand.
 
 .. doctest::
@@ -91,7 +91,7 @@ which is the same as converting the predictions to float beforehand.
     >>> stat_scores(preds, target, reduce='macro', num_classes=2)
     tensor([[1, 1, 1, 0, 1],
             [1, 0, 1, 1, 2]])
-    >>> stat_scores(preds, target, reduce='macro', num_classes=1, is_multiclass=False)
+    >>> stat_scores(preds, target, reduce='macro', num_classes=1, multiclass=False)
     tensor([[1, 0, 1, 1, 2]])
     >>> stat_scores(preds.float(), target, reduce='macro', num_classes=1)
     tensor([[1, 0, 1, 1, 2]])
@@ -104,13 +104,13 @@ but we would like to treat them as 2-class multi-class, to obtain the metric for
    preds  = torch.tensor([0.2, 0.7, 0.3])
    target = torch.tensor([1, 1, 0])
 
-In this case we can set ``is_multiclass=True``, to treat the inputs as multi-class.
+In this case we can set ``multiclass=True``, to treat the inputs as multi-class.
 
 .. doctest::
 
     >>> stat_scores(preds, target, reduce='macro', num_classes=1)
     tensor([[1, 0, 1, 1, 2]])
-    >>> stat_scores(preds, target, reduce='macro', num_classes=2, is_multiclass=True)
+    >>> stat_scores(preds, target, reduce='macro', num_classes=2, multiclass=True)
     tensor([[1, 1, 1, 0, 1],
             [1, 0, 1, 1, 2]])
 

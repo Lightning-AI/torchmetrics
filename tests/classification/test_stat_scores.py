@@ -35,10 +35,10 @@ from torchmetrics.utilities.checks import _input_format_classification
 seed_all(42)
 
 
-def _sk_stat_scores(preds, target, reduce, num_classes, is_multiclass, ignore_index, top_k, mdmc_reduce=None):
+def _sk_stat_scores(preds, target, reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce=None):
     # todo: `mdmc_reduce` is unused
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
     sk_preds, sk_target = preds.numpy(), target.numpy()
 
@@ -73,9 +73,9 @@ def _sk_stat_scores(preds, target, reduce, num_classes, is_multiclass, ignore_in
     return sk_stats
 
 
-def _sk_stat_scores_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, is_multiclass, ignore_index, top_k):
+def _sk_stat_scores_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multiclass, ignore_index, top_k):
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
 
     if mdmc_reduce == "global":
@@ -134,7 +134,7 @@ def test_wrong_threshold():
 @pytest.mark.parametrize("ignore_index", [None, 0])
 @pytest.mark.parametrize("reduce", ["micro", "macro", "samples"])
 @pytest.mark.parametrize(
-    "preds, target, sk_fn, mdmc_reduce, num_classes, is_multiclass, top_k",
+    "preds, target, sk_fn, mdmc_reduce, num_classes, multiclass, top_k",
     [
         (_input_binary_prob.preds, _input_binary_prob.target, _sk_stat_scores, None, 1, None, None),
         (_input_binary.preds, _input_binary.target, _sk_stat_scores, None, 1, False, None),
@@ -167,7 +167,7 @@ class TestStatScores(MetricTester):
         reduce: str,
         mdmc_reduce: Optional[str],
         num_classes: Optional[int],
-        is_multiclass: Optional[bool],
+        multiclass: Optional[bool],
         ignore_index: Optional[int],
         top_k: Optional[int],
     ):
@@ -184,7 +184,7 @@ class TestStatScores(MetricTester):
                 reduce=reduce,
                 mdmc_reduce=mdmc_reduce,
                 num_classes=num_classes,
-                is_multiclass=is_multiclass,
+                multiclass=multiclass,
                 ignore_index=ignore_index,
                 top_k=top_k,
             ),
@@ -194,7 +194,7 @@ class TestStatScores(MetricTester):
                 "reduce": reduce,
                 "mdmc_reduce": mdmc_reduce,
                 "threshold": THRESHOLD,
-                "is_multiclass": is_multiclass,
+                "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "top_k": top_k,
             },
@@ -210,7 +210,7 @@ class TestStatScores(MetricTester):
         reduce: str,
         mdmc_reduce: Optional[str],
         num_classes: Optional[int],
-        is_multiclass: Optional[bool],
+        multiclass: Optional[bool],
         ignore_index: Optional[int],
         top_k: Optional[int],
     ):
@@ -226,7 +226,7 @@ class TestStatScores(MetricTester):
                 reduce=reduce,
                 mdmc_reduce=mdmc_reduce,
                 num_classes=num_classes,
-                is_multiclass=is_multiclass,
+                multiclass=multiclass,
                 ignore_index=ignore_index,
                 top_k=top_k,
             ),
@@ -235,7 +235,7 @@ class TestStatScores(MetricTester):
                 "reduce": reduce,
                 "mdmc_reduce": mdmc_reduce,
                 "threshold": THRESHOLD,
-                "is_multiclass": is_multiclass,
+                "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "top_k": top_k,
             },
