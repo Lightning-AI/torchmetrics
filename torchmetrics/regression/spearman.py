@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Callable
+from typing import Any, Callable, Optional
 
 import torch
 from torch import Tensor
@@ -22,7 +22,7 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class SpearmanCorrcoef(Metric):
-    """
+    r"""
     Computes `spearmans rank correlation coefficient
     <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_.
 
@@ -57,7 +57,7 @@ class SpearmanCorrcoef(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        dist_sync_fn: Optional[Callable] = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -90,6 +90,6 @@ class SpearmanCorrcoef(Metric):
         """
         Computes spearmans correlation coefficient
         """
-        preds = torch.cat(self.y_pred, dim=0)
-        target = torch.cat(self.y, dim=0)
+        preds = torch.cat(self.preds, dim=0)
+        target = torch.cat(self.target, dim=0)
         return _spearman_corrcoef_compute(preds, target)

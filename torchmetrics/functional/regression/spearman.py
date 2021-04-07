@@ -13,6 +13,7 @@
 # limitations under the License.
 import torch
 from torch import Tensor
+
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -20,10 +21,13 @@ def _find_repeats(data: Tensor):
     """ find and return values which have repeats i.e. the same value are more than once in the tensor """
     temp = data.detach().clone()
     temp = temp.sort()[0]
-    
-    change = torch.cat([torch.tensor([True]), temp[1:] != temp[:-1]])
+
+    change = torch.cat([torch.tensor([True], device=temp.device), temp[1:] != temp[:-1]])
     unique = temp[change]
-    change_idx = torch.cat([torch.nonzero(change), torch.tensor([[temp.numel()]])]).flatten()
+    change_idx = torch.cat([
+        torch.nonzero(change), 
+        torch.tensor([[temp.numel()]], device=temp.device)
+    ]).flatten()
     freq = change_idx[1:] - change_idx[:-1]
     atleast2 = freq > 1
     return unique[atleast2]
@@ -32,21 +36,24 @@ def _find_repeats(data: Tensor):
 def _rank_data(data: Tensor):
     """ Calculate the rank for each element of a tensor. The rank refers to the indices of an element in the
     corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of
-    their rank 
-    
+    their rank
+
     Adopted from:
         https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
     """
     n = data.numel()
     rank = torch.empty_like(data)
     idx = data.argsort()
-    rank[idx[:n]] = torch.arange(1, n+1, dtype=torch.float)
-    
+    rank[idx[:n]] = torch.arange(1, n + 1, dtype=data.dtype, device=data.device)
+
     repeats = _find_repeats(data)
     for r in repeats:
-        condition = (data == r).filled(False)
+        import pdb
+        pdb.set_trace()
+        condition = rank == r
         rank[condition] = rank[condition].mean()
     return rank
+
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor):
     if preds.dtype != target.dtype:
@@ -55,25 +62,42 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor):
             f" Got pred: {preds.dtype} and target: {target.dtype}."
         )
     _check_same_shape(preds, target)
-    
+
     if preds.ndim > 1 or target.ndim > 1:
         raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
-    
+
     return preds, target
-    
+
+
 def _spearman_corrcoef_compute(preds: Tensor, target: Tensor):
     rank_preds = _rank_data(preds)
     rank_target = _rank_data(target)
-    
-    cov = ((rank_preds - rank_preds.mean()) * (rank_target - rank_target.mean())).sum()
+    cov = ((rank_preds - rank_preds.mean()) * (rank_target - rank_target.mean())).mean()
     return cov / (rank_preds.std() * rank_target.std())
-    
-    
+
+
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    """
-    
+    r"""
+     Computes `spearmans rank correlation coefficient
+    <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_.
+
+    .. math:
+        r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
+
+    where rg_x and rg_y are the rank associated to the variables x and y. Spearmans correlations coefficient
+    corresponds to the standard pearsons correlation coefficient calculated on the rank variables.
+
+    Args:
+        preds: estimated scores
+        target: ground truth scores
+
+    Example:
+        >>> from torchmetrics.functional import spearman_corrcoef
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> spearman_corrcoef(preds, target)
+        tensor(0.9849)
+
     """
     preds, target = _spearman_corrcoef_update(preds, target)
     return _spearman_corrcoef_compute(preds, target)
-    
-    
