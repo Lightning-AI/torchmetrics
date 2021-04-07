@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from deprecate import deprecated
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
@@ -121,6 +122,7 @@ class Precision(StatScores):
 
     """
 
+    @deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -134,6 +136,7 @@ class Precision(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
@@ -272,6 +275,7 @@ class Recall(StatScores):
 
     """
 
+    @deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -285,6 +289,7 @@ class Recall(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:

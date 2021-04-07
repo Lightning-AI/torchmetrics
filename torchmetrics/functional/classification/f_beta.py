@@ -14,6 +14,7 @@
 from typing import Optional
 
 import torch
+from deprecate import deprecated
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
@@ -70,6 +71,7 @@ def _fbeta_compute(
     )
 
 
+@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def fbeta(
     preds: Tensor,
     target: Tensor,
@@ -81,6 +83,7 @@ def fbeta(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes f_beta metric.
@@ -202,6 +205,7 @@ def fbeta(
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
+@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def f1(
     preds: Tensor,
     target: Tensor,
@@ -213,6 +217,7 @@ def f1(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """
     Computes F1 metric. F1 metrics correspond to a equally weighted average of the

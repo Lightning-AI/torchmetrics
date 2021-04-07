@@ -14,6 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
@@ -74,6 +75,7 @@ def _stat_scores(
     return tp.long(), fp.long(), tn.long(), fn.long()
 
 
+@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def _stat_scores_update(
     preds: Tensor,
     target: Tensor,
@@ -84,6 +86,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
 
     preds, target, _ = _input_format_classification(
@@ -137,6 +140,7 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
     return outputs
 
 
+@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def stat_scores(
     preds: Tensor,
     target: Tensor,
@@ -147,6 +151,7 @@ def stat_scores(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__

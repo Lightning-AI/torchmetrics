@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
+from deprecate import deprecated
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
@@ -128,6 +129,7 @@ class FBeta(StatScores):
 
     """
 
+    @deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -142,6 +144,7 @@ class FBeta(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
         self.beta = beta
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
@@ -270,6 +273,7 @@ class F1(FBeta):
         tensor(0.3333)
     """
 
+    @deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -283,6 +287,7 @@ class F1(FBeta):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
 
         super().__init__(

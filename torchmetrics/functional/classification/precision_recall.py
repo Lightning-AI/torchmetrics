@@ -14,6 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
+from deprecate import deprecated
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
@@ -38,6 +39,7 @@ def _precision_compute(
     )
 
 
+@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def precision(
     preds: Tensor,
     target: Tensor,
@@ -48,6 +50,7 @@ def precision(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -201,6 +204,7 @@ def _recall_compute(
     )
 
 
+@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def recall(
     preds: Tensor,
     target: Tensor,
@@ -211,6 +215,7 @@ def recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -345,6 +350,7 @@ def recall(
     return _recall_compute(tp, fp, tn, fn, average, mdmc_average)
 
 
+@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def precision_recall(
     preds: Tensor,
     target: Tensor,
@@ -355,6 +361,7 @@ def precision_recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor]:
     r"""
     Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
