@@ -160,7 +160,7 @@ class StatScores(Metric):
         self.mdmc_reduce = mdmc_reduce
         self.num_classes = num_classes
         self.threshold = threshold
-        self.is_multiclass = multiclass
+        self.multiclass = multiclass
         self.ignore_index = ignore_index
         self.top_k = top_k
 
@@ -209,7 +209,7 @@ class StatScores(Metric):
             threshold=self.threshold,
             num_classes=self.num_classes,
             top_k=self.top_k,
-            multiclass=self.is_multiclass,
+            multiclass=self.multiclass,
             ignore_index=self.ignore_index,
         )
 
