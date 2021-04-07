@@ -42,7 +42,7 @@ for size, channel, coef, multichannel, dtype in [
     ))
 
 
-def _sk_metric(preds, target, data_range, multichannel):
+def _sk_ssim(preds, target, data_range, multichannel):
     c, h, w = preds.shape[-3:]
     sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     sk_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -77,7 +77,7 @@ class TestSSIM(MetricTester):
             preds,
             target,
             SSIM,
-            partial(_sk_metric, data_range=1.0, multichannel=multichannel),
+            partial(_sk_ssim, data_range=1.0, multichannel=multichannel),
             metric_args={"data_range": 1.0},
             dist_sync_on_step=dist_sync_on_step,
         )
@@ -87,7 +87,7 @@ class TestSSIM(MetricTester):
             preds,
             target,
             ssim,
-            partial(_sk_metric, data_range=1.0, multichannel=multichannel),
+            partial(_sk_ssim, data_range=1.0, multichannel=multichannel),
             metric_args={"data_range": 1.0},
         )
 

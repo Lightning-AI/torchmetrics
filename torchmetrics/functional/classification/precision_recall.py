@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -47,7 +48,8 @@ def precision(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -68,11 +70,11 @@ def precision(
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -117,10 +119,10 @@ def precision(
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -152,6 +154,13 @@ def precision(
         tensor(0.2500)
 
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -175,7 +184,7 @@ def precision(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 
@@ -210,7 +219,8 @@ def recall(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -231,11 +241,11 @@ def recall(
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -280,10 +290,10 @@ def recall(
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -315,6 +325,13 @@ def recall(
         tensor(0.2500)
 
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -338,7 +355,7 @@ def recall(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 
@@ -354,7 +371,8 @@ def precision_recall(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor]:
     r"""
     Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -378,11 +396,11 @@ def precision_recall(
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -427,10 +445,10 @@ def precision_recall(
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -463,6 +481,13 @@ def precision_recall(
         (tensor(0.2500), tensor(0.2500))
 
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -486,7 +511,7 @@ def precision_recall(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 

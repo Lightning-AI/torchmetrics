@@ -22,7 +22,6 @@ from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import get_group_indexes
 
 #: get_group_indexes is used to group predictions belonging to the same document
-IGNORE_IDX = -100
 
 
 class RetrievalMetric(Metric, ABC):
@@ -31,9 +30,9 @@ class RetrievalMetric(Metric, ABC):
 
     Forward accepts
 
-    - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
+    - ``indexes`` (long tensor): ``(N, ...)``
 
     `indexes`, `preds` and `target` must have the same dimension and will be flatten
     to single dimension once provided.
@@ -44,15 +43,15 @@ class RetrievalMetric(Metric, ABC):
     will be computed as the mean of the scores over each query.
 
     Args:
-        query_without_relevant_docs:
-            Specify what to do with queries that do not have at least a positive target. Choose from:
+        empty_target_action:
+            Specify what to do with queries that do not have at least a positive
+            or negative (depend on metric) target. Choose from:
 
-            - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
+            - ``'neg'``: those queries count as ``0.0`` (default)
+            - ``'pos'``: those queries count as ``1.0``
+            - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
-            - ``'pos'``: score on those queries is counted as ``1.0``
-            - ``'neg'``: score on those queries is counted as ``0.0``
-        exclude:
-            Do not take into account predictions where the target is equal to this value. default `-100`
+
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -68,8 +67,7 @@ class RetrievalMetric(Metric, ABC):
 
     def __init__(
         self,
-        query_without_relevant_docs: str = 'skip',
-        exclude: int = IGNORE_IDX,
+        empty_target_action: str = 'neg',
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -82,58 +80,57 @@ class RetrievalMetric(Metric, ABC):
             dist_sync_fn=dist_sync_fn
         )
 
-        query_without_relevant_docs_options = ('error', 'skip', 'pos', 'neg')
-        if query_without_relevant_docs not in query_without_relevant_docs_options:
-            raise ValueError(f"`query_without_relevant_docs` received a wrong value {query_without_relevant_docs}.")
+        empty_target_action_options = ('error', 'skip', 'neg', 'pos')
+        if empty_target_action not in empty_target_action_options:
+            raise ValueError(f"`empty_target_action` received a wrong value `{empty_target_action}`.")
 
-        self.query_without_relevant_docs = query_without_relevant_docs
-        self.exclude = exclude
+        self.empty_target_action = empty_target_action
 
-        self.add_state("idx", default=[], dist_reduce_fx=None)
+        self.add_state("indexes", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, idx: Tensor, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor = None) -> None:
         """ Check shape, check and convert dtypes, flatten and add to accumulators. """
-        idx, preds, target = _check_retrieval_inputs(idx, preds, target, ignore=IGNORE_IDX)
-        self.idx.append(idx.flatten())
-        self.preds.append(preds.flatten())
-        self.target.append(target.flatten())
+        if indexes is None:
+            raise ValueError("`indexes` cannot be None")
+
+        indexes, preds, target = _check_retrieval_inputs(indexes, preds, target)
+
+        self.indexes.append(indexes)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self) -> Tensor:
         """
-        First concat state `idx`, `preds` and `target` since they were stored as lists. After that,
+        First concat state `indexes`, `preds` and `target` since they were stored as lists. After that,
         compute list of groups that will help in keeping together predictions about the same query.
         Finally, for each group compute the `_metric` if the number of positive targets is at least
-        1, otherwise behave as specified by `self.query_without_relevant_docs`.
+        1, otherwise behave as specified by `self.empty_target_action`.
         """
-        idx = torch.cat(self.idx, dim=0)
+        indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
 
         res = []
-        kwargs = {'device': idx.device, 'dtype': torch.float32}
+        groups = get_group_indexes(indexes)
 
-        groups = get_group_indexes(idx)
         for group in groups:
-
             mini_preds = preds[group]
             mini_target = target[group]
 
             if not mini_target.sum():
-                if self.query_without_relevant_docs == 'error':
+                if self.empty_target_action == 'error':
                     raise ValueError("`compute` method was provided with a query with no positive target.")
-                if self.query_without_relevant_docs == 'pos':
-                    res.append(tensor(1.0, **kwargs))
-                elif self.query_without_relevant_docs == 'neg':
-                    res.append(tensor(0.0, **kwargs))
+                if self.empty_target_action == 'pos':
+                    res.append(tensor(1.0))
+                elif self.empty_target_action == 'neg':
+                    res.append(tensor(0.0))
             else:
                 # ensure list containt only float tensors
-                res.append(self._metric(mini_preds, mini_target).to(**kwargs))
+                res.append(self._metric(mini_preds, mini_target))
 
-        if len(res) > 0:
-            return torch.stack(res).mean()
-        return tensor(0.0, **kwargs)
+        return torch.stack([x.to(preds) for x in res]).mean() if len(res) else tensor(0.0).to(preds)
 
     @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
