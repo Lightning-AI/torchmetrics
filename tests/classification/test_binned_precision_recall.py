@@ -21,12 +21,10 @@ import torch
 from sklearn.metrics import average_precision_score as _sk_average_precision_score
 from sklearn.metrics import precision_recall_curve as _sk_precision_recall_curve
 
-from tests.classification.inputs import (
-    _input_binary_prob,
-    _input_binary_prob_plausible as _input_binary_prob_ok,
-    _input_multilabel_prob as _input_mlb_prob,
-    _input_multilabel_prob_plausible as _input_mlb_prob_ok,
-)
+from tests.classification.inputs import _input_binary_prob
+from tests.classification.inputs import _input_binary_prob_plausible as _input_binary_prob_ok
+from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
+from tests.classification.inputs import _input_multilabel_prob_plausible as _input_mlb_prob_ok
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision, BinnedRecallAtFixedPrecision
