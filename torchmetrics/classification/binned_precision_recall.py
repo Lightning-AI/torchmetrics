@@ -75,17 +75,18 @@ class BinnedPrecisionRecallCurve(Metric):
 
     def compute(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Returns float tensor of size n_classes"""
-        precisions = self.TPs / (self.TPs + self.FPs + METRIC_EPS)
+        precisions = (self.TPs + METRIC_EPS) / (self.TPs + self.FPs + METRIC_EPS)
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
         # Need to guarantee that last precision=1 and recall=0
         precisions = torch.cat([precisions, torch.ones(self.num_classes, 1,
                                dtype=precisions.dtype, device=precisions.device)], dim=1)
         recalls = torch.cat([recalls, torch.zeros(self.num_classes, 1,
                             dtype=recalls.dtype, device=recalls.device)], dim=1)
+        thresholds = torch.cat([self.thresholds, torch.ones(1, dtype=recalls.dtype, device=recalls.device)], dim=0)
         if self.num_classes == 1:
-            return (precisions[0, :], recalls[0, :], self.thresholds)
+            return (precisions[0, :], recalls[0, :], thresholds)
         else:
-            return (precisions, recalls, self.thresholds)
+            return (precisions, recalls, thresholds)
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
@@ -123,7 +124,10 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
                 )
                 .max(dim=0)
             )
-            return recall_at_p, self.thresholds[index]
+            if recall_at_p == 0.0:
+                return recall_at_p, torch.scalar_tensor(1e6, device=condition.device)
+            else:
+                return recall_at_p, thresholds[index]
 
         recalls_at_p, indices = (
             torch.where(
@@ -137,6 +141,6 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             if recalls_at_p[i] == 0.0:
                 thresholds_at_p[i] = 1e6
             else:
-                thresholds_at_p[i] = self.thresholds[indices[i]]
+                thresholds_at_p[i] = thresholds[indices[i]]
 
         return (recalls_at_p, thresholds_at_p)

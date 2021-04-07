@@ -15,9 +15,11 @@
 from functools import partial
 from typing import Tuple
 
+import numpy as np
 import pytest
 import torch
 from sklearn.metrics import average_precision_score as _sk_average_precision_score
+from sklearn.metrics import precision_recall_curve as _sk_precision_recall_curve
 
 from tests.classification.inputs import (
     _input_binary_prob,
@@ -28,7 +30,6 @@ from tests.classification.inputs import (
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision, BinnedRecallAtFixedPrecision
-from torchmetrics.functional import precision_recall_curve
 
 seed_all(42)
 
@@ -36,8 +37,8 @@ seed_all(42)
 def recall_at_precision_x_multilabel(
     predictions: torch.Tensor, targets: torch.Tensor, min_precision: float
 ) -> Tuple[float, float]:
-    precision, recall, thresholds = precision_recall_curve(
-        predictions, targets, pos_label=1
+    precision, recall, thresholds = _sk_precision_recall_curve(
+        targets, predictions,
     )
 
     try:
@@ -49,7 +50,7 @@ def recall_at_precision_x_multilabel(
     except ValueError:
         max_recall, best_threshold = 0, 1e6
 
-    return max_recall, best_threshold
+    return float(max_recall), float(best_threshold)
 
 
 def _multiclass_prob_sk_metric(predictions, targets, num_classes, min_precision):
@@ -94,9 +95,11 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
 )
 class TestBinnedRecallAtPrecision(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("min_precision", [0.1, 0.3, 0.5])
+    @pytest.mark.parametrize("min_precision", [0.1, 0.3, 0.5, 0.8])
     def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, min_precision):
-        self.atol = 0.05  # Binned and SKLearn implementations can produce different values
+        self.atol = 0.01
+        # rounding will simulate binning for both implementations
+        preds = torch.Tensor(np.round(preds.numpy(), 2)) + 1e-6
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -109,7 +112,7 @@ class TestBinnedRecallAtPrecision(MetricTester):
             metric_args={
                 "num_classes": num_classes,
                 "min_precision": min_precision,
-                "num_thresholds": 2000,
+                "num_thresholds": 101,
             },
         )
 
