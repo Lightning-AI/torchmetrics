@@ -29,6 +29,7 @@ recursive-exclude requirements *.txt
 
 # Exclude build configs
 exclude *.yml
+exclude *.yaml
 exclude Makefile
 
 prune .git

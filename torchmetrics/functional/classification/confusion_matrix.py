@@ -21,14 +21,26 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
-def _confusion_matrix_update(preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5) -> Tensor:
+def _confusion_matrix_update(
+    preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
+) -> Tensor:
     preds, target, mode = _input_format_classification(preds, target, threshold)
     if mode not in (DataType.BINARY, DataType.MULTILABEL):
         preds = preds.argmax(dim=1)
         target = target.argmax(dim=1)
-    unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
-    bins = torch.bincount(unique_mapping, minlength=num_classes**2)
-    confmat = bins.reshape(num_classes, num_classes)
+
+    if multilabel:
+        unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_classes, device=preds.device)).flatten()
+        minlength = 4 * num_classes
+    else:
+        unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
+        minlength = num_classes**2
+
+    bins = torch.bincount(unique_mapping, minlength=minlength)
+    if multilabel:
+        confmat = bins.reshape(num_classes, 2, 2)
+    else:
+        confmat = bins.reshape(num_classes, num_classes)
     return confmat
 
 
@@ -54,17 +66,27 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
 
 
 def confusion_matrix(
-    preds: Tensor, target: Tensor, num_classes: int, normalize: Optional[str] = None, threshold: float = 0.5
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    normalize: Optional[str] = None,
+    threshold: float = 0.5,
+    multilabel: bool = False
 ) -> Tensor:
     """
-    Computes the confusion matrix. Works with binary, multiclass, and multilabel data.
-    Accepts probabilities from a model output or integer class values in prediction.
-    Works with multi-dimensional preds and target.
+    Computes the `confusion matrix
+    <https://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix>`_.  Works with binary,
+    multiclass, and multilabel data.  Accepts probabilities from a model output or integer class values in prediction.
+    Works with multi-dimensional preds and target, but it should be noted that additional dimensions will be flattened.
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
     to convert into integer labels. This is the case for binary and multi-label probabilities.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
+
+    If working with multilabel data, setting the `is_multilabel` argument to `True` will make sure that a
+    `confusion matrix gets calculated per label
+    <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html>`_.
 
     Args:
         preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
@@ -80,14 +102,35 @@ def confusion_matrix(
 
         threshold:
             Threshold value for binary or multi-label probabilities. default: 0.5
+        multilabel:
+            determines if data is multilabel or not.
 
-    Example:
-        >>> from torchmetrics.functional import confusion_matrix
+    Example (binary data):
+        >>> from torchmetrics import ConfusionMatrix
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confusion_matrix(preds, target, num_classes=2)
+        >>> confmat = ConfusionMatrix(num_classes=2)
+        >>> confmat(preds, target)
         tensor([[2., 0.],
                 [1., 1.]])
+
+    Example (multiclass data):
+        >>> target = torch.tensor([2, 1, 0, 0])
+        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> confmat = ConfusionMatrix(num_classes=3)
+        >>> confmat(preds, target)
+        tensor([[1., 1., 0.],
+                [0., 1., 0.],
+                [0., 0., 1.]])
+
+    Example (multilabel data):
+        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
+        >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        tensor([[[1., 0.], [0., 1.]],
+                [[1., 0.], [1., 0.]],
+                [[0., 1.], [0., 1.]]])
     """
-    confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
+    confmat = _confusion_matrix_update(preds, target, num_classes, threshold, multilabel)
     return _confusion_matrix_compute(confmat, normalize)
