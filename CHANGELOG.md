@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `ExplainedVariance` from storing all preds/targets to tracking 5 statistics ([#68](https://github.com/PyTorchLightning/metrics/pull/68))
 - Changed behaviour of `confusionmatrix` for multilabel data to better match `multilabel_confusion_matrix` from sklearn ([#134](https://github.com/PyTorchLightning/metrics/pull/134))
 - Updated FBeta arguments ([#111](https://github.com/PyTorchLightning/metrics/pull/111))
+- Calling `compute` before `update` will now return 0 and give an warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
 
 ### Deprecated
 
