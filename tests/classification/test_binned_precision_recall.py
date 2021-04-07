@@ -23,9 +23,9 @@ from sklearn.metrics import precision_recall_curve as _sk_precision_recall_curve
 
 from tests.classification.inputs import (
     _input_binary_prob,
-    _input_binary_prob_plausible,
-    _input_multilabel_prob,
-    _input_multilabel_prob_plausible,
+    _input_binary_prob_plausible as _input_binary_prob_ok,
+    _input_multilabel_prob as _input_mlb_prob,
+    _input_multilabel_prob_plausible as _input_mlb_prob_ok,
 )
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
@@ -78,16 +78,16 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
     "preds, target, sk_metric, num_classes",
     [
         (_input_binary_prob.preds, _input_binary_prob.target, _binary_prob_sk_metric, 1),
-        (_input_binary_prob_plausible.preds, _input_binary_prob_plausible.target, _binary_prob_sk_metric, 1),
+        (_input_binary_prob_ok.preds, _input_binary_prob_ok.target, _binary_prob_sk_metric, 1),
         (
-            _input_multilabel_prob_plausible.preds,
-            _input_multilabel_prob_plausible.target,
+            _input_mlb_prob_ok.preds,
+            _input_mlb_prob_ok.target,
             _multiclass_prob_sk_metric,
             NUM_CLASSES,
         ),
         (
-            _input_multilabel_prob.preds,
-            _input_multilabel_prob.target,
+            _input_mlb_prob.preds,
+            _input_mlb_prob.target,
             _multiclass_prob_sk_metric,
             NUM_CLASSES,
         ),
@@ -122,20 +122,20 @@ class TestBinnedRecallAtPrecision(MetricTester):
     [
         (_input_binary_prob.preds, _input_binary_prob.target, _multiclass_average_precision_sk_metric, 1),
         (
-            _input_binary_prob_plausible.preds,
-            _input_binary_prob_plausible.target,
+            _input_binary_prob_ok.preds,
+            _input_binary_prob_ok.target,
             _multiclass_average_precision_sk_metric,
             1,
         ),
         (
-            _input_multilabel_prob_plausible.preds,
-            _input_multilabel_prob_plausible.target,
+            _input_mlb_prob_ok.preds,
+            _input_mlb_prob_ok.target,
             _multiclass_average_precision_sk_metric,
             NUM_CLASSES,
         ),
         (
-            _input_multilabel_prob.preds,
-            _input_multilabel_prob.target,
+            _input_mlb_prob.preds,
+            _input_mlb_prob.target,
             _multiclass_average_precision_sk_metric,
             NUM_CLASSES,
         ),
