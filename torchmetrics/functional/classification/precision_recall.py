@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple
+from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
@@ -39,7 +39,6 @@ def _precision_compute(
     )
 
 
-@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def precision(
     preds: Tensor,
     target: Tensor,
@@ -155,6 +154,13 @@ def precision(
         tensor(0.2500)
 
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -204,7 +210,6 @@ def _recall_compute(
     )
 
 
-@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def recall(
     preds: Tensor,
     target: Tensor,
@@ -320,6 +325,13 @@ def recall(
         tensor(0.2500)
 
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -350,7 +362,6 @@ def recall(
     return _recall_compute(tp, fp, tn, fn, average, mdmc_average)
 
 
-@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def precision_recall(
     preds: Tensor,
     target: Tensor,
@@ -470,6 +481,13 @@ def precision_recall(
         (tensor(0.2500), tensor(0.2500))
 
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

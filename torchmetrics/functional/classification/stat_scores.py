@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple
+from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
@@ -75,7 +75,6 @@ def _stat_scores(
     return tp.long(), fp.long(), tn.long(), fn.long()
 
 
-@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def _stat_scores_update(
     preds: Tensor,
     target: Tensor,
@@ -88,6 +87,12 @@ def _stat_scores_update(
     ignore_index: Optional[int] = None,
     is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
 
     preds, target, _ = _input_format_classification(
         preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
@@ -140,7 +145,6 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
     return outputs
 
 
-@deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
 def stat_scores(
     preds: Tensor,
     target: Tensor,
@@ -276,6 +280,12 @@ def stat_scores(
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
 
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")

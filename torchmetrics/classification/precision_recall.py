@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
@@ -122,7 +122,6 @@ class Precision(StatScores):
 
     """
 
-    @deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -138,6 +137,13 @@ class Precision(StatScores):
         dist_sync_fn: Callable = None,
         is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        if is_multiclass is not None and multiclass is None:
+            warn(
+                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+                DeprecationWarning
+            )
+            multiclass = is_multiclass
+
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -275,7 +281,6 @@ class Recall(StatScores):
 
     """
 
-    @deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -291,6 +296,13 @@ class Recall(StatScores):
         dist_sync_fn: Callable = None,
         is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        if is_multiclass is not None and multiclass is None:
+            warn(
+                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+                DeprecationWarning
+            )
+            multiclass = is_multiclass
+
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

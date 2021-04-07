@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional, Tuple
+from warnings import warn
 
 import numpy as np
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
@@ -133,7 +133,6 @@ class StatScores(Metric):
 
     """
 
-    @deprecated(target=True, deprecated_in="0.3.0", remove_in="0.4.0", args_mapping={"is_multiclass": "multiclass"})
     def __init__(
         self,
         threshold: float = 0.5,
@@ -149,6 +148,13 @@ class StatScores(Metric):
         dist_sync_fn: Callable = None,
         is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        if is_multiclass is not None and multiclass is None:
+            warn(
+                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+                DeprecationWarning
+            )
+            multiclass = is_multiclass
+
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
