@@ -127,7 +127,7 @@ AveragePrecision
     :noindex:
 
 BinnedAveragePrecision
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BinnedAveragePrecision
     :noindex:
@@ -205,7 +205,7 @@ PrecisionRecallCurve
     :noindex:
 
 BinnedPrecisionRecallCurve
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BinnedPrecisionRecallCurve
     :noindex:
