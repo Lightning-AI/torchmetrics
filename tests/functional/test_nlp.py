@@ -63,11 +63,11 @@ def test_bleu_score(weights, n_gram, smooth_func, smooth):
         smoothing_function=smooth_func,
     )
     pl_output = bleu_score([HYPOTHESIS1], [[REFERENCE1, REFERENCE2, REFERENCE3]], n_gram=n_gram, smooth=smooth)
-    assert torch.allclose(pl_output, tensor(nltk_output))
+    assert torch.allclose(pl_output, tensor(nltk_output), atol=1e-3)
 
     nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
     pl_output = bleu_score(HYPOTHESES, LIST_OF_REFERENCES, n_gram=n_gram, smooth=smooth)
-    assert torch.allclose(pl_output, tensor(nltk_output))
+    assert torch.allclose(pl_output, tensor(nltk_output), atol=1e-3)
 
 
 def test_bleu_empty():
