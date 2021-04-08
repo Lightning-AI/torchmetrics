@@ -16,11 +16,13 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.accuracy import _accuracy_compute, _accuracy_update
-from torchmetrics.metric import Metric
+from torchmetrics.functional.classification.accuracy import (
+    _subset_accuracy_compute, _subset_accuracy_update, _mode, _accuracy_update, _accuracy_compute
+)
+from torchmetrics.classification.stat_scores import StatScores
 
 
-class Accuracy(Metric):
+class Accuracy(StatScores):
     r"""
     Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`__:
 
@@ -103,15 +105,31 @@ class Accuracy(Metric):
 
     def __init__(
         self,
+        num_classes: Optional[int] = None,
         threshold: float = 0.5,
+        average: str = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
+        is_multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ):
+        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        if average not in allowed_average:
+            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
         super().__init__(
+            reduce="macro" if average in ["weighted", "none", None] else average,
+            mdmc_reduce=mdmc_average,
+            threshold=threshold,
+            top_k=top_k,
+            num_classes=num_classes,
+            is_multiclass=is_multiclass,
+            ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
@@ -127,9 +145,11 @@ class Accuracy(Metric):
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
+        self.average = average
         self.threshold = threshold
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
+        self.mode = None
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -141,15 +161,52 @@ class Accuracy(Metric):
             target: Ground truth labels
         """
 
-        correct, total = _accuracy_update(
-            preds, target, threshold=self.threshold, top_k=self.top_k, subset_accuracy=self.subset_accuracy
-        )
+        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.is_multiclass)
 
-        self.correct += correct
-        self.total += total
+        if self.mode == None:
+            self.mode = mode
+        elif self.mode == None:
+            raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
+        
+        if self.subset_accuracy:
+            correct, total = _subset_accuracy_update(
+                preds, target, threshold=self.threshold, top_k=self.top_k, subset_accuracy=self.subset_accuracy
+            )
+            self.correct += correct
+            self.total += total
+        else:
+            tp, fp, tn, fn = _accuracy_update(
+                preds,
+                target,
+                reduce=self.reduce,
+                mdmc_reduce=self.mdmc_reduce,
+                threshold=self.threshold,
+                num_classes=self.num_classes,
+                top_k=self.top_k,
+                is_multiclass=self.is_multiclass,
+                ignore_index=self.ignore_index,
+                subset_accuracy=self.subset_accuracy,
+                mode=self.mode,
+            )
+
+            # Update states
+            if self.reduce != "samples" and self.mdmc_reduce != "samplewise":
+                self.tp += tp
+                self.fp += fp
+                self.tn += tn
+                self.fn += fn
+            else:
+                self.tp.append(tp)
+                self.fp.append(fp)
+                self.tn.append(tn)
+                self.fn.append(fn)
 
     def compute(self) -> Tensor:
         """
         Computes accuracy based on inputs passed in to ``update`` previously.
         """
-        return _accuracy_compute(self.correct, self.total)
+        if self.subset_accuracy:
+            return _subset_accuracy_compute(self.correct, self.total)
+        else:
+            tp, fp, tn, fn = self._get_final_stats()
+            return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)

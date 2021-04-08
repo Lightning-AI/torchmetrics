@@ -16,42 +16,96 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.checks import _input_format_classification, _check_classification_inputs
 from torchmetrics.utilities.enums import DataType
+from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.classification.stat_scores import _reduce_stat_scores
+
+
+def _mode(
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    threshold: float,
+    top_k: Optional[int],
+    num_classes: Optional[int],
+    is_multiclass: Optional[bool]
+) -> DataType:
+    mode = _check_classification_inputs(
+        preds, target, threshold=threshold, top_k=top_k, num_classes=num_classes, is_multiclass=is_multiclass
+    )
+    return mode
 
 
 def _accuracy_update(
-    preds: Tensor,
-    target: Tensor,
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    reduce: str,
+    mdmc_reduce: str,
     threshold: float,
+    num_classes: Optional[int],
     top_k: Optional[int],
+    is_multiclass: Optional[bool],
+    ignore_index: Optional[int],
     subset_accuracy: bool,
-) -> Tuple[Tensor, Tensor]:
+    mode: DataType
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    if mode == DataType.MULTILABEL and top_k:
+        raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
+
+    tp, fp, tn, fn = _stat_scores_update(
+        preds,
+        target,
+        reduce=reduce,
+        mdmc_reduce=mdmc_reduce,
+        threshold=threshold,
+        num_classes=num_classes,
+        top_k=top_k,
+        is_multiclass=is_multiclass,
+        ignore_index=ignore_index,
+    )
+    return tp, fp, tn, fn
+
+
+def _accuracy_compute(
+    tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor, average: str, mdmc_average: str, mode: DataType
+) -> torch.Tensor:
+    simple_average = ["micro", "samples"]
+    if (mode == DataType.BINARY and average in simple_average) or mode == DataType.MULTILABEL:
+        numerator = tp + tn
+        denominator = tp + tn + fp + fn
+    else:
+        numerator = tp
+        denominator = tp + fn
+    return _reduce_stat_scores(
+        numerator=numerator,
+        denominator=denominator,
+        weights=None if average != "weighted" else tp + fn,
+        average=average,
+        mdmc_average=mdmc_average,
+    )
+
+
+def _subset_accuracy_update(
+    preds: torch.Tensor, target: torch.Tensor, threshold: float, top_k: Optional[int], subset_accuracy: bool
+) -> Tuple[torch.Tensor, torch.Tensor]:
 
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
-    correct, total = None, None
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
 
-    if mode == DataType.BINARY or (mode == DataType.MULTILABEL and subset_accuracy):
+    if (mode == DataType.MULTILABEL and subset_accuracy):
         correct = (preds == target).all(dim=1).sum()
-        total = tensor(target.shape[0], device=target.device)
-    elif mode == DataType.MULTILABEL and not subset_accuracy:
-        correct = (preds == target).sum()
-        total = tensor(target.numel(), device=target.device)
-    elif mode == DataType.MULTICLASS or (mode == DataType.MULTIDIM_MULTICLASS and not subset_accuracy):
-        correct = (preds * target).sum()
-        total = target.sum()
+        total = torch.tensor(target.shape[0], device=target.device)
     elif mode == DataType.MULTIDIM_MULTICLASS and subset_accuracy:
         sample_correct = (preds * target).sum(dim=(1, 2))
         correct = (sample_correct == target.shape[2]).sum()
-        total = tensor(target.shape[0], device=target.device)
+        total = torch.tensor(target.shape[0], device=target.device)
 
     return correct, total
 
 
-def _accuracy_compute(correct: Tensor, total: Tensor) -> Tensor:
+def _subset_accuracy_compute(correct: torch.Tensor, total: torch.Tensor) -> torch.Tensor:
     return correct.float() / total
 
 
@@ -61,6 +115,8 @@ def accuracy(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     subset_accuracy: bool = False,
+    num_classes: Optional[int] = None,
+    is_multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`_:
 
@@ -126,5 +182,10 @@ def accuracy(
         tensor(0.6667)
     """
 
-    correct, total = _accuracy_update(preds, target, threshold, top_k, subset_accuracy)
-    return _accuracy_compute(correct, total)
+    if self.subset_accuracy:
+        correct, total = _accuracy_update(preds, target, threshold, top_k, subset_accuracy)
+        return _subset_accuracy_compute(correct, total)
+    else:
+        tp, fp, tn, fn = self._get_final_stats()
+        mode = _mode(preds, target, threshold, top_k, num_classes, is_multiclass)
+        return _accuracy_compute(tp, fp, tn, fn, average, mdmc_reduce, mode)
