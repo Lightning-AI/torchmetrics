@@ -265,8 +265,9 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=5, num_thresholds=10, min_precision=0.5)
-        >>> average_precision(pred, target)
-        (tensor([1.0000, 1.0000, 0.0000, 0.0000, 0.0000]), tensor([6.6667e-01, 6.6667e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        >>> average_precision(pred, target)   # doctest: +NORMALIZE_WHITESPACE
+        (tensor([1.0000, 1.0000, 0.0000, 0.0000, 0.0000]),
+        tensor([6.6667e-01, 6.6667e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
     """
     def __init__(
         self,
