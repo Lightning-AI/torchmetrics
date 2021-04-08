@@ -70,7 +70,7 @@ def _binary_prob_sk_metric(predictions, targets, num_classes, min_precision):
 
 def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
     # replace nan with 0
-    return torch.nan_to_num(_sk_average_precision_score(targets, predictions, average=None))
+    return np.nan_to_num(_sk_average_precision_score(targets, predictions, average=None))
 
 
 @pytest.mark.parametrize(
