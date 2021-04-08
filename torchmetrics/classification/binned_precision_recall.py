@@ -182,6 +182,9 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     curve into one number. Works for both binary and multiclass problems.
     In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
+    Computation is performed in constant-memory by computing precision and recall
+    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+
     Forward accepts
 
     - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
@@ -192,6 +195,8 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     Args:
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
+        num_thresholds: number of bins used for computation. More bins will lead to more detailed
+            curve and accurate estimates, but will be slower and consume more memory. Default 100
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         process_group:
@@ -222,6 +227,47 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
 
 
 class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
+    """
+    Computes the higest possible recall value given the minimum precision thresholds provided.
+
+    Computation is performed in constant-memory by computing precision and recall
+    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+
+    Forward accepts
+
+    - ``preds`` (float tensor): ``(N, ...)`` (binary) or ``(N, C, ...)`` (multiclass) tensor
+      with probabilities, where C is the number of classes.
+
+    - ``target`` (long tensor): ``(N, ...)`` with integer labels
+
+    Args:
+        num_classes: integer with number of classes. Provide 1 for for binary problems.
+        min_precision: float value specifying minimum precision threshold.
+        num_thresholds: number of bins used for computation. More bins will lead to more detailed
+            curve and accurate estimates, but will be slower and consume more memory. Default 100
+        compute_on_step:
+            Forward only calls ``update()`` and return None if this is set to False. default: True
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+
+    Example (binary case):
+        >>> from torchmetrics import BinnedRecallAtFixedPrecision
+        >>> pred = torch.tensor([0, 0.2, 0.5, 0.8])
+        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=1, num_thresholds=10, min_precision=0.5)
+        >>> average_precision(pred, target)
+        (tensor(1.0000), tensor(0.1111))
+
+    Example (multiclass case):
+        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=5, num_thresholds=10, min_precision=0.5)
+        >>> average_precision(pred, target)
+        (tensor([1.0000, 1.0000, 0.0000, 0.0000, 0.0000]), tensor([6.6667e-01, 6.6667e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+    """
     def __init__(
         self,
         num_classes: int,
