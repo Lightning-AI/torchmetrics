@@ -69,7 +69,8 @@ def _binary_prob_sk_metric(predictions, targets, num_classes, min_precision):
 
 
 def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
-    return _sk_average_precision_score(targets, predictions, average=None)
+    # replace nan with 0
+    return torch.nan_to_num(_sk_average_precision_score(targets, predictions, average=None))
 
 
 @pytest.mark.parametrize(
@@ -93,20 +94,20 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
 )
 class TestBinnedRecallAtPrecision(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, min_precision):
+    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision):
         self.atol = 0.02
         # rounding will simulate binning for both implementations
         preds = torch.Tensor(np.round(preds.numpy(), 2)) + 1e-6
+
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=BinnedRecallAtFixedPrecision,
             sk_metric=partial(sk_metric, num_classes=num_classes, min_precision=min_precision),
-            dist_sync_on_step=False,
-            check_dist_sync_on_step=False,
-            check_batch=False,
+            dist_sync_on_step=dist_sync_on_step,
             metric_args={
                 "num_classes": num_classes,
                 "min_precision": min_precision,
@@ -141,8 +142,9 @@ class TestBinnedRecallAtPrecision(MetricTester):
 )
 class TestBinnedAveragePrecision(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("num_thresholds", [101, 301])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, num_thresholds):
+    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, num_thresholds):
         self.atol = 0.02
         # rounding will simulate binning for both implementations
         preds = torch.Tensor(np.round(preds.numpy(), 2)) + 1e-6
@@ -153,9 +155,7 @@ class TestBinnedAveragePrecision(MetricTester):
             target=target,
             metric_class=BinnedAveragePrecision,
             sk_metric=partial(sk_metric, num_classes=num_classes),
-            dist_sync_on_step=False,
-            check_dist_sync_on_step=False,
-            check_batch=False,
+            dist_sync_on_step=dist_sync_on_step,
             metric_args={
                 "num_classes": num_classes,
                 "num_thresholds": num_thresholds,

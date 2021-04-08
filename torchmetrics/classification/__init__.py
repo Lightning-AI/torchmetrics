@@ -26,3 +26,4 @@ from torchmetrics.classification.precision_recall import Precision, Recall  # no
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.roc import ROC  # noqa: F401
 from torchmetrics.classification.stat_scores import StatScores  # noqa: F401
+from torchmetrics.classification.binned_precision_recall import BinnedPrecisionRecallCurve, BinnedAveragePrecision, BinnedRecallAtFixedPrecision # noqa: F401

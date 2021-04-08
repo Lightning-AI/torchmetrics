@@ -97,7 +97,7 @@ def generate_plausible_inputs_multilabel(num_classes=NUM_CLASSES, num_batches=NU
 def generate_plausible_inputs_binary(num_batches=NUM_BATCHES, batch_size=BATCH_SIZE):
     targets = torch.randint(high=2, size=(num_batches, batch_size))
     preds = torch.rand(num_batches, batch_size) + torch.rand(num_batches, batch_size) * targets / 3
-    return Input(preds=preds, target=targets)
+    return Input(preds=preds / (preds.max() + 0.01), target=targets)
 
 
 _input_multilabel_prob_plausible = generate_plausible_inputs_multilabel()

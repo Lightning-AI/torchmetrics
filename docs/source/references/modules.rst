@@ -126,6 +126,12 @@ AveragePrecision
 .. autoclass:: torchmetrics.AveragePrecision
     :noindex:
 
+BinnedAveragePrecision
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedAveragePrecision
+    :noindex:
+
 AUC
 ~~~
 
@@ -196,6 +202,12 @@ PrecisionRecallCurve
 ~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.PrecisionRecallCurve
+    :noindex:
+
+BinnedPrecisionRecallCurve
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedPrecisionRecallCurve
     :noindex:
 
 Recall
