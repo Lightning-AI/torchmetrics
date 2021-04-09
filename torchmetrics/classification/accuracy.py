@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.accuracy import (
-    _subset_accuracy_compute, _subset_accuracy_update, _mode, _accuracy_update, _accuracy_compute
+    _subset_accuracy_compute, _subset_accuracy_update, _mode, _accuracy_update, _accuracy_compute, _check_subset_validity
 )
 from torchmetrics.classification.stat_scores import StatScores
 
@@ -167,10 +167,13 @@ class Accuracy(StatScores):
             self.mode = mode
         elif self.mode == None:
             raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
-        
+
+        if self.subset_accuracy and not _check_subset_validity(self.mode, preds, target):
+            self.subset_accuracy = False
+
         if self.subset_accuracy:
             correct, total = _subset_accuracy_update(
-                preds, target, threshold=self.threshold, top_k=self.top_k, subset_accuracy=self.subset_accuracy
+                preds, target, threshold=self.threshold, top_k=self.top_k,
             )
             self.correct += correct
             self.total += total
@@ -185,7 +188,6 @@ class Accuracy(StatScores):
                 top_k=self.top_k,
                 is_multiclass=self.is_multiclass,
                 ignore_index=self.ignore_index,
-                subset_accuracy=self.subset_accuracy,
                 mode=self.mode,
             )
 
