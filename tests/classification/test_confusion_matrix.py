@@ -125,7 +125,7 @@ class TestConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_confusion_matrix(
-            self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step
+        self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step
     ):
         self.run_class_metric_test(
             ddp=ddp,
