@@ -17,7 +17,8 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.accuracy import (
-    _subset_accuracy_compute, _subset_accuracy_update, _mode, _accuracy_update, _accuracy_compute, _check_subset_validity
+    _subset_accuracy_compute, _subset_accuracy_update, _mode, _accuracy_update, _accuracy_compute,
+    _check_subset_validity
 )
 from torchmetrics.classification.stat_scores import StatScores
 
@@ -108,7 +109,7 @@ class Accuracy(StatScores):
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
         average: str = "micro",
-        mdmc_average: Optional[str] = None,
+        mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         is_multiclass: Optional[bool] = None,
@@ -150,6 +151,7 @@ class Accuracy(StatScores):
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
         self.mode = None
+        self.is_multiclass = is_multiclass
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -163,9 +165,9 @@ class Accuracy(StatScores):
 
         mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.is_multiclass)
 
-        if self.mode == None:
+        if self.mode is None:
             self.mode = mode
-        elif self.mode == None:
+        elif self.mode != mode:
             raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
 
         if self.subset_accuracy and not _check_subset_validity(self.mode, preds, target):

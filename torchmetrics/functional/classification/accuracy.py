@@ -24,8 +24,8 @@ from torchmetrics.classification.stat_scores import _reduce_stat_scores
 
 def _check_subset_validity(mode, preds, target):
     return (
-        mode == DataType.MULTILABEL or
-        mode == DataType.MULTIDIM_MULTICLASS 
+        mode == DataType.MULTILABEL
+        or mode == DataType.MULTIDIM_MULTICLASS
     )
 
 
@@ -38,7 +38,7 @@ def _mode(
     is_multiclass: Optional[bool]
 ) -> DataType:
     mode = _check_classification_inputs(
-        preds, target, threshold=threshold, top_k=top_k, num_classes=num_classes, is_multiclass=is_multiclass
+        preds, target, threshold=threshold, top_k=top_k, num_classes=num_classes, multiclass=is_multiclass
     )
     return mode
 
@@ -122,7 +122,7 @@ def accuracy(
     preds: Tensor,
     target: Tensor,
     average: str = "micro",
-    mdmc_average: Optional[str] = None,
+    mdmc_average: Optional[str] = "global",
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     subset_accuracy: bool = False,
