@@ -22,7 +22,7 @@ from torchmetrics.utilities.enums import DataType
 
 
 def _confusion_matrix_update(
-        preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
+    preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
 ) -> Tensor:
     preds, target, mode = _input_format_classification(preds, target, threshold)
     if mode not in (DataType.BINARY, DataType.MULTILABEL):
@@ -34,7 +34,7 @@ def _confusion_matrix_update(
         minlength = 4 * num_classes
     else:
         unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
-        minlength = num_classes ** 2
+        minlength = num_classes**2
 
     bins = torch.bincount(unique_mapping, minlength=minlength)
     if multilabel:
