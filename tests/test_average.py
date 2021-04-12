@@ -75,6 +75,7 @@ class TestAverageMeter(MetricTester):
         )
 
 
+@pytest.mark.skipif(not hasattr(torch, "broadcast_to"), reason="PyTorch <1.8 does not have broadcast_to")
 @pytest.mark.parametrize(
     "weights, expected", [(1, 11.5), (torch.ones(2, 1, 1), 11.5), (torch.tensor([1, 2]).reshape(2, 1, 1), 13.5)]
 )

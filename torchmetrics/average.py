@@ -94,7 +94,14 @@ class AverageMeter(Metric):
         if not isinstance(weight, Tensor):
             weight = torch.as_tensor(weight, dtype=torch.float32, device=self.weight.device)
 
-        weight = torch.broadcast_to(weight, value.shape)
+        # braodcast_to only supported on PyTorch 1.8+
+        if not hasattr(torch, "broadcast_to"):
+            if weight.shape == ():
+                weight = torch.ones_like(value) * weight
+            if weight.shape != value.shape:
+                raise ValueError("Broadcasting not supported on PyTorch <1.8")
+        else:
+            weight = torch.broadcast_to(weight, value.shape)
 
         self.value += (value * weight).sum()
         self.weight += weight.sum()
