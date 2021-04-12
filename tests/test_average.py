@@ -4,10 +4,26 @@ import torch
 
 from tests.helpers.testers import MetricTester, NUM_BATCHES, BATCH_SIZE
 from torchmetrics.average import AverageMeter
+from torchmetrics import Metric
 
 
 def average(values, weights):
     return np.average(values, weights=weights)
+
+
+def average_ignore_weights(values, weights):
+    return np.average(values)
+
+
+class DefaultWeightWrapper(AverageMeter):
+    def update(self, values, weights):
+        super().update(values)
+
+
+class ScalarWrapper(AverageMeter):
+    def update(self, values, weights):
+        for v, w in zip(torch.ravel(values), torch.ravel(weights)):
+            super().update(v.item(), w.item())
 
 
 @pytest.mark.parametrize(
@@ -26,6 +42,32 @@ class TestAverageMeter(MetricTester):
             ddp=ddp,
             dist_sync_on_step=dist_sync_on_step,
             metric_class=AverageMeter,
+            sk_metric=average,
+            # Abuse of names here
+            preds=values,
+            target=weights,
+        )
+
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    def test_average_fn_default(self, ddp, dist_sync_on_step, values, weights):
+        self.run_class_metric_test(
+            ddp=ddp,
+            dist_sync_on_step=dist_sync_on_step,
+            metric_class=DefaultWeightWrapper,
+            sk_metric=average_ignore_weights,
+            # Abuse of names here
+            preds=values,
+            target=weights,
+        )
+
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    def test_average_fn_scalar(self, ddp, dist_sync_on_step, values, weights):
+        self.run_class_metric_test(
+            ddp=ddp,
+            dist_sync_on_step=dist_sync_on_step,
+            metric_class=ScalarWrapper,
             sk_metric=average,
             # Abuse of names here
             preds=values,
