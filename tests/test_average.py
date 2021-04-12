@@ -4,7 +4,6 @@ import torch
 
 from tests.helpers.testers import MetricTester, NUM_BATCHES, BATCH_SIZE
 from torchmetrics.average import AverageMeter
-from torchmetrics import Metric
 
 
 def average(values, weights):
