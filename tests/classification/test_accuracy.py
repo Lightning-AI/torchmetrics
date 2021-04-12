@@ -141,7 +141,7 @@ def test_topk_accuracy(preds, target, exp_result, k, subset_accuracy):
 
     for batch in range(preds.shape[0]):
         topk(preds[batch], target[batch])
-
+    print(topk.compute(), exp_result)
     assert topk.compute() == exp_result
 
     # Test functional
@@ -188,3 +188,73 @@ def test_wrong_params(top_k, threshold):
 
     with pytest.raises(ValueError):
         accuracy(preds, target, threshold=threshold, top_k=top_k)
+
+
+_ml_t1 = [.8, .2, .8, .2]
+_ml_t2 = [_ml_t1, _ml_t1]
+_ml_ta2 = [[1, 0, 1, 1], [0, 1, 1, 0]]
+_av_preds_ml = tensor([_ml_t2, _ml_t2]).float()
+_av_target_ml = tensor([_ml_ta2, _ml_ta2])
+
+_bin_t1 = [0.7, 0.6, 0.2, 0.1]
+_av_preds_bin = tensor([_bin_t1, _bin_t1]).float()
+_av_target_bin = tensor([[1, 0, 0, 0], [0, 1, 1, 0]])
+
+
+@pytest.mark.parametrize(
+    "preds, target, num_classes, exp_result, average, mdmc_average",
+    [
+        (_topk_preds_mcls, _topk_target_mcls, 4, 1 / 4, "macro", None),
+        (_topk_preds_mcls, _topk_target_mcls, 4, 1 / 6, "weighted", None),
+        (_topk_preds_mcls, _topk_target_mcls, 4, [0., 0., 0., 1.], "none", None),
+        (_topk_preds_mdmc, _topk_target_mdmc, 4, 1 / 24, "macro", "samplewise"),
+        (_topk_preds_mdmc, _topk_target_mdmc, 4, 1 / 6, "weighted", "samplewise"),
+        (_topk_preds_mdmc, _topk_target_mdmc, 4, [0., 0., 0., 1 / 6], "none", "samplewise"),
+        (_av_preds_ml, _av_target_ml, 4, 5 / 8, "macro", None),
+        (_av_preds_ml, _av_target_ml, 4, 0.70000005, "weighted", None),
+        (_av_preds_ml, _av_target_ml, 4, [1 / 2, 1 / 2, 1., 1 / 2], "none", None),
+    ],
+)
+def test_average_accuracy(preds, target, num_classes, exp_result, average, mdmc_average):
+    acc = Accuracy(num_classes=num_classes, average=average, mdmc_average=mdmc_average)
+
+    for batch in range(preds.shape[0]):
+        acc(preds[batch], target[batch])
+
+    assert (acc.compute() == tensor(exp_result)).all()
+
+    # Test functional
+    total_samples = target.shape[0] * target.shape[1]
+
+    preds = preds.view(total_samples, num_classes, -1)
+    target = target.view(total_samples, -1)
+
+    assert (accuracy(
+        preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average
+    ) == tensor(exp_result)).all()
+
+
+@pytest.mark.parametrize(
+    "preds, target, num_classes, exp_result, average, mdmc_average, multiclass",
+    [
+        (_av_preds_bin, _av_target_bin, 2, 19 / 30, "macro", None, True),
+        (_av_preds_bin, _av_target_bin, 2, 5 / 8, "weighted", None, True),
+        (_av_preds_bin, _av_target_bin, 2, [3 / 5, 2 / 3], "none", None, True),
+    ],
+)
+def test_average_accuracy_bin(preds, target, num_classes, exp_result, average, mdmc_average, multiclass):
+    acc = Accuracy(num_classes=num_classes, average=average, mdmc_average=mdmc_average, multiclass=multiclass)
+
+    for batch in range(preds.shape[0]):
+        acc(preds[batch], target[batch])
+
+    assert (acc.compute() == tensor(exp_result)).all()
+
+    # Test functional
+    total_samples = target.shape[0] * target.shape[1]
+
+    preds = preds.view(total_samples, -1)
+    target = target.view(total_samples, -1)
+    assert (accuracy(
+        preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average, multiclass=multiclass
+    ) == tensor(exp_result)).all()

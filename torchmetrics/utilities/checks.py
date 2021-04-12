@@ -303,6 +303,19 @@ def _check_classification_inputs(
     return case
 
 
+def _input_squeeze(
+    preds: Tensor,
+    target: Tensor,
+) -> Tuple[Tensor, Tensor]:
+    """Remove excess dimensions
+    """
+    if preds.shape[0] == 1:
+        preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
+    else:
+        preds, target = preds.squeeze(), target.squeeze()
+    return preds, target
+
+
 def _input_format_classification(
     preds: Tensor,
     target: Tensor,

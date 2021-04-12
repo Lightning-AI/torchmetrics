@@ -16,11 +16,15 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.accuracy import (
-    _subset_accuracy_compute, _subset_accuracy_update, _mode, _accuracy_update, _accuracy_compute,
-    _check_subset_validity
-)
 from torchmetrics.classification.stat_scores import StatScores
+from torchmetrics.functional.classification.accuracy import (
+    _accuracy_compute,
+    _accuracy_update,
+    _check_subset_validity,
+    _mode,
+    _subset_accuracy_compute,
+    _subset_accuracy_update,
+)
 
 
 class Accuracy(StatScores):
@@ -45,15 +49,57 @@ class Accuracy(StatScores):
     Accepts all input types listed in :ref:`references/modules:input types`.
 
     Args:
+        num_classes:
+            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
+        average:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
+            - ``'macro'``: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
+            - ``'samples'``: Calculate the metric for each sample, and average the metrics
+              across samples (with equal weights for each sample).
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
+
+        mdmc_average:
+            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter). Should be one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class.
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then averaged over samples.
+              The computation for each sample is done by treating the flattened extra axes ``...``
+              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              and computing the metric for the sample based on that.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
+              (see :ref:`references/modules:input types`)
+              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+
         top_k:
             Number of highest probability predictions considered to find the correct label, relevant
             only for (multi-dimensional) multi-class inputs with probability predictions. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
+        multiclass:
+            Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be. See the parameter's
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            for a more detailed explanation and examples.
+
         subset_accuracy:
             Whether to compute subset accuracy for multi-label and multi-dimensional
             multi-class inputs (has no effect for other input types).
@@ -112,7 +158,7 @@ class Accuracy(StatScores):
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -129,7 +175,7 @@ class Accuracy(StatScores):
             threshold=threshold,
             top_k=top_k,
             num_classes=num_classes,
-            is_multiclass=is_multiclass,
+            multiclass=multiclass,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -151,7 +197,7 @@ class Accuracy(StatScores):
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
         self.mode = None
-        self.is_multiclass = is_multiclass
+        self.multiclass = multiclass
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -163,14 +209,14 @@ class Accuracy(StatScores):
             target: Ground truth labels
         """
 
-        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.is_multiclass)
+        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
 
         if self.mode is None:
             self.mode = mode
         elif self.mode != mode:
             raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
 
-        if self.subset_accuracy and not _check_subset_validity(self.mode, preds, target):
+        if self.subset_accuracy and not _check_subset_validity(self.mode):
             self.subset_accuracy = False
 
         if self.subset_accuracy:
@@ -188,7 +234,7 @@ class Accuracy(StatScores):
                 threshold=self.threshold,
                 num_classes=self.num_classes,
                 top_k=self.top_k,
-                is_multiclass=self.is_multiclass,
+                multiclass=self.multiclass,
                 ignore_index=self.ignore_index,
                 mode=self.mode,
             )
