@@ -21,8 +21,11 @@ class DefaultWeightWrapper(AverageMeter):
 
 class ScalarWrapper(AverageMeter):
     def update(self, values, weights):
-        for v, w in zip(torch.ravel(values), torch.ravel(weights)):
-            super().update(v.item(), w.item())
+        # torch.ravel is PyTorch 1.8 only, so use np.ravel instead
+        values = values.cpu().numpy()
+        weights = weights.cpu().numpy()
+        for v, w in zip(np.ravel(values), np.ravel(weights)):
+            super().update(float(v), float(w))
 
 
 @pytest.mark.parametrize(
