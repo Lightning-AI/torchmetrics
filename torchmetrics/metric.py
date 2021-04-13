@@ -259,9 +259,9 @@ class Metric(nn.Module, ABC):
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
             if isinstance(default, Tensor):
-                setattr(self, attr, deepcopy(default).to(current_val.device))
+                setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
-                setattr(self, attr, deepcopy(default))
+                setattr(self, attr, [])
 
     def clone(self):
         """ Make a copy of the metric """
@@ -450,6 +450,10 @@ class Metric(nn.Module, ABC):
 
     def __getitem__(self, idx):
         return CompositionalMetric(lambda x: x[idx], self, None)
+
+    @property
+    def is_differentiable(self):
+        raise NotImplementedError
 
 
 def _neg(tensor: Tensor):
