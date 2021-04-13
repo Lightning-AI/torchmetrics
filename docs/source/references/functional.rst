@@ -203,18 +203,26 @@ psnr [func]
     :noindex:
 
 
+r2score [func]
+~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.r2score
+    :noindex:
+
+
+spearman_corrcoef [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.spearman_corrcoef
+    :noindex:
+
+
 ssim [func]
 ~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.ssim
     :noindex:
 
-
-r2score [func]
-~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.r2score
-    :noindex:
 
 ***
 NLP

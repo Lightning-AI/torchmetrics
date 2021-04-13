@@ -257,18 +257,26 @@ PSNR
     :noindex:
 
 
+R2Score
+~~~~~~~
+
+.. autoclass:: torchmetrics.R2Score
+    :noindex:
+
+
+SpearmanCorrcoef
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpearmanCorrcoef
+    :noindex:
+
+
 SSIM
 ~~~~
 
 .. autoclass:: torchmetrics.SSIM
     :noindex:
 
-
-R2Score
-~~~~~~~
-
-.. autoclass:: torchmetrics.R2Score
-    :noindex:
 
 
 *********
