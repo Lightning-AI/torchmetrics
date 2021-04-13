@@ -34,21 +34,18 @@ seed_all(42)
 
 
 def recall_at_precision_x_multilabel(predictions: Tensor, targets: Tensor, min_precision: float) -> Tuple[float, float]:
-    precision, recall, thresholds = _sk_precision_recall_curve(
-        targets,
-        predictions,
-    )
+    precision, recall, thresholds = _sk_precision_recall_curve(targets, predictions)
 
     try:
-        max_recall, max_precision, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
-                                                        if p >= min_precision)
+        tuple_all = [(r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision]
+        max_recall, max_precision, best_threshold = max(tuple_all)
     except ValueError:
         max_recall, best_threshold = 0, 1e6
 
     return float(max_recall), float(best_threshold)
 
 
-def _multiclass_prob_sk_metric(predictions, targets, num_classes, min_precision):
+def _sk_prec_recall_mclass_prob(predictions, targets, num_classes, min_precision):
     max_recalls = torch.zeros(num_classes)
     best_thresholds = torch.zeros(num_classes)
 
@@ -59,11 +56,11 @@ def _multiclass_prob_sk_metric(predictions, targets, num_classes, min_precision)
     return max_recalls, best_thresholds
 
 
-def _binary_prob_sk_metric(predictions, targets, num_classes, min_precision):
+def _sk_prec_recall_binary_prob(predictions, targets, num_classes, min_precision):
     return recall_at_precision_x_multilabel(predictions, targets, min_precision)
 
 
-def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
+def _sk_avg_prec_multiclass(predictions, targets, num_classes):
     # replace nan with 0
     return np.nan_to_num(_sk_average_precision_score(targets, predictions, average=None))
 
@@ -71,20 +68,10 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
     [
-        (_input_binary_prob.preds, _input_binary_prob.target, _binary_prob_sk_metric, 1),
-        (_input_binary_prob_ok.preds, _input_binary_prob_ok.target, _binary_prob_sk_metric, 1),
-        (
-            _input_mlb_prob_ok.preds,
-            _input_mlb_prob_ok.target,
-            _multiclass_prob_sk_metric,
-            NUM_CLASSES,
-        ),
-        (
-            _input_mlb_prob.preds,
-            _input_mlb_prob.target,
-            _multiclass_prob_sk_metric,
-            NUM_CLASSES,
-        ),
+        (_input_binary_prob.preds, _input_binary_prob.target, _sk_prec_recall_binary_prob, 1),
+        (_input_binary_prob_ok.preds, _input_binary_prob_ok.target, _sk_prec_recall_binary_prob, 1),
+        (_input_mlb_prob_ok.preds, _input_mlb_prob_ok.target, _sk_prec_recall_mclass_prob, NUM_CLASSES),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_prec_recall_mclass_prob, NUM_CLASSES),
     ],
 )
 class TestBinnedRecallAtPrecision(MetricTester):
@@ -115,25 +102,10 @@ class TestBinnedRecallAtPrecision(MetricTester):
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
     [
-        (_input_binary_prob.preds, _input_binary_prob.target, _multiclass_average_precision_sk_metric, 1),
-        (
-            _input_binary_prob_ok.preds,
-            _input_binary_prob_ok.target,
-            _multiclass_average_precision_sk_metric,
-            1,
-        ),
-        (
-            _input_mlb_prob_ok.preds,
-            _input_mlb_prob_ok.target,
-            _multiclass_average_precision_sk_metric,
-            NUM_CLASSES,
-        ),
-        (
-            _input_mlb_prob.preds,
-            _input_mlb_prob.target,
-            _multiclass_average_precision_sk_metric,
-            NUM_CLASSES,
-        ),
+        (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_multiclass, 1),
+        (_input_binary_prob_ok.preds, _input_binary_prob_ok.target, _sk_avg_prec_multiclass, 1),
+        (_input_mlb_prob_ok.preds, _input_mlb_prob_ok.target, _sk_avg_prec_multiclass, NUM_CLASSES),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_avg_prec_multiclass, NUM_CLASSES),
     ],
 )
 class TestBinnedAveragePrecision(MetricTester):
