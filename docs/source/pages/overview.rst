@@ -284,14 +284,28 @@ However, if you are looking for the best integration and user experience, please
 
 
 *****************************
-Metrics and Differentiability
+Metrics and differentiability
 *****************************
 
-All Metric have a property that determines if a metric is differentiable or not. 
+Metrics support backpropagation, if all computations involved in the metric calculation
+are differentiable. All modular metrics have a property that determines if a metric is
+differentible or not.
 
 .. code-block:: python
 
     @property
     def is_differentiable(self):
         return True/False
-        
+
+However, note that the cached state is detached from the computational
+graph and cannot be backpropagated. Not doing this would mean storing the computational
+graph for each update call, which can lead to out-of-memory errors.
+In practise this means that:
+
+.. code-block:: python
+
+    metric = MyMetric()
+    val = metric(pred, target) # this value can be backpropagated
+    val = metric.compute() # this value cannot be backpropagated
+
+A functional metric is differentiable if its corresponding modular metric is differentiable.
