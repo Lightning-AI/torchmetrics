@@ -87,13 +87,13 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     r"""
      Computes `spearmans rank correlation coefficient
-    <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_.
+     <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_:
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
 
-    where rg_x and rg_y are the rank associated to the variables x and y. Spearmans correlations coefficient
-    corresponds to the standard pearsons correlation coefficient calculated on the rank variables.
+    where :math:`rg_x` and :math:`rg_y` are the rank associated to the variables x and y. Spearmans correlations 
+    coefficient corresponds to the standard pearsons correlation coefficient calculated on the rank variables.
 
     Args:
         preds: estimated scores
