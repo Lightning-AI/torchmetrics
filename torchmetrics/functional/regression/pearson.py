@@ -39,7 +39,7 @@ def _pearson_corrcoef_update(
     return preds, target
 
 
-def _pearson_corrcoef_compute(preds: Tensor, target: Tensor, eps: float=1e-6) -> Tensor:
+def _pearson_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
     """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
     preds_diff = preds - preds.mean()
     target_diff = target - target.mean()
