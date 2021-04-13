@@ -196,6 +196,13 @@ mean_squared_log_error [func]
     :noindex:
 
 
+pearson_corrcoef [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pearson_corrcoef
+    :noindex:
+
+
 psnr [func]
 ~~~~~~~~~~~
 
