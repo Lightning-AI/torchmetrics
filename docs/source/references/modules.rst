@@ -150,6 +150,12 @@ BinnedPrecisionRecallCurve
 .. autoclass:: torchmetrics.BinnedPrecisionRecallCurve
     :noindex:
 
+BinnedRecallAtFixedPrecision
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -214,12 +220,6 @@ Recall
 ~~~~~~
 
 .. autoclass:: torchmetrics.Recall
-    :noindex:
-
-BinnedRecallAtFixedPrecision
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
     :noindex:
 
 
