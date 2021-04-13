@@ -256,6 +256,13 @@ MeanSquaredLogError
     :noindex:
 
 
+PearsonCorrcoef
+~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.PearsonCorrcoef
+    :noindex:
+
+
 PSNR
 ~~~~
 
