@@ -14,21 +14,17 @@
 from typing import Any, List, Optional, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.classification.average_precision import _average_precision_compute_with_precision_recall
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import METRIC_EPS, to_onehot
 
 
-def _recall_at_precision(
-    precision: torch.Tensor, recall: torch.Tensor, thresholds: torch.Tensor, min_precision: float
-):
+def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor, min_precision: float):
     try:
-        max_recall, max_precision, best_threshold = max(
-            (r, p, t)
-            for p, r, t in zip(precision, recall, thresholds)
-            if p >= min_precision
-        )
+        max_recall, max_precision, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
+                                                        if p >= min_precision)
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
 
@@ -107,10 +103,10 @@ class BinnedPrecisionRecallCurve(Metric):
         tensor([0.0000, 0.5000, 1.0000])]
     """
 
-    TPs: torch.Tensor
-    FPs: torch.Tensor
-    FNs: torch.Tensor
-    thresholds: torch.Tensor
+    TPs: Tensor
+    FPs: Tensor
+    FNs: Tensor
+    thresholds: Tensor
 
     def __init__(
         self,
@@ -138,7 +134,7 @@ class BinnedPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: torch.Tensor, targets: torch.Tensor) -> None:
+    def update(self, preds: Tensor, targets: Tensor) -> None:
         """
         Args
             preds: (n_samples, n_classes) tensor
@@ -160,16 +156,19 @@ class BinnedPrecisionRecallCurve(Metric):
             self.FPs[:, i] += ((~targets) & (predictions)).sum(dim=0)
             self.FNs[:, i] += ((targets) & (~predictions)).sum(dim=0)
 
-    def compute(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Returns float tensor of size n_classes"""
         precisions = (self.TPs + METRIC_EPS) / (self.TPs + self.FPs + METRIC_EPS)
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
 
         # Need to guarantee that last precision=1 and recall=0, similar to precision_recall_curve
-        precisions = torch.cat([precisions, torch.ones(self.num_classes, 1,
-                               dtype=precisions.dtype, device=precisions.device)], dim=1)
-        recalls = torch.cat([recalls, torch.zeros(self.num_classes, 1,
-                            dtype=recalls.dtype, device=recalls.device)], dim=1)
+        precisions = torch.cat([
+            precisions, torch.ones(self.num_classes, 1, dtype=precisions.dtype, device=precisions.device)
+        ],
+                               dim=1)
+        recalls = torch.cat([recalls,
+                             torch.zeros(self.num_classes, 1, dtype=recalls.dtype, device=recalls.device)],
+                            dim=1)
         if self.num_classes == 1:
             return (precisions[0, :], recalls[0, :], self.thresholds)
         else:
@@ -221,7 +220,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         [tensor(1.0000), tensor(1.0000), tensor(0.2500), tensor(0.2500), tensor(-0.)]
     """
 
-    def compute(self) -> Union[List[torch.Tensor], torch.Tensor]:
+    def compute(self) -> Union[List[Tensor], Tensor]:
         precisions, recalls, _ = super().compute()
         return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes)
 
@@ -288,7 +287,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         )
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:
         """Returns float tensor of size n_classes"""
         precisions, recalls, thresholds = super().compute()
 
@@ -299,5 +298,6 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         thresholds_at_p = torch.zeros(self.num_classes, device=thresholds[0].device, dtype=thresholds[0].dtype)
         for i in range(self.num_classes):
             recalls_at_p[i], thresholds_at_p[i] = _recall_at_precision(
-                precisions[i], recalls[i], thresholds[i], self.min_precision)
+                precisions[i], recalls[i], thresholds[i], self.min_precision
+            )
         return (recalls_at_p, thresholds_at_p)
