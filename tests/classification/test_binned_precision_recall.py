@@ -93,11 +93,11 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
     ],
 )
 class TestBinnedRecallAtPrecision(MetricTester):
+    atol = 0.02
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
     def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision):
-        self.atol = 0.02
         # rounding will simulate binning for both implementations
         preds = torch.Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
@@ -141,11 +141,12 @@ class TestBinnedRecallAtPrecision(MetricTester):
     ],
 )
 class TestBinnedAveragePrecision(MetricTester):
+    atol = 0.02
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("num_thresholds", [101, 301])
     def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, num_thresholds):
-        self.atol = 0.02
         # rounding will simulate binning for both implementations
         preds = torch.Tensor(np.round(preds.numpy(), 2)) + 1e-6
 

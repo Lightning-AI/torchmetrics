@@ -216,6 +216,13 @@ Recall
 .. autoclass:: torchmetrics.Recall
     :noindex:
 
+BinnedRecallAtFixedPrecision
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
+    :noindex:
+
+
 ROC
 ~~~
 
