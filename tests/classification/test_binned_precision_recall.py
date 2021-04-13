@@ -144,7 +144,7 @@ class TestBinnedAveragePrecision(MetricTester):
     @pytest.mark.parametrize("num_thresholds", [101, 301])
     def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, num_thresholds):
         # rounding will simulate binning for both implementations
-        preds = torch.Tensor(np.round(preds.numpy(), 2)) + 1e-6
+        preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
         self.run_class_metric_test(
             ddp=ddp,

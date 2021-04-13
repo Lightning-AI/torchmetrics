@@ -434,11 +434,11 @@ class MetricTester:
 
     def run_differentiability_test(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {},
+        metric_args: dict = None,
     ):
         """Test if a metric is differentiable or not
 
@@ -448,6 +448,7 @@ class MetricTester:
             metric_module: the metric module to test
             metric_args: dict with additional arguments used for class initialization
         """
+        metric_args = metric_args or {}
         # only floating point tensors can require grad
         metric = metric_module(**metric_args)
         if preds.is_floating_point():
@@ -458,8 +459,7 @@ class MetricTester:
             if metric.is_differentiable:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args),
-                    (preds[0].double(), target[0])
+                    partial(metric_functional, **metric_args), (preds[0].double(), target[0])
                 )
 
             # reset as else it will carry over to other tests
