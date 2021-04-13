@@ -39,7 +39,7 @@ def _pearson_corrcoef_update(
     return preds, target
 
 
-def _pearson_corrcoef_compute(preds: Tensor, target: Tensor) -> Tensor:
+def _pearson_corrcoef_compute(preds: Tensor, target: Tensor, eps: float=1e-6) -> Tensor:
     """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
     preds_diff = preds - preds.mean()
     target_diff = target - target.mean()
@@ -48,7 +48,7 @@ def _pearson_corrcoef_compute(preds: Tensor, target: Tensor) -> Tensor:
     preds_std = torch.sqrt((preds_diff * preds_diff).mean())
     target_std = torch.sqrt((target_diff * target_diff).mean())
 
-    corrcoef = cov / (preds_std * target_std)
+    corrcoef = cov / (preds_std * target_std + eps)
     return torch.clamp(corrcoef, -1.0, 1.0)
 
 
