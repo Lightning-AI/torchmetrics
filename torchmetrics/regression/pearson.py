@@ -55,6 +55,7 @@ class PearsonCorrcoef(Metric):
         tensor(0.9849)
 
     """
+
     def __init__(
         self,
         compute_on_step: bool = True,

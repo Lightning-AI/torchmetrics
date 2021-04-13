@@ -26,10 +26,7 @@ def _find_repeats(data: Tensor):
 
     change = torch.cat([torch.tensor([True], device=temp.device), temp[1:] != temp[:-1]])
     unique = temp[change]
-    change_idx = torch.cat([
-        torch.nonzero(change),
-        torch.tensor([[temp.numel()]], device=temp.device)
-    ]).flatten()
+    change_idx = torch.cat([torch.nonzero(change), torch.tensor([[temp.numel()]], device=temp.device)]).flatten()
     freq = change_idx[1:] - change_idx[:-1]
     atleast2 = freq > 1
     return unique[atleast2]
