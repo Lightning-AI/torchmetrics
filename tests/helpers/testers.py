@@ -401,11 +401,11 @@ class MetricTester:
         )
 
     def run_differentiability_test(
-        self, 
-        preds: torch.Tensor, 
+        self,
+        preds: torch.Tensor,
         target: torch.Tensor,
         metric_module: Metric,
-        metric_functional: Callable,        
+        metric_functional: Callable,
         metric_args: dict = {},
     ):
         """Test if a metric is differentiable or not
@@ -421,11 +421,11 @@ class MetricTester:
             preds.requires_grad = True
             out = metric(preds[0], target[0])
             assert metric.is_differentiable == out.requires_grad
-            
+
             if metric.is_differentiable:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args), 
+                    partial(metric_functional, **metric_args),
                     (preds[0].double(), target[0])
                 )
 
