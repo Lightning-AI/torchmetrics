@@ -104,7 +104,7 @@ def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> spearman_corrcoef(preds, target)
-        tensor(0.9849)
+        tensor(1.0000)
 
     """
     preds, target = _spearman_corrcoef_update(preds, target)

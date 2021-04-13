@@ -49,7 +49,7 @@ class SpearmanCorrcoef(Metric):
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> spearman = SpearmanCorrcoef()
         >>> spearman(preds, target)
-        tensor(0.9849)
+        tensor(1.0000)
     """
 
     def __init__(
