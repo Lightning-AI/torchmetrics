@@ -84,3 +84,7 @@ class MeanAbsoluteError(Metric):
         Computes mean absolute error over state.
         """
         return _mean_absolute_error_compute(self.sum_abs_error, self.total)
+
+    @property
+    def is_differentiable(self):
+        return True
