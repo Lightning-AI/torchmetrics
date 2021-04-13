@@ -26,7 +26,8 @@ class PearsonCorrcoef(Metric):
     Computes `pearson correlation coefficient
     <https://en.wikipedia.org/wiki/Pearson_correlation_coefficient>`_:
 
-    .. math:: \text{P_corr}(x,y) = \frac{cov(x,y)}{\sigma_x \times \sigma_y}
+    .. math::
+        P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
 
     Where :math:`y` is a tensor of target values, and :math:`x` is a
     tensor of predictions.
