@@ -47,7 +47,7 @@ def _pearson_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) 
     cov = (preds_diff * target_diff).mean()
     preds_std = torch.sqrt((preds_diff * preds_diff).mean())
     target_std = torch.sqrt((target_diff * target_diff).mean())
-    
+
     denom = preds_std * target_std
     # prevent division by zero
     if denom == 0:
