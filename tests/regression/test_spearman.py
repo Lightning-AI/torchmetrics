@@ -15,11 +15,11 @@ from collections import namedtuple
 
 import pytest
 import torch
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, rankdata
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional.regression.spearman import spearman_corrcoef
+from torchmetrics.functional.regression.spearman import spearman_corrcoef, _rank_data
 from torchmetrics.regression.spearman import SpearmanCorrcoef
 
 seed_all(42)
@@ -35,6 +35,21 @@ _single_target_inputs2 = Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
+
+
+@pytest.mark.parametrize(
+    "preds, target", [
+        (_single_target_inputs1.preds, _single_target_inputs1.target),
+        (_single_target_inputs2.preds, _single_target_inputs2.target),
+    ]
+)
+def test_ranking(preds, target):
+    """ test that ranking function works as expected """
+    for p, t in zip(preds, target):
+        scipy_ranking = [rankdata(p.numpy()), rankdata(t.numpy())]
+        tm_ranking = [_rank_data(p), _rank_data(t)]
+        assert (torch.tensor(scipy_ranking[0]) == tm_ranking[0]).all()
+        assert (torch.tensor(scipy_ranking[1]) == tm_ranking[1]).all()
 
 
 def _sk_metric(preds, target):

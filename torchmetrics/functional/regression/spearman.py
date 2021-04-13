@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Tuple
+
 import torch
 from torch import Tensor
 
@@ -25,7 +27,7 @@ def _find_repeats(data: Tensor):
     change = torch.cat([torch.tensor([True], device=temp.device), temp[1:] != temp[:-1]])
     unique = temp[change]
     change_idx = torch.cat([
-        torch.nonzero(change), 
+        torch.nonzero(change),
         torch.tensor([[temp.numel()]], device=temp.device)
     ]).flatten()
     freq = change_idx[1:] - change_idx[:-1]
@@ -48,14 +50,12 @@ def _rank_data(data: Tensor):
 
     repeats = _find_repeats(data)
     for r in repeats:
-        import pdb
-        pdb.set_trace()
         condition = rank == r
         rank[condition] = rank[condition].mean()
     return rank
 
 
-def _spearman_corrcoef_update(preds: Tensor, target: Tensor):
+def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
@@ -69,11 +69,19 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor):
     return preds, target
 
 
-def _spearman_corrcoef_compute(preds: Tensor, target: Tensor):
-    rank_preds = _rank_data(preds)
-    rank_target = _rank_data(target)
-    cov = ((rank_preds - rank_preds.mean()) * (rank_target - rank_target.mean())).mean()
-    return cov / (rank_preds.std() * rank_target.std())
+def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
+    preds = _rank_data(preds)
+    target = _rank_data(target)
+    
+    preds_diff = preds - preds.mean()
+    target_diff = target - target.mean()
+
+    cov = (preds_diff * target_diff).mean()
+    preds_std = torch.sqrt((preds_diff * preds_diff).mean())
+    target_std = torch.sqrt((target_diff * target_diff).mean())
+
+    corrcoef = cov / (preds_std * target_std + eps)
+    return torch.clamp(corrcoef, -1.0, 1.0)
 
 
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
