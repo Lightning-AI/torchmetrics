@@ -43,6 +43,7 @@ class SpearmanCorrcoef(Metric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
+
     Example:
         >>> from torchmetrics import SpearmanCorrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
@@ -66,9 +67,8 @@ class SpearmanCorrcoef(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         rank_zero_warn(
-            'Metric `SpearmanCorrcoef` will save all targets and'
-            ' predictions in buffer. For large datasets this may lead'
-            ' to large memory footprint.'
+            'Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer.'
+            ' For large datasets, this may lead to large memory footprint.'
         )
 
         self.add_state("preds", default=[], dist_reduce_fx=None)
