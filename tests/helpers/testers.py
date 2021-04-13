@@ -216,8 +216,8 @@ def _functional_test(
 def _assert_half_support(
     metric_module: Metric,
     metric_functional: Callable,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     device: str = "cpu",
     **kwargs_update
 ):
@@ -368,8 +368,8 @@ class MetricTester:
             device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
 
             _class_test(
-                0,
-                1,
+                rank=0,
+                worldsize=1,
                 preds=preds,
                 target=target,
                 metric_class=metric_class,
@@ -386,11 +386,11 @@ class MetricTester:
 
     def run_precision_test_cpu(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {},
+        metric_args: dict = None,
         **kwargs_update,
     ):
         """Test if an metric can be used with half precision tensors on cpu
@@ -403,17 +403,18 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
+        metric_args = metric_args or {}
         _assert_half_support(
             metric_module(**metric_args), metric_functional, preds, target, device="cpu", **kwargs_update
         )
 
     def run_precision_test_gpu(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {},
+        metric_args: dict = None,
         **kwargs_update,
     ):
         """Test if an metric can be used with half precision tensors on gpu
@@ -426,6 +427,7 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
+        metric_args = metric_args or {}
         _assert_half_support(
             metric_module(**metric_args), metric_functional, preds, target, device="cuda", **kwargs_update
         )

@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.stat_scores import _stat_scores_upda
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-def _safe_divide(num: torch.Tensor, denom: torch.Tensor):
+def _safe_divide(num: Tensor, denom: Tensor):
     """ prevent zero division """
     denom[denom == 0.] = 1
     return num / denom
