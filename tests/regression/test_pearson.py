@@ -24,7 +24,6 @@ from torchmetrics.regression.pearson import PearsonCorrcoef
 
 seed_all(42)
 
-
 Input = namedtuple('Input', ["preds", "target"])
 
 _single_target_inputs1 = Input(
@@ -44,10 +43,12 @@ def _sk_pearsonr(preds, target):
     return pearsonr(sk_target, sk_preds)[0]
 
 
-@pytest.mark.parametrize("preds, target", [
-    (_single_target_inputs1.preds, _single_target_inputs1.target),
-    (_single_target_inputs2.preds, _single_target_inputs2.target),
-])
+@pytest.mark.parametrize(
+    "preds, target", [
+        (_single_target_inputs1.preds, _single_target_inputs1.target),
+        (_single_target_inputs2.preds, _single_target_inputs2.target),
+    ]
+)
 class TestPearsonCorrcoef(MetricTester):
     atol = 1e-2
 
@@ -65,10 +66,7 @@ class TestPearsonCorrcoef(MetricTester):
 
     def test_pearson_corrcoef_functional(self, preds, target):
         self.run_functional_metric_test(
-            preds=preds,
-            target=target,
-            metric_functional=pearson_corrcoef,
-            sk_metric=_sk_pearsonr
+            preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr
         )
 
     # Pearson half + cpu does not work due to missing support in torch.sqrt

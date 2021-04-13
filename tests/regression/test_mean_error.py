@@ -98,10 +98,7 @@ class TestMeanError(MetricTester):
 
     def test_mean_error_differentiability(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
         self.run_differentiability_test(
-            preds=preds,
-            target=target,
-            metric_module=metric_class,
-            metric_functional=metric_functional
+            preds=preds, target=target, metric_module=metric_class, metric_functional=metric_functional
         )
 
     @pytest.mark.skipif(
