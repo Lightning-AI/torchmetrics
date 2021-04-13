@@ -15,11 +15,11 @@ from collections import namedtuple
 
 import pytest
 import torch
-from scipy.stats import spearmanr, rankdata
+from scipy.stats import rankdata, spearmanr
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional.regression.spearman import spearman_corrcoef, _rank_data
+from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrcoef
 
 seed_all(42)
