@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
 
 from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute, _pearson_corrcoef_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
 class PearsonCorrcoef(Metric):
@@ -64,9 +65,14 @@ class PearsonCorrcoef(Metric):
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
         )
-        self.add_state("cov", default=torch.zeros(2, 2), dist_reduce_fx="sum")
-        self.add_state("mean", default=torch.zeros(2), dist_reduce_fx="sum")
-        self.add_state("n_obs", default=torch.zeros(1), dist_reduce_fx="sum")
+
+        rank_zero_warn(
+            'Metric `PearsonCorrcoef` will save all targets and predictions in buffer.'
+            ' For large datasets this may lead to large memory footprint.'
+        )
+
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -76,12 +82,14 @@ class PearsonCorrcoef(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        self.mean, self.cov, self.n_obs = _pearson_corrcoef_update(
-            preds, target, self.mean, self.cov, self.n_obs
-        )
+        preds, target = _pearson_corrcoef_update(preds, target)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self):
         """
         Computes pearson correlation coefficient over state.
         """
-        return _pearson_corrcoef_compute(self.cov, self.n_obs)
+        preds = torch.cat(self.preds, dim=0)
+        target = torch.cat(self.target, dim=0)
+        return _pearson_corrcoef_compute(preds, target)

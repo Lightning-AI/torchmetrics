@@ -19,39 +19,10 @@ from scipy.stats import pearsonr
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional.regression.pearson import _update_cov, _update_mean, pearson_corrcoef
+from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrcoef
 
 seed_all(42)
-
-
-def test_update_functions(tmpdir):
-    """ Test that updating the estimates are equal to estimating them on all data """
-    data = torch.randn(100, 2)
-    batch1, batch2 = data.chunk(2)
-
-    def _mean_cov(data):
-        mean = data.mean(0)
-        diff = data - mean
-        cov = diff.T @ diff
-        return mean, cov
-
-    mean_update, cov_update, size_update = torch.zeros(2), torch.zeros(2, 2), torch.zeros(1)
-    for batch in [batch1, batch2]:
-        new_mean = _update_mean(mean_update, size_update, batch)
-        new_cov = _update_cov(cov_update, mean_update, new_mean, batch)
-
-        assert not torch.allclose(new_mean, mean_update), "mean estimate did not update"
-        assert not torch.allclose(new_cov, cov_update), "covariance estimate did not update"
-
-        size_update += batch.shape[0]
-        mean_update = new_mean
-        cov_update = new_cov
-
-    mean, cov = _mean_cov(data)
-
-    assert torch.allclose(mean, mean_update), "updated mean does not correspond to mean of all data"
-    assert torch.allclose(cov, cov_update), "updated covariance does not correspond to covariance of all data"
 
 
 Input = namedtuple('Input', ["preds", "target"])
@@ -78,8 +49,6 @@ def _sk_pearsonr(preds, target):
     (_single_target_inputs2.preds, _single_target_inputs2.target),
 ])
 class TestPearsonCorrcoef(MetricTester):
-    atol = 1e-4
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_pearson_corrcoef(self, preds, target, ddp, dist_sync_on_step):
