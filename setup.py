@@ -7,7 +7,8 @@ from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 try:
-    from torchmetrics import __about__ as about, setup_tools
+    from torchmetrics import __about__ as about
+    from torchmetrics import setup_tools
 except ImportError:
     # alternative https://stackoverflow.com/a/67692/4521646
     sys.path.append("torchmetrics")
