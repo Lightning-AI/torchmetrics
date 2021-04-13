@@ -138,6 +138,24 @@ AUROC
 .. autoclass:: torchmetrics.AUROC
     :noindex:
 
+BinnedAveragePrecision
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedAveragePrecision
+    :noindex:
+
+BinnedPrecisionRecallCurve
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedPrecisionRecallCurve
+    :noindex:
+
+BinnedRecallAtFixedPrecision
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -204,6 +222,7 @@ Recall
 .. autoclass:: torchmetrics.Recall
     :noindex:
 
+
 ROC
 ~~~
 
@@ -264,18 +283,26 @@ PSNR
     :noindex:
 
 
+R2Score
+~~~~~~~
+
+.. autoclass:: torchmetrics.R2Score
+    :noindex:
+
+
+SpearmanCorrcoef
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpearmanCorrcoef
+    :noindex:
+
+
 SSIM
 ~~~~
 
 .. autoclass:: torchmetrics.SSIM
     :noindex:
 
-
-R2Score
-~~~~~~~
-
-.. autoclass:: torchmetrics.R2Score
-    :noindex:
 
 
 *********

@@ -451,6 +451,10 @@ class Metric(nn.Module, ABC):
     def __getitem__(self, idx):
         return CompositionalMetric(lambda x: x[idx], self, None)
 
+    @property
+    def is_differentiable(self):
+        raise NotImplementedError
+
 
 def _neg(tensor: Tensor):
     return -torch.abs(tensor)
