@@ -458,6 +458,9 @@ class MetricTester:
                     partial(metric_functional, **metric_args),
                     (preds[0].double(), target[0])
                 )
+            
+            # reset as else it will carry over to other tests
+            preds.requires_grad = False
 
 
 class DummyMetric(Metric):
