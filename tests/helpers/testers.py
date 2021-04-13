@@ -400,21 +400,35 @@ class MetricTester:
             metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device="cuda"
         )
 
-    def test_differentiability(
+    def run_differentiability_test(
         self, 
         preds: torch.Tensor, 
         target: torch.Tensor,
         metric_module: Metric,
+        metric_functional: Callable,        
+        metric_args: dict = {},
     ):
         """Test if a metric is differentiable or not
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
             metric_module: the metric module to test
+            metric_args: dict with additional arguments used for class initialization
         """
-        preds.requires_grad = True
-        out = metric_module(preds, target)
-        assert metric_module.is_differentiable == out.requires_grad
+        # only floating point tensors can require grad
+        metric = metric_module(**metric_args)
+        if preds.is_floating_point():
+            preds.requires_grad = True
+            out = metric(preds[0], target[0])
+            assert metric.is_differentiable == out.requires_grad
+            
+            if metric.is_differentiable:
+                # check for numerical correctness
+                assert torch.autograd.gradcheck(
+                    partial(metric_functional, **metric_args), 
+                    (preds[0].double(), target[0])
+                )
+
 
 class DummyMetric(Metric):
     name = "Dummy"

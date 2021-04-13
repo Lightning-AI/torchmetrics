@@ -96,12 +96,12 @@ class TestMeanError(MetricTester):
             sk_metric=partial(sk_metric, sk_fn=sk_fn),
         )
 
-    def test_metrics_differentiability(self, preds, target):
-        metric = MeanSquaredError()
-        self.test_differentiability(
+    def test_mean_error_differentiability(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+        self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=metric,
+            metric_module=metric_class,
+            metric_functional=metric_functional
         )
 
     @pytest.mark.skipif(
