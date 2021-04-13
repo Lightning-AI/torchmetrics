@@ -21,7 +21,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     """
     Computes the recall metric (for information retrieval),
     as explained `here <https://en.wikipedia.org/wiki/Precision_and_recall#Recall>`__.
-    Recall is the fraction of relevant documents among all the relevant documents.
+    Recall is the fraction of relevant documents retrieved among all the relevant documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
@@ -50,7 +50,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     if not (isinstance(k, int) and k > 0):
         raise ValueError("`k` has to be a positive integer or None")
 
-    if target.sum() == 0:
+    if not target.sum():
         return tensor(0.0, device=preds.device)
 
     relevant = target[torch.argsort(preds, dim=-1, descending=True)][:k].sum().float()
