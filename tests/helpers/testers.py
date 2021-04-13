@@ -439,6 +439,7 @@ class MetricTester:
         metric_args: dict = {},
     ):
         """Test if a metric is differentiable or not
+
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets

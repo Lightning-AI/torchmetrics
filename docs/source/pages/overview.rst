@@ -294,7 +294,7 @@ differentible or not.
 .. code-block:: python
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True/False
 
 However, note that the cached state is detached from the computational
