@@ -85,3 +85,7 @@ class MeanSquaredError(Metric):
         Computes mean squared error over state.
         """
         return _mean_squared_error_compute(self.sum_squared_error, self.total)
+
+    @property
+    def is_differentiable(self):
+        return True
