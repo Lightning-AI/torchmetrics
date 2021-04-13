@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional, Tuple
+from warnings import warn
 
 import numpy as np
 import torch
@@ -86,10 +87,10 @@ class StatScores(Metric):
               flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
 
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -140,12 +141,20 @@ class StatScores(Metric):
         num_classes: Optional[int] = None,
         ignore_index: Optional[int] = None,
         mdmc_reduce: Optional[str] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        if is_multiclass is not None and multiclass is None:
+            warn(
+                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+                DeprecationWarning
+            )
+            multiclass = is_multiclass
+
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -157,7 +166,7 @@ class StatScores(Metric):
         self.mdmc_reduce = mdmc_reduce
         self.num_classes = num_classes
         self.threshold = threshold
-        self.is_multiclass = is_multiclass
+        self.multiclass = multiclass
         self.ignore_index = ignore_index
         self.top_k = top_k
 
@@ -206,7 +215,7 @@ class StatScores(Metric):
             threshold=self.threshold,
             num_classes=self.num_classes,
             top_k=self.top_k,
-            is_multiclass=self.is_multiclass,
+            multiclass=self.multiclass,
             ignore_index=self.ignore_index,
         )
 

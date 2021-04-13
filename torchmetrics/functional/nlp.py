@@ -101,6 +101,7 @@ def bleu_score(
 
     if smooth:
         precision_scores = torch.add(numerator, torch.ones(n_gram)) / torch.add(denominator, torch.ones(n_gram))
+        precision_scores[0] = numerator[0] / denominator[0]
     else:
         precision_scores = numerator / denominator
 

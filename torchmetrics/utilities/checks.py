@@ -26,7 +26,7 @@ def _check_same_shape(pred: Tensor, target: Tensor):
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, is_multiclass: bool):
+def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: bool):
     """
     Perform basic validation of inputs that does not require deducing any information
     of the type of inputs.
@@ -50,11 +50,11 @@ def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, is_
     if not 0 < threshold < 1:
         raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
 
-    if is_multiclass is False and target.max() > 1:
-        raise ValueError("If you set `is_multiclass=False`, then `target` should not exceed 1.")
+    if multiclass is False and target.max() > 1:
+        raise ValueError("If you set `multiclass=False`, then `target` should not exceed 1.")
 
-    if is_multiclass is False and not preds_float and preds.max() > 1:
-        raise ValueError("If you set `is_multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
+    if multiclass is False and not preds_float and preds.max() > 1:
+        raise ValueError("If you set `multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[str, int]:
@@ -119,44 +119,44 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[st
     return case, implied_classes
 
 
-def _check_num_classes_binary(num_classes: int, is_multiclass: bool):
+def _check_num_classes_binary(num_classes: int, multiclass: bool):
     """
     This checks that the consistency of `num_classes` with the data
-    and `is_multiclass` param for binary data.
+    and `multiclass` param for binary data.
     """
 
     if num_classes > 2:
         raise ValueError("Your data is binary, but `num_classes` is larger than 2.")
-    if num_classes == 2 and not is_multiclass:
+    if num_classes == 2 and not multiclass:
         raise ValueError(
-            "Your data is binary and `num_classes=2`, but `is_multiclass` is not True."
+            "Your data is binary and `num_classes=2`, but `multiclass` is not True."
             " Set it to True if you want to transform binary data to multi-class format."
         )
-    if num_classes == 1 and is_multiclass:
+    if num_classes == 1 and multiclass:
         raise ValueError(
-            "You have binary data and have set `is_multiclass=True`, but `num_classes` is 1."
-            " Either set `is_multiclass=None`(default) or set `num_classes=2`"
+            "You have binary data and have set `multiclass=True`, but `num_classes` is 1."
+            " Either set `multiclass=None`(default) or set `num_classes=2`"
             " to transform binary data to multi-class format."
         )
 
 
-def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, is_multiclass: bool, implied_classes: int):
+def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, multiclass: bool, implied_classes: int):
     """
     This checks that the consistency of `num_classes` with the data
-    and `is_multiclass` param for (multi-dimensional) multi-class data.
+    and `multiclass` param for (multi-dimensional) multi-class data.
     """
 
-    if num_classes == 1 and is_multiclass is not False:
+    if num_classes == 1 and multiclass is not False:
         raise ValueError(
             "You have set `num_classes=1`, but predictions are integers."
             " If you want to convert (multi-dimensional) multi-class data with 2 classes"
-            " to binary/multi-label, set `is_multiclass=False`."
+            " to binary/multi-label, set `multiclass=False`."
         )
     if num_classes > 1:
-        if is_multiclass is False:
+        if multiclass is False:
             if implied_classes != num_classes:
                 raise ValueError(
-                    "You have set `is_multiclass=False`, but the implied number of classes "
+                    "You have set `multiclass=False`, but the implied number of classes "
                     " (from shape of inputs) does not match `num_classes`. If you are trying to"
                     " transform multi-dim multi-class data with 2 classes to multi-label, `num_classes`"
                     " should be either None or the product of the size of extra dimensions (...)."
@@ -170,35 +170,35 @@ def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, is_mu
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
 
 
-def _check_num_classes_ml(num_classes: int, is_multiclass: bool, implied_classes: int):
+def _check_num_classes_ml(num_classes: int, multiclass: bool, implied_classes: int):
     """
     This checks that the consistency of `num_classes` with the data
-    and `is_multiclass` param for multi-label data.
+    and `multiclass` param for multi-label data.
     """
 
-    if is_multiclass and num_classes != 2:
+    if multiclass and num_classes != 2:
         raise ValueError(
-            "Your have set `is_multiclass=True`, but `num_classes` is not equal to 2."
+            "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
             " If you are trying to transform multi-label data to 2 class multi-dimensional"
             " multi-class, you should set `num_classes` to either 2 or None."
         )
-    if not is_multiclass and num_classes != implied_classes:
+    if not multiclass and num_classes != implied_classes:
         raise ValueError("The implied number of classes (from shape of inputs) does not match num_classes.")
 
 
-def _check_top_k(top_k: int, case: str, implied_classes: int, is_multiclass: Optional[bool], preds_float: bool):
+def _check_top_k(top_k: int, case: str, implied_classes: int, multiclass: Optional[bool], preds_float: bool):
     if case == DataType.BINARY:
         raise ValueError("You can not use `top_k` parameter with binary data.")
     if not isinstance(top_k, int) or top_k <= 0:
         raise ValueError("The `top_k` has to be an integer larger than 0.")
     if not preds_float:
         raise ValueError("You have set `top_k`, but you do not have probability predictions.")
-    if is_multiclass is False:
-        raise ValueError("If you set `is_multiclass=False`, you can not set `top_k`.")
-    if case == DataType.MULTILABEL and is_multiclass:
+    if multiclass is False:
+        raise ValueError("If you set `multiclass=False`, you can not set `top_k`.")
+    if case == DataType.MULTILABEL and multiclass:
         raise ValueError(
             "If you want to transform multi-label data to 2 class multi-dimensional"
-            "multi-class data using `is_multiclass=True`, you can not use `top_k`."
+            "multi-class data using `multiclass=True`, you can not use `top_k`."
         )
     if top_k >= implied_classes:
         raise ValueError("The `top_k` has to be strictly smaller than the `C` dimension of `preds`.")
@@ -209,14 +209,14 @@ def _check_classification_inputs(
     target: Tensor,
     threshold: float,
     num_classes: Optional[int],
-    is_multiclass: bool,
+    multiclass: bool,
     top_k: Optional[int],
 ) -> str:
     """Performs error checking on inputs for classification.
 
     This ensures that preds and target take one of the shape/type combinations that are
     specified in ``_input_format_classification`` docstring. It also checks the cases of
-    over-rides with ``is_multiclass`` by checking (for multi-class and multi-dim multi-class
+    over-rides with ``multiclass`` by checking (for multi-class and multi-dim multi-class
     cases) that there are only up to 2 distinct labels.
 
     In case where preds are floats (probabilities), it is checked whether they are in [0,1] interval.
@@ -252,10 +252,10 @@ def _check_classification_inputs(
             it will take precedence over threshold.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/overview:using the is_multiclass parameter>`
+            :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
 
@@ -265,7 +265,7 @@ def _check_classification_inputs(
     """
 
     # Basic validation (that does not need case/type information)
-    _basic_input_validation(preds, target, threshold, is_multiclass)
+    _basic_input_validation(preds, target, threshold, multiclass)
 
     # Check that shape/types fall into one of the cases
     case, implied_classes = _check_shape_and_type_consistency(preds, target)
@@ -277,9 +277,9 @@ def _check_classification_inputs(
 
     # Check consistency with the `C` dimension in case of multi-class data
     if preds.shape != target.shape:
-        if is_multiclass is False and implied_classes != 2:
+        if multiclass is False and implied_classes != 2:
             raise ValueError(
-                "You have set `is_multiclass=False`, but have more than 2 classes in your data,"
+                "You have set `multiclass=False`, but have more than 2 classes in your data,"
                 " based on the C dimension of `preds`."
             )
         if target.max() >= implied_classes:
@@ -290,15 +290,15 @@ def _check_classification_inputs(
     # Check that num_classes is consistent
     if num_classes:
         if case == DataType.BINARY:
-            _check_num_classes_binary(num_classes, is_multiclass)
+            _check_num_classes_binary(num_classes, multiclass)
         elif case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS):
-            _check_num_classes_mc(preds, target, num_classes, is_multiclass, implied_classes)
+            _check_num_classes_mc(preds, target, num_classes, multiclass, implied_classes)
         elif case.MULTILABEL:
-            _check_num_classes_ml(num_classes, is_multiclass, implied_classes)
+            _check_num_classes_ml(num_classes, multiclass, implied_classes)
 
     # Check that top_k is consistent
     if top_k is not None:
-        _check_top_k(top_k, case, implied_classes, is_multiclass, preds.is_floating_point())
+        _check_top_k(top_k, case, implied_classes, multiclass, preds.is_floating_point())
 
     return case
 
@@ -309,7 +309,7 @@ def _input_format_classification(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
 ) -> Tuple[Tensor, Tensor, str]:
     """Convert preds and target tensors into common format.
 
@@ -333,28 +333,28 @@ def _input_format_classification(
     The returned output tensors will be binary tensors of the same shape, either ``(N, C)``
     of ``(N, C, X)``, the details for each case are described below. The function also returns
     a ``case`` string, which describes which of the above cases the inputs belonged to - regardless
-    of whether this was "overridden" by other settings (like ``is_multiclass``).
+    of whether this was "overridden" by other settings (like ``multiclass``).
 
     In binary case, targets are normally returned as ``(N,1)`` tensor, while preds are transformed
     into a binary tensor (elements become 1 if the probability is greater than or equal to
-    ``threshold`` or 0 otherwise). If ``is_multiclass=True``, then then both targets are preds
+    ``threshold`` or 0 otherwise). If ``multiclass=True``, then then both targets are preds
     become ``(N, 2)`` tensors by a one-hot transformation; with the thresholding being applied to
     preds first.
 
     In multi-class case, normally both preds and targets become ``(N, C)`` binary tensors; targets
     by a one-hot transformation and preds by selecting ``top_k`` largest entries (if their original
-    shape was ``(N,C)``). However, if ``is_multiclass=False``, then targets and preds will be
+    shape was ``(N,C)``). However, if ``multiclass=False``, then targets and preds will be
     returned as ``(N,1)`` tensor.
 
     In multi-label case, normally targets and preds are returned as ``(N, C)`` binary tensors, with
     preds being binarized as in the binary case. Here the ``C`` dimension is obtained by flattening
-    all dimensions after the first one. However if ``is_multiclass=True``, then both are returned as
+    all dimensions after the first one. However if ``multiclass=True``, then both are returned as
     ``(N, 2, C)``, by an equivalent transformation as in the binary case.
 
     In multi-dimensional multi-class case, normally both target and preds are returned as
     ``(N, C, X)`` tensors, with ``X`` resulting from flattening of all dimensions except ``N`` and
     ``C``. The transformations performed here are equivalent to the multi-class case. However, if
-    ``is_multiclass=False`` (and there are up to two classes), then the data is returned as
+    ``multiclass=False`` (and there are up to two classes), then the data is returned as
     ``(N, X)`` binary tensors (multi-label).
 
     Note:
@@ -379,10 +379,10 @@ def _input_format_classification(
             default value (``None``) will be interepreted as 1 for these inputs.
 
             Should be left unset (``None``) for all other types of inputs.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/overview:using the is_multiclass parameter>`
+            :ref:`documentation section <pages/overview:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Returns:
@@ -407,18 +407,18 @@ def _input_format_classification(
         target,
         threshold=threshold,
         num_classes=num_classes,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         top_k=top_k,
     )
 
     if case in (DataType.BINARY, DataType.MULTILABEL) and not top_k:
         preds = (preds >= threshold).int()
-        num_classes = num_classes if not is_multiclass else 2
+        num_classes = num_classes if not multiclass else 2
 
     if case == DataType.MULTILABEL and top_k:
         preds = select_topk(preds, top_k)
 
-    if case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) or is_multiclass:
+    if case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) or multiclass:
         if preds.is_floating_point():
             num_classes = preds.shape[1]
             preds = select_topk(preds, top_k or 1)
@@ -428,10 +428,10 @@ def _input_format_classification(
 
         target = to_onehot(target, max(2, num_classes))
 
-        if is_multiclass is False:
+        if multiclass is False:
             preds, target = preds[:, 1, ...], target[:, 1, ...]
 
-    if (case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and is_multiclass is not False) or is_multiclass:
+    if (case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and multiclass is not False) or multiclass:
         target = target.reshape(target.shape[0], target.shape[1], -1)
         preds = preds.reshape(preds.shape[0], preds.shape[1], -1)
     else:
@@ -495,7 +495,9 @@ def _input_format_classification_one_hot(
 
 
 def _check_retrieval_functional_inputs(
-    preds: Tensor, target: Tensor, allow_non_binary_target: bool = False
+    preds: Tensor,
+    target: Tensor,
+    allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor]:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
@@ -532,7 +534,10 @@ def _check_retrieval_functional_inputs(
 
 
 def _check_retrieval_inputs(
-    indexes: Tensor, preds: Tensor, target: Tensor, allow_non_binary_target: bool = False
+    indexes: Tensor,
+    preds: Tensor,
+    target: Tensor,
+    allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 

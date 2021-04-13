@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -82,12 +83,19 @@ def _stat_scores_update(
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
     threshold: float = 0.5,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
 
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=threshold, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
+        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
 
     if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
@@ -145,8 +153,9 @@ def stat_scores(
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
     threshold: float = 0.5,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
@@ -211,10 +220,10 @@ def stat_scores(
               flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
 
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
     Return:
@@ -271,6 +280,12 @@ def stat_scores(
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
     """
+    if is_multiclass is not None and multiclass is None:
+        warn(
+            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+            DeprecationWarning
+        )
+        multiclass = is_multiclass
 
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")
@@ -292,7 +307,7 @@ def stat_scores(
         top_k=top_k,
         threshold=threshold,
         num_classes=num_classes,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
     return _stat_scores_compute(tp, fp, tn, fn)
