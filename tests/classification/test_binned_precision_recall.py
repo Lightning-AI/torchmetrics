@@ -94,6 +94,7 @@ def _multiclass_average_precision_sk_metric(predictions, targets, num_classes):
 )
 class TestBinnedRecallAtPrecision(MetricTester):
     atol = 0.02
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
