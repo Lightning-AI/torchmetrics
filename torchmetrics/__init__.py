@@ -50,5 +50,12 @@ from torchmetrics.regression import (  # noqa: F401 E402
     R2Score,
     SpearmanCorrcoef,
 )
-from torchmetrics.retrieval import RetrievalMAP, RetrievalMRR, RetrievalPrecision  # noqa: F401 E402
+from torchmetrics.retrieval import (  # noqa: F401 E402
+    RetrievalFallOut,
+    RetrievalMAP,
+    RetrievalMRR,
+    RetrievalNormalizedDCG,
+    RetrievalPrecision,
+    RetrievalRecall,
+)
 from torchmetrics.wrappers import BootStrapper  # noqa: F401 E402

@@ -11,20 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any, Callable, Optional
+
 from torch import Tensor, tensor
 
-from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
+from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
-class RetrievalMAP(RetrievalMetric):
+class RetrievalRecall(RetrievalMetric):
     """
-    Computes `Mean Average Precision
-    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision>`__.
+    Computes `Recall
+    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Recall>`__.
 
     Works with binary target data. Accepts float predictions from a model output.
 
-    Forward accepts
+    Forward accepts:
 
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
@@ -32,8 +34,8 @@ class RetrievalMAP(RetrievalMetric):
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `MAP` will be computed as the mean
-    of the `Average Precisions` over each query.
+    Predictions will be first grouped by ``indexes`` and then `Recall` will be computed as the mean
+    of the `Recall` over each query.
 
     Args:
         empty_target_action:
@@ -55,16 +57,38 @@ class RetrievalMAP(RetrievalMetric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
+        k: consider only the top k elements for each query. default: None
 
     Example:
-        >>> from torchmetrics import RetrievalMAP
+        >>> from torchmetrics import RetrievalRecall
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
-        >>> map = RetrievalMAP()
-        >>> map(preds, target, indexes=indexes)
-        tensor(0.7917)
+        >>> r2 = RetrievalRecall(k=2)
+        >>> r2(preds, target, indexes=indexes)
+        tensor(0.7500)
     """
 
+    def __init__(
+        self,
+        empty_target_action: str = 'neg',
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+        k: int = None
+    ):
+        super().__init__(
+            empty_target_action=empty_target_action,
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn
+        )
+
+        if (k is not None) and not (isinstance(k, int) and k > 0):
+            raise ValueError("`k` has to be a positive integer or None")
+        self.k = k
+
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_average_precision(preds, target)
+        return retrieval_recall(preds, target, k=self.k)

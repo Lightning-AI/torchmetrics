@@ -17,15 +17,15 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_precision(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
+def retrieval_recall(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     """
-    Computes the precision metric (for information retrieval),
-    as explained `here <https://en.wikipedia.org/wiki/Precision_and_recall#Precision>`__.
-    Precision is the fraction of relevant documents among all the retrieved documents.
+    Computes the recall metric (for information retrieval),
+    as explained `here <https://en.wikipedia.org/wiki/Precision_and_recall#Recall>`__.
+    Recall is the fraction of relevant documents retrieved among all the relevant documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
-    otherwise an error is raised. If you want to measure Precision@K, ``k`` must be a positive integer.
+    otherwise an error is raised. If you want to measure Recall@K, ``k`` must be a positive integer.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
@@ -33,12 +33,13 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
         k: consider only the top k elements (default: None)
 
     Returns:
-        a single-value tensor with the precision (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
+        a single-value tensor with the recall (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Example:
+        >>> from  torchmetrics.functional import retrieval_recall
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_precision(preds, target, k=2)
+        >>> retrieval_recall(preds, target, k=2)
         tensor(0.5000)
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
@@ -53,4 +54,4 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
         return tensor(0.0, device=preds.device)
 
     relevant = target[torch.argsort(preds, dim=-1, descending=True)][:k].sum().float()
-    return relevant / k
+    return relevant / target.sum()
