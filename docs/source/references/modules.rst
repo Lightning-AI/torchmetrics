@@ -126,12 +126,6 @@ AveragePrecision
 .. autoclass:: torchmetrics.AveragePrecision
     :noindex:
 
-BinnedAveragePrecision
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.BinnedAveragePrecision
-    :noindex:
-
 AUC
 ~~~
 
@@ -142,6 +136,12 @@ AUROC
 ~~~~~
 
 .. autoclass:: torchmetrics.AUROC
+    :noindex:
+
+BinnedAveragePrecision
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedAveragePrecision
     :noindex:
 
 CohenKappa
