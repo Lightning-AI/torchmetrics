@@ -216,8 +216,8 @@ def _functional_test(
 def _assert_half_support(
     metric_module: Metric,
     metric_functional: Callable,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     device: str = "cpu",
     **kwargs_update
 ):
@@ -368,8 +368,8 @@ class MetricTester:
             device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
 
             _class_test(
-                0,
-                1,
+                rank=0,
+                worldsize=1,
                 preds=preds,
                 target=target,
                 metric_class=metric_class,
@@ -386,14 +386,14 @@ class MetricTester:
 
     def run_precision_test_cpu(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {},
+        metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if an metric can be used with half precision tensors on cpu
+        """Test if a metric can be used with half precision tensors on cpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -403,20 +403,21 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
+        metric_args = metric_args or {}
         _assert_half_support(
             metric_module(**metric_args), metric_functional, preds, target, device="cpu", **kwargs_update
         )
 
     def run_precision_test_gpu(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {},
+        metric_args: dict = None,
         **kwargs_update,
     ):
-        """Test if an metric can be used with half precision tensors on gpu
+        """Test if a metric can be used with half precision tensors on gpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
@@ -426,9 +427,43 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
+        metric_args = metric_args or {}
         _assert_half_support(
             metric_module(**metric_args), metric_functional, preds, target, device="cuda", **kwargs_update
         )
+
+    def run_differentiability_test(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = None,
+    ):
+        """Test if a metric is differentiable or not
+
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        metric_args = metric_args or {}
+        # only floating point tensors can require grad
+        metric = metric_module(**metric_args)
+        if preds.is_floating_point():
+            preds.requires_grad = True
+            out = metric(preds[0], target[0])
+            assert metric.is_differentiable == out.requires_grad
+
+            if metric.is_differentiable:
+                # check for numerical correctness
+                assert torch.autograd.gradcheck(
+                    partial(metric_functional, **metric_args), (preds[0].double(), target[0])
+                )
+
+            # reset as else it will carry over to other tests
+            preds.requires_grad = False
 
 
 class DummyMetric(Metric):
