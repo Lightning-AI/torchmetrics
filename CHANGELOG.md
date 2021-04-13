@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 )
 - Added `prefix` argument to `MetricCollection` ([#70](https://github.com/PyTorchLightning/metrics/pull/70))
 - Added `__getitem__` as metric arithmetic operation ([#142](https://github.com/PyTorchLightning/metrics/pull/142))
+- Added `ignore_index` argument to `Accuracy` metric ([#155](https://github.com/PyTorchLightning/metrics/pull/155))
 
 ### Changed
 
