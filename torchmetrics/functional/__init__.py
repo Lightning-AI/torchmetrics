@@ -37,6 +37,7 @@ from torchmetrics.functional.regression.mean_squared_log_error import mean_squar
 from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
+from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out  # noqa: F401

@@ -50,6 +50,7 @@ from torchmetrics.regression import (  # noqa: F401 E402
     MeanSquaredLogError,
     PearsonCorrcoef,
     R2Score,
+    SpearmanCorrcoef,
 )
 from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalFallOut,
