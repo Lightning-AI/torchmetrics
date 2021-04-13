@@ -72,7 +72,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Te
 def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
     preds = _rank_data(preds)
     target = _rank_data(target)
-    
+
     preds_diff = preds - preds.mean()
     target_diff = target - target.mean()
 
