@@ -2,15 +2,7 @@
 import logging as __logging
 import os
 
-from torchmetrics.info import (  # noqa: F401
-    __author__,
-    __author_email__,
-    __copyright__,
-    __docs__,
-    __homepage__,
-    __license__,
-    __version__,
-)
+from torchmetrics.__about__ import *  # noqa: F401
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
