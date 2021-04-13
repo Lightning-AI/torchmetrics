@@ -50,7 +50,7 @@ def _sk_pearsonr(preds, target):
 ])
 class TestPearsonCorrcoef(MetricTester):
     atol = 1e-2
-    
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_pearson_corrcoef(self, preds, target, ddp, dist_sync_on_step):
