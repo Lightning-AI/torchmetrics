@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -96,10 +97,10 @@ class FBeta(StatScores):
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -137,12 +138,20 @@ class FBeta(StatScores):
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        if is_multiclass is not None and multiclass is None:
+            warn(
+                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+                DeprecationWarning
+            )
+            multiclass = is_multiclass
+
         self.beta = beta
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
@@ -154,7 +163,7 @@ class FBeta(StatScores):
             threshold=threshold,
             top_k=top_k,
             num_classes=num_classes,
-            is_multiclass=is_multiclass,
+            multiclass=multiclass,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -243,10 +252,10 @@ class F1(FBeta):
             this parameter defaults to 1.
 
             Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -278,12 +287,19 @@ class F1(FBeta):
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        if is_multiclass is not None and multiclass is None:
+            warn(
+                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
+                DeprecationWarning
+            )
+            multiclass = is_multiclass
 
         super().__init__(
             num_classes=num_classes,
@@ -293,7 +309,7 @@ class F1(FBeta):
             mdmc_average=mdmc_average,
             ignore_index=ignore_index,
             top_k=top_k,
-            is_multiclass=is_multiclass,
+            multiclass=multiclass,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
