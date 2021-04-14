@@ -59,6 +59,8 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
+    __jit_unused_properties__ = ["is_differentiable"]
+
     def __init__(
         self,
         compute_on_step: bool = True,
@@ -453,7 +455,9 @@ class Metric(nn.Module, ABC):
 
     @property
     def is_differentiable(self):
-        raise NotImplementedError
+        # There is a bug in PyTorch that leads to properties being executed during scripting
+        # To make the metric scriptable, we add property to ignore list and switch to return None here
+        return None
 
 
 def _neg(tensor: Tensor):

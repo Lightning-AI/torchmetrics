@@ -259,3 +259,8 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.half()
     assert metric.x.dtype == torch.float16
+
+
+def test_metric_scripts():
+    torch.jit.script(DummyMetric())
+    torch.jit.script(DummyMetricSum())
