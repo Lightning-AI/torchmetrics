@@ -16,7 +16,7 @@ import inspect
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Callable, Optional, overload, Union
+from typing import Any, Callable, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -234,10 +234,6 @@ class Metric(nn.Module, ABC):
             return self._computed
 
         return wrapped_func
-
-    @overload
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        ...
 
     @abstractmethod
     def update(self) -> None:  # pylint: disable=E0202

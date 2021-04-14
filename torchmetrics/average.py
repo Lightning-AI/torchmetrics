@@ -78,7 +78,11 @@ class AverageMeter(Metric):
         self.add_state("weight", torch.zeros(()), dist_reduce_fx="sum")
 
     # TODO: need to be strings because Unions are not pickleable in Python 3.6
-    def update(self, value: "typing.Union[Tensor, float]", weight: "typing.Union[Tensor, float]" = 1.0) -> None:
+    def update(  # type: ignore
+        self,
+        value: "typing.Union[Tensor, float]",
+        weight: "typing.Union[Tensor, float]" = 1.0
+    ) -> None:
         """Updates the average with.
 
         Args:
