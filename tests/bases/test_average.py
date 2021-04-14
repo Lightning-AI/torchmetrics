@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from tests.helpers.testers import MetricTester, NUM_BATCHES, BATCH_SIZE
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.average import AverageMeter
 
 
