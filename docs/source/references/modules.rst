@@ -12,6 +12,12 @@ metrics.
 .. autoclass:: torchmetrics.Metric
     :noindex:
 
+We also have an ``AverageMeter`` class that is helpful for defining ad-hoc metrics, when creating
+your own metric type might be too burdensome.
+
+.. autoclass:: torchmetrics.AverageMeter
+    :noindex:
+
 **********************
 Classification Metrics
 **********************
