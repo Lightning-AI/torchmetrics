@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 import torch
 from torch import Tensor
@@ -80,8 +79,8 @@ class AverageMeter(Metric):
     # TODO: need to be strings because Unions are not pickleable in Python 3.6
     def update(  # type: ignore
         self,
-        value: "typing.Union[Tensor, float]",
-        weight: "typing.Union[Tensor, float]" = 1.0
+        value: "Union[Tensor, float]",
+        weight: "Union[Tensor, float]" = 1.0
     ) -> None:
         """Updates the average with.
 
