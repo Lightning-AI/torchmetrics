@@ -13,10 +13,10 @@
 # limitations under the License.
 """Import utilities"""
 import operator
-from distutils.version import LooseVersion
 from importlib import import_module
 from importlib.util import find_spec
 
+from packaging.version import Version
 from pkg_resources import DistributionNotFound
 
 
@@ -52,13 +52,11 @@ def _compare_version(package: str, op, version) -> bool:
     except (ModuleNotFoundError, DistributionNotFound):
         return False
     try:
-        pkg_version = LooseVersion(pkg.__version__)
-    except AttributeError:
-        return False
-    if not (hasattr(pkg_version, "vstring") and hasattr(pkg_version, "version")):
+        pkg_version = Version(pkg.__version__)
+    except TypeError:
         # this is mock by sphinx, so it shall return True ro generate all summaries
         return True
-    return op(pkg_version, LooseVersion(version))
+    return op(pkg_version, Version(version))
 
 
 _TORCH_LOWER_1_4 = _compare_version("torch", operator.lt, "1.4.0")

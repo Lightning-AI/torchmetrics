@@ -30,12 +30,14 @@ FOLDER_GENERATED = 'generated'
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
 try:
-    from torchmetrics import info
+    from torchmetrics import __about__ as about
 except ImportError:
     # alternative https://stackoverflow.com/a/67692/4521646
-    spec = spec_from_file_location("torchmetrics/info.py", os.path.join(_PATH_ROOT, "torchmetrics", "info.py"))
-    info = module_from_spec(spec)
-    spec.loader.exec_module(info)
+    spec = spec_from_file_location(
+        "torchmetrics/__about__.py", os.path.join(_PATH_ROOT, "torchmetrics", "__about__.py")
+    )
+    about = module_from_spec(spec)
+    spec.loader.exec_module(about)
 
 html_favicon = '_static/images/icon.svg'
 
@@ -43,13 +45,13 @@ html_favicon = '_static/images/icon.svg'
 
 # this name shall match the project name in Github as it is used for linking to code
 project = "PyTorch-Metrics"
-copyright = info.__copyright__
-author = info.__author__
+copyright = about.__copyright__
+author = about.__author__
 
 # The short X.Y version
-version = info.__version__
+version = about.__version__
 # The full version, including alpha/beta/rc tags
-release = info.__version__
+release = about.__version__
 
 # Options for the linkcode extension
 # ----------------------------------
@@ -171,7 +173,7 @@ html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
 
 html_theme_options = {
     'pytorch_project': 'https://pytorchlightning.ai',
-    'canonical_url': info.__docs_url__,
+    'canonical_url': about.__docs_url__,
     "collapse_navigation": False,
     "display_version": True,
     "logo_only": False,
@@ -237,7 +239,7 @@ texinfo_documents = [
         project + " Documentation",
         author,
         project,
-        info.__docs__,
+        about.__docs__,
         "Miscellaneous",
     ),
 ]
@@ -284,7 +286,7 @@ todo_include_todos = True
 
 # packages for which sphinx-apidoc should generate the docs (.rst files)
 PACKAGES = [
-    info.__name__,
+    about.__name__,
 ]
 
 # def run_apidoc(_):
