@@ -103,6 +103,18 @@ class TestAccuracies(MetricTester):
             },
         )
 
+    def test_accuracy_differentiability(self, preds, target, subset_accuracy):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=Accuracy,
+            metric_functional=accuracy,
+            metric_args={
+                "threshold": THRESHOLD,
+                "subset_accuracy": subset_accuracy
+            }
+        )
+
 
 _l1to4 = [0.1, 0.2, 0.3, 0.4]
 _l1to4t3 = np.array([_l1to4, _l1to4, _l1to4])

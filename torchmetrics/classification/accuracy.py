@@ -260,3 +260,8 @@ class Accuracy(StatScores):
         else:
             tp, fp, tn, fn = self._get_final_stats()
             return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
+
+    @property
+    def is_differentiable(self):
+        return False
+

@@ -14,24 +14,23 @@
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
-from torchmetrics.functional.regression.mean_squared_log_error import (
-    _mean_squared_log_error_compute,
-    _mean_squared_log_error_update,
-)
+from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
-class MeanSquaredLogError(Metric):
+class SpearmanCorrcoef(Metric):
     r"""
-    Computes `mean squared logarithmic error
-    <https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error>`_
-    (MSLE):
+    Computes `spearmans rank correlation coefficient
+    <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_.
 
-    .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
+    .. math:
+        r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
 
-    Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
+    where rg_x and rg_y are the rank associated to the variables x and y. Spearmans correlations coefficient
+    corresponds to the standard pearsons correlation coefficient calculated on the rank variables.
 
     Args:
         compute_on_step:
@@ -41,18 +40,17 @@ class MeanSquaredLogError(Metric):
             before returning the value at the step. default: False
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
 
     Example:
-        >>> from torchmetrics import MeanSquaredLogError
-        >>> target = torch.tensor([2.5, 5, 4, 8])
-        >>> preds = torch.tensor([3, 5, 2.5, 7])
-        >>> mean_squared_log_error = MeanSquaredLogError()
-        >>> mean_squared_log_error(preds, target)
-        tensor(0.0397)
-
-    .. note::
-        Half precision is only support on GPU for this metric
-
+        >>> from torchmetrics import SpearmanCorrcoef
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> spearman = SpearmanCorrcoef()
+        >>> spearman(preds, target)
+        tensor(1.0000)
     """
 
     def __init__(
@@ -60,7 +58,7 @@ class MeanSquaredLogError(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        dist_sync_fn: Optional[Callable] = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -68,9 +66,13 @@ class MeanSquaredLogError(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        rank_zero_warn(
+            'Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer.'
+            ' For large datasets, this may lead to large memory footprint.'
+        )
 
-        self.add_state("sum_squared_log_error", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -80,17 +82,14 @@ class MeanSquaredLogError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
-
-        self.sum_squared_log_error += sum_squared_log_error
-        self.total += n_obs
+        preds, target = _spearman_corrcoef_update(preds, target)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self):
         """
-        Compute mean squared logarithmic error over state.
+        Computes spearmans correlation coefficient
         """
-        return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)
-
-    @property
-    def is_differentiable(self):
-        return True
+        preds = torch.cat(self.preds, dim=0)
+        target = torch.cat(self.target, dim=0)
+        return _spearman_corrcoef_compute(preds, target)

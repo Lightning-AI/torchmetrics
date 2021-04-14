@@ -322,11 +322,11 @@ def test_top_k(
     metric_class,
     metric_fn,
     k: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     average: str,
-    expected_fbeta: torch.Tensor,
-    expected_f1: torch.Tensor,
+    expected_fbeta: Tensor,
+    expected_f1: Tensor,
 ):
     """A simple test to check that top_k works as expected.
 

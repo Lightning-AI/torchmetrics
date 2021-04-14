@@ -7,17 +7,18 @@ from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 try:
-    from torchmetrics import info, setup_tools
+    from torchmetrics import __about__ as about
+    from torchmetrics import setup_tools
 except ImportError:
     # alternative https://stackoverflow.com/a/67692/4521646
     sys.path.append("torchmetrics")
-    import info
+    import __about__ as about
     import setup_tools
 
 long_description = setup_tools._load_readme_description(
     _PATH_ROOT,
-    homepage=info.__homepage__,
-    version=f'v{info.__version__}',
+    homepage=about.__homepage__,
+    version=f'v{about.__version__}',
 )
 
 # https://packaging.python.org/discussions/install-requires-vs-requirements /
@@ -27,13 +28,13 @@ long_description = setup_tools._load_readme_description(
 # engineer specific practices
 setup(
     name='torchmetrics',
-    version=info.__version__,
-    description=info.__docs__,
-    author=info.__author__,
-    author_email=info.__author_email__,
-    url=info.__homepage__,
-    download_url=os.path.join(info.__homepage__, 'archive', 'master.zip'),
-    license=info.__license__,
+    version=about.__version__,
+    description=about.__docs__,
+    author=about.__author__,
+    author_email=about.__author_email__,
+    url=about.__homepage__,
+    download_url=os.path.join(about.__homepage__, 'archive', 'master.zip'),
+    license=about.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -44,9 +45,9 @@ setup(
     setup_requires=[],
     install_requires=setup_tools._load_requirements(_PATH_ROOT),
     project_urls={
-        "Bug Tracker": os.path.join(info.__homepage__, 'issues'),
+        "Bug Tracker": os.path.join(about.__homepage__, 'issues'),
         "Documentation": "https://torchmetrics.rtfd.io/en/latest/",
-        "Source Code": info.__homepage__,
+        "Source Code": about.__homepage__,
     },
     classifiers=[
         'Environment :: Console',

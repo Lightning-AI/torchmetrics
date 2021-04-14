@@ -2,15 +2,7 @@
 import logging as __logging
 import os
 
-from torchmetrics.info import (  # noqa: F401
-    __author__,
-    __author_email__,
-    __copyright__,
-    __docs__,
-    __homepage__,
-    __license__,
-    __version__,
-)
+from torchmetrics.__about__ import *  # noqa: F401 F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -26,6 +18,9 @@ from torchmetrics.classification import (  # noqa: F401 E402
     ROC,
     Accuracy,
     AveragePrecision,
+    BinnedAveragePrecision,
+    BinnedPrecisionRecallCurve,
+    BinnedRecallAtFixedPrecision,
     CohenKappa,
     ConfusionMatrix,
     FBeta,
@@ -47,7 +42,9 @@ from torchmetrics.regression import (  # noqa: F401 E402
     MeanAbsoluteError,
     MeanSquaredError,
     MeanSquaredLogError,
+    PearsonCorrcoef,
     R2Score,
+    SpearmanCorrcoef,
 )
 from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalFallOut,
