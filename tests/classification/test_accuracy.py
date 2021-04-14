@@ -153,7 +153,7 @@ def test_topk_accuracy(preds, target, exp_result, k, subset_accuracy):
 
     for batch in range(preds.shape[0]):
         topk(preds[batch], target[batch])
-    print(topk.compute(), exp_result)
+
     assert topk.compute() == exp_result
 
     # Test functional

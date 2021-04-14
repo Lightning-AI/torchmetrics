@@ -88,12 +88,18 @@ class Accuracy(StatScores):
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
 
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
+            or ``'none'``, the score for the ignored class will be returned as ``nan``.
+
         top_k:
             Number of highest probability predictions considered to find the correct label, relevant
             only for (multi-dimensional) multi-class inputs with probability predictions. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
+
         multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
@@ -133,6 +139,10 @@ class Accuracy(StatScores):
             If ``threshold`` is not between ``0`` and ``1``.
         ValueError:
             If ``top_k`` is not an ``integer`` larger than ``0``.
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+        ValueError:
+            If two different input modes are provided, eg. using mult-label with multi-class.
 
     Example:
         >>> from torchmetrics import Accuracy
@@ -209,6 +219,7 @@ class Accuracy(StatScores):
             target: Ground truth labels
         """
 
+        """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
         mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
 
         if self.mode is None:
@@ -264,4 +275,3 @@ class Accuracy(StatScores):
     @property
     def is_differentiable(self):
         return False
-
