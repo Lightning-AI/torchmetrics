@@ -16,7 +16,6 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.accuracy import (
     _accuracy_compute,
     _accuracy_update,
@@ -25,6 +24,8 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_compute,
     _subset_accuracy_update,
 )
+
+from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 
 
 class Accuracy(StatScores):
