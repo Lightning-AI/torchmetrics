@@ -83,6 +83,7 @@ def _class_test(
     atol: float = 1e-8,
     device: str = 'cpu',
     fragment_kwargs: bool = False,
+    check_scriptable: bool = True,
     **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric
@@ -114,6 +115,10 @@ def _class_test(
     metric = metric_class(
         compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
     )
+
+    # check that the metric is scriptable
+    if check_scriptable:
+        torch.jit.script(metric)
 
     # move to device
     metric = metric.to(device)
@@ -319,6 +324,7 @@ class MetricTester:
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
         fragment_kwargs: bool = False,
+        check_scriptable: bool = True,
         **kwargs_update,
     ):
         """Main method that should be used for testing class. Call this inside testing
@@ -360,6 +366,7 @@ class MetricTester:
                     check_batch=check_batch,
                     atol=self.atol,
                     fragment_kwargs=fragment_kwargs,
+                    check_scriptable=check_scriptable,
                     **kwargs_update,
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
@@ -381,6 +388,7 @@ class MetricTester:
                 atol=self.atol,
                 device=device,
                 fragment_kwargs=fragment_kwargs,
+                check_scriptable=check_scriptable,
                 **kwargs_update,
             )
 
