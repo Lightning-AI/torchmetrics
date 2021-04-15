@@ -16,15 +16,15 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.accuracy import (
+    _accuracy_compute,
+    _accuracy_update,
+    _check_subset_validity,
+    _mode,
     _subset_accuracy_compute,
     _subset_accuracy_update,
-    _mode,
-    _accuracy_update,
-    _accuracy_compute,
-    _check_subset_validity
 )
-from torchmetrics.classification.stat_scores import StatScores
 
 
 class Accuracy(StatScores):
