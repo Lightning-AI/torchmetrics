@@ -163,8 +163,8 @@ class Accuracy(StatScores):
 
     def __init__(
         self,
-        num_classes: Optional[int] = None,
         threshold: float = 0.5,
+        num_classes: Optional[int] = None,
         average: str = "micro",
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
