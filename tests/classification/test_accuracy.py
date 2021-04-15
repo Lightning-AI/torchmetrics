@@ -216,7 +216,7 @@ def test_wrong_params(top_k, threshold):
 def test_different_modes(preds_mc, target_mc, preds_ml, target_ml):
     acc = Accuracy()
     acc(preds_mc, target_mc)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The `average` has to be one of"):
         acc(preds_ml, target_ml)
 
 
