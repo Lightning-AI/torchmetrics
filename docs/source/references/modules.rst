@@ -338,6 +338,12 @@ and you hope that relevant documents are scored higher. ``target`` contains the 
 Since a query may be compared with a variable number of documents, we use ``indexes`` to keep track of which scores belong to
 the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
 
+.. note::
+    `Retrieval` metrics are only intended to be used globally. This means that the average of the metric over each batch can be quite different
+    from the metric computed on the whole dataset. For this reason, we suggest to compute the metric only when all the examples
+    has been provided to the metric. When using `Pytorch Lightning`, we suggest to use ``on_step=False``
+    and ``on_epoch=True`` in ``self.log`` or to place the metric calculation in ``training_epoch_end``, ``validation_epoch_end`` or ``test_epoch_end``.
+
 .. doctest::
 
     >>> from torchmetrics import RetrievalMAP
