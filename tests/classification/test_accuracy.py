@@ -202,6 +202,24 @@ def test_wrong_params(top_k, threshold):
         accuracy(preds, target, threshold=threshold, top_k=top_k)
 
 
+@pytest.mark.parametrize(
+    "preds_mc, target_mc, preds_ml, target_ml",
+    [
+        (
+            tensor([0, 1, 1, 1]),
+            tensor([2, 2, 1, 1]),
+            tensor([[1, 0, 1, 1], [0, 0, 1, 0]]),
+            tensor([[0.8, 0.2, 0.8, 0.7], [0.6, 0.4, 0.6, 0.5]])
+        )
+    ],
+)
+def test_different_modes(preds_mc, target_mc, preds_ml, target_ml):
+    acc = Accuracy()
+    acc(preds_mc, target_mc)
+    with pytest.raises(ValueError):
+        acc(preds_ml, target_ml)
+
+
 _ml_t1 = [.8, .2, .8, .2]
 _ml_t2 = [_ml_t1, _ml_t1]
 _ml_ta2 = [[1, 0, 1, 1], [0, 1, 1, 0]]
@@ -241,7 +259,7 @@ def test_average_accuracy(preds, target, num_classes, exp_result, average, mdmc_
     preds = preds.view(total_samples, num_classes, -1)
     target = target.view(total_samples, -1)
 
-    acc_score = accuracy(preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average) 
+    acc_score = accuracy(preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average)
     assert (acc_score == tensor(exp_result)).all()
 
 
