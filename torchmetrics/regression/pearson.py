@@ -11,27 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
-from torchmetrics.functional.regression.mean_squared_log_error import (
-    _mean_squared_log_error_compute,
-    _mean_squared_log_error_update,
-)
+from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute, _pearson_corrcoef_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
-class MeanSquaredLogError(Metric):
+class PearsonCorrcoef(Metric):
     r"""
-    Computes `mean squared logarithmic error
-    <https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error>`_
-    (MSLE):
+    Computes `pearson correlation coefficient
+    <https://en.wikipedia.org/wiki/Pearson_correlation_coefficient>`_:
 
-    .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
+    .. math::
+        P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
 
-    Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
+    Where :math:`y` is a tensor of target values, and :math:`x` is a
+    tensor of predictions.
+
+    Forward accepts
+
+    - ``preds`` (float tensor): ``(N,)``
+    - ``target``(float tensor): ``(N,)``
 
     Args:
         compute_on_step:
@@ -43,15 +47,12 @@ class MeanSquaredLogError(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-        >>> from torchmetrics import MeanSquaredLogError
-        >>> target = torch.tensor([2.5, 5, 4, 8])
-        >>> preds = torch.tensor([3, 5, 2.5, 7])
-        >>> mean_squared_log_error = MeanSquaredLogError()
-        >>> mean_squared_log_error(preds, target)
-        tensor(0.0397)
-
-    .. note::
-        Half precision is only support on GPU for this metric
+        >>> from torchmetrics import PearsonCorrcoef
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> pearson = PearsonCorrcoef()
+        >>> pearson(preds, target)
+        tensor(0.9849)
 
     """
 
@@ -60,17 +61,20 @@ class MeanSquaredLogError(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_squared_log_error", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        rank_zero_warn(
+            'Metric `PearsonCorrcoef` will save all targets and predictions in buffer.'
+            ' For large datasets this may lead to large memory footprint.'
+        )
+
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -80,17 +84,14 @@ class MeanSquaredLogError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
-
-        self.sum_squared_log_error += sum_squared_log_error
-        self.total += n_obs
+        preds, target = _pearson_corrcoef_update(preds, target)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self):
         """
-        Compute mean squared logarithmic error over state.
+        Computes pearson correlation coefficient over state.
         """
-        return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)
-
-    @property
-    def is_differentiable(self):
-        return True
+        preds = torch.cat(self.preds, dim=0)
+        target = torch.cat(self.target, dim=0)
+        return _pearson_corrcoef_compute(preds, target)

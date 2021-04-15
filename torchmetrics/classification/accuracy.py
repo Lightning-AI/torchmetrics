@@ -164,3 +164,7 @@ class Accuracy(Metric):
         Computes accuracy based on inputs passed in to ``update`` previously.
         """
         return _accuracy_compute(self.correct, self.total)
+
+    @property
+    def is_differentiable(self):
+        return False

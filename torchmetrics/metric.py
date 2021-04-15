@@ -59,6 +59,8 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
+    __jit_ignored_attributes__ = ["is_differentiable"]
+
     def __init__(
         self,
         compute_on_step: bool = True,
@@ -450,6 +452,12 @@ class Metric(nn.Module, ABC):
 
     def __getitem__(self, idx):
         return CompositionalMetric(lambda x: x[idx], self, None)
+
+    @property
+    def is_differentiable(self):
+        # There is a bug in PyTorch that leads to properties being executed during scripting
+        # To make the metric scriptable, we add property to ignore list and switch to return None here
+        return None
 
 
 def _neg(tensor: Tensor):
