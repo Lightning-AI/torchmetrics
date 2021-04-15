@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional, Tuple
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
@@ -226,6 +225,7 @@ def accuracy(
             If ``top_k`` parameter is set for ``multi-label`` inputs.
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional import accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])

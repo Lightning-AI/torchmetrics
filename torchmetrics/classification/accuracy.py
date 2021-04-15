@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.accuracy import (
@@ -146,6 +145,7 @@ class Accuracy(StatScores):
             If two different input modes are provided, eg. using mult-label with multi-class.
 
     Example:
+        >>> import torch
         >>> from torchmetrics import Accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
