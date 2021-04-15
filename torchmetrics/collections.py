@@ -78,7 +78,9 @@ class MetricCollection(nn.ModuleDict):
         super().__init__()
         if isinstance(metrics, dict):
             # Check all values are metrics
-            for name, metric in metrics.items():
+            # Make sure that metrics are added in deterministic order
+            for name in sorted(metrics.keys()):
+                metric = metrics[name]
                 if not isinstance(metric, Metric):
                     raise ValueError(
                         f"Value {metric} belonging to key {name}"
