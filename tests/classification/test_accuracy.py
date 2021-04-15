@@ -241,9 +241,8 @@ def test_average_accuracy(preds, target, num_classes, exp_result, average, mdmc_
     preds = preds.view(total_samples, num_classes, -1)
     target = target.view(total_samples, -1)
 
-    assert (accuracy(
-        preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average
-    ) == tensor(exp_result)).all()
+    acc_score = accuracy(preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average) 
+    assert (acc_score == tensor(exp_result)).all()
 
 
 @pytest.mark.parametrize(
@@ -267,6 +266,5 @@ def test_average_accuracy_bin(preds, target, num_classes, exp_result, average, m
 
     preds = preds.view(total_samples, -1)
     target = target.view(total_samples, -1)
-    assert (accuracy(
-        preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average, multiclass=multiclass
-    ) == tensor(exp_result)).all()
+    acc_score = accuracy(preds, target, num_classes=num_classes, average=average, mdmc_average=mdmc_average, multiclass=multiclass)
+    assert (acc_score == tensor(exp_result)).all()
