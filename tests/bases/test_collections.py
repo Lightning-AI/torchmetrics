@@ -133,26 +133,41 @@ def test_metric_collection_args_kwargs(tmpdir):
     assert metric_collection['DummyMetricDiff'].x == -20
 
 
-def test_metric_collection_prefix_arg(tmpdir):
+@pytest.mark.parametrize("prefix, postfix", [
+    [None, None],
+    ['prefix_', None],
+    [None, '_postfix'],
+    ['prefix_', '_postfix']
+])
+def test_metric_collection_prefix_postfix_args(prefix, postfix):
     """ Test that the prefix arg alters the keywords in the output"""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
     names = ['DummyMetricSum', 'DummyMetricDiff']
+    names = [prefix + n if prefix is not None else n for n in names]
+    names = [n + postfix if postfix is not None else n for n in names]
 
-    metric_collection = MetricCollection([m1, m2], prefix='prefix_')
+    metric_collection = MetricCollection([m1, m2], prefix=prefix, postfix=postfix)
 
     # test forward
     out = metric_collection(5)
     for name in names:
-        assert f"prefix_{name}" in out, 'prefix argument not working as intended with forward method'
+        assert name in out, 'prefix or postfix argument not working as intended with forward method'
 
     # test compute
     out = metric_collection.compute()
     for name in names:
-        assert f"prefix_{name}" in out, 'prefix argument not working as intended with compute method'
+        assert name in out, 'prefix or postfix argument not working as intended with compute method'
 
     # test clone
     new_metric_collection = metric_collection.clone(prefix='new_prefix_')
     out = new_metric_collection(5)
+    names = [n[7:] if prefix is not None else n for n in names]  # strip away old prefix
     for name in names:
         assert f"new_prefix_{name}" in out, 'prefix argument not working as intended with clone method'
+
+    new_metric_collection = new_metric_collection.clone(postfix='_new_postfix')
+    out = new_metric_collection(5)
+    names = [n[:-8] if postfix is not None else n for n in names]  # strip away old postfix
+    for name in names:
+        assert f"new_prefix_{name}_new_postfix" in out, 'postfix argument not working as intended with clone method'
