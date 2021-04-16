@@ -222,7 +222,20 @@ def accuracy(
 
     Raises:
         ValueError:
+            If ``threshold`` is not a ``float`` between ``0`` and ``1``.
+        ValueError:
             If ``top_k`` parameter is set for ``multi-label`` inputs.
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+        ValueError:
+            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
+        ValueError:
+            If ``average`` is set but ``num_classes`` is not provided.
+        ValueError:
+            If ``num_classes`` is set
+            and ``ignore_index`` is not in the range ``[0, num_classes)``.
+        ValueError:
+            If ``top_k`` is not an ``integer`` larger than ``0``.
 
     Example:
         >>> import torch
@@ -237,6 +250,26 @@ def accuracy(
         >>> accuracy(preds, target, top_k=2)
         tensor(0.6667)
     """
+
+    if not 0 < threshold < 1:
+        raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
+
+    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+    if average not in allowed_average:
+        raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
+    if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
+        raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
+
+    allowed_mdmc_average = [None, "samplewise", "global"]
+    if mdmc_average not in allowed_mdmc_average:
+        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
+
+    if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
+        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
+
+    if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
+        raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
     preds, target = _input_squeeze(preds, target)
     mode = _mode(preds, target, threshold, top_k, num_classes, multiclass)
