@@ -28,8 +28,7 @@ from tests.classification.inputs import _input_multilabel_multidim as _input_mlm
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import THRESHOLD, MetricTester
-from tests.helpers.testers import NUM_CLASSES
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Accuracy
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
@@ -255,15 +254,15 @@ def test_wrong_params(
         (
             tensor([0, 1, 1, 1]),
             tensor([2, 2, 1, 1]),
+            tensor([[0.8, 0.2, 0.8, 0.7], [0.6, 0.4, 0.6, 0.5]]),
             tensor([[1, 0, 1, 1], [0, 0, 1, 0]]),
-            tensor([[0.8, 0.2, 0.8, 0.7], [0.6, 0.4, 0.6, 0.5]])
         )
     ],
 )
 def test_different_modes(preds_mc, target_mc, preds_ml, target_ml):
     acc = Accuracy()
     acc(preds_mc, target_mc)
-    with pytest.raises(ValueError, match="The `average` has to be one of"):
+    with pytest.raises(ValueError, match="^[You cannot use]"):
         acc(preds_ml, target_ml)
 
 
