@@ -109,7 +109,6 @@ extensions = [
     "sphinx.ext.imgmath",
     "myst_parser",
     "sphinx.ext.autosectionlabel",
-    # 'm2r',
     "nbsphinx",
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
