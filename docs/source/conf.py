@@ -107,7 +107,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.imgmath",
-    "recommonmark",
+    "myst_parser",
     "sphinx.ext.autosectionlabel",
     # 'm2r',
     "nbsphinx",
