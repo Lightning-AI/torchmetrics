@@ -91,7 +91,7 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average='macr
 class TestAUROC(MetricTester):
 
     @pytest.mark.parametrize(
-        "preds, target, sk_metric, num_classes",[
+        "preds, target, sk_metric, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
             (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
             (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
@@ -128,7 +128,7 @@ class TestAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize(
-        "preds, target, sk_metric, num_classes",[
+        "preds, target, sk_metric, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
             (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
             (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
@@ -161,7 +161,7 @@ class TestAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize(
-        "preds, target, num_classes",[
+        "preds, target, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, 1),
             (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES),
             (_input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES),

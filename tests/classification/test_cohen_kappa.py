@@ -81,7 +81,7 @@ class TestCohenKappa(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize(
-        "preds, target, sk_metric, num_classes",[
+        "preds, target, sk_metric, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, _sk_cohen_kappa_binary_prob, 2),
             (_input_binary.preds, _input_binary.target, _sk_cohen_kappa_binary, 2),
             (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cohen_kappa_multilabel_prob, 2),
@@ -109,7 +109,7 @@ class TestCohenKappa(MetricTester):
         )
 
     @pytest.mark.parametrize(
-        "preds, target, sk_metric, num_classes",[
+        "preds, target, sk_metric, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, _sk_cohen_kappa_binary_prob, 2),
             (_input_binary.preds, _input_binary.target, _sk_cohen_kappa_binary, 2),
             (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cohen_kappa_multilabel_prob, 2),
@@ -131,9 +131,9 @@ class TestCohenKappa(MetricTester):
                 "weights": weights
             }
         )
-    
+
     @pytest.mark.parametrize(
-        "preds, target, num_classes",[
+        "preds, target, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, 2),
             (_input_binary.preds, _input_binary.target, 2),
             (_input_mlb_prob.preds, _input_mlb_prob.target, 2),

@@ -124,4 +124,3 @@ class CohenKappa(Metric):
         The equation of cohen kappa score is differentiable
         """
         return True
-    
