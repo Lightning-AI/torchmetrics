@@ -117,3 +117,10 @@ class CohenKappa(Metric):
         Computes cohen kappa score
         """
         return _cohen_kappa_compute(self.confmat, self.weights)
+
+    @property
+    def is_differentiable(self):
+        """
+        The equation of cohen kappa score is differentiable
+        """
+        return True

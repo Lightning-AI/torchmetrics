@@ -152,6 +152,31 @@ class TestAUROC(MetricTester):
             },
         )
 
+    def test_auroc_differentiability(self, preds, target, num_classes, average, max_fpr):
+        # max_fpr different from None is not support in multi class
+        if max_fpr is not None and num_classes != 1:
+            pytest.skip('max_fpr parameter not support for multi class or multi label')
+
+        # max_fpr only supported for torch v1.6 or higher
+        if max_fpr is not None and _TORCH_LOWER_1_6:
+            pytest.skip('requires torch v1.6 or higher to test max_fpr argument')
+
+        # average='micro' only supported for multilabel
+        if average == 'micro' and preds.ndim > 2 and preds.ndim == target.ndim + 1:
+            pytest.skip('micro argument only support for multilabel input')
+
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=AUROC,
+            metric_functional=auroc,
+            metric_args={
+                "num_classes": num_classes,
+                "average": average,
+                "max_fpr": max_fpr
+            }
+        )
+
 
 def test_error_on_different_mode():
     """ test that an error is raised if the user pass in data of

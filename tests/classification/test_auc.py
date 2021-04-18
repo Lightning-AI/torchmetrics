@@ -65,6 +65,17 @@ class TestAUC(MetricTester):
     def test_auc_functional(self, x, y):
         self.run_functional_metric_test(x, y, metric_functional=auc, sk_metric=sk_auc, metric_args={"reorder": False})
 
+    def test_auc_differentiability(self, x, y):
+        self.run_differentiability_test(
+            preds=x,
+            target=y,
+            metric_module=AUC,
+            metric_functional=auc,
+            metric_args={
+                "reorder": False
+            }
+        )
+
 
 @pytest.mark.parametrize(['x', 'y', 'expected'], [
     pytest.param([0, 1], [0, 1], 0.5),

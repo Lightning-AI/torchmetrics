@@ -120,6 +120,19 @@ class TestCohenKappa(MetricTester):
                 "weights": weights
             }
         )
+    
+    def test_cohen_kappa_differentiability(self, preds, target, num_classes):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=CohenKappa,
+            metric_functional=cohen_kappa,
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+                "weights": weights
+            }
+        )
 
 
 def test_warning_on_wrong_weights(tmpdir):

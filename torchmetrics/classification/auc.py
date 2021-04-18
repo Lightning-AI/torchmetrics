@@ -89,3 +89,11 @@ class AUC(Metric):
         x = torch.cat(self.x, dim=0)
         y = torch.cat(self.y, dim=0)
         return _auc_compute(x, y, reorder=self.reorder)
+
+    @property
+    def is_differentiable(self):
+        """
+        AUC metrics is considered as non differentiable so it should have `false`
+        value for `is_differentiable` property
+        """
+        return False
