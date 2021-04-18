@@ -13,11 +13,12 @@
 # limitations under the License.
 
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Sequence
 
 from torch import nn
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
 class MetricCollection(nn.ModuleDict):
@@ -58,6 +59,12 @@ class MetricCollection(nn.ModuleDict):
         >>> metrics(preds, target)
         {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
 
+    Example (input as arguments):
+        >>> metrics = MetricCollection(Accuracy(), Precision(num_classes=3, average='macro'),
+        ...                            Recall(num_classes=3, average='macro'))
+        >>> metrics(preds, target)
+        {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
+
     Example (input as dict):
         >>> metrics = MetricCollection({'micro_recall': Recall(num_classes=3, average='micro'),
         ...                             'macro_recall': Recall(num_classes=3, average='macro')})
@@ -72,10 +79,25 @@ class MetricCollection(nn.ModuleDict):
 
     def __init__(
         self,
-        metrics: Union[List[Metric], Tuple[Metric], Dict[str, Metric]],
+        metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+        *metric: Metric,
         prefix: Optional[str] = None,
     ):
         super().__init__()
+        if isinstance(metrics, Metric):
+            # set compatible with original type expectations
+            metrics = [metrics]
+        elif isinstance(metrics, Sequence):
+            # prepare for optional additions
+            metrics = list(metrics)
+        if metric:
+            metrics += [m for m in metric if isinstance(m, Metric)]
+            remain = [m for m in metric if not isinstance(m, Metric)]
+            if remain:
+                rank_zero_warn(
+                    f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
+                )
+
         if isinstance(metrics, dict):
             # Check all values are metrics
             for name, metric in metrics.items():
@@ -85,7 +107,7 @@ class MetricCollection(nn.ModuleDict):
                         " is not an instance of `pl.metrics.Metric`"
                     )
                 self[name] = metric
-        elif isinstance(metrics, (tuple, list)):
+        elif isinstance(metrics, Sequence):
             for metric in metrics:
                 if not isinstance(metric, Metric):
                     raise ValueError(
