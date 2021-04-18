@@ -181,7 +181,7 @@ class AUROC(Metric):
             self.average,
             self.max_fpr,
         )
-    
+
     @property
     def is_differentiable(self):
         """

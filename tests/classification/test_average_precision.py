@@ -98,7 +98,7 @@ class TestAveragePrecision(MetricTester):
             sk_metric=partial(sk_metric, num_classes=num_classes),
             metric_args={"num_classes": num_classes},
         )
-    
+
     @pytest.mark.parametrize(
         "preds, target, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, 1),
