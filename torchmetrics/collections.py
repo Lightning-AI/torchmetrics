@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Union, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import nn
 
@@ -103,17 +103,13 @@ class MetricCollection(nn.ModuleDict):
             for name, metric in metrics.items():
                 if not isinstance(metric, Metric):
                     raise ValueError(
-                        f"Value {metric} belonging to key {name}"
-                        " is not an instance of `pl.metrics.Metric`"
+                        f"Value {metric} belonging to key {name} is not an instance of `pl.metrics.Metric`"
                     )
                 self[name] = metric
         elif isinstance(metrics, Sequence):
             for metric in metrics:
                 if not isinstance(metric, Metric):
-                    raise ValueError(
-                        f"Input {metric} to `MetricCollection` is not a instance"
-                        " of `pl.metrics.Metric`"
-                    )
+                    raise ValueError(f"Input {metric} to `MetricCollection` is not a instance of `pl.metrics.Metric`")
                 name = metric.__class__.__name__
                 if name in self:
                     raise ValueError(f"Encountered two metrics both named {name}")
