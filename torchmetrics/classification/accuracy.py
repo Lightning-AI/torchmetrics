@@ -13,14 +13,21 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
-import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.accuracy import _accuracy_compute, _accuracy_update
-from torchmetrics.metric import Metric
+from torchmetrics.functional.classification.accuracy import (
+    _accuracy_compute,
+    _accuracy_update,
+    _check_subset_validity,
+    _mode,
+    _subset_accuracy_compute,
+    _subset_accuracy_update,
+)
+
+from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 
 
-class Accuracy(Metric):
+class Accuracy(StatScores):
     r"""
     Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`__:
 
@@ -42,15 +49,63 @@ class Accuracy(Metric):
     Accepts all input types listed in :ref:`references/modules:input types`.
 
     Args:
+        num_classes:
+            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
             Threshold probability value for transforming probability predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
+        average:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
+            - ``'macro'``: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tp + fn``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
+            - ``'samples'``: Calculate the metric for each sample, and average the metrics
+              across samples (with equal weights for each sample).
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
+
+        mdmc_average:
+            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter). Should be one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class.
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then averaged over samples.
+              The computation for each sample is done by treating the flattened extra axes ``...``
+              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              and computing the metric for the sample based on that.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
+              (see :ref:`references/modules:input types`)
+              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
+            or ``'none'``, the score for the ignored class will be returned as ``nan``.
+
         top_k:
             Number of highest probability predictions considered to find the correct label, relevant
             only for (multi-dimensional) multi-class inputs with probability predictions. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
+
+        multiclass:
+            Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be. See the parameter's
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            for a more detailed explanation and examples.
+
         subset_accuracy:
             Whether to compute subset accuracy for multi-label and multi-dimensional
             multi-class inputs (has no effect for other input types).
@@ -84,8 +139,15 @@ class Accuracy(Metric):
             If ``threshold`` is not between ``0`` and ``1``.
         ValueError:
             If ``top_k`` is not an ``integer`` larger than ``0``.
+        ValueError:
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+        ValueError:
+            If two different input modes are provided, eg. using ``mult-label`` with ``multi-class``.
+        ValueError:
+            If ``top_k`` parameter is set for ``multi-label`` inputs.
 
     Example:
+        >>> import torch
         >>> from torchmetrics import Accuracy
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
@@ -104,14 +166,30 @@ class Accuracy(Metric):
     def __init__(
         self,
         threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        average: str = "micro",
+        mdmc_average: Optional[str] = "global",
+        ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ):
+        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        if average not in allowed_average:
+            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
         super().__init__(
+            reduce="macro" if average in ["weighted", "none", None] else average,
+            mdmc_reduce=mdmc_average,
+            threshold=threshold,
+            top_k=top_k,
+            num_classes=num_classes,
+            multiclass=multiclass,
+            ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
@@ -127,9 +205,12 @@ class Accuracy(Metric):
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
+        self.average = average
         self.threshold = threshold
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
+        self.mode = None
+        self.multiclass = multiclass
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -141,18 +222,58 @@ class Accuracy(Metric):
             target: Ground truth labels
         """
 
-        correct, total = _accuracy_update(
-            preds, target, threshold=self.threshold, top_k=self.top_k, subset_accuracy=self.subset_accuracy
-        )
+        """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
+        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
 
-        self.correct += correct
-        self.total += total
+        if self.mode is None:
+            self.mode = mode
+        elif self.mode != mode:
+            raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
+
+        if self.subset_accuracy and not _check_subset_validity(self.mode):
+            self.subset_accuracy = False
+
+        if self.subset_accuracy:
+            correct, total = _subset_accuracy_update(
+                preds, target, threshold=self.threshold, top_k=self.top_k,
+            )
+            self.correct += correct
+            self.total += total
+        else:
+            tp, fp, tn, fn = _accuracy_update(
+                preds,
+                target,
+                reduce=self.reduce,
+                mdmc_reduce=self.mdmc_reduce,
+                threshold=self.threshold,
+                num_classes=self.num_classes,
+                top_k=self.top_k,
+                multiclass=self.multiclass,
+                ignore_index=self.ignore_index,
+                mode=self.mode,
+            )
+
+            # Update states
+            if self.reduce != "samples" and self.mdmc_reduce != "samplewise":
+                self.tp += tp
+                self.fp += fp
+                self.tn += tn
+                self.fn += fn
+            else:
+                self.tp.append(tp)
+                self.fp.append(fp)
+                self.tn.append(tn)
+                self.fn.append(fn)
 
     def compute(self) -> Tensor:
         """
         Computes accuracy based on inputs passed in to ``update`` previously.
         """
-        return _accuracy_compute(self.correct, self.total)
+        if self.subset_accuracy:
+            return _subset_accuracy_compute(self.correct, self.total)
+        else:
+            tp, fp, tn, fn = self._get_final_stats()
+            return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
 
     @property
     def is_differentiable(self):
