@@ -77,20 +77,20 @@ def _sk_cohen_kappa_multidim_multiclass(preds, target, weights=None):
 
 
 @pytest.mark.parametrize("weights", ['linear', 'quadratic', None])
-@pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes",
-    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_cohen_kappa_binary_prob, 2),
-     (_input_binary.preds, _input_binary.target, _sk_cohen_kappa_binary, 2),
-     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cohen_kappa_multilabel_prob, 2),
-     (_input_mlb.preds, _input_mlb.target, _sk_cohen_kappa_multilabel, 2),
-     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cohen_kappa_multiclass_prob, NUM_CLASSES),
-     (_input_mcls.preds, _input_mcls.target, _sk_cohen_kappa_multiclass, NUM_CLASSES),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cohen_kappa_multidim_multiclass_prob, NUM_CLASSES),
-     (_input_mdmc.preds, _input_mdmc.target, _sk_cohen_kappa_multidim_multiclass, NUM_CLASSES)]
-)
 class TestCohenKappa(MetricTester):
     atol = 1e-5
 
+    @pytest.mark.parametrize(
+        "preds, target, sk_metric, num_classes",
+        [(_input_binary_prob.preds, _input_binary_prob.target, _sk_cohen_kappa_binary_prob, 2),
+        (_input_binary.preds, _input_binary.target, _sk_cohen_kappa_binary, 2),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cohen_kappa_multilabel_prob, 2),
+        (_input_mlb.preds, _input_mlb.target, _sk_cohen_kappa_multilabel, 2),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cohen_kappa_multiclass_prob, NUM_CLASSES),
+        (_input_mcls.preds, _input_mcls.target, _sk_cohen_kappa_multiclass, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cohen_kappa_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc.preds, _input_mdmc.target, _sk_cohen_kappa_multidim_multiclass, NUM_CLASSES)]
+    )
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_cohen_kappa(self, weights, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
@@ -108,6 +108,17 @@ class TestCohenKappa(MetricTester):
             }
         )
 
+    @pytest.mark.parametrize(
+        "preds, target, sk_metric, num_classes",
+        [(_input_binary_prob.preds, _input_binary_prob.target, _sk_cohen_kappa_binary_prob, 2),
+        (_input_binary.preds, _input_binary.target, _sk_cohen_kappa_binary, 2),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cohen_kappa_multilabel_prob, 2),
+        (_input_mlb.preds, _input_mlb.target, _sk_cohen_kappa_multilabel, 2),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cohen_kappa_multiclass_prob, NUM_CLASSES),
+        (_input_mcls.preds, _input_mcls.target, _sk_cohen_kappa_multiclass, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cohen_kappa_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc.preds, _input_mdmc.target, _sk_cohen_kappa_multidim_multiclass, NUM_CLASSES)]
+    )
     def test_cohen_kappa_functional(self, weights, preds, target, sk_metric, num_classes):
         self.run_functional_metric_test(
             preds,
@@ -121,7 +132,18 @@ class TestCohenKappa(MetricTester):
             }
         )
     
-    def test_cohen_kappa_differentiability(self, preds, target, num_classes):
+    @pytest.mark.parametrize(
+        "preds, target, num_classes",
+        [(_input_binary_prob.preds, _input_binary_prob.target, 2),
+        (_input_binary.preds, _input_binary.target, 2),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, 2),
+        (_input_mlb.preds, _input_mlb.target, 2),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES),
+        (_input_mcls.preds, _input_mcls.target, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES),
+        (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES)]
+    )
+    def test_cohen_kappa_differentiability(self, preds, target, weights, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,

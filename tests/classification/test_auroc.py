@@ -86,18 +86,18 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average='macr
     )
 
 
-@pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes",
-    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
-     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
-     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
-     (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
-)
 @pytest.mark.parametrize("average", ['macro', 'weighted', 'micro'])
 @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
 class TestAUROC(MetricTester):
 
+    @pytest.mark.parametrize(
+        "preds, target, sk_metric, num_classes",
+        [(_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
+    )
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_auroc(self, preds, target, sk_metric, num_classes, average, max_fpr, ddp, dist_sync_on_step):
@@ -127,6 +127,14 @@ class TestAUROC(MetricTester):
             },
         )
 
+    @pytest.mark.parametrize(
+        "preds, target, sk_metric, num_classes",
+        [(_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
+    )
     def test_auroc_functional(self, preds, target, sk_metric, num_classes, average, max_fpr):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:
@@ -152,6 +160,14 @@ class TestAUROC(MetricTester):
             },
         )
 
+    @pytest.mark.parametrize(
+        "preds, target, num_classes",
+        [(_input_binary_prob.preds, _input_binary_prob.target, 1),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, NUM_CLASSES),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target, NUM_CLASSES)]
+    )
     def test_auroc_differentiability(self, preds, target, num_classes, average, max_fpr):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:
