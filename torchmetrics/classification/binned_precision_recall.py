@@ -157,13 +157,10 @@ class BinnedPrecisionRecallCurve(Metric):
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
 
         # Need to guarantee that last precision=1 and recall=0, similar to precision_recall_curve
-        precisions = torch.cat([
-            precisions, torch.ones(self.num_classes, 1, dtype=precisions.dtype, device=precisions.device)
-        ],
-            dim=1)
-        recalls = torch.cat([recalls,
-                             torch.zeros(self.num_classes, 1, dtype=recalls.dtype, device=recalls.device)],
-                            dim=1)
+        t_ones = torch.ones(self.num_classes, 1, dtype=precisions.dtype, device=precisions.device)
+        precisions = torch.cat([precisions, t_ones], dim=1)
+        t_zeros = torch.zeros(self.num_classes, 1, dtype=recalls.dtype, device=recalls.device)
+        recalls = torch.cat([recalls, t_zeros], dim=1)
         if self.num_classes == 1:
             return (precisions[0, :], recalls[0, :], self.thresholds)
         else:
