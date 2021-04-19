@@ -35,6 +35,7 @@ class MetricCollection(nn.ModuleDict):
             * dict: if metrics are passed in as a dict, will use each key in the
               dict as key for output dict. Use this format if you want to chain
               together multiple of the same metric with different parameters.
+              Note that the keys in the output dict will be sorted alphabetically.
 
         prefix: a string to append in front of the keys of the output dict
 
