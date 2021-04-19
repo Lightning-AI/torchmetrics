@@ -23,19 +23,18 @@ from torchmetrics.utilities import rank_zero_warn
 
 class MetricCollection(nn.ModuleDict):
     """
-    MetricCollection class can be used to chain metrics that have the same
-    call pattern into one single class.
+    MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
         metrics: One of the following
 
-            * list or tuple: if metrics are passed in as a list, will use the
-              metrics class name as key for output dict. Therefore, two metrics
-              of the same class cannot be chained this way.
+            * list or tuple (sequence): if metrics are passed in as a list, will use the metrics class name
+              as key for output dict. Therefore, two metrics of the same class cannot be chained this way.
 
-            * dict: if metrics are passed in as a dict, will use each key in the
-              dict as key for output dict. Use this format if you want to chain
-              together multiple of the same metric with different parameters.
+            * dict: if metrics are passed in as a dict, will use each key in the dict as key for output dict.
+              Use this format if you want to chain together multiple of the same metric with different parameters.
+
+        additional_metrics: adding additiona metrics if the first argument was single or sequrnce of metrics.
 
         prefix: a string to append in front of the keys of the output dict
 
@@ -46,6 +45,8 @@ class MetricCollection(nn.ModuleDict):
             If two elements in ``metrics`` have the same ``name``.
         ValueError:
             If ``metrics`` is not a ``list``, ``tuple`` or a ``dict``.
+        ValueError:
+            If ``metrics`` is is ``dict`` and passed any additional_metrics.
 
     Example (input as list):
         >>> import torch
@@ -87,19 +88,24 @@ class MetricCollection(nn.ModuleDict):
         if isinstance(metrics, Metric):
             # set compatible with original type expectations
             metrics = [metrics]
-        elif isinstance(metrics, Sequence):
+        if isinstance(metrics, Sequence):
             # prepare for optional additions
             metrics = list(metrics)
-        remain = []
-        for m in additional_metrics:
-            if isinstance(m, Metric):
-                metrics.append(m)
-            else:
-                remain.append(m)
-                
-        if remain:
-            rank_zero_warn(
-                f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
+            remain = []
+            for m in additional_metrics:
+                if isinstance(m, Metric):
+                    metrics.append(m)
+                else:
+                    remain.append(m)
+
+            if remain:
+                rank_zero_warn(
+                    f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
+                )
+        elif additional_metrics:
+            raise ValueError(
+                f"You have passes extra arguments {additional_metrics} which are not compatible"
+                f" with first passed dictionary {metrics} so they will be ignored."
             )
 
         if isinstance(metrics, dict):
