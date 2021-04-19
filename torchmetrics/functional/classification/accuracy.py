@@ -31,7 +31,7 @@ def _mode(
     threshold: float,
     top_k: Optional[int],
     num_classes: Optional[int],
-    multiclass: Optional[bool]
+    multiclass: Optional[bool],
 ) -> DataType:
     mode = _check_classification_inputs(
         preds, target, threshold=threshold, top_k=top_k, num_classes=num_classes, multiclass=multiclass
@@ -49,7 +49,7 @@ def _accuracy_update(
     top_k: Optional[int],
     multiclass: Optional[bool],
     ignore_index: Optional[int],
-    mode: DataType
+    mode: DataType,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
@@ -88,9 +88,8 @@ def _accuracy_compute(
     )
 
 
-def _subset_accuracy_update(
-    preds: Tensor, target: Tensor, threshold: float, top_k: Optional[int],
-) -> Tuple[Tensor, Tensor]:
+def _subset_accuracy_update(preds: Tensor, target: Tensor, threshold: float,
+                            top_k: Optional[int]) -> Tuple[Tensor, Tensor]:
 
     preds, target = _input_squeeze(preds, target)
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)

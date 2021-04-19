@@ -22,7 +22,7 @@ from torch import nn, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6, _LIGHTNING_GREATER_THAN_1_3
+from torchmetrics.utilities.imports import _LIGHTNING_GREATER_THAN_1_3, _TORCH_LOWER_1_6
 
 seed_all(42)
 

@@ -19,7 +19,7 @@ from torch import tensor
 from torch.utils.data import DataLoader
 
 from integrations.lightning_models import BoringModel, RandomDataset
-from torchmetrics import Metric, Accuracy, AveragePrecision
+from torchmetrics import Accuracy, AveragePrecision, Metric
 
 
 class SumMetric(Metric):
@@ -194,6 +194,7 @@ def test_metrics_reset(tmpdir):
 
     trainer.test(model)
     _assert_called(model, 'test')
+
 
 # todo: reconsider if it make sense to keep here
 # def test_metric_lightning_log(tmpdir):

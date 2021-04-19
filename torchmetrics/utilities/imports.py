@@ -13,8 +13,8 @@
 # limitations under the License.
 """Import utilities"""
 import operator
-from importlib.metadata import version as meta_version
 from importlib import import_module
+from importlib.metadata import version as meta_version
 from importlib.util import find_spec
 from typing import Optional
 
