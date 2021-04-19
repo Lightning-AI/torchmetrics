@@ -93,10 +93,7 @@ class MetricCollection(nn.ModuleDict):
             metrics = list(metrics)
             remain = []
             for m in additional_metrics:
-                if isinstance(m, Metric):
-                    metrics.append(m)
-                else:
-                    remain.append(m)
+                (metrics if isinstance(m, Metric) else remain).append(m)
 
             if remain:
                 rank_zero_warn(
