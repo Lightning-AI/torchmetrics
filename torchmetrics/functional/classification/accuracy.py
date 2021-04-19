@@ -88,8 +88,12 @@ def _accuracy_compute(
     )
 
 
-def _subset_accuracy_update(preds: Tensor, target: Tensor, threshold: float,
-                            top_k: Optional[int]) -> Tuple[Tensor, Tensor]:
+def _subset_accuracy_update(
+    preds: Tensor,
+    target: Tensor,
+    threshold: float,
+    top_k: Optional[int],
+) -> Tuple[Tensor, Tensor]:
 
     preds, target = _input_squeeze(preds, target)
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
