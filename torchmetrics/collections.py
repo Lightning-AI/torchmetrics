@@ -35,6 +35,7 @@ class MetricCollection(nn.ModuleDict):
             * dict: if metrics are passed in as a dict, will use each key in the
               dict as key for output dict. Use this format if you want to chain
               together multiple of the same metric with different parameters.
+              Note that the keys in the output dict will be sorted alphabetically.
 
         prefix: a string to append in front of the keys of the output dict
 
@@ -78,7 +79,9 @@ class MetricCollection(nn.ModuleDict):
         super().__init__()
         if isinstance(metrics, dict):
             # Check all values are metrics
-            for name, metric in metrics.items():
+            # Make sure that metrics are added in deterministic order
+            for name in sorted(metrics.keys()):
+                metric = metrics[name]
                 if not isinstance(metric, Metric):
                     raise ValueError(
                         f"Value {metric} belonging to key {name}"

@@ -156,3 +156,12 @@ def test_metric_collection_prefix_arg(tmpdir):
     out = new_metric_collection(5)
     for name in names:
         assert f"new_prefix_{name}" in out, 'prefix argument not working as intended with clone method'
+
+
+def test_metric_collection_same_order():
+    m1 = DummyMetricSum()
+    m2 = DummyMetricDiff()
+    col1 = MetricCollection({"a": m1, "b": m2})
+    col2 = MetricCollection({"b": m2, "a": m1})
+    for k1, k2 in zip(col1.keys(), col2.keys()):
+        assert k1 == k2
