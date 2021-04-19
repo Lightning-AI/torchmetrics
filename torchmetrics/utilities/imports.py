@@ -14,12 +14,11 @@
 """Import utilities"""
 import operator
 from importlib import import_module
-from importlib.metadata import version as meta_version
 from importlib.util import find_spec
 from typing import Optional
 
 from packaging.version import Version
-from pkg_resources import DistributionNotFound
+from pkg_resources import DistributionNotFound, get_distribution
 
 
 def _module_available(module_path: str) -> bool:
@@ -56,7 +55,8 @@ def _compare_version(package: str, op, version) -> Optional[bool]:
         return None
     except ImportError:
         # catches cyclic imports - the case with integrated libs
-        pkg_version = meta_version(package)
+        # see: https://stackoverflow.com/a/32965521
+        pkg_version = get_distribution(package).version
     try:
         pkg_version = Version(pkg_version)
     except TypeError:
