@@ -240,7 +240,7 @@ inside your LightningModule
 
     class MyModule():
         def __init__(self):
-            metrics = MetricCollection(Accuracy(), Precision(), Recall())
+            metrics = MetricCollection([Accuracy(), Precision(), Recall()])
             self.train_metrics = metrics.clone(prefix='train_')
             self.valid_metrics = metrics.clone(prefix='val_')
 

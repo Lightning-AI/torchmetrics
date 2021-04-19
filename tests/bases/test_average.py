@@ -15,11 +15,13 @@ def average_ignore_weights(values, weights):
 
 
 class DefaultWeightWrapper(AverageMeter):
+
     def update(self, values, weights):
         super().update(values)
 
 
 class ScalarWrapper(AverageMeter):
+
     def update(self, values, weights):
         # torch.ravel is PyTorch 1.8 only, so use np.ravel instead
         values = values.cpu().numpy()
@@ -37,6 +39,7 @@ class ScalarWrapper(AverageMeter):
     ],
 )
 class TestAverageMeter(MetricTester):
+
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_average_fn(self, ddp, dist_sync_on_step, values, weights):
