@@ -85,23 +85,23 @@ def test_device_and_dtype_transfer_metriccollection(tmpdir):
 
 def test_metric_collection_wrong_input(tmpdir):
     """ Check that errors are raised on wrong input """
-    m1 = DummyMetricSum()
+    dms = DummyMetricSum()
 
     # Not all input are metrics (list)
     with pytest.raises(ValueError):
-        _ = MetricCollection([m1, 5])
+        _ = MetricCollection([dms, 5])
 
     # Not all input are metrics (dict)
     with pytest.raises(ValueError):
-        _ = MetricCollection({'metric1': m1, 'metric2': 5})
+        _ = MetricCollection({'metric1': dms, 'metric2': 5})
 
     # Same metric passed in multiple times
     with pytest.raises(ValueError, match='Encountered two metrics both named *.'):
-        _ = MetricCollection([m1, m1])
+        _ = MetricCollection([dms, dms])
 
     # Not a list or dict passed in
-    with pytest.raises(ValueError, match='Unknown input to MetricCollection.'):
-        _ = MetricCollection(m1)
+    with pytest.warns(Warning, match=' which are not `Metric` so they will be ignored.'):
+        _ = MetricCollection(dms, [dms])
 
 
 def test_metric_collection_args_kwargs(tmpdir):
@@ -156,3 +156,12 @@ def test_metric_collection_prefix_arg(tmpdir):
     out = new_metric_collection(5)
     for name in names:
         assert f"new_prefix_{name}" in out, 'prefix argument not working as intended with clone method'
+
+
+def test_metric_collection_same_order():
+    m1 = DummyMetricSum()
+    m2 = DummyMetricDiff()
+    col1 = MetricCollection({"a": m1, "b": m2})
+    col2 = MetricCollection({"b": m2, "a": m1})
+    for k1, k2 in zip(col1.keys(), col2.keys()):
+        assert k1 == k2
