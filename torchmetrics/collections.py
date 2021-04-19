@@ -80,7 +80,7 @@ class MetricCollection(nn.ModuleDict):
     def __init__(
         self,
         metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
-        *metric: Metric,
+        *additional_metrics: Metric,
         prefix: Optional[str] = None,
     ):
         super().__init__()
@@ -90,13 +90,17 @@ class MetricCollection(nn.ModuleDict):
         elif isinstance(metrics, Sequence):
             # prepare for optional additions
             metrics = list(metrics)
-        if metric:
-            metrics += [m for m in metric if isinstance(m, Metric)]
-            remain = [m for m in metric if not isinstance(m, Metric)]
-            if remain:
-                rank_zero_warn(
-                    f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
-                )
+        remain = []
+        for m in additional_metrics:
+            if isinstance(m, Metric):
+                metrics.append(m)
+            else:
+                remain.append(m)
+                
+        if remain:
+            rank_zero_warn(
+                f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
+            )
 
         if isinstance(metrics, dict):
             # Check all values are metrics
