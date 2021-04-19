@@ -60,16 +60,15 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1):
     sk_target = target.view(-1).numpy()
     return _sk_average_precision_score(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
 
-
-class TestAveragePrecision(MetricTester):
-
-    @pytest.mark.parametrize(
+@pytest.mark.parametrize(
         "preds, target, sk_metric, num_classes", [
             (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_binary_prob, 1),
             (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_avg_prec_multiclass_prob, NUM_CLASSES),
             (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_avg_prec_multidim_multiclass_prob, NUM_CLASSES),
         ]
     )
+class TestAveragePrecision(MetricTester):
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_average_precision(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
@@ -83,13 +82,6 @@ class TestAveragePrecision(MetricTester):
             metric_args={"num_classes": num_classes}
         )
 
-    @pytest.mark.parametrize(
-        "preds, target, sk_metric, num_classes", [
-            (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_binary_prob, 1),
-            (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_avg_prec_multiclass_prob, NUM_CLASSES),
-            (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_avg_prec_multidim_multiclass_prob, NUM_CLASSES),
-        ]
-    )
     def test_average_precision_functional(self, preds, target, sk_metric, num_classes):
         self.run_functional_metric_test(
             preds=preds,
@@ -99,14 +91,7 @@ class TestAveragePrecision(MetricTester):
             metric_args={"num_classes": num_classes},
         )
 
-    @pytest.mark.parametrize(
-        "preds, target, num_classes", [
-            (_input_binary_prob.preds, _input_binary_prob.target, 1),
-            (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES),
-            (_input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES),
-        ]
-    )
-    def test_average_precision_differentiability(self, preds, target, num_classes):
+    def test_average_precision_differentiability(self, preds, sk_metric, target, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,
