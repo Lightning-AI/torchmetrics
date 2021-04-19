@@ -61,12 +61,12 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1):
     return _sk_average_precision_score(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
 
 @pytest.mark.parametrize(
-        "preds, target, sk_metric, num_classes", [
-            (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_binary_prob, 1),
-            (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_avg_prec_multiclass_prob, NUM_CLASSES),
-            (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_avg_prec_multidim_multiclass_prob, NUM_CLASSES),
-        ]
-    )
+    "preds, target, sk_metric, num_classes", [
+        (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_binary_prob, 1),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_avg_prec_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_avg_prec_multidim_multiclass_prob, NUM_CLASSES),
+    ]
+)
 class TestAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])

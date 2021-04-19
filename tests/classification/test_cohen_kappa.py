@@ -89,7 +89,6 @@ def _sk_cohen_kappa_multidim_multiclass(preds, target, weights=None):
         (_input_mdmc.preds, _input_mdmc.target, _sk_cohen_kappa_multidim_multiclass, NUM_CLASSES)]
 )
 class TestCohenKappa(MetricTester):
-    
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [True, False])
