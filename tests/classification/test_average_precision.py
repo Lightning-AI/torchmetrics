@@ -60,6 +60,7 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1):
     sk_target = target.view(-1).numpy()
     return _sk_average_precision_score(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
 
+
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes", [
         (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_binary_prob, 1),
