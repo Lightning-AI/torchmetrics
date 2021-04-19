@@ -28,13 +28,15 @@ class MetricCollection(nn.ModuleDict):
     Args:
         metrics: One of the following
 
-            * list or tuple (sequence): if metrics are passed in as a list, will use the metrics class name
+            * list or tuple (sequence): if metrics are passed in as a list or tuple, will use the metrics class name
               as key for output dict. Therefore, two metrics of the same class cannot be chained this way.
+
+            * arguments: similar to passing in as a list, metrics passed in as arguments will use their metric
+              class name as key for the output dict.
 
             * dict: if metrics are passed in as a dict, will use each key in the dict as key for output dict.
               Use this format if you want to chain together multiple of the same metric with different parameters.
-
-        additional_metrics: adding additiona metrics if the first argument was single or sequrnce of metrics.
+              Note that the keys in the output dict will be sorted alphabetically.
 
         prefix: a string to append in front of the keys of the output dict
 
@@ -107,7 +109,9 @@ class MetricCollection(nn.ModuleDict):
 
         if isinstance(metrics, dict):
             # Check all values are metrics
-            for name, metric in metrics.items():
+            # Make sure that metrics are added in deterministic order
+            for name in sorted(metrics.keys()):
+                metric = metrics[name]
                 if not isinstance(metric, Metric):
                     raise ValueError(
                         f"Value {metric} belonging to key {name} is not an instance of `pl.metrics.Metric`"
