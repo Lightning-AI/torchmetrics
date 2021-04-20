@@ -221,7 +221,6 @@ class Accuracy(StatScores):
             preds: Predictions from model (probabilities, or labels)
             target: Ground truth labels
         """
-
         """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
         mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
 
@@ -234,9 +233,7 @@ class Accuracy(StatScores):
             self.subset_accuracy = False
 
         if self.subset_accuracy:
-            correct, total = _subset_accuracy_update(
-                preds, target, threshold=self.threshold, top_k=self.top_k,
-            )
+            correct, total = _subset_accuracy_update(preds, target, threshold=self.threshold, top_k=self.top_k)
             self.correct += correct
             self.total += total
         else:
