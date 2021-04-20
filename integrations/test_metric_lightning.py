@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
 from unittest import mock
 
+import pytest
 import torch
 from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
@@ -84,9 +84,13 @@ def test_metric_lightning(tmpdir):
     )
     trainer.fit(model)
 
+
 @pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_1_3, reason='test requires lightning v1.3 or higher')
 def test_metrics_reset(tmpdir):
-    """Tests that metrics are reset correctly after the end of the train/val/test epoch."""
+    """Tests that metrics are reset correctly after the end of the train/val/test epoch.
+    Taken from:
+        https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
+    """
 
     class TestModel(LightningModule):
 

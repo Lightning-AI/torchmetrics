@@ -259,7 +259,7 @@ class Metric(nn.Module, ABC):
         """
         # lower lightning versions requires this implicitly to log metric objects correctly
         # in self.log
-        if not _LIGHTNING_AVAILABLE or _LIGHTNING_GREATER_THAN_1_3:
+        if not _LIGHTNING_AVAILABLE or _LIGHTNING_GREATER_EQUAL_1_3:
             self._computed = None
 
         for attr, default in self._defaults.items():
