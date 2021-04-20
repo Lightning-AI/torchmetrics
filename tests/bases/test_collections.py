@@ -182,3 +182,11 @@ def test_metric_collection_same_order():
     col2 = MetricCollection({"b": m2, "a": m1})
     for k1, k2 in zip(col1.keys(), col2.keys()):
         assert k1 == k2
+
+
+def test_collection_check_arg():
+    assert MetricCollection._check_arg(None, 'prefix') is None
+    assert MetricCollection._check_arg('sample', 'prefix') == 'sample'
+
+    with pytest.raises(ValueError, match="Expected input `postfix` to be a string, but got"):
+        MetricCollection._check_arg(1, 'postfix')

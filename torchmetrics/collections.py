@@ -191,9 +191,7 @@ class MetricCollection(nn.ModuleDict):
         return name
 
     @staticmethod
-    def _check_arg(arg: str, name: str) -> Optional[str]:
-        if arg is not None:
-            if isinstance(arg, str):
-                return arg
-            raise ValueError(f'Expected input {name} to be a string')
-        return None
+    def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
+        if arg is None or isinstance(arg, str):
+            return arg
+        raise ValueError(f'Expected input `{name}` to be a string, but got {type(arg)}')
