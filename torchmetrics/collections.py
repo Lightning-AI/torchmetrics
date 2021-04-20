@@ -172,9 +172,9 @@ class MetricCollection(nn.ModuleDict):
 
         """
         mc = deepcopy(self)
-        if prefix is not None:
+        if prefix:
             mc.prefix = self._check_arg(prefix, 'prefix')
-        if postfix is not None:
+        if postfix:
             mc.postfix = self._check_arg(postfix, 'postfix')
         return mc
 
