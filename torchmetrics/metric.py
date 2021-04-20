@@ -24,7 +24,7 @@ from torch import Tensor, nn
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _LIGHTNING_GREATER_THAN_1_3
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _LIGHTNING_GREATER_EQUAL_1_3
 
 
 class Metric(nn.Module, ABC):

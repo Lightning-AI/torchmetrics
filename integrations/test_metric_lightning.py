@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pytest
 from unittest import mock
 
 import torch
@@ -20,6 +21,7 @@ from torch.utils.data import DataLoader
 
 from integrations.lightning_models import BoringModel, RandomDataset
 from torchmetrics import Accuracy, AveragePrecision, Metric
+from torchmetrics.utilities.imports import _LIGHTNING_GREATER_EQUAL_1_3
 
 
 class SumMetric(Metric):
@@ -82,7 +84,7 @@ def test_metric_lightning(tmpdir):
     )
     trainer.fit(model)
 
-
+@pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_1_3, reason='test requires lightning v1.3 or higher')
 def test_metrics_reset(tmpdir):
     """Tests that metrics are reset correctly after the end of the train/val/test epoch."""
 
