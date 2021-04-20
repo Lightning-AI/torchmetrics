@@ -164,13 +164,13 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     # test clone
     new_metric_collection = metric_collection.clone(prefix='new_prefix_')
     out = new_metric_collection(5)
-    names = [n[7:] if prefix is not None else n for n in names]  # strip away old prefix
+    names = [n[len(prefix):] if prefix is not None else n for n in names]  # strip away old prefix
     for name in names:
         assert f"new_prefix_{name}" in out, 'prefix argument not working as intended with clone method'
 
     new_metric_collection = new_metric_collection.clone(postfix='_new_postfix')
     out = new_metric_collection(5)
-    names = [n[:-8] if postfix is not None else n for n in names]  # strip away old postfix
+    names = [n[:-len(postfix)] if postfix is not None else n for n in names]  # strip away old postfix
     for name in names:
         assert f"new_prefix_{name}_new_postfix" in out, 'postfix argument not working as intended with clone method'
 
