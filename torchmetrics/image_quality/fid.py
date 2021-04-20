@@ -156,8 +156,6 @@ class FID(Metric):
             self.fake_nobs += incep_score.shape[0]
         
     def compute(self):
-        return _compute_fid()
-        
-            
-            
-    
+        cov1 = self.real_cov / (self.real_nobs - 1)
+        cov2 = self.fake_cov / (self.fake_nobs - 1)
+        return _compute_fid(self.real_mean, cov1, self.fake_mean, cov2)
