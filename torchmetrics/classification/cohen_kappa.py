@@ -121,6 +121,8 @@ class CohenKappa(Metric):
     @property
     def is_differentiable(self):
         """
-        The equation of cohen kappa score is differentiable
+        cohen kappa is not differentiable since the implementation 
+        is based on calculating the confusion matrix which in general 
+        is not differentiable
         """
-        return True
+        return False
