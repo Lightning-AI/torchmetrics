@@ -40,6 +40,8 @@ class MetricCollection(nn.ModuleDict):
 
         prefix: a string to append in front of the keys of the output dict
 
+        postfix: a string to append after the keys of the output dict
+
     Raises:
         ValueError:
             If one of the elements of ``metrics`` is not an instance of ``pl.metrics.Metric``.
@@ -48,7 +50,11 @@ class MetricCollection(nn.ModuleDict):
         ValueError:
             If ``metrics`` is not a ``list``, ``tuple`` or a ``dict``.
         ValueError:
-            If ``metrics`` is is ``dict`` and passed any additional_metrics.
+            If ``metrics`` is ``dict`` and additional_metrics are passed in.
+        ValueError:
+            If ``prefix`` is set and it is not a string.
+        ValueError:
+            If ``postfix`` is set and it is not a string.
 
     Example (input as list):
         >>> import torch
@@ -85,6 +91,7 @@ class MetricCollection(nn.ModuleDict):
         metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
+        postfix: Optional[str] = None
     ):
         super().__init__()
         if isinstance(metrics, Metric):
@@ -128,7 +135,8 @@ class MetricCollection(nn.ModuleDict):
         else:
             raise ValueError("Unknown input to MetricCollection.")
 
-        self.prefix = self._check_prefix_arg(prefix)
+        self.prefix = self._check_arg(prefix, 'prefix')
+        self.postfix = self._check_arg(postfix, 'postfix')
 
     def forward(self, *args, **kwargs) -> Dict[str, Any]:  # pylint: disable=E0202
         """
@@ -136,7 +144,7 @@ class MetricCollection(nn.ModuleDict):
         be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return {self._set_prefix(k): m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+        return {self._set_name(k): m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
 
     def update(self, *args, **kwargs):  # pylint: disable=E0202
         """
@@ -149,20 +157,25 @@ class MetricCollection(nn.ModuleDict):
             m.update(*args, **m_kwargs)
 
     def compute(self) -> Dict[str, Any]:
-        return {self._set_prefix(k): m.compute() for k, m in self.items()}
+        return {self._set_name(k): m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
         """ Iteratively call reset for each metric """
         for _, m in self.items():
             m.reset()
 
-    def clone(self, prefix: Optional[str] = None) -> 'MetricCollection':
+    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> 'MetricCollection':
         """ Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
+            postfix: a string to append after the keys of the output dict
+
         """
         mc = deepcopy(self)
-        mc.prefix = self._check_prefix_arg(prefix)
+        if prefix:
+            mc.prefix = self._check_arg(prefix, 'prefix')
+        if postfix:
+            mc.postfix = self._check_arg(postfix, 'postfix')
         return mc
 
     def persistent(self, mode: bool = True) -> None:
@@ -172,14 +185,15 @@ class MetricCollection(nn.ModuleDict):
         for _, m in self.items():
             m.persistent(mode)
 
-    def _set_prefix(self, k: str) -> str:
-        return k if self.prefix is None else self.prefix + k
+    def _set_name(self, base: str) -> str:
+        name = base if self.prefix is None else self.prefix + base
+        name = name if self.postfix is None else name + self.postfix
+        return name
 
     @staticmethod
-    def _check_prefix_arg(prefix: str) -> Optional[str]:
-        if prefix is not None:
-            if isinstance(prefix, str):
-                return prefix
-            else:
-                raise ValueError('Expected input `prefix` to be a string')
+    def _check_arg(arg: str, name: str) -> Optional[str]:
+        if arg is not None:
+            if isinstance(arg, str):
+                return arg
+            raise ValueError(f'Expected input {name} to be a string')
         return None
