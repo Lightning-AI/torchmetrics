@@ -22,7 +22,7 @@ from torch import nn, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _LIGHTNING_GREATER_EQUAL_1_3, _TORCH_LOWER_1_6
 
 seed_all(42)
 
@@ -101,7 +101,10 @@ def test_reset_compute():
     a.update(tensor(5))
     assert a.compute() == 5
     a.reset()
-    assert a.compute() == 0
+    if not _LIGHTNING_AVAILABLE or _LIGHTNING_GREATER_EQUAL_1_3:
+        assert a.compute() == 0
+    else:
+        assert a.compute() == 5
 
 
 def test_update():
