@@ -185,16 +185,15 @@ class MetricCollection(nn.ModuleDict):
         for _, m in self.items():
             m.persistent(mode)
 
-    def _set_name(self, k: str) -> str:
-        out = k if self.prefix is None else self.prefix + k
-        out = out if self.postfix is None else out + self.postfix
-        return out
+    def _set_name(self, base: str) -> str:
+        name = base if self.prefix is None else self.prefix + base
+        name = name if self.postfix is None else name + self.postfix
+        return name
 
     @staticmethod
     def _check_arg(arg: str, name: str) -> Optional[str]:
         if arg is not None:
             if isinstance(arg, str):
                 return arg
-            else:
-                raise ValueError(f'Expected input {name} to be a string')
+            raise ValueError(f'Expected input {name} to be a string')
         return None
