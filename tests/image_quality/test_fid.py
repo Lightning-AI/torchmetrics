@@ -11,15 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
 import pickle
+
+import pytest
 import torch
 from scipy.linalg import sqrtm
-from torchmetrics.image_quality.fid import FID, _update_cov, _update_mean, _sqrtm_newton_schulz
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
-#from piq import piq_FID
+from torch.utils.data import TensorDataset
+
+from torchmetrics.image_quality.fid import FID, _sqrtm_newton_schulz, _update_cov, _update_mean
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 torch.manual_seed(42)
+
 
 def test_update_functions(tmpdir):
     """ Test that updating the estimates are equal to estimating them on all data """
@@ -32,9 +35,9 @@ def test_update_functions(tmpdir):
         cov = diff.T @ diff
         return mean, cov
 
-    mean_update, cov_update, size_update = torch.zeros(2), torch.zeros(2,2), torch.zeros(1)
+    mean_update, cov_update, size_update = torch.zeros(2), torch.zeros(2, 2), torch.zeros(1)
     for batch in [batch1, batch2]:
-        new_mean = _update_mean(mean_update, size_update, batch) 
+        new_mean = _update_mean(mean_update, size_update, batch)
         new_cov = _update_cov(cov_update, mean_update, new_mean, batch)
 
         assert not torch.allclose(new_mean, mean_update), "mean estimate did not update"
@@ -50,17 +53,71 @@ def test_update_functions(tmpdir):
     assert torch.allclose(cov, cov_update), "updated covariance does not correspond to covariance of all data"
 
 
-@pytest.mark.parametrize("matrix_size", [2, 10, 100])#, 2048])
+@pytest.mark.parametrize("matrix_size", [2, 10, 100, 500])
 def test_matrix_sqrt(matrix_size):
-    """ test that metrix sqrt function works as expected """    
+    """ test that metrix sqrt function works as expected """
+
     def generate_cov(n):
-        data = torch.randn(2*n, n)
-        return (data-data.mean(dim=0)).T @ (data-data.mean(dim=0))
+        data = torch.randn(2 * n, n)
+        return (data - data.mean(dim=0)).T @ (data - data.mean(dim=0))
 
     cov1 = generate_cov(matrix_size)
     cov2 = generate_cov(matrix_size)
 
     scipy_res = sqrtm((cov1 @ cov2).numpy()).real
-    tm_res = _sqrtm_newton_schulz(cov1 @ cov2)
+    tm_res, _ = _sqrtm_newton_schulz(cov1 @ cov2)
 
     assert torch.allclose(torch.tensor(scipy_res), tm_res, atol=1e-2)
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+def test_fid_pickle():
+    """ Assert that we can initialize the metric and pickle it"""
+    metric = FID()
+    assert metric
+
+    # verify metrics work after being loaded from pickled state
+    pickled_metric = pickle.dumps(metric)
+    metric = pickle.loads(pickled_metric)
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+def test_fid_same_input():
+    """ if real and fake are update on the same data the fid score should be 0 """
+    metric = FID()
+
+    for _ in range(2):
+        img = torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8)
+        metric.update(img, real=True)
+        metric.update(img, real=False)
+
+    assert torch.allclose(metric.real_mean, metric.fake_mean)
+    assert torch.allclose(metric.real_cov, metric.fake_cov)
+    assert torch.allclose(metric.real_nobs, metric.fake_nobs)
+
+    val = metric.compute()
+    assert val == 0
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.parametrize("feature", [64, 192, 768, 2048])
+def test_compare_fid(feature):
+    """ check that the hole pipeline give the same result as torch-fidelity """
+    from torch_fidelity import calculate_metrics
+
+    metric = FID()
+
+    img1 = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
+    img2 = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
+
+    for _ in range(10):
+        metric.update(img1, real=True)
+        metric.update(img2, real=False)
+
+    tm_res = metric.compute()
+
+    torch_fid = calculate_metrics(TensorDataset(img1),
+                                  TensorDataset(img2),
+                                  fid=True, feature_layer_fid=str(feature))
+
+    assert torch.allclose(tm_res, torch_fid)

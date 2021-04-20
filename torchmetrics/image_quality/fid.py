@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import torch
 from torch import Tensor
-
-from torch_fidility.feature_extractor import FeatureExtractorInceptionV3
+from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
@@ -45,14 +44,14 @@ def _sqrtm_newton_schulz(matrix: torch.Tensor, num_iters: int = 100) -> Tuple[to
     dim = matrix.size(0)
     norm_of_matrix = matrix.norm(p='fro')
     Y = matrix.div(norm_of_matrix)
-    I = torch.eye(dim, dim, device=matrix.device, dtype=matrix.dtype)
+    eye = torch.eye(dim, dim, device=matrix.device, dtype=matrix.dtype)
     Z = torch.eye(dim, dim, device=matrix.device, dtype=matrix.dtype)
 
     s_matrix = torch.empty_like(matrix)
     error = torch.empty(1, device=matrix.device, dtype=matrix.dtype)
 
     for _ in range(num_iters):
-        T = 0.5 * (3.0 * I - Z.mm(Y))
+        T = 0.5 * (3.0 * eye - Z.mm(Y))
         Y = Y.mm(T)
         Z = T.mm(Z)
 
@@ -64,11 +63,12 @@ def _sqrtm_newton_schulz(matrix: torch.Tensor, num_iters: int = 100) -> Tuple[to
     return s_matrix, error
 
 
-def _compute_fid(mu1: torch.Tensor, sigma1: torch.Tensor, mu2: torch.Tensor, sigma2: torch.Tensor,
-                 eps=1e-6) -> torch.Tensor:
+def _compute_fid(
+    mu1: torch.Tensor, sigma1: torch.Tensor, mu2: torch.Tensor, sigma2: torch.Tensor, eps=1e-6
+) -> torch.Tensor:
     r"""
     Credit to: https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
-    
+
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
     and X_y ~ N(mu_2, sigm_2) is
         d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
@@ -121,27 +121,86 @@ def _update_cov(old_cov: torch.Tensor, old_mean: torch.Tensor, new_mean: torch.T
 
 
 class FID(Metric):
-    def __init__(self, feature='2048'):
+    r"""
+    Calculates `Fréchet inception distance (FID) <https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance>_`
+    which is used to access the quality of generated images. Given by
+
+    .. math::
+        FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
+
+    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3 [1]
+    features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the multivariate normal
+    distribution estimated from Inception v3 features calculated on generated (fake) images. The metric was
+    originally proposed in [1].
+
+    The input is expected to be mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are
+    expected to be at least 299 with dtype uint8. The boolian flag ``real`` determines if the images should
+    update the statistics of the real distribution or the fake distribution.
+
+    .. note:: metrics requires that ``torch-fidelity`` is installed. Either install as
+        `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`
+
+    .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
+        all other metrics) as this metric does not really make sense to calculate on a single batch. This
+        means that by default ``forward`` will just call ``update`` underneat.
+
+    .. note:: while the metric does support distributed evaluation, do note that the calculation will be slightly
+        biased due to the estimation of each process covariance matrix will depend on the corresponding process
+        mean and not the global mean. It is therefore highly recommende to only evaluate this metric on
+        single device when precision is critical.
+
+    Args:
+        feature: integer indicating the inceptionv3 feature layer to choose. Can be one of the following:
+            64, 192, 768, 2048
+        compute_on_step:
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step
+        process_group:
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
+
+    """
+    def __init__(
+        self,
+        feature: int = 2048,
+        compute_on_step: bool = False,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None
+    ):
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
+
         if not _TORCH_FIDELITY_AVAILABLE:
-            raise ValueError('FID metric requires that Torch-fidelity is installed.'
-                             'Either install as `pip install torchmetrics[image-quality]`'
-                             ' or `pip install torch-fidelity`')
-        if feature not in FeatureExtractorInceptionV3.get_provided_features_list():
+            raise ValueError(
+                'FID metric requires that Torch-fidelity is installed.'
+                'Either install as `pip install torchmetrics[image-quality]`'
+                ' or `pip install torch-fidelity`'
+            )
+        if feature not in [64, 192, 768, 2048]:
             raise ValueError('feature not in list')
-            
-        self.inception = FeatureExtractorInceptionV3(name='inception-v3-compat',
-                                                     feature=[feature])
-        
-        self.add_state("real_mean", torch.zeros(self.feature_size), dist_reduce_fx="mean")
-        self.add_state("real_cov", torch.zeros(self.feature_size, self.feature_size), dist_reduce_fx="mean")
+
+        self.inception = FeatureExtractorInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+
+        self.add_state("real_mean", torch.zeros(feature), dist_reduce_fx="mean")
+        self.add_state("real_cov", torch.zeros(feature, feature), dist_reduce_fx="mean")
         self.add_state("real_nobs", torch.zeros(1), dist_reduce_fx="sum")
-        self.add_state("fake_mean", torch.zeros(self.feature_size), dist_reduce_fx="mean")
-        self.add_state("fake_cov", torch.zeros(self.feature_size, self.feature_size), dist_reduce_fx="mean")
+        self.add_state("fake_mean", torch.zeros(feature), dist_reduce_fx="mean")
+        self.add_state("fake_cov", torch.zeros(feature, feature), dist_reduce_fx="mean")
         self.add_state("fake_nobs", torch.zeros(1), dist_reduce_fx="sum")
-        
+
     def update(self, imgs: Tensor, real: bool):
         incep_score = self.inception(imgs)[0]
-        
+
         if real:
             new_mean = _update_mean(self.real_mean, self.real_nobs, incep_score)
             new_cov = _update_cov(self.real_cov, self.real_mean, new_mean, incep_score)
@@ -154,7 +213,7 @@ class FID(Metric):
             self.fake_mean = new_mean
             self.fake_cov = new_cov
             self.fake_nobs += incep_score.shape[0]
-        
+
     def compute(self):
         cov1 = self.real_cov / (self.real_nobs - 1)
         cov2 = self.fake_cov / (self.fake_nobs - 1)
