@@ -133,12 +133,14 @@ def test_metric_collection_args_kwargs(tmpdir):
     assert metric_collection['DummyMetricDiff'].x == -20
 
 
-@pytest.mark.parametrize("prefix, postfix", [
-    [None, None],
-    ['prefix_', None],
-    [None, '_postfix'],
-    ['prefix_', '_postfix']
-])
+@pytest.mark.parametrize(
+    "prefix, postfix", [
+        [None, None],
+        ['prefix_', None],
+        [None, '_postfix'],
+        ['prefix_', '_postfix'],
+    ]
+)
 def test_metric_collection_prefix_postfix_args(prefix, postfix):
     """ Test that the prefix arg alters the keywords in the output"""
     m1 = DummyMetricSum()
