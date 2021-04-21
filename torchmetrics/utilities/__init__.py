@@ -1,3 +1,4 @@
+from typing import Any
 from warnings import warn
 
 from torchmetrics.utilities.data import apply_to_collection  # noqa: F401
@@ -5,9 +6,10 @@ from torchmetrics.utilities.distributed import class_reduce, reduce  # noqa: F40
 from torchmetrics.utilities.prints import rank_zero_debug, rank_zero_info, rank_zero_warn  # noqa: F401
 
 
-def _deprecation_warn_arg_multilabel(arg):
-    if arg is not None:
-        warn(
-            "Argument `multilabel` was deprecated in v0.3 and will be removed in v0.4. Use `multiclass` instead.",
-            DeprecationWarning
-        )
+def _deprecation_warn_arg_multilabel(arg: Any) -> None:
+    if arg is None:
+        return
+    warn(
+        "Argument `multilabel` was deprecated in v0.3 and will be removed in v0.4. Use `multiclass` instead.",
+        DeprecationWarning
+    )
