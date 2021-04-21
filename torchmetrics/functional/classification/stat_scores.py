@@ -85,14 +85,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    if is_multiclass is not None and multiclass is None:
-        warn(
-            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-            DeprecationWarning
-        )
-        multiclass = is_multiclass
 
     preds, target, _ = _input_format_classification(
         preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
@@ -155,7 +148,6 @@ def stat_scores(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
@@ -280,12 +272,6 @@ def stat_scores(
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
     """
-    if is_multiclass is not None and multiclass is None:
-        warn(
-            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-            DeprecationWarning
-        )
-        multiclass = is_multiclass
 
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")

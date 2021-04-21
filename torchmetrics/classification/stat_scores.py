@@ -20,6 +20,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
@@ -146,14 +147,7 @@ class StatScores(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
-        if is_multiclass is not None and multiclass is None:
-            warn(
-                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-                DeprecationWarning
-            )
-            multiclass = is_multiclass
 
         super().__init__(
             compute_on_step=compute_on_step,
