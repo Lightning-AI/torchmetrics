@@ -16,6 +16,7 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass
 from torchmetrics.utilities.checks import _input_format_classification
 
 
@@ -147,6 +148,7 @@ def stat_scores(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
@@ -216,6 +218,9 @@ def stat_scores(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        is_multiclass:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -271,6 +276,7 @@ def stat_scores(
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
     """
+    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
 
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")
