@@ -18,7 +18,7 @@ from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.precision_recall import _precision_compute, _recall_compute
-from torchmetrics.utilities import _deprecation_warn_arg_multilabel, _deprecation_warn_arg_is_multiclass
+from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass, _deprecation_warn_arg_multilabel
 
 
 class Precision(StatScores):
