@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional, Tuple
-from warnings import warn
 
 import numpy as np
 import torch
@@ -20,7 +19,6 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
