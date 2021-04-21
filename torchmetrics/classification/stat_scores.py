@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional, Tuple
-from warnings import warn
 
 import numpy as np
 import torch
@@ -146,14 +145,7 @@ class StatScores(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
-        if is_multiclass is not None and multiclass is None:
-            warn(
-                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-                DeprecationWarning
-            )
-            multiclass = is_multiclass
 
         super().__init__(
             compute_on_step=compute_on_step,

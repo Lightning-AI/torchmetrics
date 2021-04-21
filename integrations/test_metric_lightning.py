@@ -20,8 +20,8 @@ from torch import tensor
 from torch.utils.data import DataLoader
 
 from integrations.lightning_models import BoringModel, RandomDataset
+from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3
 from torchmetrics import Accuracy, AveragePrecision, Metric
-from torchmetrics.utilities.imports import _LIGHTNING_GREATER_EQUAL_1_3
 
 
 class SumMetric(Metric):

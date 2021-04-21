@@ -20,6 +20,8 @@ jobs:
         python-version: [3.6, 3.8, 3.9]
         requires: ['minimal', 'latest']
         exclude:
+          - python-version: 3.6
+            requires: 'latest'
           - python-version: 3.9
             requires: 'minimal'
 

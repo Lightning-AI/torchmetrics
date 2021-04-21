@@ -20,9 +20,9 @@ import pytest
 import torch
 from torch import nn, tensor
 
-from tests.helpers import seed_all
+from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _LIGHTNING_GREATER_EQUAL_1_3, _TORCH_LOWER_1_6
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 
 seed_all(42)
 
