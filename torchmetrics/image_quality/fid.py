@@ -136,6 +136,8 @@ class FID(Metric):
     The input is expected to be mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are
     expected to be at least 299 with dtype uint8. The boolian flag ``real`` determines if the images should
     update the statistics of the real distribution or the fake distribution.
+    
+    We use the originally 
 
     .. note:: metrics requires that ``torch-fidelity`` is installed. Either install as
         `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`
@@ -199,7 +201,7 @@ class FID(Metric):
         self.add_state("fake_nobs", torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool):
-        incep_score = self.inception(imgs)[0]
+        incep_score = self.inception(imgs)[0].reshape(imgs.shape[0], -1)
 
         if real:
             new_mean = _update_mean(self.real_mean, self.real_nobs, incep_score)

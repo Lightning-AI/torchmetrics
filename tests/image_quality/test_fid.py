@@ -16,7 +16,7 @@ import pickle
 import pytest
 import torch
 from scipy.linalg import sqrtm
-from torch.utils.data import TensorDataset
+from torch.utils.data import Dataset
 
 from torchmetrics.image_quality.fid import FID, _sqrtm_newton_schulz, _update_cov, _update_mean
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
@@ -84,7 +84,7 @@ def test_fid_pickle():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
 def test_fid_same_input():
     """ if real and fake are update on the same data the fid score should be 0 """
-    metric = FID()
+    metric = FID(feature=192)
 
     for _ in range(2):
         img = torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8)
@@ -96,28 +96,43 @@ def test_fid_same_input():
     assert torch.allclose(metric.real_nobs, metric.fake_nobs)
 
     val = metric.compute()
-    assert val == 0
+    assert torch.allclose(val, torch.zeros_like(val), atol=1e-5)
 
 
+class _ImgDataset(Dataset):
+    def __init__(self, imgs):
+        self.imgs = imgs
+        
+    def __getitem__(self, idx):
+        return self.imgs[idx]
+
+    def __len__(self):
+        return self.imgs.shape[0]
+
+@pytest.mark.skipif(not (torch.cuda.is_available() and torch.cuda.device_count()>=1),
+                    reason='test is too slow without gpu')
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
-@pytest.mark.parametrize("feature", [64, 192, 768, 2048])
+@pytest.mark.parametrize("feature", [2048]) #TODO: test for the other choices
 def test_compare_fid(feature):
     """ check that the hole pipeline give the same result as torch-fidelity """
     from torch_fidelity import calculate_metrics
 
-    metric = FID()
+    metric = FID(feature=feature).cuda()
 
-    img1 = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
-    img2 = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
+    # Generate similar distributions
+    img1 = torch.randint(0, 255, (50, 100, 3, 299, 299), dtype=torch.uint8)
+    img2 = img1 + torch.randint(0, 2, (50, 100, 3, 299, 299), dtype=torch.uint8)
 
-    for _ in range(10):
-        metric.update(img1, real=True)
-        metric.update(img2, real=False)
+    for i in range(len(img1)):
+        print(i)
+        metric.update(img1[i].cuda(), real=True)
+        metric.update(img2[i].cuda(), real=False)
 
     tm_res = metric.compute()
 
-    torch_fid = calculate_metrics(TensorDataset(img1),
-                                  TensorDataset(img2),
+    torch_fid = calculate_metrics(_ImgDataset(torch.cat([i for i in img1], dim=0)),
+                                  _ImgDataset(torch.cat([i for i in img1], dim=0)),
                                   fid=True, feature_layer_fid=str(feature))
-
-    assert torch.allclose(tm_res, torch_fid)
+    import pdb
+    pdb.set_trace()
+    assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid['frechet_inception_distance']]))
