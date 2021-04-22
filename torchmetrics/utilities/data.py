@@ -151,7 +151,7 @@ def get_num_classes(
     return num_classes
 
 
-def _stable_1d_sort(x: torch, nb: int = 2049):
+def _stable_1d_sort(x: torch):
     """
     Stable sort of 1d tensors. Pytorch defaults to a stable sorting algorithm
     if number of elements are larger than 2048. This function pads the tensors,
@@ -166,18 +166,16 @@ def _stable_1d_sort(x: torch, nb: int = 2049):
         >>> data = torch.tensor([8, 7, 2, 6, 4, 5, 3, 1, 9, 0])
         >>> _stable_1d_sort(data)
         (tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), tensor([9, 7, 2, 6, 4, 5, 3, 1, 0, 8]))
-        >>> _stable_1d_sort(data, nb=5)
-        (tensor([0, 1, 2, 3, 4]), tensor([9, 7, 2, 6, 4]))
     """
     if x.ndim > 1:
         raise ValueError('Stable sort only works on 1d tensors')
     n = x.numel()
+    nb = 2049
     if n < nb:
         x_max = x.max()
         x = torch.cat([x, (x_max + 1) * torch.ones(nb - n, dtype=x.dtype, device=x.device)], 0)
     x_sort = x.sort()
-    i = min(nb, n)
-    return x_sort.values[:i], x_sort.indices[:i]
+    return x_sort.values[:n], x_sort.indices[:n]
 
 
 def apply_to_collection(
