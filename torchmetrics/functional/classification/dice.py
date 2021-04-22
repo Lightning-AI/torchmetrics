@@ -31,7 +31,7 @@ def _stat_scores(
     and false negative for a specific class
 
     Args:
-        pred: prediction tensor
+        preds: prediction tensor
         target: target tensor
         class_index: class to calculate over
         argmax_dim: if pred is a tensor of probabilities, this indicates the
@@ -61,7 +61,7 @@ def _stat_scores(
 
 
 def dice_score(
-    pred: Tensor,
+    preds: Tensor,
     target: Tensor,
     bg: bool = False,
     nan_score: float = 0.0,
@@ -72,7 +72,7 @@ def dice_score(
     Compute dice score from prediction scores
 
     Args:
-        pred: estimated probabilities
+        preds: estimated probabilities
         target: ground-truth labels
         bg: whether to also compute dice for the background
         nan_score: score to return, if a NaN occurs during computation
@@ -97,9 +97,9 @@ def dice_score(
         tensor(0.3333)
 
     """
-    num_classes = pred.shape[1]
+    num_classes = preds.shape[1]
     bg = (1 - int(bool(bg)))
-    scores = torch.zeros(num_classes - bg, device=pred.device, dtype=torch.float32)
+    scores = torch.zeros(num_classes - bg, device=preds.device, dtype=torch.float32)
     for i in range(bg, num_classes):
         if not (target == i).any():
             # no foreground class
@@ -107,7 +107,7 @@ def dice_score(
             continue
 
         # TODO: rewrite to use general `stat_scores`
-        tp, fp, tn, fn, sup = _stat_scores(preds=pred, target=target, class_index=i)
+        tp, fp, tn, fn, sup = _stat_scores(preds=preds, target=target, class_index=i)
         denom = (2 * tp + fp + fn).to(torch.float)
         # nan result
         score_cls = (2 * tp).to(torch.float) / denom if torch.is_nonzero(denom) else nan_score
