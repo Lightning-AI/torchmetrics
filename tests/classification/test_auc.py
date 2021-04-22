@@ -22,6 +22,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.classification.auc import AUC
 from torchmetrics.functional import auc
+from torchmetrics.utilities.data import _stable_1d_sort
 
 seed_all(42)
 
@@ -76,3 +77,13 @@ class TestAUC(MetricTester):
 def test_auc(x, y, expected):
     # Test Area Under Curve (AUC) computation
     assert auc(tensor(x), tensor(y), reorder=True) == expected
+
+
+@pytest.mark.parametrize("nb", (None, 5, 15))
+def test_stable_1d_sort(nb):
+    import torch
+    n = 10
+    x = torch.arange(n)
+    x_shuf = torch.randperm(n)
+    y, _ = _stable_1d_sort(x_shuf, nb=nb)
+    assert torch.equal(x[:nb], y)
