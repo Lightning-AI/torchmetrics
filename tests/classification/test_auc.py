@@ -15,6 +15,7 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
+import torch
 from sklearn.metrics import auc as _sk_auc
 from torch import tensor
 
@@ -81,7 +82,6 @@ def test_auc(x, y, expected):
 
 @pytest.mark.parametrize("nb", (None, 5, 15))
 def test_stable_1d_sort(nb):
-    import torch
     n = 10
     x = torch.arange(n)
     x_shuf = torch.randperm(n)

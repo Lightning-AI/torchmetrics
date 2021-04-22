@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -151,7 +151,7 @@ def get_num_classes(
     return num_classes
 
 
-def _stable_1d_sort(x: Tensor, nb: Optional[int] = None):
+def _stable_1d_sort(x: Tensor, nb: Optional[int] = None) -> Tuple[Tensor, Tensor]:
     """
     Stable sort of 1d tensors. Pytorch defaults to a stable sorting algorithm
     if number of elements are larger than 2048. This function pads the tensors,
