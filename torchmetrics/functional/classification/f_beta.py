@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import List, Optional, Union
 from warnings import warn
 
 import torch
@@ -34,12 +34,12 @@ def _fbeta_compute(
     tn: Tensor,
     fn: Tensor,
     beta: float,
-    ignore_index: Optional[int],
+    ignore_index: Optional[Union[int, Tensor, List[int]]],
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
 
-    if average == "micro" and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+    if average == AverageMethod.MICRO.value and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         mask = tp >= 0
         precision = _safe_divide(tp[mask].sum().float(), (tp[mask] + fp[mask]).sum())
         recall = _safe_divide(tp[mask].sum().float(), (tp[mask] + fn[mask]).sum())
@@ -65,7 +65,7 @@ def _fbeta_compute(
     return _reduce_stat_scores(
         numerator=num,
         denominator=denom,
-        weights=None if average != "weighted" else tp + fn,
+        weights=None if average != AverageMethod.WEIGHTED.value else tp + fn,
         average=average,
         mdmc_average=mdmc_average,
     )
@@ -181,21 +181,23 @@ def fbeta(
         )
         multiclass = is_multiclass
 
-    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+    allowed_average = list(AverageMethod)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-    allowed_mdmc_average = [None, "samplewise", "global"]
+    allowed_mdmc_average = list(MDMCAverageMethod) + [None]
     if mdmc_average not in allowed_mdmc_average:
         raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
 
-    if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
+    if average in [AverageMethod.MACRO, AverageMethod.WEIGHTED, AverageMethod.NONE] and (
+        not num_classes or num_classes < 1
+    ):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
 
     if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
-    reduce = "macro" if average in ["weighted", "none", None] else average
+    reduce = AverageMethod.MACRO.value if average in [AverageMethod.WEIGHTED, AverageMethod.NONE] else average
     tp, fp, tn, fn = _stat_scores_update(
         preds,
         target,
@@ -207,6 +209,13 @@ def fbeta(
         multiclass=multiclass,
         ignore_index=ignore_index,
     )
+    if reduce == AverageMethod.MACRO.value:
+        # `_stat_scores_update` will have set meaningless values in tp to -1
+        meaningless_indeces = torch.nonzero(tp == -1)
+        if ignore_index is None:
+            ignore_index = meaningless_indeces
+        else:
+            ignore_index = torch.unique(torch.cat((meaningless_indeces, torch.tensor([[ignore_index]]))))
 
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
@@ -259,6 +268,9 @@ def f1(
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
