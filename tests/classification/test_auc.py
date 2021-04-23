@@ -26,12 +26,6 @@ from torchmetrics.functional import auc
 seed_all(42)
 
 
-def sk_auc(x, y):
-    x = x.flatten()
-    y = y.flatten()
-    return _sk_auc(x, y)
-
-
 def sk_auc(x, y, reorder=False):
     x = x.flatten()
     y = y.flatten()
