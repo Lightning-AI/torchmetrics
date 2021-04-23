@@ -33,6 +33,7 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     if reorder:
+        # TODO: include stable=True arg when pytorch v1.9 is released
         x, x_idx = torch.sort(x)
         y = y[x_idx]
 
