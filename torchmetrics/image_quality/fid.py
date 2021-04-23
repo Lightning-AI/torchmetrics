@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import torch
 from torch.autograd import Function
@@ -21,6 +21,7 @@ import numpy as np
 import scipy
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
@@ -34,12 +35,13 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
         """ the inception network should not be able to be switched away from evaluation mode """
         super().train(False)
 
+    def forward(self, x: Tensor) -> Tensor:
+        out = super().forward(x)
+        return out[0].reshape(x.shape[0], -1)
+
 
 class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
-    NOTE: matrix square root is not differentiable for matrices with
-          zero eigenvalues.
-          
     All credit to:
         https://github.com/steveli/pytorch-sqrtm/blob/master/sqrtm.py
           
@@ -78,7 +80,8 @@ def _compute_fid(
     mu1: torch.Tensor, sigma1: torch.Tensor, mu2: torch.Tensor, sigma2: torch.Tensor, eps=1e-6
 ) -> torch.Tensor:
     r"""
-    Credit to: https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
+    Adjusted version of
+        https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
 
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
     and X_y ~ N(mu_2, sigm_2) is
@@ -93,21 +96,17 @@ def _compute_fid(
         Scalar value of the distance between sets.
     """
     diff = mu1 - mu2
-    print(sigma1.mm(sigma2))
-    torch.save(sigma1.mm(sigma2), 'inside.pt')
+
     covmean = sqrtm(sigma1.mm(sigma2))  
         # Product might be almost singular
     if not torch.isfinite(covmean).all():
-        print(f'FID calculation produces singular product; adding {eps} to diagonal of cov estimates')
+        rank_zero_info(f'FID calculation produces singular product; adding {eps} to diagonal of '
+                       'covaraince estimates')
         offset = torch.eye(sigma1.size(0), device=mu1.device, dtype=mu1.dtype) * eps
         covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
 
     tr_covmean = torch.trace(covmean)
-    print('cov trace', tr_covmean)
-    print('sigma1 trace', torch.trace(sigma1))
-    print('sigma2 trace', torch.trace(sigma2))
-    print('diff', diff.dot(diff))
-    
+    print("cov trace 1", tr_covmean)
     return diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * tr_covmean
 
 
@@ -124,7 +123,7 @@ def _update_mean(old_mean: torch.Tensor, old_nobs: torch.Tensor, data: torch.Ten
     return (old_mean * old_nobs + data.mean(dim=0) * data_size) / (old_nobs + data_size)
 
 
-def _update_cov(old_cov: torch.Tensor, old_mean: torch.Tensor, new_mean: torch.Tensor, data: torch.Tensor):
+def _update_cov(old_cov: torch.Tensor, old_mean: torch.Tensor, new_mean: torch.Tensor, data: torch.Tensor) -> torch.Tensor:
     """ Update a covariance estimate given new data
     Args:
         old_cov: current covariance estimate
@@ -150,14 +149,14 @@ class FID(Metric):
     distribution estimated from Inception v3 features calculated on generated (fake) images. The metric was
     originally proposed in [1].
 
-    The input is expected to be mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are
-    expected to be at least 299 with dtype uint8. The boolian flag ``real`` determines if the images should
-    update the statistics of the real distribution or the fake distribution.
+    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is 
+    expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
+    will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real`` 
+    determines if the images should update the statistics of the real distribution or the fake distribution.
     
-    We use the originally 
-
-    .. note:: metrics requires that ``torch-fidelity`` is installed. Either install as
-        `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`
+    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity`` 
+        is installed. Either install as ``pip install torchmetrics[image-quality]`` or 
+        ``pip install torch-fidelity``
 
     .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
         all other metrics) as this metric does not really make sense to calculate on a single batch. This
@@ -171,8 +170,10 @@ class FID(Metric):
             single device when precision is critical.
 
     Args:
-        feature: integer indicating the inceptionv3 feature layer to choose. Can be one of the following:
+        feature: either an integer or ``nn.Module``
+            * an integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
             64, 192, 768, 2048
+            * an ``nn.Module`` for using a custom feature extractor
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
@@ -184,6 +185,14 @@ class FID(Metric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
+
+    [1] Rethinking the Inception Architecture for Computer Vision
+    Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
+    https://arxiv.org/abs/1512.00567
+
+    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+    https://arxiv.org/abs/1706.08500
 
     """
     def __init__(
@@ -222,7 +231,7 @@ class FID(Metric):
         self.add_state("fake_nobs", torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool):
-        incep_score = self.inception(imgs)[0].reshape(imgs.shape[0], -1)
+        incep_score = self.inception(imgs)
 
         if real:
             new_mean = _update_mean(self.real_mean, self.real_nobs, incep_score)
@@ -237,7 +246,7 @@ class FID(Metric):
             self.fake_cov = new_cov
             self.fake_nobs += incep_score.shape[0]
 
-    def compute(self):
+    def compute(self) -> Tensor:
         cov1 = self.real_cov / (self.real_nobs - 1)
         cov2 = self.fake_cov / (self.fake_nobs - 1)
         return _compute_fid(self.real_mean, cov1, self.fake_mean, cov2)
@@ -246,6 +255,6 @@ class FID(Metric):
         """ The default feature extractor is only meant to be evaluated using floating point precision """
         for module in self.children():
             if not isinstance(module, FeatureExtractorInceptionV3):
-                module.apply(fn)
+                module.apply(lambda t: t.double() if t.is_floating_point() else t)
         return self
 

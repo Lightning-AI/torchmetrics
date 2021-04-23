@@ -119,10 +119,10 @@ def test_compare_fid(tmpdir, feature = 2048):
 
     metric = FID(feature=feature).cuda().double()  
     
-    img1 = TrialMNIST(tmpdir, num_samples=1500, digits = (0, 1, 2)).data.unsqueeze(1).repeat(1,3,1,1)
-    img2 = TrialMNIST(tmpdir, num_samples=1500, digits = (3, 4, 5)).data.unsqueeze(1).repeat(1,3,1,1)
-    import pdb
-    pdb.set_trace()
+    # We need more samples than the size of the feature vectors to not end up with a singular covariance
+    img1 = TrialMNIST(tmpdir, num_samples=1000, digits = (0, 1, 2)).data.unsqueeze(1).repeat(1,3,1,1)
+    img2 = TrialMNIST(tmpdir, num_samples=1000, digits = (1, 2, 3)).data.unsqueeze(1).repeat(1,3,1,1)
+
     batch_size = 100
     for i in range(img1.shape[0] // batch_size):
         metric.update(img1[batch_size*i:batch_size*(i+1)].cuda(), real=True)
