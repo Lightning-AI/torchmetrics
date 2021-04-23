@@ -52,8 +52,8 @@ class Accuracy(StatScores):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case 
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
 
