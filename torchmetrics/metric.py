@@ -13,6 +13,7 @@
 # limitations under the License.
 import functools
 import inspect
+import operator
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
@@ -24,6 +25,7 @@ from torch import Tensor, nn
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 class Metric(nn.Module, ABC):
@@ -69,6 +71,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Callable = None,
     ):
         super().__init__()
+        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
@@ -256,7 +259,9 @@ class Metric(nn.Module, ABC):
         """
         This method automatically resets the metric state variables to their default value.
         """
-        self._computed = None
+        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
+        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
+            self._computed = None
 
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)

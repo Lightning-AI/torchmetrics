@@ -78,9 +78,7 @@ class AverageMeter(Metric):
 
     # TODO: need to be strings because Unions are not pickleable in Python 3.6
     def update(  # type: ignore
-        self,
-        value: "Union[Tensor, float]",
-        weight: "Union[Tensor, float]" = 1.0
+        self, value: "Union[Tensor, float]", weight: "Union[Tensor, float]" = 1.0
     ) -> None:
         """Updates the average with.
 
