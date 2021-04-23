@@ -74,12 +74,9 @@ class TestAUC(MetricTester):
 
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
-        if reorder:
-            self.run_functional_metric_test(x, y, metric_functional=auc,
-                                            sk_metric=sk_auc_reorder, metric_args={"reorder": reorder})
-        else:
-            self.run_functional_metric_test(x, y, metric_functional=auc, sk_metric=sk_auc,
-                                            metric_args={"reorder": reorder})
+        self.run_functional_metric_test(x, y, metric_functional=auc,
+                                        sk_metric=partial(sk_auc_reorder, reorder=reorder), 
+                                        metric_args={"reorder": reorder})
 
 
 @pytest.mark.parametrize(['x', 'y', 'expected'], [
