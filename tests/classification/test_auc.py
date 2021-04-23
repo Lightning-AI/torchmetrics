@@ -32,12 +32,13 @@ def sk_auc(x, y):
     return _sk_auc(x, y)
 
 
-def sk_auc_reorder(x, y):
+def sk_auc(x, y, reorder=False):
     x = x.flatten()
     y = y.flatten()
-    idx = np.argsort(x, kind='stable')
-    x = x[idx]
-    y = y[idx]
+    if reorder:
+        idx = np.argsort(x, kind='stable')
+        x = x[idx]
+        y = y[idx]
     return _sk_auc(x, y)
 
 
@@ -75,7 +76,7 @@ class TestAUC(MetricTester):
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
         self.run_functional_metric_test(x, y, metric_functional=auc,
-                                        sk_metric=partial(sk_auc_reorder, reorder=reorder), 
+                                        sk_metric=partial(sk_auc, reorder=reorder), 
                                         metric_args={"reorder": reorder})
 
 
