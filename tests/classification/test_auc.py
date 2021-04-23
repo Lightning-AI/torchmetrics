@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from functools import partial
 
 import numpy as np
 import pytest
@@ -69,9 +70,9 @@ class TestAUC(MetricTester):
 
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
-        self.run_functional_metric_test(x, y, metric_functional=auc,
-                                        sk_metric=partial(sk_auc, reorder=reorder), 
-                                        metric_args={"reorder": reorder})
+        self.run_functional_metric_test(
+            x, y, metric_functional=auc, sk_metric=partial(sk_auc, reorder=reorder), metric_args={"reorder": reorder}
+        )
 
 
 @pytest.mark.parametrize(['x', 'y', 'expected'], [
