@@ -11,56 +11,67 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
+from torch.autograd import Function
 from torch import Tensor
 from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
+import numpy as np
+import scipy
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
-def _approximation_error(matrix: torch.Tensor, s_matrix: torch.Tensor) -> torch.Tensor:
+class NoTrainInceptionV3(FeatureExtractorInceptionV3):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # put into evaluation mode
+        self.eval()
+
+    def train(self, mode):
+        """ the inception network should not be able to be switched away from evaluation mode """
+        super().train(False)
+
+
+class MatrixSquareRoot(Function):
+    """Square root of a positive definite matrix.
+    NOTE: matrix square root is not differentiable for matrices with
+          zero eigenvalues.
+          
+    All credit to:
+        https://github.com/steveli/pytorch-sqrtm/blob/master/sqrtm.py
+          
     """
-    Credit to: https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
-    """
-    norm_of_matrix = torch.norm(matrix)
-    error = matrix - torch.mm(s_matrix, s_matrix)
-    error = torch.norm(error) / norm_of_matrix
-    return error
+    @staticmethod
+    def forward(ctx, input):
+        # TODO: update whenever pytorch gets an matrix square root function
+        # Issue: https://github.com/pytorch/pytorch/issues/9983
+        m = input.detach().cpu().numpy().astype(np.float_)
+        scipy_res, _ = scipy.linalg.sqrtm(m, disp=False)
+        sqrtm = torch.from_numpy(scipy_res.real).to(input)
+        ctx.save_for_backward(sqrtm)
+        return sqrtm
 
+    @staticmethod
+    def backward(ctx, grad_output):
+        grad_input = None
+        if ctx.needs_input_grad[0]:
+            sqrtm, = ctx.saved_tensors
+            sqrtm = sqrtm.data.cpu().numpy().astype(np.float_)
+            gm = grad_output.data.cpu().numpy().astype(np.float_)
 
-def _sqrtm_newton_schulz(matrix: torch.Tensor, num_iters: int = 100) -> Tuple[torch.Tensor, torch.Tensor]:
-    r"""
-    Credit to: https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
-    Args:
-        matrix: matrix or batch of matrices
-        num_iters: Number of iteration of the method
-    Returns:
-        Square root of matrix
-        Error
-    """
-    dim = matrix.size(0)
-    norm_of_matrix = matrix.norm(p='fro')
-    Y = matrix.div(norm_of_matrix)
-    eye = torch.eye(dim, dim, device=matrix.device, dtype=matrix.dtype)
-    Z = torch.eye(dim, dim, device=matrix.device, dtype=matrix.dtype)
+            # Given a positive semi-definite matrix X,
+            # since X = X^{1/2}X^{1/2}, we can compute the gradient of the
+            # matrix square root dX^{1/2} by solving the Sylvester equation:
+            # dX = (d(X^{1/2})X^{1/2} + X^{1/2}(dX^{1/2}).
+            grad_sqrtm = scipy.linalg.solve_sylvester(sqrtm, sqrtm, gm)
 
-    s_matrix = torch.empty_like(matrix)
-    error = torch.empty(1, device=matrix.device, dtype=matrix.dtype)
+            grad_input = torch.from_numpy(grad_sqrtm).to(grad_output)
+        return grad_input
 
-    for _ in range(num_iters):
-        T = 0.5 * (3.0 * eye - Z.mm(Y))
-        Y = Y.mm(T)
-        Z = T.mm(Z)
-
-        s_matrix = Y * torch.sqrt(norm_of_matrix)
-        error = _approximation_error(matrix, s_matrix)
-        if torch.isclose(error, torch.tensor([0.], device=error.device, dtype=error.dtype), atol=1e-5):
-            break
-
-    return s_matrix, error
+sqrtm = MatrixSquareRoot.apply
 
 
 def _compute_fid(
@@ -82,15 +93,21 @@ def _compute_fid(
         Scalar value of the distance between sets.
     """
     diff = mu1 - mu2
-    covmean, _ = _sqrtm_newton_schulz(sigma1.mm(sigma2))
-
-    # Product might be almost singular
+    print(sigma1.mm(sigma2))
+    torch.save(sigma1.mm(sigma2), 'inside.pt')
+    covmean = sqrtm(sigma1.mm(sigma2))  
+        # Product might be almost singular
     if not torch.isfinite(covmean).all():
         print(f'FID calculation produces singular product; adding {eps} to diagonal of cov estimates')
         offset = torch.eye(sigma1.size(0), device=mu1.device, dtype=mu1.dtype) * eps
-        covmean, _ = _sqrtm_newton_schulz((sigma1 + offset).mm(sigma2 + offset))
+        covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
 
     tr_covmean = torch.trace(covmean)
+    print('cov trace', tr_covmean)
+    print('sigma1 trace', torch.trace(sigma1))
+    print('sigma2 trace', torch.trace(sigma2))
+    print('diff', diff.dot(diff))
+    
     return diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * tr_covmean
 
 
@@ -146,10 +163,12 @@ class FID(Metric):
         all other metrics) as this metric does not really make sense to calculate on a single batch. This
         means that by default ``forward`` will just call ``update`` underneat.
 
-    .. note:: while the metric does support distributed evaluation, do note that the calculation will be slightly
-        biased due to the estimation of each process covariance matrix will depend on the corresponding process
-        mean and not the global mean. It is therefore highly recommende to only evaluate this metric on
-        single device when precision is critical.
+    .. note:: If precision of the metric is crusial to you, we advice the following:
+            * initialize the metric in double precision: `metric = FID().double()`
+            * while the metric does support distributed evaluation, do note that the calculation will be slightly
+            biased due to the estimation of each process covariance matrix will depend on the corresponding process
+            mean and not the global mean. It is therefore highly recommende to only evaluate this metric on
+            single device when precision is critical.
 
     Args:
         feature: integer indicating the inceptionv3 feature layer to choose. Can be one of the following:
@@ -169,7 +188,7 @@ class FID(Metric):
     """
     def __init__(
         self,
-        feature: int = 2048,
+        feature: Union[int, torch.nn.Module] = 2048,
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -181,21 +200,23 @@ class FID(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if isinstance(feature, int):
+            if not _TORCH_FIDELITY_AVAILABLE:
+                raise ValueError(
+                    'FID metric requires that Torch-fidelity is installed.'
+                    'Either install as `pip install torchmetrics[image-quality]`'
+                    ' or `pip install torch-fidelity`'
+                )
+            if feature not in [64, 192, 768, 2048]:
+                raise ValueError('feature not in list')
 
-        if not _TORCH_FIDELITY_AVAILABLE:
-            raise ValueError(
-                'FID metric requires that Torch-fidelity is installed.'
-                'Either install as `pip install torchmetrics[image-quality]`'
-                ' or `pip install torch-fidelity`'
-            )
-        if feature not in [64, 192, 768, 2048]:
-            raise ValueError('feature not in list')
-
-        self.inception = FeatureExtractorInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+            self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+        else:
+            self.inception = feature
 
         self.add_state("real_mean", torch.zeros(feature), dist_reduce_fx="mean")
-        self.add_state("real_cov", torch.zeros(feature, feature), dist_reduce_fx="mean")
-        self.add_state("real_nobs", torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("real_cov", torch.zeros(feature), dist_reduce_fx="mean")
+        self.add_state("real_nobs", torch.zeros(1,), dist_reduce_fx="sum")
         self.add_state("fake_mean", torch.zeros(feature), dist_reduce_fx="mean")
         self.add_state("fake_cov", torch.zeros(feature, feature), dist_reduce_fx="mean")
         self.add_state("fake_nobs", torch.zeros(1), dist_reduce_fx="sum")
@@ -220,3 +241,11 @@ class FID(Metric):
         cov1 = self.real_cov / (self.real_nobs - 1)
         cov2 = self.fake_cov / (self.fake_nobs - 1)
         return _compute_fid(self.real_mean, cov1, self.fake_mean, cov2)
+
+    def double(self):
+        """ The default feature extractor is only meant to be evaluated using floating point precision """
+        for module in self.children():
+            if not isinstance(module, FeatureExtractorInceptionV3):
+                module.apply(fn)
+        return self
+

@@ -13,13 +13,15 @@
 # limitations under the License.
 import pickle
 
+import numpy as np
 import pytest
 import torch
-from scipy.linalg import sqrtm
+from scipy.linalg import sqrtm as scipy_sqrtm
 from torch.utils.data import Dataset
 
-from torchmetrics.image_quality.fid import FID, _sqrtm_newton_schulz, _update_cov, _update_mean
+from torchmetrics.image_quality.fid import FID, sqrtm, _update_cov, _update_mean
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from tests.helpers.datasets import TrialMNIST
 
 torch.manual_seed(42)
 
@@ -27,19 +29,16 @@ torch.manual_seed(42)
 def test_update_functions(tmpdir):
     """ Test that updating the estimates are equal to estimating them on all data """
     data = torch.randn(100, 2)
-    batch1, batch2 = data.chunk(2)
+    batches = data.chunk(4)
 
     def _mean_cov(data):
-        mean = data.mean(0)
-        diff = data - mean
-        cov = diff.T @ diff
-        return mean, cov
+        data = data.numpy()
+        return np.mean(data, axis=0), np.cov(data, rowvar=False)
 
     mean_update, cov_update, size_update = torch.zeros(2), torch.zeros(2, 2), torch.zeros(1)
-    for batch in [batch1, batch2]:
+    for batch in batches:
         new_mean = _update_mean(mean_update, size_update, batch)
         new_cov = _update_cov(cov_update, mean_update, new_mean, batch)
-
         assert not torch.allclose(new_mean, mean_update), "mean estimate did not update"
         assert not torch.allclose(new_cov, cov_update), "covariance estimate did not update"
 
@@ -49,8 +48,10 @@ def test_update_functions(tmpdir):
 
     mean, cov = _mean_cov(data)
 
-    assert torch.allclose(mean, mean_update), "updated mean does not correspond to mean of all data"
-    assert torch.allclose(cov, cov_update), "updated covariance does not correspond to covariance of all data"
+    assert torch.allclose(torch.tensor(mean).float(), mean_update), \
+        "updated mean does not correspond to mean of all data"
+    assert torch.allclose(torch.tensor(cov).float(), cov_update / (size_update-1)), \
+        "updated covariance does not correspond to covariance of all data"
 
 
 @pytest.mark.parametrize("matrix_size", [2, 10, 100, 500])
@@ -64,8 +65,8 @@ def test_matrix_sqrt(matrix_size):
     cov1 = generate_cov(matrix_size)
     cov2 = generate_cov(matrix_size)
 
-    scipy_res = sqrtm((cov1 @ cov2).numpy()).real
-    tm_res, _ = _sqrtm_newton_schulz(cov1 @ cov2)
+    scipy_res = scipy_sqrtm((cov1 @ cov2).numpy()).real
+    tm_res = sqrtm(cov1 @ cov2)
 
     assert torch.allclose(torch.tensor(scipy_res), tm_res, atol=1e-2)
 
@@ -96,7 +97,7 @@ def test_fid_same_input():
     assert torch.allclose(metric.real_nobs, metric.fake_nobs)
 
     val = metric.compute()
-    assert torch.allclose(val, torch.zeros_like(val), atol=1e-5)
+    assert torch.allclose(val, torch.zeros_like(val), atol=1e-3)
 
 
 class _ImgDataset(Dataset):
@@ -112,27 +113,29 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not (torch.cuda.is_available() and torch.cuda.device_count()>=1),
                     reason='test is too slow without gpu')
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
-@pytest.mark.parametrize("feature", [2048]) #TODO: test for the other choices
-def test_compare_fid(feature):
+def test_compare_fid(tmpdir, feature = 2048):
     """ check that the hole pipeline give the same result as torch-fidelity """
     from torch_fidelity import calculate_metrics
 
-    metric = FID(feature=feature).cuda()
-
-    # Generate similar distributions
-    img1 = torch.randint(0, 255, (50, 100, 3, 299, 299), dtype=torch.uint8)
-    img2 = img1 + torch.randint(0, 2, (50, 100, 3, 299, 299), dtype=torch.uint8)
-
-    for i in range(len(img1)):
-        print(i)
-        metric.update(img1[i].cuda(), real=True)
-        metric.update(img2[i].cuda(), real=False)
+    metric = FID(feature=feature).cuda().double()  
+    
+    img1 = TrialMNIST(tmpdir, num_samples=1500, digits = (0, 1, 2)).data.unsqueeze(1).repeat(1,3,1,1)
+    img2 = TrialMNIST(tmpdir, num_samples=1500, digits = (3, 4, 5)).data.unsqueeze(1).repeat(1,3,1,1)
+    import pdb
+    pdb.set_trace()
+    batch_size = 100
+    for i in range(img1.shape[0] // batch_size):
+        metric.update(img1[batch_size*i:batch_size*(i+1)].cuda(), real=True)
+        
+    for i in range(img2.shape[0] // batch_size):
+        metric.update(img2[batch_size*i:batch_size*(i+1)].cuda(), real=False)
 
     tm_res = metric.compute()
 
-    torch_fid = calculate_metrics(_ImgDataset(torch.cat([i for i in img1], dim=0)),
-                                  _ImgDataset(torch.cat([i for i in img1], dim=0)),
-                                  fid=True, feature_layer_fid=str(feature))
-    import pdb
-    pdb.set_trace()
+    torch_fid = calculate_metrics(
+        _ImgDataset(img1),
+        _ImgDataset(img2),
+        fid=True, feature_layer_fid=str(feature)
+    )
+
     assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid['frechet_inception_distance']]))
