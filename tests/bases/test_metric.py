@@ -227,6 +227,16 @@ def test_state_dict(tmpdir):
     assert metric.state_dict() == OrderedDict()
 
 
+def test_load_state_dict(tmpdir):
+    """ test that metric states can be loaded with state dict """
+    metric = DummyMetricSum()
+    metric.persistent(True)
+    metric.update(5)
+    loaded_metric = DummyMetricSum()
+    loaded_metric.load_state_dict(metric.state_dict())
+    assert metric.compute() == 5
+
+
 def test_child_metric_state_dict():
     """ test that child metric states will be added to parent state dict """
 

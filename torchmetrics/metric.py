@@ -324,6 +324,15 @@ class Metric(nn.Module, ABC):
                 destination[prefix + key] = current_val
         return destination
 
+    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
+                              missing_keys, unexpected_keys, error_msgs):
+        for key in self._defaults.keys():
+            name = prefix + key
+            if name in state_dict:
+                setattr(self, key, state_dict.pop(name))
+        super()._load_from_state_dict(state_dict, prefix, local_metadata, True,
+                                      missing_keys, unexpected_keys, error_msgs)
+
     def _filter_kwargs(self, **kwargs):
         """ filter kwargs such that they match the update signature of the metric """
 
