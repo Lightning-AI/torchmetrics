@@ -47,7 +47,10 @@ def _compare_version(package: str, op, version) -> Optional[bool]:
     >>> import operator
     >>> _compare_version("torch", operator.ge, "0.1")
     True
+    >>> _compare_version("any_module", operator.ge, "0.0")  # is None
     """
+    if not _module_available(package):
+        return None
     try:
         pkg = import_module(package)
         pkg_version = pkg.__version__
@@ -71,4 +74,3 @@ _TORCH_LOWER_1_6 = _compare_version("torch", operator.lt, "1.6.0")
 _TORCH_GREATER_EQUAL_1_6 = _compare_version("torch", operator.ge, "1.6.0")
 _TORCH_GREATER_EQUAL_1_7 = _compare_version("torch", operator.ge, "1.7.0")
 _LIGHTNING_AVAILABLE = _module_available("pytorch_lightning")
-_LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")

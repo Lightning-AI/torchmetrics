@@ -5,6 +5,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [unReleased] - 2021-MM-DD
+
+### Added
+
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+## [0.3.1] - 2021-04-21
+
+- Cleaning remaining inconsistency and fix PL develop integration (
+    [#191](https://github.com/PyTorchLightning/metrics/pull/191),
+    [#192](https://github.com/PyTorchLightning/metrics/pull/192),
+    [#193](https://github.com/PyTorchLightning/metrics/pull/193),
+    [#194](https://github.com/PyTorchLightning/metrics/pull/194)
+)
+
+
 ## [0.3.0] - 2021-04-20
 
 ### Added
@@ -12,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `BootStrapper` to easily calculate confidence intervals for metrics ([#101](https://github.com/PyTorchLightning/metrics/pull/101))
 - Added Binned metrics  ([#128](https://github.com/PyTorchLightning/metrics/pull/128))
 - Added metrics for Information Retrieval ([(PL^5032)](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032)):
-    * Added `RetrievalMAP` ([#5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
+    * Added `RetrievalMAP` ([PL^5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
     * Added `RetrievalMRR` ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
     * Added `RetrievalPrecision` ([#139](https://github.com/PyTorchLightning/metrics/pull/139))
     * Added `RetrievalRecall` ([#146](https://github.com/PyTorchLightning/metrics/pull/146))
@@ -34,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `__getitem__` as metric arithmetic operation ([#142](https://github.com/PyTorchLightning/metrics/pull/142))
 - Added property `is_differentiable` to metrics and test for differentiability ([#154](https://github.com/PyTorchLightning/metrics/pull/154))
 - Added support for `average`, `ignore_index` and `mdmc_average` in `Accuracy` metric ([#166](https://github.com/PyTorchLightning/metrics/pull/166))
+- Added `postfix` arg to `MetricCollection` ([#188](https://github.com/PyTorchLightning/metrics/pull/188))
 
 ### Changed
 
