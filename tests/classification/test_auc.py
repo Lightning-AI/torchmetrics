@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from functools import partial
 
 import numpy as np
 import pytest
@@ -26,9 +27,13 @@ from torchmetrics.functional import auc
 seed_all(42)
 
 
-def sk_auc(x, y):
+def sk_auc(x, y, reorder=False):
     x = x.flatten()
     y = y.flatten()
+    if reorder:
+        idx = np.argsort(x, kind='stable')
+        x = x[idx]
+        y = y[idx]
     return _sk_auc(x, y)
 
 
@@ -36,15 +41,16 @@ Input = namedtuple('Input', ["x", "y"])
 
 _examples = []
 # generate already ordered samples, sorted in both directions
-for i in range(4):
-    x = np.random.randint(0, 5, (NUM_BATCHES * 8))
-    y = np.random.randint(0, 5, (NUM_BATCHES * 8))
-    idx = np.argsort(x, kind='stable')
-    x = x[idx] if i % 2 == 0 else x[idx[::-1]]
-    y = y[idx] if i % 2 == 0 else x[idx[::-1]]
-    x = x.reshape(NUM_BATCHES, 8)
-    y = y.reshape(NUM_BATCHES, 8)
-    _examples.append(Input(x=tensor(x), y=tensor(y)))
+for batch_size in (8, 4049):
+    for i in range(4):
+        x = np.random.rand((NUM_BATCHES * batch_size))
+        y = np.random.rand((NUM_BATCHES * batch_size))
+        idx = np.argsort(x, kind='stable')
+        x = x[idx] if i % 2 == 0 else x[idx[::-1]]
+        y = y[idx] if i % 2 == 0 else x[idx[::-1]]
+        x = x.reshape(NUM_BATCHES, batch_size)
+        y = y.reshape(NUM_BATCHES, batch_size)
+        _examples.append(Input(x=tensor(x), y=tensor(y)))
 
 
 @pytest.mark.parametrize("x, y", _examples)
@@ -62,8 +68,11 @@ class TestAUC(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_auc_functional(self, x, y):
-        self.run_functional_metric_test(x, y, metric_functional=auc, sk_metric=sk_auc, metric_args={"reorder": False})
+    @pytest.mark.parametrize("reorder", [True, False])
+    def test_auc_functional(self, x, y, reorder):
+        self.run_functional_metric_test(
+            x, y, metric_functional=auc, sk_metric=partial(sk_auc, reorder=reorder), metric_args={"reorder": reorder}
+        )
 
     def test_auc_differentiability(self, x, y):
         self.run_differentiability_test(
