@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed auc calculation and add tests ([#197](https://github.com/PyTorchLightning/metrics/pull/197))
+
 
 ## [0.3.1] - 2021-04-21
 
