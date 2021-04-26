@@ -326,6 +326,7 @@ class Metric(nn.Module, ABC):
 
     def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
                               missing_keys, unexpected_keys, error_msgs):
+        """ Loads metric states from state_dict """
         for key in self._defaults.keys():
             name = prefix + key
             if name in state_dict:
