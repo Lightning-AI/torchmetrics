@@ -39,7 +39,7 @@ class Precision(StatScores):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case 
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
@@ -81,7 +81,7 @@ class Precision(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label, 
+            Number of highest probability or logit score predictions considered to find the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
@@ -242,7 +242,7 @@ class Recall(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label, 
+            Number of highest probability or logit score predictions considered to find the correct label,
             relevant only for (multi-dimensional) multi-class. The
             default value (``None``) will be interpreted as 1 for these inputs.
 

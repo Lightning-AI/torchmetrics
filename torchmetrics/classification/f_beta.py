@@ -49,7 +49,7 @@ class FBeta(StatScores):
         beta:
             Beta coefficient in the F measure.
         threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case 
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
@@ -91,7 +91,7 @@ class FBeta(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label, 
+            Number of highest probability or logit score predictions considered to find the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
@@ -183,7 +183,7 @@ class F1(FBeta):
     """
     Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
-    Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model 
+    Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
     output or integer class values in prediction. Works with multi-dimensional preds and target.
 
     Forward accepts
@@ -200,7 +200,7 @@ class F1(FBeta):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case 
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
@@ -242,7 +242,7 @@ class F1(FBeta):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability or logit score predictions considered to find the correct label, 
+            Number of highest probability or logit score predictions considered to find the correct label,
             relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
