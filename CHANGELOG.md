@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [UnReleased] - 2021-MM-DD
+## [unReleased] - 2021-MM-DD
 
 ### Added
 
@@ -20,6 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Fixed
+
+- Fixed auc calculation and add tests ([#197](https://github.com/PyTorchLightning/metrics/pull/197))
+
+
+## [0.3.1] - 2021-04-21
+
+- Cleaning remaining inconsistency and fix PL develop integration (
+    [#191](https://github.com/PyTorchLightning/metrics/pull/191),
+    [#192](https://github.com/PyTorchLightning/metrics/pull/192),
+    [#193](https://github.com/PyTorchLightning/metrics/pull/193),
+    [#194](https://github.com/PyTorchLightning/metrics/pull/194)
+)
 
 
 ## [0.3.0] - 2021-04-20

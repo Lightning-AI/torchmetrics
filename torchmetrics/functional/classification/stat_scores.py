@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple
-from warnings import warn
 
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass
 from torchmetrics.utilities.checks import _input_format_classification
 
 
@@ -85,14 +85,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    if is_multiclass is not None and multiclass is None:
-        warn(
-            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-            DeprecationWarning
-        )
-        multiclass = is_multiclass
 
     preds, target, _ = _input_format_classification(
         preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
@@ -225,6 +218,9 @@ def stat_scores(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        is_multiclass:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -280,12 +276,7 @@ def stat_scores(
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
     """
-    if is_multiclass is not None and multiclass is None:
-        warn(
-            "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-            DeprecationWarning
-        )
-        multiclass = is_multiclass
+    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
 
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")
