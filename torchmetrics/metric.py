@@ -17,7 +17,7 @@ import operator
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Callable, Optional, Union, List
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
