@@ -189,10 +189,9 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     assert torch.allclose(expected, result_cl, equal_nan=True)
 
 
-
 @pytest.mark.parametrize(
     "metric_class, metric_fn, sk_fn",
-    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score),],
+    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)]
 )
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
