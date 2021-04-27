@@ -14,7 +14,6 @@
 from typing import Optional, Tuple
 from warnings import warn
 
-import numpy as np
 import torch
 from torch import Tensor, tensor
 
@@ -120,16 +119,6 @@ def _stat_scores_update(
         target = _del_column(target, ignore_index)
 
     tp, fp, tn, fn = _stat_scores(preds, target, reduce=reduce)
-
-    # if classes matter and a given class is not present in both the preds and the target,
-    # computing the score for this class is meaningless
-    if reduce == "macro":
-        # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero(torch.logical_not(torch.logical_or(tp, torch.logical_or(fp, fn))))
-        tp[..., meaningless_indeces] = -1
-        fp[..., meaningless_indeces] = -1
-        tn[..., meaningless_indeces] = -1
-        fn[..., meaningless_indeces] = -1
 
     # Take care of ignore_index
     if ignore_index is not None and reduce == "macro":
