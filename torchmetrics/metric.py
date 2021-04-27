@@ -324,8 +324,8 @@ class Metric(nn.Module, ABC):
                 destination[prefix + key] = current_val
         return destination
 
-    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
-                              missing_keys, unexpected_keys, error_msgs):
+    def _load_from_state_dict(self, state_dict: dict, prefix: str, local_metadata: dict, strict: bool,
+                              missing_keys: List[str], unexpected_keys: List[str], error_msgs: List[str]) -> None:
         """ Loads metric states from state_dict """
         for key in self._defaults.keys():
             name = prefix + key
