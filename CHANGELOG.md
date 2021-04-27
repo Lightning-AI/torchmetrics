@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed auc calculation and add tests ([#197](https://github.com/PyTorchLightning/metrics/pull/197))
 
 
+- Fixed loading persisted metric states using `load_state_dict()` ([#202](https://github.com/PyTorchLightning/metrics/pull/202))
+
+
 ## [0.3.1] - 2021-04-21
 
 - Cleaning remaining inconsistency and fix PL develop integration (
