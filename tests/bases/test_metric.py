@@ -20,9 +20,9 @@ import pytest
 import torch
 from torch import nn, tensor
 
-from tests.helpers import seed_all
+from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 
 seed_all(42)
 
@@ -101,7 +101,10 @@ def test_reset_compute():
     a.update(tensor(5))
     assert a.compute() == 5
     a.reset()
-    assert a.compute() == 0
+    if not _LIGHTNING_AVAILABLE or _LIGHTNING_GREATER_EQUAL_1_3:
+        assert a.compute() == 0
+    else:
+        assert a.compute() == 5
 
 
 def test_update():
@@ -224,6 +227,16 @@ def test_state_dict(tmpdir):
     assert metric.state_dict() == OrderedDict()
 
 
+def test_load_state_dict(tmpdir):
+    """ test that metric states can be loaded with state dict """
+    metric = DummyMetricSum()
+    metric.persistent(True)
+    metric.update(5)
+    loaded_metric = DummyMetricSum()
+    loaded_metric.load_state_dict(metric.state_dict())
+    assert metric.compute() == 5
+
+
 def test_child_metric_state_dict():
     """ test that child metric states will be added to parent state dict """
 
@@ -281,3 +294,9 @@ def test_warning_on_compute_before_update():
         val = metric.compute()
     assert not record
     assert val == 2.0
+
+
+def test_metric_scripts():
+    torch.jit.script(DummyMetric())
+    torch.jit.script(DummyMetricSum())
+

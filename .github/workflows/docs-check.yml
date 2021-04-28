@@ -97,4 +97,3 @@ jobs:
           name: docs-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}
           path: docs/build/html/
         if: success()
-

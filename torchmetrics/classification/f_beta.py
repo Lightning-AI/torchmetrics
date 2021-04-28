@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
-from warnings import warn
 
 import torch
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
+from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 
 
 class FBeta(StatScores):
@@ -114,6 +114,9 @@ class FBeta(StatScores):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
+        multilabel:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Raises:
         ValueError:
@@ -143,14 +146,9 @@ class FBeta(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
+        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
-        if is_multiclass is not None and multiclass is None:
-            warn(
-                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-                DeprecationWarning
-            )
-            multiclass = is_multiclass
+        _deprecation_warn_arg_multilabel(multilabel)
 
         self.beta = beta
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
@@ -269,6 +267,10 @@ class F1(FBeta):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
+        multilabel:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
+
 
     Example:
         >>> from torchmetrics import F1
@@ -292,14 +294,9 @@ class F1(FBeta):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
+        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
-        if is_multiclass is not None and multiclass is None:
-            warn(
-                "Argument `is_multiclass` was deprecated in v0.3.0 and will be removed in v0.4. Use `multiclass`.",
-                DeprecationWarning
-            )
-            multiclass = is_multiclass
+        _deprecation_warn_arg_multilabel(multilabel)
 
         super().__init__(
             num_classes=num_classes,

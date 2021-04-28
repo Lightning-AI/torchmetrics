@@ -14,6 +14,7 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.nox|.tox|.venv|.svn|_build|buck-out|buil
 known_first_party = [
     "torchmetrics",
     "tests",
+    "integrations",
 ]
 skip_glob = []
 profile = "black"

@@ -1,4 +1,4 @@
-__version__ = '0.3.0rc0'
+__version__ = '0.4.0dev'
 __author__ = 'PyTorchLightning et al.'
 __author_email__ = 'name@pytorchlightning.ai'
 __license__ = 'Apache-2.0'
@@ -15,3 +15,13 @@ We currently have around 25+ metrics implemented and we continuously is adding m
 already covered domains (classification, regression ect.) but also new domains (object detection ect.).
 We make sure that all our metrics are rigorously tested such that you can trust them.
 """
+
+__all__ = [
+    "__author__",
+    "__author_email__",
+    "__copyright__",
+    "__docs__",
+    "__homepage__",
+    "__license__",
+    "__version__",
+]

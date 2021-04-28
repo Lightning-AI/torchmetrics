@@ -20,9 +20,9 @@ from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
-def _check_same_shape(pred: Tensor, target: Tensor):
+def _check_same_shape(preds: Tensor, target: Tensor):
     """ Check that predictions and target have the same shape, else raise error """
-    if pred.shape != target.shape:
+    if preds.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
@@ -301,6 +301,19 @@ def _check_classification_inputs(
         _check_top_k(top_k, case, implied_classes, multiclass, preds.is_floating_point())
 
     return case
+
+
+def _input_squeeze(
+    preds: Tensor,
+    target: Tensor,
+) -> Tuple[Tensor, Tensor]:
+    """Remove excess dimensions
+    """
+    if preds.shape[0] == 1:
+        preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
+    else:
+        preds, target = preds.squeeze(), target.squeeze()
+    return preds, target
 
 
 def _input_format_classification(

@@ -12,6 +12,12 @@ metrics.
 .. autoclass:: torchmetrics.Metric
     :noindex:
 
+We also have an ``AverageMeter`` class that is helpful for defining ad-hoc metrics, when creating
+your own metric type might be too burdensome.
+
+.. autoclass:: torchmetrics.AverageMeter
+    :noindex:
+
 **********************
 Classification Metrics
 **********************
@@ -138,6 +144,24 @@ AUROC
 .. autoclass:: torchmetrics.AUROC
     :noindex:
 
+BinnedAveragePrecision
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedAveragePrecision
+    :noindex:
+
+BinnedPrecisionRecallCurve
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedPrecisionRecallCurve
+    :noindex:
+
+BinnedRecallAtFixedPrecision
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -204,6 +228,7 @@ Recall
 .. autoclass:: torchmetrics.Recall
     :noindex:
 
+
 ROC
 ~~~
 
@@ -264,18 +289,26 @@ PSNR
     :noindex:
 
 
+R2Score
+~~~~~~~
+
+.. autoclass:: torchmetrics.R2Score
+    :noindex:
+
+
+SpearmanCorrcoef
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpearmanCorrcoef
+    :noindex:
+
+
 SSIM
 ~~~~
 
 .. autoclass:: torchmetrics.SSIM
     :noindex:
 
-
-R2Score
-~~~~~~~
-
-.. autoclass:: torchmetrics.R2Score
-    :noindex:
 
 
 *********
@@ -304,6 +337,12 @@ and you hope that relevant documents are scored higher. ``target`` contains the 
 
 Since a query may be compared with a variable number of documents, we use ``indexes`` to keep track of which scores belong to
 the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
+
+.. note::
+    `Retrieval` metrics are only intended to be used globally. This means that the average of the metric over each batch can be quite different
+    from the metric computed on the whole dataset. For this reason, we suggest to compute the metric only when all the examples
+    has been provided to the metric. When using `Pytorch Lightning`, we suggest to use ``on_step=False``
+    and ``on_epoch=True`` in ``self.log`` or to place the metric calculation in ``training_epoch_end``, ``validation_epoch_end`` or ``test_epoch_end``.
 
 .. doctest::
 
@@ -375,7 +414,7 @@ RetrievalNormalizedDCG
 Wrappers
 ********
 
-Modular wrapper metrics are not metrics in themself, but instead take a metric and alter the internal logic 
+Modular wrapper metrics are not metrics in themself, but instead take a metric and alter the internal logic
 of the base metric.
 
 .. autoclass:: torchmetrics.BootStrapper
