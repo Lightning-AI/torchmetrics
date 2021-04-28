@@ -33,7 +33,6 @@ repos:
         name: imports
         entry: isort
         language: python
-        require_serial: false
         args: [--settings-path, "./pyproject.toml"]
 
   - repo: https://github.com/pre-commit/mirrors-yapf
