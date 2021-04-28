@@ -16,7 +16,6 @@ from copy import deepcopy
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 from torch import nn
-from torch._jit_internal import _copy_to_script_wrapper
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -191,7 +190,6 @@ class MetricCollection(nn.ModuleDict):
         name = name if self.postfix is None else name + self.postfix
         return name
 
-    @_copy_to_script_wrapper
     def keys(self, keep_base: bool = False):
         r"""Return an iterable of the ModuleDict key.
         Args:
@@ -201,7 +199,6 @@ class MetricCollection(nn.ModuleDict):
             return self._modules.keys()
         return [self._set_name(k) for k in self._modules.keys()]
 
-    @_copy_to_script_wrapper
     def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
         Args:
