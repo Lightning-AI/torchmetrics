@@ -17,8 +17,8 @@ from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
-from torchmetrics.utilities.enums import AverageMethod
 from torchmetrics.utilities import _deprecation_warn_arg_multilabel
+from torchmetrics.utilities.enums import AverageMethod
 
 
 class FBeta(StatScores):
