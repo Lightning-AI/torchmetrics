@@ -52,10 +52,9 @@ jobs:
     - name: Update Environment
       run: |
         conda info
-        conda install pytorch=${{ matrix.pytorch-version }} cpuonly
+        conda install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
         conda list
         pip --version
-        pip install mkl
         pip install --requirement requirements.txt --upgrade-strategy only-if-needed --quiet
         pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet
         pip list
