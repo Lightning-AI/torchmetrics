@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Union, Iterable, Tuple
+from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 from torch import nn
 from torch._jit_internal import _copy_to_script_wrapper
