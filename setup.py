@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 import os
-import sys
+from importlib.util import module_from_spec, spec_from_file_location
 
-# Always prefer setuptools over distutils
 from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
-try:
-    from torchmetrics import __about__ as about
-    from torchmetrics import setup_tools
-except ImportError:
-    # alternative https://stackoverflow.com/a/67692/4521646
-    sys.path.append("torchmetrics")
-    import __about__ as about
-    import setup_tools
 
+
+def _load_py_module(fname, pkg="torchmetrics"):
+    spec = spec_from_file_location(os.path.join(pkg, fname), os.path.join(_PATH_ROOT, pkg, fname))
+    py = module_from_spec(spec)
+    spec.loader.exec_module(py)
+    return py
+
+
+about = _load_py_module('__about__.py')
+setup_tools = _load_py_module('setup_tools.py')
 long_description = setup_tools._load_readme_description(
     _PATH_ROOT,
     homepage=about.__homepage__,
