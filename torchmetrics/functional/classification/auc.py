@@ -16,8 +16,6 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.data import _stable_1d_sort
-
 
 def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     if x.ndim > 1 or y.ndim > 1:
@@ -35,7 +33,8 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     if reorder:
-        x, x_idx = _stable_1d_sort(x)
+        # TODO: include stable=True arg when pytorch v1.9 is released
+        x, x_idx = torch.sort(x)
         y = y[x_idx]
 
     dx = x[1:] - x[:-1]
