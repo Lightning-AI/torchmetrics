@@ -26,7 +26,6 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
-      #- id: check-yaml
       - id: pretty-format-json
 
   - repo: https://github.com/PyCQA/isort
