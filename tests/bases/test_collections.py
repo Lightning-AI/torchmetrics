@@ -168,6 +168,18 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for name in names:
         assert f"new_prefix_{name}" in out, 'prefix argument not working as intended with clone method'
 
+    for k, _ in new_metric_collection.items():
+        assert 'new_prefix_' in k
+
+    for k in new_metric_collection.keys():
+        assert 'new_prefix_' in k
+
+    for k, _ in new_metric_collection.items(keep_base=True):
+        assert 'new_prefix_' not in k
+
+    for k in new_metric_collection.keys(keep_base=True):
+        assert 'new_prefix_' not in k
+
     new_metric_collection = new_metric_collection.clone(postfix='_new_postfix')
     out = new_metric_collection(5)
     names = [n[:-len(postfix)] if postfix is not None else n for n in names]  # strip away old postfix

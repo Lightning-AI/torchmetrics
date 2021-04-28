@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union, Iterable, Tuple
 
 from torch import nn
 
@@ -144,7 +144,7 @@ class MetricCollection(nn.ModuleDict):
         be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return {self._set_name(k): m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+        return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
 
     def update(self, *args, **kwargs):  # pylint: disable=E0202
         """
@@ -152,16 +152,16 @@ class MetricCollection(nn.ModuleDict):
         be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        for _, m in self.items():
+        for _, m in self.items(keep_base=True):
             m_kwargs = m._filter_kwargs(**kwargs)
             m.update(*args, **m_kwargs)
 
     def compute(self) -> Dict[str, Any]:
-        return {self._set_name(k): m.compute() for k, m in self.items()}
+        return {k: m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
         """ Iteratively call reset for each metric """
-        for _, m in self.items():
+        for _, m in self.items(keep_base=True):
             m.reset()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> 'MetricCollection':
@@ -182,13 +182,29 @@ class MetricCollection(nn.ModuleDict):
         """Method for post-init to change if metric states should be saved to
         its state_dict
         """
-        for _, m in self.items():
+        for _, m in self.items(keep_base=True):
             m.persistent(mode)
 
     def _set_name(self, base: str) -> str:
         name = base if self.prefix is None else self.prefix + base
         name = name if self.postfix is None else name + self.postfix
         return name
+
+    def keys(self, keep_base: bool = False):
+        r"""Return an iterable of the ModuleDict key.
+        Args:
+            keep_base: Whether to add prefix/postfix on the items collection.
+        """
+        if keep_base: return self._modules.keys()
+        return [self._set_name(k) for k in self._modules.keys()]
+
+    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
+        r"""Return an iterable of the ModuleDict key/value pairs.
+        Args:
+            keep_base: Whether to add prefix/postfix on the items collection.
+        """
+        if keep_base: return self._modules.items()
+        return [(self._set_name(k), v) for k,v in self._modules.items()]
 
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
