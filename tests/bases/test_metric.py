@@ -299,4 +299,3 @@ def test_warning_on_compute_before_update():
 def test_metric_scripts():
     torch.jit.script(DummyMetric())
     torch.jit.script(DummyMetricSum())
-
