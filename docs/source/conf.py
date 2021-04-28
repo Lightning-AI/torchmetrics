@@ -29,15 +29,10 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 FOLDER_GENERATED = 'generated'
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
-try:
-    from torchmetrics import __about__ as about
-except ImportError:
-    # alternative https://stackoverflow.com/a/67692/4521646
-    spec = spec_from_file_location(
-        "torchmetrics/__about__.py", os.path.join(_PATH_ROOT, "torchmetrics", "__about__.py")
-    )
-    about = module_from_spec(spec)
-    spec.loader.exec_module(about)
+# alternative https://stackoverflow.com/a/67692/4521646
+spec = spec_from_file_location("torchmetrics/__about__.py", os.path.join(_PATH_ROOT, "torchmetrics", "__about__.py"))
+about = module_from_spec(spec)
+spec.loader.exec_module(about)
 
 html_favicon = '_static/images/icon.svg'
 
