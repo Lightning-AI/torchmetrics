@@ -180,6 +180,9 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for k in new_metric_collection.keys(keep_base=True):
         assert 'new_prefix_' not in k
 
+    repr = f'MetricCollection(\n  prefix=new_prefix_,\n  postfix={postfix},\n  (DummyMetricSum): DummyMetricSum()\n  (DummyMetricDiff): DummyMetricDiff()\n)'
+    assert new_metric_collection.__repr__() == repr
+
     new_metric_collection = new_metric_collection.clone(postfix='_new_postfix')
     out = new_metric_collection(5)
     names = [n[:-len(postfix)] if postfix is not None else n for n in names]  # strip away old postfix
