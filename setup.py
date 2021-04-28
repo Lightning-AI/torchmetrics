@@ -7,8 +7,8 @@ from setuptools import find_packages, setup
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 
 
-def _load_py_module(fname):
-    spec = spec_from_file_location(os.path.join("torchmetrics", fname), os.path.join(_PATH_ROOT, "torchmetrics", fname))
+def _load_py_module(fname, pkg="torchmetrics"):
+    spec = spec_from_file_location(os.path.join(pkg, fname), os.path.join(_PATH_ROOT, pkg, fname))
     py = module_from_spec(spec)
     spec.loader.exec_module(py)
     return py
