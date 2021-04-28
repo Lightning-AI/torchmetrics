@@ -62,3 +62,7 @@ repos:
     rev: v0.790
     hooks:
       - id: mypy
+        name: Typing
+        entry: mypy
+        language: python
+        types: [python]
