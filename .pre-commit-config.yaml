@@ -25,7 +25,6 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
-      - id: pretty-format-json
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.8.0
@@ -34,7 +33,6 @@ repos:
         name: imports
         entry: isort
         language: python
-        types: [python]
         require_serial: false
         args: [--settings-path, "./pyproject.toml"]
 
@@ -46,7 +44,6 @@ repos:
         entry: yapf
         args: [--parallel]
         language: python
-        types: [python]
 
   - repo: https://github.com/PyCQA/flake8
     rev: 3.9.1
@@ -55,4 +52,3 @@ repos:
         name: PEP8
         entry: flake8
         language: python
-        types: [python]
