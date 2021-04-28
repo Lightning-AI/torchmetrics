@@ -197,7 +197,8 @@ class MetricCollection(nn.ModuleDict):
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
         """
-        if keep_base: return self._modules.keys()
+        if keep_base:
+            return self._modules.keys()
         return [self._set_name(k) for k in self._modules.keys()]
 
     @_copy_to_script_wrapper
@@ -206,8 +207,9 @@ class MetricCollection(nn.ModuleDict):
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
         """
-        if keep_base: return self._modules.items()
-        return [(self._set_name(k), v) for k,v in self._modules.items()]
+        if keep_base:
+            return self._modules.items()
+        return [(self._set_name(k), v) for k, v in self._modules.items()]
 
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
