@@ -5,13 +5,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.3.0] - 2021-04-DD
+## [unReleased] - 2021-MM-DD
 
 ### Added
 
-- Added `BootStrapper` to easely calculate confidence intervals for metrics ([#101](https://github.com/PyTorchLightning/metrics/pull/101))
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+- Fixed auc calculation and add tests ([#197](https://github.com/PyTorchLightning/metrics/pull/197))
+
+
+- Fixed loading persisted metric states using `load_state_dict()` ([#202](https://github.com/PyTorchLightning/metrics/pull/202))
+
+
+## [0.3.1] - 2021-04-21
+
+- Cleaning remaining inconsistency and fix PL develop integration (
+    [#191](https://github.com/PyTorchLightning/metrics/pull/191),
+    [#192](https://github.com/PyTorchLightning/metrics/pull/192),
+    [#193](https://github.com/PyTorchLightning/metrics/pull/193),
+    [#194](https://github.com/PyTorchLightning/metrics/pull/194)
+)
+
+
+## [0.3.0] - 2021-04-20
+
+### Added
+
+- Added `BootStrapper` to easily calculate confidence intervals for metrics ([#101](https://github.com/PyTorchLightning/metrics/pull/101))
+- Added Binned metrics  ([#128](https://github.com/PyTorchLightning/metrics/pull/128))
 - Added metrics for Information Retrieval ([(PL^5032)](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032)):
-    * Added `RetrievalMAP` ([#5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
+    * Added `RetrievalMAP` ([PL^5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
     * Added `RetrievalMRR` ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
     * Added `RetrievalPrecision` ([#139](https://github.com/PyTorchLightning/metrics/pull/139))
     * Added `RetrievalRecall` ([#146](https://github.com/PyTorchLightning/metrics/pull/146))
@@ -23,7 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * Added `PearsonCorrcoef` ([#157](https://github.com/PyTorchLightning/metrics/pull/157))
     * Added `SpearmanCorrcoef` ([#158](https://github.com/PyTorchLightning/metrics/pull/158))
     * Added `Hinge` ([#120](https://github.com/PyTorchLightning/metrics/pull/120))
-- Added Binned metrics  ([#128](https://github.com/PyTorchLightning/metrics/pull/128))
 - Added `average='micro'` as an option in AUROC for multilabel problems ([#110](https://github.com/PyTorchLightning/metrics/pull/110))
 - Added multilabel support to `ROC` metric ([#114](https://github.com/PyTorchLightning/metrics/pull/114))
 - Added testing for `half` precision ([#77](https://github.com/PyTorchLightning/metrics/pull/77),
@@ -34,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `__getitem__` as metric arithmetic operation ([#142](https://github.com/PyTorchLightning/metrics/pull/142))
 - Added property `is_differentiable` to metrics and test for differentiability ([#154](https://github.com/PyTorchLightning/metrics/pull/154))
 - Added support for `average`, `ignore_index` and `mdmc_average` in `Accuracy` metric ([#166](https://github.com/PyTorchLightning/metrics/pull/166))
+- Added `postfix` arg to `MetricCollection` ([#188](https://github.com/PyTorchLightning/metrics/pull/188))
 
 ### Changed
 
@@ -54,9 +87,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed when `_stable_1d_sort` to work when n >= N ([PL^6177](https://github.com/PyTorchLightning/pytorch-lightning/pull/6177))
+- Fixed when `_stable_1d_sort` to work when `n>=N` ([PL^6177](https://github.com/PyTorchLightning/pytorch-lightning/pull/6177))
 - Fixed `_computed` attribute not being correctly reset ([#147](https://github.com/PyTorchLightning/metrics/pull/147))
-- Fixed to blau score ([#165](https://github.com/PyTorchLightning/metrics/pull/165))
+- Fixed to Blau score ([#165](https://github.com/PyTorchLightning/metrics/pull/165))
+- Fixed backwards compatibility for logging with older version of pytorch-lightning ([#182](https://github.com/PyTorchLightning/metrics/pull/182))
 
 
 ## [0.2.0] - 2021-03-12

@@ -13,10 +13,11 @@
 # limitations under the License.
 import functools
 import inspect
+import operator
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -24,6 +25,7 @@ from torch import Tensor, nn
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 class Metric(nn.Module, ABC):
@@ -69,6 +71,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Callable = None,
     ):
         super().__init__()
+        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
@@ -256,7 +259,9 @@ class Metric(nn.Module, ABC):
         """
         This method automatically resets the metric state variables to their default value.
         """
-        self._computed = None
+        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
+        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
+            self._computed = None
 
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
@@ -318,6 +323,25 @@ class Metric(nn.Module, ABC):
                         current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
                 destination[prefix + key] = current_val
         return destination
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict,
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: List[str],
+        unexpected_keys: List[str],
+        error_msgs: List[str],
+    ) -> None:
+        """ Loads metric states from state_dict """
+        for key in self._defaults.keys():
+            name = prefix + key
+            if name in state_dict:
+                setattr(self, key, state_dict.pop(name))
+        super()._load_from_state_dict(
+            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
+        )
 
     def _filter_kwargs(self, **kwargs):
         """ filter kwargs such that they match the update signature of the metric """

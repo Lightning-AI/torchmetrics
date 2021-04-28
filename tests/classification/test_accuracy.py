@@ -154,7 +154,7 @@ _av_target_ml = tensor([_ml_ta2, _ml_ta2])
         (_topk_preds_mdmc, _topk_target_mdmc, 2 / 6, 2, True),
         (_topk_preds_mdmc, _topk_target_mdmc, 3 / 6, 3, True),
         (_av_preds_ml, _av_target_ml, 5 / 8, None, False),
-        (_av_preds_ml, _av_target_ml, 0, None, True)
+        (_av_preds_ml, _av_target_ml, 0, None, True),
     ],
 )
 def test_topk_accuracy(preds, target, exp_result, k, subset_accuracy):
@@ -209,18 +209,10 @@ def test_topk_accuracy_wrong_input_types(preds, target):
         ("micro", None, None, _input_mcls_prob, NUM_CLASSES, None, 0.5),
         ("micro", None, NUM_CLASSES, _input_mcls_prob, NUM_CLASSES, None, 0.5),
         (None, None, None, _input_mcls_prob, None, 0, 0.5),
-        (None, None, None, _input_mcls_prob, None, None, 1.5)
+        (None, None, None, _input_mcls_prob, None, None, 1.5),
     ],
 )
-def test_wrong_params(
-    average,
-    mdmc_average,
-    num_classes,
-    inputs,
-    ignore_index,
-    top_k,
-    threshold
-):
+def test_wrong_params(average, mdmc_average, num_classes, inputs, ignore_index, top_k, threshold):
     preds, target = inputs.preds, inputs.target
 
     with pytest.raises(ValueError):
@@ -250,14 +242,12 @@ def test_wrong_params(
 
 @pytest.mark.parametrize(
     "preds_mc, target_mc, preds_ml, target_ml",
-    [
-        (
-            tensor([0, 1, 1, 1]),
-            tensor([2, 2, 1, 1]),
-            tensor([[0.8, 0.2, 0.8, 0.7], [0.6, 0.4, 0.6, 0.5]]),
-            tensor([[1, 0, 1, 1], [0, 0, 1, 0]]),
-        )
-    ],
+    [(
+        tensor([0, 1, 1, 1]),
+        tensor([2, 2, 1, 1]),
+        tensor([[0.8, 0.2, 0.8, 0.7], [0.6, 0.4, 0.6, 0.5]]),
+        tensor([[1, 0, 1, 1], [0, 0, 1, 0]]),
+    )],
 )
 def test_different_modes(preds_mc, target_mc, preds_ml, target_ml):
     acc = Accuracy()
