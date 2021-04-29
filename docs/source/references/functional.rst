@@ -139,7 +139,7 @@ specificity [func]
 ~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.specificity
-    :noindex
+    :noindex:
 
 
 stat_scores [func]
