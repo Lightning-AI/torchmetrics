@@ -191,6 +191,12 @@ class MetricCollection(nn.ModuleDict):
         name = name if self.postfix is None else name + self.postfix
         return name
 
+    def _to_renamed_ordered_dict(self) -> OrderedDict:
+        od = OrderedDict()
+        for k, v in self._modules.items():
+            od[self._set_name(k)] = v
+        return od
+
     def keys(self, keep_base: bool = False):
         r"""Return an iterable of the ModuleDict key.
         Args:
@@ -198,10 +204,7 @@ class MetricCollection(nn.ModuleDict):
         """
         if keep_base:
             return self._modules.keys()
-        d = OrderedDict()
-        for k, v in self._modules.items():
-            d[self._set_name(k)] = v
-        return d.keys()
+        return self._to_renamed_ordered_dict().keys()
 
     def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
@@ -210,10 +213,7 @@ class MetricCollection(nn.ModuleDict):
         """
         if keep_base:
             return self._modules.items()
-        d = OrderedDict()
-        for k, v in self._modules.items():
-            d[self._set_name(k)] = v
-        return d.items()
+        return self._to_renamed_ordered_dict().items()
 
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
