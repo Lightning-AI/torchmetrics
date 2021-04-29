@@ -13,11 +13,11 @@
 # limitations under the License.
 from typing import Any, Callable, Optional, Union
 
-import torch
-from torch.autograd import Function
-from torch import Tensor
 import numpy as np
 import scipy
+import torch
+from torch import Tensor
+from torch.autograd import Function
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
@@ -177,7 +177,7 @@ class FID(Metric):
 
     Raises:
         ValueError:
-            If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed 
+            If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
             If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
 
@@ -239,11 +239,11 @@ class FID(Metric):
 
     def update(self, imgs: Tensor, real: bool) -> None:
         """ Update the state with extracted features
-        
+
         Args:
             imgs: tensor with images feed to the feature extractor
             real: bool indicating if imgs belong to the real or the fake distribution
-        """       
+        """
         features = self.inception(imgs)
 
         if real:

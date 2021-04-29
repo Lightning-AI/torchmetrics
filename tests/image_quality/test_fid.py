@@ -18,9 +18,9 @@ import torch
 from scipy.linalg import sqrtm as scipy_sqrtm
 from torch.utils.data import Dataset
 
+from tests.helpers.datasets import TrialMNIST
 from torchmetrics.image_quality.fid import FID, sqrtm
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
-from tests.helpers.datasets import TrialMNIST
 
 torch.manual_seed(42)
 
