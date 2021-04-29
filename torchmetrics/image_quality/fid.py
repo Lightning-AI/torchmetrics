@@ -26,10 +26,13 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 else:
+
     class FeatureExtractorInceptionV3(torch.nn.Module):
         pass
 
+
 class NoTrainInceptionV3(FeatureExtractorInceptionV3):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # put into evaluation mode
@@ -48,8 +51,9 @@ class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
     All credit to:
         https://github.com/steveli/pytorch-sqrtm/blob/master/sqrtm.py
-          
+
     """
+
     @staticmethod
     def forward(ctx, input):
         # TODO: update whenever pytorch gets an matrix square root function
@@ -77,6 +81,7 @@ class MatrixSquareRoot(Function):
             grad_input = torch.from_numpy(grad_sqrtm).to(grad_output)
         return grad_input
 
+
 sqrtm = MatrixSquareRoot.apply
 
 
@@ -101,11 +106,13 @@ def _compute_fid(
     """
     diff = mu1 - mu2
 
-    covmean = sqrtm(sigma1.mm(sigma2))  
-        # Product might be almost singular
+    covmean = sqrtm(sigma1.mm(sigma2))
+    # Product might be almost singular
     if not torch.isfinite(covmean).all():
-        rank_zero_info(f'FID calculation produces singular product; adding {eps} to diagonal of '
-                       'covaraince estimates')
+        rank_zero_info(
+            f'FID calculation produces singular product; adding {eps} to diagonal of '
+            'covaraince estimates'
+        )
         offset = torch.eye(sigma1.size(0), device=mu1.device, dtype=mu1.dtype) * eps
         covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
 
@@ -115,7 +122,7 @@ def _compute_fid(
 
 class FID(Metric):
     r"""
-    Calculates `Fréchet inception distance (FID) <https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance>_`
+    Calculates `Fréchet inception distance (FID) <https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance>`_
     which is used to access the quality of generated images. Given by
 
     .. math::
@@ -126,13 +133,13 @@ class FID(Metric):
     distribution estimated from Inception v3 features calculated on generated (fake) images. The metric was
     originally proposed in [1].
 
-    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is 
+    Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
     expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
-    will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real`` 
+    will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real``
     determines if the images should update the statistics of the real distribution or the fake distribution.
-    
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity`` 
-        is installed. Either install as ``pip install torchmetrics[image-quality]`` or 
+
+    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+        is installed. Either install as ``pip install torchmetrics[image-quality]`` or
         ``pip install torch-fidelity``
 
     .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
@@ -140,10 +147,14 @@ class FID(Metric):
         means that by default ``forward`` will just call ``update`` underneat.
 
     Args:
-        feature: either an integer or ``nn.Module``
-            * an integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
-            64, 192, 768, 2048
-            * an ``nn.Module`` for using a custom feature extractor
+        feature:
+            Either an integer or ``nn.Module``:
+
+            - an integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
+              64, 192, 768, 2048
+            - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
+              an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
@@ -164,7 +175,27 @@ class FID(Metric):
     Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
     https://arxiv.org/abs/1706.08500
 
+    Raises:
+        ValueError:
+            If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed 
+        ValueError:
+            If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> from torchmetrics import FID
+        >>> fid = FID(feature=64)
+        >>> # generate two slightly overlapping image intensity distributions
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> fid.update(imgs_dist1, real=True)
+        >>> fid.update(imgs_dist2, real=False)
+        >>> fid.compute()
+        tensor(12.7202)
+
     """
+
     def __init__(
         self,
         feature: Union[int, torch.nn.Module] = 2048,
@@ -182,10 +213,9 @@ class FID(Metric):
 
         rank_zero_warn(
             'Metric `FID` will save all extracted features in buffer.'
-            ' For large datasets this may lead to large memory footprint.',
-            UserWarning
+            ' For large datasets this may lead to large memory footprint.', UserWarning
         )
-        
+
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
@@ -195,17 +225,25 @@ class FID(Metric):
                 )
             valid_int_input = [64, 192, 768, 2048]
             if feature not in valid_int_input:
-                raise ValueError(f'Integer input to argument `feature` must be one of {valid_int_input},'
-                                 f' but got {feature}.')
+                raise ValueError(
+                    f'Integer input to argument `feature` must be one of {valid_int_input},'
+                    f' but got {feature}.'
+                )
 
             self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
         else:
             self.inception = feature
-            
-        self.add_state("real_features", [ ], dist_reduce_fx=None)
-        self.add_state("fake_features", [ ], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool):
+        self.add_state("real_features", [], dist_reduce_fx=None)
+        self.add_state("fake_features", [], dist_reduce_fx=None)
+
+    def update(self, imgs: Tensor, real: bool) -> None:
+        """ Update the state with extracted features
+        
+        Args:
+            imgs: tensor with images feed to the feature extractor
+            real: bool indicating if imgs belong to the real or the fake distribution
+        """       
         features = self.inception(imgs)
 
         if real:
@@ -214,23 +252,22 @@ class FID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tensor:
+        """ Calculate FID score based on accumulated extracted features from the two distributions """
         real_features = torch.cat(self.real_features, dim=0)
         fake_features = torch.cat(self.fake_features, dim=0)
         # computation is extremely sensitive so it needs to happen in double precision
         orig_dtype = real_features.dtype
         real_features = real_features.double()
         fake_features = fake_features.double()
-        
+
         # calculate mean and covariance
         n = real_features.shape[0]
         mean1 = real_features.mean(dim=0)
         mean2 = fake_features.mean(dim=0)
         diff1 = real_features - mean1
         diff2 = fake_features - mean2
-        cov1 = 1.0/(n-1) * diff1.t().mm(diff1)
-        cov2 = 1.0/(n-1) * diff2.t().mm(diff2)
+        cov1 = 1.0 / (n - 1) * diff1.t().mm(diff1)
+        cov2 = 1.0 / (n - 1) * diff2.t().mm(diff2)
 
         # compute fid
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
-
-

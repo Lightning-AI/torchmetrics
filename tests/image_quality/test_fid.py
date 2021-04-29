@@ -55,18 +55,24 @@ def test_fid_pickle():
 
 def test_fid_raises_errors_and_warnings():
     """ Test that expected warnings and errors are raised """
-    with pytest.warns(UserWarning, match='Metric `FID` will save all extracted features in buffer.'
-                                         ' For large datasets this may lead to large memory footprint.'):
+    with pytest.warns(
+        UserWarning,
+        match='Metric `FID` will save all extracted features in buffer.'
+        ' For large datasets this may lead to large memory footprint.'
+    ):
         _ = FID()
-    
+
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match='Integer input to argument `feature` must be one of .*'):
             _ = FID(feature=2)
     else:
-        with pytest.raises(ValueError, match='FID metric requires that Torch-fidelity is installed.'
-                                             'Either install as `pip install torchmetrics[image-quality]`'
-                                             ' or `pip install torch-fidelity`'):
-           _ = FID()
+        with pytest.raises(
+            ValueError,
+            match='FID metric requires that Torch-fidelity is installed.'
+            'Either install as `pip install torchmetrics[image-quality]`'
+            ' or `pip install torch-fidelity`'
+        ):
+            _ = FID()
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
@@ -79,47 +85,46 @@ def test_fid_same_input():
         metric.update(img, real=True)
         metric.update(img, real=False)
 
-    assert torch.allclose(torch.cat(metric.real_features, dim=0),
-                          torch.cat(metric.fake_features, dim=0))
+    assert torch.allclose(torch.cat(metric.real_features, dim=0), torch.cat(metric.fake_features, dim=0))
 
     val = metric.compute()
     assert torch.allclose(val, torch.zeros_like(val), atol=1e-3)
 
+
 class _ImgDataset(Dataset):
+
     def __init__(self, imgs):
         self.imgs = imgs
-        
+
     def __getitem__(self, idx):
         return self.imgs[idx]
 
     def __len__(self):
         return self.imgs.shape[0]
 
-@pytest.mark.skipif(not (torch.cuda.is_available() and torch.cuda.device_count()>=1),
-                    reason='test is too slow without gpu')
+
+@pytest.mark.skipif(
+    not (torch.cuda.is_available() and torch.cuda.device_count() >= 1), reason='test is too slow without gpu'
+)
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
-def test_compare_fid(tmpdir, feature = 2048):
+def test_compare_fid(tmpdir, feature=2048):
     """ check that the hole pipeline give the same result as torch-fidelity """
     from torch_fidelity import calculate_metrics
 
     metric = FID(feature=feature).cuda()
 
     # We need more samples than the size of the feature vectors to not end up with a singular covariance
-    img1 = TrialMNIST(tmpdir, num_samples=1000, digits = (0, 1, 2)).data.unsqueeze(1).repeat(1,3,1,1)
-    img2 = TrialMNIST(tmpdir, num_samples=1000, digits = (1, 2, 3)).data.unsqueeze(1).repeat(1,3,1,1)
+    img1 = TrialMNIST(tmpdir, num_samples=1000, digits=(0, 1, 2)).data.unsqueeze(1).repeat(1, 3, 1, 1)
+    img2 = TrialMNIST(tmpdir, num_samples=1000, digits=(1, 2, 3)).data.unsqueeze(1).repeat(1, 3, 1, 1)
 
     batch_size = 100
     for i in range(img1.shape[0] // batch_size):
-        metric.update(img1[batch_size*i:batch_size*(i+1)].cuda(), real=True)
+        metric.update(img1[batch_size * i:batch_size * (i + 1)].cuda(), real=True)
 
     for i in range(img2.shape[0] // batch_size):
-        metric.update(img2[batch_size*i:batch_size*(i+1)].cuda(), real=False)
+        metric.update(img2[batch_size * i:batch_size * (i + 1)].cuda(), real=False)
 
-    torch_fid = calculate_metrics(
-        _ImgDataset(img1),
-        _ImgDataset(img2),
-        fid=True, feature_layer_fid=str(feature)
-    )
+    torch_fid = calculate_metrics(_ImgDataset(img1), _ImgDataset(img2), fid=True, feature_layer_fid=str(feature))
 
     tm_res = metric.compute()
 
