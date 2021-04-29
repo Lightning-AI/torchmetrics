@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
@@ -197,7 +198,7 @@ class MetricCollection(nn.ModuleDict):
         """
         if keep_base:
             return self._modules.keys()
-        return [self._set_name(k) for k in self._modules.keys()]
+        return OrderedDict(**{self._set_name(k): v for k, v in self._modules.items()}).keys()
 
     def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
@@ -206,7 +207,7 @@ class MetricCollection(nn.ModuleDict):
         """
         if keep_base:
             return self._modules.items()
-        return [(self._set_name(k), v) for k, v in self._modules.items()]
+        return OrderedDict(**{self._set_name(k): v for k, v in self._modules.items()}).items()
 
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
