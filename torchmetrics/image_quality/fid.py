@@ -21,7 +21,7 @@ import numpy as np
 import scipy
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_info
+from torchmetrics.utilities import rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
@@ -106,34 +106,7 @@ def _compute_fid(
         covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
 
     tr_covmean = torch.trace(covmean)
-    print("cov trace 1", tr_covmean)
     return diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * tr_covmean
-
-
-def _update_mean(old_mean: torch.Tensor, old_nobs: torch.Tensor, data: torch.Tensor) -> torch.Tensor:
-    """ Update a mean estimate given new data
-    Args:
-        old_mean: current mean estimate
-        old_nobs: number of observation until now
-        data: data used for updating the estimate
-    Returns:
-        new_mean: updated mean estimate
-    """
-    data_size = data.shape[0]
-    return (old_mean * old_nobs + data.mean(dim=0) * data_size) / (old_nobs + data_size)
-
-
-def _update_cov(old_cov: torch.Tensor, old_mean: torch.Tensor, new_mean: torch.Tensor, data: torch.Tensor) -> torch.Tensor:
-    """ Update a covariance estimate given new data
-    Args:
-        old_cov: current covariance estimate
-        old_mean: current mean estimate
-        new_mean: updated mean estimate
-        data: data used for updating the estimate
-    Returns:
-        new_mean: updated covariance estimate
-    """
-    return old_cov + (data - new_mean).T @ (data - old_mean)
 
 
 class FID(Metric):
@@ -161,13 +134,6 @@ class FID(Metric):
     .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
         all other metrics) as this metric does not really make sense to calculate on a single batch. This
         means that by default ``forward`` will just call ``update`` underneat.
-
-    .. note:: If precision of the metric is crusial to you, we advice the following:
-            * initialize the metric in double precision: `metric = FID().double()`
-            * while the metric does support distributed evaluation, do note that the calculation will be slightly
-            biased due to the estimation of each process covariance matrix will depend on the corresponding process
-            mean and not the global mean. It is therefore highly recommende to only evaluate this metric on
-            single device when precision is critical.
 
     Args:
         feature: either an integer or ``nn.Module``
@@ -209,6 +175,13 @@ class FID(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+
+        rank_zero_warn(
+            'Metric `FID` will save all extracted features in buffer.'
+            ' For large datasets this may lead to large memory footprint.',
+            UserWarning
+        )
+        
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
@@ -222,39 +195,36 @@ class FID(Metric):
             self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
         else:
             self.inception = feature
-
-        self.add_state("real_mean", torch.zeros(feature), dist_reduce_fx="mean")
-        self.add_state("real_cov", torch.zeros(feature), dist_reduce_fx="mean")
-        self.add_state("real_nobs", torch.zeros(1,), dist_reduce_fx="sum")
-        self.add_state("fake_mean", torch.zeros(feature), dist_reduce_fx="mean")
-        self.add_state("fake_cov", torch.zeros(feature, feature), dist_reduce_fx="mean")
-        self.add_state("fake_nobs", torch.zeros(1), dist_reduce_fx="sum")
+            
+        self.add_state("real_features", [ ], dist_reduce_fx=None)
+        self.add_state("fake_features", [ ], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool):
-        incep_score = self.inception(imgs)
+        features = self.inception(imgs)
 
         if real:
-            new_mean = _update_mean(self.real_mean, self.real_nobs, incep_score)
-            new_cov = _update_cov(self.real_cov, self.real_mean, new_mean, incep_score)
-            self.real_mean = new_mean
-            self.real_cov = new_cov
-            self.real_nobs += incep_score.shape[0]
+            self.real_features.append(features)
         else:
-            new_mean = _update_mean(self.fake_mean, self.fake_nobs, incep_score)
-            new_cov = _update_cov(self.fake_cov, self.fake_mean, new_mean, incep_score)
-            self.fake_mean = new_mean
-            self.fake_cov = new_cov
-            self.fake_nobs += incep_score.shape[0]
+            self.fake_features.append(features)
 
     def compute(self) -> Tensor:
-        cov1 = self.real_cov / (self.real_nobs - 1)
-        cov2 = self.fake_cov / (self.fake_nobs - 1)
-        return _compute_fid(self.real_mean, cov1, self.fake_mean, cov2)
+        real_features = torch.cat(self.real_features, dim=0)
+        fake_features = torch.cat(self.fake_features, dim=0)
+        # computation is extremely sensitive so it needs to happen in double precision
+        orig_dtype = real_features.dtype
+        real_features = real_features.double()
+        fake_features = fake_features.double()
+        
+        # calculate mean and covariance
+        n = real_features.shape[0]
+        mean1 = real_features.mean(dim=0)
+        mean2 = fake_features.mean(dim=0)
+        diff1 = real_features - mean1
+        diff2 = fake_features - mean2
+        cov1 = 1.0/(n-1) * diff1.t().mm(diff1)
+        cov2 = 1.0/(n-1) * diff2.t().mm(diff2)
 
-    def double(self):
-        """ The default feature extractor is only meant to be evaluated using floating point precision """
-        for module in self.children():
-            if not isinstance(module, FeatureExtractorInceptionV3):
-                module.apply(lambda t: t.double() if t.is_floating_point() else t)
-        return self
+        # compute fid
+        return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
+
 
