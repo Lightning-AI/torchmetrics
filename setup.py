@@ -72,6 +72,6 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     extra_requires={
-        'image-quality': "torch-fidelity"
+        'image-quality': ["torch-fidelity", "scipy"]
     }
 )

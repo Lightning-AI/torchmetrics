@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import numpy as np
-import scipy
 import torch
 from torch import Tensor
 from torch.autograd import Function
@@ -30,17 +29,21 @@ else:
     class FeatureExtractorInceptionV3(torch.nn.Module):
         pass
 
-
 class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        name: str,
+        features_list: List[str],
+        feature_extractor_weights_path: Optional[str] = None,
+    ) -> None:
+        super().__init__(name, features_list, feature_extractor_weights_path)
         # put into evaluation mode
         self.eval()
 
-    def train(self, mode):
+    def train(self, mode: bool) -> 'NoTrainInceptionV3':
         """ the inception network should not be able to be switched away from evaluation mode """
-        super().train(False)
+        return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
         out = super().forward(x)
@@ -55,7 +58,8 @@ class MatrixSquareRoot(Function):
     """
 
     @staticmethod
-    def forward(ctx, input):
+    def forward(ctx, input: Tensor) -> Tensor:
+        import scipy
         # TODO: update whenever pytorch gets an matrix square root function
         # Issue: https://github.com/pytorch/pytorch/issues/9983
         m = input.detach().cpu().numpy().astype(np.float_)
@@ -65,7 +69,8 @@ class MatrixSquareRoot(Function):
         return sqrtm
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx, grad_output: Tensor) -> Tensor:
+        import scipy
         grad_input = None
         if ctx.needs_input_grad[0]:
             sqrtm, = ctx.saved_tensors
