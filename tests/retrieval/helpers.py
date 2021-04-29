@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Dict, Tuple, Type, Union
+from typing import Callable, Dict, List, Tuple, Type, Union
 
 import numpy as np
 import pytest
