@@ -24,6 +24,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
+
 class AveragePrecision(Metric):
     """
     Computes the average precision score, which summarises the precision recall

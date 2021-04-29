@@ -24,6 +24,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
+
 class PrecisionRecallCurve(Metric):
     """
     Computes precision-recall pairs for different thresholds. Works for both

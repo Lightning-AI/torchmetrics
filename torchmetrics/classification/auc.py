@@ -21,6 +21,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
+
 class AUC(Metric):
     r"""
     Computes Area Under the Curve (AUC) using the trapezoidal rule
