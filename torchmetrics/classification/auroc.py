@@ -19,8 +19,9 @@ from torch import Tensor
 from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
+
 
 class AUROC(Metric):
     r"""Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
