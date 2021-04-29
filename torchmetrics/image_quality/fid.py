@@ -26,7 +26,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(torch.nn.Module):
+    class FeatureExtractorInceptionV3(torch.nn.Module):  # type:ignore
         pass
 
 
@@ -59,7 +59,7 @@ class MatrixSquareRoot(Function):
     """
 
     @staticmethod
-    def forward(ctx, input: Tensor) -> Tensor:
+    def forward(ctx: Any, input: Tensor) -> Tensor:
         import scipy
 
         # TODO: update whenever pytorch gets an matrix square root function
@@ -71,7 +71,7 @@ class MatrixSquareRoot(Function):
         return sqrtm
 
     @staticmethod
-    def backward(ctx, grad_output: Tensor) -> Tensor:
+    def backward(ctx: Any, grad_output: Tensor) -> Tensor:
         import scipy
         grad_input = None
         if ctx.needs_input_grad[0]:
@@ -93,7 +93,7 @@ sqrtm = MatrixSquareRoot.apply
 
 
 def _compute_fid(
-    mu1: torch.Tensor, sigma1: torch.Tensor, mu2: torch.Tensor, sigma2: torch.Tensor, eps=1e-6
+    mu1: torch.Tensor, sigma1: torch.Tensor, mu2: torch.Tensor, sigma2: torch.Tensor, eps: float = 1e-6
 ) -> torch.Tensor:
     r"""
     Adjusted version of
