@@ -157,9 +157,9 @@ def specificity(
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> specificity(preds, target, average='macro', num_classes=3)
-        tensor(0.3333)
+        tensor(0.6111)
         >>> specificity(preds, target, average='micro')
-        tensor(0.2500)
+        tensor(0.6250)
 
     """
     _deprecation_warn_arg_multilabel(multilabel)

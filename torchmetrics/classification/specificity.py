@@ -122,10 +122,10 @@ class Specificity(StatScores):
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> specificity = Specificity(average='macro', num_classes=3)
         >>> specificity(preds, target)
-        tensor(0.3333)
+        tensor(0.6111)
         >>> specificity = Specificity(average='micro')
         >>> specificity(preds, target)
-        tensor(0.2500)
+        tensor(0.6250)
 
     """
 

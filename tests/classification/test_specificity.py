@@ -85,10 +85,11 @@ def _sk_spec(preds, target, reduce, num_classes, multiclass, ignore_index, top_k
     if stats:
         tp, fp, tn, fn = stats
     else:
-        tp, fp, tn, fn = _sk_stats_score(preds, target, reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce)
+        stats = _sk_stats_score(preds, target, reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce)
+        tp, fp, tn, fn = stats
 
     tp, fp, tn, fn = tensor(tp), tensor(fp), tensor(tn), tensor(fn)
-    spec =  _reduce_stat_scores(
+    spec = _reduce_stat_scores(
         numerator=tn,
         denominator=tn + fp,
         weights=None if reduce != "weighted" else tn + fp,
@@ -119,7 +120,16 @@ def _sk_spec_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multicla
         for i in range(preds.shape[0]):
             pred_i = preds[i, ...].T
             target_i = target[i, ...].T
-            tp_i, fp_i, tn_i, fn_i = _sk_stats_score(pred_i, target_i, reduce, num_classes, False, ignore_index, top_k, mdmc_reduce)
+            tp_i, fp_i, tn_i, fn_i = _sk_stats_score(
+                pred_i,
+                target_i,
+                reduce,
+                num_classes,
+                False,
+                ignore_index,
+                top_k,
+                mdmc_reduce
+            )
             tp.append(tp_i)
             fp.append(fp_i)
             tn.append(tn_i)
