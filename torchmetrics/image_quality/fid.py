@@ -61,6 +61,7 @@ class MatrixSquareRoot(Function):
     @staticmethod
     def forward(ctx, input: Tensor) -> Tensor:
         import scipy
+
         # TODO: update whenever pytorch gets an matrix square root function
         # Issue: https://github.com/pytorch/pytorch/issues/9983
         m = input.detach().cpu().numpy().astype(np.float_)
