@@ -20,9 +20,9 @@ from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
-def _check_same_shape(pred: Tensor, target: Tensor):
+def _check_same_shape(preds: Tensor, target: Tensor):
     """ Check that predictions and target have the same shape, else raise error """
-    if pred.shape != target.shape:
+    if preds.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 

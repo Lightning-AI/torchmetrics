@@ -16,7 +16,6 @@ from typing import Any, Callable, Optional, Union
 import torch
 from torch.autograd import Function
 from torch import Tensor
-from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 import numpy as np
 import scipy
 
@@ -24,6 +23,11 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+if _TORCH_FIDELITY_AVAILABLE:
+    from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
+else:
+    class FeatureExtractorInceptionV3(torch.nn.Module):
+        pass
 
 class NoTrainInceptionV3(FeatureExtractorInceptionV3):
     def __init__(self, *args, **kwargs):
@@ -189,8 +193,10 @@ class FID(Metric):
                     'Either install as `pip install torchmetrics[image-quality]`'
                     ' or `pip install torch-fidelity`'
                 )
-            if feature not in [64, 192, 768, 2048]:
-                raise ValueError('feature not in list')
+            valid_int_input = [64, 192, 768, 2048]
+            if feature not in valid_int_input:
+                raise ValueError(f'Integer input to argument `feature` must be one of {valid_int_input},'
+                                 f' but got {feature}.')
 
             self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
         else:
