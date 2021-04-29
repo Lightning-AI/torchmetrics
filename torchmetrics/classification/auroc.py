@@ -20,7 +20,6 @@ from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
-from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.distributed import gather_all_tensors
 
 class AUROC(Metric):
