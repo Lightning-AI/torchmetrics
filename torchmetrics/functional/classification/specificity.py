@@ -18,7 +18,6 @@ from torch import Tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
-from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass, _deprecation_warn_arg_multilabel
 
 
 def _specificity_compute(
@@ -50,8 +49,6 @@ def specificity(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
-    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes `Specificity <https://en.wikipedia.org/wiki/Sensitivity_and_specificity>`_:
@@ -126,12 +123,6 @@ def specificity(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -162,8 +153,6 @@ def specificity(
         tensor(0.6250)
 
     """
-    _deprecation_warn_arg_multilabel(multilabel)
-    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
 
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
