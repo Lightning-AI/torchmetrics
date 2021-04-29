@@ -29,6 +29,7 @@ else:
     class FeatureExtractorInceptionV3(torch.nn.Module):
         pass
 
+
 class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 
     def __init__(
