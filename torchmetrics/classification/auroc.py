@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
@@ -139,21 +139,13 @@ class AUROC(Metric):
                 )
 
         self.mode = None
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             'Metric `AUROC` will save all targets and predictions in buffer.'
             ' For large datasets this may lead to large memory footprint.'
         )
-
-    def _sync_dist(self, dist_sync_fn=gather_all_tensors):
-        # doing cat ahead of time will reduce number of AllGather calls
-        if len(self.preds) > 1:
-            self.preds = [torch.cat(self.preds, dim=0)]
-        if len(self.target) > 1:
-            self.target = [torch.cat(self.target, dim=0)]
-        super()._sync_dist(dist_sync_fn)
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -179,8 +171,8 @@ class AUROC(Metric):
         """
         Computes AUROC based on inputs passed in to ``update`` previously.
         """
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         return _auroc_compute(
             preds,
             target,

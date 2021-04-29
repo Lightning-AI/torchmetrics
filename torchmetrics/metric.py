@@ -180,6 +180,10 @@ class Metric(nn.Module, ABC):
 
     def _sync_dist(self, dist_sync_fn=gather_all_tensors):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
+        for attr, reduction_fn in self._reductions.items():
+            # dim_zero_cat can be applied multiple times, this optimizes the number of gathers
+            if reduction_fn == dim_zero_cat and len(input_dict[attr]) > 1:
+                input_dict[attr] = [dim_zero_cat(input_dict[attr])]
         output_dict = apply_to_collection(
             input_dict,
             Tensor,
