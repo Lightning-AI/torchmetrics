@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import torch
 from numpy import array
-from torch import Tensor
+from torch import Tensor, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import Metric, MetricTester
@@ -34,6 +34,7 @@ from tests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs
 seed_all(42)
 
 # a version of get_group_indexes that depends on NumPy is here to avoid this dependency for the full library
+
 
 def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
     """
@@ -62,7 +63,6 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
             res[_id] = [i]
 
     return [structure(x, dtype=dtype) for x in res.values()]
-
 
 
 def _compute_sklearn_metric(
