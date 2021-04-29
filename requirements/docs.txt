@@ -1,6 +1,5 @@
 sphinx>=3.0, !=3.5  # fails with sphinx.ext.viewcode
-recommonmark  # fails with badges
-m2r  # fails with multi-line text
+myst-parser
 nbsphinx>=0.8
 pandoc>=1.0
 docutils>=0.16
