@@ -20,7 +20,8 @@ from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
-
+from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.distributed import gather_all_tensors
 
 class AUROC(Metric):
     r"""Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
@@ -145,6 +146,14 @@ class AUROC(Metric):
             'Metric `AUROC` will save all targets and predictions in buffer.'
             ' For large datasets this may lead to large memory footprint.'
         )
+
+    def _sync_dist(self, dist_sync_fn=gather_all_tensors):
+        # doing cat ahead of time will reduce number of AllGather calls
+        if len(self.preds) > 1:
+            self.preds = [torch.cat(self.preds, dim=0)]
+        if len(self.target) > 1:
+            self.target = [torch.cat(self.target, dim=0)]
+        super()._sync_dist(dist_sync_fn)
 
     def update(self, preds: Tensor, target: Tensor):
         """
