@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Specificity metric ([PL^106](https://github.com/PyTorchLightning/metrics/issues/106))
+- Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
 
 ### Changed
 
