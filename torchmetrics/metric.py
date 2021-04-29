@@ -217,10 +217,9 @@ class Metric(nn.Module, ABC):
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
                     " was called before the ``update`` method which may lead to errors,"
-                    " as metric states have not yet been updated. Will return 0.0 instead.",
+                    " as metric states have not yet been updated.",
                     UserWarning
                 )
-                return 0.0
 
             # return cached value
             if self._computed is not None:
