@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.auc import _auc_compute, _auc_update
