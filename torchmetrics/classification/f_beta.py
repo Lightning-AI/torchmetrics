@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
+import torch
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
