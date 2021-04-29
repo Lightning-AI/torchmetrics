@@ -180,18 +180,43 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for k in new_metric_collection.keys(keep_base=True):
         assert 'new_prefix_' not in k
 
-    repr = 'MetricCollection(' \
-           '\n  prefix=new_prefix_,' \
-           f'\n  postfix={postfix},' \
-           '\n  (DummyMetricSum): DummyMetricSum()' \
-           '\n  (DummyMetricDiff): DummyMetricDiff()\n)'
-    assert new_metric_collection.__repr__() == repr
-
     new_metric_collection = new_metric_collection.clone(postfix='_new_postfix')
     out = new_metric_collection(5)
     names = [n[:-len(postfix)] if postfix is not None else n for n in names]  # strip away old postfix
     for name in names:
         assert f"new_prefix_{name}_new_postfix" in out, 'postfix argument not working as intended with clone method'
+
+
+def test_metric_collection_repr():
+    """
+    Test MetricCollection
+    """
+
+    class A(DummyMetricSum):
+        pass
+
+    class B(DummyMetricDiff):
+        pass
+
+    m1 = A()
+    m2 = B()
+    metric_collection = MetricCollection([m1, m2], prefix=None, postfix=None)
+
+    expected = "MetricCollection(\n  (A): A()\n  (B): B()\n)"
+    assert metric_collection.__repr__() == expected
+
+    metric_collection = MetricCollection([m1, m2], prefix="a", postfix=None)
+
+    expected = 'MetricCollection(\n  (A): A()\n  (B): B(),\n  prefix=a\n)'
+    assert metric_collection.__repr__() == expected
+
+    metric_collection = MetricCollection([m1, m2], prefix=None, postfix="a")
+    expected = 'MetricCollection(\n  (A): A()\n  (B): B(),\n  postfix=a\n)'
+    assert metric_collection.__repr__() == expected
+
+    metric_collection = MetricCollection([m1, m2], prefix="a", postfix="b")
+    expected = 'MetricCollection(\n  (A): A()\n  (B): B(),\n  prefix=a,\n  postfix=b\n)'
+    assert metric_collection.__repr__() == expected
 
 
 def test_metric_collection_same_order():
