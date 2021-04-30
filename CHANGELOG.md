@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed `numpy` as dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
+
 
 ### Fixed
 
