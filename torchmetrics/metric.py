@@ -148,6 +148,9 @@ class Metric(nn.Module, ABC):
         elif dist_reduce_fx is not None and not isinstance(dist_reduce_fx, Callable):
             raise ValueError("`dist_reduce_fx` must be callable or one of ['mean', 'sum', 'cat', None]")
 
+        if isinstance(default, Tensor):
+            default = default.contiguous()
+
         setattr(self, name, default)
 
         self._defaults[name] = deepcopy(default)
