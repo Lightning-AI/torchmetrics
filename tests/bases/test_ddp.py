@@ -68,12 +68,12 @@ def _test_ddp_gather_uneven_tensors(rank, worldsize):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize("process",
-                        [_test_ddp_cat,
-                        _test_ddp_sum,
-                        _test_ddp_sum_cat,
-                        _test_ddp_gather_uneven_tensors
-                        ]
-                        )
+                         [_test_ddp_cat,
+                          _test_ddp_sum,
+                          _test_ddp_sum_cat,
+                          _test_ddp_gather_uneven_tensors
+                          ]
+                         )
 def test_ddp(process):
     torch.multiprocessing.spawn(process, args=(2, ), nprocs=2)
 

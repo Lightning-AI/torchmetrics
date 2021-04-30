@@ -119,7 +119,7 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     max_size = torch.stack(local_sizes).max(dim=0).values
     all_sizes_equal = True
     for size in local_sizes:
-        if not (size==max_size).all():
+        if not (size == max_size).all():
             all_sizes_equal = False
             break
 
@@ -131,7 +131,7 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
 
     # 3. If not, we need to pad each local tensor to maximum size, gather and then truncate
     pad_dims = []
-    for val in (max_size-local_size):
+    for val in (max_size - local_size):
         pad_dims.append(0)
         pad_dims.append(val.item())
     result_padded = F.pad(result, pad_dims)
