@@ -125,7 +125,6 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     local_size = torch.tensor(result.shape, device=result.device)
     local_sizes = [torch.zeros_like(local_size) for _ in range(world_size)]
     torch.distributed.all_gather(local_sizes, local_size, group=group)
-
     max_size = torch.stack(local_sizes).max(dim=0).values
     all_sizes_equal = True
     for size in local_sizes:
@@ -139,7 +138,8 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
 
     # 3. If not, we need to pad each local tensor to maximum size, gather and then truncate
     pad_dims = []
-    for val in (max_size - local_size).detach().cpu():
+    pad_by = (max_size - local_size).detach().cpu()
+    for val in reversed(pad_by):
         pad_dims.append(0)
         pad_dims.append(val.item())
     result_padded = F.pad(result, pad_dims)
