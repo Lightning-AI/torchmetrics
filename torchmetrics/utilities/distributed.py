@@ -89,6 +89,12 @@ def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: s
     )
 
 
+def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int):
+    gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
+    torch.distributed.all_gather(gathered_result, result, group)
+    return gathered_result
+
+
 def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     """
     Function to gather all tensors from several ddp processes onto a list that
@@ -111,6 +117,10 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     world_size = torch.distributed.get_world_size(group)
     torch.distributed.barrier(group=group)
 
+    # if the tensor is scalar, things are easy
+    if result.ndim == 0:
+        return _simple_gather_all_tensors(result, group, world_size)
+
     # 1. Gather sizes of all tensors
     local_size = torch.tensor(result.shape, device=result.device)
     local_sizes = [torch.zeros_like(local_size) for _ in range(world_size)]
@@ -125,13 +135,11 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
 
     # 2. If shapes are all the same, then do a simple gather:
     if all_sizes_equal:
-        gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
-        torch.distributed.all_gather(gathered_result, result, group)
-        return gathered_result
+        return _simple_gather_all_tensors(result, group, world_size)
 
     # 3. If not, we need to pad each local tensor to maximum size, gather and then truncate
     pad_dims = []
-    for val in (max_size - local_size):
+    for val in (max_size - local_size).detach().cpu():
         pad_dims.append(0)
         pad_dims.append(val.item())
     result_padded = F.pad(result, pad_dims)
