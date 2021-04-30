@@ -15,6 +15,7 @@ from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
+import torch.nn.functional as F
 
 
 def reduce(to_reduce: Tensor, reduction: str) -> Tensor:
@@ -108,11 +109,37 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     result = result.contiguous()
 
     world_size = torch.distributed.get_world_size(group)
-
-    gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
-
-    # sync and broadcast all
     torch.distributed.barrier(group=group)
-    torch.distributed.all_gather(gathered_result, result, group)
 
+    # 1. Gather sizes of all tensors
+    local_size = torch.tensor(result.shape, device=result.device)
+    local_sizes = [torch.zeros_like(local_size) for _ in range(world_size)]
+    torch.distributed.all_gather(local_sizes, local_size, group=group)
+
+    max_size = torch.stack(local_sizes).max(dim=0).values
+    all_sizes_equal = True
+    for size in local_sizes:
+        if not (size==max_size).all():
+            all_sizes_equal = False
+            break
+
+    # 2. If shapes are all the same, then do a simple gather:
+    if all_sizes_equal:
+        gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
+        torch.distributed.all_gather(gathered_result, result, group)
+        return gathered_result
+
+    # 3. If not, we need to pad each local tensor to maximum size, gather and then truncate
+    pad_dims = []
+    for val in (max_size-local_size):
+        pad_dims.append(0)
+        pad_dims.append(val.item())
+    result_padded = F.pad(result, pad_dims)
+    gathered_result = [torch.zeros_like(result_padded) for _ in range(world_size)]
+    torch.distributed.all_gather(gathered_result, result_padded, group)
+    for idx, item_size in enumerate(local_sizes):
+        slice_param = [
+            slice(dim_size) for dim_size in item_size
+        ]
+        gathered_result[idx] = gathered_result[idx][slice_param]
     return gathered_result
