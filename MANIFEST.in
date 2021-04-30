@@ -10,6 +10,9 @@ recursive-include torchmetrics *.md
 # Include the license file
 include LICENSE
 
+# Include marker file for PEP 561
+include torchmetrics/py.typed
+
 exclude *.sh
 exclude *.toml
 exclude *.svg
