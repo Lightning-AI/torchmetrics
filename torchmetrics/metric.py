@@ -182,7 +182,7 @@ class Metric(nn.Module, ABC):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
         for attr, reduction_fn in self._reductions.items():
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
-            if reduction_fn == dim_zero_cat and len(input_dict[attr]) > 1:
+            if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
         output_dict = apply_to_collection(
             input_dict,
