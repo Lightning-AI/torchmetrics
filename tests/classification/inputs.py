@@ -29,7 +29,7 @@ _input_binary = Input(
 )
 
 _input_binary_logits = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
 )
 
 _input_multilabel_prob = Input(
