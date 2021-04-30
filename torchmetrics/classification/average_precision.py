@@ -125,3 +125,7 @@ class AveragePrecision(Metric):
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
         return _average_precision_compute(preds, target, self.num_classes, self.pos_label)
+
+    @property
+    def is_differentiable(self):
+        return False
