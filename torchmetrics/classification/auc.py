@@ -89,3 +89,11 @@ class AUC(Metric):
         x = dim_zero_cat(self.x)
         y = dim_zero_cat(self.y)
         return _auc_compute(x, y, reorder=self.reorder)
+
+    @property
+    def is_differentiable(self):
+        """
+        AUC metrics is considered as non differentiable so it should have `false`
+        value for `is_differentiable` property
+        """
+        return False
