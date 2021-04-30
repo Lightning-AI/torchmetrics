@@ -170,3 +170,7 @@ class Specificity(StatScores):
         """
         tp, fp, tn, fn = self._get_final_stats()
         return _specificity_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
+
+    @property
+    def is_differentiable(self):
+        return False
