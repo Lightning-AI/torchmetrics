@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Dict, Tuple, Type, Union
+from typing import Callable, Dict, List, Tuple, Type, Union
 
 import numpy as np
 import pytest
 import torch
 from numpy import array
-from torch import Tensor
+from torch import Tensor, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import Metric, MetricTester
@@ -30,9 +30,39 @@ from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as 
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
 from tests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
 from tests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
-from torchmetrics.utilities.data import get_group_indexes
 
 seed_all(42)
+
+# a version of get_group_indexes that depends on NumPy is here to avoid this dependency for the full library
+
+
+def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
+    """
+    Given an integer `torch.Tensor` or `np.ndarray` `indexes`, return a `torch.Tensor` or `np.ndarray` of indexes for
+    each different value in `indexes`.
+
+    Args:
+        indexes: a `torch.Tensor` or `np.ndarray` of integers
+
+    Return:
+        A list of integer `torch.Tensor`s or `np.ndarray`s
+
+    Example:
+        >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
+        >>> get_group_indexes(indexes)
+        [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
+    """
+    structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
+
+    res = dict()
+    for i, _id in enumerate(indexes):
+        _id = _id.item()
+        if _id in res:
+            res[_id] += [i]
+        else:
+            res[_id] = [i]
+
+    return [structure(x, dtype=dtype) for x in res.values()]
 
 
 def _compute_sklearn_metric(
