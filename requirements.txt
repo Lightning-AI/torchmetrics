@@ -1,3 +1,2 @@
-numpy
 torch>=1.3.1
 packaging

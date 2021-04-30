@@ -71,6 +71,11 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Callable = None,
     ):
         super().__init__()
+
+        # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
+        # torch/nn/modules/module.py#L227)
+        torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
+
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
@@ -142,6 +147,9 @@ class Metric(nn.Module, ABC):
             dist_reduce_fx = dim_zero_cat
         elif dist_reduce_fx is not None and not isinstance(dist_reduce_fx, Callable):
             raise ValueError("`dist_reduce_fx` must be callable or one of ['mean', 'sum', 'cat', None]")
+
+        if isinstance(default, Tensor):
+            default = default.contiguous()
 
         setattr(self, name, default)
 

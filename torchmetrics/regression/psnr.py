@@ -105,7 +105,7 @@ class PSNR(Metric):
             self.add_state("min_target", default=tensor(0.0), dist_reduce_fx=torch.min)
             self.add_state("max_target", default=tensor(0.0), dist_reduce_fx=torch.max)
         else:
-            self.register_buffer("data_range", tensor(float(data_range)))
+            self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx='mean')
         self.base = base
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
