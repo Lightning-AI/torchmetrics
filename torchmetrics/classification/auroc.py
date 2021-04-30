@@ -181,3 +181,11 @@ class AUROC(Metric):
             self.average,
             self.max_fpr,
         )
+
+    @property
+    def is_differentiable(self):
+        """
+        AUROC metrics is considered as non differentiable so it should have `false`
+        value for `is_differentiable` property
+        """
+        return False
