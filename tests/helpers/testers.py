@@ -462,7 +462,11 @@ class MetricTester:
         if preds.is_floating_point():
             preds.requires_grad = True
             out = metric(preds[0], target[0])
-            assert metric.is_differentiable == out.requires_grad
+            # metrics can return list of values
+            if isinstance(out, list):
+                assert all(metric.is_differentiable == o.requires_grad for o in out)
+            else:
+                assert metric.is_differentiable == out.requires_grad
 
             if metric.is_differentiable:
                 # check for numerical correctness
