@@ -184,6 +184,20 @@ def test_metric_collection_same_order():
         assert k1 == k2
 
 
+def test_collection_add_metrics():
+    m1 = DummyMetricSum()
+    m2 = DummyMetricDiff()
+
+    collection = MetricCollection([m1])
+    collection.add_metrics({'m1_': DummyMetricSum()})
+    collection.add_metrics(m2)
+
+    collection.update(5)
+    results = collection.compute()
+    assert results['DummyMetricSum'] == results['m1_'] and results['m1_'] == 5
+    assert results['DummyMetricDiff'] == -5
+
+
 def test_collection_check_arg():
     assert MetricCollection._check_arg(None, 'prefix') is None
     assert MetricCollection._check_arg('sample', 'prefix') == 'sample'

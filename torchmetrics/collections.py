@@ -94,46 +94,8 @@ class MetricCollection(nn.ModuleDict):
         postfix: Optional[str] = None
     ):
         super().__init__()
-        if isinstance(metrics, Metric):
-            # set compatible with original type expectations
-            metrics = [metrics]
-        if isinstance(metrics, Sequence):
-            # prepare for optional additions
-            metrics = list(metrics)
-            remain = []
-            for m in additional_metrics:
-                (metrics if isinstance(m, Metric) else remain).append(m)
 
-            if remain:
-                rank_zero_warn(
-                    f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
-                )
-        elif additional_metrics:
-            raise ValueError(
-                f"You have passes extra arguments {additional_metrics} which are not compatible"
-                f" with first passed dictionary {metrics} so they will be ignored."
-            )
-
-        if isinstance(metrics, dict):
-            # Check all values are metrics
-            # Make sure that metrics are added in deterministic order
-            for name in sorted(metrics.keys()):
-                metric = metrics[name]
-                if not isinstance(metric, Metric):
-                    raise ValueError(
-                        f"Value {metric} belonging to key {name} is not an instance of `pl.metrics.Metric`"
-                    )
-                self[name] = metric
-        elif isinstance(metrics, Sequence):
-            for metric in metrics:
-                if not isinstance(metric, Metric):
-                    raise ValueError(f"Input {metric} to `MetricCollection` is not a instance of `pl.metrics.Metric`")
-                name = metric.__class__.__name__
-                if name in self:
-                    raise ValueError(f"Encountered two metrics both named {name}")
-                self[name] = metric
-        else:
-            raise ValueError("Unknown input to MetricCollection.")
+        self.add_metrics(metrics, *additional_metrics)
 
         self.prefix = self._check_arg(prefix, 'prefix')
         self.postfix = self._check_arg(postfix, 'postfix')
@@ -184,6 +146,51 @@ class MetricCollection(nn.ModuleDict):
         """
         for _, m in self.items():
             m.persistent(mode)
+
+    def add_metrics(self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+                    *additional_metrics: Metric) -> None:
+        """Add new metrics to Metric Collection
+        """
+        if isinstance(metrics, Metric):
+            # set compatible with original type expectations
+            metrics = [metrics]
+        if isinstance(metrics, Sequence):
+            # prepare for optional additions
+            metrics = list(metrics)
+            remain = []
+            for m in additional_metrics:
+                (metrics if isinstance(m, Metric) else remain).append(m)
+
+            if remain:
+                rank_zero_warn(
+                    f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
+                )
+        elif additional_metrics:
+            raise ValueError(
+                f"You have passes extra arguments {additional_metrics} which are not compatible"
+                f" with first passed dictionary {metrics} so they will be ignored."
+            )
+
+        if isinstance(metrics, dict):
+            # Check all values are metrics
+            # Make sure that metrics are added in deterministic order
+            for name in sorted(metrics.keys()):
+                metric = metrics[name]
+                if not isinstance(metric, Metric):
+                    raise ValueError(
+                        f"Value {metric} belonging to key {name} is not an instance of `pl.metrics.Metric`"
+                    )
+                self[name] = metric
+        elif isinstance(metrics, Sequence):
+            for metric in metrics:
+                if not isinstance(metric, Metric):
+                    raise ValueError(f"Input {metric} to `MetricCollection` is not a instance of `pl.metrics.Metric`")
+                name = metric.__class__.__name__
+                if name in self:
+                    raise ValueError(f"Encountered two metrics both named {name}")
+                self[name] = metric
+        else:
+            raise ValueError("Unknown input to MetricCollection.")
 
     def _set_name(self, base: str) -> str:
         name = base if self.prefix is None else self.prefix + base
