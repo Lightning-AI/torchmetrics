@@ -206,9 +206,7 @@ def test_no_support(metric_class, metric_fn):
     assert result_cl == result_fn == 0
 
 
-@pytest.mark.parametrize(
-    "metric_class, metric_fn", [(Specificity, specificity)]
-)
+@pytest.mark.parametrize("metric_class, metric_fn", [(Specificity, specificity)])
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
 @pytest.mark.parametrize(
@@ -221,15 +219,9 @@ def test_no_support(metric_class, metric_fn):
         (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES, None, None, _sk_spec),
         (_input_mcls.preds, _input_mcls.target, NUM_CLASSES, None, None, _sk_spec),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "global", _sk_spec_mdim_mcls),
-        (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "global",
-            _sk_spec_mdim_mcls
-        ),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "global", _sk_spec_mdim_mcls),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "samplewise", _sk_spec_mdim_mcls),
-        (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "samplewise",
-            _sk_spec_mdim_mcls
-        ),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "samplewise", _sk_spec_mdim_mcls),
     ],
 )
 class TestSpecificity(MetricTester):
