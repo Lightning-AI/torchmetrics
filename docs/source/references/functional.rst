@@ -135,6 +135,12 @@ select_topk [func]
 .. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:
 
+specificity [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.specificity
+    :noindex:
+
 
 stat_scores [func]
 ~~~~~~~~~~~~~~~~~~
