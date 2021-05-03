@@ -77,13 +77,7 @@ class TestAUC(MetricTester):
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_differentiability(self, x, y, reorder):
         self.run_differentiability_test(
-            preds=x,
-            target=y,
-            metric_module=AUC,
-            metric_functional=auc,
-            metric_args={
-                "reorder": reorder
-            }
+            preds=x, target=y, metric_module=AUC, metric_functional=auc, metric_args={"reorder": reorder}
         )
 
 
