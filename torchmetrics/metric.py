@@ -17,7 +17,7 @@ import operator
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -71,6 +71,11 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Callable = None,
     ):
         super().__init__()
+
+        # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
+        # torch/nn/modules/module.py#L227)
+        torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
+
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
@@ -142,6 +147,9 @@ class Metric(nn.Module, ABC):
             dist_reduce_fx = dim_zero_cat
         elif dist_reduce_fx is not None and not isinstance(dist_reduce_fx, Callable):
             raise ValueError("`dist_reduce_fx` must be callable or one of ['mean', 'sum', 'cat', None]")
+
+        if isinstance(default, Tensor):
+            default = default.contiguous()
 
         setattr(self, name, default)
 
@@ -323,6 +331,25 @@ class Metric(nn.Module, ABC):
                         current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
                 destination[prefix + key] = current_val
         return destination
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict,
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: List[str],
+        unexpected_keys: List[str],
+        error_msgs: List[str],
+    ) -> None:
+        """ Loads metric states from state_dict """
+        for key in self._defaults.keys():
+            name = prefix + key
+            if name in state_dict:
+                setattr(self, key, state_dict.pop(name))
+        super()._load_from_state_dict(
+            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
+        )
 
     def _filter_kwargs(self, **kwargs):
         """ filter kwargs such that they match the update signature of the metric """

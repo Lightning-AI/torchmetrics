@@ -100,16 +100,16 @@ and tests gets formatted in the following way:
   3. ``new_metric(...)``: essentially wraps the ``_update`` and ``_compute`` private functions into one public function that
      makes up the functional interface for the metric.
 
-  .. note:: 
+  .. note::
      The `functional accuracy <https://github.com/PyTorchLightning/metrics/blob/master/torchmetrics/functional/classification/accuracy.py>`_
-     metric is a great example of this division of logic. 
+     metric is a great example of this division of logic.
 
 3. In a corresponding file placed in ``torchmetrics/"domain"/"new_metric".py`` create the module interface:
 
   1. Create a new module metric by subclassing ``torchmetrics.Metric``.
   2. In the ``__init__`` of the module call ``self.add_state`` for as many metric states are needed for the metric to
      proper accumulate metric statistics.
-  3. The module interface should essentially call the private ``_new_metric_update(...)`` in its `update` method and similarly the 
+  3. The module interface should essentially call the private ``_new_metric_update(...)`` in its `update` method and similarly the
      ``_new_metric_compute(...)`` function in its ``compute``. No logic should really be implemented in the module interface.
      We do this to not have duplicate code to maintain.
 
@@ -130,14 +130,14 @@ and tests gets formatted in the following way:
      respectively tests the module interface and the functional interface.
   4. The testclass should be parameterized (using ``@pytest.mark.parametrize``) by the different test inputs defined initially.
      Additionally, the ``test_"new_metric"_class`` method should also be parameterized with an ``ddp`` parameter such that it gets
-     tested in a distributed setting. If your metric has additional parameters, then make sure to also parameterize these 
+     tested in a distributed setting. If your metric has additional parameters, then make sure to also parameterize these
      such that different combinations of inputs and parameters gets tested.
   5. (optional) If your metric raises any exception, please add tests that showcase this.
 
   .. note::
     The `test file for accuracy <https://github.com/PyTorchLightning/metrics/blob/master/tests/classification/test_accuracy.py>`_ metric
-    shows how to implement such tests. 
+    shows how to implement such tests.
 
 If you only can figure out part of the steps, do not fear to send a PR. We will much rather receive working
-metrics that are not formatted exactly like our codebase, than not receiving any. Formatting can always be applied. 
+metrics that are not formatted exactly like our codebase, than not receiving any. Formatting can always be applied.
 We will gladly guide and/or help implement the remaining :]
