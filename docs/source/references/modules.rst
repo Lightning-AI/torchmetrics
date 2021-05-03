@@ -236,6 +236,13 @@ ROC
     :noindex:
 
 
+Specificity
+~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.Specificity
+    :noindex:
+
+
 StatScores
 ~~~~~~~~~~
 
