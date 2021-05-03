@@ -21,15 +21,11 @@ from torchmetrics.functional.classification.stat_scores import _stat_scores_upda
 
 
 def _specificity_compute(
-    tp: Tensor,
     fp: Tensor,
     tn: Tensor,
-    fn: Tensor,
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
-    # todo: `tp` is unused
-    # todo: `fn` is unused
     return _reduce_stat_scores(
         numerator=tn,
         denominator=tn + fp,
@@ -169,7 +165,7 @@ def specificity(
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     reduce = "macro" if average in ["weighted", "none", None] else average
-    tp, fp, tn, fn = _stat_scores_update(
+    _, fp, tn, _ = _stat_scores_update(
         preds,
         target,
         reduce=reduce,
@@ -181,4 +177,4 @@ def specificity(
         ignore_index=ignore_index,
     )
 
-    return _specificity_compute(tp, fp, tn, fn, average, mdmc_average)
+    return _specificity_compute(fp, tn, average, mdmc_average)

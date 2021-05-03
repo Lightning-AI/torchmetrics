@@ -38,8 +38,7 @@ from torchmetrics.utilities.checks import _input_format_classification
 seed_all(42)
 
 
-def _sk_stats_score(preds, target, reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce):
-    # todo: `mdmc_reduce` is unused
+def _sk_stats_score(preds, target, reduce, num_classes, multiclass, ignore_index, top_k):
     preds, target, _ = _input_format_classification(
         preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
@@ -74,21 +73,21 @@ def _sk_stats_score(preds, target, reduce, num_classes, multiclass, ignore_index
         sk_stats[ignore_index, :] = -1
 
     if reduce == "micro":
-        tp, fp, tn, fn, sup = sk_stats
+        _, fp, tn, _, _ = sk_stats
     else:
-        tp, fp, tn, fn = sk_stats[:, 0], sk_stats[:, 1], sk_stats[:, 2], sk_stats[:, 3]
-    return tp, fp, tn, fn
+        _, fp, tn, _ = sk_stats[:, 0], sk_stats[:, 1], sk_stats[:, 2], sk_stats[:, 3]
+    return fp, tn
 
 
 def _sk_spec(preds, target, reduce, num_classes, multiclass, ignore_index, top_k=None, mdmc_reduce=None, stats=None):
 
     if stats:
-        tp, fp, tn, fn = stats
+        fp, tn = stats
     else:
-        stats = _sk_stats_score(preds, target, reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce)
-        tp, fp, tn, fn = stats
+        stats = _sk_stats_score(preds, target, reduce, num_classes, multiclass, ignore_index, top_k)
+        fp, tn = stats
 
-    tp, fp, tn, fn = tensor(tp), tensor(fp), tensor(tn), tensor(fn)
+    fp, tn = tensor(fp), tensor(tn)
     spec = _reduce_stat_scores(
         numerator=tn,
         denominator=tn + fp,
@@ -114,13 +113,13 @@ def _sk_spec_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multicla
         target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
         return _sk_spec(preds, target, reduce, num_classes, False, ignore_index, top_k, mdmc_reduce)
     else:
-        tp, fp, tn, fn = [], [], [], []
+        fp, tn = [], []
         stats = []
 
         for i in range(preds.shape[0]):
             pred_i = preds[i, ...].T
             target_i = target[i, ...].T
-            tp_i, fp_i, tn_i, fn_i = _sk_stats_score(
+            fp_i, tn_i = _sk_stats_score(
                 pred_i,
                 target_i,
                 reduce,
@@ -128,17 +127,12 @@ def _sk_spec_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multicla
                 False,
                 ignore_index,
                 top_k,
-                mdmc_reduce
             )
-            tp.append(tp_i)
             fp.append(fp_i)
             tn.append(tn_i)
-            fn.append(fn_i)
 
-        stats.append(tp)
         stats.append(fp)
         stats.append(tn)
-        stats.append(fn)
         return _sk_spec(preds[0], target[0], reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce, stats)
 
 
