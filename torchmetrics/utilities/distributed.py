@@ -146,8 +146,6 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     gathered_result = [torch.zeros_like(result_padded) for _ in range(world_size)]
     torch.distributed.all_gather(gathered_result, result_padded, group)
     for idx, item_size in enumerate(local_sizes):
-        slice_param = [
-            slice(dim_size) for dim_size in item_size
-        ]
+        slice_param = [slice(dim_size) for dim_size in item_size]
         gathered_result[idx] = gathered_result[idx][slice_param]
     return gathered_result
