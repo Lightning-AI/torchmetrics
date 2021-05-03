@@ -78,15 +78,15 @@ def _sk_cohen_kappa_multidim_multiclass(preds, target, weights=None):
 
 @pytest.mark.parametrize("weights", ['linear', 'quadratic', None])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes", [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_cohen_kappa_binary_prob, 2),
-        (_input_binary.preds, _input_binary.target, _sk_cohen_kappa_binary, 2),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cohen_kappa_multilabel_prob, 2),
-        (_input_mlb.preds, _input_mlb.target, _sk_cohen_kappa_multilabel, 2),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cohen_kappa_multiclass_prob, NUM_CLASSES),
-        (_input_mcls.preds, _input_mcls.target, _sk_cohen_kappa_multiclass, NUM_CLASSES),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cohen_kappa_multidim_multiclass_prob, NUM_CLASSES),
-        (_input_mdmc.preds, _input_mdmc.target, _sk_cohen_kappa_multidim_multiclass, NUM_CLASSES)]
+    "preds, target, sk_metric, num_classes",
+    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_cohen_kappa_binary_prob, 2),
+     (_input_binary.preds, _input_binary.target, _sk_cohen_kappa_binary, 2),
+     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cohen_kappa_multilabel_prob, 2),
+     (_input_mlb.preds, _input_mlb.target, _sk_cohen_kappa_multilabel, 2),
+     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cohen_kappa_multiclass_prob, NUM_CLASSES),
+     (_input_mcls.preds, _input_mcls.target, _sk_cohen_kappa_multiclass, NUM_CLASSES),
+     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cohen_kappa_multidim_multiclass_prob, NUM_CLASSES),
+     (_input_mdmc.preds, _input_mdmc.target, _sk_cohen_kappa_multidim_multiclass, NUM_CLASSES)]
 )
 class TestCohenKappa(MetricTester):
     atol = 1e-5
