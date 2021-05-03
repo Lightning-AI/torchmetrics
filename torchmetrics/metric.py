@@ -22,7 +22,7 @@ from typing import Any, Callable, List, Optional, Union
 import torch
 from torch import Tensor, nn
 
-from torchmetrics.utilities import apply_to_collection
+from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
@@ -89,6 +89,7 @@ class Metric(nn.Module, ABC):
         self.compute = self._wrap_compute(self.compute)
         self._computed = None
         self._forward_cache = None
+        self._update_called = False
 
         # initialize state
         self._defaults = {}
@@ -211,6 +212,7 @@ class Metric(nn.Module, ABC):
         @functools.wraps(update)
         def wrapped_func(*args, **kwargs):
             self._computed = None
+            self._update_called = True
             return update(*args, **kwargs)
 
         return wrapped_func
@@ -219,6 +221,14 @@ class Metric(nn.Module, ABC):
 
         @functools.wraps(compute)
         def wrapped_func(*args, **kwargs):
+            if not self._update_called:
+                rank_zero_warn(
+                    f"The ``compute`` method of metric {self.__class__.__name__}"
+                    " was called before the ``update`` method which may lead to errors,"
+                    " as metric states have not yet been updated.",
+                    UserWarning
+                )
+
             # return cached value
             if self._computed is not None:
                 return self._computed
@@ -267,6 +277,7 @@ class Metric(nn.Module, ABC):
         """
         This method automatically resets the metric state variables to their default value.
         """
+        self._update_called = False
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log
         if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
             self._computed = None
