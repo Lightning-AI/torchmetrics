@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -89,13 +89,13 @@ def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: s
     )
 
 
-def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int):
+def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> List[Tensor]:
     gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
     torch.distributed.all_gather(gathered_result, result, group)
     return gathered_result
 
 
-def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
+def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tensor]:
     """
     Function to gather all tensors from several ddp processes onto a list that
     is broadcasted to all processes
@@ -126,11 +126,7 @@ def gather_all_tensors(result: Union[Tensor], group: Optional[Any] = None):
     local_sizes = [torch.zeros_like(local_size) for _ in range(world_size)]
     torch.distributed.all_gather(local_sizes, local_size, group=group)
     max_size = torch.stack(local_sizes).max(dim=0).values
-    all_sizes_equal = True
-    for size in local_sizes:
-        if not (size == max_size).all():
-            all_sizes_equal = False
-            break
+    all_sizes_equal = all(all(ls == max_size) for ls in local_sizes)
 
     # 2. If shapes are all the same, then do a simple gather:
     if all_sizes_equal:

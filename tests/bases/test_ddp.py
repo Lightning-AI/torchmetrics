@@ -67,7 +67,7 @@ def _test_ddp_gather_uneven_tensors(rank, worldsize):
         assert (result[idx] == torch.ones_like(result[idx])).all()
 
 
-def _test_ddp_gather_uneven_tensors2(rank, worldsize):
+def _test_ddp_gather_uneven_tensors_multidim(rank, worldsize):
     setup_ddp(rank, worldsize)
     tensor = torch.ones(rank + 1, 2 - rank)
     result = gather_all_tensors(tensor)
@@ -85,7 +85,7 @@ def _test_ddp_gather_uneven_tensors2(rank, worldsize):
         _test_ddp_sum,
         _test_ddp_sum_cat,
         _test_ddp_gather_uneven_tensors,
-        _test_ddp_gather_uneven_tensors2,
+        _test_ddp_gather_uneven_tensors_multidim,
     ]
 )
 def test_ddp(process):
