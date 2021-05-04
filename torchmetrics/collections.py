@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 from torch import nn
 
@@ -106,7 +107,7 @@ class MetricCollection(nn.ModuleDict):
         be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return {self._set_name(k): m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+        return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
 
     def update(self, *args, **kwargs):  # pylint: disable=E0202
         """
@@ -114,16 +115,16 @@ class MetricCollection(nn.ModuleDict):
         be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        for _, m in self.items():
+        for _, m in self.items(keep_base=True):
             m_kwargs = m._filter_kwargs(**kwargs)
             m.update(*args, **m_kwargs)
 
     def compute(self) -> Dict[str, Any]:
-        return {self._set_name(k): m.compute() for k, m in self.items()}
+        return {k: m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
         """ Iteratively call reset for each metric """
-        for _, m in self.items():
+        for _, m in self.items(keep_base=True):
             m.reset()
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> 'MetricCollection':
@@ -144,7 +145,7 @@ class MetricCollection(nn.ModuleDict):
         """Method for post-init to change if metric states should be saved to
         its state_dict
         """
-        for _, m in self.items():
+        for _, m in self.items(keep_base=True):
             m.persistent(mode)
 
     def add_metrics(self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
@@ -197,8 +198,40 @@ class MetricCollection(nn.ModuleDict):
         name = name if self.postfix is None else name + self.postfix
         return name
 
+    def _to_renamed_ordered_dict(self) -> OrderedDict:
+        od = OrderedDict()
+        for k, v in self._modules.items():
+            od[self._set_name(k)] = v
+        return od
+
+    def keys(self, keep_base: bool = False):
+        r"""Return an iterable of the ModuleDict key.
+        Args:
+            keep_base: Whether to add prefix/postfix on the items collection.
+        """
+        if keep_base:
+            return self._modules.keys()
+        return self._to_renamed_ordered_dict().keys()
+
+    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
+        r"""Return an iterable of the ModuleDict key/value pairs.
+        Args:
+            keep_base: Whether to add prefix/postfix on the items collection.
+        """
+        if keep_base:
+            return self._modules.items()
+        return self._to_renamed_ordered_dict().items()
+
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
         if arg is None or isinstance(arg, str):
             return arg
         raise ValueError(f'Expected input `{name}` to be a string, but got {type(arg)}')
+
+    def __repr__(self) -> Optional[str]:
+        repr = super().__repr__()[:-2]
+        if self.prefix:
+            repr += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
+        if self.postfix:
+            repr += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
+        return repr + "\n)"
