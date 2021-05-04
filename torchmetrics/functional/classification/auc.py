@@ -31,7 +31,7 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     return x, y
 
 
-def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
+def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False, tol: float = 1e-6) -> Tensor:
     with torch.no_grad():
         if reorder:
             # TODO: include stable=True arg when pytorch v1.9 is released
@@ -40,7 +40,7 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
 
         dx = x[1:] - x[:-1]
         if (dx < 0).any():
-            if (dx <= 0).all():
+            if (dx <= tol).all():
                 direction = -1.
             else:
                 raise ValueError(
