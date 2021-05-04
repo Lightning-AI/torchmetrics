@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import matthews_co
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
+from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
 from torchmetrics.functional.image_gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.nlp import bleu_score  # noqa: F401

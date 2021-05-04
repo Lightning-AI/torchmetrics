@@ -89,12 +89,12 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average='macr
 @pytest.mark.parametrize("average", ['macro', 'weighted', 'micro'])
 @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes", [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
-        (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
+    "preds, target, sk_metric, num_classes",
+    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
+     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
+     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
+     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
+     (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
 )
 class TestAUROC(MetricTester):
 

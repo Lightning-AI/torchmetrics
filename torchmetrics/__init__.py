@@ -32,6 +32,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     Precision,
     PrecisionRecallCurve,
     Recall,
+    Specificity,
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: F401 E402

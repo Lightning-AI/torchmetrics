@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.functional.regression.ssim import _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SSIM(Metric):
@@ -74,8 +75,8 @@ class SSIM(Metric):
             ' to large memory footprint.'
         )
 
-        self.add_state("y", default=[], dist_reduce_fx=None)
-        self.add_state("y_pred", default=[], dist_reduce_fx=None)
+        self.add_state("y", default=[], dist_reduce_fx="cat")
+        self.add_state("y_pred", default=[], dist_reduce_fx="cat")
         self.kernel_size = kernel_size
         self.sigma = sigma
         self.data_range = data_range
@@ -99,8 +100,8 @@ class SSIM(Metric):
         """
         Computes explained variance over state.
         """
-        preds = torch.cat(self.y_pred, dim=0)
-        target = torch.cat(self.y, dim=0)
+        preds = dim_zero_cat(self.y_pred)
+        target = dim_zero_cat(self.y)
         return _ssim_compute(
             preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
         )
