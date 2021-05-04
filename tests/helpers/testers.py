@@ -41,6 +41,7 @@ MAX_PORT = 8100
 START_PORT = 8088
 CURRENT_PORT = START_PORT
 
+
 def setup_ddp(rank, world_size):
     """ Setup ddp environment """
     global CURRENT_PORT
