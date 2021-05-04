@@ -93,3 +93,7 @@ class SpearmanCorrcoef(Metric):
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
         return _spearman_corrcoef_compute(preds, target)
+
+    @property
+    def is_differentiable(self):
+        return False
