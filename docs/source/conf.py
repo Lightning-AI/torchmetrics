@@ -303,6 +303,7 @@ def package_list_from_file(file):
 PACKAGE_MAPPING = {
     "PyYAML": "yaml",
     "pytorch-lightning": "pytorch_lightning",
+    "torch-fidelity": "torch_fidelity"
 }
 MOCK_PACKAGES = []
 if SPHINX_MOCK_REQUIREMENTS:
