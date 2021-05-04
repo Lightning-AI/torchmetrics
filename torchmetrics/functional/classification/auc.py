@@ -39,7 +39,7 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False, tol: float = 1e-6)
             y = y[x_idx]
 
         dx = x[1:] - x[:-1]
-        if (dx+tol < 0).any():
+        if (dx + tol < 0).any():
             if (dx <= tol).all():
                 direction = -1.
             else:

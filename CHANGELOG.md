@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `PSNR` not working with `DDP` ([#214](https://github.com/PyTorchLightning/metrics/pull/214))
 
 
+- Fixed `AUC` sometimes raises errors even for sorted imput due to numerical instability ([#224](https://github.com/PyTorchLightning/metrics/pull/224))
+
+
 ## [0.3.1] - 2021-04-21
 
 - Cleaning remaining inconsistency and fix PL develop integration (
