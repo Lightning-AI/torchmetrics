@@ -69,6 +69,11 @@ class TestPearsonCorrcoef(MetricTester):
             preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr
         )
 
+    def test_pearson_corrcoef_differentiability(self, preds, target):
+        self.run_differentiability_test(
+            preds=preds, target=target, metric_module=PearsonCorrcoef, metric_functional=pearson_corrcoef
+        )
+
     # Pearson half + cpu does not work due to missing support in torch.sqrt
     @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
