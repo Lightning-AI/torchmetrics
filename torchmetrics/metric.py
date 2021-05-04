@@ -17,12 +17,12 @@ import operator
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
 
-from torchmetrics.utilities import apply_to_collection
+from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
@@ -71,6 +71,11 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Callable = None,
     ):
         super().__init__()
+
+        # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
+        # torch/nn/modules/module.py#L227)
+        torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
+
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
@@ -84,6 +89,7 @@ class Metric(nn.Module, ABC):
         self.compute = self._wrap_compute(self.compute)
         self._computed = None
         self._forward_cache = None
+        self._update_called = False
 
         # initialize state
         self._defaults = {}
@@ -143,6 +149,9 @@ class Metric(nn.Module, ABC):
         elif dist_reduce_fx is not None and not isinstance(dist_reduce_fx, Callable):
             raise ValueError("`dist_reduce_fx` must be callable or one of ['mean', 'sum', 'cat', None]")
 
+        if isinstance(default, Tensor):
+            default = default.contiguous()
+
         setattr(self, name, default)
 
         self._defaults[name] = deepcopy(default)
@@ -180,6 +189,10 @@ class Metric(nn.Module, ABC):
 
     def _sync_dist(self, dist_sync_fn=gather_all_tensors):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
+        for attr, reduction_fn in self._reductions.items():
+            # pre-concatenate metric states that are lists to reduce number of all_gather operations
+            if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
+                input_dict[attr] = [dim_zero_cat(input_dict[attr])]
         output_dict = apply_to_collection(
             input_dict,
             Tensor,
@@ -203,6 +216,7 @@ class Metric(nn.Module, ABC):
         @functools.wraps(update)
         def wrapped_func(*args, **kwargs):
             self._computed = None
+            self._update_called = True
             return update(*args, **kwargs)
 
         return wrapped_func
@@ -211,6 +225,14 @@ class Metric(nn.Module, ABC):
 
         @functools.wraps(compute)
         def wrapped_func(*args, **kwargs):
+            if not self._update_called:
+                rank_zero_warn(
+                    f"The ``compute`` method of metric {self.__class__.__name__}"
+                    " was called before the ``update`` method which may lead to errors,"
+                    " as metric states have not yet been updated.",
+                    UserWarning
+                )
+
             # return cached value
             if self._computed is not None:
                 return self._computed
@@ -259,6 +281,7 @@ class Metric(nn.Module, ABC):
         """
         This method automatically resets the metric state variables to their default value.
         """
+        self._update_called = False
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log
         if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
             self._computed = None
@@ -323,6 +346,25 @@ class Metric(nn.Module, ABC):
                         current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
                 destination[prefix + key] = current_val
         return destination
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict,
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: List[str],
+        unexpected_keys: List[str],
+        error_msgs: List[str],
+    ) -> None:
+        """ Loads metric states from state_dict """
+        for key in self._defaults.keys():
+            name = prefix + key
+            if name in state_dict:
+                setattr(self, key, state_dict.pop(name))
+        super()._load_from_state_dict(
+            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
+        )
 
     def _filter_kwargs(self, **kwargs):
         """ filter kwargs such that they match the update signature of the metric """

@@ -12,7 +12,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-# import m2r
 import glob
 import inspect
 import os
@@ -29,15 +28,10 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 FOLDER_GENERATED = 'generated'
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
-try:
-    from torchmetrics import __about__ as about
-except ImportError:
-    # alternative https://stackoverflow.com/a/67692/4521646
-    spec = spec_from_file_location(
-        "torchmetrics/__about__.py", os.path.join(_PATH_ROOT, "torchmetrics", "__about__.py")
-    )
-    about = module_from_spec(spec)
-    spec.loader.exec_module(about)
+# alternative https://stackoverflow.com/a/67692/4521646
+spec = spec_from_file_location("torchmetrics/__about__.py", os.path.join(_PATH_ROOT, "torchmetrics", "__about__.py"))
+about = module_from_spec(spec)
+spec.loader.exec_module(about)
 
 html_favicon = '_static/images/icon.svg'
 
@@ -97,8 +91,6 @@ needs_sphinx = "3.4"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    # 'sphinxcontrib.mockautodoc',  # raises error: directive 'automodule' is already registered ...
-    # 'sphinxcontrib.fulltoc',  # breaks pytorch-theme with unexpected kw argument 'titles_only'
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
@@ -107,9 +99,8 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.imgmath",
-    "recommonmark",
+    "myst_parser",
     "sphinx.ext.autosectionlabel",
-    # 'm2r',
     "nbsphinx",
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
@@ -127,11 +118,10 @@ nbsphinx_execute = "never"
 nbsphinx_allow_errors = True
 nbsphinx_requirejs_path = ""
 
+myst_update_mathjax = False
+
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-#
-# source_suffix = ['.rst', '.md']
-# source_suffix = ['.rst', '.md', '.ipynb']
 source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "markdown",
@@ -163,7 +153,7 @@ pygments_style = None
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
+
 html_theme = "pt_lightning_sphinx_theme"
 html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
 
@@ -185,16 +175,6 @@ html_logo = '_static/images/logo.svg'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-
-# Custom sidebar templates, must be a dictionary that maps document names
-# to template names.
-#
-# The default sidebars (for documents that don't match any pattern) are
-# defined by theme itself.  Builtin themes are using these templates by
-# default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
-# 'searchbox.html']``.
-#
-# html_sidebars = {}
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -289,30 +269,11 @@ PACKAGES = [
     about.__name__,
 ]
 
-# def run_apidoc(_):
-#     apidoc_output_folder = os.path.join(_PATH_HERE, "api")
-#     sys.path.insert(0, apidoc_output_folder)
-#
-#     # delete api-doc files before generating them
-#     if os.path.exists(apidoc_output_folder):
-#         shutil.rmtree(apidoc_output_folder)
-#
-#     for pkg in PACKAGES:
-#         argv = ['-e',
-#                 '-o', apidoc_output_folder,
-#                 os.path.join(_PATH_ROOT, pkg),
-#                 '**/test_*',
-#                 '--force',
-#                 '--private',
-#                 '--module-first']
-#
-#         apidoc.main(argv)
-
 
 def setup(app):
     # this is for hiding doctest decoration,
     # see: http://z4r.github.io/python/2011/12/02/hides-the-prompts-and-output/
-    app.add_javascript("copybutton.js")
+    app.add_js_file("copybutton.js")
     # app.connect('builder-inited', run_apidoc)
 
 

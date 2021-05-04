@@ -227,6 +227,16 @@ def test_state_dict(tmpdir):
     assert metric.state_dict() == OrderedDict()
 
 
+def test_load_state_dict(tmpdir):
+    """ test that metric states can be loaded with state dict """
+    metric = DummyMetricSum()
+    metric.persistent(True)
+    metric.update(5)
+    loaded_metric = DummyMetricSum()
+    loaded_metric.load_state_dict(metric.state_dict())
+    assert metric.compute() == 5
+
+
 def test_child_metric_state_dict():
     """ test that child metric states will be added to parent state dict """
 
@@ -262,6 +272,28 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.half()
     assert metric.x.dtype == torch.float16
+
+
+def test_warning_on_compute_before_update():
+    metric = DummyMetricSum()
+
+    # make sure everything is fine with forward
+    with pytest.warns(None) as record:
+        val = metric(1)
+    assert not record
+
+    metric.reset()
+
+    with pytest.warns(UserWarning, match=r'The ``compute`` method of metric .*'):
+        val = metric.compute()
+    assert val == 0.0
+
+    # after update things should be fine
+    metric.update(2.0)
+    with pytest.warns(None) as record:
+        val = metric.compute()
+    assert not record
+    assert val == 2.0
 
 
 def test_metric_scripts():

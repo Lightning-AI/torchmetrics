@@ -22,6 +22,7 @@ from torchmetrics.functional.classification.average_precision import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class AveragePrecision(Metric):
@@ -89,8 +90,8 @@ class AveragePrecision(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             'Metric `AveragePrecision` will save all targets and predictions in buffer.'
@@ -122,6 +123,10 @@ class AveragePrecision(Metric):
             of such tensors, one for each class
 
         """
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         return _average_precision_compute(preds, target, self.num_classes, self.pos_label)
+
+    @property
+    def is_differentiable(self):
+        return False

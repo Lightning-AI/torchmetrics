@@ -1,7 +1,7 @@
 # Contributing
 
 Welcome to the Torchmetrics community! We're building largest collection of native pytorch metrics, with the
-goal of reducing boilerplate and increasing reproducibility. 
+goal of reducing boilerplate and increasing reproducibility.
 
 ## Contribution Types
 
@@ -24,7 +24,7 @@ We are always looking for help implementing new features or fixing bugs.
 
 3. Submit a PR!
 
-_**Note**, even if you do not find the solution, sending a PR with a test covering the issue is a valid contribution and we can 
+_**Note**, even if you do not find the solution, sending a PR with a test covering the issue is a valid contribution and we can
 help you or finish it with you :]_
 
 ### New Features:
@@ -42,7 +42,7 @@ help you or finish it with you :]_
 
 ### Test cases:
 
-Want to keep Torchmetrics healthy? Love seeing those green tests? So do we! How to we keep it that way? 
+Want to keep Torchmetrics healthy? Love seeing those green tests? So do we! How to we keep it that way?
 We write tests! We value tests contribution even more than new features. One of the core values of torchmetrics
 is that our users can trust our metric implementation. We can only guarantee this if our metrics are well tested.
 
@@ -59,9 +59,9 @@ To build the documentation locally, simply execute the following commands from p
 ### Original code
 
 All added or edited code shall be the own original work of the particular contributor.
-If you use some third-party implementation, all such blocks/functions/modules shall be properly referred and if 
+If you use some third-party implementation, all such blocks/functions/modules shall be properly referred and if
 possible also agreed by code's author. For example - `This code is inspired from http://...`.
-In case you adding new dependencies, make sure that they are compatible with the actual Torchmetrics license 
+In case you adding new dependencies, make sure that they are compatible with the actual Torchmetrics license
 (ie. dependencies should be _at least_ as permissive as the Torchmetrics license).
 
 ### Coding Style
