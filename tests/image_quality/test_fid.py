@@ -104,7 +104,7 @@ class _ImgDataset(Dataset):
 
 
 @pytest.mark.skipif(
-    not (torch.cuda.is_available() and torch.cuda.device_count() >= 1), reason='test is too slow without gpu'
+    not torch.cuda.is_available(), reason='test is too slow without gpu'
 )
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
 def test_compare_fid(tmpdir, feature=2048):
