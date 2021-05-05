@@ -23,7 +23,7 @@ METRIC_EPS = 1e-6
 
 def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     x = x if isinstance(x, (list, tuple)) else [x]
-    x = [xx.unsqueeze(0) if xx.numel() == 1 and xx.ndim == 0 else xx for xx in x]
+    x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
     return torch.cat(x, dim=0)
 
 
