@@ -198,7 +198,7 @@ class FID(Metric):
         >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> fid.update(imgs_dist1, real=True)
         >>> fid.update(imgs_dist2, real=False)
-        >>> fid.compute()
+        >>> fid.compute()  #
         tensor(12.7202)
 
     """
