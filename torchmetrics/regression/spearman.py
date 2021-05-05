@@ -94,3 +94,7 @@ class SpearmanCorrcoef(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)
+
+    @property
+    def is_differentiable(self):
+        return False

@@ -85,6 +85,12 @@ class TestExplainedVariance(MetricTester):
             metric_args=dict(multioutput=multioutput),
         )
 
+    def test_explained_variance_differentiability(self, multioutput, preds, target, sk_metric):
+        self.run_differentiability_test(
+            preds=preds, target=target, metric_module=ExplainedVariance, metric_functional=explained_variance,
+            metric_args={'multioutput': multioutput}
+        )
+
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
     )

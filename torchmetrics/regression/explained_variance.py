@@ -131,3 +131,7 @@ class ExplainedVariance(Metric):
             self.sum_squared_target,
             self.multioutput,
         )
+
+    @property
+    def is_differentiable(self):
+        return True

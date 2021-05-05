@@ -20,6 +20,7 @@ from torch import tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
+from torchmetrics.utilities.distributed import gather_all_tensors
 
 seed_all(42)
 
@@ -56,8 +57,37 @@ def _test_ddp_sum_cat(rank, worldsize):
     assert dummy.bar == worldsize
 
 
+def _test_ddp_gather_uneven_tensors(rank, worldsize):
+    setup_ddp(rank, worldsize)
+    tensor = torch.ones(rank)
+    result = gather_all_tensors(tensor)
+    assert len(result) == worldsize
+    for idx in range(worldsize):
+        assert len(result[idx]) == idx
+        assert (result[idx] == torch.ones_like(result[idx])).all()
+
+
+def _test_ddp_gather_uneven_tensors_multidim(rank, worldsize):
+    setup_ddp(rank, worldsize)
+    tensor = torch.ones(rank + 1, 2 - rank)
+    result = gather_all_tensors(tensor)
+    assert len(result) == worldsize
+    for idx in range(worldsize):
+        val = result[idx]
+        assert val.shape == (idx + 1, 2 - idx)
+        assert (val == torch.ones_like(val)).all()
+
+
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
-@pytest.mark.parametrize("process", [_test_ddp_cat, _test_ddp_sum, _test_ddp_sum_cat])
+@pytest.mark.parametrize(
+    "process", [
+        _test_ddp_cat,
+        _test_ddp_sum,
+        _test_ddp_sum_cat,
+        _test_ddp_gather_uneven_tensors,
+        _test_ddp_gather_uneven_tensors_multidim,
+    ]
+)
 def test_ddp(process):
     torch.multiprocessing.spawn(process, args=(2, ), nprocs=2)
 
