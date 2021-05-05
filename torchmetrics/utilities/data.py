@@ -21,16 +21,17 @@ from torchmetrics.utilities.prints import rank_zero_warn
 METRIC_EPS = 1e-6
 
 
-def dim_zero_cat(x):
+def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     x = x if isinstance(x, (list, tuple)) else [x]
+    x = [xx.unsqueeze(0) if xx.numel() == 1 and xx.ndim == 0 else xx for xx in x]
     return torch.cat(x, dim=0)
 
 
-def dim_zero_sum(x):
+def dim_zero_sum(x: Tensor) -> Tensor:
     return torch.sum(x, dim=0)
 
 
-def dim_zero_mean(x):
+def dim_zero_mean(x: Tensor) -> Tensor:
     return torch.mean(x, dim=0)
 
 
