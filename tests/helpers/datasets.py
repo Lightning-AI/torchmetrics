@@ -25,10 +25,12 @@ from torch.utils.data import Dataset
 
 class MNIST(Dataset):
     """
-    Customized `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset for testing Pytorch Lightning
+    Customized `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset for testing torchmetrics
     without the torchvision dependency.
+    
     Part of the code was copied from
     https://github.com/pytorch/vision/blob/build/v0.5.0/torchvision/datasets/mnist.py
+    
     Args:
         root: Root directory of dataset where ``MNIST/processed/training.pt``
             and  ``MNIST/processed/test.pt`` exist.
@@ -38,12 +40,14 @@ class MNIST(Dataset):
         download: If true, downloads the dataset from the internet and
             puts it in root directory. If dataset is already downloaded, it is not
             downloaded again.
+    
     Examples:
         >>> dataset = MNIST(".", download=True)
         >>> len(dataset)
         60000
         >>> torch.bincount(dataset.targets)
         tensor([5923, 6742, 5958, 6131, 5842, 5421, 5918, 6265, 5851, 5949])
+    
     """
 
     RESOURCES = (

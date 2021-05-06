@@ -192,13 +192,13 @@ class FID(Metric):
         >>> import torch
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics import FID
-        >>> fid = FID(feature=64)
+        >>> fid = FID(feature=64)  # doctest: +SKIP
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> fid.update(imgs_dist1, real=True)
-        >>> fid.update(imgs_dist2, real=False)
-        >>> fid.compute()  #
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
+        >>> fid.update(imgs_dist1, real=True)  # doctest: +SKIP
+        >>> fid.update(imgs_dist2, real=False)  # doctest: +SKIP
+        >>> fid.compute()  # doctest: +SKIP
         tensor(12.7202)
 
     """
