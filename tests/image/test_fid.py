@@ -38,8 +38,7 @@ def test_matrix_sqrt(matrix_size):
 
     scipy_res = scipy_sqrtm((cov1 @ cov2).numpy()).real
     tm_res = sqrtm(cov1 @ cov2)
-
-    assert torch.allclose(torch.tensor(scipy_res), tm_res, atol=1e-2)
+    assert torch.allclose(torch.tensor(scipy_res).float(), tm_res, atol=1e-3)
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
