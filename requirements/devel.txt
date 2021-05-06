@@ -8,4 +8,4 @@
 -r integrate.txt
 
 # add extra requirements
--r image_quality.txt
+-r image.txt
