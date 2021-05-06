@@ -16,7 +16,7 @@ from typing import Optional, Sequence, Tuple
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.auc import auc
+from torchmetrics.functional.classification.auc import _auc_compute_without_check
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, DataType
@@ -93,7 +93,7 @@ def _auroc_compute(
             pass
         elif num_classes != 1:
             # calculate auc scores per class
-            auc_scores = [auc(x, y) for x, y in zip(fpr, tpr)]
+            auc_scores = [_auc_compute_without_check(x, y, 1.0) for x, y in zip(fpr, tpr)]
 
             # calculate average
             if average == AverageMethod.NONE:
@@ -113,7 +113,7 @@ def _auroc_compute(
                 f" {allowed_average} but got {average}"
             )
 
-        return auc(fpr, tpr)
+        return _auc_compute_without_check(fpr, tpr, 1.0)
 
     max_fpr = tensor(max_fpr, device=fpr.device)
     # Add a single point at max_fpr and interpolate its tpr value
@@ -124,7 +124,7 @@ def _auroc_compute(
     fpr = torch.cat([fpr[:stop], max_fpr.view(1)])
 
     # Compute partial AUC
-    partial_auc = auc(fpr, tpr)
+    partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
     # McClish correction: standardize result to be 0.5 if non-discriminant
     # and 1 if maximal
