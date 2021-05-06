@@ -244,7 +244,7 @@ class FID(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:
+    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """ Update the state with extracted features
 
         Args:
