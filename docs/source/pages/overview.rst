@@ -1,3 +1,7 @@
+.. testsetup:: *
+
+    import torch
+    from pytorch_lightning.core.lightning import LightningModule
 
 ########
 Overview
@@ -91,7 +95,7 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
     from torchmetrics import Accuracy, MetricCollection
 
-    class MyModule():
+    class MyModule(torch.nn.Module):
         def __init__(self):
             ...
             # valid ways metrics will be identified as child modules
@@ -238,7 +242,7 @@ inside your LightningModule
 
     from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 
-    class MyModule():
+    class MyModule(LightningModule):
         def __init__(self):
             metrics = MetricCollection([Accuracy(), Precision(), Recall()])
             self.train_metrics = metrics.clone(prefix='train_')
