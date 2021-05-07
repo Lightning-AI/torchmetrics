@@ -1,3 +1,7 @@
+.. testsetup:: *
+
+    import torch
+    from pytorch_lightning.core.lightning import LightningModule
 
 ########
 Overview
@@ -18,7 +22,7 @@ logic present in ``.compute()`` is applied to state information from all process
 
 This metrics API is independent of PyTorch Lightning. Metrics can directly be used in PyTorch as shown in the example:
 
-.. testcode::
+.. code-block:: python
 
     from torchmetrics.classification import Accuracy
 
@@ -64,7 +68,7 @@ Metrics are simple subclasses of :class:`~torch.nn.Module` and their metric stat
 similar to buffers and parameters of modules. This means that metrics states should
 be moved to the same device as the input of the metric:
 
-.. testcode::
+.. code-block:: python
 
     from torchmetrics import Accuracy
 
@@ -91,7 +95,7 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
     from torchmetrics import Accuracy, MetricCollection
 
-    class MyModule(nn.Module):
+    class MyModule(torch.nn.Module):
         def __init__(self):
             ...
             # valid ways metrics will be identified as child modules
