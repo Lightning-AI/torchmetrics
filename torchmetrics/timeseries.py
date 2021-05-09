@@ -3,7 +3,7 @@ from torch import nn
 
 from torchmetrics.metric import Metric
 
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 
 class TimeSeriesMetric(nn.ModuleList):
