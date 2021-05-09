@@ -1,9 +1,9 @@
+from typing import Tuple, Union
+
 import torch
 from torch import nn
 
 from torchmetrics.metric import Metric
-
-from typing import Tuple, Union
 
 
 class TimeSeriesMetric(nn.ModuleList):
