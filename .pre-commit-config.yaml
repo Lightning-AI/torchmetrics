@@ -45,7 +45,7 @@ repos:
         language: python
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 3.9.1
+    rev: 3.9.2
     hooks:
       - id: flake8
         name: PEP8
