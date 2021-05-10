@@ -12,10 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
 
 
-- Added `is_differentiable` property:
-    * To `AUC`, `AUROC`, `CohenKappa` and `AveragePrecision` ([#178](https://github.com/PyTorchLightning/metrics/pull/178))
-    * To `PearsonCorrCoef`, `SpearmanCorrcoef`, `R2Score` and `ExplainedVariance` ([#225](https://github.com/PyTorchLightning/metrics/pull/225))
-
 - Added `add_metrics` method to `MetricCollection` for adding additional metrics after initialization ([#221](https://github.com/PyTorchLightning/metrics/pull/221))
 
 
@@ -25,40 +21,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `MetricCollection` should return metrics with prefix on `items()`, `keys()` ([#209](https://github.com/PyTorchLightning/metrics/pull/209))
-
-
-- Calling `compute` before `update` will now give an warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
-
-
 
 ### Deprecated
 
 
 ### Removed
 
-- Removed `numpy` as dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
 
+### Fixed
+
+
+
+## [0.3.2] - 2021-05-10
+
+### Added
+
+- Added `is_differentiable` property:
+    * To `AUC`, `AUROC`, `CohenKappa` and `AveragePrecision` ([#178](https://github.com/PyTorchLightning/metrics/pull/178))
+    * To `PearsonCorrCoef`, `SpearmanCorrcoef`, `R2Score` and `ExplainedVariance` ([#225](https://github.com/PyTorchLightning/metrics/pull/225))
+    
+### Changed
+
+- `MetricCollection` should return metrics with prefix on `items()`, `keys()` ([#209](https://github.com/PyTorchLightning/metrics/pull/209))
+- Calling `compute` before `update` will now give an warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
+
+### Removed
+
+- Removed `numpy` as dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
 
 ### Fixed
 
 - Fixed auc calculation and add tests ([#197](https://github.com/PyTorchLightning/metrics/pull/197))
-
-
 - Fixed loading persisted metric states using `load_state_dict()` ([#202](https://github.com/PyTorchLightning/metrics/pull/202))
-
-
 - Fixed `PSNR` not working with `DDP` ([#214](https://github.com/PyTorchLightning/metrics/pull/214))
-
-
 - Fixed metric calculation with unequal batch sizes ([#220](https://github.com/PyTorchLightning/metrics/pull/220))
-
-
 - Fixed metric concatenation for list states for zero-dim input ([#229](https://github.com/PyTorchLightning/metrics/pull/229))
-
-
 - Fixed numerical instability in `AUROC` metric for large input ([#230](https://github.com/PyTorchLightning/metrics/pull/230))
-
 
 ## [0.3.1] - 2021-04-21
 
