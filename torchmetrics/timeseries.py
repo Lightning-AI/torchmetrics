@@ -38,8 +38,11 @@ class TimeSeriesMetric(nn.ModuleList):
         Returns:
             The best metric value, and optionally the timestep.
         """
-        pass
+        idx, max = torch.max(self.all_metrics(), 0)
+        if return_timestep:
+            return idx.item(), max.item()
+        return max.item()
 
-    def all_metrics(self) -> List[float]:
+    def all_metrics(self) -> torch.Tensor:
         """Returns metrics for all timesteps. """
-        return [metric.compute() for metric in self]
+        return torch.Tensor([metric.compute() for metric in self])
