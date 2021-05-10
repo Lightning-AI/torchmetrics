@@ -28,8 +28,7 @@ class TimeSeriesMetric(nn.ModuleList):
         module.update(preds, targets)
         self.append(module)
 
-    def best_metric(self, return_timestep: bool = False)\
-            -> Union[float, Tuple[int, float]]:
+    def best_metric(self, return_timestep: bool = False) -> Union[float, Tuple[int, float]]:
         """Returns the highest metric out of all the timesteps.
 
         Args:
