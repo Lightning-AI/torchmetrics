@@ -98,7 +98,7 @@ def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
         x = x.unsqueeze(-1)
 
     if unsqueeze_y:
-        y = y.unsqeeze(-1)
+        y = y.unsqueeze(-1)
 
     # Test Area Under Curve (AUC) computation
     assert auc(x, y, reorder=True) == expected
