@@ -142,7 +142,7 @@ class Accuracy(StatScores):
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
         ValueError:
-            If two different input modes are provided, eg. using ``mult-label`` with ``multi-class``.
+            If two different input modes are provided, eg. using ``multi-label`` with ``multi-class``.
         ValueError:
             If ``top_k`` parameter is set for ``multi-label`` inputs.
 
