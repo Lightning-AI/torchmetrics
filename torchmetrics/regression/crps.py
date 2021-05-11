@@ -38,7 +38,7 @@ class CRPS(Metric):
         )
 
         self.add_state("batch_size", default=1)
-        self.add_state("diff_to_obs", default=tensor(0))
+        self.add_state("diff", default=tensor(0))
         self.add_state("ensemble_sum_scale_factor", default=1.)
         self.add_state("ensemble_sum", default=0.)
 
@@ -50,10 +50,10 @@ class CRPS(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        self.batch_size, self.diff_to_obs, self.ensemble_sum_scale_factor, self.ensemble_sum = _crps_update(preds, target)
+        self.batch_size, self.diff, self.ensemble_sum_scale_factor, self.ensemble_sum = _crps_update(preds, target)
 
     def compute(self):
         """
         Compute the continuous ranked probability score over state.
         """
-        return _crps_compute(self.batch_size, self.diff_to_obs, self.ensemble_sum_scale_factor, self.ensemble_sum)
+        return _crps_compute(self.batch_size, self.diff, self.ensemble_sum_scale_factor, self.ensemble_sum)

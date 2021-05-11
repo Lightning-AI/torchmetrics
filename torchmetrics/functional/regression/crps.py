@@ -31,7 +31,7 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, float, flo
     for i in range(preds.size()[1]):
         observation_inflated[:, i, :] = target
 
-    diff_to_obs = (1 / n_ensemble_members) * torch.sum(torch.abs(preds - observation_inflated))
+    diff = (1 / n_ensemble_members) * torch.sum(torch.abs(preds - observation_inflated))
 
     if n_ensemble_members > 1:
         ensemble_sum_scale_factor = (1 / (n_ensemble_members * (n_ensemble_members - 1)))
@@ -43,11 +43,11 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, float, flo
         for j in range(i, n_ensemble_members):
             ensemble_sum += torch.sum(torch.abs(preds[:, i, ] - preds[:, j, ]))
 
-    return batch_size, diff_to_obs, ensemble_sum_scale_factor, ensemble_sum
+    return batch_size, diff, ensemble_sum_scale_factor, ensemble_sum
 
 
-def _crps_compute(batch_size: int, diff_to_obs: Tensor, ensemble_sum_scale_factor, ensemble_sum) -> Tensor:
-    return (1 / batch_size) * (diff_to_obs - (ensemble_sum_scale_factor * ensemble_sum))
+def _crps_compute(batch_size: int, diff: Tensor, ensemble_sum_scale_factor, ensemble_sum) -> Tensor:
+    return (1 / batch_size) * (diff - (ensemble_sum_scale_factor * ensemble_sum))
 
 
 def crps(preds: Tensor, target: Tensor) -> Tensor:
@@ -62,5 +62,5 @@ def crps(preds: Tensor, target: Tensor) -> Tensor:
     Return:
         Tensor with CRPS
     """
-    batch_size, diff_to_obs, ensemble_sum_scale_factor, ensemble_sum = _crps_update(preds, target)
-    return _crps_compute(batch_size, diff_to_obs, ensemble_sum_scale_factor, ensemble_sum)
+    batch_size, diff, ensemble_sum_scale_factor, ensemble_sum = _crps_update(preds, target)
+    return _crps_compute(batch_size, diff, ensemble_sum_scale_factor, ensemble_sum)
