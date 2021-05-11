@@ -93,9 +93,9 @@ class TestAUC(MetricTester):
 def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
     if unsqueeze_x:
         x = x.unsqueeze(-1)
-        
+
     if unsqueeze_y:
         y = y.unsqeeze(-1)
-    
+
     # Test Area Under Curve (AUC) computation
     assert auc(tensor(x), tensor(y), reorder=True) == expected
