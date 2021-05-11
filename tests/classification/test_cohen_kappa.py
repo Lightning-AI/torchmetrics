@@ -121,6 +121,19 @@ class TestCohenKappa(MetricTester):
             }
         )
 
+    def test_cohen_kappa_differentiability(self, preds, target, sk_metric, weights, num_classes):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=CohenKappa,
+            metric_functional=cohen_kappa,
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+                "weights": weights
+            }
+        )
+
 
 def test_warning_on_wrong_weights(tmpdir):
     preds = torch.randint(3, size=(20, ))

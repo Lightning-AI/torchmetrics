@@ -145,3 +145,7 @@ class R2Score(Metric):
         return _r2score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
         )
+
+    @property
+    def is_differentiable(self):
+        return True

@@ -31,24 +31,30 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
     return x, y
 
 
-def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
-    if reorder:
-        # TODO: include stable=True arg when pytorch v1.9 is released
-        x, x_idx = torch.sort(x)
-        y = y[x_idx]
+def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor:
+    with torch.no_grad():
+        return direction * torch.trapz(y, x)
 
-    dx = x[1:] - x[:-1]
-    if (dx < 0).any():
-        if (dx <= 0).all():
-            direction = -1.
+
+def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
+    with torch.no_grad():
+        if reorder:
+            # TODO: include stable=True arg when pytorch v1.9 is released
+            x, x_idx = torch.sort(x)
+            y = y[x_idx]
+
+        dx = x[1:] - x[:-1]
+        if (dx < 0).any():
+            if (dx <= 0).all():
+                direction = -1.
+            else:
+                raise ValueError(
+                    "The `x` tensor is neither increasing or decreasing."
+                    " Try setting the reorder argument to `True`."
+                )
         else:
-            raise ValueError(
-                "The `x` tensor is neither increasing or decreasing."
-                " Try setting the reorder argument to `True`."
-            )
-    else:
-        direction = 1.
-    return direction * torch.trapz(y, x)
+            direction = 1.
+        return _auc_compute_without_check(x, y, direction)
 
 
 def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:

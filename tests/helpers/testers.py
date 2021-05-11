@@ -37,11 +37,21 @@ NUM_CLASSES = 5
 EXTRA_DIM = 3
 THRESHOLD = 0.5
 
+MAX_PORT = 8100
+START_PORT = 8088
+CURRENT_PORT = START_PORT
+
 
 def setup_ddp(rank, world_size):
     """ Setup ddp environment """
+    global CURRENT_PORT
+
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "8088"
+    os.environ["MASTER_PORT"] = str(CURRENT_PORT)
+
+    CURRENT_PORT += 1
+    if CURRENT_PORT > MAX_PORT:
+        CURRENT_PORT = START_PORT
 
     if torch.distributed.is_available() and sys.platform not in ("win32", "cygwin"):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
@@ -462,7 +472,11 @@ class MetricTester:
         if preds.is_floating_point():
             preds.requires_grad = True
             out = metric(preds[0], target[0])
-            assert metric.is_differentiable == out.requires_grad
+            # metrics can return list of values
+            if isinstance(out, list):
+                assert all(metric.is_differentiable == o.requires_grad for o in out)
+            else:
+                assert metric.is_differentiable == out.requires_grad
 
             if metric.is_differentiable:
                 # check for numerical correctness

@@ -13,12 +13,12 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.auc import _auc_compute, _auc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class AUC(Metric):
@@ -61,8 +61,8 @@ class AUC(Metric):
 
         self.reorder = reorder
 
-        self.add_state("x", default=[], dist_reduce_fx=None)
-        self.add_state("y", default=[], dist_reduce_fx=None)
+        self.add_state("x", default=[], dist_reduce_fx="cat")
+        self.add_state("y", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             'Metric `AUC` will save all targets and predictions in buffer.'
@@ -86,6 +86,14 @@ class AUC(Metric):
         """
         Computes AUC based on inputs passed in to ``update`` previously.
         """
-        x = torch.cat(self.x, dim=0)
-        y = torch.cat(self.y, dim=0)
+        x = dim_zero_cat(self.x)
+        y = dim_zero_cat(self.y)
         return _auc_compute(x, y, reorder=self.reorder)
+
+    @property
+    def is_differentiable(self):
+        """
+        AUC metrics is considered as non differentiable so it should have `false`
+        value for `is_differentiable` property
+        """
+        return False

@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, Callable, Optional, Tuple
 
-import numpy as np
 import torch
 from torch import Tensor, tensor
 
@@ -340,7 +339,7 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, tensor(np.nan, device=scores.device), scores)
+        scores = torch.where(ignore_mask, tensor(float('nan'), device=scores.device), scores)
     else:
         scores = scores.sum()
 

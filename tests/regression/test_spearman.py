@@ -82,6 +82,11 @@ class TestSpearmanCorrcoef(MetricTester):
     def test_spearman_corrcoef_functional(self, preds, target):
         self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric)
 
+    def test_spearman_corrcoef_differentiability(self, preds, target):
+        self.run_differentiability_test(
+            preds=preds, target=target, metric_module=SpearmanCorrcoef, metric_functional=spearman_corrcoef
+        )
+
     # Spearman half + cpu does not work due to missing support in torch.arange
     @pytest.mark.xfail(reason="Spearman metric does not support cpu + half precision")
     def test_spearman_corrcoef_half_cpu(self, preds, target):
