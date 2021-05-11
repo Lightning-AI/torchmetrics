@@ -81,6 +81,8 @@ class TestAUC(MetricTester):
         )
 
 
+@pytest.mark.parametrize(['unsqueeze_x'], [True, False])
+@pytest.mark.parametrize(['unsqueeze_y'], [True, False])
 @pytest.mark.parametrize(['x', 'y', 'expected'], [
     pytest.param([0, 1], [0, 1], 0.5),
     pytest.param([1, 0], [0, 1], 0.5),
@@ -88,6 +90,12 @@ class TestAUC(MetricTester):
     pytest.param([0, 1], [1, 1], 1),
     pytest.param([0, 0.5, 1], [0, 0.5, 1], 0.5),
 ])
-def test_auc(x, y, expected):
+def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
+    if unsqueeze_x:
+        x = x.unsqueeze(-1)
+        
+    if unsqueeze_y:
+        y = y.unsqeeze(-1)
+    
     # Test Area Under Curve (AUC) computation
     assert auc(tensor(x), tensor(y), reorder=True) == expected
