@@ -55,7 +55,8 @@ def _fbeta_compute(
     # computing the score for this class is meaningless, thus they should be ignored
     if average == AverageMethod.NONE and mdmc_average is None:
         # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero(np.logical_not(np.logical_or(tp, np.logical_or(fp, fn))))
+        meaningless_indeces = torch.nonzero(np.logical_not(np.logical_or(tp.cpu(),
+                                                                         np.logical_or(fp.cpu(), fn.cpu()))))
         if ignore_index is None:
             ignore_index = meaningless_indeces
         else:
