@@ -93,7 +93,7 @@ class TestAUC(MetricTester):
 def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
     x = tensor(x)
     y = tensor(y)
-    
+
     if unsqueeze_x:
         x = x.unsqueeze(-1)
 
