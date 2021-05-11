@@ -18,10 +18,16 @@ from torch import Tensor
 
 
 def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
+    if x.ndim > 1:
+        x = x.squeeze()
+    
+    if y.ndim > 1:
+        y = y.squeeze()
+    
     if x.ndim > 1 or y.ndim > 1:
         raise ValueError(
             f'Expected both `x` and `y` tensor to be 1d, but got'
-            f' tensors with dimention {x.ndim} and {y.ndim}'
+            f' tensors with dimension {x.ndim} and {y.ndim}'
         )
     if x.numel() != y.numel():
         raise ValueError(
