@@ -54,7 +54,7 @@ def _fbeta_compute(
     # computing the score for this class is meaningless, thus they should be ignored
     if average == AverageMethod.NONE and mdmc_average is None:
         # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = ((tp | fn | fp) == 0).nonzero()
+        meaningless_indeces = ((tp | fn | fp) == 0).nonzero().cpu()
         if ignore_index is None:
             ignore_index = meaningless_indeces
         else:
