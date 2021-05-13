@@ -245,7 +245,7 @@ class TestStatScores(MetricTester):
                 "top_k": top_k,
             },
         )
-        
+
     def test_stat_scores_half_cpu(self, sk_fn, preds, target, reduce, mdmc_reduce, num_classes,
                                   multiclass, ignore_index, top_k):
         if ignore_index is not None and preds.ndim == 2:

@@ -15,9 +15,9 @@ from functools import partial
 
 import numpy as np
 import pytest
+import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
-import torch
 
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
@@ -108,7 +108,7 @@ class TestAccuracies(MetricTester):
                 "subset_accuracy": subset_accuracy
             },
         )
-        
+
     def test_accuracy_half_cpu(self, preds, target, subset_accuracy):
         self.run_precision_test_cpu(preds, target, Accuracy, accuracy,
                                     {"threshold": THRESHOLD, "subset_accuracy": subset_accuracy})
