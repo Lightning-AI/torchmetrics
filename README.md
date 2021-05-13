@@ -198,7 +198,7 @@ from torchmetrics import Metric
 class MyAccuracy(Metric):
     def __init__(self, dist_sync_on_step=False):
         # call `self.add_state`for every internal state that is needed for the metrics computations
-        # dist_reduce_fx indicates the function that should be used to reduce 
+        # dist_reduce_fx indicates the function that should be used to reduce
         # state from multiple processes
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
