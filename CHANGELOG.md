@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - AUC can also support more dimensional inputs when all but one dimensions are of size 1 ([#242](https://github.com/PyTorchLightning/metrics/pull/242))
 
-
+- Fixed dtype of modular metrics after reset have been called ([#243](https://github.com/PyTorchLightning/metrics/pull/243))
 
 ## [0.3.2] - 2021-05-10
 
