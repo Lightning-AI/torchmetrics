@@ -20,12 +20,14 @@ import torch
 from sklearn.metrics import f1_score, fbeta_score
 from torch import Tensor
 
-from tests.classification.inputs import _input_binary, _input_binary_prob
+from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
+from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
+from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
@@ -36,7 +38,7 @@ from torchmetrics.utilities.checks import _input_format_classification
 seed_all(42)
 
 
-def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average=None):
+def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, multiclass, ignore_index, mdmc_average=None):
     if average == "none":
         average = None
     if num_classes == 1:
@@ -49,7 +51,7 @@ def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, igno
         pass
 
     sk_preds, sk_target, _ = _input_format_classification(
-        preds, target, THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
+        preds, target, THRESHOLD, num_classes=num_classes, multiclass=multiclass
     )
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
 
@@ -62,10 +64,10 @@ def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, is_multiclass, igno
 
 
 def _sk_fbeta_f1_multidim_multiclass(
-    preds, target, sk_fn, num_classes, average, is_multiclass, ignore_index, mdmc_average
+    preds, target, sk_fn, num_classes, average, multiclass, ignore_index, mdmc_average
 ):
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=THRESHOLD, num_classes=num_classes, is_multiclass=is_multiclass
+        preds, target, threshold=THRESHOLD, num_classes=num_classes, multiclass=multiclass
     )
 
     if mdmc_average == "global":
@@ -174,12 +176,15 @@ def test_no_support(metric_class, metric_fn):
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
 @pytest.mark.parametrize(
-    "preds, target, num_classes, is_multiclass, mdmc_average, sk_wrapper",
+    "preds, target, num_classes, multiclass, mdmc_average, sk_wrapper",
     [
+        (_input_binary_logits.preds, _input_binary_logits.target, 1, None, None, _sk_fbeta_f1),
         (_input_binary_prob.preds, _input_binary_prob.target, 1, None, None, _sk_fbeta_f1),
         (_input_binary.preds, _input_binary.target, 1, False, None, _sk_fbeta_f1),
+        (_input_mlb_logits.preds, _input_mlb_logits.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
         (_input_mlb_prob.preds, _input_mlb_prob.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
         (_input_mlb.preds, _input_mlb.target, NUM_CLASSES, False, None, _sk_fbeta_f1),
+        (_input_mcls_logits.preds, _input_mcls_logits.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
         (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
         (_input_mcls.preds, _input_mcls.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "global", _sk_fbeta_f1_multidim_multiclass),
@@ -208,7 +213,7 @@ class TestFBeta(MetricTester):
         metric_class: Metric,
         metric_fn: Callable,
         sk_fn: Callable,
-        is_multiclass: Optional[bool],
+        multiclass: Optional[bool],
         num_classes: Optional[int],
         average: str,
         mdmc_average: Optional[str],
@@ -233,7 +238,7 @@ class TestFBeta(MetricTester):
                 sk_fn=sk_fn,
                 average=average,
                 num_classes=num_classes,
-                is_multiclass=is_multiclass,
+                multiclass=multiclass,
                 ignore_index=ignore_index,
                 mdmc_average=mdmc_average,
             ),
@@ -242,7 +247,7 @@ class TestFBeta(MetricTester):
                 "num_classes": num_classes,
                 "average": average,
                 "threshold": THRESHOLD,
-                "is_multiclass": is_multiclass,
+                "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "mdmc_average": mdmc_average,
             },
@@ -258,7 +263,7 @@ class TestFBeta(MetricTester):
         metric_class: Metric,
         metric_fn: Callable,
         sk_fn: Callable,
-        is_multiclass: Optional[bool],
+        multiclass: Optional[bool],
         num_classes: Optional[int],
         average: str,
         mdmc_average: Optional[str],
@@ -282,7 +287,7 @@ class TestFBeta(MetricTester):
                 sk_fn=sk_fn,
                 average=average,
                 num_classes=num_classes,
-                is_multiclass=is_multiclass,
+                multiclass=multiclass,
                 ignore_index=ignore_index,
                 mdmc_average=mdmc_average,
             ),
@@ -290,11 +295,43 @@ class TestFBeta(MetricTester):
                 "num_classes": num_classes,
                 "average": average,
                 "threshold": THRESHOLD,
-                "is_multiclass": is_multiclass,
+                "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "mdmc_average": mdmc_average,
             },
         )
+
+    def test_fbeta_f1_half_cpu(self, preds, target, sk_wrapper, metric_class, metric_fn,
+                               sk_fn, multiclass, num_classes, average, mdmc_average, ignore_index):
+        if num_classes == 1 and average != "micro":
+            pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
+
+        if ignore_index is not None and preds.ndim == 2:
+            pytest.skip("Skipping ignore_index test with binary inputs.")
+
+        if average == "weighted" and ignore_index is not None and mdmc_average is not None:
+            pytest.skip("Ignore special case where we are ignoring entire sample for 'weighted' average")
+        
+        self.run_precision_test_cpu(preds, target, metric_class, metric_fn,
+                                    {"num_classes": num_classes, "average": average, "threshold": THRESHOLD,
+                                     "multiclass": multiclass, "ignore_index": ignore_index,
+                                     "mdmc_average": mdmc_average})
+
+    def test_fbeta_f1_half_gpu(self, preds, target, sk_wrapper, metric_class, metric_fn,
+                               sk_fn, multiclass, num_classes, average, mdmc_average, ignore_index):
+        if num_classes == 1 and average != "micro":
+            pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
+
+        if ignore_index is not None and preds.ndim == 2:
+            pytest.skip("Skipping ignore_index test with binary inputs.")
+
+        if average == "weighted" and ignore_index is not None and mdmc_average is not None:
+            pytest.skip("Ignore special case where we are ignoring entire sample for 'weighted' average")
+        
+        self.run_precision_test_gpu(preds, target, metric_class, metric_fn,
+                                    {"num_classes": num_classes, "average": average, "threshold": THRESHOLD,
+                                     "multiclass": multiclass, "ignore_index": ignore_index,
+                                     "mdmc_average": mdmc_average})
 
 
 _mc_k_target = torch.tensor([0, 1, 2])
@@ -322,11 +359,11 @@ def test_top_k(
     metric_class,
     metric_fn,
     k: int,
-    preds: torch.Tensor,
-    target: torch.Tensor,
+    preds: Tensor,
+    target: Tensor,
     average: str,
-    expected_fbeta: torch.Tensor,
-    expected_f1: torch.Tensor,
+    expected_fbeta: Tensor,
+    expected_f1: Tensor,
 ):
     """A simple test to check that top_k works as expected.
 

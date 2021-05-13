@@ -18,6 +18,7 @@ from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
+from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 
 
 class FBeta(StatScores):
@@ -29,7 +30,7 @@ class FBeta(StatScores):
         {(\beta^2 * \text{precision}) + \text{recall}}
 
     Where :math:`\beta` is some positive real factor. Works with binary, multiclass, and multilabel data.
-    Accepts probabilities from a model output or integer class values in prediction.
+    Accepts logit scores or probabilities from a model output or integer class values in prediction.
     Works with multi-dimensional preds and target.
 
     Forward accepts
@@ -38,7 +39,7 @@ class FBeta(StatScores):
     - ``target`` (long tensor): ``(N, ...)``
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
+    to convert into integer labels. This is the case for binary and multi-label logits and probabilities.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
@@ -48,16 +49,16 @@ class FBeta(StatScores):
         beta:
             Beta coefficient in the F measure.
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -90,16 +91,16 @@ class FBeta(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
 
-            Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+            Should be left at default (``None``) for all other types of inputs.
+
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -113,6 +114,9 @@ class FBeta(StatScores):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
+        multilabel:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Raises:
         ValueError:
@@ -137,12 +141,15 @@ class FBeta(StatScores):
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        _deprecation_warn_arg_multilabel(multilabel)
+
         self.beta = beta
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
@@ -154,7 +161,7 @@ class FBeta(StatScores):
             threshold=threshold,
             top_k=top_k,
             num_classes=num_classes,
-            is_multiclass=is_multiclass,
+            multiclass=multiclass,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -174,12 +181,10 @@ class FBeta(StatScores):
 
 class F1(FBeta):
     """
-    Computes F1 metric. F1 metrics correspond to a harmonic mean of the
-    precision and recall scores.
+    Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
-    Works with binary, multiclass, and multilabel data.
-    Accepts logits from a model output or integer class values in prediction.
-    Works with multi-dimensional preds and target.
+    Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
+    output or integer class values in prediction. Works with multi-dimensional preds and target.
 
     Forward accepts
 
@@ -195,16 +200,16 @@ class F1(FBeta):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -237,16 +242,15 @@ class F1(FBeta):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
 
-            Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+            Should be left at default (``None``) for all other types of inputs.
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -260,6 +264,10 @@ class F1(FBeta):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
+        multilabel:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
+
 
     Example:
         >>> from torchmetrics import F1
@@ -278,12 +286,14 @@ class F1(FBeta):
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        _deprecation_warn_arg_multilabel(multilabel)
 
         super().__init__(
             num_classes=num_classes,
@@ -293,7 +303,7 @@ class F1(FBeta):
             mdmc_average=mdmc_average,
             ignore_index=ignore_index,
             top_k=top_k,
-            is_multiclass=is_multiclass,
+            multiclass=multiclass,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,

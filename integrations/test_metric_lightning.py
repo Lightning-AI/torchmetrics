@@ -11,12 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-from pytorch_lightning import Trainer
-from torch import tensor
+from unittest import mock
 
-from integrations.lightning_models import BoringModel
-from torchmetrics import Metric
+import pytest
+import torch
+from pytorch_lightning import LightningModule, Trainer
+from torch import tensor
+from torch.utils.data import DataLoader
+
+from integrations.lightning_models import BoringModel, RandomDataset
+from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3
+from torchmetrics import Accuracy, AveragePrecision, Metric
 
 
 class SumMetric(Metric):
@@ -78,6 +83,123 @@ def test_metric_lightning(tmpdir):
         weights_summary=None,
     )
     trainer.fit(model)
+
+
+@pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_1_3, reason='test requires lightning v1.3 or higher')
+def test_metrics_reset(tmpdir):
+    """Tests that metrics are reset correctly after the end of the train/val/test epoch.
+    Taken from:
+        https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
+    """
+
+    class TestModel(LightningModule):
+
+        def __init__(self):
+            super().__init__()
+            self.layer = torch.nn.Linear(32, 1)
+
+            for stage in ['train', 'val', 'test']:
+                acc = Accuracy()
+                acc.reset = mock.Mock(side_effect=acc.reset)
+                ap = AveragePrecision(num_classes=1, pos_label=1)
+                ap.reset = mock.Mock(side_effect=ap.reset)
+                self.add_module(f"acc_{stage}", acc)
+                self.add_module(f"ap_{stage}", ap)
+
+        def forward(self, x):
+            return self.layer(x)
+
+        def _step(self, stage, batch):
+            labels = (batch.detach().sum(1) > 0).float()  # Fake some targets
+            logits = self.forward(batch)
+            loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, labels.unsqueeze(1))
+            probs = torch.sigmoid(logits.detach())
+            self.log(f"loss/{stage}", loss)
+
+            acc = self._modules[f"acc_{stage}"]
+            ap = self._modules[f"ap_{stage}"]
+
+            labels_int = labels.to(torch.long)
+            acc(probs.flatten(), labels_int)
+            ap(probs.flatten(), labels_int)
+
+            # Metric.forward calls reset so reset the mocks here
+            acc.reset.reset_mock()
+            ap.reset.reset_mock()
+
+            self.log(f"{stage}/accuracy", acc)
+            self.log(f"{stage}/ap", ap)
+
+            return loss
+
+        def training_step(self, batch, batch_idx, *args, **kwargs):
+            return self._step('train', batch)
+
+        def validation_step(self, batch, batch_idx, *args, **kwargs):
+            return self._step('val', batch)
+
+        def test_step(self, batch, batch_idx, *args, **kwargs):
+            return self._step('test', batch)
+
+        def configure_optimizers(self):
+            optimizer = torch.optim.SGD(self.layer.parameters(), lr=0.1)
+            lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
+            return [optimizer], [lr_scheduler]
+
+        def train_dataloader(self):
+            return DataLoader(RandomDataset(32, 64), batch_size=2)
+
+        def val_dataloader(self):
+            return DataLoader(RandomDataset(32, 64), batch_size=2)
+
+        def test_dataloader(self):
+            return DataLoader(RandomDataset(32, 64), batch_size=2)
+
+        def _assert_epoch_end(self, stage):
+            acc = self._modules[f"acc_{stage}"]
+            ap = self._modules[f"ap_{stage}"]
+
+            acc.reset.asset_not_called()
+            ap.reset.assert_not_called()
+
+        def train_epoch_end(self, outputs):
+            self._assert_epoch_end('train')
+
+        def validation_epoch_end(self, outputs):
+            self._assert_epoch_end('val')
+
+        def test_epoch_end(self, outputs):
+            self._assert_epoch_end('test')
+
+    def _assert_called(model, stage):
+        acc = model._modules[f"acc_{stage}"]
+        ap = model._modules[f"ap_{stage}"]
+
+        acc.reset.assert_called_once()
+        acc.reset.reset_mock()
+
+        ap.reset.assert_called_once()
+        ap.reset.reset_mock()
+
+    model = TestModel()
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=2,
+        limit_test_batches=2,
+        max_epochs=1,
+        progress_bar_refresh_rate=0,
+    )
+
+    trainer.fit(model)
+    _assert_called(model, 'train')
+    _assert_called(model, 'val')
+
+    trainer.validate(model)
+    _assert_called(model, 'val')
+
+    trainer.test(model)
+    _assert_called(model, 'test')
 
 
 # todo: reconsider if it make sense to keep here

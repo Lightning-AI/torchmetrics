@@ -21,12 +21,13 @@
 [![PyPI Status](https://badge.fury.io/py/torchmetrics.svg)](https://badge.fury.io/py/torchmetrics)
 [![PyPI Status](https://pepy.tech/badge/torchmetrics)](https://pepy.tech/project/torchmetrics)
 [![Conda](https://img.shields.io/conda/v/conda-forge/torchmetrics?label=conda&color=success)](https://anaconda.org/conda-forge/torchmetrics)
-[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/torchmetrics/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A)
+![Conda](https://img.shields.io/conda/dn/conda-forge/torchmetrics)
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PytorchLightning/metrics/blob/master/LICENSE)
 
 [![CI testing - base](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml)
 [![Build Status](https://dev.azure.com/PytorchLightning/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/PytorchLightning/Metrics/_build/latest?definitionId=3&branchName=master)
 [![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/torchmetrics/shared_invite/zt-pw5v393p-qRaDgEk24~EjiZNBpSQFgQ)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 
 ---
@@ -96,7 +97,7 @@ For the single GPU/CPU case:
 ``` python
 import torch
 # import our library
-import torchmetrics 
+import torchmetrics
 
 # initialize metric
 metric = torchmetrics.Accuracy()
@@ -109,14 +110,14 @@ for i in range(n_batches):
 
     # metric on current batch
     acc = metric(preds, target)
-    print(f"Accuracy on batch {i}: {acc}")    
+    print(f"Accuracy on batch {i}: {acc}")
 
 # metric on all batches using custom accumulation
 acc = metric.compute()
 print(f"Accuracy on all data: {acc}")
 ```
 
-Module metric usage remains the same when using multiple GPUs or multiple nodes. 
+Module metric usage remains the same when using multiple GPUs or multiple nodes.
 
 <details>
   <summary>Example using DDP</summary>
@@ -165,7 +166,7 @@ def metric_ddp(rank, world_size):
             # metric on current batch
             acc = metric(preds, target)
             if rank == 0:  # print only for rank 0
-                print(f"Accuracy on batch {i}: {acc}")    
+                print(f"Accuracy on batch {i}: {acc}")
 
         # metric on all batches and all accelerators using custom accumulation
         # accuracy is same across both accelerators
@@ -174,7 +175,7 @@ def metric_ddp(rank, world_size):
 
         # Reseting internal state such that metric ready for new data
         metric.reset()
-    
+
     # cleanup
     dist.destroy_process_group()
 
@@ -191,10 +192,13 @@ Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](ht
 and implement the following methods:
 
 ```python
+import torch
+from torchmetrics import Metric
+
 class MyAccuracy(Metric):
     def __init__(self, dist_sync_on_step=False):
         # call `self.add_state`for every internal state that is needed for the metrics computations
-	# dist_reduce_fx indicates the function that should be used to reduce 
+	# dist_reduce_fx indicates the function that should be used to reduce
 	# state from multiple processes
 	super().__init__(dist_sync_on_step=dist_sync_on_step)
 
@@ -237,7 +241,7 @@ acc = torchmetrics.functional.accuracy(preds, target)
 * [AveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#averageprecision)
 * [AUC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auc)
 * [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
-* [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1) 
+* [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1)
 * [Hamming Distance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#hamming-distance)
 * [ROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#roc)
 * [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance)
@@ -249,19 +253,19 @@ acc = torchmetrics.functional.accuracy(preds, target)
 And many more!
 
 ## Contribute!
-The lightning + torchmetric team is hard at work adding even more metrics. 
+The lightning + torchmetric team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
-Join our [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A) 
+Join our [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-pw5v393p-qRaDgEk24~EjiZNBpSQFgQ)
 to get help becoming a contributor!
 
 ## Community
-For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-f6bl2l0l-JYMK3tbAgAmGRrlNr00f1A)!
+For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-pw5v393p-qRaDgEk24~EjiZNBpSQFgQ)!
 
 ## Citations
-We’re excited to continue the strong legacy of open source software and have been inspired over the years by 
-Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai. When/if a paper is written about this, 
+We’re excited to continue the strong legacy of open source software and have been inspired over the years by
+Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai. When/if a paper is written about this,
 we’ll be happy to cite these frameworks and the corresponding authors.
 
 ## License

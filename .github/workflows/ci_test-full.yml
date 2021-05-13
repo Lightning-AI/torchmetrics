@@ -6,11 +6,13 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
     branches: [master, "release/*"]
   pull_request:
     branches: [master, "release/*"]
+    types: [opened, reopened, ready_for_review, synchronize]
 
 jobs:
   pytest:
 
     runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
@@ -18,6 +20,8 @@ jobs:
         python-version: [3.6, 3.8, 3.9]
         requires: ['minimal', 'latest']
         exclude:
+          - python-version: 3.6
+            requires: 'latest'
           - python-version: 3.9
             requires: 'minimal'
 

@@ -18,7 +18,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
-    r"""
+    """
     Computes reciprocal rank (for information retrieval), as explained
     `here <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`__.
 
@@ -34,6 +34,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
         a single-value tensor with the reciprocal rank (RR) of the predictions ``preds`` wrt the labels ``target``.
 
     Example:
+        >>> from torchmetrics.functional import retrieval_reciprocal_rank
         >>> preds = torch.tensor([0.2, 0.3, 0.5])
         >>> target = torch.tensor([False, True, False])
         >>> retrieval_reciprocal_rank(preds, target)
@@ -41,7 +42,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
-    if target.sum() == 0:
+    if not target.sum():
         return tensor(0.0, device=preds.device)
 
     target = target[torch.argsort(preds, dim=-1, descending=True)]

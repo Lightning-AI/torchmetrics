@@ -13,17 +13,19 @@
 # limitations under the License.
 import functools
 import inspect
+import operator
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
 
-from torchmetrics.utilities import apply_to_collection
+from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 class Metric(nn.Module, ABC):
@@ -59,6 +61,8 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
+    __jit_ignored_attributes__ = ["is_differentiable"]
+
     def __init__(
         self,
         compute_on_step: bool = True,
@@ -67,6 +71,12 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Callable = None,
     ):
         super().__init__()
+
+        # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
+        # torch/nn/modules/module.py#L227)
+        torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
+
+        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
@@ -79,6 +89,7 @@ class Metric(nn.Module, ABC):
         self.compute = self._wrap_compute(self.compute)
         self._computed = None
         self._forward_cache = None
+        self._update_called = False
 
         # initialize state
         self._defaults = {}
@@ -126,10 +137,7 @@ class Metric(nn.Module, ABC):
             ValueError:
                 If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``None``.
         """
-        if (
-            not isinstance(default, Tensor) and not isinstance(default, list)  # noqa: W503
-            or (isinstance(default, list) and len(default) != 0)  # noqa: W503
-        ):
+        if (not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default)):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
 
         if dist_reduce_fx == "sum":
@@ -140,6 +148,9 @@ class Metric(nn.Module, ABC):
             dist_reduce_fx = dim_zero_cat
         elif dist_reduce_fx is not None and not isinstance(dist_reduce_fx, Callable):
             raise ValueError("`dist_reduce_fx` must be callable or one of ['mean', 'sum', 'cat', None]")
+
+        if isinstance(default, Tensor):
+            default = default.contiguous()
 
         setattr(self, name, default)
 
@@ -178,6 +189,10 @@ class Metric(nn.Module, ABC):
 
     def _sync_dist(self, dist_sync_fn=gather_all_tensors):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
+        for attr, reduction_fn in self._reductions.items():
+            # pre-concatenate metric states that are lists to reduce number of all_gather operations
+            if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
+                input_dict[attr] = [dim_zero_cat(input_dict[attr])]
         output_dict = apply_to_collection(
             input_dict,
             Tensor,
@@ -201,6 +216,7 @@ class Metric(nn.Module, ABC):
         @functools.wraps(update)
         def wrapped_func(*args, **kwargs):
             self._computed = None
+            self._update_called = True
             return update(*args, **kwargs)
 
         return wrapped_func
@@ -209,6 +225,14 @@ class Metric(nn.Module, ABC):
 
         @functools.wraps(compute)
         def wrapped_func(*args, **kwargs):
+            if not self._update_called:
+                rank_zero_warn(
+                    f"The ``compute`` method of metric {self.__class__.__name__}"
+                    " was called before the ``update`` method which may lead to errors,"
+                    " as metric states have not yet been updated.",
+                    UserWarning
+                )
+
             # return cached value
             if self._computed is not None:
                 return self._computed
@@ -257,12 +281,17 @@ class Metric(nn.Module, ABC):
         """
         This method automatically resets the metric state variables to their default value.
         """
+        self._update_called = False
+        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
+        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
+            self._computed = None
+
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
             if isinstance(default, Tensor):
-                setattr(self, attr, deepcopy(default).to(current_val.device))
+                setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
-                setattr(self, attr, deepcopy(default))
+                setattr(self, attr, [])
 
     def clone(self):
         """ Make a copy of the metric """
@@ -304,7 +333,7 @@ class Metric(nn.Module, ABC):
         for key in self._persistent.keys():
             self._persistent[key] = mode
 
-    def state_dict(self, destination=None, prefix='', keep_vars=False):
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         for key in self._defaults.keys():
@@ -317,6 +346,25 @@ class Metric(nn.Module, ABC):
                         current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
                 destination[prefix + key] = current_val
         return destination
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict,
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: List[str],
+        unexpected_keys: List[str],
+        error_msgs: List[str],
+    ) -> None:
+        """ Loads metric states from state_dict """
+        for key in self._defaults.keys():
+            name = prefix + key
+            if name in state_dict:
+                setattr(self, key, state_dict.pop(name))
+        super()._load_from_state_dict(
+            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
+        )
 
     def _filter_kwargs(self, **kwargs):
         """ filter kwargs such that they match the update signature of the metric """
@@ -342,7 +390,7 @@ class Metric(nn.Module, ABC):
             val = getattr(self, key)
             # Special case: allow list values, so long
             # as their elements are hashable
-            if hasattr(val, '__iter__') and not isinstance(val, Tensor):
+            if hasattr(val, "__iter__") and not isinstance(val, Tensor):
                 hash_vals.extend(val)
             else:
                 hash_vals.append(val)
@@ -449,6 +497,15 @@ class Metric(nn.Module, ABC):
     def __pos__(self):
         return CompositionalMetric(torch.abs, self, None)
 
+    def __getitem__(self, idx):
+        return CompositionalMetric(lambda x: x[idx], self, None)
+
+    @property
+    def is_differentiable(self):
+        # There is a bug in PyTorch that leads to properties being executed during scripting
+        # To make the metric scriptable, we add property to ignore list and switch to return None here
+        return None
+
 
 def _neg(tensor: Tensor):
     return -torch.abs(tensor)
@@ -530,6 +587,6 @@ class CompositionalMetric(Metric):
 
     def __repr__(self) -> str:
         _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
-        repr_str = (self.__class__.__name__ + _op_metrics)
+        repr_str = self.__class__.__name__ + _op_metrics
 
         return repr_str

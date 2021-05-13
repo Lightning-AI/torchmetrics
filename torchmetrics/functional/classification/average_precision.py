@@ -40,6 +40,14 @@ def _average_precision_compute(
 ) -> Union[List[Tensor], Tensor]:
     # todo: `sample_weights` is unused
     precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
+    return _average_precision_compute_with_precision_recall(precision, recall, num_classes)
+
+
+def _average_precision_compute_with_precision_recall(
+    precision: Tensor,
+    recall: Tensor,
+    num_classes: int,
+) -> Union[List[Tensor], Tensor]:
     # Return the step function integral
     # The following works because the last entry of precision is
     # guaranteed to be 1, as returned by precision_recall_curve
@@ -77,15 +85,14 @@ def average_precision(
         tensor with average precision. If multiclass will return list
         of such tensors, one for each class
 
-    Example:
-        >>> # binary case
+    Example (binary case):
         >>> from torchmetrics.functional import average_precision
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> average_precision(pred, target, pos_label=1)
         tensor(1.)
 
-        >>> # multiclass case
+    Example (multiclass case):
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],

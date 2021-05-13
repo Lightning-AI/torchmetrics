@@ -5,40 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [UnReleased] - 2021-MM-DD
+## [unReleased] - 2021-MM-DD
 
 ### Added
 
-- Added `prefix` argument to `MetricCollection` ([#70](https://github.com/PyTorchLightning/metrics/pull/70))
+- Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
 
 
-- Added `CohenKappa` metric ([#69](https://github.com/PyTorchLightning/metrics/pull/69))
+- Added `add_metrics` method to `MetricCollection` for adding additional metrics after initialization ([#221](https://github.com/PyTorchLightning/metrics/pull/221))
 
 
-- Added `RetrievalMAP` metric for Information Retrieval ([#5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
+- Added pre-gather reduction in the case of `dist_reduce_fx="cat"` to reduce communication cost ([#217](https://github.com/PyTorchLightning/metrics/pull/217))
 
 
-- Added `RetrievalMRR` metric for Information Retrieval ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
+- Added better error message for `AUROC` when `num_classes` is not provided for multiclass input ([#244](https://github.com/PyTorchLightning/metrics/pull/244))
 
 
-- Added `average='micro'` as an option in AUROC for multilabel problems ([#110](https://github.com/PyTorchLightning/metrics/pull/110))
-
-
-- Added `MatthewsCorrcoef` metric ([#98](https://github.com/PyTorchLightning/metrics/pull/98))
-
-
-- Added `Hinge` metric ([#120](https://github.com/PyTorchLightning/metrics/pull/120))
-
-
-- Added multilabel support to `ROC` metric ([#114](https://github.com/PyTorchLightning/metrics/pull/114))
-
-
-- Added testing for `half` precision ([#77](https://github.com/PyTorchLightning/metrics/pull/77))
+- Added support for unnormalized scores (e.g. logits) in `Accuracy`, `Precision`, `Recall`, `FBeta`, `F1`, `StatScore`, `Hamming`, `ConfusionMatrix` metrics ([#200](https://github.com/PyTorchLightning/metrics/pull/200))
 
 
 ### Changed
-
-- Changed `ExplainedVariance` from storing all preds/targets to tracking 5 statistics ([#68](https://github.com/PyTorchLightning/metrics/pull/68))
 
 
 ### Deprecated
@@ -49,11 +35,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed when `_stable_1d_sort` to work when n >= N ([#6177](https://github.com/PyTorchLightning/pytorch-lightning/pull/6177))
+- AUC can also support more dimensional inputs when all but one dimensions are of size 1 ([#242](https://github.com/PyTorchLightning/metrics/pull/242))
+
+
+
+## [0.3.2] - 2021-05-10
+
+### Added
+
+- Added `is_differentiable` property:
+    * To `AUC`, `AUROC`, `CohenKappa` and `AveragePrecision` ([#178](https://github.com/PyTorchLightning/metrics/pull/178))
+    * To `PearsonCorrCoef`, `SpearmanCorrcoef`, `R2Score` and `ExplainedVariance` ([#225](https://github.com/PyTorchLightning/metrics/pull/225))
+
+### Changed
+
+- `MetricCollection` should return metrics with prefix on `items()`, `keys()` ([#209](https://github.com/PyTorchLightning/metrics/pull/209))
+- Calling `compute` before `update` will now give an warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
+
+### Removed
+
+- Removed `numpy` as dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
+
+### Fixed
+
+- Fixed auc calculation and add tests ([#197](https://github.com/PyTorchLightning/metrics/pull/197))
+- Fixed loading persisted metric states using `load_state_dict()` ([#202](https://github.com/PyTorchLightning/metrics/pull/202))
+- Fixed `PSNR` not working with `DDP` ([#214](https://github.com/PyTorchLightning/metrics/pull/214))
+- Fixed metric calculation with unequal batch sizes ([#220](https://github.com/PyTorchLightning/metrics/pull/220))
+- Fixed metric concatenation for list states for zero-dim input ([#229](https://github.com/PyTorchLightning/metrics/pull/229))
+- Fixed numerical instability in `AUROC` metric for large input ([#230](https://github.com/PyTorchLightning/metrics/pull/230))
+
+## [0.3.1] - 2021-04-21
+
+- Cleaning remaining inconsistency and fix PL develop integration (
+    [#191](https://github.com/PyTorchLightning/metrics/pull/191),
+    [#192](https://github.com/PyTorchLightning/metrics/pull/192),
+    [#193](https://github.com/PyTorchLightning/metrics/pull/193),
+    [#194](https://github.com/PyTorchLightning/metrics/pull/194)
+)
+
+
+## [0.3.0] - 2021-04-20
+
+### Added
+
+- Added `BootStrapper` to easily calculate confidence intervals for metrics ([#101](https://github.com/PyTorchLightning/metrics/pull/101))
+- Added Binned metrics  ([#128](https://github.com/PyTorchLightning/metrics/pull/128))
+- Added metrics for Information Retrieval ([(PL^5032)](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032)):
+    * Added `RetrievalMAP` ([PL^5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
+    * Added `RetrievalMRR` ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
+    * Added `RetrievalPrecision` ([#139](https://github.com/PyTorchLightning/metrics/pull/139))
+    * Added `RetrievalRecall` ([#146](https://github.com/PyTorchLightning/metrics/pull/146))
+    * Added `RetrievalNormalizedDCG` ([#160](https://github.com/PyTorchLightning/metrics/pull/160))
+    * Added `RetrievalFallOut` ([#161](https://github.com/PyTorchLightning/metrics/pull/161))
+- Added other metrics:
+    * Added `CohenKappa` ([#69](https://github.com/PyTorchLightning/metrics/pull/69))
+    * Added `MatthewsCorrcoef` ([#98](https://github.com/PyTorchLightning/metrics/pull/98))
+    * Added `PearsonCorrcoef` ([#157](https://github.com/PyTorchLightning/metrics/pull/157))
+    * Added `SpearmanCorrcoef` ([#158](https://github.com/PyTorchLightning/metrics/pull/158))
+    * Added `Hinge` ([#120](https://github.com/PyTorchLightning/metrics/pull/120))
+- Added `average='micro'` as an option in AUROC for multilabel problems ([#110](https://github.com/PyTorchLightning/metrics/pull/110))
+- Added multilabel support to `ROC` metric ([#114](https://github.com/PyTorchLightning/metrics/pull/114))
+- Added testing for `half` precision ([#77](https://github.com/PyTorchLightning/metrics/pull/77),
+    [#135](https://github.com/PyTorchLightning/metrics/pull/135)
+)
+- Added `AverageMeter` for ad-hoc averages of values ([#138](https://github.com/PyTorchLightning/metrics/pull/138))
+- Added `prefix` argument to `MetricCollection` ([#70](https://github.com/PyTorchLightning/metrics/pull/70))
+- Added `__getitem__` as metric arithmetic operation ([#142](https://github.com/PyTorchLightning/metrics/pull/142))
+- Added property `is_differentiable` to metrics and test for differentiability ([#154](https://github.com/PyTorchLightning/metrics/pull/154))
+- Added support for `average`, `ignore_index` and `mdmc_average` in `Accuracy` metric ([#166](https://github.com/PyTorchLightning/metrics/pull/166))
+- Added `postfix` arg to `MetricCollection` ([#188](https://github.com/PyTorchLightning/metrics/pull/188))
+
+### Changed
+
+- Changed `ExplainedVariance` from storing all preds/targets to tracking 5 statistics ([#68](https://github.com/PyTorchLightning/metrics/pull/68))
+- Changed behaviour of `confusionmatrix` for multilabel data to better match `multilabel_confusion_matrix` from sklearn ([#134](https://github.com/PyTorchLightning/metrics/pull/134))
+- Updated FBeta arguments ([#111](https://github.com/PyTorchLightning/metrics/pull/111))
+- Changed `reset` method to use `detach.clone()` instead of `deepcopy` when resetting to default ([#163](https://github.com/PyTorchLightning/metrics/pull/163))
+- Metrics passed as dict to `MetricCollection` will now always be in deterministic order ([#173](https://github.com/PyTorchLightning/metrics/pull/173))
+- Allowed `MetricCollection` pass metrics as arguments ([#176](https://github.com/PyTorchLightning/metrics/pull/176))
+
+### Deprecated
+
+- Rename argument `is_multiclass` -> `multiclass` ([#162](https://github.com/PyTorchLightning/metrics/pull/162))
+
+### Removed
+
+- Prune remaining deprecated ([#92](https://github.com/PyTorchLightning/metrics/pull/92))
+
+### Fixed
+
+- Fixed when `_stable_1d_sort` to work when `n>=N` ([PL^6177](https://github.com/PyTorchLightning/pytorch-lightning/pull/6177))
+- Fixed `_computed` attribute not being correctly reset ([#147](https://github.com/PyTorchLightning/metrics/pull/147))
+- Fixed to Blau score ([#165](https://github.com/PyTorchLightning/metrics/pull/165))
+- Fixed backwards compatibility for logging with older version of pytorch-lightning ([#182](https://github.com/PyTorchLightning/metrics/pull/182))
 
 
 ## [0.2.0] - 2021-03-12
-
 
 ### Changed
 

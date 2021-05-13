@@ -18,10 +18,11 @@ from torch import Tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-def _safe_divide(num: torch.Tensor, denom: torch.Tensor):
+def _safe_divide(num: Tensor, denom: Tensor):
     """ prevent zero division """
     denom[denom == 0.] = 1
     return num / denom
@@ -80,7 +81,8 @@ def fbeta(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
+    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes f_beta metric.
@@ -90,11 +92,11 @@ def fbeta(
         {(\beta^2 * \text{precision}) + \text{recall}}
 
     Works with binary, multiclass, and multilabel data.
-    Accepts probabilities from a model output or integer class values in prediction.
+    Accepts probabilities or logits from a model output or integer class values in prediction.
     Works with multi-dimensional preds and target.
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
+    to convert into integer labels. This is the case for binary and multi-label logits or probabilities.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
@@ -103,16 +105,16 @@ def fbeta(
     multi-dimensional multi-class case. Accepts all inputs listed in :ref:`references/modules:input types`.
 
     Args:
-        preds: Predictions from model (probabilities or labels)
+        preds: Predictions from model (probabilities, logits or labels)
         target: Ground truth values
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-                - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+                - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
                 - ``'macro'``: Calculate the metric for each class separately, and average the
-                  metrics accross classes (with equal weights for each class).
+                  metrics across classes (with equal weights for each class).
                 - ``'weighted'``: Calculate the metric for each class separately, and average the
-                  metrics accross classes, weighting each class by its support (``tp + fn``).
+                  metrics across classes, weighting each class by its support (``tp + fn``).
                 - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
                   the metric for every class.
                 - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -144,18 +146,22 @@ def fbeta(
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1. Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
+
+            Should be left at default (``None``) for all other types of inputs.
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        multilabel:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -172,6 +178,8 @@ def fbeta(
         tensor(0.3333)
 
     """
+    _deprecation_warn_arg_multilabel(multilabel)
+
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -195,7 +203,7 @@ def fbeta(
         threshold=threshold,
         num_classes=num_classes,
         top_k=top_k,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
 
@@ -212,18 +220,19 @@ def f1(
     num_classes: Optional[int] = None,
     threshold: float = 0.5,
     top_k: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
+    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """
     Computes F1 metric. F1 metrics correspond to a equally weighted average of the
     precision and recall scores.
 
     Works with binary, multiclass, and multilabel data.
-    Accepts probabilities from a model output or integer class values in prediction.
+    Accepts probabilities or logits from a model output or integer class values in prediction.
     Works with multi-dimensional preds and target.
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
+    to convert into integer labels. This is the case for binary and multi-label probabilities or logits.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
@@ -232,16 +241,16 @@ def f1(
     multi-dimensional multi-class case. Accepts all inputs listed in :ref:`references/modules:input types`.
 
     Args:
-        preds: Predictions from model (probabilities or labels)
+        preds: Predictions from model (probabilities, logits or labels)
         target: Ground truth values
         average:
             Defines the reduction that is applied. Should be one of the following:
 
-            - ``'micro'`` [default]: Calculate the metric globally, accross all samples and classes.
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
             - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics accross classes (with equal weights for each class).
+              metrics across classes (with equal weights for each class).
             - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics accross classes, weighting each class by its support (``tp + fn``).
+              metrics across classes, weighting each class by its support (``tp + fn``).
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
@@ -277,20 +286,23 @@ def f1(
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
 
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
 
-            Should be left unset (``None``) for inputs with label predictions.
-        is_multiclass:
+            Should be left at default (``None``) for all other types of inputs.
+
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        multilabel:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -306,4 +318,5 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, is_multiclass)
+    _deprecation_warn_arg_multilabel(multilabel)
+    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)

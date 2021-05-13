@@ -203,8 +203,7 @@ def precision_recall_curve(
             If the number of classes deduced from ``preds`` is not the same as the
             ``num_classes`` provided.
 
-    Example:
-        >>> # binary case
+    Example (binary case):
         >>> from torchmetrics.functional import precision_recall_curve
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 0])
@@ -216,7 +215,7 @@ def precision_recall_curve(
         >>> thresholds
         tensor([1, 2, 3])
 
-        >>> # multiclass case
+    Example (multiclass case):
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],

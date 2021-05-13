@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 import pytest
@@ -37,35 +37,41 @@ NUM_CLASSES = 5
 EXTRA_DIM = 3
 THRESHOLD = 0.5
 
+MAX_PORT = 8100
+START_PORT = 8088
+CURRENT_PORT = START_PORT
+
 
 def setup_ddp(rank, world_size):
     """ Setup ddp environment """
+    global CURRENT_PORT
+
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "8088"
+    os.environ["MASTER_PORT"] = str(CURRENT_PORT)
+
+    CURRENT_PORT += 1
+    if CURRENT_PORT > MAX_PORT:
+        CURRENT_PORT = START_PORT
 
     if torch.distributed.is_available() and sys.platform not in ("win32", "cygwin"):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
 def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
-    """ Utility function for recursively asserting that two results are within
-        a certain tolerance
-    """
+    """Utility function for recursively asserting that two results are within a certain tolerance """
     # single output compare
     if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.numpy(), sk_result, atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, (tuple, list)):
         for pl_res, sk_res in zip(pl_result, sk_result):
             _assert_allclose(pl_res, sk_res, atol=atol)
     else:
-        raise ValueError('Unknown format for comparison')
+        raise ValueError("Unknown format for comparison")
 
 
 def _assert_tensor(pl_result):
-    """ Utility function for recursively checking that some input only consist of
-        torch tensors
-    """
+    """ Utility function for recursively checking that some input only consists of torch tensors """
     if isinstance(pl_result, (list, tuple)):
         for plr in pl_result:
             _assert_tensor(plr)
@@ -85,6 +91,10 @@ def _class_test(
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
+    device: str = 'cpu',
+    fragment_kwargs: bool = False,
+    check_scriptable: bool = True,
+    **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric
     and reference metric.
@@ -103,38 +113,68 @@ def _class_test(
             calculated per batch per device (and not just at the end)
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
+        device: determine which device to run on, either 'cuda' or 'cpu'
+        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+        kwargs_update: Additional keyword arguments that will be passed with preds and
+            target when running update on the metric.
     """
     if not metric_args:
         metric_args = {}
+
     # Instanciate lightning metric
     metric = metric_class(
         compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
     )
+
+    # check that the metric is scriptable
+    if check_scriptable:
+        torch.jit.script(metric)
+
+    # move to device
+    metric = metric.to(device)
+    preds = preds.to(device)
+    target = target.to(device)
+    kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
     metric = pickle.loads(pickled_metric)
 
     for i in range(rank, NUM_BATCHES, worldsize):
-        batch_result = metric(preds[i], target[i])
+        batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+
+        batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)])
-            ddp_target = torch.cat([target[i + r] for r in range(worldsize)])
-            sk_batch_result = sk_metric(ddp_preds, ddp_target)
+            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
+            ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
+            ddp_kwargs_upd = {
+                k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
+                for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
+            }
+
+            sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
+
         elif check_batch and not metric.dist_sync_on_step:
-            # assert for batch
-            sk_batch_result = sk_metric(preds[i], target[i])
+            batch_kwargs_update = {
+                k: v.cpu() if isinstance(v, Tensor) else v
+                for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
+            }
+            sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check on all batches on all ranks
     result = metric.compute()
     _assert_tensor(result)
 
-    total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)])
-    total_target = torch.cat([target[i] for i in range(NUM_BATCHES)])
-    sk_result = sk_metric(total_preds, total_target)
+    total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)]).cpu()
+    total_target = torch.cat([target[i] for i in range(NUM_BATCHES)]).cpu()
+    total_kwargs_update = {
+        k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
+        for k, v in kwargs_update.items()
+    }
+    sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
     _assert_allclose(result, sk_result, atol=atol)
@@ -147,6 +187,9 @@ def _functional_test(
     sk_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
+    device: str = 'cpu',
+    fragment_kwargs: bool = False,
+    **kwargs_update,
 ):
     """Utility function doing the actual comparison between lightning functional metric
     and reference metric.
@@ -157,14 +200,29 @@ def _functional_test(
         metric_functional: lightning metric functional that should be tested
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
+        device: determine which device to run on, either 'cuda' or 'cpu'
+        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+        kwargs_update: Additional keyword arguments that will be passed with preds and
+            target when running update on the metric.
     """
     if not metric_args:
         metric_args = {}
+
     metric = partial(metric_functional, **metric_args)
 
+    # move to device
+    preds = preds.to(device)
+    target = target.to(device)
+    kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+
     for i in range(NUM_BATCHES):
-        lightning_result = metric(preds[i], target[i])
-        sk_result = sk_metric(preds[i], target[i])
+        extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+        lightning_result = metric(preds[i], target[i], **extra_kwargs)
+        extra_kwargs = {
+            k: v.cpu() if isinstance(v, Tensor) else v
+            for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
+        }
+        sk_result = sk_metric(preds[i].cpu(), target[i].cpu(), **extra_kwargs)
 
         # assert its the same
         _assert_allclose(lightning_result, sk_result, atol=atol)
@@ -173,9 +231,10 @@ def _functional_test(
 def _assert_half_support(
     metric_module: Metric,
     metric_functional: Callable,
-    preds: torch.Tensor,
-    target: torch.Tensor,
-    device: str = 'cpu',
+    preds: Tensor,
+    target: Tensor,
+    device: str = "cpu",
+    **kwargs_update
 ):
     """
     Test if an metric can be used with half precision tensors
@@ -186,12 +245,18 @@ def _assert_half_support(
         preds: torch tensor with predictions
         target: torch tensor with targets
         device: determine device, either "cpu" or "cuda"
+        kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
     """
     y_hat = preds[0].half().to(device) if preds[0].is_floating_point() else preds[0].to(device)
     y = target[0].half().to(device) if target[0].is_floating_point() else target[0].to(device)
+    kwargs_update = {
+        k: (v[0].half() if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
+        for k, v in kwargs_update.items()
+    }
     metric_module = metric_module.to(device)
-    _assert_tensor(metric_module(y_hat, y))
-    _assert_tensor(metric_functional(y_hat, y))
+    _assert_tensor(metric_module(y_hat, y, **kwargs_update))
+    _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
 class MetricTester:
@@ -227,6 +292,8 @@ class MetricTester:
         metric_functional: Callable,
         sk_metric: Callable,
         metric_args: dict = None,
+        fragment_kwargs: bool = False,
+        **kwargs_update,
     ):
         """Main method that should be used for testing functions. Call this inside
         testing method
@@ -237,7 +304,12 @@ class MetricTester:
             metric_functional: lightning metric class that should be tested
             sk_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
+            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
+        device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
+
         _functional_test(
             preds=preds,
             target=target,
@@ -245,6 +317,9 @@ class MetricTester:
             sk_metric=sk_metric,
             metric_args=metric_args,
             atol=self.atol,
+            device=device,
+            fragment_kwargs=fragment_kwargs,
+            **kwargs_update,
         )
 
     def run_class_metric_test(
@@ -258,6 +333,9 @@ class MetricTester:
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
+        fragment_kwargs: bool = False,
+        check_scriptable: bool = True,
+        **kwargs_update,
     ):
         """Main method that should be used for testing class. Call this inside testing
         methods.
@@ -275,6 +353,9 @@ class MetricTester:
                 calculated per batch per device (and not just at the end)
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
+            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
         if not metric_args:
             metric_args = {}
@@ -294,13 +375,18 @@ class MetricTester:
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
                     atol=self.atol,
+                    fragment_kwargs=fragment_kwargs,
+                    check_scriptable=check_scriptable,
+                    **kwargs_update,
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
         else:
+            device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
+
             _class_test(
-                0,
-                1,
+                rank=0,
+                worldsize=1,
                 preds=preds,
                 target=target,
                 metric_class=metric_class,
@@ -310,47 +396,100 @@ class MetricTester:
                 check_dist_sync_on_step=check_dist_sync_on_step,
                 check_batch=check_batch,
                 atol=self.atol,
+                device=device,
+                fragment_kwargs=fragment_kwargs,
+                check_scriptable=check_scriptable,
+                **kwargs_update,
             )
 
     def run_precision_test_cpu(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {}
+        metric_args: dict = None,
+        **kwargs_update,
     ):
-        """ Test if an metric can be used with half precision tensors on cpu
+        """Test if a metric can be used with half precision tensors on cpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
+        metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cpu'
+            metric_module(**metric_args), 
+            partial(metric_functional, **metric_args), 
+            preds, target, device="cpu", **kwargs_update
         )
 
     def run_precision_test_gpu(
         self,
-        preds: torch.Tensor,
-        target: torch.Tensor,
+        preds: Tensor,
+        target: Tensor,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = {}
+        metric_args: dict = None,
+        **kwargs_update,
     ):
-        """ Test if an metric can be used with half precision tensors on gpu
+        """Test if a metric can be used with half precision tensors on gpu
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
+            kwargs_update: Additional keyword arguments that will be passed with preds and
+                target when running update on the metric.
         """
+        metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), partial(metric_functional, **metric_args), preds, target, device='cuda'
+            metric_module(**metric_args), 
+            partial(metric_functional, **metric_args),
+            preds, target, device="cuda", **kwargs_update
         )
+
+    def run_differentiability_test(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        metric_module: Metric,
+        metric_functional: Callable,
+        metric_args: dict = None,
+    ):
+        """Test if a metric is differentiable or not
+
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_args: dict with additional arguments used for class initialization
+        """
+        metric_args = metric_args or {}
+        # only floating point tensors can require grad
+        metric = metric_module(**metric_args)
+        if preds.is_floating_point():
+            preds.requires_grad = True
+            out = metric(preds[0], target[0])
+            # metrics can return list of values
+            if isinstance(out, list):
+                assert all(metric.is_differentiable == o.requires_grad for o in out)
+            else:
+                assert metric.is_differentiable == out.requires_grad
+
+            if metric.is_differentiable:
+                # check for numerical correctness
+                assert torch.autograd.gradcheck(
+                    partial(metric_functional, **metric_args), (preds[0].double(), target[0])
+                )
+
+            # reset as else it will carry over to other tests
+            preds.requires_grad = False
 
 
 class DummyMetric(Metric):

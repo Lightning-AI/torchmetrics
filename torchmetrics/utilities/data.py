@@ -21,16 +21,17 @@ from torchmetrics.utilities.prints import rank_zero_warn
 METRIC_EPS = 1e-6
 
 
-def dim_zero_cat(x):
+def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     x = x if isinstance(x, (list, tuple)) else [x]
+    x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
     return torch.cat(x, dim=0)
 
 
-def dim_zero_sum(x):
+def dim_zero_sum(x: Tensor) -> Tensor:
     return torch.sum(x, dim=0)
 
 
-def dim_zero_mean(x):
+def dim_zero_mean(x: Tensor) -> Tensor:
     return torch.mean(x, dim=0)
 
 
@@ -150,35 +151,6 @@ def get_num_classes(
     return num_classes
 
 
-def _stable_1d_sort(x: torch, nb: int = 2049):
-    """
-    Stable sort of 1d tensors. Pytorch defaults to a stable sorting algorithm
-    if number of elements are larger than 2048. This function pads the tensors,
-    makes the sort and returns the sorted array (with the padding removed)
-    See this discussion: https://discuss.pytorch.org/t/is-torch-sort-stable/20714
-
-    Raises:
-        ValueError:
-            If dim of ``x`` is greater than 1 since stable sort works with only 1d tensors.
-
-    Example:
-        >>> data = torch.tensor([8, 7, 2, 6, 4, 5, 3, 1, 9, 0])
-        >>> _stable_1d_sort(data)
-        (tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), tensor([9, 7, 2, 6, 4, 5, 3, 1, 0, 8]))
-        >>> _stable_1d_sort(data, nb=5)
-        (tensor([0, 1, 2, 3, 4]), tensor([9, 7, 2, 6, 4]))
-    """
-    if x.ndim > 1:
-        raise ValueError('Stable sort only works on 1d tensors')
-    n = x.numel()
-    if n < nb:
-        x_max = x.max()
-        x = torch.cat([x, (x_max + 1) * torch.ones(nb - n, dtype=x.dtype, device=x.device)], 0)
-    x_sort = x.sort()
-    i = min(nb, n)
-    return x_sort.values[:i], x_sort.indices[:i]
-
-
 def apply_to_collection(
     data: Any,
     dtype: Union[type, tuple],
@@ -230,30 +202,29 @@ def apply_to_collection(
     return data
 
 
-def get_group_indexes(idx: Tensor) -> List[Tensor]:
+def get_group_indexes(indexes: Tensor) -> List[Tensor]:
     """
-    Given an integer `torch.Tensor` `idx`, return a `torch.Tensor` of indexes for
-    each different value in `idx`.
+    Given an integer `torch.Tensor` `indexes`, return a `torch.Tensor` of indexes for
+    each different value in `indexes`.
 
     Args:
-        idx: a `torch.Tensor` of integers
+        indexes: a `torch.Tensor`
 
     Return:
         A list of integer `torch.Tensor`s
 
     Example:
-
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
-        >>> groups = get_group_indexes(indexes)
-        >>> groups
+        >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
     """
 
-    indexes = dict()
-    for i, _id in enumerate(idx):
+    res = dict()
+    for i, _id in enumerate(indexes):
         _id = _id.item()
-        if _id in indexes:
-            indexes[_id] += [i]
+        if _id in res:
+            res[_id] += [i]
         else:
-            indexes[_id] = [i]
-    return [tensor(x, dtype=torch.int64) for x in indexes.values()]
+            res[_id] = [i]
+
+    return [tensor(x, dtype=torch.long) for x in res.values()]

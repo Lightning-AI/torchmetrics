@@ -90,3 +90,7 @@ class MeanSquaredLogError(Metric):
         Compute mean squared logarithmic error over state.
         """
         return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)
+
+    @property
+    def is_differentiable(self):
+        return True

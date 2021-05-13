@@ -22,6 +22,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class PrecisionRecallCurve(Metric):
@@ -52,8 +53,7 @@ class PrecisionRecallCurve(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
-    Example:
-        >>> # binary case
+    Example (binary case):
         >>> from torchmetrics import PrecisionRecallCurve
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 0])
@@ -66,7 +66,7 @@ class PrecisionRecallCurve(Metric):
         >>> thresholds
         tensor([1, 2, 3])
 
-        >>> # multiclass case
+    Example (multiclass case):
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
@@ -101,8 +101,8 @@ class PrecisionRecallCurve(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             'Metric `PrecisionRecallCurve` will save all targets and predictions in buffer.'
@@ -143,6 +143,6 @@ class PrecisionRecallCurve(Metric):
             thresholds:
                 Thresholds used for computing precision/recall scores
         """
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         return _precision_recall_curve_compute(preds, target, self.num_classes, self.pos_label)

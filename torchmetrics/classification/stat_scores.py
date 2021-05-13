@@ -13,12 +13,12 @@
 # limitations under the License.
 from typing import Any, Callable, Optional, Tuple
 
-import numpy as np
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
@@ -35,16 +35,15 @@ class StatScores(Metric):
 
     Args:
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0 or 1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
 
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
 
-            Should be left unset (``None``) for inputs with label predictions.
+            Should be left at default (``None``) for all other types of inputs.
 
         reduce:
             Defines the reduction that is applied. Should be one of the following:
@@ -86,10 +85,10 @@ class StatScores(Metric):
               flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
 
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
 
         compute_on_step:
@@ -103,6 +102,9 @@ class StatScores(Metric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
+        is_multiclass:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Raises:
         ValueError:
@@ -140,12 +142,15 @@ class StatScores(Metric):
         num_classes: Optional[int] = None,
         ignore_index: Optional[int] = None,
         mdmc_reduce: Optional[str] = None,
-        is_multiclass: Optional[bool] = None,
+        multiclass: Optional[bool] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
+        multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
+
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -157,7 +162,7 @@ class StatScores(Metric):
         self.mdmc_reduce = mdmc_reduce
         self.num_classes = num_classes
         self.threshold = threshold
-        self.is_multiclass = is_multiclass
+        self.multiclass = multiclass
         self.ignore_index = ignore_index
         self.top_k = top_k
 
@@ -194,7 +199,7 @@ class StatScores(Metric):
         on input types.
 
         Args:
-            preds: Predictions from model (probabilities or labels)
+            preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth values
         """
 
@@ -206,7 +211,7 @@ class StatScores(Metric):
             threshold=self.threshold,
             num_classes=self.num_classes,
             top_k=self.top_k,
-            is_multiclass=self.is_multiclass,
+            multiclass=self.multiclass,
             ignore_index=self.ignore_index,
         )
 
@@ -333,7 +338,7 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, tensor(np.nan, device=scores.device), scores)
+        scores = torch.where(ignore_mask, tensor(float('nan'), device=scores.device), scores)
     else:
         scores = scores.sum()
 

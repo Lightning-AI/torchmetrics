@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
@@ -21,32 +20,30 @@ from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 class RetrievalMRR(RetrievalMetric):
     """
     Computes `Mean Reciprocal Rank
-    <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`_.
+    <https://en.wikipedia.org/wiki/Mean_reciprocal_rank>`__.
 
     Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts
 
-    - ``indexes`` (long tensor): ``(N, ...)``
     - ``preds`` (float tensor): ``(N, ...)``
     - ``target`` (long or bool tensor): ``(N, ...)``
+    - ``indexes`` (long tensor): ``(N, ...)``
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then MRR will be computed as the mean
-    of the Reciprocal Rank over each query.
+    Predictions will be first grouped by ``indexes`` and then `MRR` will be computed as the mean
+    of the `Reciprocal Rank` over each query.
 
     Args:
-        query_without_relevant_docs:
+        empty_target_action:
             Specify what to do with queries that do not have at least a positive ``target``. Choose from:
 
-            - ``'skip'``: skip those queries (default); if all queries are skipped, ``0.0`` is returned
+            - ``'neg'``: those queries count as ``0.0`` (default)
+            - ``'pos'``: those queries count as ``1.0``
+            - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
-            - ``'pos'``: score on those queries is counted as ``1.0``
-            - ``'neg'``: score on those queries is counted as ``0.0``
 
-        exclude:
-            Do not take into account predictions where the ``target`` is equal to this value. default `-100`
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -61,14 +58,13 @@ class RetrievalMRR(RetrievalMetric):
 
     Example:
         >>> from torchmetrics import RetrievalMRR
-        >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
-        >>> preds = torch.tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
-        >>> target = torch.tensor([False, False, True, False, True, False, True])
+        >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
+        >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
+        >>> target = tensor([False, False, True, False, True, False, True])
         >>> mrr = RetrievalMRR()
-        >>> mrr(indexes, preds, target)
+        >>> mrr(preds, target, indexes=indexes)
         tensor(0.7500)
     """
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        valid_indexes = (target != self.exclude)
-        return retrieval_reciprocal_rank(preds[valid_indexes], target[valid_indexes])
+        return retrieval_reciprocal_rank(preds, target)

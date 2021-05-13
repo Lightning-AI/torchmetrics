@@ -18,7 +18,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
-    r"""
+    """
     Computes average precision (for information retrieval), as explained
     `here <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`__.
 
@@ -31,17 +31,18 @@ def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth about each document being relevant or not.
 
     Return:
-        a single-value tensor with the average precision (AP) of the predictions ``preds`` wrt the labels ``target``.
+        a single-value tensor with the average precision (AP) of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Example:
-        >>> preds = torch.tensor([0.2, 0.3, 0.5])
-        >>> target = torch.tensor([True, False, True])
+        >>> from torchmetrics.functional import retrieval_average_precision
+        >>> preds = tensor([0.2, 0.3, 0.5])
+        >>> target = tensor([True, False, True])
         >>> retrieval_average_precision(preds, target)
         tensor(0.8333)
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
-    if target.sum() == 0:
+    if not target.sum():
         return tensor(0.0, device=preds.device)
 
     target = target[torch.argsort(preds, dim=-1, descending=True)]

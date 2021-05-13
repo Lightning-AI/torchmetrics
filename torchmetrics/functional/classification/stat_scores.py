@@ -16,6 +16,7 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass
 from torchmetrics.utilities.checks import _input_format_classification
 
 
@@ -82,12 +83,12 @@ def _stat_scores_update(
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
     threshold: float = 0.5,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
 
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=threshold, num_classes=num_classes, is_multiclass=is_multiclass, top_k=top_k
+        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
     )
 
     if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
@@ -145,8 +146,9 @@ def stat_scores(
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
     threshold: float = 0.5,
-    is_multiclass: Optional[bool] = None,
+    multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
@@ -157,19 +159,18 @@ def stat_scores(
     multi-dimensional multi-class case. Accepts all inputs listed in :ref:`references/modules:input types`.
 
     Args:
-        preds: Predictions from model (probabilities or labels)
+        preds: Predictions from model (probabilities, logits or labels)
         target: Ground truth values
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0 or 1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
 
         top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
 
-            Should be left unset (``None``) for inputs with label predictions.
+            Should be left at default (``None``) for all other types of inputs.
 
         reduce:
             Defines the reduction that is applied. Should be one of the following:
@@ -211,11 +212,14 @@ def stat_scores(
               flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
 
-        is_multiclass:
+        multiclass:
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the is_multiclass parameter>`
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
+        is_multiclass:
+            .. deprecated:: 0.3
+                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -271,6 +275,7 @@ def stat_scores(
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
     """
+    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
 
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")
@@ -292,7 +297,7 @@ def stat_scores(
         top_k=top_k,
         threshold=threshold,
         num_classes=num_classes,
-        is_multiclass=is_multiclass,
+        multiclass=multiclass,
         ignore_index=ignore_index,
     )
     return _stat_scores_compute(tp, fp, tn, fn)
