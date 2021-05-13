@@ -48,18 +48,7 @@ jobs:
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
       run: |
-        import re, sys
-        torch_lut = {'3.8': '1.4', '3.9': '1.7.1'}
-        py_ver = f'{sys.version_info.major}.{sys.version_info.minor}'
-        if py_ver in torch_lut:
-            fpath='requirements.txt'
-            req = re.sub(r'torch>=[\d\.]+', f'torch>={torch_lut[py_ver]}', open(fpath).read())
-            open(fpath, 'w').write(req)
-
-        for fpath in ('requirements.txt', 'requirements/test.txt', 'requirements/integrate.txt'):
-            req = open(fpath).read().replace('>=', '==')
-            open(fpath, 'w').write(req)
-      shell: python
+        python .github/set-minimal-versions.py
 
     # Note: This uses an internal pip API and may not always work
     # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
