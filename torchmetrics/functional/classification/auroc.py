@@ -85,6 +85,8 @@ def _auroc_compute(
             fpr = [o[0] for o in output]
             tpr = [o[1] for o in output]
     else:
+        if mode != 'binary' and num_classes is None:
+            raise ValueError('Detected input to ``multiclass`` but you did not provide ``num_classes`` argument')
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
