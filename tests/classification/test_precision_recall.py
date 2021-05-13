@@ -301,7 +301,7 @@ class TestPrecisionRecall(MetricTester):
                 "mdmc_average": mdmc_average,
             },
         )
-    
+
     def test_precision_recall_half_cpu(self, preds, target, sk_wrapper, metric_class, metric_fn,
                                        sk_fn, multiclass, num_classes, average, mdmc_average, ignore_index):
         if num_classes == 1 and average != "micro":

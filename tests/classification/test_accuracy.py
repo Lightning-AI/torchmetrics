@@ -108,7 +108,7 @@ class TestAccuracies(MetricTester):
                 "subset_accuracy": subset_accuracy
             },
         )
-        
+
     def test_accuracy_half_cpu(self, preds, target, subset_accuracy):
         self.run_precision_test_cpu(preds, target, Accuracy, accuracy,
                                     {"threshold": THRESHOLD, "subset_accuracy": subset_accuracy})

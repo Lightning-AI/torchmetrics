@@ -245,16 +245,18 @@ class TestStatScores(MetricTester):
                 "top_k": top_k,
             },
         )
-        
+
     def test_stat_scores_half_cpu(self, sk_fn, preds, target, reduce, mdmc_reduce, num_classes,
                                   multiclass, ignore_index, top_k):
         if ignore_index is not None and preds.ndim == 2:
             pytest.skip("Skipping ignore_index test with binary inputs.")
 
-        self.run_precision_test_cpu(preds, target, StatScores, stat_scores,
-                                    metric_args={"num_classes": num_classes, "reduce": reduce, "mdmc_reduce": mdmc_reduce,
-                                                 "threshold": THRESHOLD, "multiclass": multiclass, "ignore_index": ignore_index,
-                                                 "top_k": top_k})
+        self.run_precision_test_cpu(
+            preds, target, StatScores, stat_scores,
+            metric_args={"num_classes": num_classes, "reduce": reduce, "mdmc_reduce": mdmc_reduce,
+                         "threshold": THRESHOLD, "multiclass": multiclass, "ignore_index": ignore_index,
+                         "top_k": top_k}
+        )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_stat_scores_half_gpu(self, sk_fn, preds, target, reduce, mdmc_reduce, num_classes,
@@ -262,10 +264,12 @@ class TestStatScores(MetricTester):
         if ignore_index is not None and preds.ndim == 2:
             pytest.skip("Skipping ignore_index test with binary inputs.")
 
-        self.run_precision_test_gpu(preds, target, StatScores, stat_scores,
-                                    metric_args={"num_classes": num_classes, "reduce": reduce, "mdmc_reduce": mdmc_reduce,
-                                                 "threshold": THRESHOLD, "multiclass": multiclass, "ignore_index": ignore_index,
-                                                 "top_k": top_k})
+        self.run_precision_test_gpu(
+            preds, target, StatScores, stat_scores,
+            metric_args={"num_classes": num_classes, "reduce": reduce, "mdmc_reduce": mdmc_reduce,
+                         "threshold": THRESHOLD, "multiclass": multiclass, "ignore_index": ignore_index,
+                         "top_k": top_k}
+        )
 
 
 _mc_k_target = tensor([0, 1, 2])

@@ -311,7 +311,7 @@ class TestFBeta(MetricTester):
 
         if average == "weighted" and ignore_index is not None and mdmc_average is not None:
             pytest.skip("Ignore special case where we are ignoring entire sample for 'weighted' average")
-        
+
         self.run_precision_test_cpu(preds, target, metric_class, metric_fn,
                                     {"num_classes": num_classes, "average": average, "threshold": THRESHOLD,
                                      "multiclass": multiclass, "ignore_index": ignore_index,
@@ -327,7 +327,7 @@ class TestFBeta(MetricTester):
 
         if average == "weighted" and ignore_index is not None and mdmc_average is not None:
             pytest.skip("Ignore special case where we are ignoring entire sample for 'weighted' average")
-        
+
         self.run_precision_test_gpu(preds, target, metric_class, metric_fn,
                                     {"num_classes": num_classes, "average": average, "threshold": THRESHOLD,
                                      "multiclass": multiclass, "ignore_index": ignore_index,

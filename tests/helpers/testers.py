@@ -423,8 +423,8 @@ class MetricTester:
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), 
-            partial(metric_functional, **metric_args), 
+            metric_module(**metric_args),
+            partial(metric_functional, **metric_args),
             preds, target, device="cpu", **kwargs_update
         )
 
@@ -449,7 +449,7 @@ class MetricTester:
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), 
+            metric_module(**metric_args),
             partial(metric_functional, **metric_args),
             preds, target, device="cuda", **kwargs_update
         )
