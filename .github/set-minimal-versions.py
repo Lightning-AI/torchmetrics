@@ -1,7 +1,6 @@
 import re
 import sys
 
-
 LUT_PYTHON_TORCH = {
     '3.8': '1.4',
     '3.9': '1.7.1',
