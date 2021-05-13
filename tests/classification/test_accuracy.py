@@ -15,9 +15,9 @@ from functools import partial
 
 import numpy as np
 import pytest
+import torch
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
-import torch
 
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
