@@ -19,10 +19,13 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _mean_squared_error_update(preds: Tensor, target: Tensor, squared: bool = True) -> Tuple[Tensor, int]:
     _check_same_shape(preds, target)
     diff = preds - target
-    sum_squared_error = torch.sum(diff * diff)
+    squared_error = diff * diff
+    if not squared:
+        squared_error = squared_error ** 0.5
+    sum_squared_error = torch.sum(squared_error)
     n_obs = target.numel()
     return sum_squared_error, n_obs
 
@@ -31,13 +34,14 @@ def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int) -> Tensor
     return sum_squared_error / n_obs
 
 
-def mean_squared_error(preds: Tensor, target: Tensor) -> Tensor:
+def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> Tensor:
     """
     Computes mean squared error
 
     Args:
         preds: estimated labels
         target: ground truth labels
+        squared: returns RMSE value if set to False
 
     Return:
         Tensor with MSE
@@ -49,5 +53,5 @@ def mean_squared_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> mean_squared_error(x, y)
         tensor(0.2500)
     """
-    sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
+    sum_squared_error, n_obs = _mean_squared_error_update(preds, target, squared=squared)
     return _mean_squared_error_compute(sum_squared_error, n_obs)
