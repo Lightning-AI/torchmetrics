@@ -40,6 +40,9 @@ from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
+from torchmetrics.functional.regression.mean_absolute_percentage_error import (
+    mean_absolute_percentage_error,
+)  # noqa: F401
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out  # noqa: F401
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg  # noqa: F401

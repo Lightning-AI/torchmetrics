@@ -19,11 +19,22 @@ import torch
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
+from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import mean_absolute_error, mean_squared_error, mean_squared_log_error
-from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
+from torchmetrics.functional import (
+    mean_absolute_error,
+    mean_squared_error,
+    mean_squared_log_error,
+    mean_absolute_percentage_error,
+)
+from torchmetrics.regression import (
+    MeanAbsoluteError,
+    MeanSquaredError,
+    MeanSquaredLogError,
+    MeanAbsolutePercentageError,
+)
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -68,6 +79,7 @@ def _multi_target_sk_metric(preds, target, sk_fn=mean_squared_error):
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error),
+        (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error),
     ],
 )
 class TestMeanError(MetricTester):
@@ -115,7 +127,9 @@ class TestMeanError(MetricTester):
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 
-@pytest.mark.parametrize("metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError])
+@pytest.mark.parametrize(
+    "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
+)
 def test_error_on_different_shape(metric_class):
     metric = metric_class()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
