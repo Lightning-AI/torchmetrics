@@ -17,23 +17,23 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
+from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
-from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import (
     mean_absolute_error,
+    mean_absolute_percentage_error,
     mean_squared_error,
     mean_squared_log_error,
-    mean_absolute_percentage_error,
 )
 from torchmetrics.regression import (
     MeanAbsoluteError,
+    MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
-    MeanAbsolutePercentageError,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 

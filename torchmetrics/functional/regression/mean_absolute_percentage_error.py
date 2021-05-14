@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Tuple
-import numpy as np
 
+import numpy as np
 import torch
-from torch import Tensor
-from torch import tensor
+from torch import Tensor, tensor
 from torch._C import dtype
 
 from torchmetrics.utilities.checks import _check_same_shape
