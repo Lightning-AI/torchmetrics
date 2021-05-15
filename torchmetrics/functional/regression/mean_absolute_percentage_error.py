@@ -25,7 +25,6 @@ def _mean_absolute_percentage_error_update(preds: torch.Tensor, target: torch.Te
 
     _check_same_shape(preds, target)
 
-    #eps = torch.tensor(1.17e-07)# torch.tensor(np.finfo(np.float32).eps)
 
     abs_diff = torch.abs(preds - target)
     abs_per_error = abs_diff / torch.max(eps, torch.abs(target))

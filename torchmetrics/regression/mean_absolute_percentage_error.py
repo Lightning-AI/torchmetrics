@@ -50,9 +50,9 @@ class MeanAbsolutePercentageError(Metric):
         self.sum_abs_per_error += sum_abs_per_error
         self.total += num_obs
 
-    def compute(self):
+    def compute(self) -> Tensor:
         return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False
