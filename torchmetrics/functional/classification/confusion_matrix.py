@@ -28,7 +28,6 @@ def _confusion_matrix_update(
     if mode not in (DataType.BINARY, DataType.MULTILABEL):
         preds = preds.argmax(dim=1)
         target = target.argmax(dim=1)
-
     if multilabel:
         unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_classes, device=preds.device)).flatten()
         minlength = 4 * num_classes
@@ -48,8 +47,8 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
     allowed_normalize = ('true', 'pred', 'all', 'none', None)
     assert normalize in allowed_normalize, \
         f"Argument average needs to one of the following: {allowed_normalize}"
-    confmat = confmat.float()
     if normalize is not None and normalize != 'none':
+        confmat = confmat.float() if not confmat.is_floating_point() else confmat
         cm = None
         if normalize == 'true':
             cm = confmat / confmat.sum(axis=1, keepdim=True)
