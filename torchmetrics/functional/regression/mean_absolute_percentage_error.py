@@ -13,21 +13,20 @@
 # limitations under the License.
 from typing import Tuple
 
-import numpy as np
 import torch
-from torch import Tensor, tensor
-from torch._C import dtype
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_absolute_percentage_error_update(preds: torch.Tensor, target: torch.Tensor, eps: torch.Tensor) -> Tuple[Tensor, int]:
+def _mean_absolute_percentage_error_update(
+    preds: torch.Tensor, target: torch.Tensor, epsilon: torch.Tensor
+) -> Tuple[Tensor, int]:
 
     _check_same_shape(preds, target)
 
-
-    abs_diff = torch.abs(preds - target)
-    abs_per_error = abs_diff / torch.max(eps, torch.abs(target))
+    abs_diff = torch.abs(target - preds)
+    abs_per_error = abs_diff / torch.max(epsilon, torch.abs(target))
 
     sum_abs_per_error = torch.sum(abs_per_error)
 
@@ -41,11 +40,34 @@ def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: 
     return sum_abs_per_error / num_obs
 
 
-def mean_absolute_percentage_error(preds: torch.Tensor, target: torch.Tensor, eps: float= 1.17e-07) -> Tensor:
-    """something"""
+def mean_absolute_percentage_error(preds: torch.Tensor, target: torch.Tensor, epsilon: float = 1.17e-07) -> Tensor:
+    """
+    Computes mean absolute percentage error.
 
-    eps = torch.tensor(eps)
-    sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target, eps)
+    Args:
+        preds: estimated labels
+        target: ground truth labels
+        epsilon: an arbitrary small yet strictly positive number to avoid undefined results when y is zero.
+                 default: 1.17e-07. For more information, check the note.
+
+    Return:
+        Tensor with MAPE
+
+    Note:
+        The epsilon value is taken from `scikit-learn's
+        implementation
+        <https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197>`_.
+
+    Example:
+        >>> from torchmetrics.functional import mean_absolute_percentage_error
+        >>> target = torch.tensor([1, 10, 1e6])
+        >>> preds = torch.tensor([0.9, 15, 1.2e6])
+        >>> mean_absolute_percentage_error(preds, target)
+        tensor(0.2667)
+    """
+
+    epsilon = torch.tensor(epsilon)
+    sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target, epsilon)
     mean_ape = _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
 
     return mean_ape

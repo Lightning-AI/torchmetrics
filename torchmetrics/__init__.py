@@ -42,6 +42,7 @@ from torchmetrics.regression import (  # noqa: F401 E402
     SSIM,
     ExplainedVariance,
     MeanAbsoluteError,
+    MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
     PearsonCorrcoef,
