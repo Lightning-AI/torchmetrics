@@ -19,9 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_absolute_percentage_error_update(
-    preds: torch.Tensor, target: torch.Tensor, epsilon: torch.Tensor
-) -> Tuple[Tensor, int]:
+def _mean_absolute_percentage_error_update(preds: Tensor, target: Tensor, epsilon: Tensor) -> Tuple[Tensor, int]:
 
     _check_same_shape(preds, target)
 
@@ -40,7 +38,7 @@ def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: 
     return sum_abs_per_error / num_obs
 
 
-def mean_absolute_percentage_error(preds: torch.Tensor, target: torch.Tensor, epsilon: float = 1.17e-07) -> Tensor:
+def mean_absolute_percentage_error(preds: Tensor, target: Tensor, epsilon: float = 1.17e-07) -> Tensor:
     """
     Computes mean absolute percentage error.
 
