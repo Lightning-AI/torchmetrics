@@ -119,11 +119,7 @@ class TestHinge(MetricTester):
             preds=preds,
             target=target,
             metric_module=Hinge,
-            metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode),
-            metric_args={
-                "squared": squared,
-                "multiclass_mode": multiclass_mode,
-            },
+            metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode)
         )
 
 
