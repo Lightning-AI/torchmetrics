@@ -141,3 +141,7 @@ class ConfusionMatrix(Metric):
             this will be a `[n_classes, 2, 2]` tensor
         """
         return _confusion_matrix_compute(self.confmat, self.normalize)
+
+    @property
+    def is_differentiable(self):
+        return False
