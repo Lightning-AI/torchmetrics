@@ -129,7 +129,7 @@ class TestMatthewsCorrCoef(MetricTester):
         )
 
     def test_matthews_corrcoef_differentiability(self, preds, target, sk_metric, num_classes):
-        self.run_functional_metric_test(
+        self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=MatthewsCorrcoef,
