@@ -19,13 +19,10 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_squared_error_update(preds: Tensor, target: Tensor, squared: bool = True) -> Tuple[Tensor, int]:
+def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
     _check_same_shape(preds, target)
     diff = preds - target
-    squared_error = diff * diff
-    if not squared:
-        squared_error = squared_error ** 0.5
-    sum_squared_error = torch.sum(squared_error)
+    sum_squared_error = torch.sum(diff * diff)
     n_obs = target.numel()
     return sum_squared_error, n_obs
 
@@ -53,5 +50,8 @@ def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> T
         >>> mean_squared_error(x, y)
         tensor(0.2500)
     """
-    sum_squared_error, n_obs = _mean_squared_error_update(preds, target, squared=squared)
-    return _mean_squared_error_compute(sum_squared_error, n_obs)
+    sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
+    output_error = _mean_squared_error_compute(sum_squared_error, n_obs)
+    if not squared:
+        output_error = torch.sqrt(mean_squared_error)
+    return output_error
