@@ -28,9 +28,7 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, i
 
 
 def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: bool = True) -> Tensor:
-    if not squared:
-        sum_squared_error = torch.sqrt(sum_squared_error)
-    return sum_squared_error / n_obs
+    return sum_squared_error / n_obs if squared else torch.sqrt(sum_squared_error / n_obs)
 
 
 def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> Tensor:
