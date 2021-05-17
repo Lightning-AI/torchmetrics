@@ -79,7 +79,7 @@ class MeanSquaredError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_squared_error, n_obs = _mean_squared_error_update(preds, target, squared=self.squared)
+        sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
 
         self.sum_squared_error += sum_squared_error
         self.total += n_obs
@@ -88,7 +88,7 @@ class MeanSquaredError(Metric):
         """
         Computes mean squared error over state.
         """
-        return _mean_squared_error_compute(self.sum_squared_error, self.total)
+        return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
 
     @property
     def is_differentiable(self):
