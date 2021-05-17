@@ -52,9 +52,9 @@ def _fbeta_compute(
     denom[denom == 0.] = 1  # avoid division by 0
     # if classes matter and a given class is not present in both the preds and the target,
     # computing the score for this class is meaningless, thus they should be ignored
-    if average == AverageMethod.NONE and mdmc_average is None:
+    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = ((tp | fn | fp) == 0).nonzero().cpu()
+        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
         if ignore_index is None:
             ignore_index = meaningless_indeces
         else:
@@ -131,6 +131,9 @@ def fbeta(
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the

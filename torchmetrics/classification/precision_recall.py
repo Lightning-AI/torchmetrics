@@ -178,8 +178,8 @@ class Precision(StatScores):
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
               of classes
         """
-        tp, fp, tn, fn = self._get_final_stats()
-        return _precision_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
+        tp, fp, _, fn = self._get_final_stats()
+        return _precision_compute(tp, fp, fn, self.average, self.mdmc_reduce)
 
 
 class Recall(StatScores):
@@ -339,5 +339,5 @@ class Recall(StatScores):
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
               of classes
         """
-        tp, fp, tn, fn = self._get_final_stats()
-        return _recall_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
+        tp, fp, _, fn = self._get_final_stats()
+        return _recall_compute(tp, fp, fn, self.average, self.mdmc_reduce)

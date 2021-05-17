@@ -16,6 +16,7 @@ from functools import partial
 import numpy as np
 import pytest
 from sklearn.metrics import accuracy_score as sk_accuracy
+import torch
 from torch import tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
@@ -36,6 +37,7 @@ from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
+from torchmetrics.utilities.enums import AverageMethod
 seed_all(42)
 
 
@@ -326,3 +328,25 @@ def test_average_accuracy_bin(preds, target, num_classes, exp_result, average, m
     target = target.view(total_samples, -1)
     acc_score = accuracy(preds, target, num_classes=num_classes, average=average, multiclass=multiclass)
     assert (acc_score == tensor(exp_result)).all()
+
+@pytest.mark.parametrize("metric_class, metric_fn", [(Accuracy, accuracy)])
+@pytest.mark.parametrize(
+    "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
+)
+def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
+    """This tests that when metric is computed per class and a given class is not present
+    in both the `preds` and `target`, the resulting score is `nan`.
+    """
+    preds = torch.tensor([0, 0, 0])
+    target = torch.tensor([0, 0, 0])
+    num_classes = 2
+
+    # test functional
+    result_fn = metric_fn(preds, target, average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+    assert torch.allclose(expected, result_fn, equal_nan=True)
+
+    # test class
+    cl_metric = metric_class(average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+    cl_metric(preds, target)
+    result_cl = cl_metric.compute()
+    assert torch.allclose(expected, result_cl, equal_nan=True)
