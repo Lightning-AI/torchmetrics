@@ -15,8 +15,8 @@ from functools import partial
 
 import numpy as np
 import pytest
-from sklearn.metrics import accuracy_score as sk_accuracy
 import torch
+from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
 
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
@@ -35,9 +35,8 @@ from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Accuracy
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import DataType
+from torchmetrics.utilities.enums import AverageMethod, DataType
 
-from torchmetrics.utilities.enums import AverageMethod
 seed_all(42)
 
 

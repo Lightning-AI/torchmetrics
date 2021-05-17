@@ -18,8 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
 from torchmetrics.utilities.checks import _check_classification_inputs, _input_format_classification, _input_squeeze
-from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
 
 def _check_subset_validity(mode):
