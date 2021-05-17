@@ -269,8 +269,12 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.double()
     assert metric.x.dtype == torch.float64
+    metric.reset()
+    assert metric.x.dtype == torch.float64
 
     metric = metric.half()
+    assert metric.x.dtype == torch.float16
+    metric.reset()
     assert metric.x.dtype == torch.float16
 
 
