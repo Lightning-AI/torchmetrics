@@ -13,6 +13,7 @@
 # limitations under the License.
 from collections import namedtuple
 from functools import partial
+import math
 
 import pytest
 import torch
@@ -43,16 +44,18 @@ _multi_target_inputs = Input(
 )
 
 
-def _single_target_sk_metric(preds, target, sk_fn=mean_squared_error):
+def _single_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
-    return sk_fn(sk_preds, sk_target)
+    res = sk_fn(sk_preds, sk_target)
+    return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
 
 
-def _multi_target_sk_metric(preds, target, sk_fn=mean_squared_error):
+def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
-    return sk_fn(sk_preds, sk_target)
+    res = sk_fn(sk_preds, sk_target)
+    return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
 
 
 @pytest.mark.parametrize(
@@ -63,11 +66,12 @@ def _multi_target_sk_metric(preds, target, sk_fn=mean_squared_error):
     ],
 )
 @pytest.mark.parametrize(
-    "metric_class, metric_functional, sk_fn",
+    "metric_class, metric_functional, sk_fn, metric_args",
     [
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error),
-        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error),
-        (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {'squared': True}),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {'squared': False}),
+        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
+        (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
     ],
 )
 class TestMeanError(MetricTester):
@@ -75,7 +79,7 @@ class TestMeanError(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_mean_error_class(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, ddp, dist_sync_on_step
+        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
     ):
         # todo: `metric_functional` is unused
         self.run_class_metric_test(
@@ -83,35 +87,40 @@ class TestMeanError(MetricTester):
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn),
+            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
             dist_sync_on_step=dist_sync_on_step,
+            metric_args=metric_args
         )
 
-    def test_mean_error_functional(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+    def test_mean_error_functional(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
         # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=metric_functional,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn),
+            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            metric_args=metric_args
         )
 
-    def test_mean_error_differentiability(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+    def test_mean_error_differentiability(
+        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args
+    ):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=metric_class, metric_functional=metric_functional
+            preds=preds, target=target, metric_module=metric_class, metric_functional=metric_functional,
+            metric_args=metric_args
         )
 
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
     )
-    def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+    def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
-    def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn):
+    def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 
