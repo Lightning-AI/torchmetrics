@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Optional, Tuple
 
+import torch
 from torch import Tensor, tensor
 
 from torchmetrics.classification.stat_scores import _reduce_stat_scores
