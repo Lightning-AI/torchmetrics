@@ -329,6 +329,7 @@ def test_average_accuracy_bin(preds, target, num_classes, exp_result, average, m
     acc_score = accuracy(preds, target, num_classes=num_classes, average=average, multiclass=multiclass)
     assert (acc_score == tensor(exp_result)).all()
 
+
 @pytest.mark.parametrize("metric_class, metric_fn", [(Accuracy, accuracy)])
 @pytest.mark.parametrize(
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]

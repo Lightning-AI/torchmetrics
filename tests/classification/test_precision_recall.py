@@ -369,6 +369,7 @@ def test_top_k(
     assert torch.equal(class_metric.compute(), result)
     assert torch.equal(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
+
 @pytest.mark.parametrize("metric_class, metric_fn", [(Precision, precision), (Recall, recall)])
 @pytest.mark.parametrize(
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
