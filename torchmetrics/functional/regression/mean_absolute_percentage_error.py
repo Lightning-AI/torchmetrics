@@ -19,12 +19,14 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_absolute_percentage_error_update(preds: Tensor, target: Tensor, epsilon: Tensor) -> Tuple[Tensor, int]:
+def _mean_absolute_percentage_error_update(
+        preds: Tensor, target: Tensor, epsilon: float = 1.17e-06
+) -> Tuple[Tensor, int]:
 
     _check_same_shape(preds, target)
 
-    abs_diff = torch.abs(target - preds)
-    abs_per_error = abs_diff / torch.max(epsilon, torch.abs(target))
+    abs_diff = torch.abs(preds - target)
+    abs_per_error = abs_diff / torch.clamp(torch.abs(target), min=epsilon)
 
     sum_abs_per_error = torch.sum(abs_per_error)
 
@@ -34,19 +36,16 @@ def _mean_absolute_percentage_error_update(preds: Tensor, target: Tensor, epsilo
 
 
 def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: int) -> Tensor:
-
     return sum_abs_per_error / num_obs
 
 
-def mean_absolute_percentage_error(preds: Tensor, target: Tensor, epsilon: float = 1.17e-07) -> Tensor:
+def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     Computes mean absolute percentage error.
 
     Args:
         preds: estimated labels
         target: ground truth labels
-        epsilon: an arbitrary small yet strictly positive number to avoid undefined results when y is zero.
-                 default: 1.17e-07. For more information, check the note.
 
     Return:
         Tensor with MAPE
@@ -63,9 +62,7 @@ def mean_absolute_percentage_error(preds: Tensor, target: Tensor, epsilon: float
         >>> mean_absolute_percentage_error(preds, target)
         tensor(0.2667)
     """
-
-    epsilon = torch.tensor(epsilon)
-    sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target, epsilon)
+    sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
     mean_ape = _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
 
     return mean_ape

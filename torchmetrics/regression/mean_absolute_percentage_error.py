@@ -67,7 +67,6 @@ class MeanAbsolutePercentageError(Metric):
 
     def __init__(
         self,
-        epsilon: float = 1.17e-07,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -82,7 +81,6 @@ class MeanAbsolutePercentageError(Metric):
 
         self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
-        self.epsilon = torch.tensor(epsilon)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """
@@ -92,7 +90,7 @@ class MeanAbsolutePercentageError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target, epsilon=self.epsilon)
+        sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
 
         self.sum_abs_per_error += sum_abs_per_error
         self.total += num_obs
@@ -105,4 +103,4 @@ class MeanAbsolutePercentageError(Metric):
 
     @property
     def is_differentiable(self) -> bool:
-        return False
+        return True

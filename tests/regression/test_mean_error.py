@@ -57,13 +57,13 @@ _multi_target_inputs = Input(
 def _single_target_sk_metric(preds, target, sk_fn=mean_squared_error):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
-    return sk_fn(sk_preds, sk_target)
+    return sk_fn(sk_target, sk_preds)
 
 
 def _multi_target_sk_metric(preds, target, sk_fn=mean_squared_error):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
-    return sk_fn(sk_preds, sk_target)
+    return sk_fn(sk_target, sk_preds)
 
 
 @pytest.mark.parametrize(
@@ -120,6 +120,11 @@ class TestMeanError(MetricTester):
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
+
+        if metric_class == MeanAbsolutePercentageError:
+            # MeanSquaredPercentageError half + cpu does not work due to missing support in torch.log
+            pytest.xfail("MeanSquaredPercentageError metric does not support cpu + half precision")
+
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
