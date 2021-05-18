@@ -32,9 +32,6 @@ class MeanAbsolutePercentageError(Metric):
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
-        epsilon:
-            an arbitrary small yet strictly positive number to avoid undefined results when y is zero.
-            default: 1.17e-07. For more information, check the note.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -61,10 +58,7 @@ class MeanAbsolutePercentageError(Metric):
         >>> mean_abs_percentage_error = MeanAbsolutePercentageError()
         >>> mean_abs_percentage_error(preds, target)
         tensor(0.2667)
-
-
     """
-
     def __init__(
         self,
         compute_on_step: bool = True,
