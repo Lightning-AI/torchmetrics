@@ -21,9 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: |
-        delta=$(python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))" 2>&1)
-        echo "::set-output name=period::$delta"
+    - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
       if: matrix.requires == 'latest'
       id: times
 
