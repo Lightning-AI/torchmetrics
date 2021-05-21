@@ -64,7 +64,7 @@ jobs:
     - run: |
       if: matrix.requires == 'latest'
         delta=$(python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))" 2>&1)
-        echo "::set-output name=delta::$delta"
+        echo "::set-output name=period::$delta"
       id: times
 
     # Note: This uses an internal pip API and may not always work
@@ -78,8 +78,8 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.delta }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
-        restore-keys: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.delta }}-pip-
+        key: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
+        restore-keys: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-
 
     - name: Install dependencies
       run: |
