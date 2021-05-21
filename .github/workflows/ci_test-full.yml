@@ -61,6 +61,12 @@ jobs:
             open(fpath, 'w').write(req)
       shell: python
 
+    - run: |
+      if: matrix.requires == 'latest'
+        delta=$(python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))" 2>&1)
+        echo "::set-output name=delta::$delta"
+      id: times
+
     # Note: This uses an internal pip API and may not always work
     # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
     - name: Get pip cache
@@ -72,8 +78,8 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
-        restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-
+        key: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.delta }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
+        restore-keys: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.delta }}-pip-
 
     - name: Install dependencies
       run: |
@@ -91,8 +97,8 @@ jobs:
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}
-        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        name: pytest-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}
+        path: junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       if: failure()
 
     - name: Statistics
