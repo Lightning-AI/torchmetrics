@@ -27,3 +27,4 @@ from torchmetrics.functional.classification.precision_recall import precision, p
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
+from torchmetrics.functional.classification.expected_calibration_error import expected_calibration_error
