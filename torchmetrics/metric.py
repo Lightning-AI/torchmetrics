@@ -69,7 +69,6 @@ class Metric(nn.Module, ABC):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        reset_forward_cache: bool = True,
     ):
         super().__init__()
 
