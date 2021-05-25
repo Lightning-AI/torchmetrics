@@ -59,6 +59,8 @@ class Metric(nn.Module, ABC):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
+        reset_forward_cache:
+            Wether to reset `forward_cache` after update when `dist_sync_on_step` is False.
     """
 
     __jit_ignored_attributes__ = ["is_differentiable"]
@@ -69,6 +71,7 @@ class Metric(nn.Module, ABC):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        reset_forward_cache: bool = True,
     ):
         super().__init__()
 
@@ -82,6 +85,7 @@ class Metric(nn.Module, ABC):
         self.compute_on_step = compute_on_step
         self.process_group = process_group
         self.dist_sync_fn = dist_sync_fn
+        self.reset_forward_cache = reset_forward_cache
         self._to_sync = True
 
         self._update_signature = inspect.signature(self.update)
@@ -166,7 +170,9 @@ class Metric(nn.Module, ABC):
         # add current step
         with torch.no_grad():
             self.update(*args, **kwargs)
-        self._forward_cache = None
+
+        if self.reset_forward_cache:
+            self._forward_cache = None
 
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
