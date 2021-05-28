@@ -126,7 +126,7 @@ Addtionally, if metrics are used together with a `LightningModule` the metric up
 in the ``<mode>_step_end`` method (where ``<mode>`` is either ``training``, ``validation`` or ``test``), else
 it will lead to wrong accumulation. In practice do the following:
 
-.. code-block:: python
+.. testcode::
 
     def training_step(self, batch, batch_idx):
         data, target = batch
