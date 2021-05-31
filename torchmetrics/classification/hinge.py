@@ -124,4 +124,4 @@ class Hinge(Metric):
 
     @property
     def is_differentiable(self):
-        return False
+        return True
