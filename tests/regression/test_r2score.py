@@ -95,8 +95,11 @@ class TestR2Score(MetricTester):
 
     def test_r2_differentiabilit(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=partial(R2Score, num_outputs=num_outputs),
-            metric_functional=r2score, metric_args=dict(adjusted=adjusted, multioutput=multioutput)
+            preds=preds,
+            target=target,
+            metric_module=partial(R2Score, num_outputs=num_outputs),
+            metric_functional=r2score,
+            metric_args=dict(adjusted=adjusted, multioutput=multioutput)
         )
 
     @pytest.mark.skipif(
