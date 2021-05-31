@@ -166,7 +166,6 @@ class Metric(nn.Module, ABC):
         # add current step
         with torch.no_grad():
             self.update(*args, **kwargs)
-        self._forward_cache = None
 
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
@@ -282,6 +281,7 @@ class Metric(nn.Module, ABC):
         This method automatically resets the metric state variables to their default value.
         """
         self._update_called = False
+        self._forward_cache = None
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log
         if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
             self._computed = None
