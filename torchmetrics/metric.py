@@ -166,7 +166,6 @@ class Metric(nn.Module, ABC):
         # add current step
         with torch.no_grad():
             self.update(*args, **kwargs)
-        self._forward_cache = None
 
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
@@ -282,6 +281,7 @@ class Metric(nn.Module, ABC):
         This method automatically resets the metric state variables to their default value.
         """
         self._update_called = False
+        self._forward_cache = None
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log
         if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
             self._computed = None
@@ -312,8 +312,13 @@ class Metric(nn.Module, ABC):
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
         this = super()._apply(fn)
-        # Also apply fn to metric states
-        for key in this._defaults.keys():
+        # Also apply fn to metric states and defaults
+        for key, value in this._defaults.items():
+            if isinstance(value, Tensor):
+                this._defaults[key] = fn(value)
+            elif isinstance(value, Sequence):
+                this._defaults[key] = [fn(v) for v in value]
+
             current_val = getattr(this, key)
             if isinstance(current_val, Tensor):
                 setattr(this, key, fn(current_val))

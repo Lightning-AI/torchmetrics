@@ -45,7 +45,7 @@ setup(
     url=about.__homepage__,
     download_url=os.path.join(about.__homepage__, 'archive', 'master.zip'),
     license=about.__license__,
-    packages=find_packages(exclude=['tests', 'docs']),
+    packages=find_packages(exclude=['tests', 'tests.*', 'docs']),
     long_description=long_description,
     long_description_content_type='text/markdown',
     include_package_data=True,

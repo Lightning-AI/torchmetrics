@@ -27,17 +27,18 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, i
     return sum_squared_error, n_obs
 
 
-def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int) -> Tensor:
-    return sum_squared_error / n_obs
+def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: bool = True) -> Tensor:
+    return sum_squared_error / n_obs if squared else torch.sqrt(sum_squared_error / n_obs)
 
 
-def mean_squared_error(preds: Tensor, target: Tensor) -> Tensor:
+def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> Tensor:
     """
     Computes mean squared error
 
     Args:
         preds: estimated labels
         target: ground truth labels
+        squared: returns RMSE value if set to False
 
     Return:
         Tensor with MSE
@@ -50,4 +51,4 @@ def mean_squared_error(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.2500)
     """
     sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
-    return _mean_squared_error_compute(sum_squared_error, n_obs)
+    return _mean_squared_error_compute(sum_squared_error, n_obs, squared=squared)
