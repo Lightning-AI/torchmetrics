@@ -148,8 +148,9 @@ class MetricCollection(nn.ModuleDict):
         for _, m in self.items(keep_base=True):
             m.persistent(mode)
 
-    def add_metrics(self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
-                    *additional_metrics: Metric) -> None:
+    def add_metrics(
+        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
+    ) -> None:
         """Add new metrics to Metric Collection
         """
         if isinstance(metrics, Metric):
