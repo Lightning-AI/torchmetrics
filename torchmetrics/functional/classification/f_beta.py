@@ -200,9 +200,8 @@ def fbeta(
     if mdmc_average not in allowed_mdmc_average:
         raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
 
-    if average in [AverageMethod.MACRO, AverageMethod.WEIGHTED, AverageMethod.NONE] and (
-        not num_classes or num_classes < 1
-    ):
+    if average in [AverageMethod.MACRO, AverageMethod.WEIGHTED, AverageMethod.NONE
+                   ] and (not num_classes or num_classes < 1):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
 
     if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
