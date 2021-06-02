@@ -68,8 +68,12 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
 @pytest.mark.parametrize(
     "metric_class, metric_functional, sk_fn, metric_args",
     [
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {'squared': True}),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {'squared': False}),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {
+            'squared': True
+        }),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {
+            'squared': False
+        }),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
     ],
@@ -106,7 +110,10 @@ class TestMeanError(MetricTester):
         self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=metric_class, metric_functional=metric_functional,
+            preds=preds,
+            target=target,
+            metric_module=metric_class,
+            metric_functional=metric_functional,
             metric_args=metric_args
         )
 
