@@ -93,7 +93,11 @@ sqrtm = MatrixSquareRoot.apply
 
 
 def _compute_fid(
-    mu1: torch.Tensor, sigma1: torch.Tensor, mu2: torch.Tensor, sigma2: torch.Tensor, eps: float = 1e-6
+    mu1: torch.Tensor,
+    sigma1: torch.Tensor,
+    mu2: torch.Tensor,
+    sigma2: torch.Tensor,
+    eps: float = 1e-6
 ) -> torch.Tensor:
     r"""
     Adjusted version of

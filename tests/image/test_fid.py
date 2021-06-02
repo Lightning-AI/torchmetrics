@@ -102,9 +102,7 @@ class _ImgDataset(Dataset):
         return self.imgs.shape[0]
 
 
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='test is too slow without gpu'
-)
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='test is too slow without gpu')
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
 def test_compare_fid(tmpdir, feature=2048):
     """ check that the hole pipeline give the same result as torch-fidelity """
