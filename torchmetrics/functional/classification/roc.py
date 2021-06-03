@@ -99,7 +99,7 @@ def roc(
     Args:
         preds: predictions from model (logits or probabilities)
         target: ground truth values
-        num_classes: integer with number of classes for multi-label and multiclass problems. 
+        num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translate to 1. For multiclass problems
