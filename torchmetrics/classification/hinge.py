@@ -123,5 +123,5 @@ class Hinge(Metric):
         return _hinge_compute(self.measure, self.total)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True

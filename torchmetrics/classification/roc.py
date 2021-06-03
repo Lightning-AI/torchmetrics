@@ -168,5 +168,5 @@ class ROC(Metric):
         return _roc_compute(preds, target, self.num_classes, self.pos_label)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False

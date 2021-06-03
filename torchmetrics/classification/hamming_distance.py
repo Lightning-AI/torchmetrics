@@ -111,5 +111,5 @@ class HammingDistance(Metric):
         return _hamming_distance_compute(self.correct, self.total)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False

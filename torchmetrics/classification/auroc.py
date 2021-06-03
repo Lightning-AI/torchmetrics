@@ -184,7 +184,7 @@ class AUROC(Metric):
         )
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         """
         AUROC metrics is considered as non differentiable so it should have `false`
         value for `is_differentiable` property

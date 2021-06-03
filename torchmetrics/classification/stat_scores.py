@@ -279,7 +279,7 @@ class StatScores(Metric):
         return _stat_scores_compute(tp, fp, tn, fn)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False
 
 

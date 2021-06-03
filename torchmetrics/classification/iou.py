@@ -108,5 +108,5 @@ class IoU(ConfusionMatrix):
         return _iou_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False

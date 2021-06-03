@@ -147,5 +147,5 @@ class R2Score(Metric):
         )
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True

@@ -143,5 +143,5 @@ class ConfusionMatrix(Metric):
         return _confusion_matrix_compute(self.confmat, self.normalize)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False
