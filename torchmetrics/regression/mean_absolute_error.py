@@ -86,5 +86,5 @@ class MeanAbsoluteError(Metric):
         return _mean_absolute_error_compute(self.sum_abs_error, self.total)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True

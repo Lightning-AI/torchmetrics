@@ -119,7 +119,7 @@ class CohenKappa(Metric):
         return _cohen_kappa_compute(self.confmat, self.weights)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         """
         cohen kappa is not differentiable since the implementation
         is based on calculating the confusion matrix which in general

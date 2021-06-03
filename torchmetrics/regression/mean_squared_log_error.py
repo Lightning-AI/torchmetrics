@@ -92,5 +92,5 @@ class MeanSquaredLogError(Metric):
         return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True
