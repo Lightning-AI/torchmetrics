@@ -276,5 +276,5 @@ class Accuracy(StatScores):
             return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False

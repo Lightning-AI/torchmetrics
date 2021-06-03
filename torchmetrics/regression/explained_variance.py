@@ -133,5 +133,5 @@ class ExplainedVariance(Metric):
         )
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True
