@@ -188,3 +188,10 @@ def test_error_on_different_mode():
     with pytest.raises(ValueError, match=r"The mode of data.* should be constant.*"):
         # pass in multi-label data
         metric.update(torch.rand(10, 5), torch.randint(0, 2, (10, 5)))
+
+
+def test_error_multiclass_no_num_classes():
+    with pytest.raises(
+        ValueError, match="Detected input to ``multiclass`` but you did not provide ``num_classes`` argument"
+    ):
+        _ = auroc(torch.randn(20, 3).softmax(dim=-1), torch.randint(3, (20, )))

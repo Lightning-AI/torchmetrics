@@ -21,20 +21,24 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
+      if: matrix.requires == 'latest'
+      id: times
+
     - name: Cache conda
       uses: actions/cache@v2
       with:
         path: ~/conda_pkgs_dir
-        key: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('environment.yml') }}
-        restore-keys: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
+        key: conda-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('environment.yml') }}
+        restore-keys: conda-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
 
     # Add another cache for Pip as not all packages lives in Conda env
     - name: Cache pip
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('requirements/base.txt') }}
-        restore-keys: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
+        key: pip-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('requirements/base.txt') }}
+        restore-keys: pip-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
 
     # https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf
     # https://gist.github.com/mwouts/9842452d020c08faf9e84a3bba38a66f

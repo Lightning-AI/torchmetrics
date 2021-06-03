@@ -18,9 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added pre-gather reduction in the case of `dist_reduce_fx="cat"` to reduce communication cost ([#217](https://github.com/PyTorchLightning/metrics/pull/217))
 
 
+- Added better error message for `AUROC` when `num_classes` is not provided for multiclass input ([#244](https://github.com/PyTorchLightning/metrics/pull/244))
+
+
+- Added support for unnormalized scores (e.g. logits) in `Accuracy`, `Precision`, `Recall`, `FBeta`, `F1`, `StatScore`, `Hamming`, `ConfusionMatrix` metrics ([#200](https://github.com/PyTorchLightning/metrics/pull/200))
+
+
+- Added `squared` argument to `MeanSquaredError` for computing `RMSE` ([#249](https://github.com/PyTorchLightning/metrics/pull/249))
+
 
 ### Changed
 
+- Forward cache is now reset when `reset` method is called ([#260](https://github.com/PyTorchLightning/metrics/pull/260))
 
 ### Deprecated
 
@@ -30,7 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- AUC can also support more dimensional inputs when all but one dimensions are of size 1 ([#242](https://github.com/PyTorchLightning/metrics/pull/242))
 
+- Fixed dtype of modular metrics after reset have been called ([#243](https://github.com/PyTorchLightning/metrics/pull/243))
 
 ## [0.3.2] - 2021-05-10
 
