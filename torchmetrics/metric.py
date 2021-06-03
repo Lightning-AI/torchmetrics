@@ -505,7 +505,7 @@ class Metric(nn.Module, ABC):
         return CompositionalMetric(lambda x: x[idx], self, None)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         # There is a bug in PyTorch that leads to properties being executed during scripting
         # To make the metric scriptable, we add property to ignore list and switch to return None here
         return None
