@@ -24,16 +24,25 @@ from torchmetrics.utilities.enums import DataType
 
 def _ce_compute(confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor, norm: str = "l1") -> Tensor:
 
-    ce = torch.zeros(1)
-    for bin_lower, bin_upper in zip(bin_boundaries[:-1], bin_boundaries[1:]):
-        # Calculated |confidence - accuracy| in each bin
+    conf_bin = torch.zeros_like(bin_boundaries)
+    acc_bin = torch.zeros_like(bin_boundaries)
+    prop_bin = torch.zeros_like(bin_boundaries)
+    for i, (bin_lower, bin_upper) in enumerate(zip(bin_boundaries[:-1], bin_boundaries[1:])):
+        # Calculated confidence and accuracy in each bin
         in_bin = confidences.gt(bin_lower.item()) * confidences.le(bin_upper.item())
         prop_in_bin = in_bin.float().mean()
         if prop_in_bin.item() > 0:
-            accuracy_in_bin = accuracies[in_bin].float().mean()
-            avg_confidence_in_bin = confidences[in_bin].mean()
+            acc_bin[i] = accuracies[in_bin].float().mean()
+            conf_bin[i] = confidences[in_bin].mean()
+            prop_bin[i] = prop_in_bin
 
-            ce += torch.abs(avg_confidence_in_bin - accuracy_in_bin) * prop_in_bin
+    if norm == "l1":
+        ce = torch.sum(torch.abs(conf_bin - acc_bin) * prop_bin)
+    elif norm == "max":
+        ce = torch.max(torch.abs(conf_bin - acc_bin))
+    else:
+        raise ValueError(f"Norm {norm} is not supported.")
+
     return ce
 
 
@@ -43,24 +52,28 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     if mode == DataType.BINARY:
         confidences, accuracies = preds, target
     elif mode == DataType.MULTICLASS:
-        # softmaxes = F.softmax(preds.float(), dim=-1)
         confidences, predictions = preds.max(dim=1)
-        print(predictions.size())
         accuracies = predictions.eq(target)
+    elif mode == DataType.MULTIDIM_MULTICLASS:
+        # reshape tensors
+        # for preds, move the class dimension to the final axis and flatten the rest
+        confidences, predictions = torch.transpose(preds, 1, -1).flatten(0, -2).max(dim=1)
+        # for targets, just flatten the target
+        accuracies = predictions.eq(target.flatten())
     else:
         raise ValueError(
-            f"Calibration error is not well-defined for data with preds {preds.size()} and targets {target.size()}")
+            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}")
 
     return confidences.float(), accuracies.float()
 
 
-def expected_calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15) -> Tensor:
+def maximum_calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15) -> Tensor:
     """
 
     TODO: docstring
 
     Args:
-        preds (Tensor): Input probabilities. 
+        preds (Tensor): Input probabilities.
         target (Tensor): Class labels.
         n_bins (int, optional): [description]. Defaults to 15.
     """
@@ -69,4 +82,22 @@ def expected_calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15) 
 
     confidences, accuracies = _ce_update(preds, target)
 
+    return _ce_compute(confidences, accuracies, bin_boundaries, norm="max")
+
+
+def expected_calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15) -> Tensor:
+    """
+
+    TODO: docstring
+
+    Args:
+        preds (Tensor): Input probabilities.
+        target (Tensor): Class labels.
+        n_bins (int, optional): [description]. Defaults to 15.
+    """
+
+    bin_boundaries = torch.linspace(0, 1, n_bins + 1)
+
+    confidences, accuracies = _ce_update(preds, target)
+    # raise ValueError
     return _ce_compute(confidences, accuracies, bin_boundaries)
