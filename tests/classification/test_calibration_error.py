@@ -6,8 +6,8 @@ from torch import tensor
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics import ExpectedCalibrationError, MaximumCalibrationError
-from torchmetrics.functional import expected_calibration_error, maximum_calibration_error
+from torchmetrics import CalibrationError
+from torchmetrics.functional import calibration_error
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 from tests.classification.inputs import _input_binary, _input_binary_prob
@@ -22,7 +22,7 @@ import functools
 seed_all(42)
 
 
-def _sk_calibration(preds, target, n_bins, norm):
+def _sk_calibration(preds, target, n_bins, norm, debias):
     _, _, mode = _input_format_classification(preds, target, threshold=THRESHOLD)
     sk_preds, sk_target = preds.numpy(), target.numpy()
 
@@ -38,75 +38,54 @@ def _sk_calibration(preds, target, n_bins, norm):
         # binary label is whether or not the predicted class is correct
         sk_target = np.equal(np.argmax(sk_preds, axis=1), sk_target.flatten())
         sk_preds = np.max(sk_preds, axis=1)
+    return sk_calib(y_true=sk_target, y_prob=sk_preds, norm=norm, n_bins=n_bins, reduce_bias=debias)
 
-    return sk_calib(y_true=sk_target, y_prob=sk_preds, norm=norm, n_bins=n_bins)
 
-
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize("n_bins", [10, 15, 20])
+@pytest.mark.parametrize("debias", [False, True])
+@pytest.mark.parametrize("norm", ["l1", "l2", "max"])
+@pytest.mark.parametrize(
     "preds, target",
     [(_input_binary_prob.preds, _input_binary_prob.target),
      (_input_mcls_prob.preds, _input_mcls_prob.target),
      (_input_mdmc_prob.preds, _input_mdmc_prob.target),
      ]
 )
-class TestECE(MetricTester):
+class TestCE(MetricTester):
+    # @pytest.mark.parametrize("ddp", [True, False])
+    # @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    # def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm, debias):
+    #     self.run_class_metric_test(
+    #         ddp=ddp,
+    #         preds=preds,
+    #         target=target,
+    #         metric_class=CalibrationError,
+    #         sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm, debias=debias),
+    #         dist_sync_on_step=dist_sync_on_step,
+    #         metric_args={"n_bins": n_bins, "debias": debias, "norm": norm})
 
-    @pytest.mark.parametrize("n_bins", [10, 15, 20])
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ece(self, preds, target, n_bins, ddp, dist_sync_on_step):
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=preds,
-            target=target,
-            metric_class=ExpectedCalibrationError,
-            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm="l1"),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args={"n_bins": n_bins})
-
-    @ pytest.mark.parametrize("n_bins", [10, 15, 20])
-    def test_ece_functional(self, preds, target, n_bins):
+    def test_ce_functional(self, preds, target, n_bins, norm, debias):
         self.run_functional_metric_test(
             preds,
             target,
-            metric_functional=expected_calibration_error,
-            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm="l1"),
-            metric_args={"n_bins": n_bins})
-
-
-@ pytest.mark.parametrize(
-    "preds, target",
-    [(_input_binary_prob.preds, _input_binary_prob.target),
-     (_input_mcls_prob.preds, _input_mcls_prob.target),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target),
-     ]
-)
-class TestMCE(MetricTester):
-
-    @ pytest.mark.parametrize("n_bins", [10, 15, 20])
-    @ pytest.mark.parametrize("ddp", [True, False])
-    @ pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_mce(self, preds, target, n_bins, ddp, dist_sync_on_step):
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=preds,
-            target=target,
-            metric_class=MaximumCalibrationError,
-            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm="max"),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args={"n_bins": n_bins})
-
-    @ pytest.mark.parametrize("n_bins", [10, 15, 20])
-    def test_mce_functional(self, preds, target, n_bins):
-        self.run_functional_metric_test(
-            preds,
-            target,
-            metric_functional=maximum_calibration_error,
-            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm="max"),
-            metric_args={"n_bins": n_bins})
+            metric_functional=calibration_error,
+            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm, debias=debias),
+            metric_args={"n_bins": n_bins, "debias": debias, "norm": norm})
 
 
 @ pytest.mark.parametrize("preds, targets", [(_input_mlb_prob.preds, _input_mlb_prob.target)])
 def test_invalid_input(preds, targets):
     with pytest.raises(ValueError):
-        expected_calibration_error(preds, targets)
+        calibration_error(preds, targets)
+
+
+@pytest.mark.parametrize(
+    "preds, target",
+    [(_input_binary_prob.preds, _input_binary_prob.target),
+     (_input_mcls_prob.preds, _input_mcls_prob.target),
+     (_input_mdmc_prob.preds, _input_mdmc_prob.target),
+     ]
+)
+def test_invalid_norm(preds, target):
+    with pytest.raises(ValueError):
+        calibration_error(preds, target, norm="l3")

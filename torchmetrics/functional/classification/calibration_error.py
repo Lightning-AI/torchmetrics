@@ -17,12 +17,11 @@ import torch
 from torch import Tensor, tensor
 from torch.nn import functional as F
 
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
-def _ce_compute(confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor, norm: str = "l1") -> Tensor:
+def _ce_compute(confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor, norm: str = "l1", debias: bool = True) -> Tensor:
 
     conf_bin = torch.zeros_like(bin_boundaries)
     acc_bin = torch.zeros_like(bin_boundaries)
@@ -37,12 +36,20 @@ def _ce_compute(confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor,
             prop_bin[i] = prop_in_bin
 
     if norm == "l1":
-        ce = torch.sum(torch.abs(conf_bin - acc_bin) * prop_bin)
+        ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
+        print(ce)
     elif norm == "max":
-        ce = torch.max(torch.abs(conf_bin - acc_bin))
+        ce = torch.max(torch.abs(acc_bin - conf_bin))
+    elif norm == "l2":
+        ce = torch.sum(torch.pow(acc_bin - conf_bin, 2) * prop_bin)
+        if debias:
+            # the order here (acc_bin - 1 ) vs (1 - acc_bin) is flipped from
+            # the equation in Verified Uncertainty Prediction (Kumar et al 2019)/
+            debias_bins = (acc_bin * (acc_bin - 1) * prop_bin) / (prop_bin * accuracies.size()[0] - 1)
+            ce += torch.sum(torch.nan_to_num(debias_bins))  # replace nans with zeros if nothing appeared in a bin
+        ce = torch.sqrt(ce) if ce > 0 else torch.tensor(0)
     else:
-        raise ValueError(f"Norm {norm} is not supported.")
-
+        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
     return ce
 
 
@@ -64,40 +71,53 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
         raise ValueError(
             f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}")
 
-    return confidences.float(), accuracies.float()
+    return confidences, accuracies
 
 
-def maximum_calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15) -> Tensor:
+def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1", debias=True):
     """
 
-    TODO: docstring
+        Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`. 
 
-    Args:
-        preds (Tensor): Input probabilities.
-        target (Tensor): Class labels.
-        n_bins (int, optional): [description]. Defaults to 15.
+        Three different norms are implemented, each corresponding to variations on the calibration error metric.
+
+        L1 norm (Expected Calibration Error)
+
+        .. math::
+            \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
+
+
+        Infinity norm (Maximum Calibration Error)
+
+        .. math::
+        \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
+
+        L2 norm (Root Mean Square Calibration Error)
+
+        .. math::
+        \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
+
+        Debiasing is only supported for the L2 norm, and adds an additional term to the calibration error:
+
+        .. math::
+        \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
+
+
+
+
+        Args:
+            preds (Tensor): [description]
+            target (Tensor): [description]
+            n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
+            norm (str, optional): Norm used to compare empirical and expected probability bins. 
+                Defaults to "l1", or Expected Calibration Error.
+            debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
     """
-
-    bin_boundaries = torch.linspace(0, 1, n_bins + 1)
+    if norm not in ("l1", "l2", "max"):
+        raise ValueError(f"Norm {norm} is not supported.")
 
     confidences, accuracies = _ce_update(preds, target)
 
-    return _ce_compute(confidences, accuracies, bin_boundaries, norm="max")
-
-
-def expected_calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15) -> Tensor:
-    """
-
-    TODO: docstring
-
-    Args:
-        preds (Tensor): Input probabilities.
-        target (Tensor): Class labels.
-        n_bins (int, optional): [description]. Defaults to 15.
-    """
-
     bin_boundaries = torch.linspace(0, 1, n_bins + 1)
 
-    confidences, accuracies = _ce_update(preds, target)
-    # raise ValueError
-    return _ce_compute(confidences, accuracies, bin_boundaries)
+    return _ce_compute(confidences, accuracies, bin_boundaries, norm=norm, debias=debias)

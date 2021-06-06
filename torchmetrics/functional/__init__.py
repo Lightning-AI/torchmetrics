@@ -46,4 +46,4 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision  # n
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
-from torchmetrics.functional.classification.calibration_error import expected_calibration_error, maximum_calibration_error  # noqa: F401
+from torchmetrics.functional.classification.calibration_error import calibration_error  # noqa: F401

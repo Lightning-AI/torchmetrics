@@ -132,10 +132,15 @@ def calibration_error(y_true, y_prob, sample_weight=None, norm='l2',
                                   sample_weight[i_start:i_end]) /
                            delta_count[i])
         if norm == "l2" and reduce_bias:
+            # NOTE: I think there's a mistake in the original implementation.
+            # delta_debias = (
+            #     avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i]
+            # )
+            # delta_debias /= (count * delta_count[i] - 1)
             delta_debias = (
                 avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i]
             )
-            delta_debias /= (count * delta_count[i] - 1)
+            delta_debias /= count * (delta_count[i] - 1)
             debias[i] = delta_debias
 
     if norm == "max":
@@ -147,6 +152,7 @@ def calibration_error(y_true, y_prob, sample_weight=None, norm='l2',
         delta_loss = (avg_pred_true - bin_centroid)**2 * delta_count
         loss = np.sum(delta_loss) / count
         if reduce_bias:
-            loss += np.sum(debias)
+            # convert nans to zero
+            loss += np.sum(np.nan_to_num(debias))
         loss = np.sqrt(max(loss, 0.))
     return loss
