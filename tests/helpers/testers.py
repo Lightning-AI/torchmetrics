@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 import numpy as np
 import pytest
@@ -57,26 +57,37 @@ def setup_ddp(rank, world_size):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
-def _assert_allclose(pl_result, sk_result, atol: float = 1e-8):
+def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
     """Utility function for recursively asserting that two results are within a certain tolerance """
     # single output compare
     if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     # multi output compare
-    elif isinstance(pl_result, (tuple, list)):
+    elif isinstance(pl_result, Sequence):
         for pl_res, sk_res in zip(pl_result, sk_result):
             _assert_allclose(pl_res, sk_res, atol=atol)
     else:
         raise ValueError("Unknown format for comparison")
 
 
-def _assert_tensor(pl_result):
+def _assert_tensor(pl_result: Any):
     """ Utility function for recursively checking that some input only consists of torch tensors """
-    if isinstance(pl_result, (list, tuple)):
+    if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_tensor(plr)
     else:
         assert isinstance(pl_result, Tensor)
+
+
+def _assert_requires_grad(metric: Metric, pl_result: Any):
+    """ Utility function for recursively asserting that metric output is consistent
+        with the `is_differentiable` attribute
+    """
+    if isinstance(pl_result, Sequence):
+        for plr in pl_result:
+            _assert_requires_grad(metric, plr)
+    else:
+        assert metric.is_differentiable == pl_result.requires_grad
 
 
 def _class_test(
@@ -472,11 +483,9 @@ class MetricTester:
         if preds.is_floating_point():
             preds.requires_grad = True
             out = metric(preds[0], target[0])
-            # metrics can return list of values
-            if isinstance(out, list):
-                assert all(metric.is_differentiable == o.requires_grad for o in out)
-            else:
-                assert metric.is_differentiable == out.requires_grad
+
+            # Check if requires_grad matches is_differentiable attribute
+            _assert_requires_grad(metric, out)
 
             if metric.is_differentiable:
                 # check for numerical correctness

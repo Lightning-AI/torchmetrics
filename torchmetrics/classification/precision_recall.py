@@ -181,6 +181,10 @@ class Precision(StatScores):
         tp, fp, tn, fn = self._get_final_stats()
         return _precision_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
 
+    @property
+    def is_differentiable(self) -> bool:
+        return False
+
 
 class Recall(StatScores):
     r"""
@@ -341,3 +345,7 @@ class Recall(StatScores):
         """
         tp, fp, tn, fn = self._get_final_stats()
         return _recall_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False
