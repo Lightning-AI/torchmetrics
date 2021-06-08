@@ -381,8 +381,8 @@ class RetrievalMetricTester(MetricTester):
             indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
         )
 
+    @staticmethod
     def run_metric_class_arguments_test(
-        self,
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
@@ -403,8 +403,8 @@ class RetrievalMetricTester(MetricTester):
             **kwargs_update,
         )
 
+    @staticmethod
     def run_functional_metric_arguments_test(
-        self,
         preds: Tensor,
         target: Tensor,
         metric_functional: Callable,
