@@ -112,3 +112,7 @@ class MatthewsCorrcoef(Metric):
         Computes matthews correlation coefficient
         """
         return _matthews_corrcoef_compute(self.confmat)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False
