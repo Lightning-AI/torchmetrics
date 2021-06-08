@@ -137,7 +137,7 @@ class Metric(nn.Module, ABC):
             ValueError:
                 If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``None``.
         """
-        if (not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default)):
+        if not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
 
         if dist_reduce_fx == "sum":
@@ -505,7 +505,7 @@ class Metric(nn.Module, ABC):
         return CompositionalMetric(lambda x: x[idx], self, None)
 
     @property
-    def is_differentiable(self) -> bool:
+    def is_differentiable(self):
         # There is a bug in PyTorch that leads to properties being executed during scripting
         # To make the metric scriptable, we add property to ignore list and switch to return None here
         return None
