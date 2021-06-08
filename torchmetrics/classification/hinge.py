@@ -121,3 +121,7 @@ class Hinge(Metric):
 
     def compute(self) -> Tensor:
         return _hinge_compute(self.measure, self.total)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return True

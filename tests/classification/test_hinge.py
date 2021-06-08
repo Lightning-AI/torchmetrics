@@ -108,10 +108,18 @@ class TestHinge(MetricTester):
 
     def test_hinge_fn(self, preds, target, squared, multiclass_mode):
         self.run_functional_metric_test(
-            preds,
-            target,
+            preds=preds,
+            target=target,
             metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode),
             sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
+        )
+
+    def test_hinge_differentiability(self, preds, target, squared, multiclass_mode):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=Hinge,
+            metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode)
         )
 
 
