@@ -246,6 +246,37 @@ class TestStatScores(MetricTester):
             },
         )
 
+    def test_stat_scores_differentiability(
+        self,
+        sk_fn: Callable,
+        preds: Tensor,
+        target: Tensor,
+        reduce: str,
+        mdmc_reduce: Optional[str],
+        num_classes: Optional[int],
+        multiclass: Optional[bool],
+        ignore_index: Optional[int],
+        top_k: Optional[int],
+    ):
+        if ignore_index is not None and preds.ndim == 2:
+            pytest.skip("Skipping ignore_index test with binary inputs.")
+
+        self.run_differentiability_test(
+            preds,
+            target,
+            metric_module=StatScores,
+            metric_functional=stat_scores,
+            metric_args={
+                "num_classes": num_classes,
+                "reduce": reduce,
+                "mdmc_reduce": mdmc_reduce,
+                "threshold": THRESHOLD,
+                "multiclass": multiclass,
+                "ignore_index": ignore_index,
+                "top_k": top_k,
+            },
+        )
+
 
 _mc_k_target = tensor([0, 1, 2])
 _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
