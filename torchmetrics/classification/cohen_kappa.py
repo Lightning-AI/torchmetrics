@@ -97,7 +97,7 @@ class CohenKappa(Metric):
 
         allowed_weights = ('linear', 'quadratic', 'none', None)
         if self.weights not in allowed_weights:
-            raise AssertionError(f"Argument weights needs to one of the following: {allowed_weights}")
+            raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 

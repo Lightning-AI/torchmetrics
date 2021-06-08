@@ -69,7 +69,7 @@ def bleu_score(
     """
 
     if len(translate_corpus) != len(reference_corpus):
-        raise AssertionError
+        raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
     c = 0.0

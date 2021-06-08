@@ -116,7 +116,7 @@ class ConfusionMatrix(Metric):
 
         allowed_normalize = ('true', 'pred', 'all', 'none', None)
         if self.normalize not in allowed_normalize:
-            raise AssertionError(f"Argument average needs to one of the following: {allowed_normalize}")
+            raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
 
         default = torch.zeros(num_classes, 2, 2) if multilabel else torch.zeros(num_classes, num_classes)
         self.add_state("confmat", default=default, dist_reduce_fx="sum")
