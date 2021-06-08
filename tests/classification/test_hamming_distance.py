@@ -77,10 +77,19 @@ class TestHammingDistance(MetricTester):
 
     def test_hamming_distance_fn(self, preds, target):
         self.run_functional_metric_test(
-            preds,
-            target,
+            preds=preds,
+            target=target,
             metric_functional=hamming_distance,
             sk_metric=_sk_hamming_loss,
+            metric_args={"threshold": THRESHOLD},
+        )
+
+    def test_hamming_distance_differentiability(self, preds, target):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=HammingDistance,
+            metric_functional=hamming_distance,
             metric_args={"threshold": THRESHOLD},
         )
 

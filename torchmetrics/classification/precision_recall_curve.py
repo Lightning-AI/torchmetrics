@@ -146,3 +146,7 @@ class PrecisionRecallCurve(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _precision_recall_curve_compute(preds, target, self.num_classes, self.pos_label)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False
