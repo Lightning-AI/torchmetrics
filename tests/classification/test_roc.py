@@ -116,6 +116,15 @@ class TestROC(MetricTester):
             metric_args={"num_classes": num_classes},
         )
 
+    def test_roc_differentiability(self, preds, target, sk_metric, num_classes):
+        self.run_differentiability_test(
+            preds,
+            target,
+            metric_module=ROC,
+            metric_functional=roc,
+            metric_args={"num_classes": num_classes},
+        )
+
 
 @pytest.mark.parametrize(['pred', 'target', 'expected_tpr', 'expected_fpr'], [
     pytest.param([0, 1], [0, 1], [0, 1, 1], [0, 0, 1]),
