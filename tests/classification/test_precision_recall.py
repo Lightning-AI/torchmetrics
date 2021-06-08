@@ -303,6 +303,45 @@ class TestPrecisionRecall(MetricTester):
             },
         )
 
+    def test_precision_recall_differentiability(
+        self,
+        preds: Tensor,
+        target: Tensor,
+        sk_wrapper: Callable,
+        metric_class: Metric,
+        metric_fn: Callable,
+        sk_fn: Callable,
+        multiclass: Optional[bool],
+        num_classes: Optional[int],
+        average: str,
+        mdmc_average: Optional[str],
+        ignore_index: Optional[int],
+    ):
+        # todo: `metric_class` is unused
+        if num_classes == 1 and average != "micro":
+            pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
+
+        if ignore_index is not None and preds.ndim == 2:
+            pytest.skip("Skipping ignore_index test with binary inputs.")
+
+        if average == "weighted" and ignore_index is not None and mdmc_average is not None:
+            pytest.skip("Ignore special case where we are ignoring entire sample for 'weighted' average")
+
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=metric_class,
+            metric_functional=metric_fn,
+            metric_args={
+                "num_classes": num_classes,
+                "average": average,
+                "threshold": THRESHOLD,
+                "multiclass": multiclass,
+                "ignore_index": ignore_index,
+                "mdmc_average": mdmc_average,
+            },
+        )
+
 
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 def test_precision_recall_joint(average):

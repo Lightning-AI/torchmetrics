@@ -127,3 +127,15 @@ class TestMatthewsCorrCoef(MetricTester):
                 "threshold": THRESHOLD,
             }
         )
+
+    def test_matthews_corrcoef_differentiability(self, preds, target, sk_metric, num_classes):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MatthewsCorrcoef,
+            metric_functional=matthews_corrcoef,
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+            }
+        )
