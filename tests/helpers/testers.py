@@ -413,8 +413,8 @@ class MetricTester:
                 **kwargs_update,
             )
 
+    @staticmethod
     def run_precision_test_cpu(
-        self,
         preds: Tensor,
         target: Tensor,
         metric_module: Metric,
@@ -437,8 +437,8 @@ class MetricTester:
             metric_module(**metric_args), metric_functional, preds, target, device="cpu", **kwargs_update
         )
 
+    @staticmethod
     def run_precision_test_gpu(
-        self,
         preds: Tensor,
         target: Tensor,
         metric_module: Metric,
@@ -461,8 +461,8 @@ class MetricTester:
             metric_module(**metric_args), metric_functional, preds, target, device="cuda", **kwargs_update
         )
 
+    @staticmethod
     def run_differentiability_test(
-        self,
         preds: Tensor,
         target: Tensor,
         metric_module: Metric,
