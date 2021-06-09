@@ -41,7 +41,7 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_relative_error(x, y)
         tensor(0.1250)
-        
+
     .. deprecated::
         Use :func:`torchmetrics.functional.mean_absolute_percentage_error`. Will be removed in v0.5.0.
 
