@@ -96,8 +96,8 @@ class CohenKappa(Metric):
         self.threshold = threshold
 
         allowed_weights = ('linear', 'quadratic', 'none', None)
-        assert self.weights in allowed_weights, \
-            f"Argument weights needs to one of the following: {allowed_weights}"
+        if self.weights not in allowed_weights:
+            raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
@@ -119,7 +119,7 @@ class CohenKappa(Metric):
         return _cohen_kappa_compute(self.confmat, self.weights)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         """
         cohen kappa is not differentiable since the implementation
         is based on calculating the confusion matrix which in general

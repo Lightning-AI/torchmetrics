@@ -121,7 +121,7 @@ class RetrievalFallOut(RetrievalMetric):
                 # ensure list containt only float tensors
                 res.append(self._metric(mini_preds, mini_target))
 
-        return torch.stack([x.to(preds) for x in res]).mean() if len(res) else tensor(0.0).to(preds)
+        return torch.stack([x.to(preds) for x in res]).mean() if res else tensor(0.0).to(preds)
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_fall_out(preds, target, k=self.k)

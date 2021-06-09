@@ -278,6 +278,10 @@ class StatScores(Metric):
         tp, fp, tn, fn = self._get_final_stats()
         return _stat_scores_compute(tp, fp, tn, fn)
 
+    @property
+    def is_differentiable(self) -> bool:
+        return False
+
 
 def _reduce_stat_scores(
     numerator: Tensor,
