@@ -50,8 +50,7 @@ def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
     if target.sum() > 0:
         # sklearn `label_ranking_average_precision_score` requires at most 2 dims
         return label_ranking_average_precision_score(np.expand_dims(target, axis=0), np.expand_dims(preds, axis=0))
-    else:
-        return 0.0
+    return 0.0
 
 
 class TestMRR(RetrievalMetricTester):

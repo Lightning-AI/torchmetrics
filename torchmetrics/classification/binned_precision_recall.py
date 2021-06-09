@@ -163,8 +163,7 @@ class BinnedPrecisionRecallCurve(Metric):
         recalls = torch.cat([recalls, t_zeros], dim=1)
         if self.num_classes == 1:
             return (precisions[0, :], recalls[0, :], self.thresholds)
-        else:
-            return (list(precisions), list(recalls), [self.thresholds for _ in range(self.num_classes)])
+        return (list(precisions), list(recalls), [self.thresholds for _ in range(self.num_classes)])
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
