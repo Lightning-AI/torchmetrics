@@ -54,7 +54,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
     """
     structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
 
-    res = dict()
+    res = {}
     for i, _id in enumerate(indexes):
         _id = _id.item()
         if _id in res:
@@ -117,7 +117,7 @@ def _compute_sklearn_metric(
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
-    assert all([tests[0]['argnames'] == x['argnames'] for x in tests[1:]]), "the header must be the same for all tests"
+    assert all(tests[0]['argnames'] == x['argnames'] for x in tests[1:]), "the header must be the same for all tests"
     return dict(argnames=tests[0]['argnames'], argvalues=sum([x['argvalues'] for x in tests], []))
 
 
@@ -381,8 +381,8 @@ class RetrievalMetricTester(MetricTester):
             indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
         )
 
+    @staticmethod
     def run_metric_class_arguments_test(
-        self,
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
@@ -403,8 +403,8 @@ class RetrievalMetricTester(MetricTester):
             **kwargs_update,
         )
 
+    @staticmethod
     def run_functional_metric_arguments_test(
-        self,
         preds: Tensor,
         target: Tensor,
         metric_functional: Callable,
