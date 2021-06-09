@@ -180,10 +180,8 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for k in new_metric_collection.keys(keep_base=True):
         assert 'new_prefix_' not in k
 
-    assert type(new_metric_collection.keys(keep_base=True)
-                ) == type(new_metric_collection.keys(keep_base=False))  # noqa E721
-    assert type(new_metric_collection.items(keep_base=True)
-                ) == type(new_metric_collection.items(keep_base=False))  # noqa E721
+    assert isinstance(new_metric_collection.keys(keep_base=True), type(new_metric_collection.keys(keep_base=False)))
+    assert isinstance(new_metric_collection.items(keep_base=True), type(new_metric_collection.items(keep_base=False)))
 
     new_metric_collection = new_metric_collection.clone(postfix='_new_postfix')
     out = new_metric_collection(5)
