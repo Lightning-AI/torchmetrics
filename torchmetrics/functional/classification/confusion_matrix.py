@@ -45,8 +45,8 @@ def _confusion_matrix_update(
 
 def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
     allowed_normalize = ('true', 'pred', 'all', 'none', None)
-    assert normalize in allowed_normalize, \
-        f"Argument average needs to one of the following: {allowed_normalize}"
+    if normalize not in allowed_normalize:
+        raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
     if normalize is not None and normalize != 'none':
         confmat = confmat.float() if not confmat.is_floating_point() else confmat
         cm = None
