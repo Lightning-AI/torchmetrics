@@ -48,18 +48,7 @@ jobs:
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
       run: |
-        import re, sys
-        torch_lut = {'3.8': '1.4', '3.9': '1.7.1'}
-        py_ver = f'{sys.version_info.major}.{sys.version_info.minor}'
-        if py_ver in torch_lut:
-            fpath='requirements.txt'
-            req = re.sub(r'torch>=[\d\.]+', f'torch>={torch_lut[py_ver]}', open(fpath).read())
-            open(fpath, 'w').write(req)
-
-        for fpath in ('requirements.txt', 'requirements/test.txt', 'requirements/integrate.txt'):
-            req = open(fpath).read().replace('>=', '==')
-            open(fpath, 'w').write(req)
-      shell: python
+        python .github/set-minimal-versions.py
 
     - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
       if: matrix.requires == 'latest'
@@ -90,6 +79,7 @@ jobs:
 
     - name: Tests
       run: |
+        phmdoctest README.md --outfile tests/test_readme.py
         python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
 
     - name: Upload pytest test results
