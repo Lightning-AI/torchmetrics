@@ -46,8 +46,7 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     warn(
         "Function `mean_relative_error` was deprecated v0.4 and will be removed in v0.5."
-        "Use `mean_absolute_percentage_error` instead.",
-        DeprecationWarning
+        "Use `mean_absolute_percentage_error` instead.", DeprecationWarning
     )
     sum_rltv_error, n_obs = _mean_absolute_percentage_error_update(preds, target)
     return _mean_absolute_percentage_error_compute(sum_rltv_error, n_obs)
