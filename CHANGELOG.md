@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+- Remove `torchmetrics.functional.mean_relative_error`([#248](https://github.com/PyTorchLightning/metrics/pull/248))
 
 ### Removed
 

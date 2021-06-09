@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -51,5 +52,9 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.1250)
 
     """
+    warn(
+        "Function `mean_relative_error` was deprecated v0.3.3 and will be removed in v0.4."
+        "Use `mean_absolute_percentage_error` instead.", DeprecationWarning
+    )
     sum_rltv_error, n_obs = _mean_relative_error_update(preds, target)
     return _mean_relative_error_compute(sum_rltv_error, n_obs)
