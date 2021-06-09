@@ -125,7 +125,7 @@ def _sk_spec_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multicla
             num_classes,
             False,
             ignore_index,
-            top_k,
+            top_k
         )
         fp.append(fp_i)
         tn.append(tn_i)
