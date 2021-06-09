@@ -109,3 +109,7 @@ class HammingDistance(Metric):
         Computes hamming distance based on inputs passed in to ``update`` previously.
         """
         return _hamming_distance_compute(self.correct, self.total)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False

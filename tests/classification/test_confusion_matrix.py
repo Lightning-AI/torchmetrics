@@ -149,10 +149,24 @@ class TestConfusionMatrix(MetricTester):
 
     def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel):
         self.run_functional_metric_test(
-            preds,
-            target,
+            preds=preds,
+            target=target,
             metric_functional=confusion_matrix,
             sk_metric=partial(sk_metric, normalize=normalize),
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+                "normalize": normalize,
+                "multilabel": multilabel
+            }
+        )
+
+    def test_confusion_matrix_differentiability(self, normalize, preds, target, sk_metric, num_classes, multilabel):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=ConfusionMatrix,
+            metric_functional=confusion_matrix,
             metric_args={
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,

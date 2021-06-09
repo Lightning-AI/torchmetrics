@@ -133,6 +133,19 @@ class TestIoU(MetricTester):
             }
         )
 
+    def test_confusion_matrix_differentiability(self, reduction, preds, target, sk_metric, num_classes):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=IoU,
+            metric_functional=iou,
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+                "reduction": reduction
+            }
+        )
+
 
 @pytest.mark.parametrize(['half_ones', 'reduction', 'ignore_index', 'expected'], [
     pytest.param(False, 'none', None, Tensor([1, 1, 1])),

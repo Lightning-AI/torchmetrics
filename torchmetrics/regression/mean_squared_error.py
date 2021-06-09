@@ -91,5 +91,5 @@ class MeanSquaredError(Metric):
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True
