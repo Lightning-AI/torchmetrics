@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
 from warnings import warn
 
 import torch
@@ -21,7 +20,6 @@ from torchmetrics.functional.regression.mean_absolute_percentage_error import (
     _mean_absolute_percentage_error_compute,
     _mean_absolute_percentage_error_update,
 )
-from torchmetrics.utilities.checks import _check_same_shape
 
 
 def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
