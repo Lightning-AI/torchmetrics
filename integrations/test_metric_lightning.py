@@ -68,7 +68,7 @@ def test_metric_lightning(tmpdir):
 
         def training_epoch_end(self, outs):
             if not torch.allclose(self.sum, self.metric.compute()):
-                raise AssertionError
+                raise ValueError('Sum and computed value must be equal')
             self.sum = 0.0
             self.metric.reset()
 

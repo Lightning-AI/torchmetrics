@@ -206,8 +206,8 @@ class Metric(nn.Module, ABC):
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
 
-            if not (isinstance(reduction_fn, Callable) or reduction_fn is None):
-                raise AssertionError
+            if not (callable(reduction_fn) or reduction_fn is None):
+                raise TypeError('reduction_fn must be callable or None')
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
