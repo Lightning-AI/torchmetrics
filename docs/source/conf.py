@@ -325,7 +325,7 @@ def linkcode_resolve(domain, info):
             obj = getattr(obj, part)
         fname = inspect.getsourcefile(obj)
         # https://github.com/rtfd/readthedocs.org/issues/5735
-        if any([s in fname for s in ("readthedocs", "rtfd", "checkouts")]):
+        if any(s in fname for s in ("readthedocs", "rtfd", "checkouts")):
             # /home/docs/checkouts/readthedocs.org/user_builds/pytorch_lightning/checkouts/
             #  devel/pytorch_lightning/utilities/cls_experiment.py#L26-L176
             path_top = os.path.abspath(os.path.join("..", "..", ".."))
