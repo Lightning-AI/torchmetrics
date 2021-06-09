@@ -100,9 +100,9 @@ def _auroc_compute(
             # calculate average
             if average == AverageMethod.NONE:
                 return auc_scores
-            elif average == AverageMethod.MACRO:
+            if average == AverageMethod.MACRO:
                 return torch.mean(torch.stack(auc_scores))
-            elif average == AverageMethod.WEIGHTED:
+            if average == AverageMethod.WEIGHTED:
                 if mode == DataType.MULTILABEL:
                     support = torch.sum(target, dim=0)
                 else:
