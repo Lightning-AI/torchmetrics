@@ -219,7 +219,7 @@ def get_group_indexes(indexes: Tensor) -> List[Tensor]:
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
     """
 
-    res = dict()
+    res = {}
     for i, _id in enumerate(indexes):
         _id = _id.item()
         if _id in res:
