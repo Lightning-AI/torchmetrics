@@ -24,19 +24,6 @@ from torchmetrics.functional.regression.mean_absolute_percentage_error import (
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_relative_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    _check_same_shape(preds, target)
-    target_nz = target.clone()
-    target_nz[target == 0] = 1
-    sum_rltv_error = torch.sum(torch.abs((preds - target) / target_nz))
-    n_obs = target.numel()
-    return sum_rltv_error, n_obs
-
-
-def _mean_relative_error_compute(sum_rltv_error: Tensor, n_obs: int) -> Tensor:
-    return sum_rltv_error / n_obs
-
-
 def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     Computes mean relative error
@@ -54,6 +41,9 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_relative_error(x, y)
         tensor(0.1250)
+        
+    .. deprecated::
+        Use :func:`torchmetrics.functional.mean_absolute_percentage_error`. Will be removed in v0.5.0.
 
     """
     warn(
