@@ -77,7 +77,7 @@ def _sk_prec_recall_multidim_multiclass(
         target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
         return _sk_prec_recall(preds, target, sk_fn, num_classes, average, False, ignore_index)
-    elif mdmc_average == "samplewise":
+    if mdmc_average == "samplewise":
         scores = []
 
         for i in range(preds.shape[0]):

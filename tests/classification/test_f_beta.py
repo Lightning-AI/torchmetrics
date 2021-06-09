@@ -76,7 +76,7 @@ def _sk_fbeta_f1_multidim_multiclass(
         target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
         return _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, False, ignore_index)
-    elif mdmc_average == "samplewise":
+    if mdmc_average == "samplewise":
         scores = []
 
         for i in range(preds.shape[0]):

@@ -50,8 +50,7 @@ def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
         order_indexes = np.argsort(preds, axis=0)[::-1]
         relevant = np.sum(target[order_indexes][:k])
         return relevant * 1.0 / target.sum()
-    else:
-        return np.NaN
+    return np.NaN
 
 
 class TestFallOut(RetrievalMetricTester):
