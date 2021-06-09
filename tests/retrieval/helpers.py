@@ -54,7 +54,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
     """
     structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
 
-    res = dict()
+    res = {}
     for i, _id in enumerate(indexes):
         _id = _id.item()
         if _id in res:
