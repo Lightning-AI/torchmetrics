@@ -268,9 +268,8 @@ class Accuracy(StatScores):
         """
         if self.subset_accuracy:
             return _subset_accuracy_compute(self.correct, self.total)
-        else:
-            tp, fp, tn, fn = self._get_final_stats()
-            return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
+        tp, fp, tn, fn = self._get_final_stats()
+        return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
 
     @property
     def is_differentiable(self) -> bool:

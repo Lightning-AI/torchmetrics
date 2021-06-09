@@ -65,14 +65,13 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
         if squared:
             measures = measures**2
         return measures.mean(axis=0)
-    else:
-        if multiclass_mode == MulticlassMode.ONE_VS_ALL:
-            result = np.zeros(sk_preds.shape[1])
-            for i in range(result.shape[0]):
-                result[i] = sk_hinge(y_true=sk_target[:, i], pred_decision=sk_preds[:, i])
-            return result
+    if multiclass_mode == MulticlassMode.ONE_VS_ALL:
+        result = np.zeros(sk_preds.shape[1])
+        for i in range(result.shape[0]):
+            result[i] = sk_hinge(y_true=sk_target[:, i], pred_decision=sk_preds[:, i])
+        return result
 
-        return sk_hinge(y_true=sk_target, pred_decision=sk_preds)
+    return sk_hinge(y_true=sk_target, pred_decision=sk_preds)
 
 
 @pytest.mark.parametrize(
