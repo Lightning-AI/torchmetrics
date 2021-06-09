@@ -88,7 +88,6 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
         (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
-
     ],
 )
 class TestMeanError(MetricTester):

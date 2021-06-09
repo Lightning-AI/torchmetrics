@@ -19,9 +19,9 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_absolute_percentage_error_update(
-        preds: Tensor, target: Tensor, epsilon: float = 1.17e-06
-) -> Tuple[Tensor, int]:
+def _mean_absolute_percentage_error_update(preds: Tensor,
+                                           target: Tensor,
+                                           epsilon: float = 1.17e-06) -> Tuple[Tensor, int]:
 
     _check_same_shape(preds, target)
 

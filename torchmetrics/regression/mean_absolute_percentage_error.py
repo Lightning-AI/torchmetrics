@@ -59,6 +59,7 @@ class MeanAbsolutePercentageError(Metric):
         >>> mean_abs_percentage_error(preds, target)
         tensor(0.2667)
     """
+
     def __init__(
         self,
         compute_on_step: bool = True,
