@@ -118,15 +118,7 @@ def _sk_spec_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multicla
     for i in range(preds.shape[0]):
         pred_i = preds[i, ...].T
         target_i = target[i, ...].T
-        fp_i, tn_i = _sk_stats_score(
-            pred_i,
-            target_i,
-            reduce,
-            num_classes,
-            False,
-            ignore_index,
-            top_k
-        )
+        fp_i, tn_i = _sk_stats_score(pred_i, target_i, reduce, num_classes, False, ignore_index, top_k)
         fp.append(fp_i)
         tn.append(tn_i)
 
