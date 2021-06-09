@@ -58,14 +58,22 @@ _multi_target_inputs = Input(
 def _single_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
+
+    # `sk_target` and `sk_preds` switched to fix failing tests.
+    # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
     res = sk_fn(sk_target, sk_preds)
+
     return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
 
 
 def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
+
+    # `sk_target` and `sk_preds` switched to fix failing tests.
+    # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
     res = sk_fn(sk_target, sk_preds)
+
     return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
 
 
