@@ -171,7 +171,7 @@ class Metric(nn.Module, ABC):
             self._to_sync = self.dist_sync_on_step
 
             # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+            cache = {attr: getattr(self, attr) for attr in self._defaults}
 
             # call reset, update, compute, on single batch
             self.reset()
@@ -187,7 +187,7 @@ class Metric(nn.Module, ABC):
             return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn=gather_all_tensors):
-        input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
+        input_dict = {attr: getattr(self, attr) for attr in self._reductions}
         for attr, reduction_fn in self._reductions.items():
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
@@ -245,7 +245,7 @@ class Metric(nn.Module, ABC):
             cache = []
             if self._to_sync and dist_sync_fn is not None:
                 # cache prior to syncing
-                cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+                cache = {attr: getattr(self, attr) for attr in self._defaults}
 
                 # sync
                 self._sync_dist(dist_sync_fn)
@@ -335,13 +335,13 @@ class Metric(nn.Module, ABC):
         """Method for post-init to change if metric states should be saved to
         its state_dict
         """
-        for key in self._persistent.keys():
+        for key in self._persistent:
             self._persistent[key] = mode
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
-        for key in self._defaults.keys():
+        for key in self._defaults:
             if self._persistent[key]:
                 current_val = getattr(self, key)
                 if not keep_vars:
@@ -363,7 +363,7 @@ class Metric(nn.Module, ABC):
         error_msgs: List[str],
     ) -> None:
         """ Loads metric states from state_dict """
-        for key in self._defaults.keys():
+        for key in self._defaults:
             name = prefix + key
             if name in state_dict:
                 setattr(self, key, state_dict.pop(name))
@@ -391,7 +391,7 @@ class Metric(nn.Module, ABC):
     def __hash__(self):
         hash_vals = [self.__class__.__name__]
 
-        for key in self._defaults.keys():
+        for key in self._defaults:
             val = getattr(self, key)
             # Special case: allow list values, so long
             # as their elements are hashable
