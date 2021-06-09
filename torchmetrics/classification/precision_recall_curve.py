@@ -39,8 +39,8 @@ class PrecisionRecallCurve(Metric):
     - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
 
     Args:
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translate to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
@@ -146,3 +146,7 @@ class PrecisionRecallCurve(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _precision_recall_curve_compute(preds, target, self.num_classes, self.pos_label)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False

@@ -67,7 +67,8 @@ def test_metric_lightning(tmpdir):
             return self.step(x)
 
         def training_epoch_end(self, outs):
-            assert torch.allclose(self.sum, self.metric.compute())
+            if not torch.allclose(self.sum, self.metric.compute()):
+                raise ValueError('Sum and computed value must be equal')
             self.sum = 0.0
             self.metric.reset()
 
@@ -146,13 +147,16 @@ def test_metrics_reset(tmpdir):
             lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
             return [optimizer], [lr_scheduler]
 
-        def train_dataloader(self):
+        @staticmethod
+        def train_dataloader():
             return DataLoader(RandomDataset(32, 64), batch_size=2)
 
-        def val_dataloader(self):
+        @staticmethod
+        def val_dataloader():
             return DataLoader(RandomDataset(32, 64), batch_size=2)
 
-        def test_dataloader(self):
+        @staticmethod
+        def test_dataloader():
             return DataLoader(RandomDataset(32, 64), batch_size=2)
 
         def _assert_epoch_end(self, stage):

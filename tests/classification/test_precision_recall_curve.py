@@ -97,6 +97,15 @@ class TestPrecisionRecallCurve(MetricTester):
             metric_args={"num_classes": num_classes},
         )
 
+    def test_precision_recall_curve_differentiability(self, preds, target, sk_metric, num_classes):
+        self.run_differentiability_test(
+            preds,
+            target,
+            metric_module=PrecisionRecallCurve,
+            metric_functional=precision_recall_curve,
+            metric_args={"num_classes": num_classes},
+        )
+
 
 @pytest.mark.parametrize(
     ['pred', 'target', 'expected_p', 'expected_r', 'expected_t'],

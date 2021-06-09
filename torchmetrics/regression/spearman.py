@@ -96,5 +96,5 @@ class SpearmanCorrcoef(Metric):
         return _spearman_corrcoef_compute(preds, target)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False

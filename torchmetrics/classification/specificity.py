@@ -172,5 +172,5 @@ class Specificity(StatScores):
         return _specificity_compute(fp, tn, self.average, self.mdmc_reduce)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False
