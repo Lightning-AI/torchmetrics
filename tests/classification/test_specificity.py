@@ -112,28 +112,19 @@ def _sk_spec_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multicla
         preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
         target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
         return _sk_spec(preds, target, reduce, num_classes, False, ignore_index, top_k, mdmc_reduce)
-    else:
-        fp, tn = [], []
-        stats = []
+    fp, tn = [], []
+    stats = []
 
-        for i in range(preds.shape[0]):
-            pred_i = preds[i, ...].T
-            target_i = target[i, ...].T
-            fp_i, tn_i = _sk_stats_score(
-                pred_i,
-                target_i,
-                reduce,
-                num_classes,
-                False,
-                ignore_index,
-                top_k,
-            )
-            fp.append(fp_i)
-            tn.append(tn_i)
+    for i in range(preds.shape[0]):
+        pred_i = preds[i, ...].T
+        target_i = target[i, ...].T
+        fp_i, tn_i = _sk_stats_score(pred_i, target_i, reduce, num_classes, False, ignore_index, top_k)
+        fp.append(fp_i)
+        tn.append(tn_i)
 
-        stats.append(fp)
-        stats.append(tn)
-        return _sk_spec(preds[0], target[0], reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce, stats)
+    stats.append(fp)
+    stats.append(tn)
+    return _sk_spec(preds[0], target[0], reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce, stats)
 
 
 @pytest.mark.parametrize("metric, fn_metric", [(Specificity, specificity)])
