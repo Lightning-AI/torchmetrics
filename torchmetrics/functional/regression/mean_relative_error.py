@@ -17,6 +17,10 @@ from warnings import warn
 import torch
 from torch import Tensor
 
+from torchmetrics.functional.regression.mean_absolute_percentage_error import (
+    _mean_absolute_percentage_error_compute,
+    _mean_absolute_percentage_error_update,
+)
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -54,7 +58,8 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     warn(
         "Function `mean_relative_error` was deprecated v0.4 and will be removed in v0.5."
-        "Use `mean_absolute_percentage_error` instead.", DeprecationWarning
+        "Use `mean_absolute_percentage_error` instead.",
+        DeprecationWarning,
     )
-    sum_rltv_error, n_obs = _mean_relative_error_update(preds, target)
-    return _mean_relative_error_compute(sum_rltv_error, n_obs)
+    sum_rltv_error, n_obs = _mean_absolute_percentage_error_update(preds, target)
+    return _mean_absolute_percentage_error_compute(sum_rltv_error, n_obs)
