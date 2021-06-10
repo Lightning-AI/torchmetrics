@@ -12,53 +12,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
 
 
-- Added `is_differentiable` property:
-    * To `AUC`, `AUROC`, `CohenKappa` and `AveragePrecision` ([#178](https://github.com/PyTorchLightning/metrics/pull/178))
-    * To `PearsonCorrCoef`, `SpearmanCorrcoef`, `R2Score` and `ExplainedVariance` ([#225](https://github.com/PyTorchLightning/metrics/pull/225))
-
 - Added `add_metrics` method to `MetricCollection` for adding additional metrics after initialization ([#221](https://github.com/PyTorchLightning/metrics/pull/221))
 
 
 - Added pre-gather reduction in the case of `dist_reduce_fx="cat"` to reduce communication cost ([#217](https://github.com/PyTorchLightning/metrics/pull/217))
 
 
+- Added better error message for `AUROC` when `num_classes` is not provided for multiclass input ([#244](https://github.com/PyTorchLightning/metrics/pull/244))
+
+
+- Added support for unnormalized scores (e.g. logits) in `Accuracy`, `Precision`, `Recall`, `FBeta`, `F1`, `StatScore`, `Hamming`, `ConfusionMatrix` metrics ([#200](https://github.com/PyTorchLightning/metrics/pull/200))
+
+
+- Added `MeanAbsolutePercentageError(MAPE)` metric. ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
+
+
+- Added `squared` argument to `MeanSquaredError` for computing `RMSE` ([#249](https://github.com/PyTorchLightning/metrics/pull/249))
+
+
+- Added `is_differentiable` property to `ConfusionMatrix`, `F1`, `FBeta`, `Hamming`, `Hinge`, `IOU`, `MatthewsCorrcoef`, `Precision`, `Recall`, `PrecisionRecallCurve`, `ROC`, `StatScores` ([#253](https://github.com/PyTorchLightning/metrics/pull/253))
+
+
+### Changed
+
+- Forward cache is now reset when `reset` method is called ([#260](https://github.com/PyTorchLightning/metrics/pull/260))
+
+### Deprecated
+
+- Remove `torchmetrics.functional.mean_relative_error`([#248](https://github.com/PyTorchLightning/metrics/pull/248))
+
+### Removed
+
+
+### Fixed
+
+- AUC can also support more dimensional inputs when all but one dimensions are of size 1 ([#242](https://github.com/PyTorchLightning/metrics/pull/242))
+
+- Fixed dtype of modular metrics after reset have been called ([#243](https://github.com/PyTorchLightning/metrics/pull/243))
+
+## [0.3.2] - 2021-05-10
+
+### Added
+
+- Added `is_differentiable` property:
+    * To `AUC`, `AUROC`, `CohenKappa` and `AveragePrecision` ([#178](https://github.com/PyTorchLightning/metrics/pull/178))
+    * To `PearsonCorrCoef`, `SpearmanCorrcoef`, `R2Score` and `ExplainedVariance` ([#225](https://github.com/PyTorchLightning/metrics/pull/225))
 
 ### Changed
 
 - `MetricCollection` should return metrics with prefix on `items()`, `keys()` ([#209](https://github.com/PyTorchLightning/metrics/pull/209))
-
-
 - Calling `compute` before `update` will now give an warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
-
-
-
-### Deprecated
-
 
 ### Removed
 
 - Removed `numpy` as dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
 
-
 ### Fixed
 
 - Fixed auc calculation and add tests ([#197](https://github.com/PyTorchLightning/metrics/pull/197))
-
-
 - Fixed loading persisted metric states using `load_state_dict()` ([#202](https://github.com/PyTorchLightning/metrics/pull/202))
-
-
 - Fixed `PSNR` not working with `DDP` ([#214](https://github.com/PyTorchLightning/metrics/pull/214))
-
-
 - Fixed metric calculation with unequal batch sizes ([#220](https://github.com/PyTorchLightning/metrics/pull/220))
-
-
 - Fixed metric concatenation for list states for zero-dim input ([#229](https://github.com/PyTorchLightning/metrics/pull/229))
-
-
 - Fixed numerical instability in `AUROC` metric for large input ([#230](https://github.com/PyTorchLightning/metrics/pull/230))
-
 
 ## [0.3.1] - 2021-04-21
 

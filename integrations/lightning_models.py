@@ -84,10 +84,12 @@ class BoringModel(LightningModule):
         loss = self.loss(batch, output)
         return {"loss": loss}
 
-    def training_step_end(self, training_step_outputs):
+    @staticmethod
+    def training_step_end(training_step_outputs):
         return training_step_outputs
 
-    def training_epoch_end(self, outputs) -> None:
+    @staticmethod
+    def training_epoch_end(outputs) -> None:
         torch.stack([x["loss"] for x in outputs]).mean()
 
     def validation_step(self, batch, batch_idx):
@@ -95,7 +97,8 @@ class BoringModel(LightningModule):
         loss = self.loss(batch, output)
         return {"x": loss}
 
-    def validation_epoch_end(self, outputs) -> None:
+    @staticmethod
+    def validation_epoch_end(outputs) -> None:
         torch.stack([x['x'] for x in outputs]).mean()
 
     def test_step(self, batch, batch_idx):
@@ -103,7 +106,8 @@ class BoringModel(LightningModule):
         loss = self.loss(batch, output)
         return {"y": loss}
 
-    def test_epoch_end(self, outputs) -> None:
+    @staticmethod
+    def test_epoch_end(outputs) -> None:
         torch.stack([x["y"] for x in outputs]).mean()
 
     def configure_optimizers(self):
@@ -111,11 +115,14 @@ class BoringModel(LightningModule):
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
         return [optimizer], [lr_scheduler]
 
-    def train_dataloader(self):
+    @staticmethod
+    def train_dataloader():
         return torch.utils.data.DataLoader(RandomDataset(32, 64))
 
-    def val_dataloader(self):
+    @staticmethod
+    def val_dataloader():
         return torch.utils.data.DataLoader(RandomDataset(32, 64))
 
-    def test_dataloader(self):
+    @staticmethod
+    def test_dataloader():
         return torch.utils.data.DataLoader(RandomDataset(32, 64))

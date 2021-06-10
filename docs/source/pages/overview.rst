@@ -1,3 +1,7 @@
+.. testsetup:: *
+
+    import torch
+    from pytorch_lightning.core.lightning import LightningModule
 
 ########
 Overview
@@ -91,7 +95,7 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
     from torchmetrics import Accuracy, MetricCollection
 
-    class MyModule():
+    class MyModule(torch.nn.Module):
         def __init__(self):
             ...
             # valid ways metrics will be identified as child modules
@@ -117,6 +121,23 @@ mode, one should be aware DP will both create and clean-up replicas of Metric ob
 This has the consequence, that the metric state of the replicas will as default be destroyed before we can sync
 them. It is therefore recommended, when using metrics in DP mode, to initialize them with ``dist_sync_on_step=True``
 such that metric states are synchonized between the main process and the replicas before they are destroyed.
+
+Addtionally, if metrics are used together with a `LightningModule` the metric update/logging should be done
+in the ``<mode>_step_end`` method (where ``<mode>`` is either ``training``, ``validation`` or ``test``), else
+it will lead to wrong accumulation. In practice do the following:
+
+.. testcode::
+
+    def training_step(self, batch, batch_idx):
+        data, target = batch
+        preds = self(data)
+        ...
+        return {'loss' : loss, 'preds' : preds, 'target' : target}
+
+    def training_step_end(self, outputs):
+        #update and log
+        self.metric(outputs['preds'], outputs['target'])
+        self.log('metric', self.metric)
 
 Metrics in Distributed Data Parallel (DDP) mode
 ===============================================
@@ -238,7 +259,7 @@ inside your LightningModule
 
     from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 
-    class MyModule():
+    class MyModule(LightningModule):
         def __init__(self):
             metrics = MetricCollection([Accuracy(), Precision(), Recall()])
             self.train_metrics = metrics.clone(prefix='train_')

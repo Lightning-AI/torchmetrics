@@ -23,6 +23,7 @@ _cohen_kappa_update = _confusion_matrix_update
 
 def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tensor:
     confmat = _confusion_matrix_compute(confmat)
+    confmat = confmat.float() if not confmat.is_floating_point() else confmat
     n_classes = confmat.shape[0]
     sum0 = confmat.sum(dim=0, keepdim=True)
     sum1 = confmat.sum(dim=1, keepdim=True)

@@ -11,25 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
-
-
-def _mean_relative_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    _check_same_shape(preds, target)
-    target_nz = target.clone()
-    target_nz[target == 0] = 1
-    sum_rltv_error = torch.sum(torch.abs((preds - target) / target_nz))
-    n_obs = target.numel()
-    return sum_rltv_error, n_obs
-
-
-def _mean_relative_error_compute(sum_rltv_error: Tensor, n_obs: int) -> Tensor:
-    return sum_rltv_error / n_obs
+from torchmetrics.functional.regression.mean_absolute_percentage_error import (
+    _mean_absolute_percentage_error_compute,
+    _mean_absolute_percentage_error_update,
+)
 
 
 def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
@@ -50,6 +40,13 @@ def mean_relative_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> mean_relative_error(x, y)
         tensor(0.1250)
 
+    .. deprecated::
+        Use :func:`torchmetrics.functional.mean_absolute_percentage_error`. Will be removed in v0.5.0.
+
     """
-    sum_rltv_error, n_obs = _mean_relative_error_update(preds, target)
-    return _mean_relative_error_compute(sum_rltv_error, n_obs)
+    warn(
+        "Function `mean_relative_error` was deprecated v0.4 and will be removed in v0.5."
+        "Use `mean_absolute_percentage_error` instead.", DeprecationWarning
+    )
+    sum_rltv_error, n_obs = _mean_absolute_percentage_error_update(preds, target)
+    return _mean_absolute_percentage_error_compute(sum_rltv_error, n_obs)

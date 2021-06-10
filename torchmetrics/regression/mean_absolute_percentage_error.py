@@ -16,18 +16,18 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.mean_absolute_error import (
-    _mean_absolute_error_compute,
-    _mean_absolute_error_update,
+from torchmetrics.functional.regression.mean_absolute_percentage_error import (
+    _mean_absolute_percentage_error_compute,
+    _mean_absolute_percentage_error_update,
 )
 from torchmetrics.metric import Metric
 
 
-class MeanAbsoluteError(Metric):
+class MeanAbsolutePercentageError(Metric):
     r"""
-    Computes `mean absolute error <https://en.wikipedia.org/wiki/Mean_absolute_error>`_ (MAE):
+    Computes `mean absolute percentage error <https://en.wikipedia.org/wiki/Mean_absolute_percentage_error>`_ (MAPE):
 
-    .. math:: \text{MAE} = \frac{1}{N}\sum_i^N | y_i - \hat{y_i} |
+    .. math:: \text{MAPE} = \frac{1}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, y_i)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -40,13 +40,24 @@ class MeanAbsoluteError(Metric):
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
+    Note:
+        The epsilon value is taken from `scikit-learn's implementation
+        <https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197>`_.
+
+    Note:
+        MAPE output is a non-negative floating point. Best result is 0.0 . But it is important to note that,
+        bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
+        This implementation returns a very large number instead of ``inf``.
+        For more information,  `read here
+        <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html>`_.
+
     Example:
-        >>> from torchmetrics import MeanAbsoluteError
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> mean_absolute_error = MeanAbsoluteError()
-        >>> mean_absolute_error(preds, target)
-        tensor(0.5000)
+        >>> from torchmetrics import MeanAbsolutePercentageError
+        >>> target = torch.tensor([1, 10, 1e6])
+        >>> preds = torch.tensor([0.9, 15, 1.2e6])
+        >>> mean_abs_percentage_error = MeanAbsolutePercentageError()
+        >>> mean_abs_percentage_error(preds, target)
+        tensor(0.2667)
     """
 
     def __init__(
@@ -63,10 +74,10 @@ class MeanAbsoluteError(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_abs_error", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets.
 
@@ -74,16 +85,16 @@ class MeanAbsoluteError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
+        sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
 
-        self.sum_abs_error += sum_abs_error
-        self.total += n_obs
+        self.sum_abs_per_error += sum_abs_per_error
+        self.total += num_obs
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
-        Computes mean absolute error over state.
+        Computes mean absolute percentage error over state.
         """
-        return _mean_absolute_error_compute(self.sum_abs_error, self.total)
+        return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
 
     @property
     def is_differentiable(self) -> bool:

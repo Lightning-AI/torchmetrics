@@ -137,7 +137,7 @@ class Metric(nn.Module, ABC):
             ValueError:
                 If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``None``.
         """
-        if (not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default)):
+        if not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
 
         if dist_reduce_fx == "sum":
@@ -166,13 +166,12 @@ class Metric(nn.Module, ABC):
         # add current step
         with torch.no_grad():
             self.update(*args, **kwargs)
-        self._forward_cache = None
 
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
 
             # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+            cache = {attr: getattr(self, attr) for attr in self._defaults}
 
             # call reset, update, compute, on single batch
             self.reset()
@@ -188,7 +187,7 @@ class Metric(nn.Module, ABC):
             return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn=gather_all_tensors):
-        input_dict = {attr: getattr(self, attr) for attr in self._reductions.keys()}
+        input_dict = {attr: getattr(self, attr) for attr in self._reductions}
         for attr, reduction_fn in self._reductions.items():
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
@@ -207,7 +206,8 @@ class Metric(nn.Module, ABC):
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
 
-            assert isinstance(reduction_fn, Callable) or reduction_fn is None
+            if not (callable(reduction_fn) or reduction_fn is None):
+                raise TypeError('reduction_fn must be callable or None')
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
@@ -229,8 +229,7 @@ class Metric(nn.Module, ABC):
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
                     " was called before the ``update`` method which may lead to errors,"
-                    " as metric states have not yet been updated.",
-                    UserWarning
+                    " as metric states have not yet been updated.", UserWarning
                 )
 
             # return cached value
@@ -246,7 +245,7 @@ class Metric(nn.Module, ABC):
             cache = []
             if self._to_sync and dist_sync_fn is not None:
                 # cache prior to syncing
-                cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+                cache = {attr: getattr(self, attr) for attr in self._defaults}
 
                 # sync
                 self._sync_dist(dist_sync_fn)
@@ -282,6 +281,7 @@ class Metric(nn.Module, ABC):
         This method automatically resets the metric state variables to their default value.
         """
         self._update_called = False
+        self._forward_cache = None
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log
         if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
             self._computed = None
@@ -312,8 +312,13 @@ class Metric(nn.Module, ABC):
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
         this = super()._apply(fn)
-        # Also apply fn to metric states
-        for key in this._defaults.keys():
+        # Also apply fn to metric states and defaults
+        for key, value in this._defaults.items():
+            if isinstance(value, Tensor):
+                this._defaults[key] = fn(value)
+            elif isinstance(value, Sequence):
+                this._defaults[key] = [fn(v) for v in value]
+
             current_val = getattr(this, key)
             if isinstance(current_val, Tensor):
                 setattr(this, key, fn(current_val))
@@ -330,13 +335,13 @@ class Metric(nn.Module, ABC):
         """Method for post-init to change if metric states should be saved to
         its state_dict
         """
-        for key in self._persistent.keys():
+        for key in self._persistent:
             self._persistent[key] = mode
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
-        for key in self._defaults.keys():
+        for key in self._defaults:
             if self._persistent[key]:
                 current_val = getattr(self, key)
                 if not keep_vars:
@@ -358,7 +363,7 @@ class Metric(nn.Module, ABC):
         error_msgs: List[str],
     ) -> None:
         """ Loads metric states from state_dict """
-        for key in self._defaults.keys():
+        for key in self._defaults:
             name = prefix + key
             if name in state_dict:
                 setattr(self, key, state_dict.pop(name))
@@ -386,7 +391,7 @@ class Metric(nn.Module, ABC):
     def __hash__(self):
         hash_vals = [self.__class__.__name__]
 
-        for key in self._defaults.keys():
+        for key in self._defaults:
             val = getattr(self, key)
             # Special case: allow list values, so long
             # as their elements are hashable

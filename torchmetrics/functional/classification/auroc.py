@@ -85,6 +85,8 @@ def _auroc_compute(
             fpr = [o[0] for o in output]
             tpr = [o[1] for o in output]
     else:
+        if mode != 'binary' and num_classes is None:
+            raise ValueError('Detected input to ``multiclass`` but you did not provide ``num_classes`` argument')
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
@@ -98,9 +100,9 @@ def _auroc_compute(
             # calculate average
             if average == AverageMethod.NONE:
                 return auc_scores
-            elif average == AverageMethod.MACRO:
+            if average == AverageMethod.MACRO:
                 return torch.mean(torch.stack(auc_scores))
-            elif average == AverageMethod.WEIGHTED:
+            if average == AverageMethod.WEIGHTED:
                 if mode == DataType.MULTILABEL:
                     support = torch.sum(target, dim=0)
                 else:
@@ -148,8 +150,8 @@ def auroc(
     Args:
         preds: predictions from model (logits or probabilities)
         target: Ground truth labels
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translate to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the

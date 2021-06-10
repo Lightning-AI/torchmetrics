@@ -269,8 +269,12 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.double()
     assert metric.x.dtype == torch.float64
+    metric.reset()
+    assert metric.x.dtype == torch.float64
 
     metric = metric.half()
+    assert metric.x.dtype == torch.float16
+    metric.reset()
     assert metric.x.dtype == torch.float16
 
 
@@ -299,3 +303,11 @@ def test_warning_on_compute_before_update():
 def test_metric_scripts():
     torch.jit.script(DummyMetric())
     torch.jit.script(DummyMetricSum())
+
+
+def test_metric_forward_cache_reset():
+    metric = DummyMetricSum()
+    _ = metric(2.0)
+    assert metric._forward_cache == 2.0
+    metric.reset()
+    assert metric._forward_cache is None
