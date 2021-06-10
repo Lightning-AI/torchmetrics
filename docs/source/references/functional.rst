@@ -188,6 +188,13 @@ mean_absolute_error [func]
     :noindex:
 
 
+mean_absolute_percentage_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.mean_absolute_percentage_error
+    :noindex:
+
+
 mean_squared_error [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

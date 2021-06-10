@@ -268,6 +268,13 @@ MeanAbsoluteError
     :noindex:
 
 
+MeanAbsolutePercentageError
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MeanAbsolutePercentageError
+    :noindex:
+
+
 MeanSquaredError
 ~~~~~~~~~~~~~~~~
 
