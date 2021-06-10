@@ -18,13 +18,24 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
+from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import mean_absolute_error, mean_squared_error, mean_squared_log_error
-from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, MeanSquaredLogError
+from torchmetrics.functional import (
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    mean_squared_error,
+    mean_squared_log_error,
+)
+from torchmetrics.regression import (
+    MeanAbsoluteError,
+    MeanAbsolutePercentageError,
+    MeanSquaredError,
+    MeanSquaredLogError,
+)
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -47,14 +58,22 @@ _multi_target_inputs = Input(
 def _single_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
-    res = sk_fn(sk_preds, sk_target)
+
+    # `sk_target` and `sk_preds` switched to fix failing tests.
+    # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
+    res = sk_fn(sk_target, sk_preds)
+
     return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
 
 
 def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
-    res = sk_fn(sk_preds, sk_target)
+
+    # `sk_target` and `sk_preds` switched to fix failing tests.
+    # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
+    res = sk_fn(sk_target, sk_preds)
+
     return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
 
 
@@ -75,6 +94,7 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
             'squared': False
         }),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
+        (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
     ],
 )
@@ -124,6 +144,11 @@ class TestMeanError(MetricTester):
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
+
+        if metric_class == MeanAbsolutePercentageError:
+            # MeanSquaredPercentageError half + cpu does not work due to missing support in torch.log
+            pytest.xfail("MeanSquaredPercentageError metric does not support cpu + half precision")
+
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
@@ -131,7 +156,9 @@ class TestMeanError(MetricTester):
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 
-@pytest.mark.parametrize("metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError])
+@pytest.mark.parametrize(
+    "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
+)
 def test_error_on_different_shape(metric_class):
     metric = metric_class()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):

@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.regression.explained_variance import ExplainedVariance  # noqa: F401
 from torchmetrics.regression.mean_absolute_error import MeanAbsoluteError  # noqa: F401
+from torchmetrics.regression.mean_absolute_percentage_error import MeanAbsolutePercentageError  # noqa: F401
 from torchmetrics.regression.mean_squared_error import MeanSquaredError  # noqa: F401
 from torchmetrics.regression.mean_squared_log_error import MeanSquaredLogError  # noqa: F401
 from torchmetrics.regression.pearson import PearsonCorrcoef  # noqa: F401
