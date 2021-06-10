@@ -53,8 +53,8 @@ def _fbeta_compute(
 
     if ignore_index is not None:
         if (
-            average not in (AverageMethod.MICRO.value, AverageMethod.SAMPLES.value)
-            and mdmc_average == MDMCAverageMethod.SAMPLEWISE  # noqa: W503
+            average not in (AverageMethod.MICRO.value, AverageMethod.SAMPLES.value) and
+            mdmc_average == MDMCAverageMethod.SAMPLEWISE  # noqa: W503
         ):
             num[..., ignore_index] = -1
             denom[..., ignore_index] = -1
