@@ -28,7 +28,7 @@ exclude docs
 
 # Include the Requirements
 include requirements.txt
-recursive-exclude requirements *.txt
+recursive-include requirements *.txt
 
 # Exclude build configs
 exclude *.yml
