@@ -18,7 +18,6 @@ import torch
 from scipy.linalg import sqrtm as scipy_sqrtm
 from torch.utils.data import Dataset
 
-from tests.helpers.datasets import TrialMNIST
 from torchmetrics.image.fid import FID, sqrtm
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -110,9 +109,9 @@ def test_compare_fid(tmpdir, feature=2048):
 
     metric = FID(feature=feature).cuda()
 
-    # We need more samples than the size of the feature vectors to not end up with a singular covariance
-    img1 = TrialMNIST(tmpdir, num_samples=1000, digits=(0, 1, 2)).data.unsqueeze(1).repeat(1, 3, 1, 1)
-    img2 = TrialMNIST(tmpdir, num_samples=1000, digits=(1, 2, 3)).data.unsqueeze(1).repeat(1, 3, 1, 1)
+    # Generate some synthetic data
+    img1 = torch.randint(0, 180, (500, 3, 299, 299), dtype=torch.uint8)
+    img2 = torch.randint(100, 255, (500, 3, 299, 299), dtype=torch.uint8)
 
     batch_size = 100
     for i in range(img1.shape[0] // batch_size):
