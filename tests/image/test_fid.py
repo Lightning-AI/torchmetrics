@@ -40,6 +40,23 @@ def test_matrix_sqrt(matrix_size):
     assert torch.allclose(torch.tensor(scipy_res).float(), tm_res, atol=1e-3)
 
 
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+def test_no_train():
+    """ Assert that metric never leaves evaluation mode """
+    class MyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.metric = FID()
+
+        def forward(self, x):
+            return x
+
+    model = MyModel()
+    model.train()
+    assert model.training
+    assert not model.metric.inception.training, 'FID metric was changed to training mode which should not happen'
+
+
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
 def test_fid_pickle():
     """ Assert that we can initialize the metric and pickle it"""
