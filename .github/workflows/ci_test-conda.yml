@@ -59,6 +59,7 @@ jobs:
         conda install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
         conda list
         pip --version
+        python ./requirements/adjust_versions.py requirements/image.txt
         pip install --requirement requirements.txt --upgrade-strategy only-if-needed -v
         pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed -v
         pip list
