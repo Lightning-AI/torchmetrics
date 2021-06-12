@@ -49,7 +49,6 @@ jobs:
       if: matrix.requires == 'minimal'
       run: |
         python .github/set-minimal-versions.py
-        python ./requirements/adjust_versions.py requirements/image.txt
 
     - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
       if: matrix.requires == 'latest'
@@ -73,6 +72,8 @@ jobs:
       run: |
         python --version
         pip --version
+        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        python ./requirements/adjust_versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip uninstall -y torchmetrics
         pip list
