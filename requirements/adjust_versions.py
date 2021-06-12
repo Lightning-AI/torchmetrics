@@ -13,6 +13,8 @@ VERSIONS = [
     dict(torch="1.5.1", torchvision="0.6.1", torchtext="0.6"),
     dict(torch="1.5.0", torchvision="0.6.0", torchtext="0.6"),
     dict(torch="1.4.0", torchvision="0.5.0", torchtext="0.5"),
+    dict(torch="1.3.1", torchvision="0.4.2", torchtext="0.4"),
+    dict(torch="1.3.0", torchvision="0.4.1", torchtext="0.4"),
 ]
 VERSIONS.sort(key=lambda v: v["torch"], reverse=True)
 
