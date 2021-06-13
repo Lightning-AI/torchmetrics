@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+
 from torch import Tensor, tensor
+
 from torchmetrics.functional.audio.snr import snr
 from torchmetrics.metric import Metric
 
@@ -22,8 +24,8 @@ class SNR(Metric):
 
     Forward accepts
 
-    - ``preds`` (Tensor): ``shape [..., time]``
-    - ``target`` (Tensor): ``shape [..., time]``
+    - ``preds``: ``shape [..., time]``
+    - ``target``: ``shape [..., time]``
 
     Args:
         zero_mean:
@@ -93,7 +95,7 @@ class SNR(Metric):
         self.sum_snr += snr_batch.sum()
         self.total += snr_batch.numel()
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes average SNR.
         """
