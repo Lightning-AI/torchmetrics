@@ -333,4 +333,3 @@ retrieval_normalized_dcg [func]
 
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
     :noindex:
-

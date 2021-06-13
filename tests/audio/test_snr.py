@@ -17,13 +17,13 @@ from functools import partial
 import pytest
 import torch
 from asteroid.losses import pairwise_neg_snr
+from mir_eval.separation import bss_eval_images
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import snr
 from torchmetrics.audio import SNR
+from torchmetrics.functional import snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from mir_eval.separation import bss_eval_images
 
 seed_all(42)
 
@@ -47,8 +47,7 @@ def bss_eval_images_snr(preds, target):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     snr_vb = []
     for j in range(BATCH_SIZE):
-        snr_v = bss_eval_images([target[j].view(-1).numpy()],
-                                [preds[j].view(-1).numpy()])[0][0][0]
+        snr_v = bss_eval_images([target[j].view(-1).numpy()], [preds[j].view(-1).numpy()])[0][0][0]
         snr_vb.append(snr_v)
     return torch.tensor(snr_vb)
 
@@ -69,8 +68,7 @@ class TestSNR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_snr(self, preds, target, sk_metric, zero_mean, ddp,
-                 dist_sync_on_step):
+    def test_snr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -91,37 +89,26 @@ class TestSNR(MetricTester):
         )
 
     def test_snr_differentiability(self, preds, target, sk_metric, zero_mean):
-        self.run_differentiability_test(preds=preds,
-                                        target=target,
-                                        metric_module=SNR,
-                                        metric_functional=snr,
-                                        metric_args={'zero_mean': zero_mean})
+        self.run_differentiability_test(
+            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
+        )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6,
-        reason=
-        'half support of core operations on not support before pytorch v1.6')
+        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+    )
     def test_snr_half_cpu(self, preds, target, sk_metric, zero_mean):
-        self.run_precision_test_cpu(preds=preds,
-                                    target=target,
-                                    metric_module=SNR,
-                                    metric_functional=snr,
-                                    metric_args={'zero_mean': zero_mean})
+        self.run_precision_test_cpu(
+            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
+        )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(),
-                        reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_snr_half_gpu(self, preds, target, sk_metric, zero_mean):
-        self.run_precision_test_gpu(preds=preds,
-                                    target=target,
-                                    metric_module=SNR,
-                                    metric_functional=snr,
-                                    metric_args={'zero_mean': zero_mean})
+        self.run_precision_test_gpu(
+            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
+        )
 
 
 def test_error_on_different_shape(metric_class=SNR):
     metric = metric_class()
-    with pytest.raises(
-            RuntimeError,
-            match='Predictions and targets are expected to have the same shape'
-    ):
-        metric(torch.randn(100,), torch.randn(50,))
+    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+        metric(torch.randn(100, ), torch.randn(50, ))
