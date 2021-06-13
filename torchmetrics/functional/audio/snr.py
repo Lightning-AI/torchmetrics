@@ -29,7 +29,7 @@ def snr(target, estimate, zero_mean=False, EPS=1e-8) -> Tensor:
 
     Returns:
         Tensor: snr value has a shape of [...]
-    
+
     Example:
         >>> from torchmetrics.functional.audio import snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
