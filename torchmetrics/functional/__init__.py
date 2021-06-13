@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.audio.si_sdr import si_sdr  # noqa: F401
+from torchmetrics.functional.audio.si_snr import si_snr  # noqa: F401
+from torchmetrics.functional.audio.snr import snr  # noqa: F401
 from torchmetrics.functional.classification.accuracy import accuracy  # noqa: F401
 from torchmetrics.functional.classification.auc import auc  # noqa: F401
 from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
@@ -50,6 +53,3 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision  # n
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
-from torchmetrics.functional.audio.si_sdr import si_sdr  # noqa: F401
-from torchmetrics.functional.audio.si_snr import si_snr  # noqa: F401
-from torchmetrics.functional.audio.snr import snr  # noqa: F401
