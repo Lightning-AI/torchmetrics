@@ -36,7 +36,7 @@ def si_snr(preds: Tensor, target: Tensor) -> Tensor:
         >>> from torchmetrics.functional.audio import si_snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> si_snr_val = si_snr(target, preds)
+        >>> si_snr_val = si_snr(preds, target)
         >>> si_snr_val
         tensor(15.0918)
 

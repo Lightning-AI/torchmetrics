@@ -37,7 +37,7 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
         >>> from torchmetrics.functional.audio import snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> snr_val = snr(target, preds)
+        >>> snr_val = snr(preds, target)
         >>> snr_val
         tensor(16.1805)
 

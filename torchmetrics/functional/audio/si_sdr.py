@@ -37,7 +37,7 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
         >>> from torchmetrics.functional.audio import si_sdr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> si_sdr_val = si_sdr(target, preds)
+        >>> si_sdr_val = si_sdr(preds, target)
         >>> si_sdr_val
         tensor(18.4030)
 
