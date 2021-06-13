@@ -19,7 +19,7 @@ def si_sdr(target, estimate, zero_mean=False, EPS=1e-8):
 
     Args:
         target (Tensor): shape [..., time]
-        estimate (Tensor): shape [..., time]
+        preds (Tensor): shape [..., time]
         zero_mean (Bool): if to zero mean target and estimate or not
         EPS (float, optional): a small value for numerical stability. Defaults to 1e-8.
 
