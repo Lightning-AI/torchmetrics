@@ -1,0 +1,107 @@
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from collections import namedtuple
+from functools import partial
+
+import pytest
+import torch
+from asteroid.losses import pairwise_neg_sisdr
+
+from tests.helpers import seed_all
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.functional import si_snr
+from torchmetrics.audio import SI_SNR
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+
+seed_all(42)
+
+Time = 1000
+
+Input = namedtuple('Input', ["preds", "target"])
+
+inputs = Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
+)
+
+
+def asteroid_si_snr(preds, target):
+    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+    si_snr_v = -pairwise_neg_sisdr(preds, target)
+    return si_snr_v.view(BATCH_SIZE, 1)
+
+
+def average_metric(preds, target, metric_func):
+    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+    return metric_func(preds, target).mean()
+
+
+@pytest.mark.parametrize(
+    "preds, target, sk_metric",
+    [
+        (inputs.preds, inputs.target, asteroid_si_snr),
+    ],
+)
+class TestSISNR(MetricTester):
+
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_si_snr(self, preds, target, sk_metric, ddp,
+                 dist_sync_on_step):
+        self.run_class_metric_test(
+            ddp,
+            preds,
+            target,
+            SI_SNR,
+            sk_metric=partial(average_metric, metric_func=sk_metric),
+            dist_sync_on_step=dist_sync_on_step,
+        )
+
+    def test_si_snr_functional(self, preds, target, sk_metric):
+        self.run_functional_metric_test(
+            preds,
+            target,
+            si_snr,
+            sk_metric,
+        )
+
+    def test_si_snr_differentiability(self, preds, target, sk_metric):
+        self.run_differentiability_test(preds=preds,
+                                        target=target,
+                                        metric_module=SI_SNR,
+                                        metric_functional=si_snr)
+
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_6,
+        reason=
+        'half support of core operations on not support before pytorch v1.6')
+    def test_si_snr_half_cpu(self, preds, target, sk_metric):
+        self.run_precision_test_cpu(preds=preds,
+                                    target=target,
+                                    metric_module=SI_SNR,
+                                    metric_functional=si_snr)
+
+    @pytest.mark.skipif(not torch.cuda.is_available(),
+                        reason='test requires cuda')
+    def test_si_snr_half_gpu(self, preds, target, sk_metric):
+        self.run_precision_test_gpu(preds=preds,
+                                    target=target,
+                                    metric_module=SI_SNR,
+                                    metric_functional=si_snr)
+
+
+def test_error_on_different_shape(metric_class=SI_SNR):
+    metric = metric_class()
+    with pytest.raises(ValueError, match='Inputs must be of shape*'):
+        metric(torch.randn(100,), torch.randn(50,))
