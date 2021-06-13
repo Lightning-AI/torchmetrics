@@ -15,26 +15,29 @@ import torch
 from torch import Tensor
 
 
-def snr(target: Tensor, estimate: Tensor, zero_mean: bool = False, EPS: bool = 1e-8) -> Tensor:
+def snr(target: Tensor, preds: Tensor, zero_mean: bool = False) -> Tensor:
     """ signal-to-noise ratio (SNR)
 
     Args:
-        target (Tensor): shape [..., time]
-        estimate (Tensor): shape [..., time]
-        zero_mean (Bool): if to zero mean target and estimate or not
-        EPS (float, optional): a small value for numerical stability. Defaults to 1e-8.
+        target:
+            shape [..., time]
+        preds:
+            shape [..., time]
+        zero_mean:
+            if to zero mean target and preds or not
 
     Raises:
-        TypeError: if target and estimate have a different shape
+        TypeError:
+            if target and preds have a different shape
 
     Returns:
-        Tensor: snr value has a shape of [...]
+        snr value of shape [...]
 
     Example:
         >>> from torchmetrics.functional.audio import snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> estimate = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> snr_val = snr(target,estimate)
+        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> snr_val = snr(target, preds)
         >>> snr_val
         tensor(16.1805)
 
@@ -43,16 +46,16 @@ def snr(target: Tensor, estimate: Tensor, zero_mean: bool = False, EPS: bool = 1
          and Signal Processing (ICASSP) 2019.
     """
 
-    if target.shape != estimate.shape:
-        raise TypeError(f"Inputs must be of shape [..., time], got {target.shape} and {estimate.shape} instead")
+    if target.shape != preds.shape:
+        raise TypeError(f"Inputs must be of shape [..., time], got {target.shape} and {preds.shape} instead")
 
     if zero_mean:
         target = target - torch.mean(target, dim=-1, keepdim=True)
-        estimate = estimate - torch.mean(estimate, dim=-1, keepdim=True)
+        preds = preds - torch.mean(preds, dim=-1, keepdim=True)
 
-    noise = target - estimate
+    noise = target - preds
 
-    snr_value = torch.sum(target**2, dim=-1) / (torch.sum(noise**2, dim=-1) + EPS)
-    snr_value = 10 * torch.log10(snr_value + EPS)
+    snr_value = torch.sum(target**2, dim=-1) / (torch.sum(noise**2, dim=-1) + 1e-8)
+    snr_value = 10 * torch.log10(snr_value + 1e-8)
 
     return snr_value

@@ -11,30 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-
+from torch import Tensor
 from .si_sdr import si_sdr
 
 
-def si_snr(target: Tensor, estimate: Tensor, EPS: bool = 1e-8) -> Tensor:
+def si_snr(target: Tensor, preds: Tensor) -> Tensor:
     """ scale-invariant signal-to-noise ratio (SI-SNR)
 
     Args:
-        target (Tensor): shape [..., time]
-        estimate (Tensor): shape [..., time]
-        EPS (float, optional): a small value for numerical stability. Defaults to 1e-8.
+        target:
+            shape [..., time]
+        preds:
+            shape [..., time]
 
     Raises:
-        TypeError: if target and estimate have a different shape
+        TypeError:
+            if target and preds have a different shape
 
     Returns:
-        Tensor: si-snr value has a shape of [...]
+        si-snr value of shape [...]
 
     Example:
         >>> from torchmetrics.functional.audio import si_snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> estimate = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> si_snr_val = si_snr(target,estimate)
+        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> si_snr_val = si_snr(target, preds)
         >>> si_snr_val
         tensor(15.0918)
 
@@ -44,4 +45,4 @@ def si_snr(target: Tensor, estimate: Tensor, EPS: bool = 1e-8) -> Tensor:
          696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
 
-    return si_sdr(target=target, estimate=estimate, zero_mean=True, EPS=EPS)
+    return si_sdr(target=target, preds=preds, zero_mean=True)

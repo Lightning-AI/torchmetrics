@@ -50,3 +50,6 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision  # n
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
+from torchmetrics.functional.audio.si_sdr import si_sdr  # noqa: F401
+from torchmetrics.functional.audio.si_snr import si_snr  # noqa: F401
+from torchmetrics.functional.audio.snr import snr  # noqa: F401
