@@ -95,7 +95,7 @@ class SNR(Metric):
         self.sum_snr += snr_batch.sum()
         self.total += snr_batch.numel()
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes average SNR.
         """
