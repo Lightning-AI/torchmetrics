@@ -29,7 +29,7 @@ def snr(target, estimate, zero_mean=False, EPS=1e-8) -> Tensor:
 
     Returns:
         Tensor: snr value has a shape of [...]
-    
+
     Example:
         >>> from torchmetrics.functional.audio import snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
@@ -39,7 +39,8 @@ def snr(target, estimate, zero_mean=False, EPS=1e-8) -> Tensor:
         tensor(16.1805)
 
     References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) 2019.
+        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
+         and Signal Processing (ICASSP) 2019.
     """
 
     if target.shape != estimate.shape:

@@ -28,7 +28,7 @@ def si_snr(target, estimate, EPS=1e-8):
 
     Returns:
         Tensor: si-snr value has a shape of [...]
-    
+
     Example:
         >>> from torchmetrics.functional.audio import si_snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
@@ -36,9 +36,11 @@ def si_snr(target, estimate, EPS=1e-8):
         >>> si_snr_val = si_snr(target,estimate)
         >>> si_snr_val
         tensor(15.0918)
-    
+
     References:
-        [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp. 696-700, doi: 10.1109/ICASSP.2018.8462116.
+        [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech
+         Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
+         696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
 
     return si_sdr(target=target, estimate=estimate, zero_mean=True, EPS=EPS)
