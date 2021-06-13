@@ -472,7 +472,7 @@ def _input_format_classification_one_hot(
         preds: one hot tensor of shape [num_classes, -1] with predicted labels
         target: one hot tensors of shape [num_classes, -1] with true labels
     """
-    if not (preds.ndim == target.ndim or preds.ndim == target.ndim + 1):
+    if preds.ndim not in (target.ndim, target.ndim + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
 
     if preds.ndim == target.ndim + 1:
