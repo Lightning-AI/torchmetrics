@@ -2,6 +2,44 @@
 Module metrics
 ##############
 
+*************
+Audio Metrics
+*************
+
+Input details
+~~~~~~~~~~~~~
+
+For the purposes of audio metrics, inputs (predictions, targets) must have the same size.
+
+.. doctest::
+
+    >>> import torch
+    >>> from torchmetrics import SNR
+    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> snr = SNR()
+    >>> snr_val = snr(preds, target)
+    >>> snr_val
+    tensor(16.1805)
+
+SI_SDR
+~~~~~~
+
+.. autoclass:: torchmetrics.SI_SDR
+    :noindex:
+
+SI_SNR
+~~~~~~
+
+.. autoclass:: torchmetrics.SI_SNR
+    :noindex:
+
+SNR
+~~~
+
+.. autoclass:: torchmetrics.SNR
+    :noindex:
+
 **********
 Base class
 **********
