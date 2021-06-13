@@ -14,6 +14,8 @@
 import torch
 from torch import Tensor
 
+from torchmetrics.utilities.checks import _check_same_shape
+
 
 def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """ scale-invariant signal-to-distortion ratio (SI-SDR)
@@ -25,10 +27,6 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
             shape [..., time]
         zero_mean:
             if to zero mean target and preds or not
-
-    Raises:
-        TypeError:
-            if target and preds have a different shape
 
     Returns:
         si-sdr value of shape [...]
@@ -45,9 +43,7 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
          and Signal Processing (ICASSP) 2019.
     """
-
-    if target.shape != preds.shape:
-        raise TypeError(f"Inputs must be of shape [..., time], got {target.shape} and {preds.shape} instead")
+    _check_same_shape(preds, target)
 
     if zero_mean:
         target = target - torch.mean(target, dim=-1, keepdim=True)

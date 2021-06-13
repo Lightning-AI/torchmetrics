@@ -25,10 +25,6 @@ def si_snr(preds: Tensor, target: Tensor) -> Tensor:
         target:
             shape [..., time]
 
-    Raises:
-        TypeError:
-            if target and preds have a different shape
-
     Returns:
         si-snr value of shape [...]
 
