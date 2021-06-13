@@ -15,13 +15,13 @@ from torch import Tensor
 from .si_sdr import si_sdr
 
 
-def si_snr(target: Tensor, preds: Tensor) -> Tensor:
+def si_snr(preds: Tensor, target: Tensor) -> Tensor:
     """ scale-invariant signal-to-noise ratio (SI-SNR)
 
     Args:
-        target:
-            shape [..., time]
         preds:
+            shape [..., time]
+        target:
             shape [..., time]
 
     Raises:
@@ -32,6 +32,7 @@ def si_snr(target: Tensor, preds: Tensor) -> Tensor:
         si-snr value of shape [...]
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional.audio import si_snr
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])

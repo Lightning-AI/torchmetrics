@@ -15,13 +15,13 @@ import torch
 from torch import Tensor
 
 
-def snr(target: Tensor, preds: Tensor, zero_mean: bool = False) -> Tensor:
+def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """ signal-to-noise ratio (SNR)
 
     Args:
-        target:
-            shape [..., time]
         preds:
+            shape [..., time]
+        target:
             shape [..., time]
         zero_mean:
             if to zero mean target and preds or not

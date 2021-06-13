@@ -15,13 +15,13 @@ import torch
 from torch import Tensor
 
 
-def si_sdr(target: Tensor, preds: Tensor, zero_mean: bool = False) -> Tensor:
+def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """ scale-invariant signal-to-distortion ratio (SI-SDR)
 
     Args:
-        target:
-            shape [..., time]
         preds:
+            shape [..., time]
+        target:
             shape [..., time]
         zero_mean:
             if to zero mean target and preds or not
