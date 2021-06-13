@@ -95,7 +95,7 @@ class SI_SDR(Metric):
         self.sum_si_sdr += si_sdr_batch.sum()
         self.total += si_sdr_batch.numel()
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes average SI-SDR.
         """
