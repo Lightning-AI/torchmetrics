@@ -13,7 +13,7 @@
 # limitations under the License.
 from torch import Tensor
 
-from .si_sdr import si_sdr
+from torchmetrics.functional.audio.si_sdr import si_sdr
 
 
 def si_snr(preds: Tensor, target: Tensor) -> Tensor:
