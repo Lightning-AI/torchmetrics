@@ -43,7 +43,9 @@ def test_matrix_sqrt(matrix_size):
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
     """ Assert that metric never leaves evaluation mode """
+
     class MyModel(torch.nn.Module):
+
         def __init__(self):
             super().__init__()
             self.metric = FID()
