@@ -188,7 +188,7 @@ def precision(
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     reduce = "macro" if average in ["weighted", "none", None] else average
-    tp, fp, tn, fn = _stat_scores_update(
+    tp, fp, _, fn = _stat_scores_update(
         preds,
         target,
         reduce=reduce,
@@ -368,7 +368,7 @@ def recall(
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     reduce = "macro" if average in ["weighted", "none", None] else average
-    tp, fp, tn, fn = _stat_scores_update(
+    tp, fp, _, fn = _stat_scores_update(
         preds,
         target,
         reduce=reduce,
@@ -529,7 +529,7 @@ def precision_recall(
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     reduce = "macro" if average in ["weighted", "none", None] else average
-    tp, fp, tn, fn = _stat_scores_update(
+    tp, fp, _, fn = _stat_scores_update(
         preds,
         target,
         reduce=reduce,
@@ -541,7 +541,7 @@ def precision_recall(
         ignore_index=ignore_index,
     )
 
-    precision = _precision_compute(tp, fp, fn, average, mdmc_average)
-    recall = _recall_compute(tp, fp, fn, average, mdmc_average)
+    precision_ = _precision_compute(tp, fp, fn, average, mdmc_average)
+    recall_ = _recall_compute(tp, fp, fn, average, mdmc_average)
 
-    return precision, recall
+    return precision_, recall_
