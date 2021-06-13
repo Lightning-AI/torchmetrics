@@ -24,8 +24,8 @@ class SI_SDR(Metric):
 
     Forward accepts
 
-    - ``preds`` (Tensor): ``shape [..., time]``
-    - ``target`` (Tensor): ``shape [..., time]``
+    - ``preds``: ``shape [..., time]``
+    - ``target``: ``shape [..., time]``
 
     Args:
         zero_mean:
