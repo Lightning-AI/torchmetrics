@@ -14,7 +14,7 @@
 import torch
 
 
-def si_sdr(target, estimate, zero_mean=False, EPS=1e-8):
+def si_sdr(target: Tensor, estimate: Tensor, zero_mean: bool = False, EPS: bool = 1e-8) -> Tensor:
     """ scale-invariant signal-to-distortion ratio (SI-SDR)
 
     Args:
