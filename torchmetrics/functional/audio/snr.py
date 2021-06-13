@@ -15,7 +15,7 @@ import torch
 from torch import Tensor
 
 
-def snr(target, estimate, zero_mean=False, EPS=1e-8) -> Tensor:
+def snr(target: Tensor, estimate: Tensor, zero_mean: bool = False, EPS: bool = 1e-8) -> Tensor:
     """ signal-to-noise ratio (SNR)
 
     Args:
