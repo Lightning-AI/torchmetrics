@@ -16,7 +16,7 @@ import torch
 from .si_sdr import si_sdr
 
 
-def si_snr(target, estimate, EPS=1e-8):
+def si_snr(target: Tensor, estimate: Tensor, EPS: bool =1e-8) -> Tensor:
     """ scale-invariant signal-to-noise ratio (SI-SNR)
 
     Args:
