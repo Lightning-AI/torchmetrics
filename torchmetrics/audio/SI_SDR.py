@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+
 from torch import Tensor, tensor
+
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.metric import Metric
 
@@ -88,9 +90,7 @@ class SI_SDR(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        si_sdr_batch = si_sdr(preds=preds,
-                              target=target,
-                              zero_mean=self.zero_mean)
+        si_sdr_batch = si_sdr(preds=preds, target=target, zero_mean=self.zero_mean)
 
         self.sum_si_sdr += si_sdr_batch.sum()
         self.total += si_sdr_batch.numel()

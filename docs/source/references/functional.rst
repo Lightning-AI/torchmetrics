@@ -333,4 +333,3 @@ si_snr [func]
 
 .. autofunction:: torchmetrics.functional.si_snr
     :noindex:
-
