@@ -4,7 +4,7 @@ import sys
 from typing import Dict, Optional
 
 VERSIONS = [
-    dict(torch="1.9.0", torchvision="", torchtext=""),  # nightly
+    dict(torch="1.9.0", torchvision="0.10.0", torchtext=""),  # nightly
     dict(torch="1.8.1", torchvision="0.9.1", torchtext="0.9.1"),
     dict(torch="1.8.0", torchvision="0.9.0", torchtext="0.9.0"),
     dict(torch="1.7.1", torchvision="0.8.2", torchtext="0.8.1"),
@@ -41,9 +41,11 @@ def main(path_req: str, torch_version: Optional[str] = None) -> None:
     assert torch_version, f"invalid torch: {torch_version}"
 
     with open(path_req, "r") as fp:
-        req = fp.read()
+        req = fp.readlines()
     # remove comments
-    req = re.sub(rf"\s*#.*{os.linesep}", os.linesep, req)
+    req = [r[:r.index("#")] if "#" in r else r for r in req]
+    req = [r.strip() for r in req]
+    req = os.linesep.join(req)
 
     latest = find_latest(torch_version)
     for lib, version in latest.items():
