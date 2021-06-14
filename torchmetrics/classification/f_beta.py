@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
 from torchmetrics.utilities import _deprecation_warn_arg_multilabel
+from torchmetrics.utilities.enums import AverageMethod
 
 
 class FBeta(StatScores):
@@ -66,6 +67,9 @@ class FBeta(StatScores):
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -151,12 +155,12 @@ class FBeta(StatScores):
         _deprecation_warn_arg_multilabel(multilabel)
 
         self.beta = beta
-        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        allowed_average = list(AverageMethod)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
         super().__init__(
-            reduce="macro" if average in ["weighted", "none", None] else average,
+            reduce="macro" if average in [AverageMethod.WEIGHTED, AverageMethod.NONE] else average,
             mdmc_reduce=mdmc_average,
             threshold=threshold,
             top_k=top_k,
