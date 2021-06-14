@@ -2,6 +2,22 @@
 Module metrics
 ##############
 
+**********
+Base class
+**********
+
+The base ``Metric`` class is an abstract base class that are used as the building block for all other Module
+metrics.
+
+.. autoclass:: torchmetrics.Metric
+    :noindex:
+
+We also have an ``AverageMeter`` class that is helpful for defining ad-hoc metrics, when creating
+your own metric type might be too burdensome.
+
+.. autoclass:: torchmetrics.AverageMeter
+    :noindex:
+
 *************
 Audio Metrics
 *************
@@ -41,21 +57,6 @@ SNR
 .. autoclass:: torchmetrics.SNR
     :noindex:
 
-**********
-Base class
-**********
-
-The base ``Metric`` class is an abstract base class that are used as the building block for all other Module
-metrics.
-
-.. autoclass:: torchmetrics.Metric
-    :noindex:
-
-We also have an ``AverageMeter`` class that is helpful for defining ad-hoc metrics, when creating
-your own metric type might be too burdensome.
-
-.. autoclass:: torchmetrics.AverageMeter
-    :noindex:
 
 **********************
 Classification Metrics
