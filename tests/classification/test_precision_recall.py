@@ -34,6 +34,7 @@ from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Precision, Recall
 from torchmetrics.functional import precision, precision_recall, recall
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.enums import AverageMethod
 
 seed_all(42)
 
@@ -133,7 +134,7 @@ def test_wrong_params(metric, fn_metric, average, mdmc_average, num_classes, ign
 def test_zero_division(metric_class, metric_fn):
     """ Test that zero_division works correctly (currently should just set to 0). """
 
-    preds = tensor([1, 2, 1, 1])
+    preds = tensor([0, 2, 1, 1])
     target = tensor([2, 1, 2, 1])
 
     cl_metric = metric_class(average="none", num_classes=3)
@@ -406,3 +407,26 @@ def test_top_k(
 
     assert torch.equal(class_metric.compute(), result)
     assert torch.equal(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
+
+
+@pytest.mark.parametrize("metric_class, metric_fn", [(Precision, precision), (Recall, recall)])
+@pytest.mark.parametrize(
+    "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
+)
+def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
+    """This tests that when metric is computed per class and a given class is not present
+    in both the `preds` and `target`, the resulting score is `nan`.
+    """
+    preds = torch.tensor([0, 0, 0])
+    target = torch.tensor([0, 0, 0])
+    num_classes = 2
+
+    # test functional
+    result_fn = metric_fn(preds, target, average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+    assert torch.allclose(expected, result_fn, equal_nan=True)
+
+    # test class
+    cl_metric = metric_class(average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+    cl_metric(preds, target)
+    result_cl = cl_metric.compute()
+    assert torch.allclose(expected, result_cl, equal_nan=True)
