@@ -46,7 +46,8 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     '<div align="center">...'
     """
     path_readme = os.path.join(path_dir, "README.md")
-    text = open(path_readme, encoding="utf-8").read()
+    with open(path_readme, encoding="utf-8") as fp:
+        text = fp.read()
 
     # https://github.com/PyTorchLightning/torchmetrics/raw/master/docs/source/_static/images/lightning_module/pt_to_pl.png
     github_source_url = os.path.join(homepage, "raw", version)

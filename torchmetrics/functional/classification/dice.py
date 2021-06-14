@@ -107,7 +107,7 @@ def dice_score(
             continue
 
         # TODO: rewrite to use general `stat_scores`
-        tp, fp, tn, fn, sup = _stat_scores(preds=preds, target=target, class_index=i)
+        tp, fp, _, fn, _ = _stat_scores(preds=preds, target=target, class_index=i)
         denom = (2 * tp + fp + fn).to(torch.float)
         # nan result
         score_cls = (2 * tp).to(torch.float) / denom if torch.is_nonzero(denom) else nan_score

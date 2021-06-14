@@ -23,8 +23,8 @@ from torchmetrics.utilities.data import METRIC_EPS, to_onehot
 
 def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor, min_precision: float):
     try:
-        max_recall, max_precision, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
-                                                        if p >= min_precision)
+        max_recall, _, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
+                                            if p >= min_precision)
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
 
