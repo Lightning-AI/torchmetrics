@@ -50,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed dtype of modular metrics after reset have been called ([#243](https://github.com/PyTorchLightning/metrics/pull/243))
 
+- Improved per-class metric handling for imbalanced datasets for `precision`, `recall`, `precision_recall`, `fbeta`, `f1`, `accuracy`, and `specificity` ([#204](https://github.com/PyTorchLightning/metrics/pull/204))
+
 ## [0.3.2] - 2021-05-10
 
 ### Added
