@@ -139,7 +139,13 @@ def test_compare_fid(tmpdir, feature=2048):
     for i in range(img2.shape[0] // batch_size):
         metric.update(img2[batch_size * i:batch_size * (i + 1)].cuda(), real=False)
 
-    torch_fid = calculate_metrics(_ImgDataset(img1), _ImgDataset(img2), fid=True, feature_layer_fid=str(feature))
+    torch_fid = calculate_metrics(
+        _ImgDataset(img1),
+        _ImgDataset(img2),
+        fid=True,
+        feature_layer_fid=str(feature),
+        batch_size=batch_size
+    )
 
     tm_res = metric.compute()
 
