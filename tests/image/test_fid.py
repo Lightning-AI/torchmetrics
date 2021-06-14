@@ -129,10 +129,10 @@ def test_compare_fid(tmpdir, feature=2048):
     metric = FID(feature=feature).cuda()
 
     # Generate some synthetic data
-    img1 = torch.randint(0, 180, (500, 3, 299, 299), dtype=torch.uint8)
-    img2 = torch.randint(100, 255, (500, 3, 299, 299), dtype=torch.uint8)
+    img1 = torch.randint(0, 180, (100, 3, 299, 299), dtype=torch.uint8)
+    img2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
 
-    batch_size = 100
+    batch_size = 10
     for i in range(img1.shape[0] // batch_size):
         metric.update(img1[batch_size * i:batch_size * (i + 1)].cuda(), real=True)
 
