@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 
@@ -5,6 +6,11 @@ LUT_PYTHON_TORCH = {
     '3.8': '1.4',
     '3.9': '1.7.1',
 }
+REQUIREMENTS_FILES = (
+    'requirements.txt',
+    os.path.join('requirements', 'test.txt'),
+    os.path.join('requirements', 'integrate.txt'),
+)
 
 
 def set_min_torch_by_python(fpath: str = 'requirements.txt') -> None:
@@ -22,5 +28,5 @@ def replace_min_requirements(fpath: str) -> None:
 
 if __name__ == '__main__':
     set_min_torch_by_python()
-    for fpath in ('requirements.txt', 'requirements/test.txt', 'requirements/integrate.txt'):
+    for fpath in REQUIREMENTS_FILES:
         replace_min_requirements(fpath)
