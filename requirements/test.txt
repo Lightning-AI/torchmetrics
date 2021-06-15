@@ -19,7 +19,7 @@ scikit-learn>=0.24
 scikit-image>0.17.1
 nltk>=3.6
 
-asteroid>=0.5.1
+asteroid==0.4.5  # v0.5 drop support for PT<1.8
 mir_eval>=0.6
 soundfile
 pysndfile
