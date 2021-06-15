@@ -31,8 +31,8 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Specificity
-from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional import specificity
+from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod
 
