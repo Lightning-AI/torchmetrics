@@ -1,10 +1,11 @@
+import logging
 import os
 import re
 import sys
 from typing import Dict, Optional
 
 VERSIONS = [
-    dict(torch="1.9.0", torchvision="", torchtext=""),  # nightly
+    dict(torch="1.9.0", torchvision="0.10.0", torchtext=""),  # nightly
     dict(torch="1.8.1", torchvision="0.9.1", torchtext="0.9.1"),
     dict(torch="1.8.0", torchvision="0.9.0", torchtext="0.9.0"),
     dict(torch="1.7.1", torchvision="0.8.2", torchtext="0.8.1"),
@@ -24,7 +25,7 @@ def find_latest(ver: str) -> Dict[str, str]:
     ver = re.search(r'([\.\d]+)', ver).groups()[0]
     # in case there remaining dot at the end - e.g "1.9.0.dev20210504"
     ver = ver[:-1] if ver[-1] == '.' else ver
-    print(f"finding ecosystem versions for: {ver}")
+    logging.info(f"finding ecosystem versions for: {ver}")
 
     # find first match
     for option in VERSIONS:
@@ -39,24 +40,31 @@ def main(path_req: str, torch_version: Optional[str] = None) -> None:
         import torch
         torch_version = torch.__version__
     assert torch_version, f"invalid torch: {torch_version}"
+    latest = find_latest(torch_version)
+
+    if path_req == "conda":
+        req = " ".join([f"{lib}={ver}" if ver else lib for lib, ver in latest.items()])
+        print(req)
+        return
 
     with open(path_req, "r") as fp:
         req = fp.readlines()
     # remove comments
     req = [r[:r.index("#")] if "#" in r else r for r in req]
     req = [r.strip() for r in req]
-    req = os.linesep.join(req)
 
-    latest = find_latest(torch_version)
-    for lib, version in latest.items():
-        replace = f"{lib}=={version}" if version else lib
-        replace += os.linesep
-        req = re.sub(rf"{lib}[>=]*[\d\.]*{os.linesep}", replace, req)
+    for lib, ver in latest.items():
+        for i, ln in enumerate(req):
+            m = re.search(r"(\w-_)*?[>=]{0,2}.*", ln)
+            if m and m.group() == lib:
+                req[i] = f"{lib}=={ver}" if ver else lib
 
-    print(req)  # on purpose - to debug
+    req = [r + os.linesep for r in req]
+    logging.info(req)  # on purpose - to debug
     with open(path_req, "w") as fp:
-        fp.write(req)
+        fp.writelines(req)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     main(*sys.argv[1:])
