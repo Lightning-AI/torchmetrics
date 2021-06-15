@@ -22,7 +22,6 @@ jobs:
     - uses: actions/checkout@v2
 
     - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
-      if: matrix.requires == 'latest'
       id: times
 
     - name: Cache conda
@@ -57,10 +56,13 @@ jobs:
       run: |
         conda info
         conda install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
+        conda install cpuonly $(python ./requirements/adjust-versions.py conda)
         conda list
         pip --version
+        python ./requirements/adjust-versions.py requirements.txt
+        python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements.txt --upgrade-strategy only-if-needed --quiet
-        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet
+        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
         python -c "import torch; assert torch.__version__[:3] == '${{ matrix.pytorch-version }}', torch.__version__"
       shell: bash -l {0}
