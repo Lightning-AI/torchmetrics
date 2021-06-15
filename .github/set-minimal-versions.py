@@ -17,13 +17,19 @@ def set_min_torch_by_python(fpath: str = 'requirements.txt') -> None:
     py_ver = f'{sys.version_info.major}.{sys.version_info.minor}'
     if py_ver not in LUT_PYTHON_TORCH:
         return
-    req = re.sub(r'torch>=[\d\.]+', f'torch>={LUT_PYTHON_TORCH[py_ver]}', open(fpath).read())
-    open(fpath, 'w').write(req)
+    with open(fpath) as fp:
+        req = fp.read()
+    req = re.sub(r'torch>=[\d\.]+', f'torch>={LUT_PYTHON_TORCH[py_ver]}', req)
+    with open(fpath, 'w') as fp:
+        fp.write(req)
 
 
 def replace_min_requirements(fpath: str) -> None:
-    req = open(fpath).read().replace('>=', '==')
-    open(fpath, 'w').write(req)
+    with open(fpath) as fp:
+        req = fp.read()
+    req = req.replace('>=', '==')
+    with open(fpath, 'w') as fp:
+        fp.write(req)
 
 
 if __name__ == '__main__':
