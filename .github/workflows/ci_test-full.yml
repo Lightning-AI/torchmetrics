@@ -70,7 +70,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python --version
+        sudo apt-get install -y cmake gcc
         pip --version
         pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip uninstall -y torchmetrics
