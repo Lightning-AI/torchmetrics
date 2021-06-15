@@ -92,13 +92,7 @@ class MatrixSquareRoot(Function):
 sqrtm = MatrixSquareRoot.apply
 
 
-def _compute_fid(
-    mu1: Tensor,
-    sigma1: Tensor,
-    mu2: Tensor,
-    sigma2: Tensor,
-    eps: float = 1e-6
-) -> Tensor:
+def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: float = 1e-6) -> Tensor:
     r"""
     Adjusted version of https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
 
@@ -120,9 +114,7 @@ def _compute_fid(
     covmean = sqrtm(sigma1.mm(sigma2))
     # Product might be almost singular
     if not torch.isfinite(covmean).all():
-        rank_zero_info(
-            f'FID calculation produces singular product; adding {eps} to diagonal of covariance estimates'
-        )
+        rank_zero_info(f'FID calculation produces singular product; adding {eps} to diagonal of covariance estimates')
         offset = torch.eye(sigma1.size(0), device=mu1.device, dtype=mu1.dtype) * eps
         covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
 
