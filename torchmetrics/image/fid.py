@@ -93,25 +93,25 @@ sqrtm = MatrixSquareRoot.apply
 
 
 def _compute_fid(
-    mu1: torch.Tensor,
-    sigma1: torch.Tensor,
-    mu2: torch.Tensor,
-    sigma2: torch.Tensor,
+    mu1: Tensor,
+    sigma1: Tensor,
+    mu2: Tensor,
+    sigma2: Tensor,
     eps: float = 1e-6
-) -> torch.Tensor:
+) -> Tensor:
     r"""
-    Adjusted version of
-        https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
+    Adjusted version of https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
 
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
-    and X_y ~ N(mu_2, sigm_2) is
-        d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
+    and X_y ~ N(mu_2, sigm_2) is d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
+
     Args:
         mu1: mean of activations calculated on predicted (x) samples
         sigma1: covariance matrix over activations calculated on predicted (x) samples
         mu2: mean of activations calculated on target (y) samples
         sigma2: covariance matrix over activations calculated on target (y) samples
         eps: offset constant. used if sigma_1 @ sigma_2 matrix is singular
+
     Returns:
         Scalar value of the distance between sets.
     """
@@ -121,8 +121,7 @@ def _compute_fid(
     # Product might be almost singular
     if not torch.isfinite(covmean).all():
         rank_zero_info(
-            f'FID calculation produces singular product; adding {eps} to diagonal of '
-            'covaraince estimates'
+            f'FID calculation produces singular product; adding {eps} to diagonal of covariance estimates'
         )
         offset = torch.eye(sigma1.size(0), device=mu1.device, dtype=mu1.dtype) * eps
         covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
@@ -231,14 +230,12 @@ class FID(Metric):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
                     'FID metric requires that Torch-fidelity is installed.'
-                    'Either install as `pip install torchmetrics[image-quality]`'
-                    ' or `pip install torch-fidelity`'
+                    'Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`'
                 )
             valid_int_input = [64, 192, 768, 2048]
             if feature not in valid_int_input:
                 raise ValueError(
-                    f'Integer input to argument `feature` must be one of {valid_int_input},'
-                    f' but got {feature}.'
+                    f'Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}.'
                 )
 
             self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
