@@ -28,7 +28,8 @@ exclude docs
 
 # Include the Requirements
 include requirements.txt
-recursive-exclude requirements *.txt
+recursive-include requirements *.txt
+recursive-exclude requirements *.py
 
 # Exclude build configs
 exclude *.yml

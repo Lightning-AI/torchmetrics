@@ -23,8 +23,8 @@ from torchmetrics.utilities.data import METRIC_EPS, to_onehot
 
 def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor, min_precision: float):
     try:
-        max_recall, max_precision, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
-                                                        if p >= min_precision)
+        max_recall, _, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
+                                            if p >= min_precision)
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
 
@@ -163,8 +163,7 @@ class BinnedPrecisionRecallCurve(Metric):
         recalls = torch.cat([recalls, t_zeros], dim=1)
         if self.num_classes == 1:
             return (precisions[0, :], recalls[0, :], self.thresholds)
-        else:
-            return (list(precisions), list(recalls), [self.thresholds for _ in range(self.num_classes)])
+        return (list(precisions), list(recalls), [self.thresholds for _ in range(self.num_classes)])
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
