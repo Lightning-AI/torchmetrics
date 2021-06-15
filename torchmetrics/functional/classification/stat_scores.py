@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass
 from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import MDMCAverageMethod, AverageMethod
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 def _del_column(tensor: Tensor, index: int):
