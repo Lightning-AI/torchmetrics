@@ -22,3 +22,4 @@ nltk>=3.6
 asteroid>=0.5.1
 mir_eval>=0.6
 soundfile
+pysndfile
