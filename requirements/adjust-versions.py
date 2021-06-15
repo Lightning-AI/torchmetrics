@@ -56,7 +56,7 @@ def main(path_req: str, torch_version: Optional[str] = None) -> None:
 
     for lib, ver in latest.items():
         for i, ln in enumerate(req):
-            m = re.search(r"(\w-_)*?[>=]{0,2}.*", ln)
+            m = re.search(r"(\w\d-_)*?[>=]{0,2}.*", ln)
             if m and m.group() == lib:
                 req[i] = f"{lib}=={ver}" if ver else lib
 
