@@ -13,11 +13,13 @@
 # limitations under the License.
 from collections import namedtuple
 from functools import partial
+from typing import Callable
 
 import pytest
 import torch
-from asteroid.losses import pairwise_neg_snr
-from mir_eval.separation import bss_eval_images
+from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
+from museval.metrics import bss_eval_images as museval_bss_eval_images
+from torch.tensor import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
@@ -37,38 +39,64 @@ inputs = Input(
 )
 
 
-def asteroid_snr(preds, target):
+def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable,
+                        zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    snr_v = -pairwise_neg_snr(preds, target)
-    return snr_v.view(BATCH_SIZE, 1)
-
-
-def bss_eval_images_snr(preds, target):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     snr_vb = []
-    for j in range(BATCH_SIZE):
-        snr_v = bss_eval_images([target[j].view(-1).numpy()], [preds[j].view(-1).numpy()])[0][0][0]
+    for j in range(preds.shape[0]):
+        if zero_mean:
+            t = target[j] - target[j].mean()
+            e = preds[j] - preds[j].mean()
+        else:
+            t = target[j]
+            e = preds[j]
+        if metric_func == mir_eval_bss_eval_images:
+            snr_v = metric_func([t.view(-1).numpy()],
+                                [e.view(-1).numpy()])[0][0]
+        else:
+            snr_v = metric_func([t.view(-1).numpy()],
+                                [e.view(-1).numpy()])[0][0][0]
         snr_vb.append(snr_v)
-    return torch.tensor(snr_vb)
+    return torch.tensor(snr_vb).view(-1, 1)
 
 
-def average_metric(preds, target, metric_func):
+def average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
+
+
+mireval_snr_zeromean = partial(bss_eval_images_snr,
+                               metric_func=mir_eval_bss_eval_images,
+                               zero_mean=True)
+mireval_snr_nozeromean = partial(bss_eval_images_snr,
+                                 metric_func=mir_eval_bss_eval_images,
+                                 zero_mean=False)
+museval_snr_zeromean = partial(bss_eval_images_snr,
+                               metric_func=museval_bss_eval_images,
+                               zero_mean=True)
+museval_snr_nozeromean = partial(bss_eval_images_snr,
+                                 metric_func=museval_bss_eval_images,
+                                 zero_mean=False)
 
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, zero_mean",
     [
-        (inputs.preds, inputs.target, asteroid_snr, True),
-        (inputs.preds, inputs.target, bss_eval_images_snr, False),
+        (inputs.preds, inputs.target, mireval_snr_zeromean, True),
+        (inputs.preds, inputs.target, mireval_snr_nozeromean, False),
+        (inputs.preds, inputs.target, museval_snr_zeromean, True),
+        (inputs.preds, inputs.target, museval_snr_nozeromean, False),
     ],
 )
 class TestSNR(MetricTester):
+    atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_snr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step):
+    def test_snr(self, preds, target, sk_metric, zero_mean, ddp,
+                 dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -89,26 +117,33 @@ class TestSNR(MetricTester):
         )
 
     def test_snr_differentiability(self, preds, target, sk_metric, zero_mean):
-        self.run_differentiability_test(
-            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
-        )
+        self.run_differentiability_test(preds=preds,
+                                        target=target,
+                                        metric_module=SNR,
+                                        metric_functional=snr,
+                                        metric_args={'zero_mean': zero_mean})
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
-    )
+        not _TORCH_GREATER_EQUAL_1_6,
+        reason=
+        'half support of core operations on not support before pytorch v1.6')
     def test_snr_half_cpu(self, preds, target, sk_metric, zero_mean):
-        self.run_precision_test_cpu(
-            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
-        )
+        pytest.xfail("SNR metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(),
+                        reason='test requires cuda')
     def test_snr_half_gpu(self, preds, target, sk_metric, zero_mean):
-        self.run_precision_test_gpu(
-            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
-        )
+        self.run_precision_test_gpu(preds=preds,
+                                    target=target,
+                                    metric_module=SNR,
+                                    metric_functional=snr,
+                                    metric_args={'zero_mean': zero_mean})
 
 
 def test_error_on_different_shape(metric_class=SNR):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    with pytest.raises(
+            RuntimeError,
+            match='Predictions and targets are expected to have the same shape'
+    ):
+        metric(torch.randn(100,), torch.randn(50,))

@@ -20,7 +20,6 @@ nltk>=3.6
 # add extra requirements
 -r image.txt
 
-asteroid==0.4.5  # v0.5 drop support for PT<1.8
 mir_eval>=0.6
-soundfile
-pysndfile
+https://github.com/mpariente/pb_bss/archive/refs/heads/master.zip
+https://github.com/aliutkus/speechmetrics/archive/refs/heads/master.zip
