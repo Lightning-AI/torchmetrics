@@ -62,7 +62,7 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements.txt --upgrade-strategy only-if-needed --quiet
-        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet --find-links https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
         python -c "import torch; assert torch.__version__[:3] == '${{ matrix.pytorch-version }}', torch.__version__"
       shell: bash -l {0}
