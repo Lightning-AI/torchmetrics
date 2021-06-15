@@ -20,13 +20,13 @@ from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
-def _check_same_shape(preds: Tensor, target: Tensor):
+def _check_same_shape(preds: Tensor, target: Tensor) -> None:
     """ Check that predictions and target have the same shape, else raise error """
     if preds.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: bool):
+def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: bool) -> None:
     """
     Perform basic validation of inputs that does not require deducing any information
     of the type of inputs.
@@ -113,10 +113,9 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[st
     return case, implied_classes
 
 
-def _check_num_classes_binary(num_classes: int, multiclass: bool):
+def _check_num_classes_binary(num_classes: int, multiclass: bool) -> None:
     """
-    This checks that the consistency of `num_classes` with the data
-    and `multiclass` param for binary data.
+    This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data.
     """
 
     if num_classes > 2:
@@ -134,7 +133,13 @@ def _check_num_classes_binary(num_classes: int, multiclass: bool):
         )
 
 
-def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, multiclass: bool, implied_classes: int):
+def _check_num_classes_mc(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    multiclass: Optional[bool],
+    implied_classes: int,
+) -> None:
     """
     This checks that the consistency of `num_classes` with the data
     and `multiclass` param for (multi-dimensional) multi-class data.
@@ -147,15 +152,14 @@ def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, multi
             " to binary/multi-label, set `multiclass=False`."
         )
     if num_classes > 1:
-        if multiclass is False:
-            if implied_classes != num_classes:
-                raise ValueError(
-                    "You have set `multiclass=False`, but the implied number of classes "
-                    " (from shape of inputs) does not match `num_classes`. If you are trying to"
-                    " transform multi-dim multi-class data with 2 classes to multi-label, `num_classes`"
-                    " should be either None or the product of the size of extra dimensions (...)."
-                    " See Input Types in Metrics documentation."
-                )
+        if multiclass is False and implied_classes != num_classes:
+            raise ValueError(
+                "You have set `multiclass=False`, but the implied number of classes "
+                " (from shape of inputs) does not match `num_classes`. If you are trying to"
+                " transform multi-dim multi-class data with 2 classes to multi-label, `num_classes`"
+                " should be either None or the product of the size of extra dimensions (...)."
+                " See Input Types in Metrics documentation."
+            )
         if num_classes <= target.max():
             raise ValueError("The highest label in `target` should be smaller than `num_classes`.")
         if num_classes <= preds.max():
@@ -164,7 +168,7 @@ def _check_num_classes_mc(preds: Tensor, target: Tensor, num_classes: int, multi
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
 
 
-def _check_num_classes_ml(num_classes: int, multiclass: bool, implied_classes: int):
+def _check_num_classes_ml(num_classes: int, multiclass: bool, implied_classes: int) -> None:
     """
     This checks that the consistency of `num_classes` with the data
     and `multiclass` param for multi-label data.
@@ -180,7 +184,7 @@ def _check_num_classes_ml(num_classes: int, multiclass: bool, implied_classes: i
         raise ValueError("The implied number of classes (from shape of inputs) does not match num_classes.")
 
 
-def _check_top_k(top_k: int, case: str, implied_classes: int, multiclass: Optional[bool], preds_float: bool):
+def _check_top_k(top_k: int, case: str, implied_classes: int, multiclass: Optional[bool], preds_float: bool) -> None:
     if case == DataType.BINARY:
         raise ValueError("You can not use `top_k` parameter with binary data.")
     if not isinstance(top_k, int) or top_k <= 0:
@@ -472,7 +476,7 @@ def _input_format_classification_one_hot(
         preds: one hot tensor of shape [num_classes, -1] with predicted labels
         target: one hot tensors of shape [num_classes, -1] with true labels
     """
-    if not (preds.ndim == target.ndim or preds.ndim == target.ndim + 1):
+    if preds.ndim not in (target.ndim, target.ndim + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
 
     if preds.ndim == target.ndim + 1:

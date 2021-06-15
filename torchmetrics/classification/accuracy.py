@@ -70,6 +70,9 @@ class Accuracy(StatScores):
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
 
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
+
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter). Should be one of the following:
@@ -268,9 +271,8 @@ class Accuracy(StatScores):
         """
         if self.subset_accuracy:
             return _subset_accuracy_compute(self.correct, self.total)
-        else:
-            tp, fp, tn, fn = self._get_final_stats()
-            return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
+        tp, fp, tn, fn = self._get_final_stats()
+        return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
 
     @property
     def is_differentiable(self) -> bool:

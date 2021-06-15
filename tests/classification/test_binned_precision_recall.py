@@ -38,7 +38,7 @@ def recall_at_precision_x_multilabel(predictions: Tensor, targets: Tensor, min_p
 
     try:
         tuple_all = [(r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision]
-        max_recall, max_precision, best_threshold = max(tuple_all)
+        max_recall, _, best_threshold = max(tuple_all)
     except ValueError:
         max_recall, best_threshold = 0, 1e6
 

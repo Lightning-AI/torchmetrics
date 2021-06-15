@@ -31,9 +31,10 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Specificity
-from torchmetrics.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.functional import specificity
+from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.enums import AverageMethod
 
 seed_all(42)
 
@@ -112,28 +113,19 @@ def _sk_spec_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, multicla
         preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
         target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
         return _sk_spec(preds, target, reduce, num_classes, False, ignore_index, top_k, mdmc_reduce)
-    else:
-        fp, tn = [], []
-        stats = []
+    fp, tn = [], []
+    stats = []
 
-        for i in range(preds.shape[0]):
-            pred_i = preds[i, ...].T
-            target_i = target[i, ...].T
-            fp_i, tn_i = _sk_stats_score(
-                pred_i,
-                target_i,
-                reduce,
-                num_classes,
-                False,
-                ignore_index,
-                top_k,
-            )
-            fp.append(fp_i)
-            tn.append(tn_i)
+    for i in range(preds.shape[0]):
+        pred_i = preds[i, ...].T
+        target_i = target[i, ...].T
+        fp_i, tn_i = _sk_stats_score(pred_i, target_i, reduce, num_classes, False, ignore_index, top_k)
+        fp.append(fp_i)
+        tn.append(tn_i)
 
-        stats.append(fp)
-        stats.append(tn)
-        return _sk_spec(preds[0], target[0], reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce, stats)
+    stats.append(fp)
+    stats.append(tn)
+    return _sk_spec(preds[0], target[0], reduce, num_classes, multiclass, ignore_index, top_k, mdmc_reduce, stats)
 
 
 @pytest.mark.parametrize("metric, fn_metric", [(Specificity, specificity)])
@@ -398,3 +390,26 @@ def test_top_k(
 
     assert torch.equal(class_metric.compute(), expected_spec)
     assert torch.equal(metric_fn(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
+
+
+@pytest.mark.parametrize("metric_class, metric_fn", [(Specificity, specificity)])
+@pytest.mark.parametrize(
+    "ignore_index, expected", [(None, torch.tensor([0.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
+)
+def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
+    """This tests that when metric is computed per class and a given class is not present
+    in both the `preds` and `target`, the resulting score is `nan`.
+    """
+    preds = torch.tensor([0, 0, 0])
+    target = torch.tensor([0, 0, 0])
+    num_classes = 2
+
+    # test functional
+    result_fn = metric_fn(preds, target, average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+    assert torch.allclose(expected, result_fn, equal_nan=True)
+
+    # test class
+    cl_metric = metric_class(average=AverageMethod.NONE, num_classes=num_classes, ignore_index=ignore_index)
+    cl_metric(preds, target)
+    result_cl = cl_metric.compute()
+    assert torch.allclose(expected, result_cl, equal_nan=True)

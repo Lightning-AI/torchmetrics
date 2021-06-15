@@ -13,12 +13,12 @@
 # limitations under the License.
 from typing import Optional, Tuple
 
+import torch
 from torch import Tensor, tensor
 
-from torchmetrics.classification.stat_scores import _reduce_stat_scores
-from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.checks import _check_classification_inputs, _input_format_classification, _input_squeeze
-from torchmetrics.utilities.enums import DataType
+from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
 
 def _check_subset_validity(mode):
@@ -72,17 +72,23 @@ def _accuracy_update(
 def _accuracy_compute(
     tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str, mdmc_average: str, mode: DataType
 ) -> Tensor:
-    simple_average = ["micro", "samples"]
+    simple_average = [AverageMethod.MICRO, AverageMethod.SAMPLES]
     if (mode == DataType.BINARY and average in simple_average) or mode == DataType.MULTILABEL:
         numerator = tp + tn
         denominator = tp + tn + fp + fn
     else:
         numerator = tp
         denominator = tp + fn
+    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        # a class is not present if there exists no TPs, no FPs, and no FNs
+        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
+        numerator[meaningless_indeces, ...] = -1
+        denominator[meaningless_indeces, ...] = -1
+
     return _reduce_stat_scores(
         numerator=numerator,
         denominator=denominator,
-        weights=None if average != "weighted" else tp + fn,
+        weights=None if average != AverageMethod.WEIGHTED else tp + fn,
         average=average,
         mdmc_average=mdmc_average,
     )
@@ -168,6 +174,9 @@ def accuracy(
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the

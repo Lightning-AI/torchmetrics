@@ -33,7 +33,7 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
         w_mat = torch.ones_like(confmat).flatten()
         w_mat[::n_classes + 1] = 0
         w_mat = w_mat.reshape(n_classes, n_classes)
-    elif weights == "linear" or weights == "quadratic":
+    elif weights in ("linear", "quadratic"):
         w_mat = torch.zeros_like(confmat)
         w_mat += torch.arange(n_classes, dtype=w_mat.dtype, device=w_mat.device)
         if weights == "linear":

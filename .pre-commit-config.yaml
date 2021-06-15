@@ -25,8 +25,13 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: check-case-conflict
       - id: check-yaml
+      - id: check-toml
       - id: pretty-format-json
+      - id: check-added-large-files
+      - id: check-docstring-first
+      - id: detect-private-key
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.8.0

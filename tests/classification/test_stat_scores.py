@@ -85,7 +85,7 @@ def _sk_stat_scores_mdim_mcls(preds, target, reduce, mdmc_reduce, num_classes, m
         target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
         return _sk_stat_scores(preds, target, reduce, None, False, ignore_index, top_k)
-    elif mdmc_reduce == "samplewise":
+    if mdmc_reduce == "samplewise":
         scores = []
 
         for i in range(preds.shape[0]):

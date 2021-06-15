@@ -16,8 +16,7 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.classification.stat_scores import _reduce_stat_scores
-from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
@@ -39,7 +38,7 @@ def _fbeta_compute(
     mdmc_average: Optional[str],
 ) -> Tensor:
 
-    if average == "micro" and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+    if average == AverageMethod.MICRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         mask = tp >= 0
         precision = _safe_divide(tp[mask].sum().float(), (tp[mask] + fp[mask]).sum())
         recall = _safe_divide(tp[mask].sum().float(), (tp[mask] + fn[mask]).sum())
@@ -50,22 +49,31 @@ def _fbeta_compute(
     num = (1 + beta**2) * precision * recall
     denom = beta**2 * precision + recall
     denom[denom == 0.] = 1  # avoid division by 0
+    # if classes matter and a given class is not present in both the preds and the target,
+    # computing the score for this class is meaningless, thus they should be ignored
+    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        # a class is not present if there exists no TPs, no FPs, and no FNs
+        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
+        if ignore_index is None:
+            ignore_index = meaningless_indeces
+        else:
+            ignore_index = torch.unique(torch.cat((meaningless_indeces, torch.tensor([[ignore_index]]))))
 
     if ignore_index is not None:
         if (
-            average not in (AverageMethod.MICRO.value, AverageMethod.SAMPLES.value)
+            average not in (AverageMethod.MICRO, AverageMethod.SAMPLES)
             and mdmc_average == MDMCAverageMethod.SAMPLEWISE  # noqa: W503
         ):
             num[..., ignore_index] = -1
             denom[..., ignore_index] = -1
-        elif average not in (AverageMethod.MICRO.value, AverageMethod.SAMPLES.value):
+        elif average not in (AverageMethod.MICRO, AverageMethod.SAMPLES):
             num[ignore_index, ...] = -1
             denom[ignore_index, ...] = -1
 
     return _reduce_stat_scores(
         numerator=num,
         denominator=denom,
-        weights=None if average != "weighted" else tp + fn,
+        weights=None if average != AverageMethod.WEIGHTED else tp + fn,
         average=average,
         mdmc_average=mdmc_average,
     )
@@ -122,6 +130,9 @@ def fbeta(
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -180,21 +191,22 @@ def fbeta(
     """
     _deprecation_warn_arg_multilabel(multilabel)
 
-    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+    allowed_average = list(AverageMethod)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-    allowed_mdmc_average = [None, "samplewise", "global"]
+    allowed_mdmc_average = list(MDMCAverageMethod) + [None]
     if mdmc_average not in allowed_mdmc_average:
         raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
 
-    if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
+    if average in [AverageMethod.MACRO, AverageMethod.WEIGHTED, AverageMethod.NONE
+                   ] and (not num_classes or num_classes < 1):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
 
     if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
-    reduce = "macro" if average in ["weighted", "none", None] else average
+    reduce = AverageMethod.MACRO if average in [AverageMethod.WEIGHTED, AverageMethod.NONE] else average
     tp, fp, tn, fn = _stat_scores_update(
         preds,
         target,
@@ -258,6 +270,9 @@ def f1(
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the

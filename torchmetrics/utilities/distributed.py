@@ -76,11 +76,11 @@ def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: s
 
     if class_reduction == "micro":
         return fraction
-    elif class_reduction == "macro":
+    if class_reduction == "macro":
         return torch.mean(fraction)
-    elif class_reduction == "weighted":
+    if class_reduction == "weighted":
         return torch.sum(fraction * (weights.float() / torch.sum(weights)))
-    elif class_reduction == "none" or class_reduction is None:
+    if class_reduction == "none" or class_reduction is None:
         return fraction
 
     raise ValueError(
