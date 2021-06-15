@@ -43,14 +43,13 @@ def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable,
                         zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+    if zero_mean:
+        target = target - torch.mean(target, dim=-1, keepdim=True)
+        preds = preds - torch.mean(preds, dim=-1, keepdim=True)
     snr_vb = []
     for j in range(preds.shape[0]):
-        if zero_mean:
-            t = target[j] - target[j].mean()
-            e = preds[j] - preds[j].mean()
-        else:
-            t = target[j]
-            e = preds[j]
+        t = target[j]
+        e = preds[j]
         if metric_func == mir_eval_bss_eval_images:
             snr_v = metric_func([t.view(-1).numpy()],
                                 [e.view(-1).numpy()])[0][0]
