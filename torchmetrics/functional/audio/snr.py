@@ -44,6 +44,7 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
          and Signal Processing (ICASSP) 2019.
     """
     _check_same_shape(preds, target)
+    EPS = torch.finfo(preds.dtype).eps
 
     if zero_mean:
         target = target - torch.mean(target, dim=-1, keepdim=True)
@@ -51,7 +52,7 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
 
     noise = target - preds
 
-    snr_value = torch.sum(target**2, dim=-1) / (torch.sum(noise**2, dim=-1) + 1e-8)
-    snr_value = 10 * torch.log10(snr_value + 1e-8)
+    snr_value = (torch.sum(target**2, dim=-1) + EPS) / (torch.sum(noise**2, dim=-1) + EPS)
+    snr_value = 10 * torch.log10(snr_value)
 
     return snr_value
