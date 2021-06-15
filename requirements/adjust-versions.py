@@ -43,7 +43,8 @@ def main(path_req: str, torch_version: Optional[str] = None) -> None:
     latest = find_latest(torch_version)
 
     if path_req == "conda":
-        req = " ".join([f"{lib}={ver}" if ver else lib for lib, ver in latest.items()])
+        # this is a special case when we need to get the remaining lib versions
+        req = " ".join([f"{lib}={ver}" if ver else lib for lib, ver in latest.items() if lib != "torch"])
         print(req)
         return
 
