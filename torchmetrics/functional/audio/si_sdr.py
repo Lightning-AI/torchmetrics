@@ -44,17 +44,20 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
          and Signal Processing (ICASSP) 2019.
     """
     _check_same_shape(preds, target)
+    EPS = torch.finfo(preds.dtype).eps
 
     if zero_mean:
         target = target - torch.mean(target, dim=-1, keepdim=True)
         preds = preds - torch.mean(preds, dim=-1, keepdim=True)
 
-    α = torch.sum(preds * target, dim=-1, keepdim=True) / (torch.sum(target**2, dim=-1, keepdim=True) + 1e-8)
+    α = (torch.sum(preds * target, dim=-1, keepdim=True) +
+         EPS) / (torch.sum(target**2, dim=-1, keepdim=True) + EPS)
     target_scaled = α * target
 
     noise = target_scaled - preds
 
-    si_sdr_value = torch.sum(target_scaled**2, dim=-1) / (torch.sum(noise**2, dim=-1) + 1e-8)
-    si_sdr_value = 10 * torch.log10(si_sdr_value + 1e-8)
+    si_sdr_value = (torch.sum(target_scaled**2, dim=-1) +
+                    EPS) / (torch.sum(noise**2, dim=-1) + EPS)
+    si_sdr_value = 10 * torch.log10(si_sdr_value)
 
     return si_sdr_value
