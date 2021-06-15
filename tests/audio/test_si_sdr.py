@@ -15,6 +15,7 @@ from collections import namedtuple
 from functools import partial
 
 import pytest
+import speechmetrics
 import torch
 from torch.tensor import Tensor
 
@@ -23,8 +24,6 @@ from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import SI_SDR
 from torchmetrics.functional import si_sdr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-
-import speechmetrics
 
 seed_all(42)
 
@@ -50,9 +49,7 @@ def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            metric = speechmetrics_sisdr(preds[i, j].numpy(),
-                                         target[i, j].numpy(),
-                                         rate=16000)
+            metric = speechmetrics_sisdr(preds[i, j].numpy(), target[i, j].numpy(), rate=16000)
             ms.append(metric['sisdr'][0])
         mss.append(ms)
     return torch.tensor(mss)
@@ -65,24 +62,21 @@ def average_metric(preds, target, metric_func):
 
 
 speechmetrics_si_sdr_zero_mean = partial(speechmetrics_si_sdr, zero_mean=True)
-speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr,
-                                            zero_mean=False)
+speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr, zero_mean=False)
 
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, zero_mean",
     [
         (inputs.preds, inputs.target, speechmetrics_si_sdr_zero_mean, True),
-        (inputs.preds, inputs.target, speechmetrics_si_sdr_no_zero_mean,
-         False),
+        (inputs.preds, inputs.target, speechmetrics_si_sdr_no_zero_mean, False),
     ],
 )
 class TestSISDR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_si_sdr(self, preds, target, sk_metric, zero_mean, ddp,
-                    dist_sync_on_step):
+    def test_si_sdr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -102,35 +96,33 @@ class TestSISDR(MetricTester):
             metric_args=dict(zero_mean=zero_mean),
         )
 
-    def test_si_sdr_differentiability(self, preds, target, sk_metric,
-                                      zero_mean):
-        self.run_differentiability_test(preds=preds,
-                                        target=target,
-                                        metric_module=SI_SDR,
-                                        metric_functional=si_sdr,
-                                        metric_args={'zero_mean': zero_mean})
+    def test_si_sdr_differentiability(self, preds, target, sk_metric, zero_mean):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=SI_SDR,
+            metric_functional=si_sdr,
+            metric_args={'zero_mean': zero_mean}
+        )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6,
-        reason=
-        'half support of core operations on not support before pytorch v1.6')
+        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+    )
     def test_si_sdr_half_cpu(self, preds, target, sk_metric, zero_mean):
         pytest.xfail("SI-SDR metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(),
-                        reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_si_sdr_half_gpu(self, preds, target, sk_metric, zero_mean):
-        self.run_precision_test_gpu(preds=preds,
-                                    target=target,
-                                    metric_module=SI_SDR,
-                                    metric_functional=si_sdr,
-                                    metric_args={'zero_mean': zero_mean})
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=SI_SDR,
+            metric_functional=si_sdr,
+            metric_args={'zero_mean': zero_mean}
+        )
 
 
 def test_error_on_different_shape(metric_class=SI_SDR):
     metric = metric_class()
-    with pytest.raises(
-            RuntimeError,
-            match='Predictions and targets are expected to have the same shape'
-    ):
-        metric(torch.randn(100,), torch.randn(50,))
+    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+        metric(torch.randn(100, ), torch.randn(50, ))

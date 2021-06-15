@@ -15,6 +15,7 @@ from collections import namedtuple
 from functools import partial
 
 import pytest
+import speechmetrics
 import torch
 from torch.tensor import Tensor
 
@@ -23,8 +24,6 @@ from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import SI_SNR
 from torchmetrics.functional import si_snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-
-import speechmetrics
 
 seed_all(42)
 
@@ -40,9 +39,7 @@ inputs = Input(
 speechmetrics_sisdr = speechmetrics.load('sisdr')
 
 
-def speechmetrics_si_sdr(preds: Tensor,
-                         target: Tensor,
-                         zero_mean: bool = True):
+def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -52,9 +49,7 @@ def speechmetrics_si_sdr(preds: Tensor,
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            metric = speechmetrics_sisdr(preds[i, j].numpy(),
-                                         target[i, j].numpy(),
-                                         rate=16000)
+            metric = speechmetrics_sisdr(preds[i, j].numpy(), target[i, j].numpy(), rate=16000)
             ms.append(metric['sisdr'][0])
         mss.append(ms)
     return torch.tensor(mss)
@@ -95,31 +90,20 @@ class TestSISNR(MetricTester):
         )
 
     def test_si_snr_differentiability(self, preds, target, sk_metric):
-        self.run_differentiability_test(preds=preds,
-                                        target=target,
-                                        metric_module=SI_SNR,
-                                        metric_functional=si_snr)
+        self.run_differentiability_test(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6,
-        reason=
-        'half support of core operations on not support before pytorch v1.6')
+        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+    )
     def test_si_snr_half_cpu(self, preds, target, sk_metric):
         pytest.xfail("SI-SNR metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(),
-                        reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_si_snr_half_gpu(self, preds, target, sk_metric):
-        self.run_precision_test_gpu(preds=preds,
-                                    target=target,
-                                    metric_module=SI_SNR,
-                                    metric_functional=si_snr)
+        self.run_precision_test_gpu(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
 
 
 def test_error_on_different_shape(metric_class=SI_SNR):
     metric = metric_class()
-    with pytest.raises(
-            RuntimeError,
-            match='Predictions and targets are expected to have the same shape'
-    ):
-        metric(torch.randn(100,), torch.randn(50,))
+    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+        metric(torch.randn(100, ), torch.randn(50, ))
