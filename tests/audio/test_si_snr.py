@@ -16,13 +16,14 @@ from functools import partial
 
 import pytest
 import torch
-from asteroid.losses import pairwise_neg_sisdr
+from torch.tensor import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import SI_SNR
 from torchmetrics.functional import si_snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from pb_bss_eval import OutputMetrics
 
 seed_all(42)
 
@@ -36,21 +37,29 @@ inputs = Input(
 )
 
 
-def asteroid_si_snr(preds, target):
+def pb_bss_eval_si_snr(preds: Tensor, target: Tensor):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    si_snr_v = -pairwise_neg_sisdr(preds, target)
-    return si_snr_v.view(BATCH_SIZE, 1)
+    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+    preds = preds - preds.mean(dim=2, keepdim=True)
+    target = target - target.mean(dim=2, keepdim=True)
+    vs = []
+    for i in range(preds.shape[0]):
+        om = OutputMetrics(preds[i], target[i], enable_si_sdr=True, compute_permutation=False)
+        si_snr_v = om['si_sdr']
+        vs.append(si_snr_v)
+    return torch.tensor(vs).view(-1, 1)
 
 
 def average_metric(preds, target, metric_func):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
 
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric",
     [
-        (inputs.preds, inputs.target, asteroid_si_snr),
+        (inputs.preds, inputs.target, pb_bss_eval_si_snr),
     ],
 )
 class TestSISNR(MetricTester):
@@ -76,20 +85,31 @@ class TestSISNR(MetricTester):
         )
 
     def test_si_snr_differentiability(self, preds, target, sk_metric):
-        self.run_differentiability_test(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
+        self.run_differentiability_test(preds=preds,
+                                        target=target,
+                                        metric_module=SI_SNR,
+                                        metric_functional=si_snr)
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
-    )
+        not _TORCH_GREATER_EQUAL_1_6,
+        reason=
+        'half support of core operations on not support before pytorch v1.6')
     def test_si_snr_half_cpu(self, preds, target, sk_metric):
-        self.run_precision_test_cpu(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
+        pytest.xfail("SI-SNR metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(),
+                        reason='test requires cuda')
     def test_si_snr_half_gpu(self, preds, target, sk_metric):
-        self.run_precision_test_gpu(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
+        self.run_precision_test_gpu(preds=preds,
+                                    target=target,
+                                    metric_module=SI_SNR,
+                                    metric_functional=si_snr)
 
 
 def test_error_on_different_shape(metric_class=SI_SNR):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    with pytest.raises(
+            RuntimeError,
+            match='Predictions and targets are expected to have the same shape'
+    ):
+        metric(torch.randn(100,), torch.randn(50,))
