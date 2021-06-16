@@ -22,7 +22,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
-def mmd2(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
+def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
     """
     Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
     """
@@ -65,11 +65,26 @@ def poly_mmd(
     k_11 = poly_kernel(f_real, f_real, degree, gamma, coef)
     k_22 = poly_kernel(f_fake, f_fake, degree, gamma, coef)
     k_12 = poly_kernel(f_real, f_fake, degree, gamma, coef)
-    return mmd2(k_11, k_12, k_22)
+    return maximum_mean_discrepancy(k_11, k_12, k_22)
 
 
 class KID(Metric):
     r"""
+    Calculates Kernel Inception Distance (KID) which is used to access the quality of generated images. Given by
+
+    .. math::
+        KID = MMD(f_{real}, f_{fake})^2
+
+    where :math:`MMD` is the maximum mean discrepancy and :math:`I_{real}, I_{fake}` are extracted features
+    from real and fake images, see [1] for more details. In particular, calculating the MMD requires the
+    evaluation of a polynomial kernel function :math:`k`
+
+    .. math::
+        k(x,y) = (\gamma * x^T y + coef)^degree
+
+    which controls the distance between two features. In practise the MMD is calculated over a number of
+    subsets to be able to both get the mean and standard deviation of KID.
+
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
     expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
     will be resized to 299 x 299 which is the size of the original training data.
@@ -91,7 +106,20 @@ class KID(Metric):
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
-        splits: integer determining how many splits the inception score calculation should be split among
+        subsets:
+            Number of subsets to calculate the mean and standard deviation scores over
+
+        subset_size:
+            Number of randomly picked samples in each subset
+
+        degree:
+            Degree of the polynomial kernel function
+
+        gamma:
+            Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
+
+        coef:
+            Bias term in the polynomial kernel.
 
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
@@ -112,6 +140,37 @@ class KID(Metric):
     [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
     Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
     https://arxiv.org/abs/1706.08500
+
+    Raises:
+        ValueError:
+            If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
+        ValueError:
+            If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
+        ValueError:
+            If ``subsets`` is not an integer larger than 0
+        ValueError:
+            If ``subset_size`` is not an integer larger than 0
+        ValueError:
+            If ``degree`` is not an integer larger than 0
+        ValueError:
+            If ``gamma`` is niether ``None`` or a float larger than 0
+        ValueError:
+            If ``coef`` is not an float larger than 0
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> from torchmetrics import KID
+        >>> kid = KID(subset_size=50)  # doctest: +SKIP
+        >>> # generate two slightly overlapping image intensity distributions
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
+        >>> kid.update(imgs_dist1, real=True)  # doctest: +SKIP
+        >>> kid.update(imgs_dist2, real=False)  # doctest: +SKIP
+        >>> kid_mean, kid_std = kid.compute()  # doctest: +SKIP
+        >>> print((kid_mean, kid_std))  # doctest: +SKIP
+        (tensor(0.0338), tensor(0.0025))
+
     """
 
     def __init__(
@@ -198,7 +257,10 @@ class KID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        """ Calculate KID score based on accumulated extracted features from the two distributions
+        """ Calculate KID score based on accumulated extracted features from the two distributions.
+            Returns a tuple of mean and standard deviation of KID scores calculated on subsets of
+            extracted features.
+            
             Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
         """
         real_features = torch.cat(self.real_features, dim=0)

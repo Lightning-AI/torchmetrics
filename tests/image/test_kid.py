@@ -128,11 +128,11 @@ class _ImgDataset(Dataset):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='test is too slow without gpu')
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
-def test_compare_fid(tmpdir, feature=2048):
+def test_compare_kid(tmpdir, feature=2048):
     """ check that the hole pipeline give the same result as torch-fidelity """
     from torch_fidelity import calculate_metrics
 
-    metric = KID(feature=feature).cuda()
+    metric = KID(feature=feature, subsets=10, subset_size=10).cuda()
 
     # Generate some synthetic data
     img1 = torch.randint(0, 180, (100, 3, 299, 299), dtype=torch.uint8)
@@ -146,7 +146,9 @@ def test_compare_fid(tmpdir, feature=2048):
         metric.update(img2[batch_size * i:batch_size * (i + 1)].cuda(), real=False)
 
     torch_fid = calculate_metrics(
-        _ImgDataset(img1), _ImgDataset(img2), fid=True, feature_layer_fid=str(feature), batch_size=batch_size
+        _ImgDataset(img1), _ImgDataset(img2), 
+        kid=True, feature_layer_fid=str(feature), batch_size=batch_size,
+        kid_subsets=10, kid_subset_size=10
     )
 
     tm_mean, tm_std = metric.compute()
