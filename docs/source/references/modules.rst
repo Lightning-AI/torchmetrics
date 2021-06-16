@@ -261,6 +261,10 @@ learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.
     :noindex:
 
 
+
+.. autoclass:: torchmetrics.KID
+    :noindex:
+
 ******************
 Regression Metrics
 ******************
