@@ -21,5 +21,4 @@ nltk>=3.6
 -r image.txt
 
 mir_eval>=0.6
-museval
 https://github.com/aliutkus/speechmetrics/archive/refs/heads/master.zip

@@ -18,7 +18,6 @@ from typing import Callable
 import pytest
 import torch
 from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
-from museval.metrics import bss_eval_images as museval_bss_eval_images
 from torch import Tensor
 
 from tests.helpers import seed_all
@@ -65,8 +64,6 @@ def average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
 
 mireval_snr_zeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=True)
 mireval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=False)
-museval_snr_zeromean = partial(bss_eval_images_snr, metric_func=museval_bss_eval_images, zero_mean=True)
-museval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=museval_bss_eval_images, zero_mean=False)
 
 
 @pytest.mark.parametrize(
@@ -74,8 +71,6 @@ museval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=museval_bss_ev
     [
         (inputs.preds, inputs.target, mireval_snr_zeromean, True),
         (inputs.preds, inputs.target, mireval_snr_nozeromean, False),
-        (inputs.preds, inputs.target, museval_snr_zeromean, True),
-        (inputs.preds, inputs.target, museval_snr_nozeromean, False),
     ],
 )
 class TestSNR(MetricTester):
