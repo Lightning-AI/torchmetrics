@@ -43,12 +43,15 @@ jobs:
     - name: Setup macOS
       if: runner.os == 'macOS'
       run: |
-        brew install gcc libomp  # https://github.com/pytorch/pytorch/issues/20030
-
-    - uses: s-weigand/setup-conda@v1
-      with:
-        activate-conda: true
-    - run: conda install -c conda-forge ffmpeg # for speechmetrics
+        brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
+    - name: Setup Linux
+      if: runner.os == 'ubuntu'
+      run: |
+        apt install -y ffmpeg
+    - name: Setup Windows
+      if: runner.os == 'windows'
+      run: |
+        choco install ffmpeg
 
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
