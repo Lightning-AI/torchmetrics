@@ -74,6 +74,26 @@ class IS(Metric):
     Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen
     https://arxiv.org/abs/1606.03498
 
+    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+    https://arxiv.org/abs/1706.08500
+
+    Raises:
+        ValueError:
+            If ``feature`` is set to an ``str`` or ``int`` and ``torch-fidelity`` is not installed
+        ValueError:
+            If ``feature`` is set to an ``str`` or ``int`` and not one of ['logits_unbiased', 64, 192, 768, 2048]
+   
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> from torchmetrics import IS
+        >>> inception = IS()  # doctest: +SKIP
+        >>> # generate some images
+        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
+        >>> inception.update(imgs)  # doctest: +SKIP
+        >>> inception.compute()  # doctest: +SKIP
+        (tensor(1.0569), tensor(0.0113))
 
     """
 
