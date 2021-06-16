@@ -22,8 +22,8 @@ your own metric type might be too burdensome.
 Audio Metrics
 *************
 
-Input details
-~~~~~~~~~~~~~
+About Audio Metrics
+~~~~~~~~~~~~~~~~~~~
 
 For the purposes of audio metrics, inputs (predictions, targets) must have the same size.
 If the input is 1D tensors the output will be a scalar. If the input is multi-dimensional with shape [..., time]` the metric will be computed over the `time` dimension.
