@@ -11,17 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Union, Tuple
-
+from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
 
-
+from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
-from torchmetrics.image.fid import NoTrainInceptionV3
 
 
 class IS(Metric):
@@ -78,6 +76,7 @@ class IS(Metric):
 
 
     """
+
     def __init__(
         self,
         feature: Union[str, int, torch.nn.Module] = 'logits_unbiased',
