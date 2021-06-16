@@ -260,7 +260,7 @@ class KID(Metric):
         """ Calculate KID score based on accumulated extracted features from the two distributions.
             Returns a tuple of mean and standard deviation of KID scores calculated on subsets of
             extracted features.
-            
+
             Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
         """
         real_features = torch.cat(self.real_features, dim=0)

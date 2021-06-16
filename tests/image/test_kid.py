@@ -146,7 +146,7 @@ def test_compare_kid(tmpdir, feature=2048):
         metric.update(img2[batch_size * i:batch_size * (i + 1)].cuda(), real=False)
 
     torch_fid = calculate_metrics(
-        _ImgDataset(img1), _ImgDataset(img2), 
+        input1=_ImgDataset(img1), input2=_ImgDataset(img2),
         kid=True, feature_layer_fid=str(feature), batch_size=batch_size,
         kid_subsets=10, kid_subset_size=10
     )
