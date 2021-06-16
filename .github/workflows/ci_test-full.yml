@@ -47,7 +47,7 @@ jobs:
 
     - name: Setup ffmpeg # for speechmetrics
       run: |
-        conda install -c conda-forge ffmpeg
+        $CONDA/bin/conda install -c conda-forge ffmpeg
 
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
