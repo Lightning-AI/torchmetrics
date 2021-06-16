@@ -83,7 +83,7 @@ class IS(Metric):
             If ``feature`` is set to an ``str`` or ``int`` and ``torch-fidelity`` is not installed
         ValueError:
             If ``feature`` is set to an ``str`` or ``int`` and not one of ['logits_unbiased', 64, 192, 768, 2048]
-   
+
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
