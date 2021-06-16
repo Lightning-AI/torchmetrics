@@ -16,8 +16,7 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.classification.stat_scores import _reduce_stat_scores
-from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 

@@ -72,6 +72,9 @@ jobs:
       run: |
         python --version
         pip --version
+        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        python ./requirements/adjust-versions.py requirements.txt
+        python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip uninstall -y torchmetrics
         pip list
