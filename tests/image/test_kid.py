@@ -60,11 +60,11 @@ def test_kid_raises_errors_and_warnings():
         match='Metric `KID` will save all extracted features in buffer.'
         ' For large datasets this may lead to large memory footprint.'
     ):
-        _ = KID()
+        KID()
 
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match='Integer input to argument `feature` must be one of .*'):
-            _ = KID(feature=2)
+            KID(feature=2)
     else:
         with pytest.raises(
             ValueError,
@@ -72,28 +72,28 @@ def test_kid_raises_errors_and_warnings():
             'Either install as `pip install torchmetrics[image]`'
             ' or `pip install torch-fidelity`'
         ):
-            _ = KID()
+            KID()
 
     with pytest.raises(ValueError, match='Got unknown input to argument `feature`'):
-        _ = KID(feature=[1, 2])
+        KID(feature=[1, 2])
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
 def test_kid_extra_parameters():
     with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
-        _ = KID(subsets = -1)
+        KID(subsets=-1)
 
     with pytest.raises(ValueError, match="Argument `subset_size` expected to be integer larger than 0"):
-        _ = KID(subset_size = -1)
+        KID(subset_size=-1)
 
     with pytest.raises(ValueError, match="Argument `degree` expected to be integer larger than 0"):
-        _ = KID(degree = -1)
+        KID(degree=-1)
 
     with pytest.raises(ValueError, match="Argument `gamma` expected to be `None` or float larger than 0"):
-        _ = KID(gamma = -1)
+        KID(gamma=-1)
 
     with pytest.raises(ValueError, match="Argument `coef` expected to be float larger than 0"):
-        _ = KID(coef = -1)
+        KID(coef=-1)
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
@@ -149,6 +149,7 @@ def test_compare_fid(tmpdir, feature=2048):
         _ImgDataset(img1), _ImgDataset(img2), fid=True, feature_layer_fid=str(feature), batch_size=batch_size
     )
 
-    tm_res = metric.compute()
+    tm_mean, tm_std = metric.compute()
 
-    assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid['frechet_inception_distance']]), atol=1e-3)
+    assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid['kernel_inception_distance_mean']]), atol=1e-3)
+    assert torch.allclose(tm_std.cpu(), torch.tensor([torch_fid['kernel_inception_distance_std']]), atol=1e-3)
