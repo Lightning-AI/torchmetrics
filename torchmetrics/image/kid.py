@@ -21,6 +21,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+
 def mmd2(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
     """
     Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
@@ -28,10 +29,7 @@ def mmd2(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
     m = k_xx.shape[0]
 
     diag_x = torch.diag(k_xx)
-    sum_diag = diag_x.sum()
-
     diag_y = torch.diag(k_yy)
-    sum_diag = diag_y.sum()
 
     kt_xx_sums = k_xx.sum(dim=-1) - diag_x
     kt_yy_sums = k_yy.sum(dim=-1) - diag_y
@@ -41,17 +39,13 @@ def mmd2(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
     kt_yy_sum = kt_yy_sums.sum()
     k_xy_sum = k_xy_sums.sum()
 
-    value = (kt_xx_sum + kt_yy_sum) / (m * (m-1))
+    value = (kt_xx_sum + kt_yy_sum) / (m * (m - 1))
     value -= 2 * k_xy_sum / (m * m)
-    return mmd2
+    return value
 
 
 def poly_kernel(
-    f1: Tensor, 
-    f2: Tensor, 
-    degree: int = 3, 
-    gamma: float = Optional[None], 
-    coef: float = 1.0
+    f1: Tensor, f2: Tensor, degree: int = 3, gamma: float = Optional[None], coef: float = 1.0
 ) -> Tensor:
     """
     Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
@@ -63,11 +57,7 @@ def poly_kernel(
 
 
 def poly_mmd(
-    f_real: Tensor, 
-    f_fake: Tensor, 
-    degree: int = 3, 
-    gamma: float = Optional[None], 
-    coef: float = 1.0
+    f_real: Tensor, f_fake: Tensor, degree: int = 3, gamma: float = Optional[None], coef: float = 1.0
 ) -> Tensor:
     """
     Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
@@ -80,17 +70,6 @@ def poly_mmd(
 
 class KID(Metric):
     r"""
-    Calculates the Kernel Inception Score (KID) Inception Score (IS) which is used to access how realistic generated images are.
-    It is defined as
-
-    .. math::
-        IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))
-
-    where :math:`KL(p(y | x) || p(y))` is the KL divergence between the conditional distribution :math:`p(y|x)`
-    and the margianl distribution :math:`p(y)`. Both the conditional and marginal distribution is calculated
-    from features extracted from the images. The score is calculated on random splits of the images such that
-    both a mean and standard deviation of the score are returned. The metric was originally proposed in [1].
-
     Using the default feature extraction (Inception v3 using the original weights from [2]), the input is
     expected to be mini-batches of 3-channel RGB images of shape (3 x H x W) with dtype uint8. All images
     will be resized to 299 x 299 which is the size of the original training data.
@@ -141,7 +120,7 @@ class KID(Metric):
         subsets: int = 100,
         subset_size: int = 1000,
         degree: int = 3,
-        gamma: float = Optional[None],
+        gamma: Optional[float] = None,
         coef: float = 1.0,
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
@@ -156,14 +135,14 @@ class KID(Metric):
         )
 
         rank_zero_warn(
-            'Metric `IS` will save all extracted features in buffer.'
+            'Metric `KID` will save all extracted features in buffer.'
             ' For large datasets this may lead to large memory footprint.', UserWarning
         )
 
         if isinstance(feature, (str, int)):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
-                    'IS metric requires that Torch-fidelity is installed.'
+                    'KID metric requires that Torch-fidelity is installed.'
                     'Either install as `pip install torchmetrics[image-quality]`'
                     ' or `pip install torch-fidelity`'
                 )
@@ -180,12 +159,29 @@ class KID(Metric):
         else:
             raise ValueError('Got unknown input to argument `feature`')
 
+        if not (isinstance(subsets, int) and subsets > 0):
+            raise ValueError("Argument `subsets` expected to be integer larger than 0")
         self.subsets = subsets
+
+        if not (isinstance(subset_size, int) and subset_size > 0):
+            raise ValueError("Argument `subset_size` expected to be integer larger than 0")
         self.subset_size = subset_size
+
+        if not (isinstance(degree, int) and degree > 0):
+            raise ValueError("Argument `degree` expected to be integer larger than 0")
         self.degree = degree
+
+        if gamma is not None and not isinstance(gamma, float):
+            raise ValueError("Argument `gamma` expected to be `None` or float larger than 0")
         self.gamma = gamma
+
+        if not (isinstance(coef, float) and coef > 0):
+            raise ValueError("Argument `coef` expected to be float larger than 0")
         self.coef = coef
-        self.add_state("features", [], dist_reduce_fx=None)
+
+        # states for extracted features
+        self.add_state("real_features", [], dist_reduce_fx=None)
+        self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """ Update the state with extracted features
@@ -202,12 +198,12 @@ class KID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        """ Calculate KID score based on accumulated extracted features from the two distributions 
+        """ Calculate KID score based on accumulated extracted features from the two distributions
             Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
         """
         real_features = torch.cat(self.real_features, dim=0)
         fake_features = torch.cat(self.fake_features, dim=0)
-        
+
         n_samples_real = real_features.shape[0]
         if n_samples_real < self.subset_size:
             raise ValueError()
@@ -222,12 +218,7 @@ class KID(Metric):
             perm = torch.randperm(n_samples_fake)
             f_fake = fake_features[perm[:self.subset_size]]
 
-            o = poly_mmd(f_real, f_fake self.degree, self.gamma, self.coef)
+            o = poly_mmd(f_real, f_fake, self.degree, self.gamma, self.coef)
             kid_scores.append(o)
         kid_scores = torch.stack(kid_scores)
         return kid_scores.mean(), kid_scores.std()
-
-        
-
-        
-        

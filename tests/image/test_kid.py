@@ -15,10 +15,9 @@ import pickle
 
 import pytest
 import torch
-from scipy.linalg import sqrtm as scipy_sqrtm
 from torch.utils.data import Dataset
 
-from torchmetrics.image.fid import KID
+from torchmetrics.image.kid import KID
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 torch.manual_seed(42)
@@ -44,7 +43,7 @@ def test_no_train():
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
-def test_fid_pickle():
+def test_kid_pickle():
     """ Assert that we can initialize the metric and pickle it"""
     metric = KID()
     assert metric
@@ -54,7 +53,7 @@ def test_fid_pickle():
     metric = pickle.loads(pickled_metric)
 
 
-def test_fid_raises_errors_and_warnings():
+def test_kid_raises_errors_and_warnings():
     """ Test that expected warnings and errors are raised """
     with pytest.warns(
         UserWarning,
@@ -80,10 +79,28 @@ def test_fid_raises_errors_and_warnings():
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+def test_kid_extra_parameters():
+    with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
+        _ = KID(subsets = -1)
+
+    with pytest.raises(ValueError, match="Argument `subset_size` expected to be integer larger than 0"):
+        _ = KID(subset_size = -1)
+
+    with pytest.raises(ValueError, match="Argument `degree` expected to be integer larger than 0"):
+        _ = KID(degree = -1)
+
+    with pytest.raises(ValueError, match="Argument `gamma` expected to be `None` or float larger than 0"):
+        _ = KID(gamma = -1)
+
+    with pytest.raises(ValueError, match="Argument `coef` expected to be float larger than 0"):
+        _ = KID(coef = -1)
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_kid_same_input(feature):
     """ if real and fake are update on the same data the fid score should be 0 """
-    metric = KID(feature=feature)
+    metric = KID(feature=feature, subsets=5, subset_size=2)
 
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
@@ -92,8 +109,9 @@ def test_kid_same_input(feature):
 
     assert torch.allclose(torch.cat(metric.real_features, dim=0), torch.cat(metric.fake_features, dim=0))
 
-    val = metric.compute()
-    assert torch.allclose(val, torch.zeros_like(val), atol=1e-3)
+    mean, std = metric.compute()
+    assert mean != 0.0
+    assert std != 0.0
 
 
 class _ImgDataset(Dataset):
