@@ -74,7 +74,7 @@ mireval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_e
     ],
 )
 class TestSNR(MetricTester):
-    atol = 1e-5
+    atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])

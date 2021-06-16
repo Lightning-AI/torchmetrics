@@ -73,7 +73,7 @@ speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr, zero_mean=Fals
     ],
 )
 class TestSISDR(MetricTester):
-    atol = 1e-5
+    atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
