@@ -68,6 +68,7 @@ def average_metric(preds, target, metric_func):
     ],
 )
 class TestSISNR(MetricTester):
+    atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
