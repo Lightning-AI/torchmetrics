@@ -44,15 +44,13 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
     return value
 
 
-def poly_kernel(
-    f1: Tensor, f2: Tensor, degree: int = 3, gamma: float = Optional[None], coef: float = 1.0
-) -> Tensor:
+def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: float = Optional[None], coef: float = 1.0) -> Tensor:
     """
     Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
     """
     if gamma is None:
         gamma = 1.0 / f1.shape[1]
-    kernel = (f1 @ f2.T * gamma + coef) ** degree
+    kernel = (f1 @ f2.T * gamma + coef)**degree
     return kernel
 
 
