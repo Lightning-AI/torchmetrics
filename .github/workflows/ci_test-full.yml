@@ -47,7 +47,7 @@ jobs:
     - name: Setup Linux
       if: runner.os == 'Linux'
       run: |
-        apt install -y ffmpeg
+        sudo apt install -y ffmpeg
     - name: Setup Windows
       if: runner.os == 'windows'
       run: |
