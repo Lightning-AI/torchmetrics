@@ -19,7 +19,7 @@ import pytest
 import torch
 from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
 from museval.metrics import bss_eval_images as museval_bss_eval_images
-from torch.tensor import Tensor
+from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
