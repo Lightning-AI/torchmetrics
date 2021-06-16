@@ -141,7 +141,7 @@ class FID(Metric):
     determines if the images should update the statistics of the real distribution or the fake distribution.
 
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
-        is installed. Either install as ``pip install torchmetrics[image-quality]`` or
+        is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
     .. note:: the ``forward`` method can be used but ``compute_on_step`` is disabled by default (oppesit of
@@ -222,7 +222,7 @@ class FID(Metric):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
                     'FID metric requires that Torch-fidelity is installed.'
-                    'Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`'
+                    'Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`'
                 )
             valid_int_input = [64, 192, 768, 2048]
             if feature not in valid_int_input:
@@ -231,8 +231,10 @@ class FID(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
-        else:
+        elif isinstance(feature, torch.nn.Module):
             self.inception = feature
+        else:
+            raise ValueError('Got unknown input to argument `feature`')
 
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
