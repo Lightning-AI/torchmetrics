@@ -60,7 +60,7 @@ def test_is_raises_errors_and_warnings():
         match='Metric `IS` will save all extracted features in buffer.'
         ' For large datasets this may lead to large memory footprint.'
     ):
-        _ = IS()
+        IS()
 
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match='Integer input to argument `feature` must be one of .*'):
@@ -72,10 +72,10 @@ def test_is_raises_errors_and_warnings():
             'Either install as `pip install torchmetrics[image-quality]`'
             ' or `pip install torch-fidelity`'
         ):
-            _ = IS()
+            IS()
 
     with pytest.raises(ValueError, match='Got unknown input to argument `feature`'):
-        _ = IS(feature=[1, 2])
+        IS(feature=[1, 2])
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')

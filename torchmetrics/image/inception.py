@@ -122,7 +122,7 @@ class IS(Metric):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
                     'IS metric requires that Torch-fidelity is installed.'
-                    'Either install as `pip install torchmetrics[image-quality]`'
+                    'Either install as `pip install torchmetrics[image]`'
                     ' or `pip install torch-fidelity`'
                 )
             valid_int_input = ['logits_unbiased', 64, 192, 768, 2048]
