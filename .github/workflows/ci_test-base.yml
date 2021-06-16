@@ -55,11 +55,12 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade --user pip
-        pip install --requirement ./requirements.txt --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-        pip install "pytest>6.0" "pytest-cov>2.10" --upgrade-strategy only-if-needed
         python --version
         pip --version
+        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        python ./requirements/adjust-versions.py requirements/image.txt
+        pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip uninstall -y torchmetrics
         pip list
       shell: bash
 

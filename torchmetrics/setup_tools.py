@@ -22,7 +22,7 @@ def _load_requirements(path_dir: str, file_name: str = 'requirements.txt', comme
     """Load requirements from a file
 
     >>> _load_requirements(_PROJECT_ROOT)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    ['torch...']
+    ['numpy...', 'torch...']
     """
     with open(os.path.join(path_dir, file_name), 'r') as file:
         lines = [ln.strip() for ln in file.readlines()]
@@ -46,7 +46,8 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     '<div align="center">...'
     """
     path_readme = os.path.join(path_dir, "README.md")
-    text = open(path_readme, encoding="utf-8").read()
+    with open(path_readme, encoding="utf-8") as fp:
+        text = fp.read()
 
     # https://github.com/PyTorchLightning/torchmetrics/raw/master/docs/source/_static/images/lightning_module/pt_to_pl.png
     github_source_url = os.path.join(homepage, "raw", version)
