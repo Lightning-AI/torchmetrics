@@ -45,11 +45,13 @@ def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
     if zero_mean:
         preds = preds - preds.mean(dim=2, keepdim=True)
         target = target - target.mean(dim=2, keepdim=True)
+    target = target.detach().cpu().numpy()
+    preds = preds.detach().cpu().numpy()
     mss = []
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            metric = speechmetrics_sisdr(preds[i, j].numpy(), target[i, j].numpy(), rate=16000)
+            metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
             ms.append(metric['sisdr'][0])
         mss.append(ms)
     return torch.tensor(mss)
