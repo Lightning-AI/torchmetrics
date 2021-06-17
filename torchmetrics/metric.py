@@ -21,7 +21,7 @@ from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
-
+from contextlib import contextmanager
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
@@ -221,22 +221,17 @@ class Metric(nn.Module, ABC):
 
         return wrapped_func
 
+    @contextmanager
     def _apply_sync(
         self,
-        fn: Optional[Callable] = None,
         dist_sync_fn: Optional[Callable] = None,
-        *args,
-        **kwargs
-    ) -> Any:
+    ) -> None:
         """
-        Automatically perform synchronization when running in distributed setting,
-        apply a function, restore cache states and return the output of provided fn function.
+        Context manager to synchronize the states between processes when running in a distributed setting 
+        and restore the local cache states after yielding. 
 
         Args:
-            fn: Function to be applied after metric states synchronization
-            dist_sync_fn: Function to be used to perform metric states synchronization
-            args: Arguments to be passed to the fn function
-            kwargs: Keywords arguments to be passed to the fn function
+            dist_sync_fn: Function to be used to perform states synchronization
         """
         if dist_sync_fn is None and torch.distributed.is_available() and torch.distributed.is_initialized():
             # User provided a bool, so we assume DDP if available
@@ -252,14 +247,12 @@ class Metric(nn.Module, ABC):
             self._sync_dist(dist_sync_fn)
             synced = True
 
-        value = fn(*args, **kwargs) if fn else None
+        yield
 
         if synced:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in cache.items():
                 setattr(self, attr, val)
-
-        return value
 
     def _wrap_compute(self, compute):
 
@@ -276,7 +269,8 @@ class Metric(nn.Module, ABC):
             if self._computed is not None:
                 return self._computed
 
-            self._computed = self._apply_sync(fn=compute, dist_sync_fn=self.dist_sync_fn, *args, **kwargs)
+            with self._apply_sync(dist_sync_fn=self.dist_sync_fn):
+                self._computed = compute(*args, **kwargs)
 
             return self._computed
 
