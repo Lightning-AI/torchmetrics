@@ -321,8 +321,7 @@ class Metric(nn.Module, ABC):
 
     def __getstate__(self):
         # ignore update and compute functions for pickling
-        with self._apply_sync(dist_sync_fn=self.dist_sync_fn):
-            return deepcopy({k: v for k, v in self.__dict__.items() if k not in ["update", "compute"]})
+        return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute"]}
 
     def __setstate__(self, state):
         # manually restore update and compute functions for pickling
@@ -354,6 +353,20 @@ class Metric(nn.Module, ABC):
                 )
         return this
 
+    @contextmanager
+    def _apply_persistent(
+        self,
+        mode: bool = False,
+    ) -> None:
+        """
+        Context manager for post-init to change if metric states should be saved to
+        its state_dict
+        """
+        persistent = self._persistent
+        self.persistent(mode)
+        yield
+        self._persistent = persistent
+
     def persistent(self, mode: bool = False):
         """Method for post-init to change if metric states should be saved to
         its state_dict
@@ -364,16 +377,17 @@ class Metric(nn.Module, ABC):
     def state_dict(self, destination=None, prefix="", keep_vars=False):
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
-        for key in self._defaults:
-            if self._persistent[key]:
-                current_val = getattr(self, key)
-                if not keep_vars:
-                    if torch.is_tensor(current_val):
-                        current_val = current_val.detach()
-                    elif isinstance(current_val, list):
-                        current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
-                destination[prefix + key] = current_val
-        return destination
+        with self._apply_sync(dist_sync_fn=self.dist_sync_fn):
+            for key in self._defaults:
+                if self._persistent[key]:
+                    current_val = getattr(self, key)
+                    if not keep_vars:
+                        if torch.is_tensor(current_val):
+                            current_val = current_val.detach()
+                        elif isinstance(current_val, list):
+                            current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
+                    destination[prefix + key] = deepcopy(current_val)
+            return destination
 
     def _load_from_state_dict(
         self,
