@@ -170,7 +170,7 @@ class IS(Metric):
         mean_prob = [p.mean(dim=0, keepdim=True) for p in prob]
         kl = [p * (log_p - m_p.log()) for p, log_p, m_p in zip(prob, log_prob, mean_prob)]
         kl = [k.sum(dim=1).mean().exp() for k in kl]
-        kl = torch.stack(kl)
+        kl: Tensor = torch.stack(kl)
 
         # return mean and std
         return kl.mean(), kl.std()
