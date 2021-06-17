@@ -168,9 +168,9 @@ class IS(Metric):
 
         # calculate score per split
         mean_prob = [p.mean(dim=0, keepdim=True) for p in prob]
-        kl = [p * (log_p - m_p.log()) for p, log_p, m_p in zip(prob, log_prob, mean_prob)]
-        kl = [k.sum(dim=1).mean().exp() for k in kl]
-        kl: Tensor = torch.stack(kl)
+        kl_ = [p * (log_p - m_p.log()) for p, log_p, m_p in zip(prob, log_prob, mean_prob)]
+        kl_ = [k.sum(dim=1).mean().exp() for k in kl_]
+        kl = torch.stack(kl_)
 
         # return mean and std
         return kl.mean(), kl.std()
