@@ -221,6 +221,31 @@ class Metric(nn.Module, ABC):
 
         return wrapped_func
 
+    def _apply_sync(self, fn: Optional[Callable] = None, *args, **kwargs) -> Any:
+        dist_sync_fn = self.dist_sync_fn
+        if dist_sync_fn is None and torch.distributed.is_available() and torch.distributed.is_initialized():
+            # User provided a bool, so we assume DDP if available
+            dist_sync_fn = gather_all_tensors
+
+        synced = False
+        cache = []
+        if self._to_sync and dist_sync_fn is not None:
+            # cache prior to syncing
+            cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+
+            # sync
+            self._sync_dist(dist_sync_fn)
+            synced = True
+
+        value = fn(*args, **kwargs) if fn else None
+
+        if synced:
+            # if we synced, restore to cache so that we can continue to accumulate un-synced state
+            for attr, val in cache.items():
+                setattr(self, attr, val)
+
+        return value
+
     def _wrap_compute(self, compute):
 
         @functools.wraps(compute)
@@ -236,26 +261,7 @@ class Metric(nn.Module, ABC):
             if self._computed is not None:
                 return self._computed
 
-            dist_sync_fn = self.dist_sync_fn
-            if dist_sync_fn is None and torch.distributed.is_available() and torch.distributed.is_initialized():
-                # User provided a bool, so we assume DDP if available
-                dist_sync_fn = gather_all_tensors
-
-            synced = False
-            cache = []
-            if self._to_sync and dist_sync_fn is not None:
-                # cache prior to syncing
-                cache = {attr: getattr(self, attr) for attr in self._defaults}
-
-                # sync
-                self._sync_dist(dist_sync_fn)
-                synced = True
-
-            self._computed = compute(*args, **kwargs)
-            if synced:
-                # if we synced, restore to cache so that we can continue to accumulate un-synced state
-                for attr, val in cache.items():
-                    setattr(self, attr, val)
+            self._computed = self._apply_sync(fn=self.compute, *args, **kwargs)
 
             return self._computed
 
