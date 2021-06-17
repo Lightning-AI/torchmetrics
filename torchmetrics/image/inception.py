@@ -143,7 +143,7 @@ class IS(Metric):
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor) -> None:
+    def update(self, imgs: Tensor) -> None:  # type: ignore
         """ Update the state with extracted features
 
         Args:
