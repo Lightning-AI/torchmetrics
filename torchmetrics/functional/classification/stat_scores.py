@@ -183,7 +183,7 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
 
     numerator = torch.where(zero_div_mask, tensor(float(zero_division), device=numerator.device), numerator)
     denominator = torch.where(zero_div_mask | ignore_mask, tensor(1.0, device=denominator.device), denominator)
-    weights = torch.where(ignore_mask, tensor(0.0, device=weights.device), weights)
+    weights = torch.where(zero_div_mask | ignore_mask, tensor(0.0, device=weights.device), weights)
 
     if average not in (AverageMethod.MICRO, AverageMethod.NONE, None):
         weights = weights / weights.sum(dim=-1, keepdim=True)
