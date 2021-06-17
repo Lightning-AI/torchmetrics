@@ -19,6 +19,7 @@ from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any, Callable, List, Optional, Union
+
 import torch
 from torch import Tensor, nn
 
@@ -233,13 +234,13 @@ class Metric(nn.Module, ABC):
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
         """
-        
+
         is_distributed = torch.distributed.is_available() and torch.distributed.is_initialized()
 
         if not is_distributed:
             yield
             return
-        
+
         if dist_sync_fn is None:
             # User provided a bool, so we assume DDP if available
             dist_sync_fn = gather_all_tensors
