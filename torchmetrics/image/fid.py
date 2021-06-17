@@ -20,6 +20,7 @@ from torch.autograd import Function
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
@@ -253,8 +254,8 @@ class FID(Metric):
 
     def compute(self) -> Tensor:
         """ Calculate FID score based on accumulated extracted features from the two distributions """
-        real_features = torch.cat(self.real_features, dim=0)
-        fake_features = torch.cat(self.fake_features, dim=0)
+        real_features = dim_zero_cat(self.real_features, dim=0)
+        fake_features = dim_zero_cat(self.fake_features, dim=0)
         # computation is extremely sensitive so it needs to happen in double precision
         orig_dtype = real_features.dtype
         real_features = real_features.double()

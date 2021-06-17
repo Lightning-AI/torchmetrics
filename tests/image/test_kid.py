@@ -74,8 +74,14 @@ def test_kid_raises_errors_and_warnings():
         ):
             KID()
 
-    with pytest.raises(ValueError, match='Got unknown input to argument `feature`'):
+    with pytest.raises(TypeError, match='Got unknown input to argument `feature`'):
         KID(feature=[1, 2])
+
+    with pytest.raises(ValueError, match='Argument `subset_size` should be smaller than the number of samples'):
+        m = KID()
+        m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=True)
+        m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=False)
+        m.compute()
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
@@ -99,7 +105,7 @@ def test_kid_extra_parameters():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_kid_same_input(feature):
-    """ if real and fake are update on the same data the fid score should be 0 """
+    """ test that the metric works """
     metric = KID(feature=feature, subsets=5, subset_size=2)
 
     for _ in range(2):

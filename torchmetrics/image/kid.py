@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
@@ -228,7 +229,7 @@ class KID(Metric):
             raise ValueError("Argument `degree` expected to be integer larger than 0")
         self.degree = degree
 
-        if gamma is not None and not isinstance(gamma, float):
+        if gamma is not None and not (isinstance(gamma, float) and gamma > 0):
             raise ValueError("Argument `gamma` expected to be `None` or float larger than 0")
         self.gamma = gamma
 
@@ -261,15 +262,15 @@ class KID(Metric):
 
             Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
         """
-        real_features = torch.cat(self.real_features, dim=0)
-        fake_features = torch.cat(self.fake_features, dim=0)
+        real_features = dim_zero_cat(self.real_features)
+        fake_features = dim_zero_cat(self.fake_features)
 
         n_samples_real = real_features.shape[0]
         if n_samples_real < self.subset_size:
-            raise ValueError()
+            raise ValueError('Argument `subset_size` should be smaller than the number of samples')
         n_samples_fake = fake_features.shape[0]
         if n_samples_fake < self.subset_size:
-            raise ValueError()
+            raise ValueError('Argument `subset_size` should be smaller than the number of samples')
 
         kid_scores = []
         for i in range(self.subsets):
