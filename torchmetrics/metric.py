@@ -19,7 +19,6 @@ from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any, Callable, List, Optional, Union
-
 import torch
 from torch import Tensor, nn
 
@@ -202,7 +201,7 @@ class Metric(nn.Module, ABC):
 
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
-            if isinstance(output_dict[attr][0], Tensor):
+            if isinstance(output_dict[attr][0], Tensor) and isinstance(output_dict[attr], Sequence):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
@@ -234,7 +233,14 @@ class Metric(nn.Module, ABC):
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
         """
-        if dist_sync_fn is None and torch.distributed.is_available() and torch.distributed.is_initialized():
+        
+        is_distributed = torch.distributed.is_available() and torch.distributed.is_initialized()
+
+        if not is_distributed:
+            yield
+            return
+        
+        if dist_sync_fn is None:
             # User provided a bool, so we assume DDP if available
             dist_sync_fn = gather_all_tensors
 
@@ -315,7 +321,8 @@ class Metric(nn.Module, ABC):
 
     def __getstate__(self):
         # ignore update and compute functions for pickling
-        return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute"]}
+        with self._apply_sync(dist_sync_fn=self.dist_sync_fn):
+            return deepcopy({k: v for k, v in self.__dict__.items() if k not in ["update", "compute"]})
 
     def __setstate__(self, state):
         # manually restore update and compute functions for pickling
