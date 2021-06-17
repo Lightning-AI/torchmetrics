@@ -40,7 +40,7 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
     k_xy_sum = k_xy_sums.sum()
 
     value = (kt_xx_sum + kt_yy_sum) / (m * (m - 1))
-    value -= 2 * k_xy_sum / (m ** 2)
+    value -= 2 * k_xy_sum / (m**2)
     return value
 
 
