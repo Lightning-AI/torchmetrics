@@ -221,8 +221,23 @@ class Metric(nn.Module, ABC):
 
         return wrapped_func
 
-    def _apply_sync(self, fn: Optional[Callable] = None, *args, **kwargs) -> Any:
-        dist_sync_fn = self.dist_sync_fn
+    def _apply_sync(
+        self,
+        fn: Optional[Callable] = None,
+        dist_sync_fn: Optional[Callable] = None,
+        *args,
+        **kwargs
+    ) -> Any:
+        """
+        Automatically perform synchronization when running in distributed setting,
+        apply a function, restore cache states and return the output of provided fn function.
+
+        Args:
+            fn: Function to be applied after metric states synchronization
+            dist_sync_fn: Function to be used to perform metric states synchronization
+            args: Arguments to be passed to the fn function
+            kwargs: Keywords arguments to be passed to the fn function
+        """
         if dist_sync_fn is None and torch.distributed.is_available() and torch.distributed.is_initialized():
             # User provided a bool, so we assume DDP if available
             dist_sync_fn = gather_all_tensors
@@ -261,7 +276,7 @@ class Metric(nn.Module, ABC):
             if self._computed is not None:
                 return self._computed
 
-            self._computed = self._apply_sync(fn=self.compute, *args, **kwargs)
+            self._computed = self._apply_sync(fn=compute, dist_sync_fn=self.dist_sync_fn, *args, **kwargs)
 
             return self._computed
 
