@@ -222,11 +222,7 @@ class Metric(nn.Module, ABC):
         return wrapped_func
 
     def _apply_sync(
-        self,
-        fn: Optional[Callable] = None,
-        dist_sync_fn: Optional[Callable] = None,
-        *args,
-        **kwargs
+        self, fn: Optional[Callable] = None, dist_sync_fn: Optional[Callable] = None, *args, **kwargs
     ) -> Any:
         """
         Automatically perform synchronization when running in distributed setting,
