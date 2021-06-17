@@ -16,12 +16,13 @@ import inspect
 import operator
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
-from contextlib import contextmanager
+
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
@@ -227,8 +228,8 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Optional[Callable] = None,
     ) -> None:
         """
-        Context manager to synchronize the states between processes when running in a distributed setting 
-        and restore the local cache states after yielding. 
+        Context manager to synchronize the states between processes when running in a distributed setting
+        and restore the local cache states after yielding.
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
