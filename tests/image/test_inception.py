@@ -74,7 +74,7 @@ def test_is_raises_errors_and_warnings():
         ):
             IS()
 
-    with pytest.raises(ValueError, match='Got unknown input to argument `feature`'):
+    with pytest.raises(TypeError, match='Got unknown input to argument `feature`'):
         IS(feature=[1, 2])
 
 

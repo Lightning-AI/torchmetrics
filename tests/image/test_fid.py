@@ -91,7 +91,7 @@ def test_fid_raises_errors_and_warnings():
         ):
             _ = FID()
 
-    with pytest.raises(ValueError, match='Got unknown input to argument `feature`'):
+    with pytest.raises(TypeError, match='Got unknown input to argument `feature`'):
         _ = FID(feature=[1, 2])
 
 

@@ -182,6 +182,8 @@ class FID(Metric):
             If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
         ValueError:
             If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
+        TypeError:
+            If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 
     Example:
         >>> import torch
@@ -204,7 +206,7 @@ class FID(Metric):
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -234,7 +236,7 @@ class FID(Metric):
         elif isinstance(feature, torch.nn.Module):
             self.inception = feature
         else:
-            raise ValueError('Got unknown input to argument `feature`')
+            raise TypeError('Got unknown input to argument `feature`')
 
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)

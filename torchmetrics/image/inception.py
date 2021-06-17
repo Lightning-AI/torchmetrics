@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -83,6 +83,8 @@ class IS(Metric):
             If ``feature`` is set to an ``str`` or ``int`` and ``torch-fidelity`` is not installed
         ValueError:
             If ``feature`` is set to an ``str`` or ``int`` and not one of ['logits_unbiased', 64, 192, 768, 2048]
+        TypeError:
+            If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 
     Example:
         >>> import torch
@@ -104,7 +106,7 @@ class IS(Metric):
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -125,7 +127,7 @@ class IS(Metric):
                     'Either install as `pip install torchmetrics[image]`'
                     ' or `pip install torch-fidelity`'
                 )
-            valid_int_input = ['logits_unbiased', 64, 192, 768, 2048]
+            valid_int_input = ('logits_unbiased', 64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
                     f'Integer input to argument `feature` must be one of {valid_int_input},'
@@ -136,7 +138,7 @@ class IS(Metric):
         elif isinstance(feature, torch.nn.Module):
             self.inception = feature
         else:
-            raise ValueError('Got unknown input to argument `feature`')
+            raise TypeError('Got unknown input to argument `feature`')
 
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
