@@ -125,7 +125,7 @@ class IS(Metric):
                     'Either install as `pip install torchmetrics[image]`'
                     ' or `pip install torch-fidelity`'
                 )
-            valid_int_input = ['logits_unbiased', 64, 192, 768, 2048]
+            valid_int_input = ('logits_unbiased', 64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
                     f'Integer input to argument `feature` must be one of {valid_int_input},'
@@ -136,7 +136,7 @@ class IS(Metric):
         elif isinstance(feature, torch.nn.Module):
             self.inception = feature
         else:
-            raise ValueError('Got unknown input to argument `feature`')
+            raise TypeError('Got unknown input to argument `feature`')
 
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
