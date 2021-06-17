@@ -28,7 +28,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
-Time = 1000
+Time = 100
 
 Input = namedtuple('Input', ["preds", "target"])
 
