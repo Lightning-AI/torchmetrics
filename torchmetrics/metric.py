@@ -249,6 +249,7 @@ class Metric(nn.Module, ABC):
                 Specify the process group on which synchronization is called.
                 default: None (which selects the entire world)
             should_sync: Whether to apply to state synchronization.
+            is_distributed_fn: Function to determine if we are running inside a distributed setting
 
         Returns:
             cache: A dictionarry containing the local metric states. The cache will be empty if sync didn't happen.
@@ -290,6 +291,7 @@ class Metric(nn.Module, ABC):
             should_sync: Whether to apply to state synchronization.
             restore_cache: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
+            is_distributed_fn: Function to determine if we are running inside a distributed setting
         """
         cache = self.sync(
             dist_sync_fn=dist_sync_fn,
