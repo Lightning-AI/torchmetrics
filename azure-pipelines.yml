@@ -26,7 +26,7 @@ jobs:
     pool: gridai-spot-pool
 
     container:
-      image: "pytorch/pytorch:1.7.1-cuda11.0-cudnn8-runtime"
+      image: "pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime"
       options: "--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all"
 
     workspace:
@@ -44,11 +44,14 @@ jobs:
       displayName: 'Image info & NVIDIA'
 
     - bash: |
-        apt-get install -y cmake ffmpeg git libsndfile1
+        sudo apt-get update
+        sudo apt install -y cmake ffmpeg git libsndfile1
         # python -m pip install "pip==20.1"
         pip install --requirement ./requirements/devel.txt --upgrade-strategy only-if-needed
         pip uninstall -y torchmetrics
         pip list
+      env:
+        DEBIAN_FRONTEND: noninteractive
       displayName: 'Install dependencies'
 
     - bash: |
