@@ -238,7 +238,7 @@ class Metric(nn.Module, ABC):
         should_sync: bool = True,
     ) -> Dict[str, Tensor]:
         """
-        Sync function to control
+        Sync function for manually controlling when metrics states should be synced across processes
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
