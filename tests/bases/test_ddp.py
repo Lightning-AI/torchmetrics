@@ -136,7 +136,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
             self.c += 1
 
         def compute(self):
-            return self.x / self.c
+            return self.x // self.c
 
     metric = DummyCatMetric()
     metric.persistent(True)
