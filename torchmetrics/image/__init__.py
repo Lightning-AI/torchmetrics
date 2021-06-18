@@ -12,3 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.image.fid import FID  # noqa: F401
+from torchmetrics.image.inception import IS  # noqa: F401
