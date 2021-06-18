@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, Dict
 
 import torch
 from torch import Tensor, nn
@@ -187,17 +187,19 @@ class Metric(nn.Module, ABC):
 
             return self._forward_cache
 
-    def _sync_dist(self, dist_sync_fn=gather_all_tensors):
+    def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
+        
         for attr, reduction_fn in self._reductions.items():
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
+        
         output_dict = apply_to_collection(
             input_dict,
             Tensor,
             dist_sync_fn,
-            group=self.process_group,
+            group=process_group or self.process_group,
         )
 
         for attr, reduction_fn in self._reductions.items():
@@ -222,10 +224,48 @@ class Metric(nn.Module, ABC):
 
         return wrapped_func
 
-    @contextmanager
-    def _apply_sync(
+    def sync(
         self,
         dist_sync_fn: Optional[Callable] = None,
+        process_group: Optional[Any] = None,
+        should_sync: bool = True,
+    ) -> Dict[str, Tensor]:
+        """
+        Sync function to control
+
+        Args:
+            dist_sync_fn: Function to be used to perform states synchronization
+            process_group:
+                Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            should_sync: Whether to apply to state synchronization.
+
+        Returns:
+            cache: A dictionarry containing the local metric states. The cache will be empty if sync didn't happen. 
+        """
+        is_distributed = torch.distributed.is_available() and torch.distributed.is_initialized()
+
+        if dist_sync_fn is None:
+            # User provided a bool, so we assume DDP if available
+            dist_sync_fn = gather_all_tensors
+
+        cache = {}
+        
+        if is_distributed and should_sync and dist_sync_fn is not None:
+            # cache prior to syncing
+            cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+
+            # sync
+            self._sync_dist(dist_sync_fn, process_group=process_group)
+
+        return cache
+
+    @contextmanager
+    def sync_context(
+        self,
+        dist_sync_fn: Optional[Callable] = None,
+        process_group: Optional[Any] = None,
+        should_sync: bool = True,
+        restore_cache: bool = True,
     ) -> None:
         """
         Context manager to synchronize the states between processes when running in a distributed setting
@@ -233,31 +273,22 @@ class Metric(nn.Module, ABC):
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
+            process_group:
+                Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            should_sync: Whether to apply to state synchronization.
+            restore_cache: Whether to restore the cache state so that the metrics can 
+                continue to be accumulated.
         """
-
-        is_distributed = torch.distributed.is_available() and torch.distributed.is_initialized()
-
-        if not is_distributed:
-            yield
-            return
-
-        if dist_sync_fn is None:
-            # User provided a bool, so we assume DDP if available
-            dist_sync_fn = gather_all_tensors
-
         synced = False
-        cache = []
-        if self._to_sync and dist_sync_fn is not None:
-            # cache prior to syncing
-            cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
 
-            # sync
-            self._sync_dist(dist_sync_fn)
+        if should_sync:
+
+            cache = self.sync(dist_sync_fn=dist_sync_fn, process_group=process_group, should_sync=self._to_sync)
             synced = True
 
         yield
 
-        if synced:
+        if synced and restore_cache:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in cache.items():
                 setattr(self, attr, val)
@@ -277,7 +308,7 @@ class Metric(nn.Module, ABC):
             if self._computed is not None:
                 return self._computed
 
-            with self._apply_sync(dist_sync_fn=self.dist_sync_fn):
+            with self.sync_context(dist_sync_fn=self.dist_sync_fn):
                 self._computed = compute(*args, **kwargs)
 
             return self._computed
@@ -378,7 +409,7 @@ class Metric(nn.Module, ABC):
     def state_dict(self, destination=None, prefix="", keep_vars=False):
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
-        with self._apply_sync(dist_sync_fn=self.dist_sync_fn):
+        with self.sync_context(dist_sync_fn=self.dist_sync_fn):
             for key in self._defaults:
                 if self._persistent[key]:
                     current_val = getattr(self, key)
