@@ -44,7 +44,7 @@ jobs:
       displayName: 'Image info & NVIDIA'
 
     - bash: |
-        apt install -y cmake ffmpeg git
+        apt-get install -y cmake ffmpeg git libsndfile1
         # python -m pip install "pip==20.1"
         pip install --requirement ./requirements/devel.txt --upgrade-strategy only-if-needed
         pip uninstall -y torchmetrics
