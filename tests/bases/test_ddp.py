@@ -11,17 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 import os
+import sys
+from copy import deepcopy
+from unittest import mock
+
 import pytest
 import torch
 from torch import tensor
-from unittest import mock
+
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
-from copy import deepcopy
 
 seed_all(42)
 
@@ -151,13 +153,12 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     def reload_state_dict(state_dict, expected_x, expected_c):
         metric = DummyCatMetric()
-        #metric.persistent(True)
         metric.load_state_dict(state_dict)
         assert metric.x == expected_x
         assert metric.c == expected_c
 
     with mock.patch.dict(os.environ, {"GLOBAL_RANK": str(rank)}):
-        reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0 )
+        reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
 
     reload_state_dict(deepcopy(state_dict), 20, 10)
 
