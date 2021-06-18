@@ -424,7 +424,9 @@ class Metric(nn.Module, ABC):
                         if isinstance(current_val, torch.Tensor):
                             current_val = current_val.detach()
                         elif isinstance(current_val, list):
-                            current_val = [cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val]
+                            current_val = [
+                                cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val
+                            ]
                     destination[prefix + key] = deepcopy(current_val)
             return destination
 
