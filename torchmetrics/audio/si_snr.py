@@ -67,7 +67,7 @@ class SI_SNR(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -79,7 +79,7 @@ class SI_SNR(Metric):
         self.add_state("sum_si_snr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
