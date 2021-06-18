@@ -29,6 +29,8 @@ from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, d
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
+def is_distributed_fn() -> bool:
+    return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 class Metric(nn.Module, ABC):
     """
@@ -211,7 +213,7 @@ class Metric(nn.Module, ABC):
 
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
-            if isinstance(output_dict[attr][0], Tensor) and isinstance(output_dict[attr], Sequence):
+            if isinstance(output_dict[attr], Sequence) and isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
@@ -236,6 +238,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Optional[Callable] = None,
         process_group: Optional[Any] = None,
         should_sync: bool = True,
+        is_distributed_fn: Optional[Callable] = is_distributed_fn,
     ) -> Dict[str, Tensor]:
         """
         Sync function for manually controlling when metrics states should be synced across processes
@@ -250,10 +253,9 @@ class Metric(nn.Module, ABC):
         Returns:
             cache: A dictionarry containing the local metric states. The cache will be empty if sync didn't happen.
         """
-        is_distributed = torch.distributed.is_available() and torch.distributed.is_initialized()
+        is_distributed = is_distributed_fn()
 
         if dist_sync_fn is None:
-            # User provided a bool, so we assume DDP if available
             dist_sync_fn = gather_all_tensors
 
         cache = {}
@@ -274,6 +276,7 @@ class Metric(nn.Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         restore_cache: bool = True,
+        is_distributed_fn: Optional[Callable] = is_distributed_fn,
     ) -> None:
         """
         Context manager to synchronize the states between processes when running in a distributed setting
@@ -288,7 +291,12 @@ class Metric(nn.Module, ABC):
             restore_cache: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
         """
-        cache = self.sync(dist_sync_fn=dist_sync_fn, process_group=process_group, should_sync=should_sync)
+        cache = self.sync(
+            dist_sync_fn=dist_sync_fn,
+            process_group=process_group,
+            should_sync=should_sync,
+            is_distributed_fn=is_distributed_fn
+        )
 
         yield
 
@@ -392,20 +400,6 @@ class Metric(nn.Module, ABC):
                 )
         return this
 
-    @contextmanager
-    def _apply_persistent(
-        self,
-        mode: bool = False,
-    ) -> None:
-        """
-        Context manager for post-init to change if metric states should be saved to
-        its state_dict
-        """
-        persistent = self._persistent
-        self.persistent(mode)
-        yield
-        self._persistent = persistent
-
     def persistent(self, mode: bool = False):
         """Method for post-init to change if metric states should be saved to
         its state_dict
@@ -421,12 +415,17 @@ class Metric(nn.Module, ABC):
                 if self._persistent[key]:
                     current_val = getattr(self, key)
                     if not keep_vars:
-                        if torch.is_tensor(current_val):
+                        if isinstance(current_val, torch.Tensor):
                             current_val = current_val.detach()
                         elif isinstance(current_val, list):
-                            current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
+                            current_val = [cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val]
                     destination[prefix + key] = deepcopy(current_val)
             return destination
+
+    def _on_load_from_state_dict(self, state_dict, key, name) -> None: 
+        value = state_dict.pop(name)
+        if os.getenv("GLOBAL_RANK", "0") == "0":
+            setattr(self, key, value)
 
     def _load_from_state_dict(
         self,
@@ -445,9 +444,7 @@ class Metric(nn.Module, ABC):
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
-                value = state_dict.pop(name)
-                if os.getenv("GLOBAL_RANK", "0") == "0":
-                    setattr(self, key, value)
+                self._on_load_from_state_dict(state_dict, key, name)
         super()._load_from_state_dict(
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )
