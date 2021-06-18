@@ -421,6 +421,7 @@ class Metric(nn.Module, ABC):
                             current_val = [
                                 cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val
                             ]
+                    # the tensors will be synced across processes so deepcopy to drop the references
                     destination[prefix + key] = deepcopy(current_val)
             return destination
 
