@@ -43,11 +43,13 @@ inputs = Input(
 
 import multiprocessing
 import time
+
 import speechmetrics
 
 speechmetrics_sisdr = speechmetrics.load('sisdr')
-def speechmetrics_si_sdr(preds: Tensor, target: Tensor,
-                            zero_mean: bool) -> Tensor:
+
+
+def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool) -> Tensor:
     if zero_mean:
         preds = preds - preds.mean(dim=2, keepdim=True)
         target = target - target.mean(dim=2, keepdim=True)
@@ -57,17 +59,14 @@ def speechmetrics_si_sdr(preds: Tensor, target: Tensor,
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            metric = speechmetrics_sisdr(preds[i, j],
-                                            target[i, j],
-                                            rate=16000)
+            metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
             ms.append(metric['sisdr'][0])
         mss.append(ms)
     return torch.tensor(mss)
 
+
 def test_speechmetrics_si_sdr() -> None:
-    t = multiprocessing.Process(target=speechmetrics_si_sdr,
-                                args=(inputs.preds[0], inputs.target[0],
-                                      False))
+    t = multiprocessing.Process(target=speechmetrics_si_sdr, args=(inputs.preds[0], inputs.target[0], False))
     t.start()
     try:
         t.join(timeout=180)  # 3min
