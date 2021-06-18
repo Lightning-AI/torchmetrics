@@ -14,12 +14,13 @@
 import functools
 import inspect
 import operator
+import os
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Union
-import os
+
 import torch
 from torch import Tensor, nn
 
@@ -437,8 +438,8 @@ class Metric(nn.Module, ABC):
         error_msgs: List[str],
     ) -> None:
         """ Loads metric states from state_dict """
-        
-        # only global rank 0 should be reloading the values present in the ``state_dict`` 
+
+        # only global rank 0 should be reloading the values present in the ``state_dict``
         # as the state contains synced values across all progress_group
         for key in self._defaults:
             name = prefix + key
