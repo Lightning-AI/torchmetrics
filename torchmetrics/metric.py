@@ -30,7 +30,7 @@ from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
-def is_distributed_fn() -> bool:
+def distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
@@ -240,7 +240,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Optional[Callable] = None,
         process_group: Optional[Any] = None,
         should_sync: bool = True,
-        is_distributed_fn: Optional[Callable] = is_distributed_fn,
+        distributed_available: Optional[Callable] = distributed_available,
     ) -> Dict[str, Tensor]:
         """
         Sync function for manually controlling when metrics states should be synced across processes
@@ -251,24 +251,20 @@ class Metric(nn.Module, ABC):
                 Specify the process group on which synchronization is called.
                 default: None (which selects the entire world)
             should_sync: Whether to apply to state synchronization.
-            is_distributed_fn: Function to determine if we are running inside a distributed setting
+            distributed_available: Function to determine if we are running inside a distributed setting
 
         Returns:
-            cache: A dictionarry containing the local metric states. The cache will be empty if sync didn't happen.
+            cache: A dictionary containing the local metric states. The cache will be empty if sync didn't happen.
         """
-        is_distributed = is_distributed_fn()
-
+        is_distributed = distributed_available()
+        if not should_sync or not is_distributed:
+            return {}
         if dist_sync_fn is None:
             dist_sync_fn = gather_all_tensors
-
-        cache = {}
-
-        if is_distributed and should_sync:
-            # cache prior to syncing
-            cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
-
-            # sync
-            self._sync_dist(dist_sync_fn, process_group=process_group)
+        # cache prior to syncing
+        cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+        # sync
+        self._sync_dist(dist_sync_fn, process_group=process_group)
 
         return cache
 
@@ -279,7 +275,7 @@ class Metric(nn.Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         restore_cache: bool = True,
-        is_distributed_fn: Optional[Callable] = is_distributed_fn,
+        distributed_available: Optional[Callable] = distributed_available,
     ) -> None:
         """
         Context manager to synchronize the states between processes when running in a distributed setting
@@ -293,13 +289,13 @@ class Metric(nn.Module, ABC):
             should_sync: Whether to apply to state synchronization.
             restore_cache: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
-            is_distributed_fn: Function to determine if we are running inside a distributed setting
+            distributed_available: Function to determine if we are running inside a distributed setting
         """
         cache = self.sync(
             dist_sync_fn=dist_sync_fn,
             process_group=process_group,
             should_sync=should_sync,
-            is_distributed_fn=is_distributed_fn
+            distributed_available=distributed_available
         )
 
         yield
@@ -428,10 +424,8 @@ class Metric(nn.Module, ABC):
                     destination[prefix + key] = deepcopy(current_val)
             return destination
 
-    def _on_load_from_state_dict(self, state_dict, key, name) -> None:
-        value = state_dict.pop(name)
-        if os.getenv("GLOBAL_RANK", "0") == "0":
-            setattr(self, key, value)
+    def _should_load_from_state_dict(self) -> bool:
+        return os.getenv("GLOBAL_RANK", "0") == "0"
 
     def _load_from_state_dict(
         self,
@@ -450,7 +444,9 @@ class Metric(nn.Module, ABC):
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
-                self._on_load_from_state_dict(state_dict, key, name)
+                value = state_dict.pop(name)
+                if self._should_load_from_state_dict():
+                    setattr(self, key, value)
         super()._load_from_state_dict(
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )

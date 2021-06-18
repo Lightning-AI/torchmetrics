@@ -145,7 +145,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     for i in range(steps):
         metric(i)
         state_dict = metric.state_dict()
-        print(state_dict)
 
         sum = i * (i + 1) / 2
         assert state_dict["x"] == sum * worldsize
