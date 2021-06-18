@@ -29,8 +29,10 @@ from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, d
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
+
 def is_distributed_fn() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
+
 
 class Metric(nn.Module, ABC):
     """
@@ -424,7 +426,7 @@ class Metric(nn.Module, ABC):
                     destination[prefix + key] = deepcopy(current_val)
             return destination
 
-    def _on_load_from_state_dict(self, state_dict, key, name) -> None: 
+    def _on_load_from_state_dict(self, state_dict, key, name) -> None:
         value = state_dict.pop(name)
         if os.getenv("GLOBAL_RANK", "0") == "0":
             setattr(self, key, value)
