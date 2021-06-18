@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+import os
 from typing import OrderedDict
-
 import pytest
 import torch
 from torch import tensor
-
+from unittest import mock
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
+from copy import deepcopy
 
 seed_all(42)
 
@@ -119,7 +120,7 @@ def test_non_contiguous_tensors():
     torch.multiprocessing.spawn(_test_non_contiguous_tensors, args=(2, ), nprocs=2)
 
 
-def _test_state_dict_is_synced(rank, worldsize):
+def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     setup_ddp(rank, worldsize)
 
     class DummyCatMetric(Metric):
@@ -149,8 +150,20 @@ def _test_state_dict_is_synced(rank, worldsize):
         assert state_dict["c"] == (i + 1) * 2
         assert metric.c == (i + 1)
 
+    def reload_state_dict(state_dict, expected_x, expected_c):
+        metric = DummyCatMetric()
+        #metric.persistent(True)
+        metric.load_state_dict(state_dict)
+        assert metric.x == expected_x
+        assert metric.c == expected_c
+
+    with mock.patch.dict(os.environ, {"GLOBAL_RANK": str(rank)}):
+        reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0 )
+
+    reload_state_dict(deepcopy(state_dict), 20, 10)
+
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
-def test_state_dict_is_synced():
+def test_state_dict_is_synced(tmpdir):
     """ This test asserts taht metric are synced while creating the state dict but restored after to continue accumulation. """
-    torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, ), nprocs=2)
+    torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
