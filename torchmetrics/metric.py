@@ -290,7 +290,7 @@ class Metric(nn.Module, ABC):
         cache = self.sync(dist_sync_fn=dist_sync_fn, process_group=process_group, should_sync=should_sync)
         
         yield
-        
+
         if cache and restore_cache:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in cache.items():
