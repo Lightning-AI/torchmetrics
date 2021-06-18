@@ -36,7 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `is_differentiable` property to `ConfusionMatrix`, `F1`, `FBeta`, `Hamming`, `Hinge`, `IOU`, `MatthewsCorrcoef`, `Precision`, `Recall`, `PrecisionRecallCurve`, `ROC`, `StatScores` ([#253](https://github.com/PyTorchLightning/metrics/pull/253))
 
 
-- Added KID metric ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
+- Added Inception Score metric to image module ([#299](https://github.com/PyTorchLightning/metrics/pull/299))
+
+
+- Added KID metric to image module ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
 
 ### Changed
 

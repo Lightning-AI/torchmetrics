@@ -41,7 +41,7 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
     k_xy_sum = k_xy_sums.sum()
 
     value = (kt_xx_sum + kt_yy_sum) / (m * (m - 1))
-    value -= 2 * k_xy_sum / (m * m)
+    value -= 2 * k_xy_sum / (m**2)
     return value
 
 
@@ -107,19 +107,14 @@ class KID(Metric):
 
         subsets:
             Number of subsets to calculate the mean and standard deviation scores over
-
         subset_size:
             Number of randomly picked samples in each subset
-
         degree:
             Degree of the polynomial kernel function
-
         gamma:
             Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
-
         coef:
             Bias term in the polynomial kernel.
-
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
@@ -199,7 +194,7 @@ class KID(Metric):
 
         if isinstance(feature, (str, int)):
             if not _TORCH_FIDELITY_AVAILABLE:
-                raise ValueError(
+                raise RuntimeError(
                     'KID metric requires that Torch-fidelity is installed.'
                     'Either install as `pip install torchmetrics[image-quality]`'
                     ' or `pip install torch-fidelity`'
