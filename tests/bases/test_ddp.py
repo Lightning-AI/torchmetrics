@@ -153,7 +153,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     def reload_state_dict(state_dict, expected_x, expected_c):
         metric = DummyCatMetric()
-        #metric.persistent(True)
         metric.load_state_dict(state_dict)
         assert metric.x == expected_x
         assert metric.c == expected_c

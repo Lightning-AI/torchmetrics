@@ -439,7 +439,7 @@ class Metric(nn.Module, ABC):
     ) -> None:
         """ Loads metric states from state_dict """
 
-        # only global rank 0 should be reloading the values present in the ``state_dict``
+        # only global rank 0 should be reloading the values present in the ``state_dict``
         # as the state contains synced values across all progress_group
         for key in self._defaults:
             name = prefix + key
