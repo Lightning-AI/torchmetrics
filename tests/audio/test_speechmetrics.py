@@ -84,7 +84,6 @@ speechmetrics_si_sdr_zero_mean = partial(speechmetrics_si_sdr, zero_mean=True)
 speechmetrics_si_sdr_no_zero_mean = partial(speechmetrics_si_sdr, zero_mean=False)
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
-
 # def average_metric(preds, target, metric_func):
 #     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
 #     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
