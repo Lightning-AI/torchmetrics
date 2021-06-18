@@ -358,11 +358,12 @@ class Metric(nn.Module, ABC):
 
     def __getstate__(self):
         # ignore update and compute functions for pickling
-        return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute"]}
+        return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute", "_update_signature"]}
 
     def __setstate__(self, state):
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
+        self._update_signature = inspect.signature(self.update)
         self.update = self._wrap_update(self.update)
         self.compute = self._wrap_compute(self.compute)
 
