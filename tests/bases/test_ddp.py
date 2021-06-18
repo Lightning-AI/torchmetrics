@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from typing import OrderedDict
 
 import pytest
 import torch
@@ -152,5 +151,8 @@ def _test_state_dict_is_synced(rank, worldsize):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_state_dict_is_synced():
-    """ This test asserts taht metric are synced while creating the state dict but restored after to continue accumulation. """
+    """
+    This test asserts taht metric are synced while creating the state
+    dict but restored after to continue accumulation.
+    """
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, ), nprocs=2)
