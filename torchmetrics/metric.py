@@ -279,16 +279,13 @@ class Metric(nn.Module, ABC):
             restore_cache: Whether to restore the cache state so that the metrics can 
                 continue to be accumulated.
         """
-        synced = False
-
+        cache = {}
         if should_sync:
-
             cache = self.sync(dist_sync_fn=dist_sync_fn, process_group=process_group, should_sync=self._to_sync)
-            synced = True
-
+        
         yield
-
-        if synced and restore_cache:
+        
+        if cache and restore_cache:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in cache.items():
                 setattr(self, attr, val)
