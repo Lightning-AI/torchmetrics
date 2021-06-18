@@ -54,6 +54,7 @@ jobs:
 
     - name: Update Environment
       run: |
+        sudo apt install libsndfile1
         conda info
         conda install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
         conda install cpuonly $(python ./requirements/adjust-versions.py conda)
