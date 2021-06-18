@@ -198,7 +198,7 @@ class Metric(nn.Module, ABC):
 
             return self._forward_cache
 
-    def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None):
+    def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 
         for attr, reduction_fn in self._reductions.items():
@@ -262,10 +262,9 @@ class Metric(nn.Module, ABC):
         if dist_sync_fn is None:
             dist_sync_fn = gather_all_tensors
         # cache prior to syncing
-        cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+        cache = {attr: getattr(self, attr) for attr in self._defaults}
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
-
         return cache
 
     @contextmanager
