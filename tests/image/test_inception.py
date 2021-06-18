@@ -87,8 +87,8 @@ def test_is_update_compute():
         metric.update(img)
 
     mean, std = metric.compute()
-    assert mean != 0.0
-    assert std != 0.0
+    assert mean >= 0.0
+    assert std >= 0.0
 
 
 class _ImgDataset(Dataset):
