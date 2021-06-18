@@ -236,7 +236,8 @@ class Metric(nn.Module, ABC):
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
-                Specify the process group on which synchronization is called. default: None (which selects the entire world)
+                Specify the process group on which synchronization is called.
+                default: None (which selects the entire world)
             should_sync: Whether to apply to state synchronization.
 
         Returns:
@@ -274,7 +275,8 @@ class Metric(nn.Module, ABC):
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
-                Specify the process group on which synchronization is called. default: None (which selects the entire world)
+                Specify the process group on which synchronization is called.
+                default: None (which selects the entire world)
             should_sync: Whether to apply to state synchronization.
             restore_cache: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
