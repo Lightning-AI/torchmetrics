@@ -171,8 +171,8 @@ class Metric(nn.Module, ABC):
 
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
-            # skip restore cache operation from compute 
-            # as cache is stored below.     
+            # skip restore cache operation from compute
+            # as cache is stored below.
             self._restore_cache = False
 
             # save context before switch
@@ -186,7 +186,7 @@ class Metric(nn.Module, ABC):
             # restore context
             for attr, val in cache.items():
                 setattr(self, attr, val)
-            
+
             self._restore_cache = True
             self._to_sync = True
             self._computed = None
@@ -288,7 +288,7 @@ class Metric(nn.Module, ABC):
                 continue to be accumulated.
         """
         cache = self.sync(dist_sync_fn=dist_sync_fn, process_group=process_group, should_sync=should_sync)
-        
+
         yield
 
         if cache and restore_cache:
@@ -311,7 +311,9 @@ class Metric(nn.Module, ABC):
             if self._computed is not None:
                 return self._computed
 
-            with self.sync_context(dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, restore_cache=self._restore_cache):
+            with self.sync_context(
+                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, restore_cache=self._restore_cache
+            ):
                 self._computed = compute(*args, **kwargs)
 
             return self._computed
