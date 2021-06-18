@@ -69,8 +69,8 @@ class SI_SDR(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ):
+        dist_sync_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
