@@ -211,7 +211,7 @@ class Metric(nn.Module, ABC):
 
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
-            if isinstance(output_dict[attr][0], Tensor) and isinstance(output_dict[attr], Sequence):
+            if isinstance(output_dict[attr], Sequence) and isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
@@ -258,7 +258,7 @@ class Metric(nn.Module, ABC):
 
         cache = {}
 
-        if is_distributed and should_sync and dist_sync_fn is not None:
+        if is_distributed and should_sync:
             # cache prior to syncing
             cache = {attr: getattr(self, attr) for attr in self._defaults.keys()}
 
@@ -421,10 +421,10 @@ class Metric(nn.Module, ABC):
                 if self._persistent[key]:
                     current_val = getattr(self, key)
                     if not keep_vars:
-                        if torch.is_tensor(current_val):
+                        if isinstance(current_val, torch.Tensor):
                             current_val = current_val.detach()
                         elif isinstance(current_val, list):
-                            current_val = [cur_v.detach() if torch.is_tensor(cur_v) else cur_v for cur_v in current_val]
+                            current_val = [cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val]
                     destination[prefix + key] = deepcopy(current_val)
             return destination
 

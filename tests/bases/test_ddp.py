@@ -141,15 +141,16 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     metric = DummyCatMetric()
     metric.persistent(True)
 
-    for i in range(5):
+    steps = 5
+    for i in range(steps):
         metric(i)
         state_dict = metric.state_dict()
 
-        assert state_dict["x"] == sum(range(i + 1)) * 2
-        assert metric.x == sum(range(i + 1))
+        assert metric.x == steps * (steps + 1) / 2
+        assert state_dict["x"] == metric.x * 2
 
-        assert state_dict["c"] == (i + 1) * 2
         assert metric.c == (i + 1)
+        assert state_dict["c"] == metric.c * 2
 
     def reload_state_dict(state_dict, expected_x, expected_c):
         metric = DummyCatMetric()
