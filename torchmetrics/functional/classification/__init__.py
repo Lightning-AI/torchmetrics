@@ -28,3 +28,4 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
+from torchmetrics.functional.classification.cosine_similarity import cosine_similarity # noqa: F401
