@@ -14,10 +14,11 @@
 from typing import Tuple
 
 import torch
-import torchmetrics
 from torch import Tensor
 
+import torchmetrics
 from torchmetrics.utilities.checks import _check_same_shape
+
 
 def _cosine_similarity_update(
     preds: Tensor,
@@ -28,20 +29,17 @@ def _cosine_similarity_update(
 
     return preds, target
 
-def _cosine_similarity_compute(
-    preds: Tensor,
-    target: Tensor,
-    reduction = 'sum'
-) -> Tensor:
+
+def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     dot_product = (preds * target).sum(dim=-1)
     preds_norm = preds.norm(dim=-1)
     target_norm = target.norm(dim=-1)
-    similarity = dot_product/(preds_norm*target_norm)
-    reduction_mapping = {"sum": torch.sum,
-                         "mean": torch.mean, "none": lambda x: x}
+    similarity = dot_product / (preds_norm * target_norm)
+    reduction_mapping = {"sum": torch.sum, "mean": torch.mean, "none": lambda x: x}
     return reduction_mapping[reduction](similarity)
 
-def cosine_similarity(preds: Tensor, target: Tensor, reduction = 'sum') -> Tensor:
+
+def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     r"""
         Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
         between targets and predictions:
@@ -65,4 +63,3 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction = 'sum') -> Tenso
         """
     preds, target = _cosine_similarity_update(preds, target)
     return _cosine_similarity_compute(preds, target, reduction)
-

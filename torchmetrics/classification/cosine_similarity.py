@@ -16,8 +16,12 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.functional.classification.cosine_similarity import (
+    _cosine_similarity_compute,
+    _cosine_similarity_update,
+)
 from torchmetrics.metric import Metric
-from torchmetrics.functional.classification.cosine_similarity import _cosine_similarity_update, _cosine_similarity_compute
+
 
 class CosineSimilarty(Metric):
     r"""
@@ -53,14 +57,15 @@ class CosineSimilarty(Metric):
            >>> cosine_similarity.compute()
            tensor([1.0000, 1.0000, 1.0000])
     """
+
     def __init__(
-            self,
-            threshold: float = 0.5,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
-            dist_sync_fn: Callable = None,
-            reduction: str = 'sum'
+        self,
+        threshold: float = 0.5,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+        reduction: str = 'sum'
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -73,12 +78,11 @@ class CosineSimilarty(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.reduction = reduction
 
-
         if not 0 < threshold < 1:
             raise ValueError("The `threshold` should lie in the (0,1) interval.")
         self.threshold = threshold
 
-    def update(self, preds: Tensor, target: Tensor, reduction = "sum"):
+    def update(self, preds: Tensor, target: Tensor, reduction="sum"):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
