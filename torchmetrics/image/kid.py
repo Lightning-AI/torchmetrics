@@ -45,7 +45,7 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
     return value
 
 
-def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: float = Optional[None], coef: float = 1.0) -> Tensor:
+def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] = None, coef: float = 1.0) -> Tensor:
     """
     Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
     """
@@ -56,7 +56,7 @@ def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: float = Optional
 
 
 def poly_mmd(
-    f_real: Tensor, f_fake: Tensor, degree: int = 3, gamma: float = Optional[None], coef: float = 1.0
+    f_real: Tensor, f_fake: Tensor, degree: int = 3, gamma: Optional[float] = None, coef: float = 1.0
 ) -> Tensor:
     """
     Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
@@ -173,7 +173,7 @@ class KID(Metric):
         subsets: int = 100,
         subset_size: int = 1000,
         degree: int = 3,
-        gamma: Optional[float] = None,
+        gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,

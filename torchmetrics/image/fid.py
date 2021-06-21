@@ -258,8 +258,8 @@ class FID(Metric):
 
     def compute(self) -> Tensor:
         """ Calculate FID score based on accumulated extracted features from the two distributions """
-        real_features = dim_zero_cat(self.real_features, dim=0)
-        fake_features = dim_zero_cat(self.fake_features, dim=0)
+        real_features = dim_zero_cat(self.real_features)
+        fake_features = dim_zero_cat(self.fake_features)
         # computation is extremely sensitive so it needs to happen in double precision
         orig_dtype = real_features.dtype
         real_features = real_features.double()
