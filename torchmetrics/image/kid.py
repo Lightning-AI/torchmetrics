@@ -277,4 +277,4 @@ class KID(Metric):
             o = poly_mmd(f_real, f_fake, self.degree, self.gamma, self.coef)
             kid_scores.append(o)
         kid_scores = torch.stack(kid_scores)
-        return kid_scores.mean(), kid_scores.std()
+        return kid_scores.mean(), kid_scores.std(unbiased=False)
