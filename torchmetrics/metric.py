@@ -250,7 +250,8 @@ class Metric(nn.Module, ABC):
             process_group:
                 Specify the process group on which synchronization is called.
                 default: None (which selects the entire world)
-            should_sync: Whether to apply to state synchronization.
+            should_sync: Whether to apply to state synchronization. This will have an impact 
+                only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
 
         Returns:
@@ -285,7 +286,8 @@ class Metric(nn.Module, ABC):
             process_group:
                 Specify the process group on which synchronization is called.
                 default: None (which selects the entire world)
-            should_sync: Whether to apply to state synchronization.
+            should_sync: Whether to apply to state synchronization. This will have an impact 
+                only when running in a distributed setting.
             restore_cache: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
             distributed_available: Function to determine if we are running inside a distributed setting
