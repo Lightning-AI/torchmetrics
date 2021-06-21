@@ -50,8 +50,8 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
         target = target - torch.mean(target, dim=-1, keepdim=True)
         preds = preds - torch.mean(preds, dim=-1, keepdim=True)
 
-    α = (torch.sum(preds * target, dim=-1, keepdim=True) + EPS) / (torch.sum(target**2, dim=-1, keepdim=True) + EPS)
-    target_scaled = α * target
+    alpha = (torch.sum(preds * target, dim=-1, keepdim=True) + EPS) / (torch.sum(target**2, dim=-1, keepdim=True) + EPS)
+    target_scaled = alpha * target
 
     noise = target_scaled - preds
 
