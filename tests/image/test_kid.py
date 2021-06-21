@@ -158,7 +158,8 @@ def test_compare_kid(tmpdir, feature=2048):
         feature_layer_fid=str(feature),
         batch_size=batch_size,
         kid_subsets=1,
-        kid_subset_size=100
+        kid_subset_size=100,
+        save_cpu_ram=True
     )
 
     tm_mean, tm_std = metric.compute()

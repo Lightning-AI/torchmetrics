@@ -148,7 +148,8 @@ def test_compare_fid(tmpdir, feature=2048):
         input2=_ImgDataset(img2),
         fid=True,
         feature_layer_fid=str(feature),
-        batch_size=batch_size
+        batch_size=batch_size,
+        save_cpu_ram=True
     )
 
     tm_res = metric.compute()
