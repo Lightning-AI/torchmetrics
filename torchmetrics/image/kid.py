@@ -267,7 +267,7 @@ class KID(Metric):
         if n_samples_fake < self.subset_size:
             raise ValueError('Argument `subset_size` should be smaller than the number of samples')
 
-        kid_scores = []
+        kid_scores_ = []
         for i in range(self.subsets):
             perm = torch.randperm(n_samples_real)
             f_real = real_features[perm[:self.subset_size]]
@@ -275,6 +275,6 @@ class KID(Metric):
             f_fake = fake_features[perm[:self.subset_size]]
 
             o = poly_mmd(f_real, f_fake, self.degree, self.gamma, self.coef)
-            kid_scores.append(o)
-        kid_scores = torch.stack(kid_scores)
+            kid_scores_.append(o)
+        kid_scores = torch.stack(kid_scores_)
         return kid_scores.mean(), kid_scores.std(unbiased=False)
