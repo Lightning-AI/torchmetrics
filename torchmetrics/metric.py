@@ -176,8 +176,7 @@ class Metric(nn.Module, ABC):
 
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
-            # skip restore cache operation from compute
-            # as cache is stored below.
+            # skip restore cache operation from compute as cache is stored below.
             self._restore_cache = False
 
             # save context before switch
