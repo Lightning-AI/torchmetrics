@@ -42,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Inception Score metric to image module ([#299](https://github.com/PyTorchLightning/metrics/pull/299))
 
 
+- Added KID metric to image module ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
+
 ### Changed
 
 - Forward cache is now reset when `reset` method is called ([#260](https://github.com/PyTorchLightning/metrics/pull/260))
