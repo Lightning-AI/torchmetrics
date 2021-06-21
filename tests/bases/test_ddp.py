@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import sys
+from copy import deepcopy
+from unittest import mock
 
 import pytest
 import torch
@@ -116,3 +119,55 @@ def _test_non_contiguous_tensors(rank, worldsize):
 def test_non_contiguous_tensors():
     """ Test that gather_all operation works for non contiguous tensors """
     torch.multiprocessing.spawn(_test_non_contiguous_tensors, args=(2, ), nprocs=2)
+
+
+def _test_state_dict_is_synced(rank, worldsize, tmpdir):
+    setup_ddp(rank, worldsize)
+
+    class DummyCatMetric(Metric):
+
+        def __init__(self):
+            super().__init__()
+            self.add_state("x", torch.tensor(0), dist_reduce_fx=torch.sum)
+            self.add_state("c", torch.tensor(0), dist_reduce_fx=torch.sum)
+
+        def update(self, x):
+            self.x += x
+            self.c += 1
+
+        def compute(self):
+            return self.x // self.c
+
+    metric = DummyCatMetric()
+    metric.persistent(True)
+
+    steps = 5
+    for i in range(steps):
+        metric(i)
+        state_dict = metric.state_dict()
+
+        sum = i * (i + 1) / 2
+        assert state_dict["x"] == sum * worldsize
+        assert metric.x == sum
+        assert metric.c == (i + 1)
+        assert state_dict["c"] == metric.c * worldsize
+
+    def reload_state_dict(state_dict, expected_x, expected_c):
+        metric = DummyCatMetric()
+        metric.load_state_dict(state_dict)
+        assert metric.x == expected_x
+        assert metric.c == expected_c
+
+    with mock.patch.dict(os.environ, {"GLOBAL_RANK": str(rank)}):
+        reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
+
+    reload_state_dict(deepcopy(state_dict), 20, 10)
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+def test_state_dict_is_synced(tmpdir):
+    """
+    This test asserts that metrics are synced while creating the state
+    dict but restored after to continue accumulation.
+    """
+    torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
