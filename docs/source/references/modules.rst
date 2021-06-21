@@ -269,6 +269,10 @@ IS
 .. autoclass:: torchmetrics.IS
     :noindex:
 
+
+.. autoclass:: torchmetrics.KID
+    :noindex:
+
 ******************
 Regression Metrics
 ******************
