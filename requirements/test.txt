@@ -23,5 +23,6 @@ nltk>=3.6
 # audio
 pypesq
 mir_eval>=0.6
+pesq @ https://github.com/ludlows/python-pesq/archive/refs/heads/master.zip
 SRMRpy @ https://github.com/jfsantos/SRMRpy/archive/refs/heads/master.zip
 speechmetrics @ https://github.com/aliutkus/speechmetrics/archive/refs/heads/master.zip
