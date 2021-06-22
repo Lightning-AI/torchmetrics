@@ -16,6 +16,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
+import torch
 from torch import nn
 
 from torchmetrics.metric import Metric
@@ -101,6 +102,7 @@ class MetricCollection(nn.ModuleDict):
         self.prefix = self._check_arg(prefix, 'prefix')
         self.postfix = self._check_arg(postfix, 'postfix')
 
+    @torch.jit.unused
     def forward(self, *args, **kwargs) -> Dict[str, Any]:  # pylint: disable=E0202
         """
         Iteratively call forward for each metric. Positional arguments (args) will
