@@ -26,7 +26,7 @@ jobs:
     pool: gridai-spot-pool
 
     container:
-      image: "pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime"
+      image: "pytorch/pytorch:1.8.1-cuda10.2-cudnn7-runtime"
       options: "--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all --name ci-container -v /usr/bin/docker:/tmp/docker:ro"
 
     workspace:
