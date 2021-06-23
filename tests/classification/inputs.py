@@ -116,3 +116,10 @@ def generate_plausible_inputs_binary(num_batches=NUM_BATCHES, batch_size=BATCH_S
 _input_multilabel_prob_plausible = generate_plausible_inputs_multilabel()
 
 _input_binary_prob_plausible = generate_plausible_inputs_binary()
+
+# randomly remove one class from the input
+_temp = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))
+_class_remove, _class_replace = torch.multinomial(torch.ones(NUM_CLASSES), num_samples=2, replacement=False)
+_temp[_temp == _class_remove] = _class_replace
+
+_input_multiclass_with_missing_class = Input(_temp.clone(), _temp.clone())
