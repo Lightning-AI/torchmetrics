@@ -251,7 +251,7 @@ StatScores
 
 
 *********************
-Image Quality Metrics
+Image Metrics
 *********************
 
 Image quality metrics can be used to access the quality of synthetic generated images from machine
@@ -269,6 +269,8 @@ IS
 .. autoclass:: torchmetrics.IS
     :noindex:
 
+KID
+~~~
 
 .. autoclass:: torchmetrics.KID
     :noindex:
