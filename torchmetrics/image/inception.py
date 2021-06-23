@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
@@ -153,7 +154,7 @@ class IS(Metric):
         self.features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        features = torch.cat(self.features, dim=0)
+        features = dim_zero_cat(self.features)
         # random permute the features
         idx = torch.randperm(features.shape[0])
         features = features[idx]

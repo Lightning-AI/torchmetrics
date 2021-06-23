@@ -18,6 +18,46 @@ your own metric type might be too burdensome.
 .. autoclass:: torchmetrics.AverageMeter
     :noindex:
 
+*************
+Audio Metrics
+*************
+
+About Audio Metrics
+~~~~~~~~~~~~~~~~~~~
+
+For the purposes of audio metrics, inputs (predictions, targets) must have the same size.
+If the input is 1D tensors the output will be a scalar. If the input is multi-dimensional with shape [..., time]` the metric will be computed over the `time` dimension.
+
+.. doctest::
+
+    >>> import torch
+    >>> from torchmetrics import SNR
+    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> snr = SNR()
+    >>> snr_val = snr(preds, target)
+    >>> snr_val
+    tensor(16.1805)
+
+SI_SDR
+~~~~~~
+
+.. autoclass:: torchmetrics.SI_SDR
+    :noindex:
+
+SI_SNR
+~~~~~~
+
+.. autoclass:: torchmetrics.SI_SNR
+    :noindex:
+
+SNR
+~~~
+
+.. autoclass:: torchmetrics.SNR
+    :noindex:
+
+
 **********************
 Classification Metrics
 **********************
@@ -250,9 +290,9 @@ StatScores
     :noindex:
 
 
-*********************
-Image Quality Metrics
-*********************
+*************
+Image Metrics
+*************
 
 Image quality metrics can be used to access the quality of synthetic generated images from machine
 learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
@@ -267,6 +307,12 @@ IS
 ~~
 
 .. autoclass:: torchmetrics.IS
+    :noindex:
+
+KID
+~~~
+
+.. autoclass:: torchmetrics.KID
     :noindex:
 
 ******************
