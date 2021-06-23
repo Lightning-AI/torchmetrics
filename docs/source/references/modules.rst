@@ -290,9 +290,9 @@ StatScores
     :noindex:
 
 
-*********************
-Image Quality Metrics
-*********************
+*************
+Image Metrics
+*************
 
 Image quality metrics can be used to access the quality of synthetic generated images from machine
 learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
@@ -309,6 +309,8 @@ IS
 .. autoclass:: torchmetrics.IS
     :noindex:
 
+KID
+~~~
 
 .. autoclass:: torchmetrics.KID
     :noindex:
