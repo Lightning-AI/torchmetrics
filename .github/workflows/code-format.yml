@@ -52,7 +52,7 @@ jobs:
           pip list
       - name: mypy
         run: |
-          mypy
+          mypy --show-error-codes
 
 #  format-check-yapf:
 #    runs-on: ubuntu-20.04
