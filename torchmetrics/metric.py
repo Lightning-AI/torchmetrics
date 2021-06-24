@@ -214,7 +214,7 @@ class Metric(nn.Module, ABC):
 
         for attr, reduction_fn in self._reductions.items():
             # pre-processing ops (stack or flatten for inputs)
-            if isinstance(output_dict[attr], Sequence) and isinstance(output_dict[attr][0], Tensor):
+            if isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
@@ -334,7 +334,6 @@ class Metric(nn.Module, ABC):
         """
         Override this method to update the state variables of your metric class.
         """
-        pass
 
     @abstractmethod
     def compute(self):  # pylint: disable=E0202
@@ -342,7 +341,6 @@ class Metric(nn.Module, ABC):
         Override this method to compute the final metric value from state variables
         synchronized across the distributed backend.
         """
-        pass
 
     def reset(self):
         """

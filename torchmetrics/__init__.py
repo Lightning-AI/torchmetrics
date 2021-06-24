@@ -25,6 +25,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     BinnedRecallAtFixedPrecision,
     CohenKappa,
     ConfusionMatrix,
+    CosineSimilarity,
     FBeta,
     HammingDistance,
     Hinge,

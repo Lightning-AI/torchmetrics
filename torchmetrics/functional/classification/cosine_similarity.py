@@ -16,10 +16,6 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
-import torchmetrics
-from torchmetrics.utilities.checks import _check_same_shape
-
-
 def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,

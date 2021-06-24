@@ -214,6 +214,12 @@ ConfusionMatrix
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
+CosineSimilarity
+~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CosineSimilarity
+    :noindex:
+
 F1
 ~~
 

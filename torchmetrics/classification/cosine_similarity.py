@@ -23,15 +23,14 @@ from torchmetrics.functional.classification.cosine_similarity import (
 from torchmetrics.metric import Metric
 
 
-class CosineSimilarty(Metric):
+class CosineSimilarity(Metric):
     r"""
        Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
         between targets and predictions:
        Accepts all input types listed in :ref:`references/modules:input types`.
        Args:
-           threshold:
-               Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-               of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+           reduction : how to reduce over the batch dimension using sum, mean or
+                        taking the individual scores
            compute_on_step:
                Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
            dist_sync_on_step:
@@ -43,11 +42,6 @@ class CosineSimilarty(Metric):
            dist_sync_fn:
                Callback that performs the allgather operation on the metric state. When ``None``, DDP
                will be used to perform the all gather.
-           reduction: The method of reducing along the batch dimension using sum, mean or
-                        taking the individual scores
-       Raises:
-           ValueError:
-               If ``threshold`` is not between ``0`` and ``1``.
        Example:
            >>> from torchmetrics import CosineSimilarity
            >>> target = torch.tensor([[0, 1], [1, 1]])
@@ -60,12 +54,11 @@ class CosineSimilarty(Metric):
 
     def __init__(
         self,
-        threshold: float = 0.5,
+        reduction: str = 'sum',
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        reduction: str = 'sum'
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -78,25 +71,18 @@ class CosineSimilarty(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.reduction = reduction
 
-        if not 0 < threshold < 1:
-            raise ValueError("The `threshold` should lie in the (0,1) interval.")
-        self.threshold = threshold
-
-    def update(self, preds: Tensor, target: Tensor, reduction="sum"):
+    def update(self, preds: Tensor, target: Tensor):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
         Args:
             preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth labels
-            reduction : how to reduce over the batch dimension using sum, mean or
-                        taking the individual scores
         """
         correct, total = _cosine_similarity_update(preds, target)
 
         self.correct += correct
         self.total += total
-        self.reduction = reduction
 
     def compute(self):
         return _cosine_similarity_compute(self.total, self.correct, self.reduction)
