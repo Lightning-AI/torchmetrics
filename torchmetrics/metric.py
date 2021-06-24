@@ -92,8 +92,8 @@ class Metric(nn.Module, ABC):
         self._restore_cache = True
 
         self._update_signature = inspect.signature(self.update)
-        self.update = self._wrap_update(self.update)
-        self.compute = self._wrap_compute(self.compute)
+        self.update: Callable = self._wrap_update(self.update)
+        self.compute: Callable = self._wrap_compute(self.compute)
         self._computed = None
         self._forward_cache = None
         self._update_called = False
