@@ -63,8 +63,8 @@ jobs:
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision
-        pip install --requirement requirements.txt --upgrade-strategy only-if-needed --quiet
-        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet
+        pip install --requirement requirements.txt --quiet
+        pip install --requirement requirements/test.txt --quiet
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
       shell: bash -l {0}
