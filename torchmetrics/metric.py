@@ -334,7 +334,6 @@ class Metric(nn.Module, ABC):
         """
         Override this method to update the state variables of your metric class.
         """
-        pass
 
     @abstractmethod
     def compute(self):  # pylint: disable=E0202
@@ -342,7 +341,6 @@ class Metric(nn.Module, ABC):
         Override this method to compute the final metric value from state variables
         synchronized across the distributed backend.
         """
-        pass
 
     def reset(self):
         """
