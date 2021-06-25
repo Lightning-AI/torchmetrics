@@ -17,7 +17,6 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
-from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass, _deprecation_warn_arg_multilabel
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
@@ -55,8 +54,6 @@ def precision(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
-    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -133,12 +130,6 @@ def precision(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -169,9 +160,6 @@ def precision(
         tensor(0.2500)
 
     """
-    _deprecation_warn_arg_multilabel(multilabel)
-    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
-
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -235,8 +223,6 @@ def recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
-    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -313,12 +299,6 @@ def recall(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -349,9 +329,6 @@ def recall(
         tensor(0.2500)
 
     """
-    _deprecation_warn_arg_multilabel(multilabel)
-    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
-
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -392,8 +369,6 @@ def precision_recall(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
-    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tuple[Tensor, Tensor]:
     r"""
     Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
@@ -473,12 +448,6 @@ def precision_recall(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The function returns a tuple with two elements: precision and recall. Their shape
@@ -510,9 +479,6 @@ def precision_recall(
         (tensor(0.2500), tensor(0.2500))
 
     """
-    _deprecation_warn_arg_multilabel(multilabel)
-    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
-
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
