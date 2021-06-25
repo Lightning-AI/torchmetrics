@@ -18,15 +18,17 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    """ scale-invariant signal-to-distortion ratio (SI-SDR)
+    """
+    Calculates Scale-invariant signal-to-distortion ratio (SI-SDR) metric. The SI-SDR value
+    is in general considered an overall measure of how good a source sound.
 
     Args:
         preds:
-            shape [..., time]
+            shape ``[...,time]``
         target:
-            shape [..., time]
+            shape ``[...,time]``
         zero_mean:
-            if to zero mean target and preds or not
+            If to zero mean target and preds or not
 
     Returns:
         si-sdr value of shape [...]
@@ -41,7 +43,7 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
 
     References:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
-         and Signal Processing (ICASSP) 2019.
+        and Signal Processing (ICASSP) 2019.
     """
     _check_same_shape(preds, target)
     EPS = torch.finfo(preds.dtype).eps

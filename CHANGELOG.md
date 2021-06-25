@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.4.0] - 2021-06-24
+## [0.4.0] - 2021-06-25
 
 ### Added
 
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added audio metrics: SNR, SI_SDR, SI_SNR ([#292](https://github.com/PyTorchLightning/metrics/pull/292))
 - Added Inception Score metric to image module ([#299](https://github.com/PyTorchLightning/metrics/pull/299))
 - Added KID metric to image module ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
+- Added `sync` and `sync_context` methods for manually controlling when metric states are synced ([#302](https://github.com/PyTorchLightning/metrics/pull/302))
 
 ### Changed
 
@@ -29,10 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved per-class metric handling for imbalanced datasets for `precision`, `recall`, `precision_recall`, `fbeta`, `f1`, `accuracy`, and `specificity` ([#204](https://github.com/PyTorchLightning/metrics/pull/204))
 - Added `torch.jit.unused` to `MetricCollection` forward ([#307](https://github.com/PyTorchLightning/metrics/pull/307))
 
-
 ### Deprecated
 
 - Deprecated `torchmetrics.functional.mean_relative_error` ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
+
+### Removed
+
+- Removed argument `is_multiclass` ([#319](https://github.com/PyTorchLightning/metrics/pull/319))
 
 ### Fixed
 
@@ -51,11 +55,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `MetricCollection` should return metrics with prefix on `items()`, `keys()` ([#209](https://github.com/PyTorchLightning/metrics/pull/209))
-- Calling `compute` before `update` will now give an warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
+- Calling `compute` before `update` will now give warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
 
 ### Removed
 
-- Removed `numpy` as dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
+- Removed `numpy` as direct dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
 
 ### Fixed
 
