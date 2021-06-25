@@ -37,7 +37,8 @@ class SSIM(_SSIM):
         process_group: Optional[Any] = None,
     ):
         warn(
-            "This `SIIM` was deprecated in v0.4 and will be removed in v0.5. Use `torchmetrics.image.ssim` instead.",
+            "This `SIIM` was moved in v0.4 and this shell will be removed in v0.5."
+            " Use `torchmetrics.image.ssim` instead.",
             DeprecationWarning
         )
         super().__init__(
