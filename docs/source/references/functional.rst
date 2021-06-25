@@ -76,7 +76,7 @@ confusion_matrix [func]
     :noindex:
 
 cosine_similarity [func]
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.cosine_similarity
     :noindex:

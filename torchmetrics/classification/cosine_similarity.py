@@ -47,7 +47,7 @@ class CosineSimilarity(Metric):
            >>> target = torch.tensor([[0, 1], [1, 1]])
            >>> preds = torch.tensor([[0, 1], [0, 1]])
            >>> cosine_similarity = CosineSimilarity()
-           >>> cosine_similarity.update(preds, target, 'none')
+           >>> cosine_similarity.update(preds, target)
            >>> cosine_similarity.compute()
            tensor([1.0000, 1.0000, 1.0000])
     """

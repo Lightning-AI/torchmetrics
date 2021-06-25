@@ -47,7 +47,7 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
                         taking the individual scores
 
         Example:
-            >>> from torchmetrics.functional import cosine_similarity
+            >>> from torchmetrics.functional.classification import cosine_similarity
             >>> target = torch.tensor([1, 2, 3, 4], dtype= torch.float)
             >>> preds = torch.tensor([[1, 2, 3, 4],
             ...                       [1, 2, 3, 4],
