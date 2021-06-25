@@ -36,8 +36,7 @@ class PSNR(_PSNR):
     ):
         warn(
             "This `PSNR` was moved in v0.4 and this shell will be removed in v0.5."
-            " Use `torchmetrics.image.psnr` instead.",
-            DeprecationWarning
+            " Use `torchmetrics.image.psnr` instead.", DeprecationWarning
         )
         super().__init__(
             data_range=data_range,

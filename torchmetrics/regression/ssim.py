@@ -38,8 +38,7 @@ class SSIM(_SSIM):
     ):
         warn(
             "This `SIIM` was moved in v0.4 and this shell will be removed in v0.5."
-            " Use `torchmetrics.image.ssim` instead.",
-            DeprecationWarning
+            " Use `torchmetrics.image.ssim` instead.", DeprecationWarning
         )
         super().__init__(
             kernel_size=kernel_size,
