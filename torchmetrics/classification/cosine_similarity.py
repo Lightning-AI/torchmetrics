@@ -27,6 +27,11 @@ class CosineSimilarity(Metric):
     r"""
        Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
         between targets and predictions:
+        
+        .. math::
+            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2} \sqrt{\sum_{i=1}^n y_i^2}}
+            
+        where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
        Accepts all input types listed in :ref:`references/modules:input types`.
 
        Args:
