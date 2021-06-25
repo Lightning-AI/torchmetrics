@@ -28,6 +28,7 @@ class CosineSimilarity(Metric):
        Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
         between targets and predictions:
        Accepts all input types listed in :ref:`references/modules:input types`.
+
        Args:
            reduction : how to reduce over the batch dimension using sum, mean or
                         taking the individual scores
@@ -42,6 +43,7 @@ class CosineSimilarity(Metric):
            dist_sync_fn:
                Callback that performs the allgather operation on the metric state. When ``None``, DDP
                will be used to perform the all gather.
+
        Example:
            >>> from torchmetrics import CosineSimilarity
            >>> target = torch.tensor([[0, 1], [1, 1]])
@@ -75,6 +77,7 @@ class CosineSimilarity(Metric):
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
+
         Args:
             preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth labels
