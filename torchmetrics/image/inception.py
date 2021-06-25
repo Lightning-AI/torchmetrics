@@ -71,13 +71,14 @@ class IS(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    [1] Improved Techniques for Training GANs
-    Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen
-    https://arxiv.org/abs/1606.03498
+    References:
+        [1] Improved Techniques for Training GANs
+        Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen
+        https://arxiv.org/abs/1606.03498
 
-    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-    https://arxiv.org/abs/1706.08500
+        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:
