@@ -17,13 +17,13 @@ from torchmetrics.functional.audio.si_sdr import si_sdr
 
 
 def si_snr(preds: Tensor, target: Tensor) -> Tensor:
-    """ scale-invariant signal-to-noise ratio (SI-SNR)
+    """ Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Args:
         preds:
-            shape [..., time]
+            shape ``[...,time]``
         target:
-            shape [..., time]
+            shape ``[...,time]``
 
     Returns:
         si-snr value of shape [...]
@@ -39,8 +39,8 @@ def si_snr(preds: Tensor, target: Tensor) -> Tensor:
 
     References:
         [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech
-         Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
-         696-700, doi: 10.1109/ICASSP.2018.8462116.
+        Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
+        696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
 
     return si_sdr(target=target, preds=preds, zero_mean=True)
