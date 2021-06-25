@@ -12,44 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional, Sequence
+from warnings import warn
 
-import torch
-from torch import Tensor
-
-from torchmetrics.functional.regression.ssim import _ssim_compute, _ssim_update
-from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.image.ssim import SSIM as _SSIM
 
 
-class SSIM(Metric):
+class SSIM(_SSIM):
     """
-    Computes `Structual Similarity Index Measure
-    <https://en.wikipedia.org/wiki/Structural_similarity>`_ (SSIM).
+    .. deprecated:: 0.4
+        The SSIM was moved to `torchmetrics.image.ssim`.
 
-    Args:
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of SSIM. Default: 0.01
-        k2: Parameter of SSIM. Default: 0.03
-
-    Return:
-        Tensor with SSIM score
-
-    Example:
-        >>> from torchmetrics import SSIM
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> ssim = SSIM()
-        >>> ssim(preds, target)
-        tensor(0.9219)
     """
 
     def __init__(
@@ -64,44 +36,18 @@ class SSIM(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ):
+        warn(
+            "This `SIIM` was moved in v0.4 and this shell will be removed in v0.5."
+            " Use `torchmetrics.image.ssim` instead.", DeprecationWarning
+        )
         super().__init__(
+            kernel_size=kernel_size,
+            sigma=sigma,
+            reduction=reduction,
+            data_range=data_range,
+            k1=k1,
+            k2=k2,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-        )
-        rank_zero_warn(
-            'Metric `SSIM` will save all targets and'
-            ' predictions in buffer. For large datasets this may lead'
-            ' to large memory footprint.'
-        )
-
-        self.add_state("y", default=[], dist_reduce_fx="cat")
-        self.add_state("y_pred", default=[], dist_reduce_fx="cat")
-        self.kernel_size = kernel_size
-        self.sigma = sigma
-        self.data_range = data_range
-        self.k1 = k1
-        self.k2 = k2
-        self.reduction = reduction
-
-    def update(self, preds: Tensor, target: Tensor):
-        """
-        Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        preds, target = _ssim_update(preds, target)
-        self.y_pred.append(preds)
-        self.y.append(target)
-
-    def compute(self):
-        """
-        Computes explained variance over state.
-        """
-        preds = dim_zero_cat(self.y_pred)
-        target = dim_zero_cat(self.y)
-        return _ssim_compute(
-            preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
         )
