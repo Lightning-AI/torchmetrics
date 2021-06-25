@@ -16,6 +16,7 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
+
 def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
