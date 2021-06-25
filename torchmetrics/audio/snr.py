@@ -20,7 +20,14 @@ from torchmetrics.metric import Metric
 
 
 class SNR(Metric):
-    """ signal-to-noise ratio (SNR)
+    r""" `Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
+
+    .. math::
+        \text{SNR} = \frac{P_{signal}}{P_{noise}}
+
+    where  :math:`P` denotes the power of each signal. The SNR metric compares the level 
+    of the desired signal to the level of background noise. Therefore, a high value of 
+    SNR means that the audio is clear.
 
     Forward accepts
 
@@ -60,7 +67,7 @@ class SNR(Metric):
 
     References:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
-         and Signal Processing (ICASSP) 2019.
+        and Signal Processing (ICASSP) 2019.
     """
 
     def __init__(

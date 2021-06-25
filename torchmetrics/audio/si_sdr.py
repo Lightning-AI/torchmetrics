@@ -20,12 +20,14 @@ from torchmetrics.metric import Metric
 
 
 class SI_SDR(Metric):
-    """ scale-invariant signal-to-distortion ratio (SI-SDR)
+    """ 
+    Scale-invariant signal-to-distortion ratio (SI-SDR). The SI-SDR value
+    is in general considered an overall measure of how good a source sound.
 
     Forward accepts
 
-    - ``preds``: ``shape [..., time]``
-    - ``target``: ``shape [..., time]``
+    - ``preds``: ``shape [...,time]``
+    - ``target``: ``shape [...,time]``
 
     Args:
         zero_mean:
@@ -60,7 +62,7 @@ class SI_SDR(Metric):
 
     References:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
-         and Signal Processing (ICASSP) 2019.
+        and Signal Processing (ICASSP) 2019.
     """
 
     def __init__(

@@ -79,7 +79,7 @@ class KID(Metric):
     evaluation of a polynomial kernel function :math:`k`
 
     .. math::
-        k(x,y) = (\gamma * x^T y + coef)^degree
+        k(x,y) = (\gamma * x^T y + coef)^{degree}
 
     which controls the distance between two features. In practise the MMD is calculated over a number of
     subsets to be able to both get the mean and standard deviation of KID.
@@ -127,13 +127,14 @@ class KID(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    [1] Demystifying MMD GANs
-    Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
-    https://arxiv.org/abs/1801.01401
+    References:
+        [1] Demystifying MMD GANs
+        Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
+        https://arxiv.org/abs/1801.01401
 
-    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-    https://arxiv.org/abs/1706.08500
+        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:

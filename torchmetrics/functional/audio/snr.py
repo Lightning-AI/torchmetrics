@@ -18,13 +18,20 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    """ signal-to-noise ratio (SNR)
+    r""" `Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
+
+    .. math::
+        \text{SNR} = \frac{P_{signal}}{P_{noise}}
+
+    where  :math:`P` denotes the power of each signal. The SNR metric compares the level 
+    of the desired signal to the level of background noise. Therefore, a high value of 
+    SNR means that the audio is clear.
 
     Args:
         preds:
-            shape [..., time]
+            shape ``[...,time]``
         target:
-            shape [..., time]
+            shape ``[...,time]``
         zero_mean:
             if to zero mean target and preds or not
 
