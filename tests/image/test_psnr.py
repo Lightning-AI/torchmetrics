@@ -23,7 +23,7 @@ from skimage.metrics import peak_signal_noise_ratio
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import psnr
-from torchmetrics.regression import PSNR
+from torchmetrics.image import PSNR
 
 seed_all(42)
 
