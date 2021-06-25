@@ -66,7 +66,7 @@ jobs:
         pip install --requirement requirements.txt --upgrade-strategy only-if-needed --quiet
         pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet
         pip list
-        python -c "import torch; assert torch.__version__[:3] == '${{ matrix.pytorch-version }}', torch.__version__"
+        python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
       shell: bash -l {0}
 
     - name: Testing
