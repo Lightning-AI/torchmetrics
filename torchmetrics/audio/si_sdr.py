@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SI_SDR(Metric):
-    """ 
+    """
     Scale-invariant signal-to-distortion ratio (SI-SDR). The SI-SDR value
     is in general considered an overall measure of how good a source sound.
 

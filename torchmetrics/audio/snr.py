@@ -25,8 +25,8 @@ class SNR(Metric):
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
 
-    where  :math:`P` denotes the power of each signal. The SNR metric compares the level 
-    of the desired signal to the level of background noise. Therefore, a high value of 
+    where  :math:`P` denotes the power of each signal. The SNR metric compares the level
+    of the desired signal to the level of background noise. Therefore, a high value of
     SNR means that the audio is clear.
 
     Forward accepts

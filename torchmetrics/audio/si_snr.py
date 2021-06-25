@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SI_SNR(Metric):
-    """ Scale-invariant signal-to-noise ratio (SI-SNR). 
+    """ Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Forward accepts
 
