@@ -14,7 +14,7 @@
 from typing import Any, Callable, Optional
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.classification.kldivergence import _kld_update, _kld_compute
 from torchmetrics.metric import Metric
@@ -52,7 +52,7 @@ class KLDivergence(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.functional import kldivergence
-        >>> p = torch.randn(([[0.36, 0.48, 0.16]])
+        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kldivergence(p, q)
         tensor(0.085)

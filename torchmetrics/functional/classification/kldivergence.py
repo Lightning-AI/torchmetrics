@@ -73,7 +73,7 @@ def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Option
     Example:
         >>> import torch
         >>> from torchmetrics.functional import kldivergence
-        >>> p = torch.randn(([[0.36, 0.48, 0.16]])
+        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kldivergence(p, q)
         tensor(0.085)
