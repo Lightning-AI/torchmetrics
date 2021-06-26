@@ -28,6 +28,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     HammingDistance,
     Hinge,
     IoU,
+    KLDivergence,
     MatthewsCorrcoef,
     Precision,
     PrecisionRecallCurve,
