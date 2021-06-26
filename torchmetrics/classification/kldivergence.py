@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.kldivergence import _kld_update, _kld_compute
+from torchmetrics.functional.classification.kldivergence import _kld_compute, _kld_update
 from torchmetrics.metric import Metric
 
 
@@ -33,9 +33,9 @@ class KLDivergence(Metric):
     Args:
         p: data distribution with shape ``[N, d]``
         q: prior or approximate distribution with shape ``[N, d]``
-        log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities, 
+        log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
             will normalize to make sure the distributes sum to 1
-        reduction: 
+        reduction:
             Determines how to reduce over the ``N``/batch dimension:
 
             - ``'mean'`` [default]: Averages score across samples

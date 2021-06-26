@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -61,9 +61,9 @@ def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Option
     Args:
         p: data distribution with shape ``[N, d]``
         q: prior or approximate distribution with shape ``[N, d]``
-        log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities, 
+        log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
             will normalize to make sure the distributes sum to 1
-        reduction: 
+        reduction:
             Determines how to reduce over the ``N``/batch dimension:
 
             - ``'mean'`` [default]: Averages score across samples
