@@ -89,6 +89,12 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
+kldivergence [func]
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.kldivergence
+    :noindex:
+
 matthews_corrcoef [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

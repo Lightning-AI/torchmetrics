@@ -98,3 +98,7 @@ class KLDivergence(Metric):
 
     def compute(self) -> Tensor:
         return _kld_compute(self.measures, self.total, self.reduction)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return True
