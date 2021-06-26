@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.cosine_similarity import (
+from torchmetrics.functional.regression.cosine_similarity import (
     _cosine_similarity_compute,
     _cosine_similarity_update,
 )
@@ -53,10 +53,9 @@ class CosineSimilarity(Metric):
            >>> from torchmetrics import CosineSimilarity
            >>> target = torch.tensor([[0, 1], [1, 1]])
            >>> preds = torch.tensor([[0, 1], [0, 1]])
-           >>> cosine_similarity = CosineSimilarity()
-           >>> cosine_similarity.update(preds, target)
-           >>> cosine_similarity.compute()
-           tensor([1.0000, 1.0000, 1.0000])
+           >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
+           >>> cosine_similarity(preds, target)
+           tensor(0.8536)
     """
 
     def __init__(
@@ -71,7 +70,7 @@ class CosineSimilarity(Metric):
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+            dist_sync_fn=dist_sync_fn
         )
 
         self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
@@ -89,8 +88,12 @@ class CosineSimilarity(Metric):
         """
         correct, total = _cosine_similarity_update(preds, target)
 
-        self.correct += correct
-        self.total += total
+        self.correct = correct + self.correct
+        self.total = total + self.total
 
     def compute(self):
         return _cosine_similarity_compute(self.total, self.correct, self.reduction)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return True

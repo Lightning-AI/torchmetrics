@@ -17,7 +17,6 @@ from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
 from torchmetrics.functional.classification.average_precision import average_precision  # noqa: F401
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa  # noqa: F401
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix  # noqa: F401
-from torchmetrics.functional.classification.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.classification.dice import dice_score  # noqa: F401
 from torchmetrics.functional.classification.f_beta import f1, fbeta  # noqa: F401
 from torchmetrics.functional.classification.hamming_distance import hamming_distance  # noqa: F401

@@ -25,7 +25,6 @@ from torchmetrics.classification import (  # noqa: F401 E402
     BinnedRecallAtFixedPrecision,
     CohenKappa,
     ConfusionMatrix,
-    CosineSimilarity,
     FBeta,
     HammingDistance,
     Hinge,
@@ -43,6 +42,7 @@ from torchmetrics.metric import Metric  # noqa: F401 E402
 from torchmetrics.regression import (  # noqa: F401 E402
     PSNR,
     SSIM,
+    CosineSimilarity,
     ExplainedVariance,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,

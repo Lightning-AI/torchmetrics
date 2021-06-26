@@ -75,12 +75,6 @@ confusion_matrix [func]
 .. autofunction:: torchmetrics.functional.confusion_matrix
     :noindex:
 
-cosine_similarity [func]
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.cosine_similarity
-    :noindex:
-
 
 dice_score [func]
 ~~~~~~~~~~~~~~~~~
@@ -197,6 +191,13 @@ to_onehot [func]
 ******************
 Regression Metrics
 ******************
+
+cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.cosine_similarity
+    :noindex:
+
 
 explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -20,7 +20,6 @@ from torchmetrics.classification.binned_precision_recall import BinnedPrecisionR
 from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision  # noqa: F401
 from torchmetrics.classification.cohen_kappa import CohenKappa  # noqa: F401
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
-from torchmetrics.classification.cosine_similarity import CosineSimilarity  # noqa: F401
 from torchmetrics.classification.f_beta import F1, FBeta  # noqa: F401
 from torchmetrics.classification.hamming_distance import HammingDistance  # noqa: F401
 from torchmetrics.classification.hinge import Hinge  # noqa: F401
