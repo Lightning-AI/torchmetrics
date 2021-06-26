@@ -43,7 +43,10 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     r"""
         Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
         between targets and predictions:
-        Accepts all input types listed in :ref:`references/modules:input types`.
+        Forward accepts
+
+        - ``preds`` (float tensor): ``(N,)``
+        - ``target``(float tensor): ``(N,)``
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)

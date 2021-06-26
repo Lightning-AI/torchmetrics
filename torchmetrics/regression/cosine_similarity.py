@@ -26,14 +26,19 @@ class CosineSimilarity(Metric):
         between targets and predictions:
 
         .. math::
-            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2} \sqrt{\sum_{i=1}^n y_i^2}}
+            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}
+             \sqrt{\sum_{i=1}^n y_i^2}}
 
         where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
-       Accepts all input types listed in :ref:`references/modules:input types`.
+
+        Forward accepts
+
+        - ``preds`` (float tensor): ``(N,)``
+        - ``target``(float tensor): ``(N,)``
 
        Args:
-           reduction : how to reduce over the batch dimension using sum, mean or
-                        taking the individual scores
+           reduction : how to reduce over the batch dimension using 'sum', 'mean' or 'none'
+                        (taking the individual scores)
            compute_on_step:
                Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
            dist_sync_on_step:
@@ -76,8 +81,10 @@ class CosineSimilarity(Metric):
 
     def update(self, preds: Tensor, target: Tensor):
         """
-        Update state with predictions and targets. See :ref:`references/modules:input types` for more information
-        on input types.
+        Update state with predictions and targets. Forward accepts
+
+        - ``preds`` (float tensor): ``(N,)``
+        - ``target``(float tensor): ``(N,)``
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)
