@@ -16,8 +16,9 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.kldivergence import _kld_update, _kld_compute
+from torchmetrics.functional.classification.kldivergence import _kld_compute, _kld_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KLDivergence(Metric):
@@ -33,9 +34,9 @@ class KLDivergence(Metric):
     Args:
         p: data distribution with shape ``[N, d]``
         q: prior or approximate distribution with shape ``[N, d]``
-        log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities, 
+        log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities
             will normalize to make sure the distributes sum to 1
-        reduction: 
+        reduction:
             Determines how to reduce over the ``N``/batch dimension:
 
             - ``'mean'`` [default]: Averages score across samples
@@ -80,23 +81,26 @@ class KLDivergence(Metric):
         allowed_reduction = ['mean', 'sum', 'none', None]
         if reduction not in allowed_reduction:
             raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction} but got {reduction}")
-        self.recduction = reduction
+        self.reduction = reduction
 
         if self.reduction in ['mean', 'sum']:
             self.add_state('measures', torch.zeros(1), dist_reduce_fx='sum')
-            self.add_state('total', torch.zeros(1), dist_reduce_fx='sum')
         else:
             self.add_state('measures', [], dist_reduce_fx='cat')
+        self.add_state('total', torch.zeros(1), dist_reduce_fx='sum')
 
     def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == 'none':
             self.measures.append(measures)
         else:
-            self.measures += measures
+            self.measures += measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
+        if self.reduction is None or self.reduction == 'none':
+            self.measures = dim_zero_cat(self.measures)
+
         return _kld_compute(self.measures, self.total, self.reduction)
 
     @property

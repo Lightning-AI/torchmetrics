@@ -23,15 +23,14 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from torchmetrics.classification import KLDivergence
 from torchmetrics.functional import kldivergence
-from torchmetrics.regression import KLDivergence
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple('Input', ["p", "q"])
 
 _probs_inputs = Input(
     p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
@@ -39,8 +38,8 @@ _probs_inputs = Input(
 )
 
 _log_probs_inputs = Input(
-    p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).log(),
-    q=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).log(),
+    p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).softmax(dim=-1).log(),
+    q=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).softmax(dim=-1).log(),
 )
 
 
@@ -62,6 +61,7 @@ def _sk_metric(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = 
     "p, q, log_prob", [(_probs_inputs.p, _probs_inputs.q, False), (_log_probs_inputs.p, _log_probs_inputs.q, True)]
 )
 class TestKLDivergence(MetricTester):
+    atol = 1e-6
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
@@ -88,16 +88,15 @@ class TestKLDivergence(MetricTester):
 
     def test_kldivergence_differentiabilit(self, reduction, p, q, log_prob):
         self.run_differentiability_test(
-            preds=p,
-            target=q,
+            p,
+            q,
             metric_module=KLDivergence,
             metric_functional=kldivergence,
             metric_args=dict(log_prob=log_prob, reduction=reduction)
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
-    )
+    # KLDivergence half + cpu does not work due to missing support in torch.clamp
+    @pytest.mark.xfail(reason="KLDivergence metric does not support cpu + half precision")
     def test_kldivergence_half_cpu(self, reduction, p, q, log_prob):
         self.run_precision_test_cpu(p, q, KLDivergence, kldivergence, {'log_prob': log_prob, 'reduction': reduction})
 
@@ -114,9 +113,5 @@ def test_error_on_different_shape():
 
 def test_error_on_multidim_tensors():
     metric = KLDivergence()
-    with pytest.raises(
-        ValueError,
-        match=r'Expected both prediction and target to be 1D or 2D tensors,'
-        r' but received tensors with dimension .'
-    ):
+    with pytest.raises(ValueError, match='Expected both p and q distribution to be 2D but got 3 and 3 respectively'):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))
