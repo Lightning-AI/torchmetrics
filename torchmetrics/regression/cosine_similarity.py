@@ -16,10 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.cosine_similarity import (
-    _cosine_similarity_compute,
-    _cosine_similarity_update,
-)
+from torchmetrics.functional.regression.cosine_similarity import _cosine_similarity_compute, _cosine_similarity_update
 from torchmetrics.metric import Metric
 
 
