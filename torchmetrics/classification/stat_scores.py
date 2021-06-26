@@ -18,7 +18,6 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _stat_scores_compute, _stat_scores_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
@@ -102,9 +101,6 @@ class StatScores(Metric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Raises:
         ValueError:
@@ -147,10 +143,7 @@ class StatScores(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
     ):
-        multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
-
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,

@@ -5,6 +5,31 @@
 Functional metrics
 ##################
 
+*************
+Audio Metrics
+*************
+
+si_sdr [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.si_sdr
+    :noindex:
+
+
+si_snr [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.si_snr
+    :noindex:
+
+
+snr [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.snr
+    :noindex:
+
+
 **********************
 Classification Metrics
 **********************

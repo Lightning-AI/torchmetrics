@@ -20,6 +20,7 @@ from torch.autograd import Function
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
@@ -140,6 +141,9 @@ class FID(Metric):
     will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real``
     determines if the images should update the statistics of the real distribution or the fake distribution.
 
+    .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
+        torchmetrics[image]`` or ``pip install scipy``
+
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
@@ -169,13 +173,14 @@ class FID(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    [1] Rethinking the Inception Architecture for Computer Vision
-    Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
-    https://arxiv.org/abs/1512.00567
+    References:
+        [1] Rethinking the Inception Architecture for Computer Vision
+        Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
+        https://arxiv.org/abs/1512.00567
 
-    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-    https://arxiv.org/abs/1706.08500
+        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:
@@ -257,8 +262,8 @@ class FID(Metric):
 
     def compute(self) -> Tensor:
         """ Calculate FID score based on accumulated extracted features from the two distributions """
-        real_features = torch.cat(self.real_features, dim=0)
-        fake_features = torch.cat(self.fake_features, dim=0)
+        real_features = dim_zero_cat(self.real_features)
+        fake_features = dim_zero_cat(self.fake_features)
         # computation is extremely sensitive so it needs to happen in double precision
         orig_dtype = real_features.dtype
         real_features = real_features.double()
