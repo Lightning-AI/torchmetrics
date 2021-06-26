@@ -28,8 +28,6 @@ from torchmetrics.functional import kldivergence
 
 seed_all(42)
 
-num_targets = 5
-
 Input = namedtuple('Input', ["p", "q"])
 
 _probs_inputs = Input(

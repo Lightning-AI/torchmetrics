@@ -56,7 +56,7 @@ def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Option
 
     Where :math:`P` and :math:`Q` are probability distributions where :math:`P` usually represents a distribution
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
-    is a none symetrical measure.
+    is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
     Args:
         p: data distribution with shape ``[N, d]``
@@ -76,7 +76,7 @@ def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Option
         >>> p = torch.tensor([[0.36, 0.48, 0.16]])
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kldivergence(p, q)
-        tensor(0.085)
+        tensor(0.0853)
     """
     measures, total = _kld_update(p, q, log_prob)
     return _kld_compute(measures, total, reduction)
