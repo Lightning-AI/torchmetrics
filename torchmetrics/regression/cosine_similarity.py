@@ -18,6 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.cosine_similarity import _cosine_similarity_compute, _cosine_similarity_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CosineSimilarity(Metric):
@@ -26,14 +27,19 @@ class CosineSimilarity(Metric):
         between targets and predictions:
 
         .. math::
-            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2} \sqrt{\sum_{i=1}^n y_i^2}}
+            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}
+             \sqrt{\sum_{i=1}^n y_i^2}}
 
         where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
-       Accepts all input types listed in :ref:`references/modules:input types`.
+
+        Forward accepts
+
+        - ``preds`` (float tensor): ``(N,)``
+        - ``target``(float tensor): ``(N,)``
 
        Args:
-           reduction : how to reduce over the batch dimension using sum, mean or
-                        taking the individual scores
+           reduction : how to reduce over the batch dimension using 'sum', 'mean' or 'none'
+                        (taking the individual scores)
            compute_on_step:
                Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
            dist_sync_on_step:
@@ -55,6 +61,7 @@ class CosineSimilarity(Metric):
            tensor(0.8536)
     """
 
+
     def __init__(
         self,
         reduction: str = 'sum',
@@ -70,26 +77,30 @@ class CosineSimilarity(Metric):
             dist_sync_fn=dist_sync_fn
         )
 
-        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("preds", [], dist_reduce_fx="cat")
+        self.add_state("target", [], dist_reduce_fx="cat")
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor):
         """
-        Update state with predictions and targets. See :ref:`references/modules:input types` for more information
-        on input types.
+        Update state with predictions and targets. Forward accepts
+
+        - ``preds`` (float tensor): ``(N,)``
+        - ``target``(float tensor): ``(N,)``
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth labels
         """
-        correct, total = _cosine_similarity_update(preds, target)
+        preds, target = _cosine_similarity_update(preds, target)
 
-        self.correct = correct + self.correct
-        self.total = total + self.total
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self):
-        return _cosine_similarity_compute(self.total, self.correct, self.reduction)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+        return _cosine_similarity_compute(preds, target, self.reduction)
 
     @property
     def is_differentiable(self) -> bool:

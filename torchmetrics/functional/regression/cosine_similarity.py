@@ -43,7 +43,10 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     r"""
         Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
         between targets and predictions:
-        Accepts all input types listed in :ref:`references/modules:input types`.
+        Forward accepts
+
+        - ``preds`` (float tensor): ``(N,)``
+        - ``target``(float tensor): ``(N,)``
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)
@@ -53,12 +56,12 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
 
         Example:
             >>> from torchmetrics.functional.regression import cosine_similarity
-            >>> target = torch.tensor([1, 2, 3, 4])
+            >>> target = torch.tensor([[1, 2, 3, 4],
+            ...                        [1, 2, 3, 4]])
             >>> preds = torch.tensor([[1, 2, 3, 4],
-            ...                       [1, 2, 3, 4],
             ...                       [1, 2, 3, 4]])
             >>> cosine_similarity(preds, target, 'none')
-            tensor([1.0000, 1.0000, 1.0000])
+            tensor([1.0000, 1.0000])
 
         """
     preds, target = _cosine_similarity_update(preds, target)
