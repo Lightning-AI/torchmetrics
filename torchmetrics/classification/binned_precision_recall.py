@@ -53,7 +53,10 @@ class BinnedPrecisionRecallCurve(Metric):
     Args:
         num_classes: integer with number of classes. For binary, set to 1.
         num_thresholds: number of bins used for computation. More bins will lead to more detailed
-            curve and accurate estimates, but will be slower and consume more memory. Default 100
+            curve and accurate estimates, but will be slower and consume more memory. Default 100.
+            Mutually exclusive with `thresholds` argument.
+        thresholds: list or tensor with specific thresholds. Mutually exclusive with `num_thresholds`
+            argument.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -61,6 +64,12 @@ class BinnedPrecisionRecallCurve(Metric):
             before returning the value at the step. default: False
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
+
+    Raises:
+        ValueError:
+            If both ``num_thresholds`` and ``thresholds`` is not ``None``
+        ValueError:
+            If ``thresholds`` is not a list or tensor
 
     Example (binary case):
         >>> from torchmetrics import BinnedPrecisionRecallCurve
@@ -106,7 +115,8 @@ class BinnedPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        num_thresholds: int = 100,
+        num_thresholds: Optional[int] = 100,
+        thresholds: Optional[Union[Tensor, List[float]]] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -118,14 +128,26 @@ class BinnedPrecisionRecallCurve(Metric):
         )
 
         self.num_classes = num_classes
-        self.num_thresholds = num_thresholds
-        thresholds = torch.linspace(0, 1.0, num_thresholds)
-        self.register_buffer("thresholds", thresholds)
+        if num_thresholds is not None:
+            if thresholds is not None:
+                raise ValueError(
+                    'Arguments `num_thresholds` and `thresholds` are mutually exclusive, but got'
+                    f'{num_thresholds} and {thresholds}'
+                )
+            self.num_thresholds = num_thresholds
+            thresholds = torch.linspace(0, 1.0, num_thresholds)
+            self.register_buffer("thresholds", thresholds)
+        elif thresholds is not None:
+            if not (isinstance(thresholds, list) or isinstance(thresholds, Tensor)):
+                raise ValueError('Expected argument `thresholds` to either be a list of floats or a tensor')
+            thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
+            self.num_thresholds = thresholds.numel()
+            self.register_buffer("thresholds", thresholds)
 
         for name in ("TPs", "FPs", "FNs"):
             self.add_state(
                 name=name,
-                default=torch.zeros(num_classes, num_thresholds, dtype=torch.float32),
+                default=torch.zeros(num_classes, self.num_thresholds, dtype=torch.float32),
                 dist_reduce_fx="sum",
             )
 
@@ -186,11 +208,20 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
         num_thresholds: number of bins used for computation. More bins will lead to more detailed
-            curve and accurate estimates, but will be slower and consume more memory. Default 100
+            curve and accurate estimates, but will be slower and consume more memory. Default 100.
+            Mutually exclusive with `thresholds` argument.
+        thresholds: list or tensor with specific thresholds. Mutually exclusive with `num_thresholds`
+            argument.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
+
+    Raises:
+        ValueError:
+            If both ``num_thresholds`` and ``thresholds`` is not ``None``
+        ValueError:
+            If ``thresholds`` is not a list or tensor
 
     Example (binary case):
         >>> from torchmetrics import BinnedAveragePrecision
@@ -234,11 +265,20 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         num_classes: integer with number of classes. Provide 1 for for binary problems.
         min_precision: float value specifying minimum precision threshold.
         num_thresholds: number of bins used for computation. More bins will lead to more detailed
-            curve and accurate estimates, but will be slower and consume more memory. Default 100
+            curve and accurate estimates, but will be slower and consume more memory. Default 100.
+            Mutually exclusive with `thresholds` argument.
+        thresholds: list or tensor with specific thresholds. Mutually exclusive with `num_thresholds`
+            argument.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
+
+    Raises:
+        ValueError:
+            If both ``num_thresholds`` and ``thresholds`` is not ``None``
+        ValueError:
+            If ``thresholds`` is not a list or tensor
 
     Example (binary case):
         >>> from torchmetrics import BinnedRecallAtFixedPrecision
@@ -265,6 +305,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         num_classes: int,
         min_precision: float,
         num_thresholds: int = 100,
+        thresholds: Optional[Union[Tensor, List[float]]] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -272,6 +313,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         super().__init__(
             num_classes=num_classes,
             num_thresholds=num_thresholds,
+            thresholds=thresholds,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
