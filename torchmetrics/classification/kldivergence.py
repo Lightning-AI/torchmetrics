@@ -100,10 +100,8 @@ class KLDivergence(Metric):
             self.total += total
 
     def compute(self) -> Tensor:
-        if self.reduction is None or self.reduction == 'none':
-            self.measures = dim_zero_cat(self.measures)
-
-        return _kld_compute(self.measures, self.total, self.reduction)
+        measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == 'none' else self.measures
+        return _kld_compute(measures, self.total, self.reduction)
 
     @property
     def is_differentiable(self) -> bool:
