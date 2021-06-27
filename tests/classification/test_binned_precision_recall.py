@@ -28,7 +28,11 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.classification.inputs import _input_multilabel_prob_plausible as _input_mlb_prob_ok
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
-from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision, BinnedPrecisionRecallCurve, BinnedRecallAtFixedPrecision
+from torchmetrics.classification.binned_precision_recall import (
+    BinnedAveragePrecision,
+    BinnedPrecisionRecallCurve,
+    BinnedRecallAtFixedPrecision,
+)
 
 seed_all(42)
 
