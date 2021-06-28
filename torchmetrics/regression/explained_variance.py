@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -85,7 +85,7 @@ class ExplainedVariance(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -104,7 +104,7 @@ class ExplainedVariance(Metric):
         self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets.
 
@@ -119,7 +119,7 @@ class ExplainedVariance(Metric):
         self.sum_target = self.sum_target + sum_target
         self.sum_squared_target = self.sum_squared_target + sum_squared_target
 
-    def compute(self):
+    def compute(self) -> Union[Tensor, Sequence[Tensor]]:
         """
         Computes explained variance over state.
         """

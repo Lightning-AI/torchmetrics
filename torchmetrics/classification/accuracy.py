@@ -215,7 +215,7 @@ class Accuracy(StatScores):
         self.mode = None
         self.multiclass = multiclass
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.

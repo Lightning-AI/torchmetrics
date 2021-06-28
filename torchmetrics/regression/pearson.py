@@ -77,7 +77,7 @@ class PearsonCorrcoef(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets.
 
@@ -89,7 +89,7 @@ class PearsonCorrcoef(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes pearson correlation coefficient over state.
         """
