@@ -214,8 +214,8 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
             for binary problems.
         num_thresholds: number of bins used for computation. More bins will lead to more detailed
             curve and accurate estimates, but will be slower and consume more memory. Default 100.
-            Mutually exclusive with `thresholds` argument.
-        thresholds: list or tensor with specific thresholds. Mutually exclusive with `num_thresholds`
+            Mutually exclusive with ``thresholds`` argument.
+        thresholds: list or tensor with specific thresholds. Mutually exclusive with ``num_thresholds``
             argument.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
@@ -271,8 +271,8 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         min_precision: float value specifying minimum precision threshold.
         num_thresholds: number of bins used for computation. More bins will lead to more detailed
             curve and accurate estimates, but will be slower and consume more memory. Default 100.
-            Mutually exclusive with `thresholds` argument.
-        thresholds: list or tensor with specific thresholds. Mutually exclusive with `num_thresholds`
+            Mutually exclusive with ``thresholds`` argument.
+        thresholds: list or tensor with specific thresholds. Mutually exclusive with ``num_thresholds``
             argument.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
