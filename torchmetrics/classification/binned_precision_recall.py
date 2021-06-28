@@ -71,8 +71,6 @@ class BinnedPrecisionRecallCurve(Metric):
 
     Raises:
         ValueError:
-            If ``thresholds`` is not ``None``
-        ValueError:
             If ``thresholds`` is not a int, list or tensor
 
     Example (binary case):
@@ -224,8 +222,6 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
 
     Raises:
         ValueError:
-            If both ``num_thresholds`` and ``thresholds`` is not ``None``
-        ValueError:
             If ``thresholds`` is not a list or tensor
 
     Example (binary case):
@@ -280,8 +276,6 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Raises:
-        ValueError:
-            If both ``num_thresholds`` and ``thresholds`` is not ``None``
         ValueError:
             If ``thresholds`` is not a list or tensor
 
