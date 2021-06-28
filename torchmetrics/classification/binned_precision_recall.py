@@ -121,7 +121,7 @@ class BinnedPrecisionRecallCurve(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        num_thresholds: Optional[int] = 100,  # ToDO: deprecated
+        num_thresholds: Optional[int] = 100,  # ToDo: remove in v0.5
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -210,11 +210,14 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     Args:
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
-        num_thresholds: number of bins used for computation. More bins will lead to more detailed
-            curve and accurate estimates, but will be slower and consume more memory. Default 100.
-            Mutually exclusive with ``thresholds`` argument.
-        thresholds: list or tensor with specific thresholds. Mutually exclusive with ``num_thresholds``
-            argument.
+        num_thresholds: number of bins used for computation.
+
+            .. deprecated:: v0.4
+                Use `thresholds`. Will be removed in v0.5.
+
+        thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
+            It is used for computation will lead to more detailed curve and accurate estimates,
+            but will be slower and consume more memory
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         process_group:
@@ -265,11 +268,14 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
     Args:
         num_classes: integer with number of classes. Provide 1 for for binary problems.
         min_precision: float value specifying minimum precision threshold.
-        num_thresholds: number of bins used for computation. More bins will lead to more detailed
-            curve and accurate estimates, but will be slower and consume more memory. Default 100.
-            Mutually exclusive with ``thresholds`` argument.
-        thresholds: list or tensor with specific thresholds. Mutually exclusive with ``num_thresholds``
-            argument.
+        num_thresholds: number of bins used for computation.
+
+            .. deprecated:: v0.4
+                Use `thresholds`. Will be removed in v0.5.
+
+        thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
+            It is used for computation will lead to more detailed curve and accurate estimates,
+            but will be slower and consume more memory
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         process_group:
@@ -303,11 +309,11 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         self,
         num_classes: int,
         min_precision: float,
-        num_thresholds: int = 100,
         thresholds: Optional[Union[Tensor, List[float]]] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
+        num_thresholds: int = 100,  # ToDo: remove in v0.5
     ):
         super().__init__(
             num_classes=num_classes,
