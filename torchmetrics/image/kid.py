@@ -269,7 +269,7 @@ class KID(Metric):
             raise ValueError('Argument `subset_size` should be smaller than the number of samples')
 
         kid_scores_ = []
-        for i in range(self.subsets):
+        for _ in range(self.subsets):
             perm = torch.randperm(n_samples_real)
             f_real = real_features[perm[:self.subset_size]]
             perm = torch.randperm(n_samples_fake)

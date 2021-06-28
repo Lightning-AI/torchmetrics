@@ -122,6 +122,6 @@ def test_compare_is(tmpdir):
         input1=_ImgDataset(img1), isc=True, isc_splits=1, batch_size=batch_size, save_cpu_ram=True
     )
 
-    tm_mean, tm_std = metric.compute()
+    tm_mean, _ = metric.compute()
 
     assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid['inception_score_mean']]), atol=1e-3)
