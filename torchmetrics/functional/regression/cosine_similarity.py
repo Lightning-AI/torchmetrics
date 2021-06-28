@@ -52,7 +52,7 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     Args:
         preds: Predicted tensor with shape ``(N,d)``
         target: Ground truth tensor with shape ``(N,d)`
-        reduction: 
+        reduction:
             The method of reducing along the batch dimension using sum, mean or taking the individual scores
 
     Example:
