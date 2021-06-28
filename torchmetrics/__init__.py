@@ -43,6 +43,7 @@ from torchmetrics.metric import Metric  # noqa: F401 E402
 from torchmetrics.regression import (  # noqa: F401 E402
     PSNR,
     SSIM,
+    CosineSimilarity,
     ExplainedVariance,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,

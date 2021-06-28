@@ -326,6 +326,13 @@ KID
 Regression Metrics
 ******************
 
+CosineSimilarity
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CosineSimilarity
+    :noindex:
+
+
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~
 

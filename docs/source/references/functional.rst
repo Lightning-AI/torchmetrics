@@ -198,6 +198,13 @@ to_onehot [func]
 Regression Metrics
 ******************
 
+cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.cosine_similarity
+    :noindex:
+
+
 explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
