@@ -19,8 +19,8 @@ from torchmetrics.image.ssim import SSIM as _SSIM
 
 class SSIM(_SSIM):
     """
-    .. deprecated:: 0.4
-        The SSIM was moved to `torchmetrics.image.ssim`.
+    .. deprecated:: v0.4
+        The SSIM was moved to `torchmetrics.image.ssim`. It will be removed in v0.5.
 
     """
 

@@ -19,8 +19,8 @@ from torchmetrics.image.psnr import PSNR as _PSNR
 
 class PSNR(_PSNR):
     """
-    .. deprecated:: 0.4
-        The PSNR was moved to `torchmetrics.image.psnr`.
+    .. deprecated:: v0.4
+        The PSNR was moved to `torchmetrics.image.psnr`. It will be removed in v0.5.
 
     """
 

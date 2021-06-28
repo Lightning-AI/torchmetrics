@@ -55,11 +55,12 @@ class BinnedPrecisionRecallCurve(Metric):
         num_classes: integer with number of classes. For binary, set to 1.
         num_thresholds: number of bins used for computation.
 
-            .. deprecated:: 0.4
-                Use `thresholds`. Will be removed in 0.5.
+            .. deprecated:: v0.4
+                Use `thresholds`. Will be removed in v0.5.
 
-        thresholds: list or tensor with specific thresholds. Seting a number of bins used for computation will lead
-            to more detailed curve and accurate estimates, but will be slower and consume more memory.
+        thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
+            It is used for computation will lead to more detailed curve and accurate estimates,
+            but will be slower and consume more memory.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -138,8 +139,8 @@ class BinnedPrecisionRecallCurve(Metric):
             )
             thresholds = num_thresholds
         if isinstance(thresholds, int):
-            self.num_thresholds = num_thresholds
-            thresholds = torch.linspace(0, 1.0, num_thresholds)
+            self.num_thresholds = thresholds
+            thresholds = torch.linspace(0, 1.0, thresholds)
             self.register_buffer("thresholds", thresholds)
         elif thresholds is not None:
             if not isinstance(thresholds, list, Tensor):
