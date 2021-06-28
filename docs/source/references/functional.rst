@@ -114,6 +114,12 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
+kldivergence [func]
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.kldivergence
+    :noindex:
+
 matthews_corrcoef [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -191,6 +197,13 @@ to_onehot [func]
 ******************
 Regression Metrics
 ******************
+
+cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.cosine_similarity
+    :noindex:
+
 
 explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~

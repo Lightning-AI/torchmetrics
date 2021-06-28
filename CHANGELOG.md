@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added Cosine Similarity Metric([#75](https://github.com/PyTorchLightning/metrics/issues/75))
 - Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
 - Added `add_metrics` method to `MetricCollection` for adding additional metrics after initialization ([#221](https://github.com/PyTorchLightning/metrics/pull/221))
 - Added pre-gather reduction in the case of `dist_reduce_fx="cat"` to reduce communication cost ([#217](https://github.com/PyTorchLightning/metrics/pull/217))
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added KID metric to image module ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
 - Added `sync` and `sync_context` methods for manually controlling when metric states are synced ([#302](https://github.com/PyTorchLightning/metrics/pull/302))
 - Added `thresholds` argument to binned metrics for manually controlling the thresholds ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
+- Added `KLDivergence` metric ([#247](https://github.com/PyTorchLightning/metrics/pull/247))
 
 ### Changed
 
@@ -42,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - AUC can also support more dimensional inputs when all but one dimension are of size 1 ([#242](https://github.com/PyTorchLightning/metrics/pull/242))
 - Fixed `dtype` of modular metrics after reset has been called ([#243](https://github.com/PyTorchLightning/metrics/pull/243))
-
+- Fixed calculation in `matthews_corrcoef` to correctly match formula ([#321](https://github.com/PyTorchLightning/metrics/pull/321))
 
 ## [0.3.2] - 2021-05-10
 
