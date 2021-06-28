@@ -14,9 +14,9 @@
 from collections import namedtuple
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
 
 from tests.helpers import seed_all
@@ -50,7 +50,7 @@ def _multi_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     if reduction == 'sum':
         to_return = sum
     elif reduction == 'mean':
-        mean = sum/len(col)
+        mean = sum / len(col)
         to_return = mean
     else:
         to_return = col
@@ -104,6 +104,7 @@ class TestCosineSimilarity(MetricTester):
             partial(sk_metric, reduction=reduction),
             metric_args=dict(reduction=reduction),
         )
+
 
 def test_error_on_different_shape(metric_class=CosineSimilarity):
     metric = metric_class()

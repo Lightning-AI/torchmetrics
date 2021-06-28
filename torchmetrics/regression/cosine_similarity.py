@@ -61,7 +61,6 @@ class CosineSimilarity(Metric):
            tensor(0.8536)
     """
 
-
     def __init__(
         self,
         reduction: str = 'sum',
