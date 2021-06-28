@@ -245,6 +245,12 @@ IoU
 .. autoclass:: torchmetrics.IoU
     :noindex:
 
+KLDivergence
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.KLDivergence
+    :noindex:
+
 MatthewsCorrcoef
 ~~~~~~~~~~~~~~~~
 
@@ -319,6 +325,13 @@ KID
 ******************
 Regression Metrics
 ******************
+
+CosineSimilarity
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CosineSimilarity
+    :noindex:
+
 
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~
