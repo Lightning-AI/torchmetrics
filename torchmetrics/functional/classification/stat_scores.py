@@ -20,10 +20,9 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-def _del_column(tensor: Tensor, index: int):
+def _del_column(data: Tensor, idx: int):
     """ Delete the column at index."""
-
-    return torch.cat([tensor[:, :index], tensor[:, (index + 1):]], 1)
+    return torch.cat([data[:, :idx], data[:, (idx + 1):]], 1)
 
 
 def _stat_scores(
