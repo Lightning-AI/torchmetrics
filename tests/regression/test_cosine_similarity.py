@@ -73,7 +73,7 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     return to_return
 
 
-@pytest.mark.parametrize("reduction", ['sum', 'mean', 'none'])
+@pytest.mark.parametrize("reduction", ['sum', 'mean'])
 @pytest.mark.parametrize(
     "preds, target, sk_metric",
     [
