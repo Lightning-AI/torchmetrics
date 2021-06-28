@@ -245,6 +245,12 @@ IoU
 .. autoclass:: torchmetrics.IoU
     :noindex:
 
+KLDivergence
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.KLDivergence
+    :noindex:
+
 MatthewsCorrcoef
 ~~~~~~~~~~~~~~~~
 
