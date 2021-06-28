@@ -215,12 +215,6 @@ ConfusionMatrix
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
-CosineSimilarity
-~~~~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.CosineSimilarity
-    :noindex:
-
 F1
 ~~
 
@@ -331,6 +325,13 @@ KID
 ******************
 Regression Metrics
 ******************
+
+CosineSimilarity
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CosineSimilarity
+    :noindex:
+
 
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~

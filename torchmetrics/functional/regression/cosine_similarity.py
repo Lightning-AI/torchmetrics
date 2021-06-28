@@ -43,15 +43,16 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     r"""
     Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
     between targets and predictions:
+
     .. math::
-        cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}
-            \sqrt{\sum_{i=1}^n y_i^2}}
+        cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} = 
+        \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}\sqrt{\sum_{i=1}^n y_i^2}}
 
     where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
     Args:
         preds: Predicted tensor with shape ``(N,d)``
-        target: Ground truth tensor with shape ``(N,d)`
+        target: Ground truth tensor with shape ``(N,d)``
         reduction:
             The method of reducing along the batch dimension using sum, mean or taking the individual scores
 

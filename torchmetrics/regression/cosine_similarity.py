@@ -23,42 +23,42 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 class CosineSimilarity(Metric):
     r"""
-       Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
-        between targets and predictions:
+    Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
+    between targets and predictions:
 
-        .. math::
-            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}
-             \sqrt{\sum_{i=1}^n y_i^2}}
+    .. math::
+        cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} = 
+        \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}\sqrt{\sum_{i=1}^n y_i^2}}
 
-        where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
+    where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
-        Forward accepts
+    Forward accepts
 
-        - ``preds`` (float tensor): ``(N,d)``
-        - ``target``(float tensor): ``(N,d)``
+    - ``preds`` (float tensor): ``(N,d)``
+    - ``target`` (float tensor): ``(N,d)``
 
-       Args:
-           reduction : how to reduce over the batch dimension using 'sum', 'mean' or 'none'
-                        (taking the individual scores)
-           compute_on_step:
-               Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-           dist_sync_on_step:
-               Synchronize metric state across processes at each ``forward()``
-               before returning the value at the step.
-           process_group:
-               Specify the process group on which synchronization is called.
-               default: ``None`` (which selects the entire world)
-           dist_sync_fn:
-               Callback that performs the allgather operation on the metric state. When ``None``, DDP
-               will be used to perform the all gather.
+    Args:
+        reduction : how to reduce over the batch dimension using 'sum', 'mean' or 'none'
+                    (taking the individual scores)
+        compute_on_step:
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
+        process_group:
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the all gather.
 
-       Example:
-           >>> from torchmetrics import CosineSimilarity
-           >>> target = torch.tensor([[0, 1], [1, 1]])
-           >>> preds = torch.tensor([[0, 1], [0, 1]])
-           >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
-           >>> cosine_similarity(preds, target)
-           tensor(0.8536)
+    Example:
+        >>> from torchmetrics import CosineSimilarity
+        >>> target = torch.tensor([[0, 1], [1, 1]])
+        >>> preds = torch.tensor([[0, 1], [0, 1]])
+        >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
+        >>> cosine_similarity(preds, target)
+        tensor(0.8536)
     """
 
     def __init__(
@@ -83,9 +83,11 @@ class CosineSimilarity(Metric):
     def update(self, preds: Tensor, target: Tensor):
         """
         Update metric states with predictions and targets.
+
         Args:
             preds: Predicted tensor with shape ``(N,d)``
             target: Ground truth tensor with shape ``(N,d)``
+
         """
         preds, target = _cosine_similarity_update(preds, target)
 
