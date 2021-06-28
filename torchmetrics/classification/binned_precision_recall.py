@@ -71,9 +71,9 @@ class BinnedPrecisionRecallCurve(Metric):
 
     Raises:
         ValueError:
-            If both ``num_thresholds`` and ``thresholds`` is not ``None``
+            If ``thresholds`` is not ``None``
         ValueError:
-            If ``thresholds`` is not a list or tensor
+            If ``thresholds`` is not a int, list or tensor
 
     Example (binary case):
         >>> from torchmetrics import BinnedPrecisionRecallCurve
