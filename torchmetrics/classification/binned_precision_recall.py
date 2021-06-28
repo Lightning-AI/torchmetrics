@@ -122,7 +122,7 @@ class BinnedPrecisionRecallCurve(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         num_thresholds: Optional[int] = 100,  # ToDo: remove in v0.5
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -314,7 +314,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         num_thresholds: int = 100,  # ToDo: remove in v0.5
-    ):
+    ) -> None:
         super().__init__(
             num_classes=num_classes,
             num_thresholds=num_thresholds,

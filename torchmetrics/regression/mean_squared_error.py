@@ -59,7 +59,7 @@ class MeanSquaredError(Metric):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
         squared: bool = True,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,

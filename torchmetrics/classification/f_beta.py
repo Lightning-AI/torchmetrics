@@ -146,7 +146,7 @@ class FBeta(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         self.beta = beta
         allowed_average = list(AverageMethod)
         if average not in allowed_average:
@@ -285,7 +285,7 @@ class F1(FBeta):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             num_classes=num_classes,
             beta=1.0,

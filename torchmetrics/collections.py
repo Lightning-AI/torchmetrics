@@ -94,7 +94,7 @@ class MetricCollection(nn.ModuleDict):
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None
-    ):
+    ) -> None:
         super().__init__()
 
         self.add_metrics(metrics, *additional_metrics)

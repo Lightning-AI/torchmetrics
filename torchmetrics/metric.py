@@ -75,7 +75,7 @@ class Metric(nn.Module, ABC):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__()
 
         # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
@@ -603,7 +603,7 @@ class CompositionalMetric(Metric):
         operator: Callable,
         metric_a: Union[Metric, int, float, Tensor],
         metric_b: Union[Metric, int, float, Tensor, None],
-    ):
+    ) -> None:
         """
         Args:
             operator: the operator taking in one (if metric_b is None)

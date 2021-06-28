@@ -35,7 +35,7 @@ class SSIM(_SSIM):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         warn(
             "This `SIIM` was moved in v0.4 and this shell will be removed in v0.5."
             " Use `torchmetrics.image.ssim` instead.", DeprecationWarning
