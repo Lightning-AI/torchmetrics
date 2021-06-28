@@ -41,29 +41,28 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction='sum') -
 
 def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     r"""
-        Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
-        between targets and predictions:
-        .. math::
-            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}
-             \sqrt{\sum_{i=1}^n y_i^2}}
+    Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
+    between targets and predictions:
+    .. math::
+        cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}
+            \sqrt{\sum_{i=1}^n y_i^2}}
 
-        where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
+    where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
-        Args:
-            preds: Predicted tensor with shape ``(N,d)``
-            target: Ground truth tensor with shape ``(N,d)`
-            reduction: The method of reducing along the batch dimension using sum, mean or
-                        taking the individual scores
+    Args:
+        preds: Predicted tensor with shape ``(N,d)``
+        target: Ground truth tensor with shape ``(N,d)`
+        reduction: 
+            The method of reducing along the batch dimension using sum, mean or taking the individual scores
 
-        Example:
-            >>> from torchmetrics.functional.regression import cosine_similarity
-            >>> target = torch.tensor([[1, 2, 3, 4],
-            ...                        [1, 2, 3, 4]])
-            >>> preds = torch.tensor([[1, 2, 3, 4],
-            ...                       [-1, -2, -3, -4]])
-            >>> cosine_similarity(preds, target, 'none')
-            tensor([1.0000, -1.0000])
-
-        """
+    Example:
+        >>> from torchmetrics.functional.regression import cosine_similarity
+        >>> target = torch.tensor([[1, 2, 3, 4],
+        ...                        [1, 2, 3, 4]])
+        >>> preds = torch.tensor([[1, 2, 3, 4],
+        ...                       [-1, -2, -3, -4]])
+        >>> cosine_similarity(preds, target, 'none')
+        tensor([ 1.0000, -1.0000])
+    """
     preds, target = _cosine_similarity_update(preds, target)
     return _cosine_similarity_compute(preds, target, reduction)
