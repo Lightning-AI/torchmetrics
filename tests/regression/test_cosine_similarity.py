@@ -46,11 +46,11 @@ def _multi_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     sk_target = target.view(-1, num_targets).numpy()
     result_array = sk_fn(sk_target, sk_preds)
     col = np.diagonal(result_array)
-    sum = col.sum()
+    col_sum = col.sum()
     if reduction == 'sum':
-        to_return = sum
+        to_return = col_sum
     elif reduction == 'mean':
-        mean = sum / len(col)
+        mean = col_sum / len(col)
         to_return = mean
     else:
         to_return = col
@@ -62,11 +62,11 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     sk_target = target.view(-1).numpy()
     result_array = sk_fn(np.expand_dims(sk_preds, axis=0), np.expand_dims(sk_target, axis=0))
     col = np.diagonal(result_array)
-    sum = col.sum()
+    col_sum = col.sum()
     if reduction == 'sum':
-        to_return = sum
+        to_return = col_sum
     elif reduction == 'mean':
-        mean = sum / len(col)
+        mean = col_sum / len(col)
         to_return = mean
     else:
         to_return = col
