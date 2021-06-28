@@ -41,9 +41,9 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
 def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = 'mean') -> Tensor:
     if reduction == 'sum':
         return measures.sum()
-    elif reduction == 'mean':
+    if reduction == 'mean':
         return measures.sum() / total
-    elif reduction is None or reduction == 'none':
+    if reduction is None or reduction == 'none':
         return measures
     return measures / total
 
