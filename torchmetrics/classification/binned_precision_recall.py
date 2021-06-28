@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, List, Optional, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -52,11 +53,13 @@ class BinnedPrecisionRecallCurve(Metric):
 
     Args:
         num_classes: integer with number of classes. For binary, set to 1.
-        num_thresholds: number of bins used for computation. More bins will lead to more detailed
-            curve and accurate estimates, but will be slower and consume more memory. Default 100.
-            Mutually exclusive with `thresholds` argument.
-        thresholds: list or tensor with specific thresholds. Mutually exclusive with `num_thresholds`
-            argument.
+        num_thresholds: number of bins used for computation.
+
+            .. deprecated:: 0.4
+                Use `thresholds`. Will be removed in 0.5.
+
+        thresholds: list or tensor with specific thresholds. Seting a number of bins used for computation will lead
+            to more detailed curve and accurate estimates, but will be slower and consume more memory.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -75,7 +78,7 @@ class BinnedPrecisionRecallCurve(Metric):
         >>> from torchmetrics import BinnedPrecisionRecallCurve
         >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 0])
-        >>> pr_curve = BinnedPrecisionRecallCurve(num_classes=1, num_thresholds=5)
+        >>> pr_curve = BinnedPrecisionRecallCurve(num_classes=1, thresholds=5)
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision
         tensor([0.5000, 0.5000, 1.0000, 1.0000, 1.0000, 1.0000])
@@ -90,7 +93,7 @@ class BinnedPrecisionRecallCurve(Metric):
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> pr_curve = BinnedPrecisionRecallCurve(num_classes=5, num_thresholds=3)
+        >>> pr_curve = BinnedPrecisionRecallCurve(num_classes=5, thresholds=3)
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision   # doctest: +NORMALIZE_WHITESPACE
         [tensor([0.2500, 1.0000, 1.0000, 1.0000]),
@@ -115,11 +118,11 @@ class BinnedPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        num_thresholds: Optional[int] = 100,
         thresholds: Optional[Union[Tensor, List[float]]] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
+        num_thresholds: Optional[int] = 100,  # ToDO: deprecated
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -128,17 +131,18 @@ class BinnedPrecisionRecallCurve(Metric):
         )
 
         self.num_classes = num_classes
-        if num_thresholds is not None:
-            if thresholds is not None:
-                raise ValueError(
-                    'Arguments `num_thresholds` and `thresholds` are mutually exclusive, but got'
-                    f'{num_thresholds} and {thresholds}'
-                )
+        if thresholds is None and num_thresholds is not None:
+            warn(
+                "Argument `num_thresholds` is deprecated in v0.4 and will be removed in v0.5."
+                " Use `thresholds` instead.", DeprecationWarning
+            )
+            thresholds = num_thresholds
+        if isinstance(thresholds, int):
             self.num_thresholds = num_thresholds
             thresholds = torch.linspace(0, 1.0, num_thresholds)
             self.register_buffer("thresholds", thresholds)
         elif thresholds is not None:
-            if not (isinstance(thresholds, list) or isinstance(thresholds, Tensor)):
+            if not isinstance(thresholds, list, Tensor):
                 raise ValueError('Expected argument `thresholds` to either be a list of floats or a tensor')
             thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
             self.num_thresholds = thresholds.numel()
