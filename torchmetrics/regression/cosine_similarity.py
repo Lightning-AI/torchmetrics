@@ -34,8 +34,8 @@ class CosineSimilarity(Metric):
 
         Forward accepts
 
-        - ``preds`` (float tensor): ``(N,)``
-        - ``target``(float tensor): ``(N,)``
+        - ``preds`` (float tensor): ``(N,d)``
+        - ``target``(float tensor): ``(N,d)``
 
        Args:
            reduction : how to reduce over the batch dimension using 'sum', 'mean' or 'none'
@@ -82,14 +82,10 @@ class CosineSimilarity(Metric):
 
     def update(self, preds: Tensor, target: Tensor):
         """
-        Update state with predictions and targets. Forward accepts
-
-        - ``preds`` (float tensor): ``(N,)``
-        - ``target``(float tensor): ``(N,)``
-
+        Update metric states with predictions and targets.
         Args:
-            preds: Predictions from model (probabilities, logits or labels)
-            target: Ground truth labels
+            preds: Predicted tensor with shape ``(N,d)``
+            target: Ground truth tensor with shape ``(N,d)``
         """
         preds, target = _cosine_similarity_update(preds, target)
 

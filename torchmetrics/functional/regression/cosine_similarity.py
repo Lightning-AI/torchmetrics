@@ -24,8 +24,8 @@ def _cosine_similarity_update(
     target: Tensor,
 ) -> Tuple[Tensor, Tensor]:
     _check_same_shape(preds, target)
-    preds = Tensor.float(preds)
-    target = Tensor.float(target)
+    preds = preds.float()
+    target = target.float()
 
     return preds, target
 
@@ -43,14 +43,15 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
     r"""
         Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
         between targets and predictions:
-        Forward accepts
+        .. math::
+            cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y|| = \frac{\sum_{i=1}^n x_i y_i}{\sqrt{\sum_{i=1}^n x_i^2}
+             \sqrt{\sum_{i=1}^n y_i^2}}
 
-        - ``preds`` (float tensor): ``(N,)``
-        - ``target``(float tensor): ``(N,)``
+        where :math:`y` is a tensor of target values, and :math:`x` is a tensor of predictions.
 
         Args:
-            preds: Predictions from model (probabilities, logits or labels)
-            target: Ground truth
+            preds: Predicted tensor with shape ``(N,d)``
+            target: Ground truth tensor with shape ``(N,d)`
             reduction: The method of reducing along the batch dimension using sum, mean or
                         taking the individual scores
 
@@ -59,9 +60,9 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
             >>> target = torch.tensor([[1, 2, 3, 4],
             ...                        [1, 2, 3, 4]])
             >>> preds = torch.tensor([[1, 2, 3, 4],
-            ...                       [1, 2, 3, 4]])
+            ...                       [-1, -2, -3, -4]])
             >>> cosine_similarity(preds, target, 'none')
-            tensor([1.0000, 1.0000])
+            tensor([1.0000, -1.0000])
 
         """
     preds, target = _cosine_similarity_update(preds, target)
