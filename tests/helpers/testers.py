@@ -151,8 +151,7 @@ def _class_test(
     pickled_metric = pickle.dumps(metric)
     metric = pickle.loads(pickled_metric)
 
-    batches_per_rank = int(BATCH_SIZE / worldsize)
-    for i in range(rank * batches_per_rank, (rank + 1) * batches_per_rank):
+    for i in range(rank, NUM_BATCHES, worldsize):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
