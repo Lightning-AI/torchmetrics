@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Inception Score metric to image module ([#299](https://github.com/PyTorchLightning/metrics/pull/299))
 - Added KID metric to image module ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
 - Added `sync` and `sync_context` methods for manually controlling when metric states are synced ([#302](https://github.com/PyTorchLightning/metrics/pull/302))
+- Added `KLDivergence` metric ([#247](https://github.com/PyTorchLightning/metrics/pull/247))
 
 ### Changed
 
