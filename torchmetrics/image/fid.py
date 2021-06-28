@@ -21,7 +21,7 @@ from torch.autograd import Function
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _SCIPY_AVAILABLE
+from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
@@ -29,6 +29,7 @@ else:
 
     class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
         pass
+
 
 if _SCIPY_AVAILABLE:
     import scipy
