@@ -141,12 +141,19 @@ class TestBinnedAveragePrecision(MetricTester):
 @pytest.mark.parametrize(
     "metric_class", [BinnedAveragePrecision, BinnedRecallAtFixedPrecision, BinnedPrecisionRecallCurve]
 )
-def test_raises_errors(metric_class):
+def test_raises_errors_and_warning(metric_class):
     if metric_class == BinnedRecallAtFixedPrecision:
         metric_class = partial(metric_class, min_precision=0.5)
 
-    with pytest.raises(ValueError):
-        metric_class(num_classes=10, num_thresholds=100, thresholds=[0.1, 0.5, 0.9])
+    with pytest.warns(
+        DeprecationWarning,
+        match="Argument `num_thresholds` "
+        "is deprecated in v0.4 and will be removed in v0.5. Use `thresholds` instead."
+    ):
+        metric_class(num_classes=10, num_thresholds=100)
 
-    with pytest.raises(ValueError):
-        metric_class(num_classes=10, num_thresholds=None, thresholds=1)
+    with pytest.raises(
+        ValueError, match="Expected argument `thresholds` to either"
+        " be an integer, list of floats or a tensor"
+    ):
+        metric_class(num_classes=10, thresholds={'temp': [10, 20]})

@@ -143,8 +143,8 @@ class BinnedPrecisionRecallCurve(Metric):
             thresholds = torch.linspace(0, 1.0, thresholds)
             self.register_buffer("thresholds", thresholds)
         elif thresholds is not None:
-            if not isinstance(thresholds, list, Tensor):
-                raise ValueError('Expected argument `thresholds` to either be a list of floats or a tensor')
+            if not isinstance(thresholds, (list, Tensor)):
+                raise ValueError('Expected argument `thresholds` to either be an integer, list of floats or a tensor')
             thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
             self.num_thresholds = thresholds.numel()
             self.register_buffer("thresholds", thresholds)
