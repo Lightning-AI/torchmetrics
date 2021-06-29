@@ -316,7 +316,7 @@ def _input_format_classification(
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
-) -> Tuple[Tensor, Tensor, str]:
+) -> Tuple[Tensor, Tensor, DataType]:
     """Convert preds and target tensors into common format.
 
     Preds and targets are supposed to fall into one of these categories (and are
@@ -426,13 +426,13 @@ def _input_format_classification(
 
     if case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) or multiclass:
         if preds.is_floating_point():
-            num_classes: int = preds.shape[1]
+            num_classes = preds.shape[1]
             preds = select_topk(preds, top_k or 1)
         else:
-            num_classes: int = num_classes if num_classes else max(preds.max(), target.max()) + 1
+            num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
             preds = to_onehot(preds, max(2, num_classes))
 
-        target = to_onehot(target, max(2, num_classes))
+        target = to_onehot(target, max(2, num_classes))  # type: ignore
 
         if multiclass is False:
             preds, target = preds[:, 1, ...], target[:, 1, ...]
