@@ -15,7 +15,7 @@
 import operator
 from importlib import import_module
 from importlib.util import find_spec
-from typing import Optional
+from typing import Optional, Callable
 
 from packaging.version import Version
 from pkg_resources import DistributionNotFound, get_distribution
@@ -40,7 +40,7 @@ def _module_available(module_path: str) -> bool:
         return False
 
 
-def _compare_version(package: str, op, version) -> Optional[bool]:
+def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]:
     """
     Compare package version with some requirements
 

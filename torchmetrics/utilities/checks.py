@@ -26,7 +26,7 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: bool) -> None:
+def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool]) -> None:
     """
     Perform basic validation of inputs that does not require deducing any information
     of the type of inputs.
@@ -113,7 +113,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
     return case, implied_classes
 
 
-def _check_num_classes_binary(num_classes: int, multiclass: bool) -> None:
+def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> None:
     """
     This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data.
     """
@@ -168,7 +168,7 @@ def _check_num_classes_mc(
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
 
 
-def _check_num_classes_ml(num_classes: int, multiclass: bool, implied_classes: int) -> None:
+def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
     """
     This checks that the consistency of `num_classes` with the data
     and `multiclass` param for multi-label data.
@@ -426,10 +426,10 @@ def _input_format_classification(
 
     if case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) or multiclass:
         if preds.is_floating_point():
-            num_classes = preds.shape[1]
+            num_classes: int = preds.shape[1]
             preds = select_topk(preds, top_k or 1)
         else:
-            num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
+            num_classes: int = num_classes if num_classes else max(preds.max(), target.max()) + 1
             preds = to_onehot(preds, max(2, num_classes))
 
         target = to_onehot(target, max(2, num_classes))

@@ -30,7 +30,7 @@ def rank_zero_only(fn: Callable) -> Callable:
 
 
 # add the attribute to the function but don't overwrite in case Trainer has already set it
-rank_zero_only.rank = getattr(rank_zero_only, 'rank', int(os.environ.get('LOCAL_RANK', 0)))
+rank_zero_only.rank = getattr(rank_zero_only, 'rank', int(os.environ.get('LOCAL_RANK', 0)))  # type: ignore
 
 
 def _warn(*args: Any, **kwargs: Any) -> None:

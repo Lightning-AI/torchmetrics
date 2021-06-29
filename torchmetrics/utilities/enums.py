@@ -39,7 +39,7 @@ class EnumStr(str, Enum):
         other = other.value if isinstance(other, Enum) else str(other)
         return self.value.lower() == other.lower()
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # re-enable hashtable so it can be used as a dict key or in a set
         # example: set(LightningEnum)
         return hash(self.name)
