@@ -207,7 +207,7 @@ class MetricCollection(nn.ModuleDict):
             od[self._set_name(k)] = v
         return od
 
-    def keys(self, keep_base: bool = False) -> Iterable[str]:
+    def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.

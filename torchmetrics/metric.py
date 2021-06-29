@@ -100,9 +100,9 @@ class Metric(nn.Module, ABC):
         self._update_called = False
 
         # initialize state
-        self._defaults: dict = {}
-        self._persistent: dict = {}
-        self._reductions: dict = {}
+        self._defaults: Dict[str, Union[List, Tensor]] = {}
+        self._persistent: Dict[str, bool] = {}
+        self._reductions: Dict[str, Union[str, Callable[[Union[List, Tensor]], Tensor]] = {}
 
     def add_state(
         self,
@@ -232,7 +232,7 @@ class Metric(nn.Module, ABC):
     def _wrap_update(self, update: Callable) -> Callable:
 
         @functools.wraps(update)
-        def wrapped_func(*args: Tensor, **kwargs: Any) -> Optional[Any]:
+        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
             self._computed = None
             self._update_called = True
             return update(*args, **kwargs)
@@ -310,10 +310,10 @@ class Metric(nn.Module, ABC):
             for attr, val in cache.items():
                 setattr(self, attr, val)
 
-    def _wrap_compute(self, compute: Callable) -> Callable:
+    def _wrap_compute(self, compute: Callable[Any]) -> Callable[Any]:
 
         @functools.wraps(compute)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
+        def wrapped_func() -> Any:
             if not self._update_called:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
@@ -459,7 +459,7 @@ class Metric(nn.Module, ABC):
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )
 
-    def _filter_kwargs(self, **kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
         """ filter kwargs such that they match the update signature of the metric """
 
         # filter all parameters based on update signature except those of
