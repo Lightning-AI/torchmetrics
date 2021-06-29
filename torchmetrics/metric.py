@@ -30,7 +30,7 @@ from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
-def distributed_available() -> bool:
+def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
@@ -75,7 +75,7 @@ class Metric(nn.Module, ABC):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__()
 
         # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
@@ -239,7 +239,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Optional[Callable] = None,
         process_group: Optional[Any] = None,
         should_sync: bool = True,
-        distributed_available: Optional[Callable] = distributed_available,
+        distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> Dict[str, Tensor]:
         """
         Sync function for manually controlling when metrics states should be synced across processes
@@ -274,7 +274,7 @@ class Metric(nn.Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         restore_cache: bool = True,
-        distributed_available: Optional[Callable] = distributed_available,
+        distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> None:
         """
         Context manager to synchronize the states between processes when running in a distributed setting
@@ -330,7 +330,7 @@ class Metric(nn.Module, ABC):
         return wrapped_func
 
     @abstractmethod
-    def update(self) -> None:  # pylint: disable=E0202
+    def update(self, *_: Any, **__: Any) -> None:  # pylint: disable=E0202
         """
         Override this method to update the state variables of your metric class.
         """
@@ -342,7 +342,7 @@ class Metric(nn.Module, ABC):
         synchronized across the distributed backend.
         """
 
-    def reset(self):
+    def reset(self) -> None:
         """
         This method automatically resets the metric state variables to their default value.
         """
@@ -359,7 +359,7 @@ class Metric(nn.Module, ABC):
             else:
                 setattr(self, attr, [])
 
-    def clone(self):
+    def clone(self) -> "Metric":
         """ Make a copy of the metric """
         return deepcopy(self)
 
@@ -374,7 +374,7 @@ class Metric(nn.Module, ABC):
         self.update = self._wrap_update(self.update)
         self.compute = self._wrap_compute(self.compute)
 
-    def _apply(self, fn):
+    def _apply(self, fn) -> "Metric":
         """Overwrite _apply function such that we can also move metric states
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
@@ -398,7 +398,7 @@ class Metric(nn.Module, ABC):
                 )
         return this
 
-    def persistent(self, mode: bool = False):
+    def persistent(self, mode: bool = False) -> None:
         """Method for post-init to change if metric states should be saved to
         its state_dict
         """
@@ -585,7 +585,7 @@ class Metric(nn.Module, ABC):
         return CompositionalMetric(lambda x: x[idx], self, None)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> Optional[bool]:
         # There is a bug in PyTorch that leads to properties being executed during scripting
         # To make the metric scriptable, we add property to ignore list and switch to return None here
         return None
@@ -603,7 +603,7 @@ class CompositionalMetric(Metric):
         operator: Callable,
         metric_a: Union[Metric, int, float, Tensor],
         metric_b: Union[Metric, int, float, Tensor, None],
-    ):
+    ) -> None:
         """
         Args:
             operator: the operator taking in one (if metric_b is None)

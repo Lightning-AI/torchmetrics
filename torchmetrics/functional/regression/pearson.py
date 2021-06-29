@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -22,13 +22,9 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _pearson_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    old_mean: Optional[Tensor] = None,
-    old_cov: Optional[Tensor] = None,
-    old_nobs: Optional[Tensor] = None
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """ updates current estimates of the mean, cov and n_obs with new data for calculating
-        pearsons correlation
-    """
+    *_,
+) -> Tuple[Tensor, Tensor]:
+    """ updates current estimates of the mean, cov and n_obs with new data for calculating pearsons correlation """
     # Data checking
     _check_same_shape(preds, target)
     preds = preds.squeeze()

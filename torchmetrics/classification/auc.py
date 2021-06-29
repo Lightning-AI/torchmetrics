@@ -51,7 +51,7 @@ class AUC(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -69,7 +69,7 @@ class AUC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, x: Tensor, y: Tensor):
+    def update(self, x: Tensor, y: Tensor) -> None:
         """
         Update state with predictions and targets.
 

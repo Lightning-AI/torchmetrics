@@ -15,6 +15,7 @@ from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
@@ -180,7 +181,7 @@ class KID(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -207,8 +208,8 @@ class KID(Metric):
                     f' but got {feature}.'
                 )
 
-            self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
-        elif isinstance(feature, torch.nn.Module):
+            self.inception: Module = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+        elif isinstance(feature, Module):
             self.inception = feature
         else:
             raise TypeError('Got unknown input to argument `feature`')

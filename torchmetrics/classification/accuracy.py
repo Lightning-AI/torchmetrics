@@ -180,7 +180,7 @@ class Accuracy(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -215,7 +215,7 @@ class Accuracy(StatScores):
         self.mode = None
         self.multiclass = multiclass
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.

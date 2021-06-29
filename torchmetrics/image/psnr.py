@@ -78,7 +78,7 @@ class PSNR(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -110,7 +110,7 @@ class PSNR(Metric):
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets.
 
