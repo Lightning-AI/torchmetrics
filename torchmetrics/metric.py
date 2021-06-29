@@ -487,7 +487,8 @@ class Metric(nn.Module, ABC):
     def __and__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __eq__(self, other: "Metric") -> "Metric":
+    # Fixme: this shall return bool instead of Metric
+    def __eq__(self, other: "Metric") -> "Metric":  # type: ignore
         return CompositionalMetric(torch.eq, self, other)
 
     def __floordiv__(self, other: "Metric") -> "Metric":
