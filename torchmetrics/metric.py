@@ -415,7 +415,7 @@ class Metric(nn.Module, ABC):
         destination: Dict[str, Any] = None,
         prefix: str = "",
         keep_vars: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> Optional[Dict[str, Any]]:
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         with self.sync_context(dist_sync_fn=self.dist_sync_fn):
@@ -424,14 +424,14 @@ class Metric(nn.Module, ABC):
                     continue
                 current_val = getattr(self, key)
                 if not keep_vars:
-                    if isinstance(current_val, torch.Tensor):
+                    if isinstance(current_val, Tensor):
                         current_val = current_val.detach()
                     elif isinstance(current_val, list):
                         current_val = [
-                            cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val
+                            cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val
                         ]
                 # the tensors will be synced across processes so deepcopy to drop the references
-                destination[prefix + key] = deepcopy(current_val)
+                destination[prefix + key] = deepcopy(current_val)  # type: ignore
         return destination
 
     def _should_load_from_state_dict(self) -> bool:
