@@ -35,11 +35,11 @@ class EnumStr(str, Enum):
                 return getattr(cls, st)
         return None
 
-    def __eq__(self, other: Union[str, Enum]) -> bool:
+    def __eq__(self, other: Union[str, 'EnumStr']) -> bool:  # type: ignore
         other = other.value if isinstance(other, Enum) else str(other)
         return self.value.lower() == other.lower()
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # re-enable hashtable so it can be used as a dict key or in a set
         # example: set(LightningEnum)
         return hash(self.name)
