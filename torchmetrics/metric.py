@@ -19,10 +19,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, Generator
 
 import torch
 from torch import Tensor, nn
+from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
@@ -92,20 +93,20 @@ class Metric(nn.Module, ABC):
         self._restore_cache = True
 
         self._update_signature = inspect.signature(self.update)
-        self.update = self._wrap_update(self.update)
-        self.compute = self._wrap_compute(self.compute)
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
         self._computed = None
         self._forward_cache = None
         self._update_called = False
 
         # initialize state
-        self._defaults = {}
-        self._persistent = {}
-        self._reductions = {}
+        self._defaults: dict = {}
+        self._persistent: dict = {}
+        self._reductions: dict = {}
 
     def add_state(
-        self, name: str, default, dist_reduce_fx: Optional[Union[str, Callable]] = None, persistent: bool = False
-    ):
+        self, name: str, default: Union[list, Tensor], dist_reduce_fx: Optional[Union[str, Callable]] = None, persistent: bool = False
+    ) -> None:
         """
         Adds metric state variable. Only used by subclasses.
 
@@ -153,7 +154,7 @@ class Metric(nn.Module, ABC):
             dist_reduce_fx = dim_zero_mean
         elif dist_reduce_fx == "cat":
             dist_reduce_fx = dim_zero_cat
-        elif dist_reduce_fx is not None and not isinstance(dist_reduce_fx, Callable):
+        elif dist_reduce_fx is not None and not callable(dist_reduce_fx):
             raise ValueError("`dist_reduce_fx` must be callable or one of ['mean', 'sum', 'cat', None]")
 
         if isinstance(default, Tensor):
@@ -166,7 +167,7 @@ class Metric(nn.Module, ABC):
         self._reductions[name] = dist_reduce_fx
 
     @torch.jit.unused
-    def forward(self, *args, **kwargs):
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
         """
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
@@ -256,7 +257,7 @@ class Metric(nn.Module, ABC):
         Returns:
             cache: A dictionary containing the local metric states. The cache will be empty if sync didn't happen.
         """
-        is_distributed = distributed_available()
+        is_distributed: bool = distributed_available()
         if not should_sync or not is_distributed:
             return {}
         if dist_sync_fn is None:
@@ -275,7 +276,7 @@ class Metric(nn.Module, ABC):
         should_sync: bool = True,
         restore_cache: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
-    ) -> None:
+    ) -> Generator:
         """
         Context manager to synchronize the states between processes when running in a distributed setting
         and restore the local cache states after yielding.
@@ -330,13 +331,13 @@ class Metric(nn.Module, ABC):
         return wrapped_func
 
     @abstractmethod
-    def update(self, *_: Any, **__: Any) -> None:  # pylint: disable=E0202
+    def update(self, *_: Any, **__: Any) -> None:
         """
         Override this method to update the state variables of your metric class.
         """
 
     @abstractmethod
-    def compute(self):  # pylint: disable=E0202
+    def compute(self) -> Any:
         """
         Override this method to compute the final metric value from state variables
         synchronized across the distributed backend.
@@ -371,10 +372,10 @@ class Metric(nn.Module, ABC):
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
-        self.update = self._wrap_update(self.update)
-        self.compute = self._wrap_compute(self.compute)
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
-    def _apply(self, fn) -> "Metric":
+    def _apply(self, fn) -> Module:
         """Overwrite _apply function such that we can also move metric states
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
@@ -515,7 +516,8 @@ class Metric(nn.Module, ABC):
     def __mul__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.mul, self, other)
 
-    def __ne__(self, other: "Metric") -> "Metric":
+    # Fixme: this shall return bool instead of Metric
+    def __ne__(self, other: "Metric") -> "Metric":  # type: ignore
         return CompositionalMetric(torch.ne, self, other)
 
     def __or__(self, other: "Metric") -> "Metric":
@@ -628,7 +630,7 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn: Callable = None) -> None:
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, *_) -> None:
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 
