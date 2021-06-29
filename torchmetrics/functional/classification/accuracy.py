@@ -70,7 +70,13 @@ def _accuracy_update(
 
 
 def _accuracy_compute(
-    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: Optional[str], mdmc_average: Optional[str], mode: DataType,
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
+    average: Optional[str],
+    mdmc_average: Optional[str],
+    mode: DataType,
 ) -> Tensor:
     simple_average = [AverageMethod.MICRO, AverageMethod.SAMPLES]
     if (mode == DataType.BINARY and average in simple_average) or mode == DataType.MULTILABEL:
