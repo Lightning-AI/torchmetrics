@@ -172,6 +172,8 @@ def _precision_recall_curve_compute(
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     with torch.no_grad():
         if num_classes == 1:
+            if pos_label is None:
+                pos_label = 1
             return _precision_recall_curve_compute_single_class(preds, target, pos_label, sample_weights)
         return _precision_recall_curve_compute_multi_class(preds, target, num_classes, sample_weights)
 

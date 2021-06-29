@@ -93,6 +93,8 @@ def _roc_compute(
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     with torch.no_grad():
         if num_classes == 1 and preds.ndim == 1:  # binary
+            if pos_label is None:
+                pos_label = 1
             return _roc_compute_single_class(preds, target, pos_label, sample_weights)
         return _roc_compute_multi_class(preds, target, num_classes, sample_weights)
 
