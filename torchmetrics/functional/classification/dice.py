@@ -98,12 +98,12 @@ def dice_score(
 
     """
     num_classes = preds.shape[1]
-    bg: int = (1 - int(bool(bg)))
-    scores = torch.zeros(num_classes - bg, device=preds.device, dtype=torch.float32)
-    for i in range(bg, num_classes):
+    bg_inv = (1 - int(bool(bg)))
+    scores = torch.zeros(num_classes - bg_inv, device=preds.device, dtype=torch.float32)
+    for i in range(bg_inv, num_classes):
         if not (target == i).any():
             # no foreground class
-            scores[i - bg] += no_fg_score
+            scores[i - bg_inv] += no_fg_score
             continue
 
         # TODO: rewrite to use general `stat_scores`
@@ -112,5 +112,5 @@ def dice_score(
         # nan result
         score_cls = (2 * tp).to(torch.float) / denom if torch.is_nonzero(denom) else nan_score
 
-        scores[i - bg] += score_cls
+        scores[i - bg_inv] += score_cls
     return reduce(scores, reduction=reduction)

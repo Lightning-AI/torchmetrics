@@ -28,7 +28,7 @@ def _del_column(data: Tensor, idx: int) -> Tensor:
 def _stat_scores(
     preds: Tensor,
     target: Tensor,
-    reduce: str = "micro",
+    reduce: Optional[str] = "micro",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate the number of tp, fp, tn, fn.
 
