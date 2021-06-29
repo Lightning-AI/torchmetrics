@@ -192,6 +192,6 @@ def test_error_on_different_mode():
 
 def test_error_multiclass_no_num_classes():
     with pytest.raises(
-        ValueError, match="Detected input to ``multiclass`` but you did not provide ``num_classes`` argument"
+        ValueError, match="Detected input to `multiclass` but you did not provide `num_classes` argument"
     ):
         _ = auroc(torch.randn(20, 3).softmax(dim=-1), torch.randint(3, (20, )))
