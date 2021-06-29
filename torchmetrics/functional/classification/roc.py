@@ -88,7 +88,7 @@ def _roc_compute(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    pos_label: int,
+    pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     with torch.no_grad():
