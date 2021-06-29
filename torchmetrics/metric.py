@@ -413,7 +413,7 @@ class Metric(nn.Module, ABC):
     def state_dict(
         self, destination: Dict[str, Any] = None, prefix: str = "", keep_vars: bool = False
     ) -> Dict[str, Any]:
-        destination: Dict[str, Any] = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
+        destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         with self.sync_context(dist_sync_fn=self.dist_sync_fn):
             for key in self._defaults:
@@ -429,7 +429,7 @@ class Metric(nn.Module, ABC):
                         ]
                 # the tensors will be synced across processes so deepcopy to drop the references
                 destination[prefix + key] = deepcopy(current_val)
-            return destination
+        return destination
 
     def _should_load_from_state_dict(self) -> bool:
         return os.getenv("GLOBAL_RANK", "0") == "0"
