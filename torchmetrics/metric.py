@@ -261,7 +261,7 @@ class Metric(nn.Module, ABC):
         Returns:
             cache: A dictionary containing the local metric states. The cache will be empty if sync didn't happen.
         """
-        is_distributed: bool = distributed_available()
+        is_distributed = distributed_available() if callable(distributed_available) else None
         if not should_sync or not is_distributed:
             return {}
         if dist_sync_fn is None:
@@ -379,7 +379,7 @@ class Metric(nn.Module, ABC):
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
-    def _apply(self, fn) -> Module:
+    def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
@@ -410,7 +410,7 @@ class Metric(nn.Module, ABC):
         for key in self._persistent:
             self._persistent[key] = mode
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False) -> Dict[str, Any]:
+    def state_dict(self, destination: dict = None, prefix="", keep_vars=False) -> Dict[str, Any]:
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         with self.sync_context(dist_sync_fn=self.dist_sync_fn):
@@ -598,8 +598,8 @@ class Metric(nn.Module, ABC):
         return None
 
 
-def _neg(tensor: Tensor):
-    return -torch.abs(tensor)
+def _neg(x: Tensor) -> Tensor:
+    return -torch.abs(x)
 
 
 class CompositionalMetric(Metric):
@@ -634,11 +634,11 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, *_) -> None:
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, *_: Any) -> None:
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 
-    def update(self, *args, **kwargs) -> None:
+    def update(self, *args: Any, **kwargs: Any) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
