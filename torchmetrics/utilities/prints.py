@@ -23,7 +23,7 @@ def rank_zero_only(fn: Callable) -> Callable:
 
     @wraps(fn)
     def wrapped_fn(*args: Any, **kwargs: Any) -> Any:
-        if rank_zero_only.rank == 0:
+        if rank_zero_only.rank == 0:  # type: ignore
             return fn(*args, **kwargs)
 
     return wrapped_fn
