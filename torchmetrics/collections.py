@@ -14,7 +14,7 @@
 
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union, Hashable
+from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import nn
