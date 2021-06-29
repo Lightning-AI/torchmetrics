@@ -411,7 +411,10 @@ class Metric(nn.Module, ABC):
             self._persistent[key] = mode
 
     def state_dict(
-        self, destination: Dict[str, Any] = None, prefix: str = "", keep_vars: bool = False
+        self,
+        destination: Dict[str, Any] = None,
+        prefix: str = "",
+        keep_vars: bool = False,
     ) -> Dict[str, Any]:
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
