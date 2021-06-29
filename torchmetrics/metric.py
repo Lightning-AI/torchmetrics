@@ -102,7 +102,7 @@ class Metric(nn.Module, ABC):
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[[Union[List, Tensor]], Tensor]] = {}
+        self._reductions: Dict[str, Union[str, Callable[[Union[List, Tensor]], Tensor]]] = {}
 
     def add_state(
         self,
@@ -310,10 +310,10 @@ class Metric(nn.Module, ABC):
             for attr, val in cache.items():
                 setattr(self, attr, val)
 
-    def _wrap_compute(self, compute: Callable[Any]) -> Callable[Any]:
+    def _wrap_compute(self, compute: Callable) -> Callable:
 
         @functools.wraps(compute)
-        def wrapped_func() -> Any:
+        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
             if not self._update_called:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
