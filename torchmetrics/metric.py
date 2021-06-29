@@ -19,10 +19,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
+from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
@@ -92,20 +93,24 @@ class Metric(nn.Module, ABC):
         self._restore_cache = True
 
         self._update_signature = inspect.signature(self.update)
-        self.update = self._wrap_update(self.update)
-        self.compute = self._wrap_compute(self.compute)
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
         self._computed = None
         self._forward_cache = None
         self._update_called = False
 
         # initialize state
-        self._defaults = {}
-        self._persistent = {}
-        self._reductions = {}
+        self._defaults: Dict[str, Union[List, Tensor]] = {}
+        self._persistent: Dict[str, bool] = {}
+        self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
 
     def add_state(
-        self, name: str, default, dist_reduce_fx: Optional[Union[str, Callable]] = None, persistent: bool = False
-    ):
+        self,
+        name: str,
+        default: Union[list, Tensor],
+        dist_reduce_fx: Optional[Union[str, Callable]] = None,
+        persistent: bool = False
+    ) -> None:
         """
         Adds metric state variable. Only used by subclasses.
 
@@ -153,7 +158,7 @@ class Metric(nn.Module, ABC):
             dist_reduce_fx = dim_zero_mean
         elif dist_reduce_fx == "cat":
             dist_reduce_fx = dim_zero_cat
-        elif dist_reduce_fx is not None and not isinstance(dist_reduce_fx, Callable):
+        elif dist_reduce_fx is not None and not callable(dist_reduce_fx):
             raise ValueError("`dist_reduce_fx` must be callable or one of ['mean', 'sum', 'cat', None]")
 
         if isinstance(default, Tensor):
@@ -166,7 +171,7 @@ class Metric(nn.Module, ABC):
         self._reductions[name] = dist_reduce_fx
 
     @torch.jit.unused
-    def forward(self, *args, **kwargs):
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
         """
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
@@ -224,10 +229,10 @@ class Metric(nn.Module, ABC):
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
-    def _wrap_update(self, update):
+    def _wrap_update(self, update: Callable) -> Callable:
 
         @functools.wraps(update)
-        def wrapped_func(*args, **kwargs):
+        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
             self._computed = None
             self._update_called = True
             return update(*args, **kwargs)
@@ -256,7 +261,7 @@ class Metric(nn.Module, ABC):
         Returns:
             cache: A dictionary containing the local metric states. The cache will be empty if sync didn't happen.
         """
-        is_distributed = distributed_available()
+        is_distributed = distributed_available() if callable(distributed_available) else None
         if not should_sync or not is_distributed:
             return {}
         if dist_sync_fn is None:
@@ -275,7 +280,7 @@ class Metric(nn.Module, ABC):
         should_sync: bool = True,
         restore_cache: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
-    ) -> None:
+    ) -> Generator:
         """
         Context manager to synchronize the states between processes when running in a distributed setting
         and restore the local cache states after yielding.
@@ -305,10 +310,10 @@ class Metric(nn.Module, ABC):
             for attr, val in cache.items():
                 setattr(self, attr, val)
 
-    def _wrap_compute(self, compute):
+    def _wrap_compute(self, compute: Callable) -> Callable:
 
         @functools.wraps(compute)
-        def wrapped_func(*args, **kwargs):
+        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
             if not self._update_called:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
@@ -330,13 +335,13 @@ class Metric(nn.Module, ABC):
         return wrapped_func
 
     @abstractmethod
-    def update(self, *_: Any, **__: Any) -> None:  # pylint: disable=E0202
+    def update(self, *_: Any, **__: Any) -> None:
         """
         Override this method to update the state variables of your metric class.
         """
 
     @abstractmethod
-    def compute(self):  # pylint: disable=E0202
+    def compute(self) -> Any:
         """
         Override this method to compute the final metric value from state variables
         synchronized across the distributed backend.
@@ -363,18 +368,18 @@ class Metric(nn.Module, ABC):
         """ Make a copy of the metric """
         return deepcopy(self)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         # ignore update and compute functions for pickling
         return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute", "_update_signature"]}
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Dict[str, Any]) -> None:
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
-        self.update = self._wrap_update(self.update)
-        self.compute = self._wrap_compute(self.compute)
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
-    def _apply(self, fn) -> "Metric":
+    def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states
         to the correct device when `.to`, `.cuda`, etc methods are called
         """
@@ -405,23 +410,27 @@ class Metric(nn.Module, ABC):
         for key in self._persistent:
             self._persistent[key] = mode
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
+    def state_dict(
+        self,
+        destination: Dict[str, Any] = None,
+        prefix: str = "",
+        keep_vars: bool = False,
+    ) -> Optional[Dict[str, Any]]:
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         with self.sync_context(dist_sync_fn=self.dist_sync_fn):
             for key in self._defaults:
-                if self._persistent[key]:
-                    current_val = getattr(self, key)
-                    if not keep_vars:
-                        if isinstance(current_val, torch.Tensor):
-                            current_val = current_val.detach()
-                        elif isinstance(current_val, list):
-                            current_val = [
-                                cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val
-                            ]
-                    # the tensors will be synced across processes so deepcopy to drop the references
-                    destination[prefix + key] = deepcopy(current_val)
-            return destination
+                if not self._persistent[key]:
+                    continue
+                current_val = getattr(self, key)
+                if not keep_vars:
+                    if isinstance(current_val, Tensor):
+                        current_val = current_val.detach()
+                    elif isinstance(current_val, list):
+                        current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
+                # the tensors will be synced across processes so deepcopy to drop the references
+                destination[prefix + key] = deepcopy(current_val)  # type: ignore
+        return destination
 
     def _should_load_from_state_dict(self) -> bool:
         return os.getenv("GLOBAL_RANK", "0") == "0"
@@ -450,7 +459,7 @@ class Metric(nn.Module, ABC):
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )
 
-    def _filter_kwargs(self, **kwargs):
+    def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
         """ filter kwargs such that they match the update signature of the metric """
 
         # filter all parameters based on update signature except those of
@@ -467,7 +476,7 @@ class Metric(nn.Module, ABC):
             filtered_kwargs = kwargs
         return filtered_kwargs
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         hash_vals = [self.__class__.__name__]
 
         for key in self._defaults:
@@ -481,107 +490,109 @@ class Metric(nn.Module, ABC):
 
         return hash(tuple(hash_vals))
 
-    def __add__(self, other: Any):
+    def __add__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.add, self, other)
 
-    def __and__(self, other: Any):
+    def __and__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __eq__(self, other: Any):
+    # Fixme: this shall return bool instead of Metric
+    def __eq__(self, other: "Metric") -> "Metric":  # type: ignore
         return CompositionalMetric(torch.eq, self, other)
 
-    def __floordiv__(self, other: Any):
+    def __floordiv__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.floor_divide, self, other)
 
-    def __ge__(self, other: Any):
+    def __ge__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.ge, self, other)
 
-    def __gt__(self, other: Any):
+    def __gt__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.gt, self, other)
 
-    def __le__(self, other: Any):
+    def __le__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.le, self, other)
 
-    def __lt__(self, other: Any):
+    def __lt__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.lt, self, other)
 
-    def __matmul__(self, other: Any):
+    def __matmul__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.matmul, self, other)
 
-    def __mod__(self, other: Any):
+    def __mod__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.fmod, self, other)
 
-    def __mul__(self, other: Any):
+    def __mul__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.mul, self, other)
 
-    def __ne__(self, other: Any):
+    # Fixme: this shall return bool instead of Metric
+    def __ne__(self, other: "Metric") -> "Metric":  # type: ignore
         return CompositionalMetric(torch.ne, self, other)
 
-    def __or__(self, other: Any):
+    def __or__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.bitwise_or, self, other)
 
-    def __pow__(self, other: Any):
+    def __pow__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.pow, self, other)
 
-    def __radd__(self, other: Any):
+    def __radd__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.add, other, self)
 
-    def __rand__(self, other: Any):
+    def __rand__(self, other: "Metric") -> "Metric":
         # swap them since bitwise_and only supports that way and it's commutative
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __rfloordiv__(self, other: Any):
+    def __rfloordiv__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.floor_divide, other, self)
 
-    def __rmatmul__(self, other: Any):
+    def __rmatmul__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.matmul, other, self)
 
-    def __rmod__(self, other: Any):
+    def __rmod__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.fmod, other, self)
 
-    def __rmul__(self, other: Any):
+    def __rmul__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.mul, other, self)
 
-    def __ror__(self, other: Any):
+    def __ror__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.bitwise_or, other, self)
 
-    def __rpow__(self, other: Any):
+    def __rpow__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.pow, other, self)
 
-    def __rsub__(self, other: Any):
+    def __rsub__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.sub, other, self)
 
-    def __rtruediv__(self, other: Any):
+    def __rtruediv__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.true_divide, other, self)
 
-    def __rxor__(self, other: Any):
+    def __rxor__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.bitwise_xor, other, self)
 
-    def __sub__(self, other: Any):
+    def __sub__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.sub, self, other)
 
-    def __truediv__(self, other: Any):
+    def __truediv__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.true_divide, self, other)
 
-    def __xor__(self, other: Any):
+    def __xor__(self, other: "Metric") -> "Metric":
         return CompositionalMetric(torch.bitwise_xor, self, other)
 
-    def __abs__(self):
+    def __abs__(self) -> "Metric":
         return CompositionalMetric(torch.abs, self, None)
 
-    def __inv__(self):
+    def __inv__(self) -> "Metric":
         return CompositionalMetric(torch.bitwise_not, self, None)
 
-    def __invert__(self):
+    def __invert__(self) -> "Metric":
         return self.__inv__()
 
-    def __neg__(self):
+    def __neg__(self) -> "Metric":
         return CompositionalMetric(_neg, self, None)
 
-    def __pos__(self):
+    def __pos__(self) -> "Metric":
         return CompositionalMetric(torch.abs, self, None)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
 
     @property
@@ -591,8 +602,8 @@ class Metric(nn.Module, ABC):
         return None
 
 
-def _neg(tensor: Tensor):
-    return -torch.abs(tensor)
+def _neg(x: Tensor) -> Tensor:
+    return -torch.abs(x)
 
 
 class CompositionalMetric(Metric):
@@ -627,11 +638,11 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn: Callable = None) -> None:
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, *_: Any) -> None:
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 
-    def update(self, *args, **kwargs) -> None:
+    def update(self, *args: Any, **kwargs: Any) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
