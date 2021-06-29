@@ -23,7 +23,7 @@ import torch
 from torch import Tensor, tensor
 
 
-def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
+def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
     """
     Counting how many times each word appears in a given text with ngram
 

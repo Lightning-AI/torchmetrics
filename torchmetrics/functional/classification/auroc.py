@@ -118,21 +118,19 @@ def _auroc_compute(
         return _auc_compute_without_check(fpr, tpr, 1.0)
 
     _device = fpr.device if isinstance(fpr, Tensor) else fpr[0].device
-    max_fpr: Tensor = tensor(max_fpr, device=_device)
+    max_area: Tensor = tensor(max_fpr, device=_device)
     # Add a single point at max_fpr and interpolate its tpr value
-    stop = torch.bucketize(max_fpr, fpr, out_int32=True, right=True)
-    weight = (max_fpr - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
+    stop = torch.bucketize(max_area, fpr, out_int32=True, right=True)
+    weight = (max_area - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
     interp_tpr: Tensor = torch.lerp(tpr[stop - 1], tpr[stop], weight)
     tpr = torch.cat([tpr[:stop], interp_tpr.view(1)])
-    fpr = torch.cat([fpr[:stop], max_fpr.view(1)])
+    fpr = torch.cat([fpr[:stop], max_area.view(1)])
 
     # Compute partial AUC
     partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
-    # McClish correction: standardize result to be 0.5 if non-discriminant
-    # and 1 if maximal
-    min_area: Tensor = 0.5 * max_fpr**2
-    max_area: Tensor = max_fpr
+    # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
+    min_area: Tensor = 0.5 * max_area**2
     return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
 
 

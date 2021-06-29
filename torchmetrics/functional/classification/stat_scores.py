@@ -55,13 +55,11 @@ def _stat_scores(
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
     """
-    dim: Union[int, List[int]] = ...
+    dim: Union[int, List[int]] = 1  # for "samples"
     if reduce == "micro":
         dim = [0, 1] if preds.ndim == 2 else [1, 2]
     elif reduce == "macro":
         dim = 0 if preds.ndim == 2 else 2
-    elif reduce == "samples":
-        dim = 1
 
     true_pred, false_pred = target == preds, target != preds
     pos_pred, neg_pred = preds == 1, preds == 0
@@ -78,7 +76,7 @@ def _stat_scores(
 def _stat_scores_update(
     preds: Tensor,
     target: Tensor,
-    reduce: str = "micro",
+    reduce: Optional[str] = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
