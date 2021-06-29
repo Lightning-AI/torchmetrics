@@ -427,9 +427,7 @@ class Metric(nn.Module, ABC):
                     if isinstance(current_val, Tensor):
                         current_val = current_val.detach()
                     elif isinstance(current_val, list):
-                        current_val = [
-                            cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val
-                        ]
+                        current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
                 # the tensors will be synced across processes so deepcopy to drop the references
                 destination[prefix + key] = deepcopy(current_val)  # type: ignore
         return destination
