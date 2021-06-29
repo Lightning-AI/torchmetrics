@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, List, Union
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -124,14 +124,14 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-
-    outputs = torch.cat([
+    stats = [
         tp.unsqueeze(-1),
         fp.unsqueeze(-1),
         tn.unsqueeze(-1),
         fn.unsqueeze(-1),
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
-    ], -1)
+    ]
+    outputs: Tensor = torch.cat(stats, -1)
     outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
     return outputs
