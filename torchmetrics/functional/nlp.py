@@ -35,7 +35,7 @@ def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
         ngram_counter: a collections.Counter object of ngram
     """
 
-    ngram_counter = Counter()
+    ngram_counter: Counter = Counter()
 
     for i in range(1, n_gram + 1):
         for j in range(len(ngram_input_list) - i + 1):
@@ -80,8 +80,8 @@ def bleu_score(
         ref_len_list = [len(ref) for ref in references]
         ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
         r += ref_len_list[ref_len_diff.index(min(ref_len_diff))]
-        translation_counter = _count_ngram(translation, n_gram)
-        reference_counter = Counter()
+        translation_counter: Counter = _count_ngram(translation, n_gram)
+        reference_counter: Counter = Counter()
 
         for ref in references:
             reference_counter |= _count_ngram(ref, n_gram)
