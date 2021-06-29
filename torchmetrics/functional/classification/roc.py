@@ -56,7 +56,6 @@ def _roc_compute_single_class(
     return fpr, tpr, thresholds
 
 
-@torch.no_grad()
 def _roc_compute(
     preds: Tensor,
     target: Tensor,
@@ -64,30 +63,31 @@ def _roc_compute(
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    if num_classes == 1 and preds.ndim == 1:  # binary
-        return _roc_compute_single_class(preds, target, pos_label, sample_weights)
+    with torch.no_grad():
+        if num_classes == 1 and preds.ndim == 1:  # binary
+            return _roc_compute_single_class(preds, target, pos_label, sample_weights)
 
-    # Recursively call per class
-    fpr, tpr, thresholds = [], [], []
-    for c in range(num_classes):
-        if preds.shape == target.shape:
-            preds_c = preds[:, c]
-            target_c = target[:, c]
-            pos_label = 1
-        else:
-            preds_c = preds[:, c]
-            target_c = target
-            pos_label = c
-        res = roc(
-            preds=preds_c,
-            target=target_c,
-            num_classes=1,
-            pos_label=pos_label,
-            sample_weights=sample_weights,
-        )
-        fpr.append(res[0])
-        tpr.append(res[1])
-        thresholds.append(res[2])
+        # Recursively call per class
+        fpr, tpr, thresholds = [], [], []
+        for c in range(num_classes):
+            if preds.shape == target.shape:
+                preds_c = preds[:, c]
+                target_c = target[:, c]
+                pos_label = 1
+            else:
+                preds_c = preds[:, c]
+                target_c = target
+                pos_label = c
+            res = roc(
+                preds=preds_c,
+                target=target_c,
+                num_classes=1,
+                pos_label=pos_label,
+                sample_weights=sample_weights,
+            )
+            fpr.append(res[0])
+            tpr.append(res[1])
+            thresholds.append(res[2])
 
     return fpr, tpr, thresholds
 

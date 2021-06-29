@@ -139,7 +139,6 @@ def _precision_recall_curve_compute_single_class(
     return precision, recall, thresholds
 
 
-@torch.no_grad()
 def _precision_recall_curve_compute(
     preds: Tensor,
     target: Tensor,
@@ -147,23 +146,24 @@ def _precision_recall_curve_compute(
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    if num_classes == 1:
-        return _precision_recall_curve_compute_single_class(preds, target, pos_label, sample_weights)
+    with torch.no_grad():
+        if num_classes == 1:
+            return _precision_recall_curve_compute_single_class(preds, target, pos_label, sample_weights)
 
-    # Recursively call per class
-    precision, recall, thresholds = [], [], []
-    for c in range(num_classes):
-        preds_c = preds[:, c]
-        res = precision_recall_curve(
-            preds=preds_c,
-            target=target,
-            num_classes=1,
-            pos_label=c,
-            sample_weights=sample_weights,
-        )
-        precision.append(res[0])
-        recall.append(res[1])
-        thresholds.append(res[2])
+        # Recursively call per class
+        precision, recall, thresholds = [], [], []
+        for c in range(num_classes):
+            preds_c = preds[:, c]
+            res = precision_recall_curve(
+                preds=preds_c,
+                target=target,
+                num_classes=1,
+                pos_label=c,
+                sample_weights=sample_weights,
+            )
+            precision.append(res[0])
+            recall.append(res[1])
+            thresholds.append(res[2])
 
     return precision, recall, thresholds
 
