@@ -102,7 +102,7 @@ class Metric(nn.Module, ABC):
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor]]] = {}
+        self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
 
     def add_state(
         self,
