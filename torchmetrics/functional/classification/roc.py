@@ -31,6 +31,31 @@ def _roc_update(
     return _precision_recall_curve_update(preds, target, num_classes, pos_label)
 
 
+def _roc_compute_single_class(
+    preds: Tensor,
+    target: Tensor,
+    pos_label: int,
+    sample_weights: Optional[Sequence] = None,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    fps, tps, thresholds = _binary_clf_curve(
+        preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
+    )
+    # Add an extra threshold position to make sure that the curve starts at (0, 0)
+    tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
+    fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
+    thresholds = torch.cat([thresholds[0][None] + 1, thresholds])
+
+    if fps[-1] <= 0:
+        raise ValueError("No negative samples in targets, false positive value should be meaningless")
+    fpr = fps / fps[-1]
+
+    if tps[-1] <= 0:
+        raise ValueError("No positive samples in targets, true positive value should be meaningless")
+    tpr = tps / tps[-1]
+
+    return fpr, tpr, thresholds
+
+
 @torch.no_grad()
 def _roc_compute(
     preds: Tensor,
@@ -40,24 +65,7 @@ def _roc_compute(
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     if num_classes == 1 and preds.ndim == 1:  # binary
-        fps, tps, thresholds = _binary_clf_curve(
-            preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
-        )
-        # Add an extra threshold position
-        # to make sure that the curve starts at (0, 0)
-        tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
-        fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
-        thresholds = torch.cat([thresholds[0][None] + 1, thresholds])
-
-        if fps[-1] <= 0:
-            raise ValueError("No negative samples in targets, false positive value should be meaningless")
-        fpr = fps / fps[-1]
-
-        if tps[-1] <= 0:
-            raise ValueError("No positive samples in targets, true positive value should be meaningless")
-        tpr = tps / tps[-1]
-
-        return fpr, tpr, thresholds
+        return _roc_compute_single_class(preds, target, pos_label, sample_weights)
 
     # Recursively call per class
     fpr, tpr, thresholds = [], [], []
