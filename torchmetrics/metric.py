@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Union, Generator
+from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -105,7 +105,11 @@ class Metric(nn.Module, ABC):
         self._reductions: dict = {}
 
     def add_state(
-        self, name: str, default: Union[list, Tensor], dist_reduce_fx: Optional[Union[str, Callable]] = None, persistent: bool = False
+        self,
+        name: str,
+        default: Union[list, Tensor],
+        dist_reduce_fx: Optional[Union[str, Callable]] = None,
+        persistent: bool = False
     ) -> None:
         """
         Adds metric state variable. Only used by subclasses.
