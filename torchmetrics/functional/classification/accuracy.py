@@ -43,7 +43,7 @@ def _accuracy_update(
     preds: Tensor,
     target: Tensor,
     reduce: Optional[str],
-    mdmc_reduce: str,
+    mdmc_reduce: Optional[str],
     threshold: float,
     num_classes: Optional[int],
     top_k: Optional[int],

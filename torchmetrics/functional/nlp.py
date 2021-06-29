@@ -46,7 +46,7 @@ def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
 
 
 def bleu_score(
-    translate_corpus: Sequence[str], reference_corpus: Sequence[str], n_gram: int = 4, smooth: bool = False
+    translate_corpus: Sequence[Sequence[str]], reference_corpus: Sequence[Sequence[Sequence[str]]], n_gram: int = 4, smooth: bool = False
 ) -> Tensor:
     """
     Calculate BLEU score of machine translated text with one or more references
@@ -54,7 +54,7 @@ def bleu_score(
     Args:
         translate_corpus: An iterable of machine translated corpus
         reference_corpus: An iterable of iterables of reference corpus
-        n_gram: Gram value ranged from 1 to 4 (Default 4)
+        n_gram: Gram value ranged from 1 to 4
         smooth: Whether or not to apply smoothing – Lin et al. 2004
 
     Return:

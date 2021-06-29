@@ -49,18 +49,17 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
         raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
     if normalize is not None and normalize != 'none':
         confmat = confmat.float() if not confmat.is_floating_point() else confmat
-        cm = None
         if normalize == 'true':
-            cm = confmat / confmat.sum(axis=1, keepdim=True)
+            confmat = confmat / confmat.sum(axis=1, keepdim=True)
         elif normalize == 'pred':
-            cm = confmat / confmat.sum(axis=0, keepdim=True)
+            confmat = confmat / confmat.sum(axis=0, keepdim=True)
         elif normalize == 'all':
-            cm = confmat / confmat.sum()
-        nan_elements = cm[torch.isnan(cm)].nelement()
-        if cm and nan_elements != 0:
-            cm[torch.isnan(cm)] = 0
+            confmat = confmat / confmat.sum()
+
+        nan_elements = confmat[torch.isnan(confmat)].nelement()
+        if nan_elements != 0:
+            confmat[torch.isnan(confmat)] = 0
             rank_zero_warn(f'{nan_elements} nan values found in confusion matrix have been replaced with zeros.')
-        return cm
     return confmat
 
 
