@@ -133,10 +133,7 @@ def _precision_recall_curve_compute(
 
         # need to call reversed explicitly, since including that to slice would
         # introduce negative strides that are not yet supported in pytorch
-        precision = torch.cat([
-            reversed(precision[sl]),
-            torch.ones(1, dtype=precision.dtype, device=precision.device)
-        ])
+        precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
 
         recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
 
