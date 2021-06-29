@@ -21,7 +21,7 @@ from torchmetrics.utilities.checks import _check_classification_inputs, _input_f
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
 
-def _check_subset_validity(mode):
+def _check_subset_validity(mode: DataType) -> bool:
     return mode in (DataType.MULTILABEL, DataType.MULTIDIM_MULTICLASS)
 
 

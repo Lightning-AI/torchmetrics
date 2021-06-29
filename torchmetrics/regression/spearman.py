@@ -87,7 +87,7 @@ class SpearmanCorrcoef(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes spearmans correlation coefficient
         """
