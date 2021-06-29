@@ -17,7 +17,7 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
-from typing import List, Sequence
+from typing import Sequence
 
 import torch
 from torch import Tensor, tensor

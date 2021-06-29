@@ -139,7 +139,7 @@ def _reduce_stat_scores(
     numerator: Tensor,
     denominator: Tensor,
     weights: Optional[Tensor],
-    average: str,
+    average: Optional[str],
     mdmc_average: Optional[str],
     zero_division: int = 0,
 ) -> Tensor:

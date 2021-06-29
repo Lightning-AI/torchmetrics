@@ -27,7 +27,7 @@ def _average_precision_update(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, int, int]:
+) -> Tuple[Tensor, Tensor, int, Optional[int]]:
     return _precision_recall_curve_update(preds, target, num_classes, pos_label)
 
 
