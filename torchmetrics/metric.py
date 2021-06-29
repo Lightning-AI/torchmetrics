@@ -224,10 +224,10 @@ class Metric(nn.Module, ABC):
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
-    def _wrap_update(self, update):
+    def _wrap_update(self, update: Callable) -> Callable:
 
         @functools.wraps(update)
-        def wrapped_func(*args, **kwargs):
+        def wrapped_func(*args: Tensor, **kwargs: Any) -> Optional[Any]:
             self._computed = None
             self._update_called = True
             return update(*args, **kwargs)
@@ -305,10 +305,10 @@ class Metric(nn.Module, ABC):
             for attr, val in cache.items():
                 setattr(self, attr, val)
 
-    def _wrap_compute(self, compute):
+    def _wrap_compute(self, compute: Callable) -> Callable:
 
         @functools.wraps(compute)
-        def wrapped_func(*args, **kwargs):
+        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
             if not self._update_called:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
@@ -363,11 +363,11 @@ class Metric(nn.Module, ABC):
         """ Make a copy of the metric """
         return deepcopy(self)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         # ignore update and compute functions for pickling
         return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute", "_update_signature"]}
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Dict[str, Any]) -> None:
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
