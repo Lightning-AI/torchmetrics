@@ -232,9 +232,9 @@ class MetricCollection(nn.ModuleDict):
         raise ValueError(f'Expected input `{name}` to be a string, but got {type(arg)}')
 
     def __repr__(self) -> Optional[str]:
-        repr = super().__repr__()[:-2]
+        repr_str = super().__repr__()[:-2]
         if self.prefix:
-            repr += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
+            repr_str += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
         if self.postfix:
-            repr += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
-        return repr + "\n)"
+            repr_str += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
+        return repr_str + "\n)"

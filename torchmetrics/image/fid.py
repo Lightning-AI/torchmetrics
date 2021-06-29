@@ -64,12 +64,12 @@ class MatrixSquareRoot(Function):
     """
 
     @staticmethod
-    def forward(ctx: Any, input: Tensor) -> Tensor:
+    def forward(ctx: Any, input_data: Tensor) -> Tensor:
         # TODO: update whenever pytorch gets an matrix square root function
         # Issue: https://github.com/pytorch/pytorch/issues/9983
-        m = input.detach().cpu().numpy().astype(np.float_)
+        m = input_data.detach().cpu().numpy().astype(np.float_)
         scipy_res, _ = scipy.linalg.sqrtm(m, disp=False)
-        sqrtm = torch.from_numpy(scipy_res.real).to(input)
+        sqrtm = torch.from_numpy(scipy_res.real).to(input_data)
         ctx.save_for_backward(sqrtm)
         return sqrtm
 
