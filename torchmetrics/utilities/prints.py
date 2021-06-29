@@ -14,6 +14,7 @@
 import os
 import warnings
 from functools import wraps
+from typing import Any
 
 from torchmetrics import _logger as log
 
@@ -21,7 +22,7 @@ from torchmetrics import _logger as log
 def rank_zero_only(fn):
 
     @wraps(fn)
-    def wrapped_fn(*args, **kwargs):
+    def wrapped_fn(*args: Any, **kwargs: Any) -> Any:
         if rank_zero_only.rank == 0:
             return fn(*args, **kwargs)
 
@@ -32,7 +33,7 @@ def rank_zero_only(fn):
 rank_zero_only.rank = getattr(rank_zero_only, 'rank', int(os.environ.get('LOCAL_RANK', 0)))
 
 
-def _warn(*args, **kwargs):
+def _warn(*args: Any, **kwargs: Any) -> None:
     warnings.warn(*args, **kwargs)
 
 
