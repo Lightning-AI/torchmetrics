@@ -35,7 +35,7 @@ def _average_precision_compute(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    pos_label: int,
+    pos_label: Optional[int],
     sample_weights: Optional[Sequence] = None,
 ) -> Union[List[Tensor], Tensor]:
     # todo: `sample_weights` is unused
@@ -102,5 +102,6 @@ def average_precision(
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
 
     """
+    # fixme: `sample_weights` is unused
     preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes, pos_label)
     return _average_precision_compute(preds, target, num_classes, pos_label, sample_weights)
