@@ -152,9 +152,7 @@ class Metric(nn.Module, ABC):
         if not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
 
-        lut_reduce: Dict[str, Callable] = dict(
-            sum=dim_zero_sum, mean=dim_zero_mean, cat=dim_zero_cat
-        )
+        lut_reduce: Dict[str, Callable] = dict(sum=dim_zero_sum, mean=dim_zero_mean, cat=dim_zero_cat)
         if isinstance(dist_reduce_fx, str) and dist_reduce_fx in lut_reduce:
             dist_reduce_fx = lut_reduce[dist_reduce_fx]
         elif dist_reduce_fx is not None and not callable(dist_reduce_fx):
