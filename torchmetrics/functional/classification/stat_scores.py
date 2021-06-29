@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Union
 
 import torch
 from torch import Tensor, tensor
@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-def _del_column(data: Tensor, idx: int):
+def _del_column(data: Tensor, idx: int) -> Tensor:
     """ Delete the column at index."""
     return torch.cat([data[:, :idx], data[:, (idx + 1):]], 1)
 
@@ -55,6 +55,7 @@ def _stat_scores(
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
     """
+    dim: Union[int, List[int]] = ...
     if reduce == "micro":
         dim = [0, 1] if preds.ndim == 2 else [1, 2]
     elif reduce == "macro":
@@ -124,14 +125,13 @@ def _stat_scores_update(
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
 
-    outputs = [
+    outputs = torch.cat([
         tp.unsqueeze(-1),
         fp.unsqueeze(-1),
         tn.unsqueeze(-1),
         fn.unsqueeze(-1),
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
-    ]
-    outputs = torch.cat(outputs, -1)
+    ], -1)
     outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
     return outputs

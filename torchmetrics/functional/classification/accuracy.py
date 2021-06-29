@@ -42,7 +42,7 @@ def _mode(
 def _accuracy_update(
     preds: Tensor,
     target: Tensor,
-    reduce: str,
+    reduce: Optional[str],
     mdmc_reduce: str,
     threshold: float,
     num_classes: Optional[int],

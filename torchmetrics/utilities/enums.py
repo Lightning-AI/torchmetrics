@@ -35,7 +35,7 @@ class EnumStr(str, Enum):
                 return getattr(cls, st)
         return None
 
-    def __eq__(self, other: Union[str, 'EnumStr']) -> bool:  # type: ignore
+    def __eq__(self, other: Union[str, 'EnumStr', None]) -> bool:  # type: ignore
         other = other.value if isinstance(other, Enum) else str(other)
         return self.value.lower() == other.lower()
 
