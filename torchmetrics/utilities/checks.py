@@ -51,7 +51,7 @@ def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, mul
         raise ValueError("If you set `multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
 
 
-def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[str, int]:
+def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> DataType:
     """
     This checks that the shape and type of inputs are consistent with
     each other and fall into one of the allowed input types (see the
@@ -209,7 +209,7 @@ def _check_classification_inputs(
     num_classes: Optional[int],
     multiclass: bool,
     top_k: Optional[int],
-) -> str:
+) -> DataType:
     """Performs error checking on inputs for classification.
 
     This ensures that preds and target take one of the shape/type combinations that are

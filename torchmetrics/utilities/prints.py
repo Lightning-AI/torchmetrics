@@ -14,12 +14,12 @@
 import os
 import warnings
 from functools import wraps
-from typing import Any
+from typing import Any, Callable
 
 from torchmetrics import _logger as log
 
 
-def rank_zero_only(fn):
+def rank_zero_only(fn: Callable) -> Callable:
 
     @wraps(fn)
     def wrapped_fn(*args: Any, **kwargs: Any) -> Any:
@@ -37,11 +37,11 @@ def _warn(*args: Any, **kwargs: Any) -> None:
     warnings.warn(*args, **kwargs)
 
 
-def _info(*args, **kwargs):
+def _info(*args: Any, **kwargs: Any) -> None:
     log.info(*args, **kwargs)
 
 
-def _debug(*args, **kwargs):
+def _debug(*args: Any, **kwargs: Any) -> None:
     log.debug(*args, **kwargs)
 
 
