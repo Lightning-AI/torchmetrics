@@ -57,7 +57,7 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
         elif normalize == 'all':
             cm = confmat / confmat.sum()
         nan_elements = cm[torch.isnan(cm)].nelement()
-        if nan_elements != 0:
+        if cm and nan_elements != 0:
             cm[torch.isnan(cm)] = 0
             rank_zero_warn(f'{nan_elements} nan values found in confusion matrix have been replaced with zeros.')
         return cm

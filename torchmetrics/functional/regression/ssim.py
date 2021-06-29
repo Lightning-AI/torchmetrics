@@ -21,7 +21,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _gaussian(kernel_size: int, sigma: int, dtype: torch.dtype, device: torch.device):
+def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device):
     dist = torch.arange(start=(1 - kernel_size) / 2, end=(1 + kernel_size) / 2, step=1, dtype=dtype, device=device)
     gauss = torch.exp(-torch.pow(dist / sigma, 2) / 2)
     return (gauss / gauss.sum()).unsqueeze(dim=0)  # (1, kernel_size)

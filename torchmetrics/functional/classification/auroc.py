@@ -99,7 +99,7 @@ def _auroc_compute(
 
             # calculate average
             if average == AverageMethod.NONE:
-                return auc_scores
+                return tensor(auc_scores)
             if average == AverageMethod.MACRO:
                 return torch.mean(torch.stack(auc_scores))
             if average == AverageMethod.WEIGHTED:
@@ -117,7 +117,8 @@ def _auroc_compute(
 
         return _auc_compute_without_check(fpr, tpr, 1.0)
 
-    max_fpr = tensor(max_fpr, device=fpr.device)
+    _device = fpr.device if isinstance(fpr, Tensor) else fpr[0].device
+    max_fpr = tensor(max_fpr, device=_device)
     # Add a single point at max_fpr and interpolate its tpr value
     stop = torch.bucketize(max_fpr, fpr, out_int32=True, right=True)
     weight = (max_fpr - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
