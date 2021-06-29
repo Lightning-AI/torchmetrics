@@ -28,6 +28,12 @@ def _iou_from_confmat(
     absent_score: float = 0.0,
     reduction: str = 'elementwise_mean',
 ):
+
+    # Remove the ignored class index from the scores.
+    if ignore_index is not None and 0 <= ignore_index < num_classes:
+        confmat = confmat[torch.arange(confmat.size(0)) != ignore_index].T[[
+            ignore_index != torch.arange(confmat.size(0))]].T
+
     intersection = torch.diag(confmat)
     union = confmat.sum(0) + confmat.sum(1) - intersection
 
@@ -35,12 +41,6 @@ def _iou_from_confmat(
     scores = intersection.float() / union.float()
     scores[union == 0] = absent_score
 
-    # Remove the ignored class index from the scores.
-    if ignore_index is not None and 0 <= ignore_index < num_classes:
-        scores = torch.cat([
-            scores[:ignore_index],
-            scores[ignore_index + 1:],
-        ])
     return reduce(scores, reduction=reduction)
 
 
