@@ -336,7 +336,7 @@ class Metric(nn.Module, ABC):
         """
 
     @abstractmethod
-    def compute(self) -> Any:  # pylint: disable=E0202
+    def compute(self):  # pylint: disable=E0202
         """
         Override this method to compute the final metric value from state variables
         synchronized across the distributed backend.
