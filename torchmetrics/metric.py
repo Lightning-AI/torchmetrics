@@ -410,22 +410,25 @@ class Metric(nn.Module, ABC):
         for key in self._persistent:
             self._persistent[key] = mode
 
-    def state_dict(self, destination: dict = None, prefix="", keep_vars=False) -> Dict[str, Any]:
-        destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
+    def state_dict(
+        self, destination: Dict[str, Any] = None, prefix: str = "", keep_vars: bool = False
+    ) -> Dict[str, Any]:
+        destination: Dict[str, Any] = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
         with self.sync_context(dist_sync_fn=self.dist_sync_fn):
             for key in self._defaults:
-                if self._persistent[key]:
-                    current_val = getattr(self, key)
-                    if not keep_vars:
-                        if isinstance(current_val, torch.Tensor):
-                            current_val = current_val.detach()
-                        elif isinstance(current_val, list):
-                            current_val = [
-                                cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val
-                            ]
-                    # the tensors will be synced across processes so deepcopy to drop the references
-                    destination[prefix + key] = deepcopy(current_val)
+                if not self._persistent[key]:
+                    continue
+                current_val = getattr(self, key)
+                if not keep_vars:
+                    if isinstance(current_val, torch.Tensor):
+                        current_val = current_val.detach()
+                    elif isinstance(current_val, list):
+                        current_val = [
+                            cur_v.detach() if isinstance(cur_v, torch.Tensor) else cur_v for cur_v in current_val
+                        ]
+                # the tensors will be synced across processes so deepcopy to drop the references
+                destination[prefix + key] = deepcopy(current_val)
             return destination
 
     def _should_load_from_state_dict(self) -> bool:
