@@ -102,7 +102,7 @@ class Metric(nn.Module, ABC):
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor]]] = {}
+        self._reductions: Dict[str, Union[str, Callable]] = {}
 
     def add_state(
         self,
@@ -152,7 +152,7 @@ class Metric(nn.Module, ABC):
         if not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
 
-        lut_reduce = {"sum": dim_zero_sum, "mean": dim_zero_mean, "cat": dim_zero_cat}
+        lut_reduce: Dict[str, Callable] = {"sum": dim_zero_sum, "mean": dim_zero_mean, "cat": dim_zero_cat}
         if dist_reduce_fx in lut_reduce:
             dist_reduce_fx = lut_reduce[dist_reduce_fx]
         elif dist_reduce_fx is not None and not callable(dist_reduce_fx):
