@@ -139,7 +139,7 @@ class AUROC(Metric):
                     '`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6'
                 )
 
-        self.mode: DataType = ...
+        self.mode: DataType = None  # type: ignore
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 

@@ -213,7 +213,7 @@ class Accuracy(StatScores):
         self.threshold = threshold
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
-        self.mode: DataType = ...
+        self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
