@@ -146,6 +146,8 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         metric(i)
         state_dict = metric.state_dict()
 
+        state_dict_not_synced = metric.state_dict(should_sync=False)
+
         exp_sum = i * (i + 1) / 2
         assert state_dict["x"] == exp_sum * worldsize
         assert metric.x == exp_sum
@@ -158,10 +160,9 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         assert metric.x == expected_x
         assert metric.c == expected_c
 
-    with mock.patch.dict(os.environ, {"GLOBAL_RANK": str(rank)}):
-        reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
+    reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
 
-    reload_state_dict(deepcopy(state_dict), 20, 10)
+    reload_state_dict(deepcopy(state_dict_not_synced), 10, 5)
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")

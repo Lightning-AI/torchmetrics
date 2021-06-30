@@ -66,6 +66,8 @@ class Metric(nn.Module, ABC):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
+        should_sync_state_dict: Whether states should be synchronized while creating a checkpoint.
+            This would be part of the checkpoint and re-used when reloading the metric state_dict.
     """
 
     __jit_ignored_attributes__ = ["is_differentiable"]
@@ -76,6 +78,7 @@ class Metric(nn.Module, ABC):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        should_sync_state_dict: bool = True,
     ) -> None:
         super().__init__()
 
@@ -91,6 +94,8 @@ class Metric(nn.Module, ABC):
         self.dist_sync_fn = dist_sync_fn
         self._to_sync = True
         self._restore_cache = True
+        self.should_sync_state_dict = should_sync_state_dict
+
 
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
@@ -415,10 +420,15 @@ class Metric(nn.Module, ABC):
         destination: Dict[str, Any] = None,
         prefix: str = "",
         keep_vars: bool = False,
+        should_sync: Optional[bool] = None
     ) -> Optional[Dict[str, Any]]:
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
-        with self.sync_context(dist_sync_fn=self.dist_sync_fn):
+        
+        # whether the metric should be synced.
+        should_sync = should_sync if should_sync is not None else self.should_sync_state_dict
+        
+        with self.sync_context(dist_sync_fn=self.dist_sync_fn, should_sync=should_sync):
             for key in self._defaults:
                 if not self._persistent[key]:
                     continue
@@ -430,10 +440,14 @@ class Metric(nn.Module, ABC):
                         current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
                 # the tensors will be synced across processes so deepcopy to drop the references
                 destination[prefix + key] = deepcopy(current_val)  # type: ignore
+            destination[prefix + "should_sync"] =  should_sync # type: ignore
         return destination
 
-    def _should_load_from_state_dict(self) -> bool:
-        return os.getenv("GLOBAL_RANK", "0") == "0"
+    @property
+    def is_global_zero(self) -> bool:
+        if jit_distributed_available():
+            return torch.distributed.get_rank() == 0
+        return True
 
     def _load_from_state_dict(
         self,
@@ -447,13 +461,19 @@ class Metric(nn.Module, ABC):
     ) -> None:
         """ Loads metric states from state_dict """
 
+        # assumption for legacy support
+        # most users were saving their checkpoint on rank 0 without states synchornization 
+        # and reloading the state dict on all ranks.
+        # Therefore, if ``should_sync`` doesn't exist in the state_dict, only rank 0 should reload the metric states.
+        should_load_state = self.is_global_zero if state_dict.pop(prefix + "should_sync", True) else True
+
         # only global rank 0 should be reloading the values present in the ``state_dict``
         # as the state contains synced values across all progress_group
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
                 value = state_dict.pop(name)
-                if self._should_load_from_state_dict():
+                if should_load_state:
                     setattr(self, key, value)
         super()._load_from_state_dict(
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
