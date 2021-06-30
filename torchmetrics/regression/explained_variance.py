@@ -97,7 +97,7 @@ class ExplainedVariance(Metric):
             raise ValueError(
                 f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
             )
-        self.multioutput = multioutput
+        self.multioutput: str = multioutput
         self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
@@ -113,11 +113,11 @@ class ExplainedVariance(Metric):
             target: Ground truth values
         """
         n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
-        self.n_obs = self.n_obs + n_obs
-        self.sum_error = self.sum_error + sum_error
-        self.sum_squared_error = self.sum_squared_error + sum_squared_error
-        self.sum_target = self.sum_target + sum_target
-        self.sum_squared_target = self.sum_squared_target + sum_squared_target
+        self.n_obs: Tensor = self.n_obs + n_obs
+        self.sum_error: Tensor = self.sum_error + sum_error
+        self.sum_squared_error: Tensor = self.sum_squared_error + sum_squared_error
+        self.sum_target: Tensor = self.sum_target + sum_target
+        self.sum_squared_target: Tensor = self.sum_squared_target + sum_squared_target
 
     def compute(self) -> Union[Tensor, Sequence[Tensor]]:
         """
