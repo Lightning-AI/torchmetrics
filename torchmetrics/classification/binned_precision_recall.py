@@ -154,27 +154,27 @@ class BinnedPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, targets: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Args
             preds: (n_samples, n_classes) tensor
-            targets: (n_samples, n_classes) tensor
+            target: (n_samples, n_classes) tensor
         """
         # binary case
-        if len(preds.shape) == len(targets.shape) == 1:
+        if len(preds.shape) == len(target.shape) == 1:
             preds = preds.reshape(-1, 1)
-            targets = targets.reshape(-1, 1)
+            target = target.reshape(-1, 1)
 
-        if len(preds.shape) == len(targets.shape) + 1:
-            targets = to_onehot(targets, num_classes=self.num_classes)
+        if len(preds.shape) == len(target.shape) + 1:
+            target = to_onehot(target, num_classes=self.num_classes)
 
-        targets = targets == 1
+        target = target == 1
         # Iterate one threshold at a time to conserve memory
         for i in range(self.num_thresholds):
             predictions = preds >= self.thresholds[i]
-            self.TPs[:, i] += (targets & predictions).sum(dim=0)
-            self.FPs[:, i] += ((~targets) & (predictions)).sum(dim=0)
-            self.FNs[:, i] += ((targets) & (~predictions)).sum(dim=0)
+            self.TPs[:, i] += (target & predictions).sum(dim=0)
+            self.FPs[:, i] += ((~target) & (predictions)).sum(dim=0)
+            self.FNs[:, i] += ((target) & (~predictions)).sum(dim=0)
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Returns float tensor of size n_classes"""
