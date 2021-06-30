@@ -174,6 +174,8 @@ class StatScores(Metric):
         if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
+        default: Callable = lambda: []
+        reduce_fn: Optional[str] = None
         if mdmc_reduce != "samplewise" and reduce != "samples":
             if reduce == "micro":
                 zeros_shape = []
@@ -183,9 +185,6 @@ class StatScores(Metric):
                 raise ValueError(f'Wrong reduce="{reduce}"')
             default = lambda: torch.zeros(zeros_shape, dtype=torch.long)
             reduce_fn = "sum"
-        else:
-            default = lambda: []
-            reduce_fn = None
 
         for s in ("tp", "fp", "tn", "fn"):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)

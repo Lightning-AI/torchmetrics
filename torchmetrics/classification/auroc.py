@@ -20,6 +20,7 @@ from torchmetrics.functional.classification.auroc import _auroc_compute, _auroc_
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
@@ -138,7 +139,7 @@ class AUROC(Metric):
                     '`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6'
                 )
 
-        self.mode = None
+        self.mode: DataType = ...
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
@@ -160,7 +161,7 @@ class AUROC(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-        if self.mode is not None and self.mode != mode:
+        if self.mode and self.mode != mode:
             raise ValueError(
                 'The mode of data (binary, multi-label, multi-class) should be constant, but changed'
                 f' between batches from {self.mode} to {mode}'
@@ -171,10 +172,12 @@ class AUROC(Metric):
         """
         Computes AUROC based on inputs passed in to ``update`` previously.
         """
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
+        if not self.mode:
+            raise RuntimeError("You have to have determined mode.")
         if not self.num_classes:
             raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         return _auroc_compute(
             preds,
             target,
