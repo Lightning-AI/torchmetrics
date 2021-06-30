@@ -27,9 +27,8 @@ from torch.nn import Module
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 from torchmetrics.utilities.exceptions import MisconfigurationException
-
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
@@ -440,7 +439,7 @@ class Metric(nn.Module, ABC):
                 
                 if should_sync and not self.is_global_zero:
                     current_val = self._defaults[key]
-                else:    
+                else:
                     current_val = getattr(self, key)
                 
                 if not keep_vars:
@@ -496,7 +495,8 @@ class Metric(nn.Module, ABC):
             if previous_world_size != self.world_size:
                 raise MisconfigurationException(
                     f"The ``state_dict`` hasn't been synchornized and the previously {previous_world_size} "
-                    f"used ``world_size`` isn't the same as the current one: {self.world_size}.")
+                    f"used ``world_size`` isn't the same as the current one: {self.world_size}."
+                )
 
         if has_synced:
             should_load_states = True

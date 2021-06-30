@@ -166,8 +166,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
             assert state_dict["c"] == metric.c * worldsize
         else:
             assert state_dict["x"] == 0
-            assert state_dict["c"] == 0 
-
+            assert state_dict["c"] == 0
 
     assert state_dict["has_synced"]
     assert state_dict_2_should_sync["has_synced"]
@@ -202,7 +201,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     # shows that multiple checkpoints can be reloaded properly.
     state_dict_not_synced = torch.load(path_1)
     reload_state_dict(deepcopy(state_dict_not_synced), 10, 5)
-
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
