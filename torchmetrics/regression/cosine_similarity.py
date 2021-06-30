@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, overload
 
 import torch
 from torch import Tensor
@@ -80,7 +80,8 @@ class CosineSimilarity(Metric):
         self.add_state("target", [], dist_reduce_fx="cat")
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    @overload
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update metric states with predictions and targets.
 

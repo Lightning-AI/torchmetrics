@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, overload
 from warnings import warn
 
 import torch
@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import METRIC_EPS, to_onehot
 
 
 def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor,
-                         min_precision: float) -> Tuple[Tensor, Tensor]:
+                         min_precision: float,) -> Tuple[Tensor, Tensor]:
     try:
         max_recall, _, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
                                             if p >= min_precision)
@@ -155,7 +155,8 @@ class BinnedPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    @overload
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Args
             preds: (n_samples, n_classes) tensor

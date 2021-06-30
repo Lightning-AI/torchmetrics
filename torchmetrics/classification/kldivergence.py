@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, overload
 
 import torch
 from torch import Tensor
@@ -91,7 +91,8 @@ class KLDivergence(Metric):
             self.add_state('measures', [], dist_reduce_fx='cat')
         self.add_state('total', torch.zeros(1), dist_reduce_fx='sum')
 
-    def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
+    @overload
+    def update(self, p: Tensor, q: Tensor) -> None:
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == 'none':
             self.measures.append(measures)

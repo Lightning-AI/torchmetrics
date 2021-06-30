@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Union, overload
 
 from torch import Tensor, tensor
 
@@ -115,7 +115,8 @@ class Hinge(Metric):
         self.squared = squared
         self.multiclass_mode = multiclass_mode
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    @overload
+    def update(self, preds: Tensor, target: Tensor) -> None:
         measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
         self.measure = measure + self.measure

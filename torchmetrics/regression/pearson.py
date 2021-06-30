@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, overload
 
 import torch
 from torch import Tensor
@@ -77,7 +77,8 @@ class PearsonCorrcoef(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    @overload
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets.
 

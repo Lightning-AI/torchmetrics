@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union, overload
 
 import torch
 from torch import Tensor
@@ -133,7 +133,8 @@ class ROC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    @overload
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """
         Update state with predictions and targets.
 

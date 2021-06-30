@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, overload
 
 import torch
 from torch import Tensor, tensor
@@ -90,7 +90,8 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
+    @overload
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
         """ Check shape, check and convert dtypes, flatten and add to accumulators. """
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")

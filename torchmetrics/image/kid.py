@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, Union, overload
 
 import torch
 from torch import Tensor
@@ -238,7 +238,8 @@ class KID(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    @overload
+    def update(self, imgs: Tensor, real: bool) -> None:
         """ Update the state with extracted features
 
         Args:
