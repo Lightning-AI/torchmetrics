@@ -90,7 +90,7 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
         """ Check shape, check and convert dtypes, flatten and add to accumulators. """
         if indexes is None:
             raise ValueError("`indexes` cannot be None")
@@ -127,7 +127,7 @@ class RetrievalMetric(Metric, ABC):
                 elif self.empty_target_action == 'neg':
                     res.append(tensor(0.0))
             else:
-                # ensure list containt only float tensors
+                # ensure list contains only float tensors
                 res.append(self._metric(mini_preds, mini_target))
 
         return torch.stack([x.to(preds) for x in res]).mean() if res else tensor(0.0).to(preds)
