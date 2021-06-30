@@ -24,7 +24,7 @@ def _binary_clf_curve(
     preds: Tensor,
     target: Tensor,
     sample_weights: Optional[Sequence] = None,
-    pos_label: int = 1.,
+    pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """
     adapted from https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
@@ -68,10 +68,7 @@ def _precision_recall_curve_update(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, int, int]:
-    if not (len(preds.shape) == len(target.shape) or len(preds.shape) == len(target.shape) + 1):
-        raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
-
+) -> Tuple[Tensor, Tensor, int, Optional[int]]:
     if len(preds.shape) == len(target.shape):
         if pos_label is None:
             rank_zero_warn('`pos_label` automatically set 1.')
@@ -93,7 +90,7 @@ def _precision_recall_curve_update(
             num_classes = 1
 
     # multi class problem
-    if len(preds.shape) == len(target.shape) + 1:
+    elif len(preds.shape) == len(target.shape) + 1:
         if pos_label is not None:
             rank_zero_warn(
                 'Argument `pos_label` should be `None` when running'
@@ -108,59 +105,76 @@ def _precision_recall_curve_update(
         preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
         target = target.flatten()
 
+    else:
+        raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
+
     return preds, target, num_classes, pos_label
+
+
+def _precision_recall_curve_compute_single_class(
+    preds: Tensor,
+    target: Tensor,
+    pos_label: int,
+    sample_weights: Optional[Sequence] = None,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    fps, tps, thresholds = _binary_clf_curve(
+        preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
+    )
+    precision = tps / (tps + fps)
+    recall = tps / tps[-1]
+
+    # stop when full recall attained and reverse the outputs so recall is decreasing
+    last_ind = torch.where(tps == tps[-1])[0][0]
+    sl = slice(0, last_ind.item() + 1)
+
+    # need to call reversed explicitly, since including that to slice would
+    # introduce negative strides that are not yet supported in pytorch
+    precision = torch.cat([reversed(precision[sl]), torch.ones(1, dtype=precision.dtype, device=precision.device)])
+
+    recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
+
+    thresholds = tensor(reversed(thresholds[sl]))
+
+    return precision, recall, thresholds
+
+
+def _precision_recall_curve_compute_multi_class(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    sample_weights: Optional[Sequence] = None,
+) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
+    # Recursively call per class
+    precision, recall, thresholds = [], [], []
+    for cls in range(num_classes):
+        preds_cls = preds[:, cls]
+        res = precision_recall_curve(
+            preds=preds_cls,
+            target=target,
+            num_classes=1,
+            pos_label=cls,
+            sample_weights=sample_weights,
+        )
+        precision.append(res[0])
+        recall.append(res[1])
+        thresholds.append(res[2])
+
+    return precision, recall, thresholds
 
 
 def _precision_recall_curve_compute(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    pos_label: int,
+    pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     with torch.no_grad():
         if num_classes == 1:
-            fps, tps, thresholds = _binary_clf_curve(
-                preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
-            )
-
-            precision = tps / (tps + fps)
-            recall = tps / tps[-1]
-
-            # stop when full recall attained
-            # and reverse the outputs so recall is decreasing
-            last_ind = torch.where(tps == tps[-1])[0][0]
-            sl = slice(0, last_ind.item() + 1)
-
-            # need to call reversed explicitly, since including that to slice would
-            # introduce negative strides that are not yet supported in pytorch
-            precision = torch.cat([
-                reversed(precision[sl]),
-                torch.ones(1, dtype=precision.dtype, device=precision.device)
-            ])
-
-            recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
-
-            thresholds = reversed(thresholds[sl]).clone()
-
-            return precision, recall, thresholds
-
-        # Recursively call per class
-        precision, recall, thresholds = [], [], []
-        for c in range(num_classes):
-            preds_c = preds[:, c]
-            res = precision_recall_curve(
-                preds=preds_c,
-                target=target,
-                num_classes=1,
-                pos_label=c,
-                sample_weights=sample_weights,
-            )
-            precision.append(res[0])
-            recall.append(res[1])
-            thresholds.append(res[2])
-
-        return precision, recall, thresholds
+            if pos_label is None:
+                pos_label = 1
+            return _precision_recall_curve_compute_single_class(preds, target, pos_label, sample_weights)
+        return _precision_recall_curve_compute_multi_class(preds, target, num_classes, sample_weights)
 
 
 def precision_recall_curve(

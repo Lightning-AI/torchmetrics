@@ -17,7 +17,7 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def _dcg(target):
+def _dcg(target: Tensor) -> Tensor:
     denom = torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0)
     return (target / denom).sum()
 

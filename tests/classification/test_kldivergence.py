@@ -83,7 +83,7 @@ class TestKLDivergence(MetricTester):
             metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
 
-    def test_kldivergence_differentiabilit(self, reduction, p, q, log_prob):
+    def test_kldivergence_differentiability(self, reduction, p, q, log_prob):
         self.run_differentiability_test(
             p,
             q,

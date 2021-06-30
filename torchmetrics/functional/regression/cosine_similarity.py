@@ -30,7 +30,7 @@ def _cosine_similarity_update(
     return preds, target
 
 
-def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
+def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = 'sum') -> Tensor:
     dot_product = (preds * target).sum(dim=-1)
     preds_norm = preds.norm(dim=-1)
     target_norm = target.norm(dim=-1)
@@ -39,7 +39,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction='sum') -
     return reduction_mapping[reduction](similarity)
 
 
-def cosine_similarity(preds: Tensor, target: Tensor, reduction='sum') -> Tensor:
+def cosine_similarity(preds: Tensor, target: Tensor, reduction: str = 'sum') -> Tensor:
     r"""
     Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
     between targets and predictions:
