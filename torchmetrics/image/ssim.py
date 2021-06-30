@@ -84,7 +84,7 @@ class SSIM(Metric):
         self.k2 = k2
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -96,7 +96,7 @@ class SSIM(Metric):
         self.y_pred.append(preds)
         self.y.append(target)
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes explained variance over state.
         """
