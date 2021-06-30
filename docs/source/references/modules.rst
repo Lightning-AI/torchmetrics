@@ -24,31 +24,33 @@ We recommend to use ``should_sync_state_dict`` when your metric is nested inside
 
 .. doctest::
 
+    >>> import torch
     >>> from torchmetrics import Metric
     >>> class AverageMeter(Metric):
-
-            def __init__(self):
-                super().__init__(should_sync_state_dict=False)
-                self.add_state("x", tensor(0.0), dist_reduce_fx=torch.sum)
-                self.add_state("total", tensor(0.0), dist_reduce_fx=torch.sum)
-
-            def update(self, x: torch.Tensor):
-                self.x += x
-                self.total += 1
-
-            def compute(self):
-                return self.x / self.total
-
+    ...     def __init__(self):
+    ...         super().__init__(should_sync_state_dict=False)
+    ...         self.add_state("x", torch.tensor(0.0), dist_reduce_fx=torch.sum, persistent=True)
+    ...         self.add_state("total", torch.tensor(0.0), dist_reduce_fx=torch.sum, persistent=True)
+    ...
+    ...     def update(self, x: torch.Tensor):
+    ...         self.x += x
+    ...         self.total += 1
+    ...
+    ...     def compute(self):
+    ...         return self.x / self.total
     >>> metric = AverageMeter()
     >>> metric.state_dict()
+    OrderedDict(...)
 
 We recommend to use ``state_dict(should_sync=False)`` you can easily access your :class:`~torchmetrics.Metric`.
 
 .. doctest::
 
-    >>> from torchmetrics import Metric
-    >>> metric = Metric()
+    >>> from torchmetrics import Accuracy
+    >>> metric = Accuracy()
+    >>> metric.persistent(True)
     >>> metric.state_dict(should_sync=False)
+    OrderedDict(...)
 
 
 We also have an ``AverageMeter`` class that is helpful for defining ad-hoc metrics, when creating
