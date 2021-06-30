@@ -23,9 +23,9 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_compute,
     _subset_accuracy_update,
 )
+from torchmetrics.utilities.enums import DataType
 
 from torchmetrics.classification.stat_scores import StatScores  # isort:skip
-from torchmetrics.utilities.enums import DataType
 
 
 class Accuracy(StatScores):
