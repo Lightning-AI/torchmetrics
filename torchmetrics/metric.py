@@ -335,7 +335,7 @@ class Metric(nn.Module, ABC):
         return wrapped_func
 
     @abstractmethod
-    def update(self, *args: Any, **__: Any) -> None:
+    def update(self, *_: Any) -> None:
         """
         Override this method to update the state variables of your metric class.
         """
