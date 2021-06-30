@@ -98,7 +98,7 @@ def dice_score(
 
     """
     num_classes = preds.shape[1]
-    bg_inv = (1 - int(bool(bg)))
+    bg_inv = (1 - int(bg))
     scores = torch.zeros(num_classes - bg_inv, device=preds.device, dtype=torch.float32)
     for i in range(bg_inv, num_classes):
         if not (target == i).any():

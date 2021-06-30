@@ -84,6 +84,8 @@ def _auroc_compute(
             ]
             fpr = [o[0] for o in output]
             tpr = [o[1] for o in output]
+        else:
+            raise ValueError('Detected input to be `multilabel` but you did not provide `num_classes` argument')
     else:
         if mode != 'binary' and num_classes is None:
             raise ValueError('Detected input to `multiclass` but you did not provide `num_classes` argument')
