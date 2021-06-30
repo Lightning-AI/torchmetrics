@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import METRIC_EPS, to_onehot
 
 
-def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor, min_precision: float):
+def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor, min_precision: float) -> Tuple[Tensor, Tensor]:
     try:
         max_recall, _, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
                                             if p >= min_precision)
@@ -246,7 +246,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         [tensor(1.0000), tensor(1.0000), tensor(0.2500), tensor(0.2500), tensor(-0.)]
     """
 
-    def compute(self) -> Union[List[Tensor], Tensor]:
+    def compute(self) -> Union[List[Tensor], Tensor]:  # type: ignore
         precisions, recalls, _ = super().compute()
         return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes)
 
@@ -325,7 +325,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         )
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
         """Returns float tensor of size n_classes"""
         precisions, recalls, thresholds = super().compute()
 
@@ -338,4 +338,4 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             recalls_at_p[i], thresholds_at_p[i] = _recall_at_precision(
                 precisions[i], recalls[i], thresholds[i], self.min_precision
             )
-        return (recalls_at_p, thresholds_at_p)
+        return recalls_at_p, thresholds_at_p

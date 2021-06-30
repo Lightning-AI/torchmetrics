@@ -125,6 +125,8 @@ class AveragePrecision(Metric):
         """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
+        if not self.num_classes:
+            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         return _average_precision_compute(preds, target, self.num_classes, self.pos_label)
 
     @property

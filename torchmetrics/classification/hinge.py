@@ -116,8 +116,8 @@ class Hinge(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
-        self.measure = measure + self.measure
-        self.total = total + self.total
+        self.measure: Tensor = measure + self.measure
+        self.total: Tensor = total + self.total
 
     def compute(self) -> Tensor:
         return _hinge_compute(self.measure, self.total)

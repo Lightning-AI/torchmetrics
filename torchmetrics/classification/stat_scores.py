@@ -181,9 +181,11 @@ class StatScores(Metric):
                 zeros_shape = [num_classes]
             else:
                 raise ValueError(f'Wrong reduce="{reduce}"')
-            default, reduce_fn = lambda: torch.zeros(zeros_shape, dtype=torch.long), "sum"
+            default = lambda: torch.zeros(zeros_shape, dtype=torch.long)
+            reduce_fn = "sum"
         else:
-            default, reduce_fn = lambda: [], None
+            default = lambda: []
+            reduce_fn = None
 
         for s in ("tp", "fp", "tn", "fn"):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
@@ -226,15 +228,10 @@ class StatScores(Metric):
         """Performs concatenation on the stat scores if neccesary,
         before passing them to a compute function.
         """
-
-        if isinstance(self.tp, list):
-            tp = torch.cat(self.tp)
-            fp = torch.cat(self.fp)
-            tn = torch.cat(self.tn)
-            fn = torch.cat(self.fn)
-        else:
-            tp, fp, tn, fn = self.tp, self.fp, self.tn, self.fn
-
+        tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
+        fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
+        tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
+        fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
         return tp, fp, tn, fn
 
     def compute(self) -> Tensor:

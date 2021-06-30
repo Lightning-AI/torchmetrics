@@ -25,6 +25,7 @@ from torchmetrics.functional.classification.accuracy import (
 )
 
 from torchmetrics.classification.stat_scores import StatScores  # isort:skip
+from torchmetrics.utilities.enums import DataType
 
 
 class Accuracy(StatScores):
@@ -212,7 +213,7 @@ class Accuracy(StatScores):
         self.threshold = threshold
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
-        self.mode = None
+        self.mode: DataType = ...
         self.multiclass = multiclass
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
@@ -227,7 +228,7 @@ class Accuracy(StatScores):
         """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
         mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
 
-        if self.mode is None:
+        if not self.mode:
             self.mode = mode
         elif self.mode != mode:
             raise RuntimeError(f"You can not use {mode} inputs with {self.mode} inputs.")
@@ -271,6 +272,8 @@ class Accuracy(StatScores):
         """
         Computes accuracy based on inputs passed in to ``update`` previously.
         """
+        if not self.mode:
+            raise RuntimeError("You have to have determined mode.")
         if self.subset_accuracy:
             return _subset_accuracy_compute(self.correct, self.total)
         tp, fp, tn, fn = self._get_final_stats()
