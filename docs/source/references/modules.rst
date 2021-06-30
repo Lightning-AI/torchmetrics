@@ -19,11 +19,16 @@ metrics.
     This behaviour can be blocked in the following ways.
     We strongly recommend calling :meth:`~torchmetrics.Metric.state_dict` on all processes or this can cause a deadlock.
 
+
+We recommend to use ``should_sync_state_dict`` when your metric is nested inside another :class:`~torch.nn.Module`.
+
 .. doctest::
 
     >>> from torchmetrics import Metric
     >>> metric = Metric(should_sync_state_dict=False)
     >>> metric.state_dict()
+
+We recommend to use ``state_dict(should_sync=False)`` you can easily access your :class:`~torchmetrics.Metric`.
 
 .. doctest::
 
