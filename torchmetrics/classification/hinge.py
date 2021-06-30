@@ -83,6 +83,8 @@ class Hinge(Metric):
         >>> hinge(preds, target)
         tensor([2.2333, 1.5000, 1.2333])
     """
+    measure: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -116,8 +118,8 @@ class Hinge(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
-        self.measure: Tensor = measure + self.measure
-        self.total: Tensor = total + self.total
+        self.measure = measure + self.measure
+        self.total = total + self.total
 
     def compute(self) -> Tensor:
         return _hinge_compute(self.measure, self.total)
