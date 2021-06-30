@@ -96,7 +96,6 @@ class Metric(nn.Module, ABC):
         self._restore_cache = True
         self.should_sync_state_dict = should_sync_state_dict
 
-
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
@@ -424,10 +423,10 @@ class Metric(nn.Module, ABC):
     ) -> Optional[Dict[str, Any]]:
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
-        
+
         # whether the metric should be synced.
         should_sync = should_sync if should_sync is not None else self.should_sync_state_dict
-        
+
         with self.sync_context(dist_sync_fn=self.dist_sync_fn, should_sync=should_sync):
             for key in self._defaults:
                 if not self._persistent[key]:
@@ -440,7 +439,7 @@ class Metric(nn.Module, ABC):
                         current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
                 # the tensors will be synced across processes so deepcopy to drop the references
                 destination[prefix + key] = deepcopy(current_val)  # type: ignore
-            destination[prefix + "should_sync"] =  should_sync # type: ignore
+            destination[prefix + "should_sync"] = should_sync  # type: ignore
         return destination
 
     @property
@@ -462,7 +461,7 @@ class Metric(nn.Module, ABC):
         """ Loads metric states from state_dict """
 
         # assumption for legacy support
-        # most users were saving their checkpoint on rank 0 without states synchornization 
+        # most users were saving their checkpoint on rank 0 without states synchornization
         # and reloading the state dict on all ranks.
         # Therefore, if ``should_sync`` doesn't exist in the state_dict, only rank 0 should reload the metric states.
         should_load_state = self.is_global_zero if state_dict.pop(prefix + "should_sync", True) else True
