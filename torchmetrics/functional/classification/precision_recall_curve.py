@@ -123,8 +123,7 @@ def _precision_recall_curve_compute_single_class(
     precision = tps / (tps + fps)
     recall = tps / tps[-1]
 
-    # stop when full recall attained
-    # and reverse the outputs so recall is decreasing
+    # stop when full recall attained and reverse the outputs so recall is decreasing
     last_ind = torch.where(tps == tps[-1])[0][0]
     sl = slice(0, last_ind.item() + 1)
 
@@ -147,13 +146,13 @@ def _precision_recall_curve_compute_multi_class(
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
     # Recursively call per class
     precision, recall, thresholds = [], [], []
-    for c in range(num_classes):
-        preds_c = preds[:, c]
+    for cls in range(num_classes):
+        preds_cls = preds[:, cls]
         res = precision_recall_curve(
-            preds=preds_c,
+            preds=preds_cls,
             target=target,
             num_classes=1,
-            pos_label=c,
+            pos_label=cls,
             sample_weights=sample_weights,
         )
         precision.append(res[0])

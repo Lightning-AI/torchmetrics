@@ -63,16 +63,16 @@ def _roc_compute_multi_class(
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
     fpr, tpr, thresholds = [], [], []
-    for c in range(num_classes):
+    for cls in range(num_classes):
         if preds.shape == target.shape:
-            target_c = target[:, c]
+            target_cls = target[:, cls]
             pos_label = 1
         else:
-            target_c = target
-            pos_label = c
+            target_cls = target
+            pos_label = cls
         res = roc(
-            preds=preds[:, c],
-            target=target_c,
+            preds=preds[:, cls],
+            target=target_cls,
             num_classes=1,
             pos_label=pos_label,
             sample_weights=sample_weights,
