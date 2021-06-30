@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Union, overload
+from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -334,9 +334,8 @@ class Metric(nn.Module, ABC):
 
         return wrapped_func
 
-    @overload
     @abstractmethod
-    def update(self, *_: Any, **__: Any) -> None:
+    def update(self, *_, **__) -> None:
         """
         Override this method to update the state variables of your metric class.
         """
