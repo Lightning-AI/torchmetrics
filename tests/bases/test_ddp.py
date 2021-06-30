@@ -143,7 +143,10 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     metric.persistent(True)
 
     metric_2 = DummyCatMetric(should_sync_state_dict=False)
-    metric.persistent(True)
+    metric_2.persistent(True)
+
+    metric_3 = DummyCatMetric(should_sync_state_dict=False)
+    assert "has_synced" not in metric_3.state_dict()
 
     steps = 5
     for i in range(steps):
