@@ -429,6 +429,7 @@ class Metric(nn.Module, ABC):
         is_persistent = False
 
         with self.sync_context(dist_sync_fn=self.dist_sync_fn, should_sync=should_sync):
+            device = None
             for key in self._defaults:
 
                 # used to track if any defaults is persistent
@@ -445,14 +446,18 @@ class Metric(nn.Module, ABC):
                 if not keep_vars:
                     if isinstance(current_val, Tensor):
                         current_val = current_val.detach()
+                        if device is None:
+                            device = current_val.device
                     elif isinstance(current_val, list):
                         current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
+                        for v in current_val:
+                            if device is None:
+                                device = v.device
 
                 # the tensors will be synced across processes so deepcopy to drop the references
                 destination[prefix + key] = deepcopy(current_val)  # type: ignore
 
             if is_persistent:
-                device = current_val.device
                 destination[prefix + "has_synced"] = torch.tensor(should_sync, device=device)  # type: ignore
                 destination[prefix + "rank"] = torch.tensor(self.current_rank, device=device)  # type: ignore
                 destination[prefix + "world_size"] = torch.tensor(self.world_size, device=device)  # type: ignore

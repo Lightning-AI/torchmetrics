@@ -222,7 +222,9 @@ def test_state_dict(tmpdir):
     metric = DummyMetric()
     assert metric.state_dict() == OrderedDict()
     metric.persistent(True)
-    assert metric.state_dict() == OrderedDict(x=0)
+    assert metric.state_dict() == OrderedDict(
+        x=0, has_synced=torch.tensor(True), rank=torch.tensor(0), world_size=torch.tensor(1)
+    )
     metric.persistent(False)
     assert metric.state_dict() == OrderedDict()
 
@@ -254,6 +256,9 @@ def test_child_metric_state_dict():
         'metric.a': tensor(0),
         'metric.b': [],
         'metric.c': tensor(0),
+        'metric.has_synced': tensor(True),
+        'metric.rank': tensor(0),
+        'metric.world_size': tensor(1),
     }
     assert module.state_dict() == expected_state_dict
 
