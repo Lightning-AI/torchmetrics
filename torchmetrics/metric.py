@@ -70,7 +70,7 @@ class Metric(nn.Module, ABC):
             This would be part of the checkpoint and re-used when reloading the metric state_dict.
     """
 
-    __jit_ignored_attributes__ = ["is_differentiable"]
+    __jit_ignored_attributes__ = ["is_differentiable", "world_size", "current_rank", "is_global_zero"]
 
     def __init__(
         self,
