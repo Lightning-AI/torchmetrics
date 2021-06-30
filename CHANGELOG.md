@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+
+## [UnReleased] - 2021-MM-DD
+
+### Added
+
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
 ## [0.4.0] - 2021-06-29
 
 ### Added
