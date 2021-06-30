@@ -463,7 +463,7 @@ class Metric(nn.Module, ABC):
         # most users were saving their checkpoint on rank 0 without states synchornization
         # and reloading the state dict on all ranks.
         # Therefore, if ``should_sync`` doesn't exist in the state_dict, only rank 0 should reload the metric states.
-        should_load_state = self.is_global_zero if state_dict.pop(prefix + "should_sync", True) else True
+        should_load_states = self.is_global_zero if state_dict.pop(prefix + "should_sync", True) else True
 
         # only global rank 0 should be reloading the values present in the ``state_dict``
         # as the state contains synced values across all progress_group
@@ -471,7 +471,7 @@ class Metric(nn.Module, ABC):
             name = prefix + key
             if name in state_dict:
                 value = state_dict.pop(name)
-                if should_load_state:
+                if should_load_states:
                     setattr(self, key, value)
         super()._load_from_state_dict(
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
