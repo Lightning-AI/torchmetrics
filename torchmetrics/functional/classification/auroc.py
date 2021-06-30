@@ -76,7 +76,7 @@ def _auroc_compute(
     if mode == 'multi-label':
         if average == AverageMethod.MICRO:
             fpr, tpr, _ = roc(preds.flatten(), target.flatten(), 1, pos_label, sample_weights)
-        else:
+        elif num_classes:
             # for multilabel we iteratively evaluate roc in a binary fashion
             output = [
                 roc(preds[:, i], target[:, i], num_classes=1, pos_label=1, sample_weights=sample_weights)
@@ -84,9 +84,11 @@ def _auroc_compute(
             ]
             fpr = [o[0] for o in output]
             tpr = [o[1] for o in output]
+        else:
+            raise ValueError('Detected input to be `multilabel` but you did not provide `num_classes` argument')
     else:
         if mode != 'binary' and num_classes is None:
-            raise ValueError('Detected input to ``multiclass`` but you did not provide ``num_classes`` argument')
+            raise ValueError('Detected input to `multiclass` but you did not provide `num_classes` argument')
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
@@ -99,7 +101,7 @@ def _auroc_compute(
 
             # calculate average
             if average == AverageMethod.NONE:
-                return auc_scores
+                return tensor(auc_scores)
             if average == AverageMethod.MACRO:
                 return torch.mean(torch.stack(auc_scores))
             if average == AverageMethod.WEIGHTED:
@@ -117,21 +119,20 @@ def _auroc_compute(
 
         return _auc_compute_without_check(fpr, tpr, 1.0)
 
-    max_fpr = tensor(max_fpr, device=fpr.device)
+    _device = fpr.device if isinstance(fpr, Tensor) else fpr[0].device
+    max_area: Tensor = tensor(max_fpr, device=_device)
     # Add a single point at max_fpr and interpolate its tpr value
-    stop = torch.bucketize(max_fpr, fpr, out_int32=True, right=True)
-    weight = (max_fpr - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
-    interp_tpr = torch.lerp(tpr[stop - 1], tpr[stop], weight)
+    stop = torch.bucketize(max_area, fpr, out_int32=True, right=True)
+    weight = (max_area - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
+    interp_tpr: Tensor = torch.lerp(tpr[stop - 1], tpr[stop], weight)
     tpr = torch.cat([tpr[:stop], interp_tpr.view(1)])
-    fpr = torch.cat([fpr[:stop], max_fpr.view(1)])
+    fpr = torch.cat([fpr[:stop], max_area.view(1)])
 
     # Compute partial AUC
     partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
-    # McClish correction: standardize result to be 0.5 if non-discriminant
-    # and 1 if maximal
-    min_area = 0.5 * max_fpr**2
-    max_area = max_fpr
+    # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
+    min_area: Tensor = 0.5 * max_area**2
     return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
 
 

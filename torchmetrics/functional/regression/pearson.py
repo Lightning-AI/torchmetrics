@@ -22,7 +22,6 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _pearson_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    *_,
 ) -> Tuple[Tensor, Tensor]:
     """ updates current estimates of the mean, cov and n_obs with new data for calculating pearsons correlation """
     # Data checking

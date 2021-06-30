@@ -14,7 +14,6 @@
 import os
 import sys
 from copy import deepcopy
-from unittest import mock
 
 import pytest
 import torch
@@ -23,7 +22,6 @@ from torch import tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
-from torchmetrics.utilities import distributed
 from torchmetrics.utilities.distributed import gather_all_tensors
 
 seed_all(42)

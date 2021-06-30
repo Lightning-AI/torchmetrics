@@ -139,9 +139,7 @@ class R2Score(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """
-        Computes r2 score over the metric states.
-        """
+        """Computes r2 score over the metric states."""
         return _r2score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
         )
