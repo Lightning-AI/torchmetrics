@@ -77,6 +77,11 @@ class ExplainedVariance(Metric):
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
     """
+    n_obs: Tensor
+    sum_error: Tensor
+    sum_squared_error: Tensor
+    sum_target: Tensor
+    sum_squared_target: Tensor
 
     def __init__(
         self,
@@ -113,11 +118,11 @@ class ExplainedVariance(Metric):
             target: Ground truth values
         """
         n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
-        self.n_obs: Tensor = self.n_obs + n_obs
-        self.sum_error: Tensor = self.sum_error + sum_error
-        self.sum_squared_error: Tensor = self.sum_squared_error + sum_squared_error
-        self.sum_target: Tensor = self.sum_target + sum_target
-        self.sum_squared_target: Tensor = self.sum_squared_target + sum_squared_target
+        self.n_obs = self.n_obs + n_obs
+        self.sum_error = self.sum_error + sum_error
+        self.sum_squared_error = self.sum_squared_error + sum_squared_error
+        self.sum_target = self.sum_target + sum_target
+        self.sum_squared_target = self.sum_squared_target + sum_squared_target
 
     def compute(self) -> Union[Tensor, Sequence[Tensor]]:
         """
