@@ -262,7 +262,7 @@ class Metric(nn.Module, ABC):
             cache: A dictionary containing the local metric states. The cache will be empty if sync didn't happen.
         """
         is_distributed = distributed_available() if callable(distributed_available) else None
-        if not should_sync or not is_distributed:
+        if not should_sync or not is_distributed or not self._update_called:
             return {}
         if dist_sync_fn is None:
             dist_sync_fn = gather_all_tensors
