@@ -14,7 +14,6 @@
 import functools
 import inspect
 import operator
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
@@ -424,7 +423,7 @@ class Metric(nn.Module, ABC):
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
 
-        # whether the metric should be synced.
+        # whether the metric should be synced.
         should_sync = should_sync if should_sync is not None else self.should_sync_state_dict
 
         with self.sync_context(dist_sync_fn=self.dist_sync_fn, should_sync=should_sync):
