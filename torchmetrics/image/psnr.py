@@ -68,6 +68,8 @@ class PSNR(Metric):
         Half precision is only support on GPU for this metric
 
     """
+    min_target: Tensor
+    max_target: Tensor
 
     def __init__(
         self,
@@ -122,8 +124,8 @@ class PSNR(Metric):
         if self.dim is None:
             if self.data_range is None:
                 # keep track of min and max target values
-                self.min_target: Tensor = min(target.min(), self.min_target)
-                self.max_target: Tensor = max(target.max(), self.max_target)
+                self.min_target = min(target.min(), self.min_target)
+                self.max_target = max(target.max(), self.max_target)
 
             self.sum_squared_error += sum_squared_error
             self.total += n_obs
