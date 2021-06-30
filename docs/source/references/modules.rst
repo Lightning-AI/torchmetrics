@@ -18,7 +18,7 @@ We strongly recommend calling :meth:`~torchmetrics.Metric.state_dict` on all pro
 This can also happen when the ``state_dict`` of your :class:`torch.nn.Module` is generated if metric attributes have been registered.
 
 
-We recommend to use ``dist_sync_state_dict`` when your metric is nested inside another :class:`~torch.nn.Module`.
+Set ``dist_sync_state_dict=False`` when your metric is nested inside another :class:`torch.nn.Module`.
 
 .. doctest::
 

@@ -35,6 +35,14 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
+def jit_world_size() -> int:
+    return torch.distributed.get_world_size()
+
+
+def jit_rank() -> int:
+    return torch.distributed.get_rank()
+
+
 class Metric(nn.Module, ABC):
     """
     Base class for all metrics present in the Metrics API.
@@ -69,6 +77,8 @@ class Metric(nn.Module, ABC):
         dist_sync_state_dict: Whether states should be synchronized while creating a checkpoint.
             This would be part of the checkpoint and re-used when reloading the metric state_dict.
     """
+
+    __jit_ignored_attributes__ = ["is_differentiable"]
 
     def __init__(
         self,
@@ -461,21 +471,18 @@ class Metric(nn.Module, ABC):
                 destination[prefix + "world_size"] = torch.tensor(self.world_size, device=device)  # type: ignore
         return destination
 
-    @torch.jit.unused
     @property
     def world_size(self) -> int:
         if jit_distributed_available():
-            return torch.distributed.get_world_size()
+            return jit_world_size()
         return 1
 
-    @torch.jit.unused
     @property
     def current_rank(self) -> int:
         if jit_distributed_available():
-            return torch.distributed.get_rank()
+            return jit_rank()
         return 0
 
-    @torch.jit.unused
     @property
     def is_global_zero(self) -> bool:
         return self.current_rank == 0
@@ -497,12 +504,11 @@ class Metric(nn.Module, ABC):
         previous_rank = state_dict.pop(prefix + "rank", 0)
         previous_world_size = state_dict.pop(prefix + "world_size", self.world_size)
 
-        if has_synced is False:
-            if previous_world_size != self.world_size:
-                raise MisconfigurationException(
-                    f"The ``state_dict`` hasn't been synchornized and the previously {previous_world_size} "
-                    f"used ``world_size`` isn't the same as the current one: {self.world_size}."
-                )
+        if has_synced is False and previous_world_size != self.world_size:
+            raise MisconfigurationException(
+                f"The ``state_dict`` hasn't been synchornized and the previously {previous_world_size} "
+                f"used ``world_size`` isn't the same as the current one: {self.world_size}."
+            )
 
         if has_synced:
             should_load_states = True
@@ -655,7 +661,6 @@ class Metric(nn.Module, ABC):
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
 
-    @torch.jit.unused
     @property
     def is_differentiable(self) -> Optional[bool]:
         # There is a bug in PyTorch that leads to properties being executed during scripting
