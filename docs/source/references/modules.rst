@@ -12,6 +12,21 @@ metrics.
 .. autoclass:: torchmetrics.Metric
     :noindex:
 
+.. note:: Metric states are being synchornized by default in a distributed setting. This behaviour can be blocked in the following ways.
+
+.. doctest::
+
+    >>> from torchmetrics import Metric
+    >>> metric = Metric(should_sync_state_dict=False)
+    >>> metric.state_dict()
+
+.. doctest::
+
+    >>> from torchmetrics import Metric
+    >>> metric = Metric()
+    >>> metric.state_dict(should_sync=False)
+
+
 We also have an ``AverageMeter`` class that is helpful for defining ad-hoc metrics, when creating
 your own metric type might be too burdensome.
 
