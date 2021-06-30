@@ -230,7 +230,7 @@ class Accuracy(StatScores):
         if self.mode is None:
             self.mode = mode
         elif self.mode != mode:
-            raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
+            raise RuntimeError(f"You can not use {mode} inputs with {self.mode} inputs.")
 
         if self.subset_accuracy and not _check_subset_validity(self.mode):
             self.subset_accuracy = False
@@ -240,6 +240,8 @@ class Accuracy(StatScores):
             self.correct += correct
             self.total += total
         else:
+            if not self.mode:
+                raise RuntimeError("You have to have determined mode.")
             tp, fp, tn, fn = _accuracy_update(
                 preds,
                 target,

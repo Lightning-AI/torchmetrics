@@ -173,6 +173,8 @@ class AUROC(Metric):
         """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
+        if not self.num_classes:
+            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         return _auroc_compute(
             preds,
             target,
@@ -186,7 +188,7 @@ class AUROC(Metric):
     @property
     def is_differentiable(self) -> bool:
         """
-        AUROC metrics is considered as non differentiable so it should have `false`
-        value for `is_differentiable` property
+        AUROC metrics is considered as non differentiable
+         so it should have `false` value for `is_differentiable` property
         """
         return False
