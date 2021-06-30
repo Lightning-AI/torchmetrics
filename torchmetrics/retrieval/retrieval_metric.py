@@ -90,7 +90,7 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
         """ Check shape, check and convert dtypes, flatten and add to accumulators. """
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
