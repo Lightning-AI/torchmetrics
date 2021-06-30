@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, overload
 
 import torch
 from torch import Tensor, tensor
@@ -82,7 +82,7 @@ class RetrievalMetric(Metric, ABC):
 
         empty_target_action_options = ('error', 'skip', 'neg', 'pos')
         if empty_target_action not in empty_target_action_options:
-            raise ValueError(f"`empty_target_action` received a wrong value `{empty_target_action}`.")
+            raise ValueError(f"Argument `empty_target_action` received a wrong value `{empty_target_action}`.")
 
         self.empty_target_action = empty_target_action
 
@@ -90,10 +90,11 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
+    @overload
     def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
         """ Check shape, check and convert dtypes, flatten and add to accumulators. """
         if indexes is None:
-            raise ValueError("`indexes` cannot be None")
+            raise ValueError("Argument `indexes` cannot be None")
 
         indexes, preds, target = _check_retrieval_inputs(indexes, preds, target)
 
@@ -103,10 +104,10 @@ class RetrievalMetric(Metric, ABC):
 
     def compute(self) -> Tensor:
         """
-        First concat state `indexes`, `preds` and `target` since they were stored as lists. After that,
-        compute list of groups that will help in keeping together predictions about the same query.
-        Finally, for each group compute the `_metric` if the number of positive targets is at least
-        1, otherwise behave as specified by `self.empty_target_action`.
+        First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
+        After that, compute list of groups that will help in keeping together predictions about the same query.
+        Finally, for each group compute the ``_metric`` if the number of positive targets is at least
+        1, otherwise behave as specified by ``self.empty_target_action``.
         """
         indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)
