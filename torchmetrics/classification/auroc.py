@@ -174,8 +174,6 @@ class AUROC(Metric):
         """
         if not self.mode:
             raise RuntimeError("You have to have determined mode.")
-        if not self.num_classes:
-            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _auroc_compute(
