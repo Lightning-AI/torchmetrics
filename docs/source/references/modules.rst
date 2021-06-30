@@ -12,12 +12,10 @@ metrics.
 .. autoclass:: torchmetrics.Metric
     :noindex:
 
-.. note::
-
-    Metric states are being synchornized by default when ``persistent=True`` in a distributed setting
-    when using :meth:`~torchmetrics.Metric.state_dict`
-    This behaviour can be blocked in the following ways.
-    We strongly recommend calling :meth:`~torchmetrics.Metric.state_dict` on all processes or this can cause a deadlock.
+Metric states are synchornized when ``persistent=True`` in a distributed setting
+when calling :meth:`~torchmetrics.Metric.state_dict`
+We strongly recommend calling :meth:`~torchmetrics.Metric.state_dict` on all processes, otherwise this can cause a deadlock.
+This can also happen when the ``state_dict`` of your :class:`torch.nn.Module` is generated if metric attributes have been registered.
 
 
 We recommend to use ``dist_sync_state_dict`` when your metric is nested inside another :class:`~torch.nn.Module`.
