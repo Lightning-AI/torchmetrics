@@ -77,6 +77,11 @@ class ExplainedVariance(Metric):
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
     """
+    n_obs: Tensor
+    sum_error: Tensor
+    sum_squared_error: Tensor
+    sum_target: Tensor
+    sum_squared_target: Tensor
 
     def __init__(
         self,
@@ -97,14 +102,14 @@ class ExplainedVariance(Metric):
             raise ValueError(
                 f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
             )
-        self.multioutput = multioutput
+        self.multioutput: str = multioutput
         self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 

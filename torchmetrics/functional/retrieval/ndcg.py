@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import torch
 from torch import Tensor, tensor
 
@@ -22,7 +24,7 @@ def _dcg(target: Tensor) -> Tensor:
     return (target / denom).sum()
 
 
-def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
+def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
     """
     Computes Normalized Discounted Cumulative Gain (for information retrieval), as explained
     `here <https://en.wikipedia.org/wiki/Discounted_cumulative_gain>`__.
