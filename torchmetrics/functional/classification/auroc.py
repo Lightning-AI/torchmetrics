@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
-def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, str]:
+def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
     # use _input_format_classification for validating the input and get the mode of data
     _, _, mode = _input_format_classification(preds, target)
 
@@ -42,7 +42,7 @@ def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, str]:
 def _auroc_compute(
     preds: Tensor,
     target: Tensor,
-    mode: str,
+    mode: DataType,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = 'macro',
@@ -50,7 +50,7 @@ def _auroc_compute(
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
     # binary mode override num_classes
-    if mode == 'binary':
+    if mode == DataType.BINARY:
         num_classes = 1
 
     # check max_fpr parameter
@@ -65,7 +65,7 @@ def _auroc_compute(
             )
 
         # max_fpr parameter is only support for binary
-        if mode != 'binary':
+        if mode != DataType.BINARY:
             raise ValueError(
                 f"Partial AUC computation not available in"
                 f" multilabel/multiclass setting, 'max_fpr' must be"
@@ -73,7 +73,7 @@ def _auroc_compute(
             )
 
     # calculate fpr, tpr
-    if mode == 'multi-label':
+    if mode == DataType.MULTILABEL:
         if average == AverageMethod.MICRO:
             fpr, tpr, _ = roc(preds.flatten(), target.flatten(), 1, pos_label, sample_weights)
         elif num_classes:
@@ -87,13 +87,13 @@ def _auroc_compute(
         else:
             raise ValueError('Detected input to be `multilabel` but you did not provide `num_classes` argument')
     else:
-        if mode != 'binary' and num_classes is None:
+        if mode != DataType.BINARY and num_classes is None:
             raise ValueError('Detected input to `multiclass` but you did not provide `num_classes` argument')
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
     if max_fpr is None or max_fpr == 1:
-        if mode == 'multi-label' and average == AverageMethod.MICRO:
+        if mode == DataType.MULTILABEL and average == AverageMethod.MICRO:
             pass
         elif num_classes != 1:
             # calculate auc scores per class

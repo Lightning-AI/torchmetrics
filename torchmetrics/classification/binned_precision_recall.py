@@ -22,7 +22,8 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import METRIC_EPS, to_onehot
 
 
-def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor, min_precision: float):
+def _recall_at_precision(precision: Tensor, recall: Tensor, thresholds: Tensor,
+                         min_precision: float) -> Tuple[Tensor, Tensor]:
     try:
         max_recall, _, best_threshold = max((r, p, t) for p, r, t in zip(precision, recall, thresholds)
                                             if p >= min_precision)
@@ -154,27 +155,27 @@ class BinnedPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, targets: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Args
             preds: (n_samples, n_classes) tensor
-            targets: (n_samples, n_classes) tensor
+            target: (n_samples, n_classes) tensor
         """
         # binary case
-        if len(preds.shape) == len(targets.shape) == 1:
+        if len(preds.shape) == len(target.shape) == 1:
             preds = preds.reshape(-1, 1)
-            targets = targets.reshape(-1, 1)
+            target = target.reshape(-1, 1)
 
-        if len(preds.shape) == len(targets.shape) + 1:
-            targets = to_onehot(targets, num_classes=self.num_classes)
+        if len(preds.shape) == len(target.shape) + 1:
+            target = to_onehot(target, num_classes=self.num_classes)
 
-        targets = targets == 1
+        target = target == 1
         # Iterate one threshold at a time to conserve memory
         for i in range(self.num_thresholds):
             predictions = preds >= self.thresholds[i]
-            self.TPs[:, i] += (targets & predictions).sum(dim=0)
-            self.FPs[:, i] += ((~targets) & (predictions)).sum(dim=0)
-            self.FNs[:, i] += ((targets) & (~predictions)).sum(dim=0)
+            self.TPs[:, i] += (target & predictions).sum(dim=0)
+            self.FPs[:, i] += ((~target) & (predictions)).sum(dim=0)
+            self.FNs[:, i] += ((target) & (~predictions)).sum(dim=0)
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Returns float tensor of size n_classes"""
@@ -246,7 +247,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         [tensor(1.0000), tensor(1.0000), tensor(0.2500), tensor(0.2500), tensor(-0.)]
     """
 
-    def compute(self) -> Union[List[Tensor], Tensor]:
+    def compute(self) -> Union[List[Tensor], Tensor]:  # type: ignore
         precisions, recalls, _ = super().compute()
         return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes)
 
@@ -325,7 +326,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         )
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
         """Returns float tensor of size n_classes"""
         precisions, recalls, thresholds = super().compute()
 
@@ -338,4 +339,4 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             recalls_at_p[i], thresholds_at_p[i] = _recall_at_precision(
                 precisions[i], recalls[i], thresholds[i], self.min_precision
             )
-        return (recalls_at_p, thresholds_at_p)
+        return recalls_at_p, thresholds_at_p

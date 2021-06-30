@@ -120,7 +120,7 @@ class ConfusionMatrix(Metric):
         default = torch.zeros(num_classes, 2, 2) if multilabel else torch.zeros(num_classes, num_classes)
         self.add_state("confmat", default=default, dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
