@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
+    [#335](https://github.com/PyTorchLightning/metrics/pull/335))
+
 
 ### Deprecated
 
@@ -50,6 +53,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved per-class metric handling for imbalanced datasets for `precision`, `recall`, `precision_recall`, `fbeta`, `f1`, `accuracy`, and `specificity` ([#204](https://github.com/PyTorchLightning/metrics/pull/204))
 - Decorated `torch.jit.unused` to `MetricCollection` forward ([#307](https://github.com/PyTorchLightning/metrics/pull/307))
 - Renamed `thresholds` argument to binned metrics for manually controlling the thresholds ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
+- Extend typing ([#324](https://github.com/PyTorchLightning/metrics/pull/324),
+    [#326](https://github.com/PyTorchLightning/metrics/pull/326),
+    [#327](https://github.com/PyTorchLightning/metrics/pull/327))
 
 ### Deprecated
 
