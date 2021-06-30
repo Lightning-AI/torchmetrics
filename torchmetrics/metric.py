@@ -14,7 +14,6 @@
 import functools
 import inspect
 import operator
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
@@ -29,6 +28,8 @@ from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
+from torchmetrics.utilities.exceptions import MisconfigurationException
+
 
 
 def jit_distributed_available() -> bool:
@@ -431,7 +432,10 @@ class Metric(nn.Module, ABC):
             for key in self._defaults:
                 if not self._persistent[key]:
                     continue
-                current_val = getattr(self, key)
+                if should_sync and not self.is_global_zero:
+                    current_val = self._defaults[key]
+                else:    
+                    current_val = getattr(self, key)
                 if not keep_vars:
                     if isinstance(current_val, Tensor):
                         current_val = current_val.detach()
@@ -439,14 +443,26 @@ class Metric(nn.Module, ABC):
                         current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
                 # the tensors will be synced across processes so deepcopy to drop the references
                 destination[prefix + key] = deepcopy(current_val)  # type: ignore
-            destination[prefix + "should_sync"] = should_sync  # type: ignore
+            destination[prefix + "has_synced"] = should_sync  # type: ignore
+            destination[prefix + "rank"] = self.current_rank  # type: ignore
+            destination[prefix + "world_size"] = self.world_size  # type: ignore
         return destination
 
     @property
-    def is_global_zero(self) -> bool:
+    def world_size(self) -> int:
         if jit_distributed_available():
-            return torch.distributed.get_rank() == 0
-        return True
+            return torch.distributed.get_world_size()
+        return 0
+
+    @property
+    def current_rank(self) -> int:
+        if jit_distributed_available():
+            return torch.distributed.get_rank()
+        return 0
+
+    @property
+    def is_global_zero(self) -> bool:
+        return self.current_rank == 0
 
     def _load_from_state_dict(
         self,
@@ -460,19 +476,24 @@ class Metric(nn.Module, ABC):
     ) -> None:
         """ Loads metric states from state_dict """
 
-        # assumption for legacy support
-        # most users were saving their checkpoint on rank 0 without states synchornization
-        # and reloading the state dict on all ranks.
-        # Therefore, if ``should_sync`` doesn't exist in the state_dict, only rank 0 should reload the metric states.
-        should_load_state = self.is_global_zero if state_dict.pop(prefix + "should_sync", True) else True
+        # assumption: users didn't manually sync the Metric states by default.
+        has_synced = state_dict.pop(prefix + "has_synced", False)
+        previous_rank = state_dict.pop(prefix + "rank", 0)
+        previous_world_size = state_dict.pop(prefix + "world_size", 0)
 
-        # only global rank 0 should be reloading the values present in the ``state_dict``
-        # as the state contains synced values across all progress_group
+        if not has_synced:
+            if previous_world_size > self.world_size:
+                raise MisconfigurationException(
+                    f"The ``state_dict`` hasn't been synchornized and the previously {previous_world_size} "
+                    f"used ``world_size`` exceeds the current one: {self.world_size}.")
+
+        should_load_states = self.is_global_zero if has_synced else previous_rank == self.current_rank
+
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
                 value = state_dict.pop(name)
-                if should_load_state:
+                if should_load_states:
                     setattr(self, key, value)
         super()._load_from_state_dict(
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs

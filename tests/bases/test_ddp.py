@@ -155,15 +155,20 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         state_dict_2_should_sync = metric_2.state_dict(should_sync=True)
 
         exp_sum = i * (i + 1) / 2
-        assert state_dict["x"] == exp_sum * worldsize
         assert metric.x == exp_sum
         assert metric.c == (i + 1)
-        assert state_dict["c"] == metric.c * worldsize
+        if rank == 0:
+            assert state_dict["x"] == exp_sum * worldsize
+            assert state_dict["c"] == metric.c * worldsize
+        else:
+            assert state_dict["x"] == 0
+            assert state_dict["c"] == 0 
 
-    assert state_dict["should_sync"]
-    assert state_dict_2_should_sync["should_sync"]
-    assert not state_dict_2_should_not_sync["should_sync"]
-    assert not state_dict_not_synced["should_sync"]
+
+    assert state_dict["has_synced"]
+    assert state_dict_2_should_sync["has_synced"]
+    assert not state_dict_2_should_not_sync["has_synced"]
+    assert not state_dict_not_synced["has_synced"]
 
     def reload_state_dict(state_dict, expected_x, expected_c):
         metric = DummyCatMetric()
@@ -174,8 +179,8 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
     reload_state_dict(deepcopy(state_dict_not_synced), 10, 5)
 
-    del state_dict_not_synced["should_sync"]
-    reload_state_dict(deepcopy(state_dict_not_synced), 10 if not rank else 0, 5 if not rank else 0)
+    del state_dict_not_synced["has_synced"]
+    reload_state_dict(deepcopy(state_dict_not_synced), 10, 5)
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
