@@ -430,7 +430,7 @@ class Metric(nn.Module, ABC):
             device = None
             for key in self._defaults:
 
-                # used to track if any defaults is persistent
+                # used to track if any defaults are persistent
                 is_persistent |= self._persistent[key]
 
                 if not self._persistent[key]:
