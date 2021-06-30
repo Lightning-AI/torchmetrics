@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
+    [#332](https://github.com/PyTorchLightning/metrics/pull/332),
     [#335](https://github.com/PyTorchLightning/metrics/pull/335))
 
 
