@@ -41,7 +41,7 @@ We recommend to use ``dist_sync_state_dict`` when your metric is nested inside a
     >>> metric.state_dict()
     OrderedDict(...)
 
-We recommend to use ``state_dict(should_sync=False)`` if you can easily access your :class:`~torchmetrics.Metric`.
+Or use ``state_dict(should_sync=False)`` if you can easily access your :class:`~torchmetrics.Metric`.
 
 .. doctest::
 
