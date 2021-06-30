@@ -477,17 +477,20 @@ class Metric(nn.Module, ABC):
         """ Loads metric states from state_dict """
 
         # assumption: users didn't manually sync the Metric states by default.
-        has_synced = state_dict.pop(prefix + "has_synced", False)
+        has_synced = state_dict.pop(prefix + "has_synced", None)
         previous_rank = state_dict.pop(prefix + "rank", 0)
-        previous_world_size = state_dict.pop(prefix + "world_size", 0)
+        previous_world_size = state_dict.pop(prefix + "world_size", self.world_size)
 
-        if not has_synced:
-            if previous_world_size > self.world_size:
+        if has_synced is False:
+            if previous_world_size != self.world_size:
                 raise MisconfigurationException(
                     f"The ``state_dict`` hasn't been synchornized and the previously {previous_world_size} "
-                    f"used ``world_size`` exceeds the current one: {self.world_size}.")
+                    f"used ``world_size`` isn't the same as the current one: {self.world_size}.")
 
-        should_load_states = self.is_global_zero if has_synced else previous_rank == self.current_rank
+        if has_synced:
+            should_load_states = True
+        else:
+            should_load_states = self.is_global_zero if previous_rank == 0 else True
 
         for key in self._defaults:
             name = prefix + key

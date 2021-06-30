@@ -23,6 +23,7 @@ from torch import tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
+from torchmetrics.utilities import distributed
 from torchmetrics.utilities.distributed import gather_all_tensors
 
 seed_all(42)
@@ -124,6 +125,8 @@ def test_non_contiguous_tensors():
 def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     setup_ddp(rank, worldsize)
 
+    is_global_zero = not rank
+
     class DummyCatMetric(Metric):
 
         def __init__(self, should_sync_state_dict: bool = True):
@@ -176,11 +179,29 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         assert metric.x == expected_x
         assert metric.c == expected_c
 
-    reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
+    reload_state_dict(deepcopy(state_dict), 10 + 10 if is_global_zero else 0, 5 + 5 if is_global_zero else 0)
     reload_state_dict(deepcopy(state_dict_not_synced), 10, 5)
 
-    del state_dict_not_synced["has_synced"]
+    path = os.path.join(tmpdir, "metric.p")
+    if rank == 0:
+        torch.save(state_dict_not_synced, path)
+
+    path_1 = os.path.join(tmpdir, "metric_1.p")
+    if rank == 1:
+        torch.save(state_dict_not_synced, path_1)
+
+    torch.distributed.barrier()
+
+    state_dict_not_synced = torch.load(path)
+
+    reload_state_dict(deepcopy(state_dict_not_synced), 10 if is_global_zero else 0, 5 if is_global_zero else 0)
+
+    reload_state_dict(deepcopy(state_dict_not_synced), 10 if is_global_zero else 0, 5 if is_global_zero else 0)
+
+    # shows that multiple checkpoints can be reloaded properly.
+    state_dict_not_synced = torch.load(path_1)
     reload_state_dict(deepcopy(state_dict_not_synced), 10, 5)
+
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
