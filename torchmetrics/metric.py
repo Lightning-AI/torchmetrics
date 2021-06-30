@@ -70,7 +70,7 @@ class Metric(nn.Module, ABC):
             This would be part of the checkpoint and re-used when reloading the metric state_dict.
     """
 
-    __jit_ignored_attributes__ = ["is_differentiable", "world_size", "current_rank", "is_global_zero"]
+    __jit_ignored_attributes__ = ["is_differentiable"]
 
     def __init__(
         self,
@@ -463,18 +463,21 @@ class Metric(nn.Module, ABC):
                 destination[prefix + "world_size"] = torch.tensor(self.world_size, device=device)  # type: ignore
         return destination
 
+    @torch.jit.unused
     @property
     def world_size(self) -> int:
         if jit_distributed_available():
             return torch.distributed.get_world_size()
         return 1
 
+    @torch.jit.unused
     @property
     def current_rank(self) -> int:
         if jit_distributed_available():
             return torch.distributed.get_rank()
         return 0
 
+    @torch.jit.unused
     @property
     def is_global_zero(self) -> bool:
         return self.current_rank == 0
