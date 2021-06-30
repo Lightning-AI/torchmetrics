@@ -36,6 +36,7 @@ We recommend to use ``dist_sync_state_dict`` when your metric is nested inside a
     ...
     ...     def compute(self):
     ...         return self.x / self.total
+    ...
     >>> metric = AverageMeter()
     >>> metric.state_dict()
     OrderedDict(...)
