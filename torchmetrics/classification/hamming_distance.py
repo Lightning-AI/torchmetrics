@@ -90,7 +90,7 @@ class HammingDistance(Metric):
             raise ValueError("The `threshold` should lie in the (0,1) interval.")
         self.threshold = threshold
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.

@@ -69,15 +69,15 @@ class AUC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, x: Tensor, y: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
         Args:
-            x: Predictions from model (probabilities, or labels)
-            y: Ground truth labels
+            preds: Predictions from model (probabilities, or labels)
+            target: Ground truth labels
         """
-        x, y = _auc_update(x, y)
+        x, y = _auc_update(preds, target)
 
         self.x.append(x)
         self.y.append(y)
