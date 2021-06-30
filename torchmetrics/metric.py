@@ -460,7 +460,7 @@ class Metric(nn.Module, ABC):
         """ Loads metric states from state_dict """
 
         # assumption for legacy support
-        # most users were saving their checkpoint on rank 0 without states synchornization
+        # most users were saving their checkpoint on rank 0 without states synchronization.
         # and reloading the state dict on all ranks.
         # Therefore, if ``should_sync`` doesn't exist in the state_dict, only rank 0 should reload the metric states.
         should_load_states = self.is_global_zero if state_dict.pop(prefix + "should_sync", True) else True
