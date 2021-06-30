@@ -231,7 +231,7 @@ class Accuracy(StatScores):
         if not self.mode:
             self.mode = mode
         elif self.mode != mode:
-            raise RuntimeError(f"You can not use {mode} inputs with {self.mode} inputs.")
+            raise ValueError(f"You can not use {mode} inputs with {self.mode} inputs.")
 
         if self.subset_accuracy and not _check_subset_validity(self.mode):
             self.subset_accuracy = False
