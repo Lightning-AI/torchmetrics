@@ -140,6 +140,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     metric = DummyCatMetric()
     metric.persistent(True)
+    _ = metric.state_dict()
 
     steps = 5
     for i in range(steps):
