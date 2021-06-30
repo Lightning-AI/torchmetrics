@@ -66,7 +66,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
-        should_sync_state_dict: Whether states should be synchronized while creating a checkpoint.
+        dist_sync_state_dict: Whether states should be synchronized while creating a checkpoint.
             This would be part of the checkpoint and re-used when reloading the metric state_dict.
     """
 
@@ -78,7 +78,7 @@ class Metric(nn.Module, ABC):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        should_sync_state_dict: bool = True,
+        dist_sync_state_dict: bool = True,
     ) -> None:
         super().__init__()
 
@@ -94,7 +94,7 @@ class Metric(nn.Module, ABC):
         self.dist_sync_fn = dist_sync_fn
         self._to_sync = True
         self._restore_cache = True
-        self.should_sync_state_dict = should_sync_state_dict
+        self.dist_sync_state_dict = dist_sync_state_dict
 
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
@@ -425,7 +425,7 @@ class Metric(nn.Module, ABC):
         # Register metric states to be part of the state_dict
 
         # whether the metric should be synced.
-        should_sync = should_sync if should_sync is not None else self.should_sync_state_dict
+        should_sync = should_sync if should_sync is not None else self.dist_sync_state_dict
         is_persistent = False
 
         with self.sync_context(dist_sync_fn=self.dist_sync_fn, should_sync=should_sync):
@@ -462,7 +462,7 @@ class Metric(nn.Module, ABC):
     def world_size(self) -> int:
         if jit_distributed_available():
             return torch.distributed.get_world_size()
-        return 0
+        return 1
 
     @property
     def current_rank(self) -> int:

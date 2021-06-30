@@ -127,8 +127,8 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     class DummyCatMetric(Metric):
 
-        def __init__(self, should_sync_state_dict: bool = True):
-            super().__init__(should_sync_state_dict=should_sync_state_dict)
+        def __init__(self, dist_sync_state_dict: bool = True):
+            super().__init__(dist_sync_state_dict=dist_sync_state_dict)
             self.add_state("x", torch.tensor(0), dist_reduce_fx=torch.sum)
             self.add_state("c", torch.tensor(0), dist_reduce_fx=torch.sum)
 
@@ -142,10 +142,10 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     metric = DummyCatMetric()
     metric.persistent(True)
 
-    metric_2 = DummyCatMetric(should_sync_state_dict=False)
+    metric_2 = DummyCatMetric(dist_sync_state_dict=False)
     metric_2.persistent(True)
 
-    metric_3 = DummyCatMetric(should_sync_state_dict=False)
+    metric_3 = DummyCatMetric(dist_sync_state_dict=False)
     assert "has_synced" not in metric_3.state_dict()
 
     steps = 5

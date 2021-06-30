@@ -20,7 +20,7 @@ metrics.
     We strongly recommend calling :meth:`~torchmetrics.Metric.state_dict` on all processes or this can cause a deadlock.
 
 
-We recommend to use ``should_sync_state_dict`` when your metric is nested inside another :class:`~torch.nn.Module`.
+We recommend to use ``dist_sync_state_dict`` when your metric is nested inside another :class:`~torch.nn.Module`.
 
 .. doctest::
 
@@ -28,7 +28,7 @@ We recommend to use ``should_sync_state_dict`` when your metric is nested inside
     >>> from torchmetrics import Metric
     >>> class AverageMeter(Metric):
     ...     def __init__(self):
-    ...         super().__init__(should_sync_state_dict=False)
+    ...         super().__init__(dist_sync_state_dict=False)
     ...         self.add_state("x", torch.tensor(0.0), dist_reduce_fx=torch.sum, persistent=True)
     ...         self.add_state("total", torch.tensor(0.0), dist_reduce_fx=torch.sum, persistent=True)
     ...
