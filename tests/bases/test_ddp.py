@@ -14,6 +14,7 @@
 import os
 import sys
 from copy import deepcopy
+from torchmetrics.utilities.exceptions import MisconfigurationException
 from unittest import mock
 
 import pytest
@@ -138,19 +139,59 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         def compute(self):
             return self.x // self.c
 
+        def __repr__(self):
+            return f"DummyCatMetric(x={self.x}, c={self.c})"
+
     metric = DummyCatMetric()
     metric.persistent(True)
 
+    def verify_metric(metric, i, world_size):
+        state_dict = metric.state_dict()
+        exp_sum = i * (i + 1) / 2
+        assert state_dict["x"] == exp_sum * world_size
+        assert metric.x == exp_sum * world_size
+        assert metric.c == (i + 1) * world_size
+        assert state_dict["c"] == metric.c
+
     steps = 5
     for i in range(steps):
-        metric(i)
-        state_dict = metric.state_dict()
 
-        exp_sum = i * (i + 1) / 2
-        assert state_dict["x"] == exp_sum * worldsize
-        assert metric.x == exp_sum
-        assert metric.c == (i + 1)
-        assert state_dict["c"] == metric.c * worldsize
+        if metric.is_synced:
+            metric.unsync()
+
+        metric(i)
+        
+        verify_metric(metric, i, 1)
+        
+        metric.sync()
+        assert metric.is_synced
+
+        with pytest.raises(MisconfigurationException, match="The Metric has already been synced."):
+            metric.sync()
+
+        verify_metric(metric, i, 2)
+        
+        metric.unsync()
+        assert not metric.is_synced
+
+        with pytest.raises(MisconfigurationException, match="The Metric has already been un-synced."):
+            metric.unsync()
+
+        with metric.sync_context():
+            assert metric.is_synced
+            verify_metric(metric, i, 2)
+
+        with metric.sync_context(restore_cache=False):
+            assert metric.is_synced
+            verify_metric(metric, i, 2)
+
+        assert metric.is_synced
+
+        metric.unsync()
+
+        assert not metric.is_synced
+
+        metric.sync()
 
     def reload_state_dict(state_dict, expected_x, expected_c):
         metric = DummyCatMetric()
@@ -158,10 +199,10 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         assert metric.x == expected_x
         assert metric.c == expected_c
 
-    with mock.patch.dict(os.environ, {"GLOBAL_RANK": str(rank)}):
-        reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
+    reload_state_dict(deepcopy(metric.state_dict()), 20, 10)
 
-    reload_state_dict(deepcopy(state_dict), 20, 10)
+    metric.unsync()
+    reload_state_dict(deepcopy(metric.state_dict()), 10, 5)
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
