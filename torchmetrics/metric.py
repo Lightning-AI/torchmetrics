@@ -289,6 +289,13 @@ class Metric(nn.Module, ABC):
         self.is_synced = True
 
     def unsync(self, should_unsync: bool = True) -> None:
+        """
+        Unsync function for manually controlling when metrics states should be reverted back to their local states.  
+
+        Args:
+            should_unsync: Whether to perform unsync
+        
+        """
         if not should_unsync:
             return
 
@@ -392,6 +399,7 @@ class Metric(nn.Module, ABC):
                 setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
                 setattr(self, attr, [])
+
         # reset internal states
         self._cache = None
         self.is_synced = False
