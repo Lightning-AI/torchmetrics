@@ -361,6 +361,9 @@ class Metric(nn.Module, ABC):
             if self._computed is not None:
                 return self._computed
 
+            # compute relies on the sync context manager to gather the states across processes and apply reduction
+            # if synchronization happened, the current rank accumulated states will be restored to keep
+            # accumulation going if ``should_unsync=True``,
             with self.sync_context(
                 dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
             ):
