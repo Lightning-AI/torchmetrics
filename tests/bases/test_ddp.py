@@ -11,11 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import sys
 from copy import deepcopy
-from torchmetrics.utilities.exceptions import MisconfigurationException
-from unittest import mock
 
 import pytest
 import torch
@@ -25,6 +22,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.exceptions import MisconfigurationException
 
 seed_all(42)
 
@@ -163,9 +161,9 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
             metric.unsync()
 
         metric(i)
-        
+
         verify_metric(metric, i, 1)
-        
+
         metric.sync()
         assert metric.is_synced
 
@@ -173,7 +171,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
             metric.sync()
 
         verify_metric(metric, i, 2)
-        
+
         metric.unsync()
         assert not metric.is_synced
 
