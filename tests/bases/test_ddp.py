@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import sys
 from copy import deepcopy
 
@@ -208,6 +209,12 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     metric.cpu()
     assert metric.device == torch.device("cpu")
     metric.sync()
+
+    torch.save(metric.state_dict(), os.path.join(tmpdir, 'weights.pt'))
+
+    metric.unsync()
+    with metric.sync_context():
+        torch.save(metric.state_dict(), os.path.join(tmpdir, 'weights.pt'))
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
