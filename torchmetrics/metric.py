@@ -256,7 +256,7 @@ class Metric(nn.Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
-    ):
+    ) -> None:
         """
         Sync function for manually controlling when metrics states should be synced across processes
 
@@ -276,7 +276,7 @@ class Metric(nn.Module, ABC):
         is_distributed = distributed_available() if callable(distributed_available) else None
 
         if not should_sync or not is_distributed:
-            return {}
+            return
 
         if dist_sync_fn is None:
             dist_sync_fn = gather_all_tensors
@@ -288,12 +288,18 @@ class Metric(nn.Module, ABC):
         self._sync_dist(dist_sync_fn, process_group=process_group)
         self.is_synced = True
 
-    def unsync(self) -> None:
+    def unsync(self, should_unsync: bool = True) -> None:
+        if not should_unsync:
+            return
         if self.is_synced:
+            if self._cache is None:
+                raise MisconfigurationException("The internal cache should exist to unsync the Metric.")
+
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in self._cache.items():
                 setattr(self, attr, val)
             self.is_synced = False
+            self._cache = None
         else:
             raise MisconfigurationException("The Metric has already been un-synced.")
 
@@ -329,6 +335,8 @@ class Metric(nn.Module, ABC):
         )
 
         yield
+
+        self.unsync(should_unsync=should_unsync)
 
         if self._cache and should_unsync:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
@@ -389,6 +397,9 @@ class Metric(nn.Module, ABC):
                 setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
                 setattr(self, attr, [])
+        # reset internal states
+        self._cache = None
+        self.is_synced = False
 
     def clone(self) -> "Metric":
         """ Make a copy of the metric """
