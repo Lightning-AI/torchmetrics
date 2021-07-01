@@ -191,10 +191,16 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         assert metric.is_synced
 
         metric.unsync()
-
         assert not metric.is_synced
 
         metric.sync()
+        cache = metric._cache
+        metric._cache = None
+
+        with pytest.raises(MisconfigurationException, match="The internal cache should exist to unsync the Metric."):
+            metric.unsync()
+
+        metric._cache = cache
 
     def reload_state_dict(state_dict, expected_x, expected_c):
         metric = DummyCatMetric()

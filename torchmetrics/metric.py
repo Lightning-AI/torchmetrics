@@ -291,6 +291,7 @@ class Metric(nn.Module, ABC):
     def unsync(self, should_unsync: bool = True) -> None:
         if not should_unsync:
             return
+
         if self.is_synced:
             if self._cache is None:
                 raise MisconfigurationException("The internal cache should exist to unsync the Metric.")
@@ -336,13 +337,17 @@ class Metric(nn.Module, ABC):
 
         yield
 
-        self.unsync(should_unsync=should_unsync)
+        if self.is_synced:
+            self.unsync(should_unsync=should_unsync)
 
+        """
         if self._cache and should_unsync:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in self._cache.items():
                 setattr(self, attr, val)
             self.is_synced = False
+            self._cache = None
+        """
 
     def _wrap_compute(self, compute: Callable) -> Callable:
 
