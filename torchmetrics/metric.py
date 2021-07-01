@@ -27,8 +27,8 @@ from torch.nn import Module
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 from torchmetrics.utilities.exceptions import MisconfigurationException
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
