@@ -145,7 +145,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     metric.persistent(True)
 
     metric.to(f"cuda:{rank}")
-    assert metric.device == torch.device(f"cuda:{rank}")
 
     def verify_metric(metric, i, world_size):
         state_dict = metric.state_dict()
@@ -159,6 +158,10 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     for i in range(steps):
 
         if metric.is_synced:
+            
+            with pytest.raises(MisconfigurationException, match="The Metric shouldn't be synced when performing"):
+                metric(i)
+
             metric.unsync()
 
         metric(i)
@@ -207,7 +210,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     reload_state_dict(deepcopy(metric.state_dict()), 10, 5)
 
     metric.cpu()
-    assert metric.device == torch.device("cpu")
     metric.sync()
 
     torch.save(metric.state_dict(), os.path.join(tmpdir, 'weights.pt'))

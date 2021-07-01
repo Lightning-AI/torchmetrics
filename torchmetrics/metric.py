@@ -26,7 +26,6 @@ from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
-from torchmetrics.utilities.device_dtype_mixin import DeviceDtypeModuleMixin
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 from torchmetrics.utilities.exceptions import MisconfigurationException
@@ -36,7 +35,7 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(DeviceDtypeModuleMixin, nn.Module, ABC):
+class Metric(nn.Module, ABC):
     """
     Base class for all metrics present in the Metrics API.
 
@@ -181,6 +180,11 @@ class Metric(DeviceDtypeModuleMixin, nn.Module, ABC):
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
         # add current step
+        if self.is_synced:
+            raise MisconfigurationException(
+                "The Metric shouldn't be synced when performing ``update``. "
+                "HINT: Did you forget to call ``unsync`` ?.")
+
         with torch.no_grad():
             self.update(*args, **kwargs)
 
