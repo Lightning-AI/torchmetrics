@@ -183,7 +183,8 @@ class Metric(nn.Module, ABC):
         if self.is_synced:
             raise MisconfigurationException(
                 "The Metric shouldn't be synced when performing ``update``. "
-                "HINT: Did you forget to call ``unsync`` ?.")
+                "HINT: Did you forget to call ``unsync`` ?."
+            )
 
         with torch.no_grad():
             self.update(*args, **kwargs)

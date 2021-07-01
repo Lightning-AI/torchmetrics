@@ -158,7 +158,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     for i in range(steps):
 
         if metric.is_synced:
-            
+
             with pytest.raises(MisconfigurationException, match="The Metric shouldn't be synced when performing"):
                 metric(i)
 
