@@ -14,7 +14,6 @@
 import os
 import sys
 from copy import deepcopy
-from unittest import mock
 
 import pytest
 import torch
@@ -24,6 +23,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 seed_all(42)
 
@@ -138,20 +138,70 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         def compute(self):
             return self.x // self.c
 
+        def __repr__(self):
+            return f"DummyCatMetric(x={self.x}, c={self.c})"
+
     metric = DummyCatMetric()
     metric.persistent(True)
     _ = metric.state_dict()
 
+    def verify_metric(metric, i, world_size):
+        state_dict = metric.state_dict()
+        exp_sum = i * (i + 1) / 2
+        assert state_dict["x"] == exp_sum * world_size
+        assert metric.x == exp_sum * world_size
+        assert metric.c == (i + 1) * world_size
+        assert state_dict["c"] == metric.c
+
     steps = 5
     for i in range(steps):
-        metric(i)
-        state_dict = metric.state_dict()
 
-        exp_sum = i * (i + 1) / 2
-        assert state_dict["x"] == exp_sum * worldsize
-        assert metric.x == exp_sum
-        assert metric.c == (i + 1)
-        assert state_dict["c"] == metric.c * worldsize
+        if metric._is_synced:
+
+            with pytest.raises(TorchMetricsUserError, match="The Metric shouldn't be synced when performing"):
+                metric(i)
+
+            metric.unsync()
+
+        metric(i)
+
+        verify_metric(metric, i, 1)
+
+        metric.sync()
+        assert metric._is_synced
+
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been synced."):
+            metric.sync()
+
+        verify_metric(metric, i, 2)
+
+        metric.unsync()
+        assert not metric._is_synced
+
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been un-synced."):
+            metric.unsync()
+
+        with metric.sync_context():
+            assert metric._is_synced
+            verify_metric(metric, i, 2)
+
+        with metric.sync_context(should_unsync=False):
+            assert metric._is_synced
+            verify_metric(metric, i, 2)
+
+        assert metric._is_synced
+
+        metric.unsync()
+        assert not metric._is_synced
+
+        metric.sync()
+        cache = metric._cache
+        metric._cache = None
+
+        with pytest.raises(TorchMetricsUserError, match="The internal cache should exist to unsync the Metric."):
+            metric.unsync()
+
+        metric._cache = cache
 
     def reload_state_dict(state_dict, expected_x, expected_c):
         metric = DummyCatMetric()
@@ -159,10 +209,20 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         assert metric.x == expected_x
         assert metric.c == expected_c
 
-    with mock.patch.dict(os.environ, {"GLOBAL_RANK": str(rank)}):
-        reload_state_dict(deepcopy(state_dict), 20 if not rank else 0, 10 if not rank else 0)
+    reload_state_dict(deepcopy(metric.state_dict()), 20, 10)
 
-    reload_state_dict(deepcopy(state_dict), 20, 10)
+    metric.unsync()
+    reload_state_dict(deepcopy(metric.state_dict()), 10, 5)
+
+    metric.sync()
+
+    filepath = os.path.join(tmpdir, f'weights-{rank}.pt')
+
+    torch.save(metric.state_dict(), filepath)
+
+    metric.unsync()
+    with metric.sync_context():
+        torch.save(metric.state_dict(), filepath)
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")

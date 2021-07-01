@@ -14,7 +14,6 @@
 import functools
 import inspect
 import operator
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
@@ -28,6 +27,7 @@ from torch.nn import Module
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
@@ -68,7 +68,7 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ["is_differentiable"]
+    __jit_ignored_attributes__ = ['is_differentiable', 'device', 'dtype']
 
     def __init__(
         self,
@@ -90,7 +90,7 @@ class Metric(nn.Module, ABC):
         self.process_group = process_group
         self.dist_sync_fn = dist_sync_fn
         self._to_sync = True
-        self._restore_cache = True
+        self._should_unsync = True
 
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
@@ -103,6 +103,10 @@ class Metric(nn.Module, ABC):
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
         self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
+
+        # state management
+        self._is_synced = False
+        self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
     def add_state(
         self,
@@ -176,13 +180,19 @@ class Metric(nn.Module, ABC):
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
         # add current step
+        if self._is_synced:
+            raise TorchMetricsUserError(
+                "The Metric shouldn't be synced when performing ``update``. "
+                "HINT: Did you forget to call ``unsync`` ?."
+            )
+
         with torch.no_grad():
             self.update(*args, **kwargs)
 
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
             # skip restore cache operation from compute as cache is stored below.
-            self._restore_cache = False
+            self._should_unsync = False
 
             # save context before switch
             cache = {attr: getattr(self, attr) for attr in self._defaults}
@@ -195,8 +205,9 @@ class Metric(nn.Module, ABC):
             # restore context
             for attr, val in cache.items():
                 setattr(self, attr, val)
+            self._is_synced = False
 
-            self._restore_cache = True
+            self._should_unsync = True
             self._to_sync = True
             self._computed = None
 
@@ -245,7 +256,7 @@ class Metric(nn.Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
-    ) -> Dict[str, Tensor]:
+    ) -> None:
         """
         Sync function for manually controlling when metrics states should be synced across processes
 
@@ -258,19 +269,46 @@ class Metric(nn.Module, ABC):
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
 
-        Returns:
-            cache: A dictionary containing the local metric states. The cache will be empty if sync didn't happen.
         """
+        if self._is_synced and should_sync:
+            raise TorchMetricsUserError("The Metric has already been synced.")
+
         is_distributed = distributed_available() if callable(distributed_available) else None
         if not should_sync or not is_distributed or not self._update_called:
-            return {}
+            return
+
         if dist_sync_fn is None:
             dist_sync_fn = gather_all_tensors
+
         # cache prior to syncing
-        cache = {attr: getattr(self, attr) for attr in self._defaults}
+        self._cache = {attr: getattr(self, attr) for attr in self._defaults}
+
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
-        return cache
+        self._is_synced = True
+
+    def unsync(self, should_unsync: bool = True) -> None:
+        """
+        Unsync function for manually controlling when metrics states should be reverted back to their local states.
+
+        Args:
+            should_unsync: Whether to perform unsync
+
+        """
+        if not should_unsync:
+            return
+
+        if not self._is_synced:
+            raise TorchMetricsUserError("The Metric has already been un-synced.")
+
+        if self._cache is None:
+            raise TorchMetricsUserError("The internal cache should exist to unsync the Metric.")
+
+        # if we synced, restore to cache so that we can continue to accumulate un-synced state
+        for attr, val in self._cache.items():
+            setattr(self, attr, val)
+        self._is_synced = False
+        self._cache = None
 
     @contextmanager
     def sync_context(
@@ -278,7 +316,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Optional[Callable] = None,
         process_group: Optional[Any] = None,
         should_sync: bool = True,
-        restore_cache: bool = True,
+        should_unsync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> Generator:
         """
@@ -292,11 +330,11 @@ class Metric(nn.Module, ABC):
                 default: None (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
-            restore_cache: Whether to restore the cache state so that the metrics can
+            should_unsync: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
             distributed_available: Function to determine if we are running inside a distributed setting
         """
-        cache = self.sync(
+        self.sync(
             dist_sync_fn=dist_sync_fn,
             process_group=process_group,
             should_sync=should_sync,
@@ -305,10 +343,7 @@ class Metric(nn.Module, ABC):
 
         yield
 
-        if cache and restore_cache:
-            # if we synced, restore to cache so that we can continue to accumulate un-synced state
-            for attr, val in cache.items():
-                setattr(self, attr, val)
+        self.unsync(should_unsync=self._is_synced and should_unsync)
 
     def _wrap_compute(self, compute: Callable) -> Callable:
 
@@ -325,8 +360,11 @@ class Metric(nn.Module, ABC):
             if self._computed is not None:
                 return self._computed
 
+            # compute relies on the sync context manager to gather the states across processes and apply reduction
+            # if synchronization happened, the current rank accumulated states will be restored to keep
+            # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, restore_cache=self._restore_cache
+                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
             ):
                 self._computed = compute(*args, **kwargs)
 
@@ -363,6 +401,10 @@ class Metric(nn.Module, ABC):
                 setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
                 setattr(self, attr, [])
+
+        # reset internal states
+        self._cache = None
+        self._is_synced = False
 
     def clone(self) -> "Metric":
         """ Make a copy of the metric """
@@ -418,22 +460,17 @@ class Metric(nn.Module, ABC):
     ) -> Optional[Dict[str, Any]]:
         destination = super().state_dict(destination=destination, prefix=prefix, keep_vars=keep_vars)
         # Register metric states to be part of the state_dict
-        with self.sync_context(dist_sync_fn=self.dist_sync_fn):
-            for key in self._defaults:
-                if not self._persistent[key]:
-                    continue
-                current_val = getattr(self, key)
-                if not keep_vars:
-                    if isinstance(current_val, Tensor):
-                        current_val = current_val.detach()
-                    elif isinstance(current_val, list):
-                        current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
-                # the tensors will be synced across processes so deepcopy to drop the references
-                destination[prefix + key] = deepcopy(current_val)  # type: ignore
+        for key in self._defaults:
+            if not self._persistent[key]:
+                continue
+            current_val = getattr(self, key)
+            if not keep_vars:
+                if isinstance(current_val, Tensor):
+                    current_val = current_val.detach()
+                elif isinstance(current_val, list):
+                    current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
+            destination[prefix + key] = deepcopy(current_val)  # type: ignore
         return destination
-
-    def _should_load_from_state_dict(self) -> bool:
-        return os.getenv("GLOBAL_RANK", "0") == "0"
 
     def _load_from_state_dict(
         self,
@@ -447,14 +484,10 @@ class Metric(nn.Module, ABC):
     ) -> None:
         """ Loads metric states from state_dict """
 
-        # only global rank 0 should be reloading the values present in the ``state_dict``
-        # as the state contains synced values across all progress_group
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
-                value = state_dict.pop(name)
-                if self._should_load_from_state_dict():
-                    setattr(self, key, value)
+                setattr(self, key, state_dict.pop(name))
         super()._load_from_state_dict(
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )
