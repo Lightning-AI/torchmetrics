@@ -90,7 +90,7 @@ class Metric(nn.Module, ABC):
         self.process_group = process_group
         self.dist_sync_fn = dist_sync_fn
         self._to_sync = True
-        self._restore_cache = True
+        self._should_unsync = True
 
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
@@ -191,7 +191,7 @@ class Metric(nn.Module, ABC):
         if self.compute_on_step:
             self._to_sync = self.dist_sync_on_step
             # skip restore cache operation from compute as cache is stored below.
-            self._restore_cache = False
+            self._should_unsync = False
 
             # save context before switch
             cache = {attr: getattr(self, attr) for attr in self._defaults}
@@ -206,7 +206,7 @@ class Metric(nn.Module, ABC):
                 setattr(self, attr, val)
             self.is_synced = False
 
-            self._restore_cache = True
+            self._should_unsync = True
             self._to_sync = True
             self._computed = None
 
@@ -302,7 +302,7 @@ class Metric(nn.Module, ABC):
         dist_sync_fn: Optional[Callable] = None,
         process_group: Optional[Any] = None,
         should_sync: bool = True,
-        restore_cache: bool = True,
+        should_unsync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> Generator:
         """
@@ -316,7 +316,7 @@ class Metric(nn.Module, ABC):
                 default: None (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
-            restore_cache: Whether to restore the cache state so that the metrics can
+            should_unsync: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
             distributed_available: Function to determine if we are running inside a distributed setting
         """
@@ -329,7 +329,7 @@ class Metric(nn.Module, ABC):
 
         yield
 
-        if self._cache and restore_cache:
+        if self._cache and should_unsync:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in self._cache.items():
                 setattr(self, attr, val)
@@ -351,7 +351,7 @@ class Metric(nn.Module, ABC):
                 return self._computed
 
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, restore_cache=self._restore_cache
+                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
             ):
                 self._computed = compute(*args, **kwargs)
 

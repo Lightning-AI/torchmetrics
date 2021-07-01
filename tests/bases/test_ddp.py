@@ -186,7 +186,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
             assert metric.is_synced
             verify_metric(metric, i, 2)
 
-        with metric.sync_context(restore_cache=False):
+        with metric.sync_context(should_unsync=False):
             assert metric.is_synced
             verify_metric(metric, i, 2)
 
