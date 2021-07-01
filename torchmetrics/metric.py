@@ -28,8 +28,8 @@ from torch.nn import Module
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 from torchmetrics.utilities.exceptions import MisconfigurationException
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
@@ -104,7 +104,7 @@ class Metric(nn.Module, ABC):
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
         self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
-        
+
         # state management
         self.is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
@@ -183,7 +183,8 @@ class Metric(nn.Module, ABC):
         if self.is_synced:
             raise MisconfigurationException(
                 "The Metric is currently synced."
-                "HINT: Did you forgot to call ``metric.unsync()`` before performing an update.")
+                "HINT: Did you forgot to call ``metric.unsync()`` before performing an update."
+            )
 
         # add current step
         with torch.no_grad():
@@ -273,16 +274,16 @@ class Metric(nn.Module, ABC):
             raise MisconfigurationException("The Metric has already been synced.")
 
         is_distributed = distributed_available() if callable(distributed_available) else None
-        
+
         if not should_sync or not is_distributed:
             return {}
-        
+
         if dist_sync_fn is None:
             dist_sync_fn = gather_all_tensors
 
         # cache prior to syncing
         self._cache = {attr: getattr(self, attr) for attr in self._defaults}
-        
+
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
         self.is_synced = True
@@ -291,10 +292,10 @@ class Metric(nn.Module, ABC):
         if self.is_synced:
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in self._cache.items():
-                setattr(self, attr, val)    
-            self.is_synced = False     
+                setattr(self, attr, val)
+            self.is_synced = False
         else:
-            raise MisconfigurationException("The Metric has already been un-synced.")   
+            raise MisconfigurationException("The Metric has already been un-synced.")
 
     @contextmanager
     def sync_context(
