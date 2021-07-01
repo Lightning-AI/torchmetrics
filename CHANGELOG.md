@@ -7,12 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2021-MM-DD
-
-### Added
-
-- Added `is_sync` logic to `Metric` ([#339](https://github.com/PyTorchLightning/metrics/pull/339))
-
+## [0.4.1] - 2021-07-DD
 
 ### Changed
 
@@ -21,14 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#333](https://github.com/PyTorchLightning/metrics/pull/333),
     [#335](https://github.com/PyTorchLightning/metrics/pull/335))
 
-
-### Deprecated
-
-
-### Removed
-
-
 ### Fixed
+
+- Fixed DDP by `is_sync` logic to `Metric` ([#339](https://github.com/PyTorchLightning/metrics/pull/339))
 
 
 ## [0.4.0] - 2021-06-29
