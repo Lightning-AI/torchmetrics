@@ -23,7 +23,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
-from torchmetrics.utilities.exceptions import MisconfigurationException
+from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 seed_all(42)
 
@@ -157,7 +157,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
         if metric.is_synced:
 
-            with pytest.raises(MisconfigurationException, match="The Metric shouldn't be synced when performing"):
+            with pytest.raises(TorchMetricsUserError, match="The Metric shouldn't be synced when performing"):
                 metric(i)
 
             metric.unsync()
@@ -169,7 +169,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         metric.sync()
         assert metric.is_synced
 
-        with pytest.raises(MisconfigurationException, match="The Metric has already been synced."):
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been synced."):
             metric.sync()
 
         verify_metric(metric, i, 2)
@@ -177,7 +177,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         metric.unsync()
         assert not metric.is_synced
 
-        with pytest.raises(MisconfigurationException, match="The Metric has already been un-synced."):
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been un-synced."):
             metric.unsync()
 
         with metric.sync_context():
@@ -197,7 +197,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         cache = metric._cache
         metric._cache = None
 
-        with pytest.raises(MisconfigurationException, match="The internal cache should exist to unsync the Metric."):
+        with pytest.raises(TorchMetricsUserError, match="The internal cache should exist to unsync the Metric."):
             metric.unsync()
 
         metric._cache = cache

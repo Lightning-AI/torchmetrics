@@ -13,7 +13,13 @@
 # limitations under the License.
 
 
-class MisconfigurationException(Exception):
+class BaseUserError(Exception):
     """
-    Exception used to inform users of mis-use with `torchmetrics`
+    Base user error class to indicate wrong usage.
+    """
+
+
+class TorchMetricsUserError(BaseUserError):
+    """
+    Error used to inform users of a wrong combinison of Metric API calls.
     """

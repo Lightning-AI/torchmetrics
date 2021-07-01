@@ -27,7 +27,7 @@ from torch.nn import Module
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
-from torchmetrics.utilities.exceptions import MisconfigurationException
+from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
@@ -181,7 +181,7 @@ class Metric(nn.Module, ABC):
         """
         # add current step
         if self.is_synced:
-            raise MisconfigurationException(
+            raise TorchMetricsUserError(
                 "The Metric shouldn't be synced when performing ``update``. "
                 "HINT: Did you forget to call ``unsync`` ?."
             )
@@ -271,7 +271,7 @@ class Metric(nn.Module, ABC):
 
         """
         if self.is_synced and should_sync:
-            raise MisconfigurationException("The Metric has already been synced.")
+            raise TorchMetricsUserError("The Metric has already been synced.")
 
         is_distributed = distributed_available() if callable(distributed_available) else None
 
@@ -301,7 +301,7 @@ class Metric(nn.Module, ABC):
 
         if self.is_synced:
             if self._cache is None:
-                raise MisconfigurationException("The internal cache should exist to unsync the Metric.")
+                raise TorchMetricsUserError("The internal cache should exist to unsync the Metric.")
 
             # if we synced, restore to cache so that we can continue to accumulate un-synced state
             for attr, val in self._cache.items():
@@ -309,7 +309,7 @@ class Metric(nn.Module, ABC):
             self.is_synced = False
             self._cache = None
         else:
-            raise MisconfigurationException("The Metric has already been un-synced.")
+            raise TorchMetricsUserError("The Metric has already been un-synced.")
 
     @contextmanager
     def sync_context(
