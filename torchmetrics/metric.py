@@ -28,8 +28,8 @@ from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.device_dtype_mixin import DeviceDtypeModuleMixin
 from torchmetrics.utilities.distributed import gather_all_tensors
-from torchmetrics.utilities.exceptions import MisconfigurationException
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
+from torchmetrics.utilities.exceptions import MisconfigurationException
 
 
 def jit_distributed_available() -> bool:
@@ -69,7 +69,7 @@ class Metric(DeviceDtypeModuleMixin, nn.Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ["is_differentiable"]
+    __jit_ignored_attributes__ = ['is_differentiable', 'device', 'dtype']
 
     def __init__(
         self,
@@ -180,9 +180,6 @@ class Metric(DeviceDtypeModuleMixin, nn.Module, ABC):
         """
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
-        if self.is_synced:
-            self.unsync()
-
         # add current step
         with torch.no_grad():
             self.update(*args, **kwargs)
@@ -203,6 +200,7 @@ class Metric(DeviceDtypeModuleMixin, nn.Module, ABC):
             # restore context
             for attr, val in cache.items():
                 setattr(self, attr, val)
+            self.is_synced = False
 
             self._restore_cache = True
             self._to_sync = True
