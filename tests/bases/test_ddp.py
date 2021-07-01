@@ -155,7 +155,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     steps = 5
     for i in range(steps):
 
-        if metric.is_synced:
+        if metric._is_synced:
 
             with pytest.raises(TorchMetricsUserError, match="The Metric shouldn't be synced when performing"):
                 metric(i)
@@ -167,7 +167,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         verify_metric(metric, i, 1)
 
         metric.sync()
-        assert metric.is_synced
+        assert metric._is_synced
 
         with pytest.raises(TorchMetricsUserError, match="The Metric has already been synced."):
             metric.sync()
@@ -175,23 +175,23 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         verify_metric(metric, i, 2)
 
         metric.unsync()
-        assert not metric.is_synced
+        assert not metric._is_synced
 
         with pytest.raises(TorchMetricsUserError, match="The Metric has already been un-synced."):
             metric.unsync()
 
         with metric.sync_context():
-            assert metric.is_synced
+            assert metric._is_synced
             verify_metric(metric, i, 2)
 
         with metric.sync_context(should_unsync=False):
-            assert metric.is_synced
+            assert metric._is_synced
             verify_metric(metric, i, 2)
 
-        assert metric.is_synced
+        assert metric._is_synced
 
         metric.unsync()
-        assert not metric.is_synced
+        assert not metric._is_synced
 
         metric.sync()
         cache = metric._cache

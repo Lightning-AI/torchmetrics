@@ -105,7 +105,7 @@ class Metric(nn.Module, ABC):
         self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
 
         # state management
-        self.is_synced = False
+        self._is_synced = False
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
     def add_state(
@@ -180,7 +180,7 @@ class Metric(nn.Module, ABC):
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
         # add current step
-        if self.is_synced:
+        if self._is_synced:
             raise TorchMetricsUserError(
                 "The Metric shouldn't be synced when performing ``update``. "
                 "HINT: Did you forget to call ``unsync`` ?."
@@ -205,7 +205,7 @@ class Metric(nn.Module, ABC):
             # restore context
             for attr, val in cache.items():
                 setattr(self, attr, val)
-            self.is_synced = False
+            self._is_synced = False
 
             self._should_unsync = True
             self._to_sync = True
@@ -270,7 +270,7 @@ class Metric(nn.Module, ABC):
             distributed_available: Function to determine if we are running inside a distributed setting
 
         """
-        if self.is_synced and should_sync:
+        if self._is_synced and should_sync:
             raise TorchMetricsUserError("The Metric has already been synced.")
 
         is_distributed = distributed_available() if callable(distributed_available) else None
@@ -286,7 +286,7 @@ class Metric(nn.Module, ABC):
 
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
-        self.is_synced = True
+        self._is_synced = True
 
     def unsync(self, should_unsync: bool = True) -> None:
         """
@@ -299,17 +299,17 @@ class Metric(nn.Module, ABC):
         if not should_unsync:
             return
 
-        if self.is_synced:
-            if self._cache is None:
-                raise TorchMetricsUserError("The internal cache should exist to unsync the Metric.")
-
-            # if we synced, restore to cache so that we can continue to accumulate un-synced state
-            for attr, val in self._cache.items():
-                setattr(self, attr, val)
-            self.is_synced = False
-            self._cache = None
-        else:
+        if not self._is_synced:
             raise TorchMetricsUserError("The Metric has already been un-synced.")
+
+        if self._cache is None:
+            raise TorchMetricsUserError("The internal cache should exist to unsync the Metric.")
+
+        # if we synced, restore to cache so that we can continue to accumulate un-synced state
+        for attr, val in self._cache.items():
+            setattr(self, attr, val)
+        self._is_synced = False
+        self._cache = None
 
     @contextmanager
     def sync_context(
@@ -344,7 +344,7 @@ class Metric(nn.Module, ABC):
 
         yield
 
-        self.unsync(should_unsync=self.is_synced and should_unsync)
+        self.unsync(should_unsync=self._is_synced and should_unsync)
 
     def _wrap_compute(self, compute: Callable) -> Callable:
 
@@ -402,7 +402,7 @@ class Metric(nn.Module, ABC):
 
         # reset internal states
         self._cache = None
-        self.is_synced = False
+        self._is_synced = False
 
     def clone(self) -> "Metric":
         """ Make a copy of the metric """

@@ -13,13 +13,7 @@
 # limitations under the License.
 
 
-class BaseUserError(Exception):
-    """
-    Base user error class to indicate wrong usage.
-    """
-
-
-class TorchMetricsUserError(BaseUserError):
+class TorchMetricsUserError(Exception):
     """
     Error used to inform users of a wrong combinison of Metric API calls.
     """
