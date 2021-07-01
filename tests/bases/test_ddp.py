@@ -215,11 +215,13 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     metric.sync()
 
-    torch.save(metric.state_dict(), os.path.join(tmpdir, 'weights.pt'))
+    filepath = os.path.join(tmpdir, f'weights-{rank}.pt')
+
+    torch.save(metric.state_dict(), filepath)
 
     metric.unsync()
     with metric.sync_context():
-        torch.save(metric.state_dict(), os.path.join(tmpdir, 'weights.pt'))
+        torch.save(metric.state_dict(), filepath)
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
