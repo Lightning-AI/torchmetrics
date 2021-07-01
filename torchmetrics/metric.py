@@ -14,7 +14,6 @@
 import functools
 import inspect
 import operator
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
