@@ -337,8 +337,7 @@ class Metric(nn.Module, ABC):
 
         yield
 
-        if self.is_synced:
-            self.unsync(should_unsync=should_unsync)
+        self.unsync(should_unsync=self.is_synced and should_unsync)
 
         """
         if self._cache and should_unsync:
