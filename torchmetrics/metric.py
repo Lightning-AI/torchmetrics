@@ -30,13 +30,14 @@ from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, d
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 from torchmetrics.utilities.exceptions import MisconfigurationException
+from torchmetrics.utilities.device_dtype_mixin import DeviceDtypeModuleMixin
 
 
 def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(nn.Module, ABC):
+class Metric(DeviceDtypeModuleMixin, nn.Module, ABC):
     """
     Base class for all metrics present in the Metrics API.
 

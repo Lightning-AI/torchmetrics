@@ -145,6 +145,9 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     metric = DummyCatMetric()
     metric.persistent(True)
 
+    metric.to(f"cuda:{rank}")
+    assert metric.device == torch.device(f"cuda:{rank}")
+
     def verify_metric(metric, i, world_size):
         state_dict = metric.state_dict()
         exp_sum = i * (i + 1) / 2
@@ -203,6 +206,10 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     metric.unsync()
     reload_state_dict(deepcopy(metric.state_dict()), 10, 5)
+
+    metric.cpu()
+    assert metric.device == torch.device("cpu")
+    metric.sync()
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
