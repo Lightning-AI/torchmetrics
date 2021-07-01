@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed metrics causing ddp to hang in lightning ([#338](https://github.com/PyTorchLightning/metrics/pull/338))
 
 ## [0.4.0] - 2021-06-29
 
