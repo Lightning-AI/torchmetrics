@@ -290,11 +290,11 @@ class Metric(nn.Module, ABC):
 
     def unsync(self, should_unsync: bool = True) -> None:
         """
-        Unsync function for manually controlling when metrics states should be reverted back to their local states.  
+        Unsync function for manually controlling when metrics states should be reverted back to their local states.
 
         Args:
             should_unsync: Whether to perform unsync
-        
+
         """
         if not should_unsync:
             return
