@@ -181,10 +181,7 @@ class Metric(DeviceDtypeModuleMixin, nn.Module, ABC):
         Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
         """
         if self.is_synced:
-            raise MisconfigurationException(
-                "The Metric is currently synced."
-                "HINT: Did you forgot to call ``metric.unsync()`` before performing an update."
-            )
+            self.unsync()
 
         # add current step
         with torch.no_grad():

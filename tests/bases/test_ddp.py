@@ -158,9 +158,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     steps = 5
     for i in range(steps):
 
-        if metric.is_synced:
-            metric.unsync()
-
         metric(i)
 
         verify_metric(metric, i, 1)
