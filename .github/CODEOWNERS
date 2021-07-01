@@ -15,8 +15,8 @@
 /setup.py             @borda @SkafteNicki @tchaton
 
 # Base API
-/torchmetrics/metric.py  @SkafteNicki @justusschock @tchaton
-
+/torchmetrics/metric.py        @SkafteNicki @justusschock @borda @tchaton
+/torchmetrics/collections.py   @SkafteNicki @justusschock @borda
 
 # CI/CD
 /.github/workflows/   @borda @tchaton
