@@ -339,15 +339,6 @@ class Metric(nn.Module, ABC):
 
         self.unsync(should_unsync=self.is_synced and should_unsync)
 
-        """
-        if self._cache and should_unsync:
-            # if we synced, restore to cache so that we can continue to accumulate un-synced state
-            for attr, val in self._cache.items():
-                setattr(self, attr, val)
-            self.is_synced = False
-            self._cache = None
-        """
-
     def _wrap_compute(self, compute: Callable) -> Callable:
 
         @functools.wraps(compute)
