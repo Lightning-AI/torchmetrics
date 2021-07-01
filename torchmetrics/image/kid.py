@@ -15,6 +15,7 @@ from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from torch.nn import Module
 
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
@@ -79,7 +80,7 @@ class KID(Metric):
     evaluation of a polynomial kernel function :math:`k`
 
     .. math::
-        k(x,y) = (\gamma * x^T y + coef)^degree
+        k(x,y) = (\gamma * x^T y + coef)^{degree}
 
     which controls the distance between two features. In practise the MMD is calculated over a number of
     subsets to be able to both get the mean and standard deviation of KID.
@@ -127,13 +128,14 @@ class KID(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    [1] Demystifying MMD GANs
-    Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
-    https://arxiv.org/abs/1801.01401
+    References:
+        [1] Demystifying MMD GANs
+        Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
+        https://arxiv.org/abs/1801.01401
 
-    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-    https://arxiv.org/abs/1706.08500
+        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:
@@ -179,7 +181,7 @@ class KID(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -206,8 +208,8 @@ class KID(Metric):
                     f' but got {feature}.'
                 )
 
-            self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
-        elif isinstance(feature, torch.nn.Module):
+            self.inception: Module = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+        elif isinstance(feature, Module):
             self.inception = feature
         else:
             raise TypeError('Got unknown input to argument `feature`')
@@ -268,7 +270,7 @@ class KID(Metric):
             raise ValueError('Argument `subset_size` should be smaller than the number of samples')
 
         kid_scores_ = []
-        for i in range(self.subsets):
+        for _ in range(self.subsets):
             perm = torch.randperm(n_samples_real)
             f_real = real_features[perm[:self.subset_size]]
             perm = torch.randperm(n_samples_fake)

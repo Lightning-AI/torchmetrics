@@ -21,7 +21,7 @@ from torchmetrics.utilities.checks import _check_classification_inputs, _input_f
 from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
 
-def _check_subset_validity(mode):
+def _check_subset_validity(mode: DataType) -> bool:
     return mode in (DataType.MULTILABEL, DataType.MULTIDIM_MULTICLASS)
 
 
@@ -42,8 +42,8 @@ def _mode(
 def _accuracy_update(
     preds: Tensor,
     target: Tensor,
-    reduce: str,
-    mdmc_reduce: str,
+    reduce: Optional[str],
+    mdmc_reduce: Optional[str],
     threshold: float,
     num_classes: Optional[int],
     top_k: Optional[int],
@@ -70,7 +70,13 @@ def _accuracy_update(
 
 
 def _accuracy_compute(
-    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, average: str, mdmc_average: str, mode: DataType
+    tp: Tensor,
+    fp: Tensor,
+    tn: Tensor,
+    fn: Tensor,
+    average: Optional[str],
+    mdmc_average: Optional[str],
+    mode: DataType,
 ) -> Tensor:
     simple_average = [AverageMethod.MICRO, AverageMethod.SAMPLES]
     if (mode == DataType.BINARY and average in simple_average) or mode == DataType.MULTILABEL:

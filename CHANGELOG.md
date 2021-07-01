@@ -4,11 +4,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+**Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-## [0.4.0] - 2021-06-DD
+
+## [UnReleased] - 2021-MM-DD
 
 ### Added
 
+
+### Changed
+
+- Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
+    [#332](https://github.com/PyTorchLightning/metrics/pull/332),
+    [#333](https://github.com/PyTorchLightning/metrics/pull/333),
+    [#335](https://github.com/PyTorchLightning/metrics/pull/335))
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+## [0.4.0] - 2021-06-29
+
+### Added
+
+- Added Cosine Similarity Metric ([#305](https://github.com/PyTorchLightning/metrics/pull/305))
 - Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
 - Added `add_metrics` method to `MetricCollection` for adding additional metrics after initialization ([#221](https://github.com/PyTorchLightning/metrics/pull/221))
 - Added pre-gather reduction in the case of `dist_reduce_fx="cat"` to reduce communication cost ([#217](https://github.com/PyTorchLightning/metrics/pull/217))
@@ -21,23 +46,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added audio metrics: SNR, SI_SDR, SI_SNR ([#292](https://github.com/PyTorchLightning/metrics/pull/292))
 - Added Inception Score metric to image module ([#299](https://github.com/PyTorchLightning/metrics/pull/299))
 - Added KID metric to image module ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
+- Added `sync` and `sync_context` methods for manually controlling when metric states are synced ([#302](https://github.com/PyTorchLightning/metrics/pull/302))
+- Added `KLDivergence` metric ([#247](https://github.com/PyTorchLightning/metrics/pull/247))
 
 ### Changed
 
-- Forward cache is now reset when `reset` method is called ([#260](https://github.com/PyTorchLightning/metrics/pull/260))
+- Forward cache is reset when `reset` method is called ([#260](https://github.com/PyTorchLightning/metrics/pull/260))
 - Improved per-class metric handling for imbalanced datasets for `precision`, `recall`, `precision_recall`, `fbeta`, `f1`, `accuracy`, and `specificity` ([#204](https://github.com/PyTorchLightning/metrics/pull/204))
-- Added `torch.jit.unused` to `MetricCollection` forward ([#307](https://github.com/PyTorchLightning/metrics/pull/307))
-
+- Decorated `torch.jit.unused` to `MetricCollection` forward ([#307](https://github.com/PyTorchLightning/metrics/pull/307))
+- Renamed `thresholds` argument to binned metrics for manually controlling the thresholds ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
+- Extend typing ([#324](https://github.com/PyTorchLightning/metrics/pull/324),
+    [#326](https://github.com/PyTorchLightning/metrics/pull/326),
+    [#327](https://github.com/PyTorchLightning/metrics/pull/327))
 
 ### Deprecated
 
 - Deprecated `torchmetrics.functional.mean_relative_error` ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
+- Deprecated `num_thresholds` argument in `BinnedPrecisionRecallCurve` ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
+
+### Removed
+
+- Removed argument `is_multiclass` ([#319](https://github.com/PyTorchLightning/metrics/pull/319))
 
 ### Fixed
 
-- AUC can also support more dimensional inputs when all but one dimensions are of size 1 ([#242](https://github.com/PyTorchLightning/metrics/pull/242))
-- Fixed dtype of modular metrics after reset have been called ([#243](https://github.com/PyTorchLightning/metrics/pull/243))
-
+- AUC can also support more dimensional inputs when all but one dimension are of size 1 ([#242](https://github.com/PyTorchLightning/metrics/pull/242))
+- Fixed `dtype` of modular metrics after reset has been called ([#243](https://github.com/PyTorchLightning/metrics/pull/243))
+- Fixed calculation in `matthews_corrcoef` to correctly match formula ([#321](https://github.com/PyTorchLightning/metrics/pull/321))
 
 ## [0.3.2] - 2021-05-10
 
@@ -50,11 +85,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `MetricCollection` should return metrics with prefix on `items()`, `keys()` ([#209](https://github.com/PyTorchLightning/metrics/pull/209))
-- Calling `compute` before `update` will now give an warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
+- Calling `compute` before `update` will now give warning ([#164](https://github.com/PyTorchLightning/metrics/pull/164))
 
 ### Removed
 
-- Removed `numpy` as dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
+- Removed `numpy` as direct dependency ([#212](https://github.com/PyTorchLightning/metrics/pull/212))
 
 ### Fixed
 

@@ -62,7 +62,7 @@ class PearsonCorrcoef(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -77,7 +77,7 @@ class PearsonCorrcoef(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -89,7 +89,7 @@ class PearsonCorrcoef(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes pearson correlation coefficient over state.
         """

@@ -26,7 +26,8 @@ About Audio Metrics
 ~~~~~~~~~~~~~~~~~~~
 
 For the purposes of audio metrics, inputs (predictions, targets) must have the same size.
-If the input is 1D tensors the output will be a scalar. If the input is multi-dimensional with shape [..., time]` the metric will be computed over the `time` dimension.
+If the input is 1D tensors the output will be a scalar. If the input is multi-dimensional with shape ``[...,time]``
+the metric will be computed over the ``time`` dimension.
 
 .. doctest::
 
@@ -244,6 +245,12 @@ IoU
 .. autoclass:: torchmetrics.IoU
     :noindex:
 
+KLDivergence
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.KLDivergence
+    :noindex:
+
 MatthewsCorrcoef
 ~~~~~~~~~~~~~~~~
 
@@ -318,6 +325,13 @@ KID
 ******************
 Regression Metrics
 ******************
+
+CosineSimilarity
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CosineSimilarity
+    :noindex:
+
 
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~
@@ -495,6 +509,9 @@ Wrappers
 
 Modular wrapper metrics are not metrics in themself, but instead take a metric and alter the internal logic
 of the base metric.
+
+BootStrapper
+~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BootStrapper
     :noindex:

@@ -17,12 +17,11 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
-from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
 
 
-def _safe_divide(num: Tensor, denom: Tensor):
+def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     """ prevent zero division """
     denom[denom == 0.] = 1
     return num / denom
@@ -88,7 +87,6 @@ def fbeta(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
-    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     r"""
     Computes f_beta metric.
@@ -168,9 +166,6 @@ def fbeta(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -187,15 +182,12 @@ def fbeta(
         tensor(0.3333)
 
     """
-    _deprecation_warn_arg_multilabel(multilabel)
-
     allowed_average = list(AvgMethod)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-    allowed_mdmc_average = list(MDMCAverageMethod) + [None]
-    if mdmc_average not in allowed_mdmc_average:
-        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
+    if mdmc_average is not None and MDMCAverageMethod.from_str(mdmc_average) is None:
+        raise ValueError(f"The `mdmc_average` has to be one of {list(MDMCAverageMethod)}, got {mdmc_average}.")
 
     if average in [AvgMethod.MACRO, AvgMethod.WEIGHTED, AvgMethod.NONE] and (not num_classes or num_classes < 1):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
@@ -230,7 +222,6 @@ def f1(
     threshold: float = 0.5,
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
-    multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """
     Computes F1 metric. F1 metrics correspond to a equally weighted average of the
@@ -312,9 +303,6 @@ def f1(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
@@ -330,5 +318,4 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    _deprecation_warn_arg_multilabel(multilabel)
     return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)

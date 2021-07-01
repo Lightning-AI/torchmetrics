@@ -14,7 +14,7 @@
 
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import nn
@@ -94,7 +94,7 @@ class MetricCollection(nn.ModuleDict):
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None
-    ):
+    ) -> None:
         super().__init__()
 
         self.add_metrics(metrics, *additional_metrics)
@@ -103,7 +103,7 @@ class MetricCollection(nn.ModuleDict):
         self.postfix = self._check_arg(postfix, 'postfix')
 
     @torch.jit.unused
-    def forward(self, *args, **kwargs) -> Dict[str, Any]:  # pylint: disable=E0202
+    def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Iteratively call forward for each metric. Positional arguments (args) will
         be passed to every metric in the collection, while keyword arguments (kwargs)
@@ -111,7 +111,7 @@ class MetricCollection(nn.ModuleDict):
         """
         return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
 
-    def update(self, *args, **kwargs):  # pylint: disable=E0202
+    def update(self, *args: Any, **kwargs: Any) -> None:
         """
         Iteratively call update for each metric. Positional arguments (args) will
         be passed to every metric in the collection, while keyword arguments (kwargs)
@@ -161,7 +161,7 @@ class MetricCollection(nn.ModuleDict):
         if isinstance(metrics, Sequence):
             # prepare for optional additions
             metrics = list(metrics)
-            remain = []
+            remain: list = []
             for m in additional_metrics:
                 (metrics if isinstance(m, Metric) else remain).append(m)
 
@@ -207,7 +207,7 @@ class MetricCollection(nn.ModuleDict):
             od[self._set_name(k)] = v
         return od
 
-    def keys(self, keep_base: bool = False):
+    def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
@@ -231,10 +231,10 @@ class MetricCollection(nn.ModuleDict):
             return arg
         raise ValueError(f'Expected input `{name}` to be a string, but got {type(arg)}')
 
-    def __repr__(self) -> Optional[str]:
-        repr = super().__repr__()[:-2]
+    def __repr__(self) -> str:
+        repr_str = super().__repr__()[:-2]
         if self.prefix:
-            repr += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
+            repr_str += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
         if self.postfix:
-            repr += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
-        return repr + "\n)"
+            repr_str += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
+        return repr_str + "\n)"

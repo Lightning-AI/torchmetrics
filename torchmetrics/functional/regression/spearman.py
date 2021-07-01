@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _find_repeats(data: Tensor):
+def _find_repeats(data: Tensor) -> Tensor:
     """ find and return values which have repeats i.e. the same value are more than once in the tensor """
     temp = data.detach().clone()
     temp = temp.sort()[0]
@@ -32,7 +32,7 @@ def _find_repeats(data: Tensor):
     return unique[atleast2]
 
 
-def _rank_data(data: Tensor):
+def _rank_data(data: Tensor) -> Tensor:
     """ Calculate the rank for each element of a tensor. The rank refers to the indices of an element in the
     corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of
     their rank
