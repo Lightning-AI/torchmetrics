@@ -27,7 +27,7 @@ def _iou_from_confmat(
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     reduction: str = 'elementwise_mean',
-):
+) -> Tensor:
     intersection = torch.diag(confmat)
     union = confmat.sum(0) + confmat.sum(1) - intersection
 

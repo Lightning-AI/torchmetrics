@@ -28,7 +28,11 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.classification.inputs import _input_multilabel_prob_plausible as _input_mlb_prob_ok
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
-from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision, BinnedRecallAtFixedPrecision
+from torchmetrics.classification.binned_precision_recall import (
+    BinnedAveragePrecision,
+    BinnedPrecisionRecallCurve,
+    BinnedRecallAtFixedPrecision,
+)
 
 seed_all(42)
 
@@ -112,8 +116,10 @@ class TestBinnedAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("num_thresholds", [101, 301])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, num_thresholds):
+    @pytest.mark.parametrize(
+        "num_thresholds, thresholds", ([101, None], [301, None], [None, torch.linspace(0.0, 1.0, 101)])
+    )
+    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, num_thresholds, thresholds):
         # rounding will simulate binning for both implementations
         preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
@@ -127,5 +133,27 @@ class TestBinnedAveragePrecision(MetricTester):
             metric_args={
                 "num_classes": num_classes,
                 "num_thresholds": num_thresholds,
+                "thresholds": thresholds
             },
         )
+
+
+@pytest.mark.parametrize(
+    "metric_class", [BinnedAveragePrecision, BinnedRecallAtFixedPrecision, BinnedPrecisionRecallCurve]
+)
+def test_raises_errors_and_warning(metric_class):
+    if metric_class == BinnedRecallAtFixedPrecision:
+        metric_class = partial(metric_class, min_precision=0.5)
+
+    with pytest.warns(
+        DeprecationWarning,
+        match="Argument `num_thresholds` "
+        "is deprecated in v0.4 and will be removed in v0.5. Use `thresholds` instead."
+    ):
+        metric_class(num_classes=10, num_thresholds=100)
+
+    with pytest.raises(
+        ValueError, match="Expected argument `thresholds` to either"
+        " be an integer, list of floats or a tensor"
+    ):
+        metric_class(num_classes=10, thresholds={'temp': [10, 20]})

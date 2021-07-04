@@ -4,12 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+**Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-## [0.4.0] - 2021-06-25
+
+## [0.4.1] - 2021-07-DD
+
+### Changed
+
+- Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
+    [#332](https://github.com/PyTorchLightning/metrics/pull/332),
+    [#333](https://github.com/PyTorchLightning/metrics/pull/333),
+    [#335](https://github.com/PyTorchLightning/metrics/pull/335))
+
+### Fixed
+
+- Fixed DDP by `is_sync` logic to `Metric` ([#339](https://github.com/PyTorchLightning/metrics/pull/339))
+
+
+## [0.4.0] - 2021-06-29
 
 ### Added
 
-- Added Cosine Similarity Metric([#75](https://github.com/PyTorchLightning/metrics/issues/75))
+- Added Cosine Similarity Metric ([#305](https://github.com/PyTorchLightning/metrics/pull/305))
 - Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
 - Added `add_metrics` method to `MetricCollection` for adding additional metrics after initialization ([#221](https://github.com/PyTorchLightning/metrics/pull/221))
 - Added pre-gather reduction in the case of `dist_reduce_fx="cat"` to reduce communication cost ([#217](https://github.com/PyTorchLightning/metrics/pull/217))
@@ -29,11 +45,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Forward cache is reset when `reset` method is called ([#260](https://github.com/PyTorchLightning/metrics/pull/260))
 - Improved per-class metric handling for imbalanced datasets for `precision`, `recall`, `precision_recall`, `fbeta`, `f1`, `accuracy`, and `specificity` ([#204](https://github.com/PyTorchLightning/metrics/pull/204))
-- Added `torch.jit.unused` to `MetricCollection` forward ([#307](https://github.com/PyTorchLightning/metrics/pull/307))
+- Decorated `torch.jit.unused` to `MetricCollection` forward ([#307](https://github.com/PyTorchLightning/metrics/pull/307))
+- Renamed `thresholds` argument to binned metrics for manually controlling the thresholds ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
+- Extend typing ([#324](https://github.com/PyTorchLightning/metrics/pull/324),
+    [#326](https://github.com/PyTorchLightning/metrics/pull/326),
+    [#327](https://github.com/PyTorchLightning/metrics/pull/327))
 
 ### Deprecated
 
 - Deprecated `torchmetrics.functional.mean_relative_error` ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
+- Deprecated `num_thresholds` argument in `BinnedPrecisionRecallCurve` ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
 
 ### Removed
 

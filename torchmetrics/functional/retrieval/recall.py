@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_recall(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
+def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
     """
     Computes the recall metric (for information retrieval),
     as explained `here <https://en.wikipedia.org/wiki/Precision_and_recall#Recall>`__.

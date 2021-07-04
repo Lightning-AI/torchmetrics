@@ -61,7 +61,7 @@ class MeanSquaredLogError(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -72,7 +72,7 @@ class MeanSquaredLogError(Metric):
         self.add_state("sum_squared_log_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -85,7 +85,7 @@ class MeanSquaredLogError(Metric):
         self.sum_squared_log_error += sum_squared_log_error
         self.total += n_obs
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Compute mean squared logarithmic error over state.
         """

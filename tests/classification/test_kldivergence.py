@@ -48,10 +48,9 @@ def _sk_metric(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = 
     res = entropy(p, q, axis=1)
     if reduction == 'mean':
         return np.mean(res)
-    elif reduction == 'sum':
+    if reduction == 'sum':
         return np.sum(res)
-    else:
-        return res
+    return res
 
 
 @pytest.mark.parametrize("reduction", ['mean', 'sum'])
@@ -84,7 +83,7 @@ class TestKLDivergence(MetricTester):
             metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
 
-    def test_kldivergence_differentiabilit(self, reduction, p, q, log_prob):
+    def test_kldivergence_differentiability(self, reduction, p, q, log_prob):
         self.run_differentiability_test(
             p,
             q,

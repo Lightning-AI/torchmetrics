@@ -21,7 +21,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _gaussian(kernel_size: int, sigma: int, dtype: torch.dtype, device: torch.device):
+def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
     dist = torch.arange(start=(1 - kernel_size) / 2, end=(1 + kernel_size) / 2, step=1, dtype=dtype, device=device)
     gauss = torch.exp(-torch.pow(dist / sigma, 2) / 2)
     return (gauss / gauss.sum()).unsqueeze(dim=0)  # (1, kernel_size)
@@ -29,7 +29,7 @@ def _gaussian(kernel_size: int, sigma: int, dtype: torch.dtype, device: torch.de
 
 def _gaussian_kernel(
     channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
-):
+) -> Tensor:
     gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
     kernel = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
@@ -61,7 +61,7 @@ def _ssim_compute(
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-):
+) -> Tensor:
     if len(kernel_size) != 2 or len(sigma) != 2:
         raise ValueError(
             "Expected `kernel_size` and `sigma` to have the length of two."

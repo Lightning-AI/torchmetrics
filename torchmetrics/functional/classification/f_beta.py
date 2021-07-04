@@ -21,7 +21,7 @@ from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
 
 
-def _safe_divide(num: Tensor, denom: Tensor):
+def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     """ prevent zero division """
     denom[denom == 0.] = 1
     return num / denom
@@ -186,9 +186,8 @@ def fbeta(
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
-    allowed_mdmc_average = list(MDMCAverageMethod) + [None]
-    if mdmc_average not in allowed_mdmc_average:
-        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
+    if mdmc_average is not None and MDMCAverageMethod.from_str(mdmc_average) is None:
+        raise ValueError(f"The `mdmc_average` has to be one of {list(MDMCAverageMethod)}, got {mdmc_average}.")
 
     if average in [AvgMethod.MACRO, AvgMethod.WEIGHTED, AvgMethod.NONE] and (not num_classes or num_classes < 1):
         raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
