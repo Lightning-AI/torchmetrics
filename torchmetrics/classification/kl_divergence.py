@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, Optional
 
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.kldivergence import _kld_compute, _kld_update
+from torchmetrics.functional.classification.kl_divergence import _kld_compute, _kld_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
@@ -60,6 +60,8 @@ class KLDivergence(Metric):
         >>> kldivergence(p, q)
         tensor(0.0853)
     """
+    # canot be used because if scripting
+    # measures: Union[List[Tensor], Tensor]
     total: Tensor
 
     def __init__(

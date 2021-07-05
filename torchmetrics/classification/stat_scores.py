@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, Union, List
+from typing import Any, Callable, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -129,6 +129,12 @@ class StatScores(Metric):
         tensor([2, 2, 6, 2, 4])
 
     """
+
+    # canot be used because if scripting
+    # tp: Union[Tensor, List[Tensor]]
+    # fp: Union[Tensor, List[Tensor]]
+    # tn: Union[Tensor, List[Tensor]]
+    # fn: Union[Tensor, List[Tensor]]
 
     def __init__(
         self,
