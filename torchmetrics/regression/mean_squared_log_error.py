@@ -54,6 +54,8 @@ class MeanSquaredLogError(Metric):
         Half precision is only support on GPU for this metric
 
     """
+    sum_squared_log_error: Tensor
+    total: Tensor
 
     def __init__(
         self,

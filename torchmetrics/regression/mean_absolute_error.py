@@ -48,6 +48,8 @@ class MeanAbsoluteError(Metric):
         >>> mean_absolute_error(preds, target)
         tensor(0.5000)
     """
+    sum_abs_error: Tensor
+    total: Tensor
 
     def __init__(
         self,

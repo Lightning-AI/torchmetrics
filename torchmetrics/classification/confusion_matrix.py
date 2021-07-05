@@ -92,6 +92,7 @@ class ConfusionMatrix(Metric):
                 [[1., 0.], [1., 0.]],
                 [[0., 1.], [0., 1.]]])
     """
+    confmat: Tensor
 
     def __init__(
         self,

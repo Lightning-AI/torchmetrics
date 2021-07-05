@@ -130,6 +130,12 @@ class StatScores(Metric):
 
     """
 
+    # TODO: canot be used because if scripting
+    # tp: Union[Tensor, List[Tensor]]
+    # fp: Union[Tensor, List[Tensor]]
+    # tn: Union[Tensor, List[Tensor]]
+    # fn: Union[Tensor, List[Tensor]]
+
     def __init__(
         self,
         threshold: float = 0.5,

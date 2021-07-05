@@ -75,6 +75,7 @@ class CohenKappa(Metric):
         >>> cohenkappa(preds, target)
         tensor(0.5000)
     """
+    confmat: Tensor
 
     def __init__(
         self,
