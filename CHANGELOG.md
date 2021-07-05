@@ -7,14 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [0.4.1] - 2021-07-DD
+## [0.4.1] - 2021-07-05
 
 ### Changed
 
 - Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
     [#332](https://github.com/PyTorchLightning/metrics/pull/332),
     [#333](https://github.com/PyTorchLightning/metrics/pull/333),
-    [#335](https://github.com/PyTorchLightning/metrics/pull/335))
+    [#335](https://github.com/PyTorchLightning/metrics/pull/335),
+    [#314](https://github.com/PyTorchLightning/metrics/pull/314))
 
 ### Fixed
 
