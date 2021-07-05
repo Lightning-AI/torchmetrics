@@ -60,7 +60,7 @@ class KLDivergence(Metric):
         >>> kldivergence(p, q)
         tensor(0.0853)
     """
-    # canot be used because if scripting
+    # TODO: canot be used because if scripting
     # measures: Union[List[Tensor], Tensor]
     total: Tensor
 

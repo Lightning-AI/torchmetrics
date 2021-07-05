@@ -130,7 +130,7 @@ class StatScores(Metric):
 
     """
 
-    # canot be used because if scripting
+    # TODO: canot be used because if scripting
     # tp: Union[Tensor, List[Tensor]]
     # fp: Union[Tensor, List[Tensor]]
     # tn: Union[Tensor, List[Tensor]]
