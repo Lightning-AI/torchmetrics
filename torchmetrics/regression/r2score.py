@@ -87,6 +87,10 @@ class R2Score(Metric):
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
     """
+    sum_squared_error: Tensor
+    sum_error: Tensor
+    residual: Tensor
+    total: Tensor
 
     def __init__(
         self,

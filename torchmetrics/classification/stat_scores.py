@@ -129,6 +129,10 @@ class StatScores(Metric):
         tensor([2, 2, 6, 2, 4])
 
     """
+    tp: Tensor
+    fp: Tensor
+    tn: Tensor
+    fn: Tensor
 
     def __init__(
         self,

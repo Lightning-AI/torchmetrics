@@ -205,6 +205,8 @@ class FID(Metric):
         tensor(12.7202)
 
     """
+    real_features: List
+    fake_features: List
 
     def __init__(
         self,

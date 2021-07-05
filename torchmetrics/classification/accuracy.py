@@ -166,6 +166,8 @@ class Accuracy(StatScores):
         tensor(0.6667)
 
     """
+    correct: Tensor
+    total: Tensor
 
     def __init__(
         self,

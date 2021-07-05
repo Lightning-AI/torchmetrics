@@ -72,6 +72,8 @@ class AveragePrecision(Metric):
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
 
     """
+    preds: List
+    target: List
 
     def __init__(
         self,

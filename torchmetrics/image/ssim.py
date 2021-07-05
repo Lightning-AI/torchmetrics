@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, List
 
 import torch
 from torch import Tensor
@@ -51,6 +51,8 @@ class SSIM(Metric):
         >>> ssim(preds, target)
         tensor(0.9219)
     """
+    preds: List
+    target: List
 
     def __init__(
         self,
@@ -75,8 +77,8 @@ class SSIM(Metric):
             ' to large memory footprint.'
         )
 
-        self.add_state("y", default=[], dist_reduce_fx="cat")
-        self.add_state("y_pred", default=[], dist_reduce_fx="cat")
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
         self.kernel_size = kernel_size
         self.sigma = sigma
         self.data_range = data_range
@@ -93,15 +95,15 @@ class SSIM(Metric):
             target: Ground truth values
         """
         preds, target = _ssim_update(preds, target)
-        self.y_pred.append(preds)
-        self.y.append(target)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self) -> Tensor:
         """
         Computes explained variance over state.
         """
-        preds = dim_zero_cat(self.y_pred)
-        target = dim_zero_cat(self.y)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
         return _ssim_compute(
             preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
         )

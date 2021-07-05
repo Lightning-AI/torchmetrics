@@ -67,6 +67,8 @@ class HammingDistance(Metric):
         tensor(0.2500)
 
     """
+    correct: Tensor
+    total: Tensor
 
     def __init__(
         self,
