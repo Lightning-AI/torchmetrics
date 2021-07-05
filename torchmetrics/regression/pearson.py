@@ -56,8 +56,8 @@ class PearsonCorrcoef(Metric):
         tensor(0.9849)
 
     """
-    preds: List
-    target: List
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

@@ -83,8 +83,8 @@ class PrecisionRecallCurve(Metric):
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
 
     """
-    preds: List
-    target: List
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

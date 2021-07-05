@@ -60,8 +60,8 @@ class CosineSimilarity(Metric):
         >>> cosine_similarity(preds, target)
         tensor(0.8536)
     """
-    preds: List
-    target: List
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

@@ -53,8 +53,8 @@ class SpearmanCorrcoef(Metric):
         >>> spearman(preds, target)
         tensor(1.0000)
     """
-    preds: List
-    target: List
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

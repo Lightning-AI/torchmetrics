@@ -60,7 +60,7 @@ class KLDivergence(Metric):
         >>> kldivergence(p, q)
         tensor(0.0853)
     """
-    measures: Union[List, Tensor]
+    measures: Union[List[Tensor], Tensor]
     total: Tensor
 
     def __init__(

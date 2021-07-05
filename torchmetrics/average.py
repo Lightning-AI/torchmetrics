@@ -59,6 +59,8 @@ class AverageMeter(Metric):
         >>> avg(values, weights)
         tensor(1.2500)
     """
+    value: Tensor
+    weight: Tensor
 
     def __init__(
         self,

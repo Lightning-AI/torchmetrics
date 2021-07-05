@@ -43,8 +43,8 @@ class AUC(Metric):
             Callback that performs the ``allgather`` operation on the metric state. When ``None``, DDP
             will be used to perform the ``allgather``.
     """
-    x: List
-    y: List
+    x: List[Tensor]
+    y: List[Tensor]
 
     def __init__(
         self,

@@ -168,8 +168,8 @@ class KID(Metric):
         (tensor(0.0338), tensor(0.0025))
 
     """
-    real_features: List
-    fake_features: List
+    real_features: List[Tensor]
+    fake_features: List[Tensor]
 
     def __init__(
         self,

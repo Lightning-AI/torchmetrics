@@ -51,8 +51,8 @@ class SSIM(Metric):
         >>> ssim(preds, target)
         tensor(0.9219)
     """
-    preds: List
-    target: List
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

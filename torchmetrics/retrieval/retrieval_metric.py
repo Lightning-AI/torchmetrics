@@ -64,9 +64,9 @@ class RetrievalMetric(Metric, ABC):
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
     """
-    indexes: List
-    preds: List
-    target: List
+    indexes: List[Tensor]
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
