@@ -153,7 +153,7 @@ def test_wrong_params(reduce, mdmc_reduce, num_classes, inputs, ignore_index):
         ),
         (_input_mdmc.preds, _input_mdmc.target, _sk_stat_scores_mdim_mcls, "global", NUM_CLASSES, None, None, 0.0),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_stat_scores_mdim_mcls, "global", NUM_CLASSES, None, 
+            _input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_stat_scores_mdim_mcls, "global", NUM_CLASSES, None,
             None, 0.0
         ),
     ],
