@@ -165,9 +165,6 @@ class StatScores(Metric):
         self.ignore_index = ignore_index
         self.top_k = top_k
 
-        if not 0 < threshold < 1:
-            raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
-
         if reduce not in ["micro", "macro", "samples"]:
             raise ValueError(f"The `reduce` {reduce} is not valid.")
 

@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+## [0.x.x] - ????-??-??
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+- Removed restriction that `threshold` has to be in (0,1) range to support logit input ([]())
+
+### Fixed
 
 ## [0.4.1] - 2021-07-05
 
