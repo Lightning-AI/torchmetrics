@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+## [0.x.x] - ????-??-??
+
+### Added
+
+- Added support in `nDCG` metric for target with values larger than 1 ([#343](https://github.com/PyTorchLightning/metrics/issues/343))
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
 
 ## [0.4.1] - 2021-07-05
 
