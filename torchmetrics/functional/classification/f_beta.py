@@ -48,7 +48,6 @@ def _fbeta_compute(
 
     num = (1 + beta**2) * precision * recall
     denom = beta**2 * precision + recall
-    # denom[denom == 0.] = 1  # avoid division by 0
     # if classes matter and a given class is not present in both the preds and the target,
     # computing the score for this class is meaningless, thus they should be ignored
     if average == AvgMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:

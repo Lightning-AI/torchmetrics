@@ -68,7 +68,7 @@ def _sk_accuracy(preds, target, subset_accuracy):
      (_input_mdmc.preds, _input_mdmc.target, False), (_input_mdmc.preds, _input_mdmc.target, True),
      (_input_mlmd_prob.preds, _input_mlmd_prob.target, True), (_input_mlmd_prob.preds, _input_mlmd_prob.target, False),
      (_input_mlmd.preds, _input_mlmd.target, True), (_input_mlmd.preds, _input_mlmd.target, False),
-     (_input_miss_class.preds, _input_miss_class.target, False)],
+     (_input_miss_class.preds, _input_miss_class.target, False),],
 )
 class TestAccuracies(MetricTester):
 
