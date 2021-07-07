@@ -450,5 +450,5 @@ def test_same_input(metric_class, metric_functional, sk_fn, average):
     func_res = metric_functional(preds_flat, target_flat, num_classes=NUM_CLASSES, average=average)
     sk_res = sk_fn(target_flat, preds_flat, average=average, zero_division=1)
 
-    assert class_res == sk_res
-    assert func_res == sk_res
+    assert torch.allclose(class_res, torch.tensor(sk_res).float())
+    assert torch.allclose(func_res, torch.tensor(sk_res).float())
