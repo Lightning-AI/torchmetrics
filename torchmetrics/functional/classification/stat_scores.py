@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-def _del_column(data: Tensor, idx: int):
+def _del_column(data: Tensor, idx: int) -> Tensor:
     """ Delete the column at index."""
     return torch.cat([data[:, :idx], data[:, (idx + 1):]], 1)
 
@@ -28,7 +28,7 @@ def _del_column(data: Tensor, idx: int):
 def _stat_scores(
     preds: Tensor,
     target: Tensor,
-    reduce: str = "micro",
+    reduce: Optional[str] = "micro",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate the number of tp, fp, tn, fn.
 
@@ -55,12 +55,11 @@ def _stat_scores(
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
     """
+    dim: Union[int, List[int]] = 1  # for "samples"
     if reduce == "micro":
         dim = [0, 1] if preds.ndim == 2 else [1, 2]
     elif reduce == "macro":
         dim = 0 if preds.ndim == 2 else 2
-    elif reduce == "samples":
-        dim = 1
 
     true_pred, false_pred = target == preds, target != preds
     pos_pred, neg_pred = preds == 1, preds == 0
@@ -77,7 +76,7 @@ def _stat_scores(
 def _stat_scores_update(
     preds: Tensor,
     target: Tensor,
-    reduce: str = "micro",
+    reduce: Optional[str] = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
@@ -123,15 +122,14 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-
-    outputs = [
+    stats = [
         tp.unsqueeze(-1),
         fp.unsqueeze(-1),
         tn.unsqueeze(-1),
         fn.unsqueeze(-1),
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
     ]
-    outputs = torch.cat(outputs, -1)
+    outputs: Tensor = torch.cat(stats, -1)
     outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
     return outputs
@@ -141,7 +139,7 @@ def _reduce_stat_scores(
     numerator: Tensor,
     denominator: Tensor,
     weights: Optional[Tensor],
-    average: str,
+    average: Optional[str],
     mdmc_average: Optional[str],
     zero_division: int = 0,
 ) -> Tensor:

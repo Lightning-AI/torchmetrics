@@ -69,6 +69,8 @@ class SNR(Metric):
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
         and Signal Processing (ICASSP) 2019.
     """
+    sum_snr: Tensor
+    total: Tensor
 
     def __init__(
         self,

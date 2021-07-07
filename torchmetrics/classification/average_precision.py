@@ -72,6 +72,8 @@ class AveragePrecision(Metric):
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
 
     """
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -98,7 +100,7 @@ class AveragePrecision(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -125,6 +127,8 @@ class AveragePrecision(Metric):
         """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
+        if not self.num_classes:
+            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         return _average_precision_compute(preds, target, self.num_classes, self.pos_label)
 
     @property

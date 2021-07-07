@@ -75,6 +75,7 @@ class CohenKappa(Metric):
         >>> cohenkappa(preds, target)
         tensor(0.5000)
     """
+    confmat: Tensor
 
     def __init__(
         self,
@@ -100,7 +101,7 @@ class CohenKappa(Metric):
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Callable, List, Optional
 
 import torch
 from torch import Tensor
@@ -60,6 +60,8 @@ class CosineSimilarity(Metric):
         >>> cosine_similarity(preds, target)
         tensor(0.8536)
     """
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -80,7 +82,7 @@ class CosineSimilarity(Metric):
         self.add_state("target", [], dist_reduce_fx="cat")
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update metric states with predictions and targets.
 
@@ -94,7 +96,7 @@ class CosineSimilarity(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self):
+    def compute(self) -> Tensor:
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _cosine_similarity_compute(preds, target, self.reduction)

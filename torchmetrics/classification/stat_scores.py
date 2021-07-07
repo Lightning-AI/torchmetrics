@@ -130,6 +130,12 @@ class StatScores(Metric):
 
     """
 
+    # TODO: canot be used because if scripting
+    # tp: Union[Tensor, List[Tensor]]
+    # fp: Union[Tensor, List[Tensor]]
+    # tn: Union[Tensor, List[Tensor]]
+    # fn: Union[Tensor, List[Tensor]]
+
     def __init__(
         self,
         threshold: float = 0.5,
@@ -159,9 +165,6 @@ class StatScores(Metric):
         self.ignore_index = ignore_index
         self.top_k = top_k
 
-        if not 0 < threshold < 1:
-            raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
-
         if reduce not in ["micro", "macro", "samples"]:
             raise ValueError(f"The `reduce` {reduce} is not valid.")
 
@@ -174,19 +177,22 @@ class StatScores(Metric):
         if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
+        default: Callable = lambda: []
+        reduce_fn: Optional[str] = None
         if mdmc_reduce != "samplewise" and reduce != "samples":
             if reduce == "micro":
                 zeros_shape = []
             elif reduce == "macro":
-                zeros_shape = (num_classes, )
-            default, reduce_fn = lambda: torch.zeros(zeros_shape, dtype=torch.long), "sum"
-        else:
-            default, reduce_fn = lambda: [], None
+                zeros_shape = [num_classes]
+            else:
+                raise ValueError(f'Wrong reduce="{reduce}"')
+            default = lambda: torch.zeros(zeros_shape, dtype=torch.long)
+            reduce_fn = "sum"
 
         for s in ("tp", "fp", "tn", "fn"):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
@@ -224,15 +230,10 @@ class StatScores(Metric):
         """Performs concatenation on the stat scores if neccesary,
         before passing them to a compute function.
         """
-
-        if isinstance(self.tp, list):
-            tp = torch.cat(self.tp)
-            fp = torch.cat(self.fp)
-            tn = torch.cat(self.tn)
-            fn = torch.cat(self.fn)
-        else:
-            tp, fp, tn, fn = self.tp, self.fp, self.tn, self.fn
-
+        tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
+        fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
+        tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
+        fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
         return tp, fp, tn, fn
 
     def compute(self) -> Tensor:

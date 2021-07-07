@@ -105,6 +105,8 @@ class ROC(Metric):
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
 
     """
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -133,7 +135,7 @@ class ROC(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -165,6 +167,8 @@ class ROC(Metric):
         """
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
+        if not self.num_classes:
+            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         return _roc_compute(preds, target, self.num_classes, self.pos_label)
 
     @property

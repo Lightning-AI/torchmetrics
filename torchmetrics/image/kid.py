@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -168,6 +168,8 @@ class KID(Metric):
         (tensor(0.0338), tensor(0.0025))
 
     """
+    real_features: List[Tensor]
+    fake_features: List[Tensor]
 
     def __init__(
         self,

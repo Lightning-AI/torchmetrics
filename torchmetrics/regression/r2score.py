@@ -87,6 +87,10 @@ class R2Score(Metric):
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
     """
+    sum_squared_error: Tensor
+    sum_error: Tensor
+    residual: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -123,7 +127,7 @@ class R2Score(Metric):
         self.add_state("residual", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -139,9 +143,7 @@ class R2Score(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """
-        Computes r2 score over the metric states.
-        """
+        """Computes r2 score over the metric states."""
         return _r2score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
         )

@@ -59,6 +59,8 @@ class MeanAbsolutePercentageError(Metric):
         >>> mean_abs_percentage_error(preds, target)
         tensor(0.2667)
     """
+    sum_abs_per_error: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -77,7 +79,7 @@ class MeanAbsolutePercentageError(Metric):
         self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 

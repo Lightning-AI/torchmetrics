@@ -6,6 +6,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+
+## [unreleased] - YYYY-MM-??
+
+### Added
+
+- Added support in `nDCG` metric for target with values larger than 1 ([#343](https://github.com/PyTorchLightning/metrics/issues/343))
+
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+- Removed restriction that `threshold` has to be in (0,1) range to support logit input ([#351](https://github.com/PyTorchLightning/metrics/pull/351))
+
+
+### Fixed
+
+
+
+## [0.4.1] - 2021-07-05
+
+### Changed
+
+- Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
+    [#332](https://github.com/PyTorchLightning/metrics/pull/332),
+    [#333](https://github.com/PyTorchLightning/metrics/pull/333),
+    [#335](https://github.com/PyTorchLightning/metrics/pull/335),
+    [#314](https://github.com/PyTorchLightning/metrics/pull/314))
+
+### Fixed
+
+- Fixed DDP by `is_sync` logic to `Metric` ([#339](https://github.com/PyTorchLightning/metrics/pull/339))
+
+
 ## [0.4.0] - 2021-06-29
 
 ### Added
@@ -32,6 +70,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved per-class metric handling for imbalanced datasets for `precision`, `recall`, `precision_recall`, `fbeta`, `f1`, `accuracy`, and `specificity` ([#204](https://github.com/PyTorchLightning/metrics/pull/204))
 - Decorated `torch.jit.unused` to `MetricCollection` forward ([#307](https://github.com/PyTorchLightning/metrics/pull/307))
 - Renamed `thresholds` argument to binned metrics for manually controlling the thresholds ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
+- Extend typing ([#324](https://github.com/PyTorchLightning/metrics/pull/324),
+    [#326](https://github.com/PyTorchLightning/metrics/pull/326),
+    [#327](https://github.com/PyTorchLightning/metrics/pull/327))
 
 ### Deprecated
 

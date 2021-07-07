@@ -74,6 +74,7 @@ class MatthewsCorrcoef(Metric):
         tensor(0.5774)
 
     """
+    confmat: Tensor
 
     def __init__(
         self,
@@ -95,7 +96,7 @@ class MatthewsCorrcoef(Metric):
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 

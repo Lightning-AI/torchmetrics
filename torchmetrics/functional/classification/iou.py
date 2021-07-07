@@ -27,7 +27,7 @@ def _iou_from_confmat(
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     reduction: str = 'elementwise_mean',
-):
+) -> Tensor:
 
     # Remove the ignored class index from the scores.
     if ignore_index is not None and 0 <= ignore_index < num_classes:
