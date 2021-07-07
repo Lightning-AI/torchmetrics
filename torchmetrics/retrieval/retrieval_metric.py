@@ -82,6 +82,7 @@ class RetrievalMetric(Metric, ABC):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn
         )
+        self.allow_non_binary_target = False
 
         empty_target_action_options = ('error', 'skip', 'neg', 'pos')
         if empty_target_action not in empty_target_action_options:
@@ -98,7 +99,9 @@ class RetrievalMetric(Metric, ABC):
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
 
-        indexes, preds, target = _check_retrieval_inputs(indexes, preds, target)
+        indexes, preds, target = _check_retrieval_inputs(
+            indexes, preds, target, allow_non_binary_target=self.allow_non_binary_target
+        )
 
         self.indexes.append(indexes)
         self.preds.append(preds)
