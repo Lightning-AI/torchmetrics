@@ -24,13 +24,14 @@ from tests.classification.inputs import _input_binary, _input_binary_logits, _in
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
 from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import F1, FBeta, Metric
 from torchmetrics.functional import f1, fbeta
 from torchmetrics.utilities.checks import _input_format_classification
@@ -55,7 +56,6 @@ def _sk_fbeta_f1(preds, target, sk_fn, num_classes, average, multiclass, ignore_
         preds, target, THRESHOLD, num_classes=num_classes, multiclass=multiclass
     )
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
-
     sk_scores = sk_fn(sk_target, sk_preds, average=average, zero_division=0, labels=labels)
 
     if len(labels) != num_classes and not average:
@@ -408,3 +408,25 @@ def test_top_k(
 
     assert torch.isclose(class_metric.compute(), result)
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
+
+
+@pytest.mark.parametrize('average', ['micro', 'macro', 'weighted'])
+@pytest.mark.parametrize('metric_class, metric_functional, sk_fn', [
+    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)),
+    (F1, f1, f1_score)
+])
+def test_same_input(metric_class, metric_functional, sk_fn, average):
+    preds = _input_miss_class.preds
+    target = _input_miss_class.target
+    preds_flat = torch.cat([p for p in preds], dim=0)
+    target_flat = torch.cat([t for t in target], dim=0)
+
+    mc = metric_class(num_classes=NUM_CLASSES, average=average)
+    for i in range(NUM_BATCHES):
+        mc.update(preds[i], target[i])
+    class_res = mc.compute()
+    func_res = metric_functional(preds_flat, target_flat, num_classes=NUM_CLASSES, average=average)
+    sk_res = sk_fn(target_flat, preds_flat, average=average, zero_division=0)
+
+    assert torch.allclose(class_res, torch.tensor(sk_res).float())
+    assert torch.allclose(func_res, torch.tensor(sk_res).float())

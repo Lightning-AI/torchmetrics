@@ -46,8 +46,14 @@ def _fbeta_compute(
         precision = _safe_divide(tp.float(), tp + fp)
         recall = _safe_divide(tp.float(), tp + fn)
 
+    if average == AvgMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        cond = tp + fp + fn == 0
+        precision = precision[~cond]
+        recall = recall[~cond]
+
     num = (1 + beta**2) * precision * recall
     denom = beta**2 * precision + recall
+    denom[denom == 0.] = 1.0  # avoid division by 0
     # if classes matter and a given class is not present in both the preds and the target,
     # computing the score for this class is meaningless, thus they should be ignored
     if average == AvgMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
