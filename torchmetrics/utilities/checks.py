@@ -162,8 +162,6 @@ def _check_num_classes_mc(
             )
         if num_classes <= target.max():
             raise ValueError("The highest label in `target` should be smaller than `num_classes`.")
-        if num_classes <= preds.max():
-            raise ValueError("The highest label in `preds` should be smaller than `num_classes`.")
         if preds.shape != target.shape and num_classes != implied_classes:
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
 
