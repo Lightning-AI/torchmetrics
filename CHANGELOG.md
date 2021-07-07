@@ -7,17 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2021-MM-DD
+## [unreleased] - YYYY-MM-??
 
 ### Added
 
+- Added support in `nDCG` metric for target with values larger than 1 ([#343](https://github.com/PyTorchLightning/metrics/issues/343))
+
 
 ### Changed
-
-- Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
-    [#332](https://github.com/PyTorchLightning/metrics/pull/332),
-    [#333](https://github.com/PyTorchLightning/metrics/pull/333),
-    [#335](https://github.com/PyTorchLightning/metrics/pull/335))
 
 
 ### Deprecated
@@ -25,8 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed restriction that `threshold` has to be in (0,1) range to support logit input ([#351](https://github.com/PyTorchLightning/metrics/pull/351))
+
 
 ### Fixed
+
+
+
+## [0.4.1] - 2021-07-05
+
+### Changed
+
+- Extend typing ([#330](https://github.com/PyTorchLightning/metrics/pull/330),
+    [#332](https://github.com/PyTorchLightning/metrics/pull/332),
+    [#333](https://github.com/PyTorchLightning/metrics/pull/333),
+    [#335](https://github.com/PyTorchLightning/metrics/pull/335),
+    [#314](https://github.com/PyTorchLightning/metrics/pull/314))
+
+### Fixed
+
+- Fixed DDP by `is_sync` logic to `Metric` ([#339](https://github.com/PyTorchLightning/metrics/pull/339))
 
 
 ## [0.4.0] - 2021-06-29

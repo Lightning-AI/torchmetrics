@@ -130,6 +130,12 @@ class StatScores(Metric):
 
     """
 
+    # TODO: canot be used because if scripting
+    # tp: Union[Tensor, List[Tensor]]
+    # fp: Union[Tensor, List[Tensor]]
+    # tn: Union[Tensor, List[Tensor]]
+    # fn: Union[Tensor, List[Tensor]]
+
     def __init__(
         self,
         threshold: float = 0.5,
@@ -158,9 +164,6 @@ class StatScores(Metric):
         self.multiclass = multiclass
         self.ignore_index = ignore_index
         self.top_k = top_k
-
-        if not 0 < threshold < 1:
-            raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
 
         if reduce not in ["micro", "macro", "samples"]:
             raise ValueError(f"The `reduce` {reduce} is not valid.")

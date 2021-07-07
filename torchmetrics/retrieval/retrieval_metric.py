@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional
+from typing import Any, Callable, List, Optional
 
 import torch
 from torch import Tensor, tensor
@@ -64,6 +64,9 @@ class RetrievalMetric(Metric, ABC):
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
     """
+    indexes: List[Tensor]
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -79,6 +82,7 @@ class RetrievalMetric(Metric, ABC):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn
         )
+        self.allow_non_binary_target = False
 
         empty_target_action_options = ('error', 'skip', 'neg', 'pos')
         if empty_target_action not in empty_target_action_options:
@@ -95,7 +99,9 @@ class RetrievalMetric(Metric, ABC):
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
 
-        indexes, preds, target = _check_retrieval_inputs(indexes, preds, target)
+        indexes, preds, target = _check_retrieval_inputs(
+            indexes, preds, target, allow_non_binary_target=self.allow_non_binary_target
+        )
 
         self.indexes.append(indexes)
         self.preds.append(preds)

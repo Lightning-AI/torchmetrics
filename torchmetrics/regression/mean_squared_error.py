@@ -51,6 +51,8 @@ class MeanSquaredError(Metric):
         tensor(0.8750)
 
     """
+    sum_squared_error: Tensor
+    total: Tensor
 
     def __init__(
         self,

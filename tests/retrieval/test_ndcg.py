@@ -20,8 +20,8 @@ from tests.helpers import seed_all
 from tests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,
-    _default_metric_class_input_arguments,
-    _default_metric_functional_input_arguments,
+    _default_metric_class_input_arguments_with_non_binary_target,
+    _default_metric_functional_input_arguments_with_non_binary_target,
     _errors_test_class_metric_parameters_default,
     _errors_test_class_metric_parameters_k,
     _errors_test_class_metric_parameters_no_pos_target,
@@ -56,7 +56,7 @@ class TestNDCG(RetrievalMetricTester):
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments_with_non_binary_target)
     def test_class_metric(
         self,
         ddp: bool,
@@ -80,7 +80,7 @@ class TestNDCG(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_functional_input_arguments_with_non_binary_target)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
         self.run_functional_metric_test(
@@ -92,7 +92,7 @@ class TestNDCG(RetrievalMetricTester):
             k=k,
         )
 
-    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments_with_non_binary_target)
     def test_precision_cpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
         self.run_precision_test_cpu(
             indexes=indexes,
@@ -102,7 +102,7 @@ class TestNDCG(RetrievalMetricTester):
             metric_functional=retrieval_normalized_dcg,
         )
 
-    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments_with_non_binary_target)
     def test_precision_gpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
         self.run_precision_test_gpu(
             indexes=indexes,

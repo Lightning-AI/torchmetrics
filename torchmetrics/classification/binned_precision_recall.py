@@ -114,6 +114,9 @@ class BinnedPrecisionRecallCurve(Metric):
         tensor([0.0000, 0.5000, 1.0000]),
         tensor([0.0000, 0.5000, 1.0000])]
     """
+    TPs: Tensor
+    FPs: Tensor
+    FNs: Tensor
 
     def __init__(
         self,

@@ -105,6 +105,8 @@ class ROC(Metric):
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
 
     """
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

@@ -100,6 +100,7 @@ class IS(Metric):
         (tensor(1.0569), tensor(0.0113))
 
     """
+    features: List
 
     def __init__(
         self,
