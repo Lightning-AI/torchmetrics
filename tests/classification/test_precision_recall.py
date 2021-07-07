@@ -434,10 +434,9 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
 
 
 @pytest.mark.parametrize('average', ['micro', 'macro', 'weighted'])
-@pytest.mark.parametrize('metric_class, metric_functional, sk_fn', [
-    (Precision, precision, precision_score),
-    (Recall, recall, recall_score)
-])
+@pytest.mark.parametrize(
+    'metric_class, metric_functional, sk_fn', [(Precision, precision, precision_score), (Recall, recall, recall_score)]
+)
 def test_same_input(metric_class, metric_functional, sk_fn, average):
     preds = _input_miss_class.preds
     target = _input_miss_class.target
