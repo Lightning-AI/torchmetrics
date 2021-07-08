@@ -79,7 +79,7 @@ class RetrievalFallOut(RetrievalMetric):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
         k: int = None
-    ):
+    ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             compute_on_step=compute_on_step,

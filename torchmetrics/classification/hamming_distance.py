@@ -67,6 +67,8 @@ class HammingDistance(Metric):
         tensor(0.2500)
 
     """
+    correct: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -75,7 +77,7 @@ class HammingDistance(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -90,7 +92,7 @@ class HammingDistance(Metric):
             raise ValueError("The `threshold` should lie in the (0,1) interval.")
         self.threshold = threshold
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.

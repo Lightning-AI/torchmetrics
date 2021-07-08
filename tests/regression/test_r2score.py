@@ -93,7 +93,7 @@ class TestR2Score(MetricTester):
             metric_args=dict(adjusted=adjusted, multioutput=multioutput),
         )
 
-    def test_r2_differentiabilit(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_differentiability(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
         self.run_differentiability_test(
             preds=preds,
             target=target,

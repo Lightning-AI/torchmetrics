@@ -11,25 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
-def _del_column(tensor: Tensor, index: int):
+def _del_column(data: Tensor, idx: int) -> Tensor:
     """ Delete the column at index."""
-
-    return torch.cat([tensor[:, :index], tensor[:, (index + 1):]], 1)
+    return torch.cat([data[:, :idx], data[:, (idx + 1):]], 1)
 
 
 def _stat_scores(
     preds: Tensor,
     target: Tensor,
-    reduce: str = "micro",
+    reduce: Optional[str] = "micro",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate the number of tp, fp, tn, fn.
 
@@ -56,12 +55,11 @@ def _stat_scores(
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
     """
+    dim: Union[int, List[int]] = 1  # for "samples"
     if reduce == "micro":
         dim = [0, 1] if preds.ndim == 2 else [1, 2]
     elif reduce == "macro":
         dim = 0 if preds.ndim == 2 else 2
-    elif reduce == "samples":
-        dim = 1
 
     true_pred, false_pred = target == preds, target != preds
     pos_pred, neg_pred = preds == 1, preds == 0
@@ -78,7 +76,7 @@ def _stat_scores(
 def _stat_scores_update(
     preds: Tensor,
     target: Tensor,
-    reduce: str = "micro",
+    reduce: Optional[str] = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
     top_k: Optional[int] = None,
@@ -124,18 +122,83 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-
-    outputs = [
+    stats = [
         tp.unsqueeze(-1),
         fp.unsqueeze(-1),
         tn.unsqueeze(-1),
         fn.unsqueeze(-1),
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
     ]
-    outputs = torch.cat(outputs, -1)
+    outputs: Tensor = torch.cat(stats, -1)
     outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
     return outputs
+
+
+def _reduce_stat_scores(
+    numerator: Tensor,
+    denominator: Tensor,
+    weights: Optional[Tensor],
+    average: Optional[str],
+    mdmc_average: Optional[str],
+    zero_division: int = 0,
+) -> Tensor:
+    """
+    Reduces scores of type ``numerator/denominator`` or
+    ``weights * (numerator/denominator)``, if ``average='weighted'``.
+
+    Args:
+        numerator: A tensor with numerator numbers.
+        denominator: A tensor with denominator numbers. If a denominator is
+            negative, the class will be ignored (if averaging), or its score
+            will be returned as ``nan`` (if ``average=None``).
+            If the denominator is zero, then ``zero_division`` score will be
+            used for those elements.
+        weights:
+            A tensor of weights to be used if ``average='weighted'``.
+        average:
+            The method to average the scores. Should be one of ``'micro'``, ``'macro'``,
+            ``'weighted'``, ``'none'``, ``None`` or ``'samples'``. The behavior
+            corresponds to `sklearn averaging methods <https://scikit-learn.org/stable/modules/\
+model_evaluation.html#multiclass-and-multilabel-classification>`__.
+        mdmc_average:
+            The method to average the scores if inputs were multi-dimensional multi-class (MDMC).
+            Should be either ``'global'`` or ``'samplewise'``. If inputs were not
+            multi-dimensional multi-class, it should be ``None`` (default).
+        zero_division:
+            The value to use for the score if denominator equals zero.
+    """
+    numerator, denominator = numerator.float(), denominator.float()
+    zero_div_mask = denominator == 0
+    ignore_mask = denominator < 0
+
+    if weights is None:
+        weights = torch.ones_like(denominator)
+    else:
+        weights = weights.float()
+
+    numerator = torch.where(zero_div_mask, tensor(float(zero_division), device=numerator.device), numerator)
+    denominator = torch.where(zero_div_mask | ignore_mask, tensor(1.0, device=denominator.device), denominator)
+    weights = torch.where(ignore_mask, tensor(0.0, device=weights.device), weights)
+
+    if average not in (AverageMethod.MICRO, AverageMethod.NONE, None):
+        weights = weights / weights.sum(dim=-1, keepdim=True)
+
+    scores = weights * (numerator / denominator)
+
+    # This is in case where sum(weights) = 0, which happens if we ignore the only present class with average='weighted'
+    scores = torch.where(torch.isnan(scores), tensor(float(zero_division), device=scores.device), scores)
+
+    if mdmc_average == MDMCAverageMethod.SAMPLEWISE:
+        scores = scores.mean(dim=0)
+        ignore_mask = ignore_mask.sum(dim=0).bool()
+
+    if average in (AverageMethod.NONE, None):
+        scores = torch.where(ignore_mask, tensor(float('nan'), device=scores.device), scores)
+    else:
+        scores = scores.sum()
+
+    return scores
 
 
 def stat_scores(
@@ -148,7 +211,6 @@ def stat_scores(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-    is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
 ) -> Tensor:
     """Computes the number of true positives, false positives, true negatives, false negatives.
     Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
@@ -217,9 +279,6 @@ def stat_scores(
             than what they appear to be. See the parameter's
             :ref:`documentation section <references/modules:using the multiclass parameter>`
             for a more detailed explanation and examples.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Return:
         The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -275,8 +334,6 @@ def stat_scores(
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
     """
-    multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
-
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")
 

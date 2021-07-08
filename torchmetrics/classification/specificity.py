@@ -135,8 +135,7 @@ class Specificity(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
-
+    ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -168,8 +167,8 @@ class Specificity(StatScores):
             - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
               of classes
         """
-        _, fp, tn, _ = self._get_final_stats()
-        return _specificity_compute(fp, tn, self.average, self.mdmc_reduce)
+        tp, fp, tn, fn = self._get_final_stats()
+        return _specificity_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
 
     @property
     def is_differentiable(self) -> bool:

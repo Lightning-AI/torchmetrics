@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import sys
+from copy import deepcopy
 
 import pytest
 import torch
@@ -21,6 +23,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
+from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 seed_all(42)
 
@@ -116,3 +119,115 @@ def _test_non_contiguous_tensors(rank, worldsize):
 def test_non_contiguous_tensors():
     """ Test that gather_all operation works for non contiguous tensors """
     torch.multiprocessing.spawn(_test_non_contiguous_tensors, args=(2, ), nprocs=2)
+
+
+def _test_state_dict_is_synced(rank, worldsize, tmpdir):
+    setup_ddp(rank, worldsize)
+
+    class DummyCatMetric(Metric):
+
+        def __init__(self):
+            super().__init__()
+            self.add_state("x", torch.tensor(0), dist_reduce_fx=torch.sum)
+            self.add_state("c", torch.tensor(0), dist_reduce_fx=torch.sum)
+
+        def update(self, x):
+            self.x += x
+            self.c += 1
+
+        def compute(self):
+            return self.x // self.c
+
+        def __repr__(self):
+            return f"DummyCatMetric(x={self.x}, c={self.c})"
+
+    metric = DummyCatMetric()
+    metric.persistent(True)
+
+    def verify_metric(metric, i, world_size):
+        state_dict = metric.state_dict()
+        exp_sum = i * (i + 1) / 2
+        assert state_dict["x"] == exp_sum * world_size
+        assert metric.x == exp_sum * world_size
+        assert metric.c == (i + 1) * world_size
+        assert state_dict["c"] == metric.c
+
+    steps = 5
+    for i in range(steps):
+
+        if metric._is_synced:
+
+            with pytest.raises(TorchMetricsUserError, match="The Metric shouldn't be synced when performing"):
+                metric(i)
+
+            metric.unsync()
+
+        metric(i)
+
+        verify_metric(metric, i, 1)
+
+        metric.sync()
+        assert metric._is_synced
+
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been synced."):
+            metric.sync()
+
+        verify_metric(metric, i, 2)
+
+        metric.unsync()
+        assert not metric._is_synced
+
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been un-synced."):
+            metric.unsync()
+
+        with metric.sync_context():
+            assert metric._is_synced
+            verify_metric(metric, i, 2)
+
+        with metric.sync_context(should_unsync=False):
+            assert metric._is_synced
+            verify_metric(metric, i, 2)
+
+        assert metric._is_synced
+
+        metric.unsync()
+        assert not metric._is_synced
+
+        metric.sync()
+        cache = metric._cache
+        metric._cache = None
+
+        with pytest.raises(TorchMetricsUserError, match="The internal cache should exist to unsync the Metric."):
+            metric.unsync()
+
+        metric._cache = cache
+
+    def reload_state_dict(state_dict, expected_x, expected_c):
+        metric = DummyCatMetric()
+        metric.load_state_dict(state_dict)
+        assert metric.x == expected_x
+        assert metric.c == expected_c
+
+    reload_state_dict(deepcopy(metric.state_dict()), 20, 10)
+
+    metric.unsync()
+    reload_state_dict(deepcopy(metric.state_dict()), 10, 5)
+
+    metric.sync()
+
+    filepath = os.path.join(tmpdir, f'weights-{rank}.pt')
+
+    torch.save(metric.state_dict(), filepath)
+
+    metric.unsync()
+    with metric.sync_context():
+        torch.save(metric.state_dict(), filepath)
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+def test_state_dict_is_synced(tmpdir):
+    """
+    This test asserts that metrics are synced while creating the state
+    dict but restored after to continue accumulation.
+    """
+    torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)

@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_compute,
     _subset_accuracy_update,
 )
+from torchmetrics.utilities.enums import DataType
 
 from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 
@@ -69,6 +70,9 @@ class Accuracy(StatScores):
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -162,6 +166,8 @@ class Accuracy(StatScores):
         tensor(0.6667)
 
     """
+    correct: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -177,7 +183,7 @@ class Accuracy(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -209,10 +215,10 @@ class Accuracy(StatScores):
         self.threshold = threshold
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
-        self.mode = None
+        self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
@@ -224,10 +230,10 @@ class Accuracy(StatScores):
         """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
         mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
 
-        if self.mode is None:
+        if not self.mode:
             self.mode = mode
         elif self.mode != mode:
-            raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
+            raise ValueError(f"You can not use {mode} inputs with {self.mode} inputs.")
 
         if self.subset_accuracy and not _check_subset_validity(self.mode):
             self.subset_accuracy = False
@@ -237,6 +243,8 @@ class Accuracy(StatScores):
             self.correct += correct
             self.total += total
         else:
+            if not self.mode:
+                raise RuntimeError("You have to have determined mode.")
             tp, fp, tn, fn = _accuracy_update(
                 preds,
                 target,
@@ -266,6 +274,8 @@ class Accuracy(StatScores):
         """
         Computes accuracy based on inputs passed in to ``update`` previously.
         """
+        if not self.mode:
+            raise RuntimeError("You have to have determined mode.")
         if self.subset_accuracy:
             return _subset_accuracy_compute(self.correct, self.total)
         tp, fp, tn, fn = self._get_final_stats()

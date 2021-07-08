@@ -25,16 +25,17 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
-      - id: check-case-conflict
       - id: check-yaml
-      - id: check-toml
-      - id: pretty-format-json
-      - id: check-added-large-files
       - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-toml
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=250', '--enforce-all']
       - id: detect-private-key
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.8.0
+    rev: 5.9.1
     hooks:
       - id: isort
         name: imports

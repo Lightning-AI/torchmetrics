@@ -59,6 +59,8 @@ class AverageMeter(Metric):
         >>> avg(values, weights)
         tensor(1.2500)
     """
+    value: Tensor
+    weight: Tensor
 
     def __init__(
         self,
@@ -66,7 +68,7 @@ class AverageMeter(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,

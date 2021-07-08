@@ -16,20 +16,29 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.classification.stat_scores import _reduce_stat_scores
-from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 def _specificity_compute(
+    tp: Tensor,
     fp: Tensor,
     tn: Tensor,
+    fn: Tensor,
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    numerator = tn
+    denominator = tn + fp
+    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        # a class is not present if there exists no TPs, no FPs, and no FNs
+        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
+        numerator[meaningless_indeces, ...] = -1
+        denominator[meaningless_indeces, ...] = -1
     return _reduce_stat_scores(
-        numerator=tn,
-        denominator=tn + fp,
-        weights=None if average != "weighted" else tn + fp,
+        numerator=numerator,
+        denominator=denominator,
+        weights=None if average != AverageMethod.WEIGHTED else denominator,
         average=average,
         mdmc_average=mdmc_average,
     )
@@ -77,6 +86,9 @@ def specificity(
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -165,7 +177,7 @@ def specificity(
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     reduce = "macro" if average in ["weighted", "none", None] else average
-    _, fp, tn, _ = _stat_scores_update(
+    tp, fp, tn, fn = _stat_scores_update(
         preds,
         target,
         reduce=reduce,
@@ -177,4 +189,4 @@ def specificity(
         ignore_index=ignore_index,
     )
 
-    return _specificity_compute(fp, tn, average, mdmc_average)
+    return _specificity_compute(tp, fp, tn, fn, average, mdmc_average)

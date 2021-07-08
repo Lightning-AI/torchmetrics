@@ -77,7 +77,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
         k: int = None
-    ):
+    ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             compute_on_step=compute_on_step,
@@ -89,6 +89,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         if (k is not None) and not (isinstance(k, int) and k > 0):
             raise ValueError("`k` has to be a positive integer or None")
         self.k = k
+        self.allow_non_binary_target = True
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_normalized_dcg(preds, target, k=self.k)
