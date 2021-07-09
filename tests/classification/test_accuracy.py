@@ -370,7 +370,7 @@ def test_negative_ignore_index():
     target = torch.tensor([1, 2, -1])
     num_classes = 2
     exp_result = 1.0
-    
+
     # If the ignore index is set properly
     ignore_index = -1
     # Test class
@@ -381,7 +381,6 @@ def test_negative_ignore_index():
     # Test functional
     acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
     assert (acc_score == tensor(exp_result)).all()
-    
 
     # If the ignore index is not set properly, we expect to see an error
     ignore_index = None
