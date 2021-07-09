@@ -63,7 +63,7 @@ __temp_target = abs(__temp_preds - 1)
 
 _input_multilabel_no_match = Input(preds=__temp_preds, target=__temp_target)
 
-__mc_prob_logits = torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
+__mc_prob_logits = 10 * torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
 __mc_prob_preds = __mc_prob_logits.abs() / __mc_prob_logits.abs().sum(dim=2, keepdim=True)
 
 _input_multiclass_prob = Input(
