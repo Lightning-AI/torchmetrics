@@ -19,7 +19,7 @@ from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
 from torch.utils.data import DataLoader
 
-from integrations.lightning_models import BoringModel, RandomDataset
+from integrations.lightning.boring_model import BoringModel, RandomDataset
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3
 from torchmetrics import Accuracy, AveragePrecision, Metric
 
