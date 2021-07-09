@@ -360,3 +360,36 @@ def test_same_input(average):
 
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
+
+
+def test_negative_ignore_index():
+    """This tests that if a negative value for the ignore index is set, it should work with the checks
+    for the target value.
+    """
+    preds = torch.tensor([1, 2, 1])
+    target = torch.tensor([1, 2, -1])
+    num_classes = 2
+    exp_result = 1.0
+    
+    # If the ignore index is set properly
+    ignore_index = -1
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    acc(preds, target)
+    assert (acc.compute() == tensor(exp_result)).all()
+
+    # Test functional
+    acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+    assert (acc_score == tensor(exp_result)).all()
+    
+
+    # If the ignore index is not set properly, we expect to see an error
+    ignore_index = None
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc(preds, target)
+
+    # Test functional
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
