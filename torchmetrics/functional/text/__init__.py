@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from torchmetrics.functional.text.blue import bleu_score  # noqa: F401
+from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401

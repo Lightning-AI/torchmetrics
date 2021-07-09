@@ -11,4 +11,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.text.blue import BLEUScore  # noqa: F401
+from torchmetrics.text.bleu import BLEUScore  # noqa: F401
