@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from tests.helpers.testers import MetricTester
 import pytest
 import torch
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu, sentence_bleu
 from torch import tensor
 
-from torchmetrics.functional import bleu_score
+from torchmetrics.functional.text.bleu import bleu_score
+from torchmetrics.text.bleu import BLEUScore
 
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.sentence_bleu
