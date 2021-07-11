@@ -46,8 +46,8 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
 
 
 def _bleu_score_update(
-    translate_corpus: Sequence[Sequence[str]],
     reference_corpus: Sequence[Sequence[Sequence[str]]],
+    translate_corpus: Sequence[Sequence[str]],
     numerator: Tensor,
     denominator: Tensor,
     c: float,
@@ -73,7 +73,7 @@ def _bleu_score_update(
         for counter in translation_counter:
             denominator[len(counter) - 1] += translation_counter[counter]
 
-    return tensor(c), tensor(r)
+    return c if isinstance(c, Tensor) else tensor(c), r if isinstance(r, Tensor) else tensor(r)
 
 
 def _bleu_score_compute(
@@ -104,8 +104,8 @@ def _bleu_score_compute(
 
 
 def bleu_score(
-    translate_corpus: Sequence[Sequence[str]],
     reference_corpus: Sequence[Sequence[Sequence[str]]],
+    translate_corpus: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False
 ) -> Tensor:
@@ -118,8 +118,8 @@ def bleu_score(
         http://www.aclweb.org/anthology/P02-1040.pdf
 
     Args:
-        translate_corpus: An iterable of machine translated corpus
         reference_corpus: An iterable of iterables of reference corpus
+        translate_corpus: An iterable of machine translated corpus
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether or not to apply smoothing – Lin et al. 2004
 
@@ -141,7 +141,7 @@ def bleu_score(
     c = tensor(0, dtype=torch.float)
     r = tensor(0, dtype=torch.float)
 
-    c, r = _bleu_score_update(translate_corpus, reference_corpus, numerator, denominator, c, r, n_gram)
+    c, r = _bleu_score_update(reference_corpus, translate_corpus, numerator, denominator, c, r, n_gram)
 
     trans_len = c.clone().detach()
     ref_len = r.clone().detach()

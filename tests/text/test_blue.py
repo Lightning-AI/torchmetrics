@@ -63,21 +63,21 @@ def test_bleu_score(weights, n_gram, smooth_func, smooth):
         weights=weights,
         smoothing_function=smooth_func,
     )
-    pl_output = bleu_score([HYPOTHESIS1], [[REFERENCE1, REFERENCE2, REFERENCE3]], n_gram=n_gram, smooth=smooth)
+    pl_output = bleu_score([[REFERENCE1, REFERENCE2, REFERENCE3]], [HYPOTHESIS1], n_gram=n_gram, smooth=smooth)
     assert torch.allclose(pl_output, tensor(nltk_output))
 
     nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
-    pl_output = bleu_score(HYPOTHESES, LIST_OF_REFERENCES, n_gram=n_gram, smooth=smooth)
+    pl_output = bleu_score(LIST_OF_REFERENCES, HYPOTHESES, n_gram=n_gram, smooth=smooth)
     assert torch.allclose(pl_output, tensor(nltk_output))
 
 
 def test_bleu_empty():
     hyp = [[]]
     ref = [[[]]]
-    assert bleu_score(hyp, ref) == tensor(0.0)
+    assert bleu_score(ref, hyp) == tensor(0.0)
 
 
 def test_no_4_gram():
     hyps = [["My", "full", "pytorch-lightning"]]
     refs = [[["My", "full", "pytorch-lightning", "test"], ["Completely", "Different"]]]
-    assert bleu_score(hyps, refs) == tensor(0.0)
+    assert bleu_score(refs, hyps) == tensor(0.0)
