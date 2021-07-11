@@ -57,15 +57,15 @@ class BLEUScore(Metric):
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    def update(self, translate_corpus, reference_corpus) -> None:
+    def update(self, reference_corpus, translate_corpus) -> None:
         """
         Compute Precision Scores.
         Args:
-            translate_corpus: An iterable of machine translated corpus
             reference_corpus: An iterable of iterables of reference corpus
+            translate_corpus: An iterable of machine translated corpus
         """
         self.c, self.r = _bleu_score_update(
-            translate_corpus, reference_corpus, self.numerator, self.denominator, self.c, self.r, self.n_gram
+            reference_corpus, translate_corpus, self.numerator, self.denominator, self.c, self.r, self.n_gram
         )
 
     def compute(self) -> Tensor:
