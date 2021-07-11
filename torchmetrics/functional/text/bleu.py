@@ -45,6 +45,64 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
     return ngram_counter
 
 
+def _bleu_score_update(
+    translate_corpus: Sequence[Sequence[str]],
+    reference_corpus: Sequence[Sequence[Sequence[str]]],
+    numerator: Tensor,
+    denominator: Tensor,
+    c: float,
+    r: float,
+    n_gram: int = 4
+):
+    for (translation, references) in zip(translate_corpus, reference_corpus):
+        c += len(translation)
+        ref_len_list = [len(ref) for ref in references]
+        ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
+        r += ref_len_list[ref_len_diff.index(min(ref_len_diff))]
+        translation_counter: Counter = _count_ngram(translation, n_gram)
+        reference_counter: Counter = Counter()
+
+        for ref in references:
+            reference_counter |= _count_ngram(ref, n_gram)
+
+        ngram_counter_clip = translation_counter & reference_counter
+
+        for counter_clip in ngram_counter_clip:
+            numerator[len(counter_clip) - 1] += ngram_counter_clip[counter_clip]
+
+        for counter in translation_counter:
+            denominator[len(counter) - 1] += translation_counter[counter]
+
+    return tensor(c), tensor(r)
+
+
+def _bleu_score_compute(
+    trans_len: Tensor,
+    ref_len: Tensor,
+    numerator: Tensor,
+    denominator: Tensor,
+    c: float,
+    r: float,
+    n_gram: int = 4,
+    smooth: bool = False
+) -> Tensor:
+    if min(numerator) == 0.0:
+        return tensor(0.0)
+
+    if smooth:
+        precision_scores = torch.add(numerator, torch.ones(n_gram)) / torch.add(denominator, torch.ones(n_gram))
+        precision_scores[0] = numerator[0] / denominator[0]
+    else:
+        precision_scores = numerator / denominator
+
+    log_precision_scores = tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
+    geometric_mean = torch.exp(torch.sum(log_precision_scores))
+    brevity_penalty = tensor(1.0) if c > r else torch.exp(1 - (ref_len / trans_len))
+    bleu = brevity_penalty * geometric_mean
+
+    return bleu
+
+
 def bleu_score(
     translate_corpus: Sequence[Sequence[str]],
     reference_corpus: Sequence[Sequence[Sequence[str]]],
@@ -53,6 +111,11 @@ def bleu_score(
 ) -> Tensor:
     """
     Calculate BLEU score of machine translated text with one or more references
+
+    References:
+        [1] BLEU: a Method for Automatic Evaluation of Machine Translation
+        Papineni, Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu
+        http://www.aclweb.org/anthology/P02-1040.pdf
 
     Args:
         translate_corpus: An iterable of machine translated corpus
@@ -75,43 +138,12 @@ def bleu_score(
         raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
-    c = 0.0
-    r = 0.0
+    c = tensor(0, dtype=torch.float)
+    r = tensor(0, dtype=torch.float)
 
-    for (translation, references) in zip(translate_corpus, reference_corpus):
-        c += len(translation)
-        ref_len_list = [len(ref) for ref in references]
-        ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
-        r += ref_len_list[ref_len_diff.index(min(ref_len_diff))]
-        translation_counter: Counter = _count_ngram(translation, n_gram)
-        reference_counter: Counter = Counter()
+    c, r = _bleu_score_update(translate_corpus, reference_corpus, numerator, denominator, c, r, n_gram)
 
-        for ref in references:
-            reference_counter |= _count_ngram(ref, n_gram)
+    trans_len = c.clone().detach()
+    ref_len = r.clone().detach()
 
-        ngram_counter_clip = translation_counter & reference_counter
-
-        for counter_clip in ngram_counter_clip:
-            numerator[len(counter_clip) - 1] += ngram_counter_clip[counter_clip]
-
-        for counter in translation_counter:
-            denominator[len(counter) - 1] += translation_counter[counter]
-
-    trans_len = tensor(c)
-    ref_len = tensor(r)
-
-    if min(numerator) == 0.0:
-        return tensor(0.0)
-
-    if smooth:
-        precision_scores = torch.add(numerator, torch.ones(n_gram)) / torch.add(denominator, torch.ones(n_gram))
-        precision_scores[0] = numerator[0] / denominator[0]
-    else:
-        precision_scores = numerator / denominator
-
-    log_precision_scores = tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
-    geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = tensor(1.0) if c > r else torch.exp(1 - (ref_len / trans_len))
-    bleu = brevity_penalty * geometric_mean
-
-    return bleu
+    return _bleu_score_compute(trans_len, ref_len, numerator, denominator, c, r, n_gram, smooth)
