@@ -23,8 +23,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, float, float]:
     _check_same_shape(preds[:, 0, ], target)  # second dimension of preds should be number of ensemble members
 
-    batch_size = target.size()[0]
-    n_ensemble_members = preds.size()[1]
+    batch_size = target.shape[0]
+    n_ensemble_members = preds.shape[1]
 
     # inflate observations:
     observation_inflated = torch.ones_like(preds)
@@ -33,10 +33,7 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, float, flo
 
     diff = (1 / n_ensemble_members) * torch.sum(torch.abs(preds - observation_inflated))
 
-    if n_ensemble_members > 1:
-        ensemble_sum_scale_factor = (1 / (n_ensemble_members * (n_ensemble_members - 1)))
-    else:
-        ensemble_sum_scale_factor = 1
+    ensemble_sum_scale_factor = (1 / (n_ensemble_members * (n_ensemble_members - 1))) if n_ensemble_members > 1 else 1.0
 
     ensemble_sum = 0
     for i in range(n_ensemble_members):
