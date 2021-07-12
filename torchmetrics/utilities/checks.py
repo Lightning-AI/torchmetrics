@@ -26,7 +26,7 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: bool) -> None:
+def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool]) -> None:
     """
     Perform basic validation of inputs that does not require deducing any information
     of the type of inputs.
@@ -51,7 +51,7 @@ def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, mul
         raise ValueError("If you set `multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
 
 
-def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[str, int]:
+def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
     """
     This checks that the shape and type of inputs are consistent with
     each other and fall into one of the allowed input types (see the
@@ -113,7 +113,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[st
     return case, implied_classes
 
 
-def _check_num_classes_binary(num_classes: int, multiclass: bool) -> None:
+def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> None:
     """
     This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data.
     """
@@ -162,13 +162,11 @@ def _check_num_classes_mc(
             )
         if num_classes <= target.max():
             raise ValueError("The highest label in `target` should be smaller than `num_classes`.")
-        if num_classes <= preds.max():
-            raise ValueError("The highest label in `preds` should be smaller than `num_classes`.")
         if preds.shape != target.shape and num_classes != implied_classes:
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
 
 
-def _check_num_classes_ml(num_classes: int, multiclass: bool, implied_classes: int) -> None:
+def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
     """
     This checks that the consistency of `num_classes` with the data
     and `multiclass` param for multi-label data.
@@ -207,9 +205,9 @@ def _check_classification_inputs(
     target: Tensor,
     threshold: float,
     num_classes: Optional[int],
-    multiclass: bool,
+    multiclass: Optional[bool],
     top_k: Optional[int],
-) -> str:
+) -> DataType:
     """Performs error checking on inputs for classification.
 
     This ensures that preds and target take one of the shape/type combinations that are
@@ -316,7 +314,7 @@ def _input_format_classification(
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
-) -> Tuple[Tensor, Tensor, str]:
+) -> Tuple[Tensor, Tensor, DataType]:
     """Convert preds and target tensors into common format.
 
     Preds and targets are supposed to fall into one of these categories (and are
@@ -432,7 +430,7 @@ def _input_format_classification(
             num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
             preds = to_onehot(preds, max(2, num_classes))
 
-        target = to_onehot(target, max(2, num_classes))
+        target = to_onehot(target, max(2, num_classes))  # type: ignore
 
         if multiclass is False:
             preds, target = preds[:, 1, ...], target[:, 1, ...]

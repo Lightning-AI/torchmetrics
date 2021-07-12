@@ -11,6 +11,7 @@ _logger.setLevel(__logging.INFO)
 _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
+from torchmetrics.audio import SI_SDR, SI_SNR, SNR  # noqa: F401 E402
 from torchmetrics.average import AverageMeter  # noqa: F401 E402
 from torchmetrics.classification import (  # noqa: F401 E402
     AUC,
@@ -28,6 +29,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     HammingDistance,
     Hinge,
     IoU,
+    KLDivergence,
     MatthewsCorrcoef,
     Precision,
     PrecisionRecallCurve,
@@ -36,11 +38,12 @@ from torchmetrics.classification import (  # noqa: F401 E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: F401 E402
-from torchmetrics.image import FID, IS  # noqa: F401 E402
+from torchmetrics.image import FID, IS, KID  # noqa: F401 E402
 from torchmetrics.metric import Metric  # noqa: F401 E402
 from torchmetrics.regression import (  # noqa: F401 E402
     PSNR,
     SSIM,
+    CosineSimilarity,
     ExplainedVariance,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,

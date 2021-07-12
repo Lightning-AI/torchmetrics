@@ -88,7 +88,7 @@ class IoU(ConfusionMatrix):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             num_classes=num_classes,
             normalize=None,

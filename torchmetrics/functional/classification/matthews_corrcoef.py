@@ -20,8 +20,8 @@ _matthews_corrcoef_update = _confusion_matrix_update
 
 
 def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
-    tk = confmat.sum(dim=0).float()
-    pk = confmat.sum(dim=1).float()
+    tk = confmat.sum(dim=1).float()
+    pk = confmat.sum(dim=0).float()
     c = torch.trace(confmat).float()
     s = confmat.sum().float()
     return (c * s - sum(tk * pk)) / (torch.sqrt(s**2 - sum(pk * pk)) * torch.sqrt(s**2 - sum(tk * tk)))

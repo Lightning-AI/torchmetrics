@@ -21,7 +21,7 @@ from skimage.metrics import structural_similarity
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import ssim
-from torchmetrics.regression import SSIM
+from torchmetrics.image import SSIM
 
 seed_all(42)
 

@@ -19,6 +19,7 @@ from torch import Tensor
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
@@ -70,13 +71,14 @@ class IS(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    [1] Improved Techniques for Training GANs
-    Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen
-    https://arxiv.org/abs/1606.03498
+    References:
+        [1] Improved Techniques for Training GANs
+        Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, Xi Chen
+        https://arxiv.org/abs/1606.03498
 
-    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-    https://arxiv.org/abs/1706.08500
+        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:
@@ -98,6 +100,7 @@ class IS(Metric):
         (tensor(1.0569), tensor(0.0113))
 
     """
+    features: List
 
     def __init__(
         self,
@@ -107,7 +110,7 @@ class IS(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable[[Tensor], List[Tensor]] = None
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -153,7 +156,7 @@ class IS(Metric):
         self.features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        features = torch.cat(self.features, dim=0)
+        features = dim_zero_cat(self.features)
         # random permute the features
         idx = torch.randperm(features.shape[0])
         features = features[idx]

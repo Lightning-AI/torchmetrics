@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.audio.si_sdr import si_sdr  # noqa: F401
+from torchmetrics.functional.audio.si_snr import si_snr  # noqa: F401
+from torchmetrics.functional.audio.snr import snr  # noqa: F401
 from torchmetrics.functional.classification.accuracy import accuracy  # noqa: F401
 from torchmetrics.functional.classification.auc import auc  # noqa: F401
 from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
@@ -22,6 +25,7 @@ from torchmetrics.functional.classification.f_beta import f1, fbeta  # noqa: F40
 from torchmetrics.functional.classification.hamming_distance import hamming_distance  # noqa: F401
 from torchmetrics.functional.classification.hinge import hinge  # noqa: F401
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
+from torchmetrics.functional.classification.kl_divergence import kldivergence  # noqa: F401
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
@@ -30,6 +34,7 @@ from torchmetrics.functional.classification.specificity import specificity  # no
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
 from torchmetrics.functional.image_gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.nlp import bleu_score  # noqa: F401
+from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_percentage_error import (  # noqa: F401

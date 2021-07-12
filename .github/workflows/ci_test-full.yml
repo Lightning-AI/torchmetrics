@@ -26,7 +26,7 @@ jobs:
             requires: 'minimal'
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 35
+    timeout-minutes: 55
 
     steps:
     - uses: actions/checkout@v2
@@ -43,7 +43,16 @@ jobs:
     - name: Setup macOS
       if: runner.os == 'macOS'
       run: |
-        brew install libomp  # https://github.com/pytorch/pytorch/issues/20030
+        brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
+    - name: Setup Linux
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update --fix-missing
+        sudo apt install -y ffmpeg
+    - name: Setup Windows
+      if: runner.os == 'windows'
+      run: |
+        choco install ffmpeg
 
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
@@ -70,7 +79,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python --version
         pip --version
         pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         python ./requirements/adjust-versions.py requirements.txt

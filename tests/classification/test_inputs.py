@@ -253,8 +253,6 @@ def test_threshold():
         (_mc_prob.preds[0], randint(low=NUM_CLASSES + 1, high=100, size=(BATCH_SIZE, NUM_CLASSES)), 4, None),
         # Max target larger than num_classes (with #dim preds = #dims target)
         (randint(high=4, size=(7, 3)), randint(low=5, high=7, size=(7, 3)), 4, None),
-        # Max preds larger than num_classes (with #dim preds = #dims target)
-        (randint(low=5, high=7, size=(7, 3)), randint(high=4, size=(7, 3)), 4, None),
         # Num_classes=1, but multiclass not false
         (randint(high=2, size=(7, )), randint(high=2, size=(7, )), 1, None),
         # multiclass=False, but implied class dimension (for multi-label, from shape) != num_classes
