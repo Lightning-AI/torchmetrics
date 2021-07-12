@@ -332,6 +332,12 @@ CosineSimilarity
 .. autoclass:: torchmetrics.CosineSimilarity
     :noindex:
 
+CRPS
+~~~~
+
+.. autoclass:: torchmetrics.CRPR
+    :noindex:
+
 
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~

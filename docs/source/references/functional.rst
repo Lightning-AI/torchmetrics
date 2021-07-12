@@ -205,6 +205,13 @@ cosine_similarity [func]
     :noindex:
 
 
+crps [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.crps
+    :noindex:
+
+
 explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
