@@ -112,11 +112,6 @@ def bleu_score(
     """
     Calculate BLEU score of machine translated text with one or more references
 
-    References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation
-        Papineni, Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu
-        http://www.aclweb.org/anthology/P02-1040.pdf
-
     Args:
         reference_corpus: An iterable of iterables of reference corpus
         translate_corpus: An iterable of machine translated corpus
@@ -132,6 +127,10 @@ def bleu_score(
         >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
         >>> bleu_score(translate_corpus, reference_corpus)
         tensor(0.7598)
+
+    References:
+        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
+        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu http://www.aclweb.org/anthology/P02-1040.pdf
     """
 
     if len(translate_corpus) != len(reference_corpus):

@@ -281,17 +281,6 @@ ssim [func]
 .. autofunction:: torchmetrics.functional.ssim
     :noindex:
 
-
-***
-NLP
-***
-
-bleu_score [func]
-~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.bleu_score
-    :noindex:
-
 ********
 Pairwise
 ********
@@ -345,4 +334,14 @@ retrieval_normalized_dcg [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
+    :noindex:
+
+****
+Text
+****
+
+bleu_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bleu_score
     :noindex:

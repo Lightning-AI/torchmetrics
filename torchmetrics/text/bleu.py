@@ -28,11 +28,6 @@ class BLEUScore(Metric):
     """
     Calculate BLEU score of machine translated text with one or more references.
 
-    References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation
-        Papineni, Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu
-        http://www.aclweb.org/anthology/P02-1040.pdf
-
     Args:
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
@@ -45,6 +40,10 @@ class BLEUScore(Metric):
         >>> metric = BLEUScore()
         >>> metric(translate_corpus, reference_corpus)
         tensor(0.7598)
+
+    References:
+        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
+        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu http://www.aclweb.org/anthology/P02-1040.pdf
     """
 
     def __init__(self, n_gram: int = 4, smooth: bool = False):
