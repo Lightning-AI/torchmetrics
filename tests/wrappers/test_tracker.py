@@ -31,8 +31,8 @@ def test_raises_error_on_wrong_input():
 @pytest.mark.parametrize(
     "method, method_input",
     [
-        ("update", (torch.randint(10, (50,)), torch.randint(10, (50,)))),
-        ("forward", (torch.randint(10, (50,)), torch.randint(10, (50,)))),
+        ("update", (torch.randint(10, (50, )), torch.randint(10, (50, )))),
+        ("forward", (torch.randint(10, (50, )), torch.randint(10, (50, )))),
         ("compute", None),
     ],
 )
@@ -48,30 +48,22 @@ def test_raises_error_if_increment_not_called(method, method_input):
 @pytest.mark.parametrize(
     "base_metric, metric_input, maximize",
     [
-        (partial(Accuracy, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (partial(Precision, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (partial(Recall, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (partial(Accuracy, num_classes=10), (torch.randint(10, (50, )), torch.randint(10, (50, ))), True),
+        (partial(Precision, num_classes=10), (torch.randint(10, (50, )), torch.randint(10, (50, ))), True),
+        (partial(Recall, num_classes=10), (torch.randint(10, (50, )), torch.randint(10, (50, ))), True),
         (
             MeanSquaredError,
             (
-                torch.randn(
-                    50,
-                ),
-                torch.randn(
-                    50,
-                ),
+                torch.randn(50, ),
+                torch.randn(50, ),
             ),
             False,
         ),
         (
             MeanAbsoluteError,
             (
-                torch.randn(
-                    50,
-                ),
-                torch.randn(
-                    50,
-                ),
+                torch.randn(50, ),
+                torch.randn(50, ),
             ),
             False,
         ),
