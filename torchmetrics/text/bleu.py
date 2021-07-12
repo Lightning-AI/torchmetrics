@@ -16,6 +16,8 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
+from typing import Sequence
+
 import torch
 from torch import tensor
 from torch.functional import Tensor
@@ -26,13 +28,13 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 
 class BLEUScore(Metric):
     """
-    Calculate BLEU score of machine translated text with one or more references.
+    Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more references.
 
     Args:
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
-            Whether or not to apply smoothing – Lin et al. 2004
+            Whether or not to apply smoothing – see [2]
 
     Example:
         >>> translate_corpus = ['the cat is on the mat'.split()]
@@ -44,6 +46,9 @@ class BLEUScore(Metric):
     References:
         [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
         Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu http://www.aclweb.org/anthology/P02-1040.pdf
+
+        [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
+        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
     """
 
     def __init__(self, n_gram: int = 4, smooth: bool = False):
@@ -51,20 +56,23 @@ class BLEUScore(Metric):
         self.n_gram = n_gram
         self.smooth = smooth
 
-        self.add_state("c", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("r", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("trans_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("ref_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    def update(self, reference_corpus, translate_corpus) -> None:
+    def update(
+        self, reference_corpus: Sequence[Sequence[Sequence[str]]], translate_corpus: Sequence[Sequence[str]]
+    ) -> None:
         """
         Compute Precision Scores.
         Args:
             reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
         """
-        self.c, self.r = _bleu_score_update(
-            reference_corpus, translate_corpus, self.numerator, self.denominator, self.c, self.r, self.n_gram
+        self.trans_len, self.ref_len = _bleu_score_update(
+            reference_corpus, translate_corpus, self.numerator, self.denominator, self.trans_len, self.ref_len,
+            self.n_gram
         )
 
     def compute(self) -> Tensor:
@@ -74,9 +82,6 @@ class BLEUScore(Metric):
         Return:
             Tensor with BLEU Score
         """
-        trans_len = self.c.clone().detach()
-        ref_len = self.r.clone().detach()
-
         return _bleu_score_compute(
-            trans_len, ref_len, self.numerator, self.denominator, self.c, self.r, self.n_gram, self.smooth
+            self.trans_len, self.ref_len, self.numerator, self.denominator, self.n_gram, self.smooth
         )

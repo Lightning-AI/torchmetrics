@@ -50,15 +50,15 @@ def _bleu_score_update(
     translate_corpus: Sequence[Sequence[str]],
     numerator: Tensor,
     denominator: Tensor,
-    c: float,
-    r: float,
+    trans_len: Tensor,
+    ref_len: Tensor,
     n_gram: int = 4
 ):
     for (translation, references) in zip(translate_corpus, reference_corpus):
-        c += len(translation)
+        trans_len += len(translation)
         ref_len_list = [len(ref) for ref in references]
         ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
-        r += ref_len_list[ref_len_diff.index(min(ref_len_diff))]
+        ref_len += ref_len_list[ref_len_diff.index(min(ref_len_diff))]
         translation_counter: Counter = _count_ngram(translation, n_gram)
         reference_counter: Counter = Counter()
 
@@ -73,7 +73,7 @@ def _bleu_score_update(
         for counter in translation_counter:
             denominator[len(counter) - 1] += translation_counter[counter]
 
-    return c if isinstance(c, Tensor) else tensor(c), r if isinstance(r, Tensor) else tensor(r)
+    return trans_len, ref_len
 
 
 def _bleu_score_compute(
@@ -81,8 +81,6 @@ def _bleu_score_compute(
     ref_len: Tensor,
     numerator: Tensor,
     denominator: Tensor,
-    c: float,
-    r: float,
     n_gram: int = 4,
     smooth: bool = False
 ) -> Tensor:
@@ -97,7 +95,7 @@ def _bleu_score_compute(
 
     log_precision_scores = tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = tensor(1.0) if c > r else torch.exp(1 - (ref_len / trans_len))
+    brevity_penalty = tensor(1.0) if trans_len > ref_len else torch.exp(1 - (ref_len / trans_len))
     bleu = brevity_penalty * geometric_mean
 
     return bleu
@@ -110,13 +108,17 @@ def bleu_score(
     smooth: bool = False
 ) -> Tensor:
     """
-    Calculate BLEU score of machine translated text with one or more references
+    Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more references
 
     Args:
-        reference_corpus: An iterable of iterables of reference corpus
-        translate_corpus: An iterable of machine translated corpus
-        n_gram: Gram value ranged from 1 to 4
-        smooth: Whether or not to apply smoothing – Lin et al. 2004
+        reference_corpus:
+            An iterable of iterables of reference corpus
+        translate_corpus:
+            An iterable of machine translated corpus
+        n_gram:
+            Gram value ranged from 1 to 4 (Default 4)
+        smooth:
+            Whether or not to apply smoothing – see [2]
 
     Return:
         Tensor with BLEU Score
@@ -131,18 +133,20 @@ def bleu_score(
     References:
         [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
         Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu http://www.aclweb.org/anthology/P02-1040.pdf
+
+        [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
+        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
     """
 
     if len(translate_corpus) != len(reference_corpus):
         raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
-    c = tensor(0, dtype=torch.float)
-    r = tensor(0, dtype=torch.float)
+    trans_len = tensor(0, dtype=torch.float)
+    ref_len = tensor(0, dtype=torch.float)
 
-    c, r = _bleu_score_update(reference_corpus, translate_corpus, numerator, denominator, c, r, n_gram)
+    trans_len, ref_len = _bleu_score_update(
+        reference_corpus, translate_corpus, numerator, denominator, trans_len, ref_len, n_gram
+    )
 
-    trans_len = c.clone().detach()
-    ref_len = r.clone().detach()
-
-    return _bleu_score_compute(trans_len, ref_len, numerator, denominator, c, r, n_gram, smooth)
+    return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)
