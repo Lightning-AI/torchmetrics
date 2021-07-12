@@ -61,4 +61,4 @@ from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.wrappers import BootStrapper  # noqa: F401 E402
+from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: F401 E402
