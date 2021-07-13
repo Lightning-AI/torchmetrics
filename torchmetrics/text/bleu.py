@@ -19,8 +19,7 @@
 from typing import Sequence
 
 import torch
-from torch import tensor
-from torch.functional import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
