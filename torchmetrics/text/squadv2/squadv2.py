@@ -45,7 +45,16 @@ Returns:
     >>> metrics = QNAMetrics()
     >>> results = metrics.compute(predictions=predictions, references=references)
     >>> print(results)
-    {'exact': 100.0, 'f1': 100.0, 'total': 1, 'HasAns_exact': 100.0, 'HasAns_f1': 100.0, 'HasAns_total': 1, 'best_exact': 100.0, 'best_exact_thresh': 0.0, 'best_f1': 100.0, 'best_f1_thresh': 0.0}
+    {'exact': 100.0,
+     'f1': 100.0,
+     'total': 1,
+     'HasAns_exact': 100.0,
+     'HasAns_f1': 100.0,
+     'HasAns_total': 1,
+      'best_exact': 100.0,
+      'best_exact_thresh': 0.0,
+      'best_f1': 100.0,
+      'best_f1_thresh': 0.0}
     """
 
     def __init__(self, n_gram: int = 4, smooth: bool = False, no_answer_threshold: float = 1.0):
