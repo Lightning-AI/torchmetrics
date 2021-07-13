@@ -1,10 +1,12 @@
 from typing import Any
 
 from jiwer import compute_measures
+
 from torchmetrics.metric import Metric
 
 
 class WER(Metric):
+
     def __init__(self, concatenate_texts=False):
         super().__init__()
         self.concatenate_texts = concatenate_texts

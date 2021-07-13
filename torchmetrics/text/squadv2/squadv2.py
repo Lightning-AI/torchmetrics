@@ -1,3 +1,5 @@
+from torchmetrics.metric import Metric
+
 from .evaluate_squad import (
     apply_no_ans_threshold,
     find_all_best_thresh,
@@ -7,7 +9,6 @@ from .evaluate_squad import (
     merge_eval,
 )
 
-from torchmetrics.metric import Metric
 
 class SQuADv2(Metric):
     """
@@ -46,6 +47,7 @@ Returns:
     >>> print(results)
     {'exact': 100.0, 'f1': 100.0, 'total': 1, 'HasAns_exact': 100.0, 'HasAns_f1': 100.0, 'HasAns_total': 1, 'best_exact': 100.0, 'best_exact_thresh': 0.0, 'best_f1': 100.0, 'best_f1_thresh': 0.0}
     """
+
     def __init__(self, n_gram: int = 4, smooth: bool = False, no_answer_threshold: float = 1.0):
         """
                Args:
@@ -71,7 +73,9 @@ Returns:
         no_ans_qids = [k for k, v in qid_to_has_ans.items() if not v]
 
         exact_raw, f1_raw = get_raw_scores(dataset, predictions)
-        exact_thresh = apply_no_ans_threshold(exact_raw, no_answer_probabilities, qid_to_has_ans, self.no_answer_threshold)
+        exact_thresh = apply_no_ans_threshold(
+            exact_raw, no_answer_probabilities, qid_to_has_ans, self.no_answer_threshold
+        )
         f1_thresh = apply_no_ans_threshold(f1_raw, no_answer_probabilities, qid_to_has_ans, self.no_answer_threshold)
         out_eval = make_eval_dict(exact_thresh, f1_thresh)
 
