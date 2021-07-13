@@ -126,9 +126,7 @@ class TestMeanError(MetricTester):
             metric_args=metric_args
         )
 
-    def test_mean_error_differentiability(
-        self, preds, target, _, metric_class, metric_functional, __, metric_args
-    ):
+    def test_mean_error_differentiability(self, preds, target, _, metric_class, metric_functional, __, metric_args):
         self.run_differentiability_test(
             preds=preds,
             target=target,
