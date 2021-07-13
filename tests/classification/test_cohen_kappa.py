@@ -121,7 +121,7 @@ class TestCohenKappa(MetricTester):
             }
         )
 
-    def test_cohen_kappa_differentiability(self, preds, target, sk_metric, weights, num_classes):
+    def test_cohen_kappa_differentiability(self, preds, target, _, weights, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,

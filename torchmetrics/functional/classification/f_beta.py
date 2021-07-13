@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -214,7 +215,7 @@ def fbeta(
 def f1(
     preds: Tensor,
     target: Tensor,
-    beta: float = 1.0,
+    beta: Optional[float] = None,
     average: str = "micro",
     mdmc_average: Optional[str] = None,
     ignore_index: Optional[int] = None,
@@ -318,4 +319,6 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
+    if beta is not None:
+        warn("You have used redundant `beta` argument which will be removed in v0.5", DeprecationWarning)
     return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)

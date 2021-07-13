@@ -116,7 +116,7 @@ class TestROC(MetricTester):
             metric_args={"num_classes": num_classes},
         )
 
-    def test_roc_differentiability(self, preds, target, sk_metric, num_classes):
+    def test_roc_differentiability(self, preds, target, _, num_classes):
         self.run_differentiability_test(
             preds,
             target,

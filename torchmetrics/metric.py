@@ -478,19 +478,22 @@ class Metric(nn.Module, ABC):
         state_dict: dict,
         prefix: str,
         local_metadata: dict,
-        strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        strict: bool = True,
+        missing_keys: List[str] = None,
+        unexpected_keys: List[str] = None,
+        error_msgs: List[str] = None,
     ) -> None:
         """ Loads metric states from state_dict """
+        missing_keys = missing_keys if missing_keys else []
+        unexpected_keys = unexpected_keys if unexpected_keys else []
+        error_msgs = error_msgs if error_msgs else []
 
         for key in self._defaults:
             name = prefix + key
             if name in state_dict:
                 setattr(self, key, state_dict.pop(name))
         super()._load_from_state_dict(
-            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
+            state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:

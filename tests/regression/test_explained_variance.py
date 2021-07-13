@@ -85,7 +85,7 @@ class TestExplainedVariance(MetricTester):
             metric_args=dict(multioutput=multioutput),
         )
 
-    def test_explained_variance_differentiability(self, multioutput, preds, target, sk_metric):
+    def test_explained_variance_differentiability(self, multioutput, preds, target, _):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -97,11 +97,11 @@ class TestExplainedVariance(MetricTester):
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
     )
-    def test_explained_variance_half_cpu(self, multioutput, preds, target, sk_metric):
+    def test_explained_variance_half_cpu(self, multioutput, preds, target, _):
         self.run_precision_test_cpu(preds, target, ExplainedVariance, explained_variance)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
-    def test_explained_variance_half_gpu(self, multioutput, preds, target, sk_metric):
+    def test_explained_variance_half_gpu(self, multioutput, preds, target, _):
         self.run_precision_test_gpu(preds, target, ExplainedVariance, explained_variance)
 
 

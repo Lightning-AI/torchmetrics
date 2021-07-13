@@ -92,7 +92,7 @@ class TestAveragePrecision(MetricTester):
             metric_args={"num_classes": num_classes},
         )
 
-    def test_average_precision_differentiability(self, preds, sk_metric, target, num_classes):
+    def test_average_precision_differentiability(self, preds, _, target, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,

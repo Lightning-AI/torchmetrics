@@ -99,7 +99,7 @@ class TestSISDR(MetricTester):
             metric_args=dict(zero_mean=zero_mean),
         )
 
-    def test_si_sdr_differentiability(self, preds, target, sk_metric, zero_mean):
+    def test_si_sdr_differentiability(self, preds, target, _, zero_mean):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -111,11 +111,11 @@ class TestSISDR(MetricTester):
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
     )
-    def test_si_sdr_half_cpu(self, preds, target, sk_metric, zero_mean):
+    def test_si_sdr_half_cpu(self, *_):
         pytest.xfail("SI-SDR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
-    def test_si_sdr_half_gpu(self, preds, target, sk_metric, zero_mean):
+    def test_si_sdr_half_gpu(self, preds, target, _, zero_mean):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

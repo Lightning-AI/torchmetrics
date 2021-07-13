@@ -133,7 +133,7 @@ class TestIoU(MetricTester):
             }
         )
 
-    def test_iou_differentiability(self, reduction, preds, target, sk_metric, num_classes):
+    def test_iou_differentiability(self, reduction, preds, target, _, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,

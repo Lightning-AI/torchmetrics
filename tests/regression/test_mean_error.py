@@ -103,7 +103,7 @@ class TestMeanError(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_mean_error_class(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
+        self, preds, target, sk_metric, metric_class, _, sk_fn, metric_args, ddp, dist_sync_on_step
     ):
         # todo: `metric_functional` is unused
         self.run_class_metric_test(
@@ -116,7 +116,7 @@ class TestMeanError(MetricTester):
             metric_args=metric_args
         )
 
-    def test_mean_error_functional(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+    def test_mean_error_functional(self, preds, target, sk_metric, _, metric_functional, sk_fn, metric_args):
         # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=preds,
@@ -127,7 +127,7 @@ class TestMeanError(MetricTester):
         )
 
     def test_mean_error_differentiability(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args
+        self, preds, target, _, metric_class, metric_functional, __, metric_args
     ):
         self.run_differentiability_test(
             preds=preds,
@@ -140,7 +140,7 @@ class TestMeanError(MetricTester):
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
     )
-    def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+    def test_mean_error_half_cpu(self, preds, target, _, metric_class, metric_functional, *__):
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
@@ -152,7 +152,7 @@ class TestMeanError(MetricTester):
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
-    def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+    def test_mean_error_half_gpu(self, preds, target, _, metric_class, metric_functional, *__):
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 

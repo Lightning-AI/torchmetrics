@@ -67,7 +67,7 @@ def test_fid_pickle():
 
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
-    metric = pickle.loads(pickled_metric)
+    pickle.loads(pickled_metric)
 
 
 def test_fid_raises_errors_and_warnings():

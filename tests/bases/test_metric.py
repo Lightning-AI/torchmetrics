@@ -283,7 +283,7 @@ def test_warning_on_compute_before_update():
 
     # make sure everything is fine with forward
     with pytest.warns(None) as record:
-        val = metric(1)
+        metric(1)
     assert not record
 
     metric.reset()

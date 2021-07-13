@@ -161,7 +161,7 @@ class TestConfusionMatrix(MetricTester):
             }
         )
 
-    def test_confusion_matrix_differentiability(self, normalize, preds, target, sk_metric, num_classes, multilabel):
+    def test_confusion_matrix_differentiability(self, normalize, preds, target, _, num_classes, multilabel):
         self.run_differentiability_test(
             preds=preds,
             target=target,

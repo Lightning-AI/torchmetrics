@@ -330,7 +330,7 @@ class TestFBeta(MetricTester):
         sk_wrapper: Callable,
         metric_class: Metric,
         metric_fn: Callable,
-        sk_fn: Callable,
+        _: Callable,
         multiclass: Optional[bool],
         num_classes: Optional[int],
         average: str,

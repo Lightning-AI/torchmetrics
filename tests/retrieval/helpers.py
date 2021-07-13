@@ -367,7 +367,7 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
     ):
 
-        def metric_functional_ignore_indexes(preds, target, indexes):
+        def metric_functional_ignore_indexes(preds, target, _):
             return metric_functional(preds, target)
 
         super().run_precision_test_cpu(
@@ -376,7 +376,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={'empty_target_action': 'neg'},
-            indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
+            # indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
         )
 
     def run_precision_test_gpu(
@@ -390,7 +390,7 @@ class RetrievalMetricTester(MetricTester):
         if not torch.cuda.is_available():
             pytest.skip()
 
-        def metric_functional_ignore_indexes(preds, target, indexes):
+        def metric_functional_ignore_indexes(preds, target, _):
             return metric_functional(preds, target)
 
         super().run_precision_test_gpu(
@@ -399,7 +399,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={'empty_target_action': 'neg'},
-            indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
+            # indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
         )
 
     @staticmethod

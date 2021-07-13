@@ -60,11 +60,11 @@ def _sk_prec_recall_mclass_prob(predictions, targets, num_classes, min_precision
     return max_recalls, best_thresholds
 
 
-def _sk_prec_recall_binary_prob(predictions, targets, num_classes, min_precision):
+def _sk_prec_recall_binary_prob(predictions, targets, _, min_precision):
     return recall_at_precision_x_multilabel(predictions, targets, min_precision)
 
 
-def _sk_avg_prec_multiclass(predictions, targets, num_classes):
+def _sk_avg_prec_multiclass(predictions, targets, _):
     # replace nan with 0
     return np.nan_to_num(_sk_average_precision_score(targets, predictions, average=None))
 

@@ -83,7 +83,7 @@ class TestR2Score(MetricTester):
             metric_args=dict(adjusted=adjusted, multioutput=multioutput, num_outputs=num_outputs),
         )
 
-    def test_r2_functional(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_functional(self, adjusted, multioutput, preds, target, sk_metric, _):
         # todo: `num_outputs` is unused
         self.run_functional_metric_test(
             preds,
@@ -93,7 +93,7 @@ class TestR2Score(MetricTester):
             metric_args=dict(adjusted=adjusted, multioutput=multioutput),
         )
 
-    def test_r2_differentiability(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_differentiability(self, adjusted, multioutput, preds, target, _, num_outputs):
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -105,7 +105,7 @@ class TestR2Score(MetricTester):
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
     )
-    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, _, num_outputs):
         self.run_precision_test_cpu(
             preds, target, partial(R2Score, num_outputs=num_outputs), r2score, {
                 'adjusted': adjusted,
@@ -114,7 +114,7 @@ class TestR2Score(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
-    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, _, num_outputs):
         self.run_precision_test_gpu(
             preds, target, partial(R2Score, num_outputs=num_outputs), r2score, {
                 'adjusted': adjusted,

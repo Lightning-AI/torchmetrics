@@ -31,7 +31,7 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 seed_all(42)
 
 
-def _sk_auroc_binary_prob(preds, target, num_classes, average='macro', max_fpr=None, multi_class='ovr'):
+def _sk_auroc_binary_prob(preds, target, num_classes=None, average='macro', max_fpr=None, multi_class=None):
     # todo: `multi_class` is unused
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
@@ -152,7 +152,7 @@ class TestAUROC(MetricTester):
             },
         )
 
-    def test_auroc_differentiability(self, preds, target, sk_metric, num_classes, average, max_fpr):
+    def test_auroc_differentiability(self, preds, target, _, num_classes, average, max_fpr):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:
             pytest.skip('max_fpr parameter not support for multi class or multi label')

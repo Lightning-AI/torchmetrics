@@ -59,14 +59,14 @@ def test_metric_lightning(tmpdir):
             self.metric = SumMetric()
             self.sum = 0.0
 
-        def training_step(self, batch, batch_idx):
+        def training_step(self, batch, _):
             x = batch
             self.metric(x.sum())
             self.sum += x.sum()
 
             return self.step(x)
 
-        def training_epoch_end(self, outs):
+        def training_epoch_end(self, _):
             if not torch.allclose(self.sum, self.metric.compute()):
                 raise ValueError('Sum and computed value must be equal')
             self.sum = 0.0
@@ -133,13 +133,13 @@ def test_metrics_reset(tmpdir):
 
             return loss
 
-        def training_step(self, batch, batch_idx, *args, **kwargs):
+        def training_step(self, batch, _, *args, **kwargs):
             return self._step('train', batch)
 
-        def validation_step(self, batch, batch_idx, *args, **kwargs):
+        def validation_step(self, batch, _, *args, **kwargs):
             return self._step('val', batch)
 
-        def test_step(self, batch, batch_idx, *args, **kwargs):
+        def test_step(self, batch, _, *args, **kwargs):
             return self._step('test', batch)
 
         def configure_optimizers(self):
@@ -166,13 +166,13 @@ def test_metrics_reset(tmpdir):
             acc.reset.asset_not_called()
             ap.reset.assert_not_called()
 
-        def train_epoch_end(self, outputs):
+        def train_epoch_end(self, _):
             self._assert_epoch_end('train')
 
-        def validation_epoch_end(self, outputs):
+        def validation_epoch_end(self, _):
             self._assert_epoch_end('val')
 
-        def test_epoch_end(self, outputs):
+        def test_epoch_end(self, _):
             self._assert_epoch_end('test')
 
     def _assert_called(model, stage):

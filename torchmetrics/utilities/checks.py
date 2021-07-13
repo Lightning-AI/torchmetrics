@@ -26,7 +26,7 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool]) -> None:
+def _basic_input_validation(preds: Tensor, target: Tensor, multiclass: Optional[bool]) -> None:
     """
     Perform basic validation of inputs that does not require deducing any information
     of the type of inputs.
@@ -261,7 +261,7 @@ def _check_classification_inputs(
     """
 
     # Basic validation (that does not need case/type information)
-    _basic_input_validation(preds, target, threshold, multiclass)
+    _basic_input_validation(preds, target, multiclass)
 
     # Check that shape/types fall into one of the cases
     case, implied_classes = _check_shape_and_type_consistency(preds, target)

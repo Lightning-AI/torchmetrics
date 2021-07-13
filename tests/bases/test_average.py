@@ -10,13 +10,13 @@ def average(values, weights):
     return np.average(values, weights=weights)
 
 
-def average_ignore_weights(values, weights):
+def average_ignore_weights(values, _):
     return np.average(values)
 
 
 class DefaultWeightWrapper(AverageMeter):
 
-    def update(self, values, weights):
+    def update(self, values, _):
         super().update(values)
 
 

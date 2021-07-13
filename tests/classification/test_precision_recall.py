@@ -39,7 +39,7 @@ from torchmetrics.utilities.enums import AverageMethod
 seed_all(42)
 
 
-def _sk_prec_recall(preds, target, sk_fn, num_classes, average, multiclass, ignore_index, mdmc_average=None):
+def _sk_prec_recall(preds, target, sk_fn, num_classes, average, multiclass, ignore_index, _):
     # todo: `mdmc_average` is unused
     if average == "none":
         average = None
