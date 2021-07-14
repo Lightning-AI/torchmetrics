@@ -123,6 +123,8 @@ def _subset_accuracy_update(
         sample_correct = (preds * target).sum(dim=(1, 2))
         correct = (sample_correct == target.shape[2]).sum()
         total = tensor(target.shape[0], device=target.device)
+    else:
+        correct, total = tensor(0), tensor(0)
 
     return correct, total
 

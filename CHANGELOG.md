@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+- Rename `r2score` >> `r2_score` and `kldivergence` >> `kl_divergence` in `torchmetrics.functional` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
+
 
 ### Removed
 
