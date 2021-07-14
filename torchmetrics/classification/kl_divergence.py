@@ -54,10 +54,10 @@ class KLDivergence(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import kldivergence
+        >>> from torchmetrics.functional import kl_divergence
         >>> p = torch.tensor([[0.36, 0.48, 0.16]])
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
-        >>> kldivergence(p, q)
+        >>> kl_divergence(p, q)
         tensor(0.0853)
     """
     # TODO: canot be used because if scripting
