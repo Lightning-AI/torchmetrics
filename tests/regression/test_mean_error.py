@@ -14,6 +14,8 @@
 import math
 from collections import namedtuple
 from functools import partial
+from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import symmetric_mean_absolute_percentage_error
+from torchmetrics.regression.symmetric_mean_absolute_percentage_error import SymmetricMeanAbsolutePercentageError
 
 import pytest
 import torch
@@ -23,6 +25,7 @@ from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 
 from tests.helpers import seed_all
+from tests.helpers.non_sklearn_metrics import symmetric_mean_absolute_percentage_error as sk_sym_mean_abs_percentage_error
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import (
     mean_absolute_error,
@@ -95,6 +98,7 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
         }),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
         (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
+        (SymmetricMeanAbsolutePercentageError, symmetric_mean_absolute_percentage_error, sk_sym_mean_abs_percentage_error, {}),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
     ],
 )
@@ -148,6 +152,10 @@ class TestMeanError(MetricTester):
         if metric_class == MeanAbsolutePercentageError:
             # MeanSquaredPercentageError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredPercentageError metric does not support cpu + half precision")
+
+        if metric_class == SymmetricMeanAbsolutePercentageError:
+            # MeanSquaredPercentageError half + cpu does not work due to missing support in torch.log
+            pytest.xfail("SymmetricMeanAbsolutePercentageError metric does not support cpu + half precision")
 
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
