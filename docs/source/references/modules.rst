@@ -506,14 +506,14 @@ RetrievalNormalizedDCG
 Text
 ****
 
-SQuADV2 
+SQuADV2
 ~~~~~~~~~
 
 .. autoclass:: torchmetrics.SQuADV2
     :noindex:
 
 
-WER 
+WER
 ~~~~~~~~~
 
 .. autoclass:: torchmetrics.WER
