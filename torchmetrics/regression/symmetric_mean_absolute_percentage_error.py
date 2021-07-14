@@ -52,9 +52,9 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         >>> from torchmetrics import SymmetricMeanAbsolutePercentageError
         >>> target = torch.tensor([1, 10, 1e6])
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
-        >>> symetric_mean_abs_percentage_error = SymmetricMeanAbsolutePercentageError()
-        >>> symetric_mean_abs_percentage_error(preds, target)
-        tensor(0.2667)
+        >>> smape = SymmetricMeanAbsolutePercentageError()
+        >>> smape(preds, target)
+        tensor(0.2290)
     """
     sum_abs_per_error: Tensor
     total: Tensor
