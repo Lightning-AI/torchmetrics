@@ -43,7 +43,7 @@ def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor,
 
 def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
     """
-    Computes mean absolute percentage error.
+    Computes symmetric mean absolute percentage error.
 
     Args:
         preds: estimated labels
