@@ -167,5 +167,5 @@ def r2score(
         >>> r2score(preds, target, multioutput='raw_values')
         tensor([0.9654, 0.9082])
     """
-    warn("`kldivergence` was renamed as `kl_divergence` in v0.5 and it will be removed in v0.6", DeprecationWarning)
+    warn("`r2score` was renamed as `r2_score` in v0.5 and it will be removed in v0.6", DeprecationWarning)
     return r2_score(preds, target, adjusted, multioutput)
