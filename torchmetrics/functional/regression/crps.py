@@ -28,7 +28,7 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, float, flo
 
     # inflate observations:
     observation_inflated = torch.ones_like(preds)
-    for i in range(preds.size()[1]):
+    for i in range(preds.n_ensemble_members):
         observation_inflated[:, i, :] = target
 
     diff = (1 / n_ensemble_members) * torch.sum(torch.abs(preds - observation_inflated))
