@@ -199,18 +199,15 @@ def test_error_multiclass_no_num_classes():
 
 def test_weighted_with_empty_classes():
     #preds, target, num_classes = (_input_mcls_prob.preds, _input_mcls_prob.target, NUM_CLASSES)
-    preds = torch.tensor([[0.90, 0.05, 0.05],
-                          [0.05, 0.90, 0.05],
-                          [0.05, 0.05, 0.90],
-                          [0.85, 0.05, 0.10],
+    preds = torch.tensor([[0.90, 0.05, 0.05], [0.05, 0.90, 0.05], [0.05, 0.05, 0.90], [0.85, 0.05, 0.10],
                           [0.10, 0.10, 0.80]])
     target = torch.tensor([0, 1, 1, 2, 2])
     num_classes = 3
     _auroc = auroc(preds, target, average="weighted", num_classes=num_classes)
 
     # Add in a class with zero observations at second to last index
-    preds = torch.cat((preds[:, :NUM_CLASSES-1], torch.randn_like(preds[:, 0:1]), preds[:, NUM_CLASSES-1:]), axis=1)
+    preds = torch.cat((preds[:, :NUM_CLASSES - 1], torch.randn_like(preds[:, 0:1]), preds[:, NUM_CLASSES - 1:]), axis=1)
     # Last class (2) gets moved to 3
     target[target == NUM_CLASSES - 1] = NUM_CLASSES
-    _auroc_empty_class = auroc(preds, target, average="weighted", num_classes=num_classes+1)
+    _auroc_empty_class = auroc(preds, target, average="weighted", num_classes=num_classes + 1)
     assert _auroc == _auroc_empty_class
