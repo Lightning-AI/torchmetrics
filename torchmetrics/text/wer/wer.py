@@ -38,6 +38,7 @@ class WER(Metric):
         >>> print(wer_score)
         0.5
     """
+
     def __init__(self, concatenate_texts: bool = False):
         super().__init__()
         self.concatenate_texts = concatenate_texts
