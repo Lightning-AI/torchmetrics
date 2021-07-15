@@ -44,6 +44,11 @@ REF2A = "he was interested in world history because he read the book".split()
 LIST_OF_REFERENCES = [[REF1A, REF1B, REF1C], [REF2A]]
 HYPOTHESES = [HYP1, HYP2]
 
+BATCHES = [
+    dict(reference_corpus=[[REF1A, REF1B, REF1C]], translate_corpus=[HYP1]),
+    dict(reference_corpus=[[REF2A]], translate_corpus=[HYP2])
+]
+
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.SmoothingFunction
 smooth_func = SmoothingFunction().method2
 
@@ -106,6 +111,26 @@ def test_bleu_score_class(weights, n_gram, smooth_func, smooth):
 
     nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
     pl_output = bleu(LIST_OF_REFERENCES, HYPOTHESES)
+    assert torch.allclose(pl_output, tensor(nltk_output))
+
+
+@pytest.mark.parametrize(
+    ["weights", "n_gram", "smooth_func", "smooth"],
+    [
+        pytest.param([1], 1, None, False),
+        pytest.param([0.5, 0.5], 2, smooth_func, True),
+        pytest.param([0.333333, 0.333333, 0.333333], 3, None, False),
+        pytest.param([0.25, 0.25, 0.25, 0.25], 4, smooth_func, True),
+    ],
+)
+def test_bleu_score_class_batches(weights, n_gram, smooth_func, smooth):
+    bleu = BLEUScore(n_gram=n_gram, smooth=smooth)
+
+    nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
+
+    for batch in BATCHES:
+        bleu.update(batch['reference_corpus'], batch['translate_corpus'])
+    pl_output = bleu.compute()
     assert torch.allclose(pl_output, tensor(nltk_output))
 
 

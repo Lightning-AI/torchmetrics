@@ -55,6 +55,9 @@ def bleu_score(
 
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
+
+    .. deprecated:: v0.5
+        Use :func:`torchmetrics.functional.text.bleu.bleu_score`. Will be removed in v0.6.
     """
     warn(
         "Function `functional.nlp.bleu_score` will be deprecated in v0.5 and will be removed in v0.6."
