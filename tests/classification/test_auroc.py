@@ -198,15 +198,13 @@ def test_error_multiclass_no_num_classes():
 
 
 def test_weighted_with_empty_classes():
-    preds = torch.tensor(
-        [
-            [0.90, 0.05, 0.05], 
-            [0.05, 0.90, 0.05], 
-            [0.05, 0.05, 0.90], 
-            [0.85, 0.05, 0.10],
-            [0.10, 0.10, 0.80],
-        ]
-    )
+    preds = torch.tensor([
+        [0.90, 0.05, 0.05],
+        [0.05, 0.90, 0.05],
+        [0.05, 0.05, 0.90],
+        [0.85, 0.05, 0.10],
+        [0.10, 0.10, 0.80],
+    ])
     target = torch.tensor([0, 1, 1, 2, 2])
     num_classes = 3
     _auroc = auroc(preds, target, average="weighted", num_classes=num_classes)
