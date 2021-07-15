@@ -1,11 +1,17 @@
 """File for non sklearn metrics that are to be used for reference for tests"""
+from typing import Optional
 
 import numpy as np
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils.validation import check_consistent_length
 
 
-def symmetric_mean_absolute_percentage_error(y_true, y_pred, sample_weight=None, multioutput='uniform_average'):
+def symmetric_mean_absolute_percentage_error(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    sample_weight: Optional[np.ndarray] = None,
+    multioutput: str = 'uniform_average'
+):
     """Symmetric mean absolute percentage error regression loss.
 
     Parameters
