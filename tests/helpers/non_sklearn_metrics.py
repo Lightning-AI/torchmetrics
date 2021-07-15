@@ -1,13 +1,11 @@
 """File for non sklearn metrics that are to be used for reference for tests"""
 
 import numpy as np
-from sklearn.utils.validation import check_consistent_length
 from sklearn.metrics._regression import _check_reg_targets
+from sklearn.utils.validation import check_consistent_length
 
 
-def symmetric_mean_absolute_percentage_error(y_true, y_pred,
-                                   sample_weight=None,
-                                   multioutput='uniform_average'):
+def symmetric_mean_absolute_percentage_error(y_true, y_pred, sample_weight=None, multioutput='uniform_average'):
     """Symmetric mean absolute percentage error regression loss.
 
     Parameters
@@ -39,13 +37,11 @@ def symmetric_mean_absolute_percentage_error(y_true, y_pred,
         Note that we return a large value instead of `inf` when y_true is zero.
 
     """
-    y_type, y_true, y_pred, multioutput = _check_reg_targets(
-        y_true, y_pred, multioutput)
+    y_type, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)
     epsilon = np.finfo(np.float64).eps
     smape = 2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_true) + np.abs(y_pred), epsilon)
-    output_errors = np.average(smape,
-                               weights=sample_weight, axis=0)
+    output_errors = np.average(smape, weights=sample_weight, axis=0)
     if isinstance(multioutput, str):
         if multioutput == 'raw_values':
             return output_errors

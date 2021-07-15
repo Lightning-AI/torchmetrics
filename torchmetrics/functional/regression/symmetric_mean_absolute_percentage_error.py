@@ -65,10 +65,12 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
         tensor(0.2290)
     """
     sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(
-        preds, target,
+        preds,
+        target,
     )
     mean_ape = _symmetric_mean_absolute_percentage_error_compute(
-        sum_abs_per_error, num_obs,
+        sum_abs_per_error,
+        num_obs,
     )
 
     return mean_ape
