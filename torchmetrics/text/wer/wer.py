@@ -33,8 +33,8 @@ class WER(Metric):
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> wer = WER()
-        >>> wer_score = wer.compute(predictions=predictions, references=references)
+        >>> wer = WER(predictions=predictions, references=references)
+        >>> wer_score = wer.compute()
         >>> print(wer_score)
         0.5
     """

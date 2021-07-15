@@ -42,8 +42,8 @@ class SQuADv2(Metric):
     Examples:
         >>> predictions = [{'prediction_text': '1976', 'id': '56e10a3be3433e1400422b22', 'no_answer_probability': 0.}]
         >>> references = [{'answers': {'answer_start': [97], 'text': ['1976']}, 'id': '56e10a3be3433e1400422b22'}]
-        >>> metrics = SQuADv2()
-        >>> results = metrics.compute(predictions=predictions, references=references)
+        >>> metrics = SQuADv2(redictions=predictions, references=references)
+        >>> results = metrics.compute()
         >>> print(results)
         {'exact': 100.0,
         'f1': 100.0,
