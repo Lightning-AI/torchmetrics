@@ -9,8 +9,9 @@ class WER(Metric):
     """
     Word error rate (WER) is a common metric of the performance of an automatic speech recognition system.
 
-    WER's output is always a number between 0 and 1. This value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
-    performance of the ASR system with a WER of 0 being a perfect score.
+    WER's output is always a number between 0 and 1.
+    This value indicates the percentage of words that were incorrectly predicted.
+    The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
 
     Word error rate can then be computed as:
     WER = (S + D + I) / N = (S + D + I) / (S + D + C)
