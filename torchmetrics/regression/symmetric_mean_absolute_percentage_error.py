@@ -25,7 +25,8 @@ from torchmetrics.metric import Metric
 
 class SymmetricMeanAbsolutePercentageError(Metric):
     r"""
-    Computes `symmetric mean absolute percentage error <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
+    Computes `symmetric mean absolute percentage error
+     <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
 
@@ -33,10 +34,9 @@ class SymmetricMeanAbsolutePercentageError(Metric):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            Synchronize metric state across processes at each ``forward()`` before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
