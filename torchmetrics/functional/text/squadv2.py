@@ -5,7 +5,7 @@ import os
 import re
 import string
 import sys
-from typing import Dict, Any, Tuple, OrderedDict, Union
+from typing import Any, Dict, OrderedDict, Tuple, Union
 
 import numpy as np
 
@@ -160,8 +160,12 @@ def plot_pr_curve(precisions, recalls, out_image, title) -> None:
     plt.clf()
 
 
-def make_precision_recall_eval(scores, na_probs, num_true_pos, qid_to_has_ans, out_image=None, title=None) -> Dict[
-    str, float]:
+def make_precision_recall_eval(scores,
+                               na_probs,
+                               num_true_pos,
+                               qid_to_has_ans,
+                               out_image=None,
+                               title=None) -> Dict[str, float]:
     qid_list = sorted(na_probs, key=lambda k: na_probs[k])
     true_pos = 0.0
     cur_p = 1.0
@@ -184,7 +188,7 @@ def make_precision_recall_eval(scores, na_probs, num_true_pos, qid_to_has_ans, o
     return {"ap": 100.0 * avg_prec}
 
 
-def run_precision_recall_analysis(main_eval, exact_raw, f1_raw, na_probs, qid_to_has_ans, out_image_dir)-> None:
+def run_precision_recall_analysis(main_eval, exact_raw, f1_raw, na_probs, qid_to_has_ans, out_image_dir) -> None:
     if out_image_dir and not os.path.exists(out_image_dir):
         os.makedirs(out_image_dir)
     num_true_pos = sum(1 for v in qid_to_has_ans.values() if v)
