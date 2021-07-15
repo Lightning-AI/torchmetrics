@@ -13,6 +13,11 @@ def symmetric_mean_absolute_percentage_error(
     multioutput: str = 'uniform_average'
 ):
     """Symmetric mean absolute percentage error regression loss.
+    <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
+
+    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
+
+    Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Parameters
     ----------

@@ -44,18 +44,18 @@ def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor,
 def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
     """
     Computes symmetric mean absolute percentage error.
+    <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
+
+    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
+
+    Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
         preds: estimated labels
         target: ground truth labels
 
     Return:
-        Tensor with SMAPE
-
-    Note:
-        The epsilon value is taken from `scikit-learn's
-        implementation
-        <https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197>`_.
+        Tensor with SMAPE.
 
     Example:
         >>> from torchmetrics.functional import symmetric_mean_absolute_percentage_error
