@@ -3,17 +3,23 @@ import pytest
 from torchmetrics.text.wer.wer import WER
 
 
-def test_wer_same():
-    hyp = ["hello world"]
-    ref = ["hello world"]
+@pytest.mark.parametrize("hyp,ref",
+                         [
+                             ("hello world", "hello world"),
+                         ],
+                         )
+def test_wer_same(hyp, ref):
     metric = WER()
     metric.update(hyp, ref)
     assert metric.compute() == 0.0
 
 
-def test_wer_different():
-    hyp = ["firrrrr"]
-    ref = ["hello world"]
+@pytest.mark.parametrize("hyp,ref",
+                         [
+                             ("hello world", "Firwww")
+                         ],
+                         )
+def test_wer_different(hyp, ref):
     metric = WER()
     metric.update(hyp, ref)
     assert metric.compute() == 1.0
