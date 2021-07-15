@@ -47,7 +47,7 @@ class WER(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Any:
+    def compute(self) -> float:
         if self.concatenate_texts:
             return compute_measures(self.target, self.preds)["wer"]
         incorrect = 0
