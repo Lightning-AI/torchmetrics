@@ -1,6 +1,8 @@
+from typing import Any, Dict
+
 from torchmetrics.metric import Metric
 
-from .evaluate_squad import (
+from .helper import (
     apply_no_ans_threshold,
     find_all_best_thresh,
     get_raw_scores,
@@ -42,7 +44,7 @@ Returns:
     Examples:
     >>> predictions = [{'prediction_text': '1976', 'id': '56e10a3be3433e1400422b22', 'no_answer_probability': 0.}]
     >>> references = [{'answers': {'answer_start': [97], 'text': ['1976']}, 'id': '56e10a3be3433e1400422b22'}]
-    >>> metrics = QNAMetrics()
+    >>> metrics = SQuADv2()
     >>> results = metrics.compute(predictions=predictions, references=references)
     >>> print(results)
     {'exact': 100.0,
