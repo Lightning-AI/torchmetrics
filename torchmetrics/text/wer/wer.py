@@ -12,8 +12,8 @@ class WER(Metric):
         self.concatenate_texts = concatenate_texts
 
     def update(self, preds: Any, target: Any) -> None:
-        self.preds = preds
-        self.target = target
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self) -> Any:
         if self.concatenate_texts:
