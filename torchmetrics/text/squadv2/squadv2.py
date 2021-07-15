@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from torchmetrics.metric import Metric
 
-from .helper import (
+from torchmetrics.functional.text import (
     apply_no_ans_threshold,
     find_all_best_thresh,
     get_raw_scores,
