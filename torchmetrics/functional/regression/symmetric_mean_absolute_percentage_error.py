@@ -38,11 +38,21 @@ def _symmetric_mean_absolute_percentage_error_update(
 
 
 def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: int) -> Tensor:
+    """
+    Averages the accumulated error
+
+    Args:
+        sum_abs_per_error (Tensor): The accumulated error
+        num_obs (int): The number of observations
+
+    Returns:
+        Tensor: the averaged smape error over num_obs samples
+    """
     return sum_abs_per_error / num_obs
 
 
 def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    """
+    r"""
     Computes symmetric mean absolute percentage error.
     <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
 
