@@ -68,11 +68,11 @@ Returns:
         self.smooth = smooth
         self.no_answer_threshold = no_answer_threshold
 
-    def update(self, predictions, references) -> None:
+    def update(self, predictions: Any, references: Any) -> None:
         self.predictions = predictions
         self.references = references
 
-    def compute(self):
+    def compute(self) -> Dict[str, float]:
         no_answer_probabilities = dict((p["id"], p["no_answer_probability"]) for p in self.predictions)
         dataset = [{"paragraphs": [{"qas": self.references}]}]
         predictions = dict((p["id"], p["prediction_text"]) for p in self.predictions)
