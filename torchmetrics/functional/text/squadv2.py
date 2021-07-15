@@ -5,13 +5,14 @@ import os
 import re
 import string
 import sys
+from typing import Dict, Any, Tuple, OrderedDict, Union
 
 import numpy as np
 
 OPTS = None
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser("Official evaluation script for SQuAD version 2.0.")
     parser.add_argument("data_file", metavar="data.json", help="Input data JSON file.")
     parser.add_argument("pred_file", metavar="pred.json", help="Model predictions.")
@@ -38,7 +39,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def make_qid_to_has_ans(dataset):
+def make_qid_to_has_ans(dataset) -> Dict[Any, bool]:
     qid_to_has_ans = {}
     for article in dataset:
         for p in article["paragraphs"]:
@@ -47,7 +48,7 @@ def make_qid_to_has_ans(dataset):
     return qid_to_has_ans
 
 
-def normalize_answer(s):
+def normalize_answer(s) -> str:
     """Lower text and remove punctuation, articles and extra whitespace."""
 
     def remove_articles(text):
@@ -67,17 +68,17 @@ def normalize_answer(s):
     return white_space_fix(remove_articles(remove_punc(lower(s))))
 
 
-def get_tokens(s):
+def get_tokens(s) -> List[str]:
     if not s:
         return []
     return normalize_answer(s).split()
 
 
-def compute_exact(a_gold, a_pred):
+def compute_exact(a_gold, a_pred) -> int:
     return int(normalize_answer(a_gold) == normalize_answer(a_pred))
 
 
-def compute_f1(a_gold, a_pred):
+def compute_f1(a_gold, a_pred) -> float:
     gold_toks = get_tokens(a_gold)
     pred_toks = get_tokens(a_pred)
     common = collections.Counter(gold_toks) & collections.Counter(pred_toks)
@@ -93,7 +94,7 @@ def compute_f1(a_gold, a_pred):
     return f1
 
 
-def get_raw_scores(dataset, preds):
+def get_raw_scores(dataset, preds) -> Tuple[Dict[Any, int], Dict[Any, float]]:
     exact_scores = {}
     f1_scores = {}
     for article in dataset:
@@ -125,7 +126,7 @@ def apply_no_ans_threshold(scores, na_probs, qid_to_has_ans, na_prob_thresh):
     return new_scores
 
 
-def make_eval_dict(exact_scores, f1_scores, qid_list=None):
+def make_eval_dict(exact_scores, f1_scores, qid_list=None) -> OrderedDict[str, Union[Union[float, int], Any]]:
     if not qid_list:
         total = len(exact_scores)
         return collections.OrderedDict([
@@ -142,12 +143,12 @@ def make_eval_dict(exact_scores, f1_scores, qid_list=None):
         ])
 
 
-def merge_eval(main_eval, new_eval, prefix):
+def merge_eval(main_eval, new_eval, prefix) -> None:
     for k in new_eval:
         main_eval["%s_%s" % (prefix, k)] = new_eval[k]
 
 
-def plot_pr_curve(precisions, recalls, out_image, title):
+def plot_pr_curve(precisions, recalls, out_image, title) -> None:
     plt.step(recalls, precisions, color="b", alpha=0.2, where="post")
     plt.fill_between(recalls, precisions, step="post", alpha=0.2, color="b")
     plt.xlabel("Recall")
@@ -159,7 +160,8 @@ def plot_pr_curve(precisions, recalls, out_image, title):
     plt.clf()
 
 
-def make_precision_recall_eval(scores, na_probs, num_true_pos, qid_to_has_ans, out_image=None, title=None):
+def make_precision_recall_eval(scores, na_probs, num_true_pos, qid_to_has_ans, out_image=None, title=None) -> Dict[
+    str, float]:
     qid_list = sorted(na_probs, key=lambda k: na_probs[k])
     true_pos = 0.0
     cur_p = 1.0
@@ -182,7 +184,7 @@ def make_precision_recall_eval(scores, na_probs, num_true_pos, qid_to_has_ans, o
     return {"ap": 100.0 * avg_prec}
 
 
-def run_precision_recall_analysis(main_eval, exact_raw, f1_raw, na_probs, qid_to_has_ans, out_image_dir):
+def run_precision_recall_analysis(main_eval, exact_raw, f1_raw, na_probs, qid_to_has_ans, out_image_dir)-> None:
     if out_image_dir and not os.path.exists(out_image_dir):
         os.makedirs(out_image_dir)
     num_true_pos = sum(1 for v in qid_to_has_ans.values() if v)
@@ -218,7 +220,7 @@ def run_precision_recall_analysis(main_eval, exact_raw, f1_raw, na_probs, qid_to
     merge_eval(main_eval, pr_oracle, "pr_oracle")
 
 
-def histogram_na_prob(na_probs, qid_list, image_dir, name):
+def histogram_na_prob(na_probs, qid_list, image_dir, name) -> None:
     if not qid_list:
         return
     x = [na_probs[k] for k in qid_list]
@@ -231,7 +233,7 @@ def histogram_na_prob(na_probs, qid_list, image_dir, name):
     plt.clf()
 
 
-def find_best_thresh(preds, scores, na_probs, qid_to_has_ans):
+def find_best_thresh(preds, scores, na_probs, qid_to_has_ans) -> Tuple[float, Union[float, Any]]:
     num_no_ans = sum(1 for k in qid_to_has_ans if not qid_to_has_ans[k])
     cur_score = num_no_ans
     best_score = cur_score
@@ -254,7 +256,7 @@ def find_best_thresh(preds, scores, na_probs, qid_to_has_ans):
     return 100.0 * best_score / len(scores), best_thresh
 
 
-def find_all_best_thresh(main_eval, preds, exact_raw, f1_raw, na_probs, qid_to_has_ans):
+def find_all_best_thresh(main_eval, preds, exact_raw, f1_raw, na_probs, qid_to_has_ans) -> None:
     best_exact, exact_thresh = find_best_thresh(preds, exact_raw, na_probs, qid_to_has_ans)
     best_f1, f1_thresh = find_best_thresh(preds, f1_raw, na_probs, qid_to_has_ans)
     main_eval["best_exact"] = best_exact
@@ -263,7 +265,7 @@ def find_all_best_thresh(main_eval, preds, exact_raw, f1_raw, na_probs, qid_to_h
     main_eval["best_f1_thresh"] = f1_thresh
 
 
-def main():
+def main() -> None:
     with open(OPTS.data_file) as f:
         dataset_json = json.load(f)
         dataset = dataset_json["data"]
