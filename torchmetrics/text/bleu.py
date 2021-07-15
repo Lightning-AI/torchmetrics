@@ -49,6 +49,10 @@ class BLEUScore(Metric):
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
     """
+    trans_len: Tensor
+    ref_len: Tensor
+    numerator: Tensor
+    denominator: Tensor
 
     def __init__(self, n_gram: int = 4, smooth: bool = False):
         super().__init__()
