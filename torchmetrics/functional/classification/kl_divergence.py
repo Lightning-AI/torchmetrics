@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Optional, Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -48,7 +49,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = 'me
     return measures / total
 
 
-def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = 'mean') -> Tensor:
+def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = 'mean') -> Tensor:
     r"""Computes the `KL divergence <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_:
 
     .. math::
@@ -72,11 +73,29 @@ def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Option
 
     Example:
         >>> import torch
+        >>> from torchmetrics.functional import kl_divergence
+        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
+        >>> q = torch.tensor([[1/3, 1/3, 1/3]])
+        >>> kl_divergence(p, q)
+        tensor(0.0853)
+    """
+    measures, total = _kld_update(p, q, log_prob)
+    return _kld_compute(measures, total, reduction)
+
+
+def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = 'mean') -> Tensor:
+    r"""Computes the `KL divergence <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_:
+
+    .. deprecated:: v0.5
+        `kldivergence` was renamed as `kl_divergence` in v0.5 and it will be removed in v0.6
+
+    Example:
+        >>> import torch
         >>> from torchmetrics.functional import kldivergence
         >>> p = torch.tensor([[0.36, 0.48, 0.16]])
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kldivergence(p, q)
         tensor(0.0853)
     """
-    measures, total = _kld_update(p, q, log_prob)
-    return _kld_compute(measures, total, reduction)
+    warn("`kldivergence` was renamed as `kl_divergence` in v0.5 and it will be removed in v0.6", DeprecationWarning)
+    return kl_divergence(p, q, log_prob, reduction)
