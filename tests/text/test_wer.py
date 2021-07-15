@@ -1,5 +1,6 @@
-from torchmetrics.text.wer.wer import WER
 import pytest
+
+from torchmetrics.text.wer.wer import WER
 
 
 def test_wer_same():
