@@ -1,7 +1,5 @@
 from typing import Any, Dict
 
-from torchmetrics.metric import Metric
-
 from torchmetrics.functional.text import (
     apply_no_ans_threshold,
     find_all_best_thresh,
@@ -10,6 +8,7 @@ from torchmetrics.functional.text import (
     make_qid_to_has_ans,
     merge_eval,
 )
+from torchmetrics.metric import Metric
 
 
 class SQuADv2(Metric):
