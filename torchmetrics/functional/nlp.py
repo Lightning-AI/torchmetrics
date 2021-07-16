@@ -32,7 +32,7 @@ def bleu_score(
         >>> from torchmetrics.functional import bleu_score
         >>> translate_corpus = ['the cat is on the mat'.split()]
         >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
-        >>> bleu_score(translate_corpus, reference_corpus)
+        >>> bleu_score(reference_corpus, translate_corpus)
         tensor(0.7598)
 
     .. deprecated:: v0.5
@@ -42,5 +42,4 @@ def bleu_score(
         "Function `functional.nlp.bleu_score` is deprecated in v0.5 and will be removed in v0.6."
         " Use `functional.text.bleu.bleu_score` instead.", DeprecationWarning
     )
-
     return _bleu_score(reference_corpus, translate_corpus, n_gram, smooth)

@@ -17,7 +17,7 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
-from typing import Sequence
+from typing import Sequence, Tuple
 
 import torch
 from torch import Tensor, tensor
@@ -53,7 +53,7 @@ def _bleu_score_update(
     trans_len: Tensor,
     ref_len: Tensor,
     n_gram: int = 4
-):
+) -> Tuple[Tensor, Tensor]:
     for (translation, references) in zip(translate_corpus, reference_corpus):
         trans_len += len(translation)
         ref_len_list = [len(ref) for ref in references]
@@ -127,7 +127,7 @@ def bleu_score(
         >>> from torchmetrics.functional import bleu_score
         >>> translate_corpus = ['the cat is on the mat'.split()]
         >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
-        >>> bleu_score(translate_corpus, reference_corpus)
+        >>> bleu_score(reference_corpus, translate_corpus)
         tensor(0.7598)
 
     References:

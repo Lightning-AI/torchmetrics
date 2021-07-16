@@ -39,7 +39,7 @@ class BLEUScore(Metric):
         >>> translate_corpus = ['the cat is on the mat'.split()]
         >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
         >>> metric = BLEUScore()
-        >>> metric(translate_corpus, reference_corpus)
+        >>> metric(reference_corpus, translate_corpus)
         tensor(0.7598)
 
     References:

@@ -41,8 +41,8 @@ REF1B = "It is a guiding principle which makes the military force always being u
 REF1C = "It is the practical guide for the army always to heed the directions of the party".split()
 REF2A = "he was interested in world history because he read the book".split()
 
-LIST_OF_REFERENCES = [[REF1A, REF1B, REF1C], [REF2A]]
-HYPOTHESES = [HYP1, HYP2]
+TUPLE_OF_REFERENCES = ((REF1A, REF1B, REF1C), tuple([REF2A]))
+HYPOTHESES = (HYP1, HYP2)
 
 BATCHES = [
     dict(reference_corpus=[[REF1A, REF1B, REF1C]], translate_corpus=[HYP1]),
@@ -72,8 +72,8 @@ def test_bleu_score_functional(weights, n_gram, smooth_func, smooth):
     pl_output = bleu_score([[REFERENCE1, REFERENCE2, REFERENCE3]], [HYPOTHESIS1], n_gram=n_gram, smooth=smooth)
     assert torch.allclose(pl_output, tensor(nltk_output))
 
-    nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
-    pl_output = bleu_score(LIST_OF_REFERENCES, HYPOTHESES, n_gram=n_gram, smooth=smooth)
+    nltk_output = corpus_bleu(TUPLE_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
+    pl_output = bleu_score(TUPLE_OF_REFERENCES, HYPOTHESES, n_gram=n_gram, smooth=smooth)
     assert torch.allclose(pl_output, tensor(nltk_output))
 
 
@@ -109,8 +109,8 @@ def test_bleu_score_class(weights, n_gram, smooth_func, smooth):
     pl_output = bleu([[REFERENCE1, REFERENCE2, REFERENCE3]], [HYPOTHESIS1])
     assert torch.allclose(pl_output, tensor(nltk_output))
 
-    nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
-    pl_output = bleu(LIST_OF_REFERENCES, HYPOTHESES)
+    nltk_output = corpus_bleu(TUPLE_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
+    pl_output = bleu(TUPLE_OF_REFERENCES, HYPOTHESES)
     assert torch.allclose(pl_output, tensor(nltk_output))
 
 
@@ -126,7 +126,7 @@ def test_bleu_score_class(weights, n_gram, smooth_func, smooth):
 def test_bleu_score_class_batches(weights, n_gram, smooth_func, smooth):
     bleu = BLEUScore(n_gram=n_gram, smooth=smooth)
 
-    nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
+    nltk_output = corpus_bleu(TUPLE_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
 
     for batch in BATCHES:
         bleu.update(batch['reference_corpus'], batch['translate_corpus'])
