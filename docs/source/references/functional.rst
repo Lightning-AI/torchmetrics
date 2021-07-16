@@ -29,6 +29,10 @@ snr [func]
 .. autofunction:: torchmetrics.functional.snr
     :noindex:
 
+*************
+Image Metrics
+*************
+
 
 psnr [func]
 ~~~~~~~~~~~
