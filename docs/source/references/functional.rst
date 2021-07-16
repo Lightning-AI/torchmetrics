@@ -29,24 +29,6 @@ snr [func]
 .. autofunction:: torchmetrics.functional.snr
     :noindex:
 
-*************
-Image Metrics
-*************
-
-
-psnr [func]
-~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.psnr
-    :noindex:
-
-
-ssim [func]
-~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.ssim
-    :noindex:
-
 
 **********************
 Classification Metrics
@@ -219,6 +201,20 @@ image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.image_gradients
+    :noindex:
+
+
+psnr [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.psnr
+    :noindex:
+
+
+ssim [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ssim
     :noindex:
 
 ******************
