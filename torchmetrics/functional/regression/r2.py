@@ -140,32 +140,3 @@ def r2_score(
     """
     sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
     return _r2_score_compute(sum_squared_error, sum_error, residual, total, adjusted, multioutput)
-
-
-def r2score(
-    preds: Tensor,
-    target: Tensor,
-    adjusted: int = 0,
-    multioutput: str = "uniform_average",
-) -> Tensor:
-    r"""
-    Computes r2 score also known as `coefficient of determination
-    <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
-
-    .. deprecated:: v0.5
-        `r2score` was renamed as `r2_score` in v0.5 and it will be removed in v0.6
-
-    Example:
-        >>> from torchmetrics.functional import r2score
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> r2score(preds, target)
-        tensor(0.9486)
-
-        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
-        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
-        >>> r2score(preds, target, multioutput='raw_values')
-        tensor([0.9654, 0.9082])
-    """
-    warn("`r2score` was renamed as `r2_score` in v0.5 and it will be removed in v0.6", DeprecationWarning)
-    return r2_score(preds, target, adjusted, multioutput)

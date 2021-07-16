@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved `psnr` and `ssim` from `torchmetrics.functional.regression.*` to `torchmetrics.functional.image.*` ([#382](https://github.com/PyTorchLightning/metrics/pull/382)):
 
 
+- Moved `R2Score` from `torchmetrics.regression.r2score` to `torchmetrics.regression.r2` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
+
+
 ### Deprecated
 
 - Rename `r2score` >> `r2_score` and `kldivergence` >> `kl_divergence` in `torchmetrics.functional` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
