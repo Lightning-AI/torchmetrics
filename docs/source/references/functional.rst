@@ -141,7 +141,7 @@ matthews_corrcoef [func]
     :noindex:
 
 roc [func]
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.roc
     :noindex:
