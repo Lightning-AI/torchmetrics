@@ -12,8 +12,6 @@ import numpy as np
 OPTS = None
 
 
-
-
 def make_qid_to_has_ans(dataset) -> Dict[Any, bool]:
     qid_to_has_ans = {}
     for article in dataset:
@@ -135,12 +133,14 @@ def plot_pr_curve(precisions, recalls, out_image, title) -> None:
     plt.clf()
 
 
-def make_precision_recall_eval(scores,
-                               na_probs,
-                               num_true_pos,
-                               qid_to_has_ans,
-                               out_image=None,
-                               title=None,) -> Dict[str, float]:
+def make_precision_recall_eval(
+    scores,
+    na_probs,
+    num_true_pos,
+    qid_to_has_ans,
+    out_image=None,
+    title=None,
+) -> Dict[str, float]:
     qid_list = sorted(na_probs, key=lambda k: na_probs[k])
     true_pos = 0.0
     cur_p = 1.0
