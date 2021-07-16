@@ -282,6 +282,13 @@ ssim [func]
     :noindex:
 
 
+symmetric_mean_absolute_percentage_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
+    :noindex:
+
+
 ***
 NLP
 ***
