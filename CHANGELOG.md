@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Moved `torchmetrics.functional.regression.psnr` to `torchmetrics.functional.image.psnr` ([#379](https://github.com/PyTorchLightning/metrics/pull/379)):
+
 
 ### Deprecated
 
@@ -31,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Removed restriction that `preds` could not be bigger than `num_classes` to support logit input ([#357](https://github.com/PyTorchLightning/metrics/pull/357))
+
+
+- Removed ([#379](https://github.com/PyTorchLightning/metrics/pull/379)):
+    * module `torchmetrics.regression.psnr`
 
 
 ### Fixed
