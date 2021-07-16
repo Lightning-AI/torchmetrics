@@ -35,7 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed restriction that `preds` could not be bigger than `num_classes` to support logit input ([#357](https://github.com/PyTorchLightning/metrics/pull/357))
 
 
-- Removed `torchmetrics.functional.mean_relative_error`and `num_thresholds` argument in `BinnedPrecisionRecallCurve` ([#379](https://github.com/PyTorchLightning/metrics/pull/379))
+- Removed ([#379](https://github.com/PyTorchLightning/metrics/pull/379)):
+    * function `torchmetrics.functional.mean_relative_error`
+    * `num_thresholds` argument in `BinnedPrecisionRecallCurve`
 
 
 ### Fixed
