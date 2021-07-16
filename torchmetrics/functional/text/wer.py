@@ -14,8 +14,7 @@ def wer(target: Any, preds: Any, concatenate_texts: bool = False) -> float:
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> wer = WER(predictions=predictions, references=references)
-        >>> wer_score = wer.compute()
+        >>> wer_score = wer(preds=predictions, target=references)
         >>> print(wer_score)
         0.5
     """
