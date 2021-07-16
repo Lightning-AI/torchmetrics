@@ -402,6 +402,11 @@ SSIM
 .. autoclass:: torchmetrics.SSIM
     :noindex:
 
+SymmetricMeanAbsolutePercentageError
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SymmetricMeanAbsolutePercentageError
+    :noindex:
 
 
 *********
