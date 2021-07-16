@@ -22,3 +22,6 @@ from torchmetrics.regression.psnr import PSNR  # noqa: F401
 from torchmetrics.regression.r2score import R2Score  # noqa: F401
 from torchmetrics.regression.spearman import SpearmanCorrcoef  # noqa: F401
 from torchmetrics.regression.ssim import SSIM  # noqa: F401
+from torchmetrics.regression.symmetric_mean_absolute_percentage_error import (  # noqa: F401
+    SymmetricMeanAbsolutePercentageError,
+)
