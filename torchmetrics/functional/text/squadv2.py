@@ -5,7 +5,7 @@ import os
 import re
 import string
 import sys
-from typing import Any, Dict, OrderedDict, Tuple, Union, List
+from typing import Any, Dict, List, OrderedDict, Tuple, Union
 
 import numpy as np
 
