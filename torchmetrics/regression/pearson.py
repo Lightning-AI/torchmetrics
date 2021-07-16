@@ -21,6 +21,10 @@ from torchmetrics.metric import Metric
 
 
 def _final_aggregation(mxs, mys, vxs, vys, cxys, ns):
+    """
+    Aggregate the statistics from multiple devices. Formula taken from here:
+    https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
+    """
     mx1, my1, vx1, vy1, cxy1, n1 = mxs[0], mys[0], vxs[0], vys[0], cxys[0], ns[0]
     for i in range(1, len(mxs)):
         mx2, my2, vx2, vy2, cxy2, n2 = mxs[i], mys[i], vxs[i], vys[i], cxys[i], ns[i]
