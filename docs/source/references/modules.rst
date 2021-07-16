@@ -502,6 +502,15 @@ RetrievalNormalizedDCG
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
     :noindex:
 
+************
+Text Metrics
+************
+
+WER
+~~~
+
+.. autoclass:: torchmetrics.WER
+    :noindex:
 
 ********
 Wrappers
