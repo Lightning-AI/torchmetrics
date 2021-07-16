@@ -19,7 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Moved `psnr` and `ssim` from `torchmetrics.functional.regression.*` to `torchmetrics.functional.image.*` ([#382](https://github.com/PyTorchLightning/metrics/pull/382)):
+- Moved `psnr` and `ssim` from `torchmetrics.functional.regression.*` to `torchmetrics.functional.image.*` ([#382](https://github.com/PyTorchLightning/metrics/pull/382))
+
+
+- Moved `image_gradient` from `torchmetrics.functional.image_gradients` to `torchmetrics.functional.image.gradients` ([#381](https://github.com/PyTorchLightning/metrics/pull/381))
 
 
 ### Deprecated
