@@ -14,10 +14,6 @@
 from typing import Any, Callable, Optional
 from warnings import warn
 
-import torch
-from torch import Tensor, tensor
-
-from torchmetrics.functional.regression.r2 import _r2_score_compute, _r2_score_update
 from torchmetrics.regression.r2 import R2Score as _R2Score
 
 
