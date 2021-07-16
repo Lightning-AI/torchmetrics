@@ -18,8 +18,24 @@ from torch import Tensor
 
 from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute, _pearson_corrcoef_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import dim_zero_cat
+
+
+def _final_aggregation(mxs, mys, vxs, vys, cxys, ns):
+    mx1, my1, vx1, vy1, cxy1, n1 = mxs[0], mys[0], vxs[0], vys[0], cxys[0], ns[0]
+    for i in range(1, len(mxs)):
+        mx2, my2, vx2, vy2, cxy2, n2 = mxs[i], mys[i], vxs[i], vys[i], cxys[i], ns[i]
+
+        n = n1 + n2
+        mx = (n1 * mx1 + n2 * mx2) / n
+        my = (n1 * my1 + n2 * my2) / n
+        vx = n1*vx1 + n1*(mx1-mx)*(my1-my) +n2*vx2 + n2*(mx2-mx)*(my2-my)
+        vy = n1*vy1 + n1*(my1-my)*(my1-my) +n2*vy2 + n2*(my2-my)*(my2-my)
+        cxy = n1*cxy1 + n1*(mx1-mx)*(my1-my) +n2*cxy2 + n2*(mx2-mx)*(my2-my)
+
+        mx1, my1, vx1, vy1, cxy1, n1 = mx, my, vx, vy, cxy, n
+
+    return vx, vy, cxy, n
+
 
 
 class PearsonCorrcoef(Metric):
@@ -71,13 +87,12 @@ class PearsonCorrcoef(Metric):
             process_group=process_group,
         )
 
-        rank_zero_warn(
-            'Metric `PearsonCorrcoef` will save all targets and predictions in buffer.'
-            ' For large datasets this may lead to large memory footprint.'
-        )
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        self.add_state("mx", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("my", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("vx", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("vy", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("cxy", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("n", default=torch.zeros(1), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
@@ -87,17 +102,23 @@ class PearsonCorrcoef(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _pearson_corrcoef_update(preds, target)
-        self.preds.append(preds)
-        self.target.append(target)
+        self.mx, self.my, self.vx, self.vy, self.cxy, self.n = _pearson_corrcoef_update(
+            preds, target, self.mx, self.my, self.vx, self.vy, self.cxy, self.n
+        )
 
     def compute(self) -> Tensor:
         """
         Computes pearson correlation coefficient over state.
         """
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _pearson_corrcoef_compute(preds, target)
+        if isinstance(self.mx, list):  # reduce over multiple devices, need further reduction
+            vx, vy, cxy, n = _final_aggregation(self.mx, self.my, self.vx, self.vy, self.cxy, self.n)
+        else:
+            vx = self.vx
+            vy = self.vy
+            cxy = self.cxy
+            n = self.n
+
+        return _pearson_corrcoef_compute(vx, vy, cxy, n)
 
     @property
     def is_differentiable(self) -> bool:

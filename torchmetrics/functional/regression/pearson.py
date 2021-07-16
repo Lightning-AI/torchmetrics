@@ -22,7 +22,13 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _pearson_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
+    mx: Tensor,
+    my: Tensor,
+    vx: Tensor,
+    vy: Tensor,
+    cxy: Tensor,
+    n: Tensor,
+) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """ updates current estimates of the mean, cov and n_obs with new data for calculating pearsons correlation """
     # Data checking
     _check_same_shape(preds, target)
@@ -31,24 +37,30 @@ def _pearson_corrcoef_update(
     if preds.ndim > 1 or target.ndim > 1:
         raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
 
-    return preds, target
+    n_obs = preds.numel()
+    mx_new = (n * mx + preds.mean() * n_obs) / (n + n_obs)
+    my_new = (n * my + target.mean() * n_obs) / (n + n_obs)
+    n += n_obs
+    vx += ((preds - mx_new) * (preds - mx)).sum()
+    vy += ((target - my_new) * (target - my)).sum()
+    cxy += ((preds - mx_new) * (target - my)).sum()
+    mx = mx_new
+    my = my_new
+
+    return mx, my, vx, vy, cxy, n
 
 
-def _pearson_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
+def _pearson_corrcoef_compute(
+    vx: Tensor,
+    vy: Tensor,
+    cxy: Tensor,
+    n: Tensor,
+) -> Tensor:
     """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
-    preds_diff = preds - preds.mean()
-    target_diff = target - target.mean()
-
-    cov = (preds_diff * target_diff).mean()
-    preds_std = torch.sqrt((preds_diff * preds_diff).mean())
-    target_std = torch.sqrt((target_diff * target_diff).mean())
-
-    denom = preds_std * target_std
-    # prevent division by zero
-    if denom == 0:
-        denom += eps
-
-    corrcoef = cov / denom
+    vx /= (n - 1)
+    vy /= (n - 1)
+    cxy /= (n - 1)
+    corrcoef = cxy / (vx * vy).sqrt()
     return torch.clamp(corrcoef, -1.0, 1.0)
 
 
@@ -67,5 +79,8 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> pearson_corrcoef(preds, target)
         tensor(0.9849)
     """
-    preds, target = _pearson_corrcoef_update(preds, target)
-    return _pearson_corrcoef_compute(preds, target)
+    _temp = torch.zeros(1, dtype=preds.dtype, device=preds.device)
+    mx, my, vx = _temp.clone(), _temp.clone(), _temp.clone()
+    vy, cxy, n = _temp.clone(), _temp.clone(), _temp.clone()
+    _, _, vx, vy, cxy, n = _pearson_corrcoef_update(preds, target, mx, my, vx, vy, cxy, n)
+    return _pearson_corrcoef_compute(vx, vy, cxy, n)
