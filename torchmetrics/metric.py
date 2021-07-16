@@ -13,7 +13,7 @@
 # limitations under the License.
 import functools
 import inspect
-import operator
+import operator as op
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
@@ -83,7 +83,7 @@ class Metric(nn.Module, ABC):
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
-        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", operator.ge, "1.3.0")
+        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
