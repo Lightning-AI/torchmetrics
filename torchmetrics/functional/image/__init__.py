@@ -13,4 +13,4 @@
 # limitations under the License.
 
 from torchmetrics.functional.image.psnr import psnr  # noqa: F401
-from torchmetrics.functional.image.image_gradients import image_gradients  # noqa: F401
+from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
