@@ -531,7 +531,7 @@ def _check_retrieval_functional_inputs(
     if not preds.is_floating_point():
         raise ValueError("`preds` must be a tensor of floats")
 
-    if not allow_non_binary_target and target.max() > 1 or target.min() < 0:
+    if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
         raise ValueError("`target` must contain `binary` values")
 
     return preds.float().flatten(), target.long().flatten()
