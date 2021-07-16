@@ -56,8 +56,7 @@ def symmetric_mean_absolute_percentage_error(
     if isinstance(multioutput, str):
         if multioutput == 'raw_values':
             return output_errors
-        else:
-            # pass None as weights to np.average: uniform mean
-            multioutput = None
+        # pass None as weights to np.average: uniform mean
+        multioutput = None
 
     return np.average(output_errors, weights=multioutput)
