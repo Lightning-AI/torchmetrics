@@ -48,7 +48,7 @@ class BinnedPrecisionRecallCurve(Metric):
     be calculated based on a one-vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
-    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+    for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
 
     Forward accepts
 
@@ -121,7 +121,7 @@ class BinnedPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        thresholds: Union[float, Tensor, List[float], None] = None,
+        thresholds: Union[int, Tensor, List[float], None] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -195,7 +195,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
-    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+    for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
 
     Forward accepts
 
@@ -223,7 +223,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         >>> from torchmetrics import BinnedAveragePrecision
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> average_precision = BinnedAveragePrecision(num_classes=1, num_thresholds=10)
+        >>> average_precision = BinnedAveragePrecision(num_classes=1, thresholds=10)
         >>> average_precision(pred, target)
         tensor(1.0000)
 
@@ -233,7 +233,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision = BinnedAveragePrecision(num_classes=5, num_thresholds=10)
+        >>> average_precision = BinnedAveragePrecision(num_classes=5, thresholds=10)
         >>> average_precision(pred, target)
         [tensor(1.0000), tensor(1.0000), tensor(0.2500), tensor(0.2500), tensor(-0.)]
     """
@@ -248,7 +248,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
     Computes the higest possible recall value given the minimum precision thresholds provided.
 
     Computation is performed in constant-memory by computing precision and recall
-    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+    for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
 
     Forward accepts
 
@@ -276,7 +276,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         >>> from torchmetrics import BinnedRecallAtFixedPrecision
         >>> pred = torch.tensor([0, 0.2, 0.5, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
-        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=1, num_thresholds=10, min_precision=0.5)
+        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=1, thresholds=10, min_precision=0.5)
         >>> average_precision(pred, target)
         (tensor(1.0000), tensor(0.1111))
 
@@ -286,7 +286,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=5, num_thresholds=10, min_precision=0.5)
+        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=5, thresholds=10, min_precision=0.5)
         >>> average_precision(pred, target)   # doctest: +NORMALIZE_WHITESPACE
         (tensor([1.0000, 1.0000, 0.0000, 0.0000, 0.0000]),
         tensor([6.6667e-01, 6.6667e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
@@ -296,7 +296,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         self,
         num_classes: int,
         min_precision: float,
-        thresholds: Optional[Union[Tensor, List[float]]] = None,
+        thresholds: Union[int, Tensor, List[float], None] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
