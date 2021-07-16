@@ -507,14 +507,14 @@ Text
 ****
 
 SQuADV2
-~~~~~~~~~
+~~~~~~~
 
 .. autoclass:: torchmetrics.SQuADV2
     :noindex:
 
 
 WER
-~~~~~~~~~
+~~~
 
 .. autoclass:: torchmetrics.WER
     :noindex:

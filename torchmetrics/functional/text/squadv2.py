@@ -12,31 +12,6 @@ import numpy as np
 OPTS = None
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser("Official evaluation script for SQuAD version 2.0.")
-    parser.add_argument("data_file", metavar="data.json", help="Input data JSON file.")
-    parser.add_argument("pred_file", metavar="pred.json", help="Model predictions.")
-    parser.add_argument(
-        "--out-file", "-o", metavar="eval.json", help="Write accuracy metrics to file (default is stdout)."
-    )
-    parser.add_argument(
-        "--na-prob-file", "-n", metavar="na_prob.json", help="Model estimates of probability of no answer."
-    )
-    parser.add_argument(
-        "--na-prob-thresh",
-        "-t",
-        type=float,
-        default=1.0,
-        help='Predict "" if no-answer probability exceeds this (default = 1.0).',
-    )
-    parser.add_argument(
-        "--out-image-dir", "-p", metavar="out_images", default=None, help="Save precision-recall curves to directory."
-    )
-    parser.add_argument("--verbose", "-v", action="store_true")
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
-    return parser.parse_args()
 
 
 def make_qid_to_has_ans(dataset) -> Dict[Any, bool]:
@@ -165,7 +140,7 @@ def make_precision_recall_eval(scores,
                                num_true_pos,
                                qid_to_has_ans,
                                out_image=None,
-                               title=None) -> Dict[str, float]:
+                               title=None,) -> Dict[str, float]:
     qid_list = sorted(na_probs, key=lambda k: na_probs[k])
     true_pos = 0.0
     cur_p = 1.0
@@ -249,10 +224,7 @@ def find_best_thresh(preds, scores, na_probs, qid_to_has_ans) -> Tuple[float, Un
         if qid_to_has_ans[qid]:
             diff = scores[qid]
         else:
-            if preds[qid]:
-                diff = -1
-            else:
-                diff = 0
+            diff = -1 if preds[qid] else 0
         cur_score += diff
         if cur_score > best_score:
             best_score = cur_score

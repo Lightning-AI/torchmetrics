@@ -16,6 +16,7 @@ class SQuADv2(Metric):
     This metric wrap the official scoring script for version 2 of the Stanford Question
     Answering Dataset (SQuAD).
     Computes SQuAD v2 scores (F1 and EM).
+
     Args:
         predictions: List of triple for question-answers to score with the following elements:
             - the question-answer 'id' field as given in the references (see below)
@@ -25,6 +26,7 @@ class SQuADv2(Metric):
             - 'id': id of the question-answer pair (see above),
             - 'answers': a list of Dict {'text': text of the answer as a string}
         no_answer_threshold: float Probability threshold to decide that a question has no answer.
+
     Returns:
         'exact': Exact match (the normalized answer exactly match the gold answer)
         'f1': The F-score of predicted tokens versus the gold answer
@@ -39,6 +41,7 @@ class SQuADv2(Metric):
         'best_exact_thresh': No-answer probability threshold associated to the best exact match
         'best_f1': Best F1 (with varying threshold)
         'best_f1_thresh': No-answer probability threshold associated to the best F1
+
     Examples:
         >>> predictions = [{'prediction_text': '1976', 'id': '56e10a3be3433e1400422b22', 'no_answer_probability': 0.}]
         >>> references = [{'answers': {'answer_start': [97], 'text': ['1976']}, 'id': '56e10a3be3433e1400422b22'}]
@@ -59,10 +62,10 @@ class SQuADv2(Metric):
 
     def __init__(self, n_gram: int = 4, smooth: bool = False, no_answer_threshold: float = 1.0):
         """
-               Args:
-                   n_gram: Gram value ranged from 1 to 4 (Default 4)
-                   smooth: Whether or not to apply smoothing – Lin et al. 2004
-               """
+       Args:
+           n_gram: Gram value ranged from 1 to 4 (Default 4)
+           smooth: Whether or not to apply smoothing – Lin et al. 2004
+       """
         super().__init__()
         self.n_gram = n_gram
         self.smooth = smooth

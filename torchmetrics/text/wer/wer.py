@@ -15,7 +15,7 @@ class WER(Metric):
 
     Word error rate can then be computed as:
     WER = (S + D + I) / N = (S + D + I) / (S + D + C)
-    where
+    where:
     S is the number of substitutions,
     D is the number of deletions,
     I is the number of insertions,
@@ -28,8 +28,10 @@ class WER(Metric):
         references: List of references for each speech input.
         predictions: List of transcriptions to score.
         concatenate_texts (bool, default=False): Whether to concatenate all input texts or compute WER iteratively.
+
     Returns:
         (float): the word error rate
+
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
