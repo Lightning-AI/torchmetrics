@@ -292,6 +292,17 @@ bleu_score [func]
 .. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
 
+***
+Text
+***
+
+wer [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.text.wer
+    :noindex:
+
+
 ********
 Pairwise
 ********
