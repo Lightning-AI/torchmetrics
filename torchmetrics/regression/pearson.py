@@ -28,14 +28,13 @@ def _final_aggregation(mxs, mys, vxs, vys, cxys, ns):
         n = n1 + n2
         mx = (n1 * mx1 + n2 * mx2) / n
         my = (n1 * my1 + n2 * my2) / n
-        vx = n1*vx1 + n1*(mx1-mx)*(my1-my) +n2*vx2 + n2*(mx2-mx)*(my2-my)
-        vy = n1*vy1 + n1*(my1-my)*(my1-my) +n2*vy2 + n2*(my2-my)*(my2-my)
-        cxy = n1*cxy1 + n1*(mx1-mx)*(my1-my) +n2*cxy2 + n2*(mx2-mx)*(my2-my)
+        vx = n1 * vx1 + n1 * (mx1 - mx) * (my1 - my) + n2 * vx2 + n2 * (mx2 - mx) * (my2 - my)
+        vy = n1 * vy1 + n1 * (my1 - my) * (my1 - my) + n2 * vy2 + n2 * (my2 - my) * (my2 - my)
+        cxy = n1 * cxy1 + n1 * (mx1 - mx) * (my1 - my) + n2 * cxy2 + n2 * (mx2 - mx) * (my2 - my)
 
         mx1, my1, vx1, vy1, cxy1, n1 = mx, my, vx, vy, cxy, n
 
     return vx, vy, cxy, n
-
 
 
 class PearsonCorrcoef(Metric):
