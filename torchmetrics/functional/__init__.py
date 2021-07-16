@@ -47,7 +47,7 @@ from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa:
 from torchmetrics.functional.image.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2 import r2_score, r2score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
-from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
+from torchmetrics.functional.image.ssim import ssim  # noqa: F401
 from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (  # noqa: F401
     symmetric_mean_absolute_percentage_error,
 )
