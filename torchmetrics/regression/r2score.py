@@ -40,8 +40,10 @@ class R2Score(_R2Score):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ) -> None:
-        warn("`R2Score` was moved from `torchmetrics.regression.r2` to `torchmetrics.regression.r2_score` in v0.5"
-             " and it will be removed in v0.6", DeprecationWarning)
+        warn(
+            "`R2Score` was moved from `torchmetrics.regression.r2` to `torchmetrics.regression.r2_score` in v0.5"
+            " and it will be removed in v0.6", DeprecationWarning
+        )
         super().__init__(
             num_outputs=num_outputs,
             adjusted=adjusted,
