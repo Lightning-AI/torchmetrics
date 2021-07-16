@@ -29,6 +29,24 @@ snr [func]
 .. autofunction:: torchmetrics.functional.snr
     :noindex:
 
+*************
+Image Metrics
+*************
+
+
+psnr [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.psnr
+    :noindex:
+
+
+ssim [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ssim
+    :noindex:
+
 
 **********************
 Classification Metrics
@@ -254,13 +272,6 @@ pearson_corrcoef [func]
     :noindex:
 
 
-psnr [func]
-~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.psnr
-    :noindex:
-
-
 r2score [func]
 ~~~~~~~~~~~~~~
 
@@ -272,13 +283,6 @@ spearman_corrcoef [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.spearman_corrcoef
-    :noindex:
-
-
-ssim [func]
-~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.ssim
     :noindex:
 
 
