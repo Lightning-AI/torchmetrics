@@ -17,40 +17,12 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.image_gradients import image_gradients as ig_new
+from torchmetrics.functional.image.image_gradients import image_gradients as _image_gradients
 
 
 def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
     """
     Computes the `gradients <https://en.wikipedia.org/wiki/Image_gradient>`_ of a given image using finite difference
-
-    Args:
-        img: An ``(N, C, H, W)`` input tensor where C is the number of image channels
-
-    Return:
-        Tuple of (dy, dx) with each gradient of shape ``[N, C, H, W]``
-
-    Raises:
-        TypeError:
-            If ``img`` is not of the type <torch.Tensor>.
-        RuntimeError:
-            If ``img`` is not a 4D tensor.
-
-    Example:
-        >>> from torchmetrics.functional import image_gradients
-        >>> image = torch.arange(0, 1*1*5*5, dtype=torch.float32)
-        >>> image = torch.reshape(image, (1, 1, 5, 5))
-        >>> dy, dx = image_gradients(image)
-        >>> dy[0, 0, :, :]
-        tensor([[5., 5., 5., 5., 5.],
-                [5., 5., 5., 5., 5.],
-                [5., 5., 5., 5., 5.],
-                [5., 5., 5., 5., 5.],
-                [0., 0., 0., 0., 0.]])
-
-    .. note:: The implementation follows the 1-step finite difference method as followed
-           by the TF implementation. The values are organized such that the gradient of
-           [I(x+1, y)-[I(x, y)]] are at the (x, y) location
 
     .. deprecated:: v0.5
         Use :func:`torchmetrics.functional.image.image_gradients.image_gradients`. Will be removed in v0.6.
@@ -61,4 +33,4 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
         " Use `functional.image.image_gradients.image_gradients` instead.", DeprecationWarning
     )
 
-    return ig_new(img)
+    return _image_gradients(img)
