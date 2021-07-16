@@ -34,7 +34,7 @@ from torchmetrics.functional.classification.specificity import specificity  # no
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
 from torchmetrics.functional.image.psnr import psnr  # noqa: F401
 from torchmetrics.functional.image.ssim import ssim  # noqa: F401
-from torchmetrics.functional.image_gradients import image_gradients  # noqa: F401
+from torchmetrics.functional.image.image_gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.nlp import bleu_score  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401

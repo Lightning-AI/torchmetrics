@@ -211,6 +211,15 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
+*************
+Image Metrics
+*************
+
+image_gradients [func]
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.image_gradients
+    :noindex:
 
 ******************
 Regression Metrics
@@ -227,13 +236,6 @@ explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.explained_variance
-    :noindex:
-
-
-image_gradients [func]
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.image_gradients
     :noindex:
 
 

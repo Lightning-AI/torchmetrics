@@ -12,12 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Tuple
-from warnings import warn
 
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.image_gradients import image_gradients as ig_new
+
+def _image_gradients_validate(img: Tensor) -> None:
+    """ Validates whether img is a 4D torch Tensor """
+
+    if not isinstance(img, Tensor):
+        raise TypeError(f"The `img` expects a value of <Tensor> type but got {type(img)}")
+    if img.ndim != 4:
+        raise RuntimeError(f"The `img` expects a 4D tensor but got {img.ndim}D tensor")
+
+
+def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
+    """ Computes image gradients (dy/dx) for a given image """
+
+    batch_size, channels, height, width = img.shape
+
+    dy = img[..., 1:, :] - img[..., :-1, :]
+    dx = img[..., :, 1:] - img[..., :, :-1]
+
+    shapey = [batch_size, channels, 1, width]
+    dy = torch.cat([dy, torch.zeros(shapey, device=img.device, dtype=img.dtype)], dim=2)
+    dy = dy.view(img.shape)
+
+    shapex = [batch_size, channels, height, 1]
+    dx = torch.cat([dx, torch.zeros(shapex, device=img.device, dtype=img.dtype)], dim=3)
+    dx = dx.view(img.shape)
+
+    return dy, dx
 
 
 def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
@@ -51,14 +76,7 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
     .. note:: The implementation follows the 1-step finite difference method as followed
            by the TF implementation. The values are organized such that the gradient of
            [I(x+1, y)-[I(x, y)]] are at the (x, y) location
-
-    .. deprecated:: v0.5
-        Use :func:`torchmetrics.functional.image.image_gradients.image_gradients`. Will be removed in v0.6.
-
     """
-    warn(
-        "Function `functional.image_gradients.image_gradients` is deprecated in v0.5 and will be removed in v0.6."
-        " Use `functional.image.image_gradients.image_gradients` instead.", DeprecationWarning
-    )
+    _image_gradients_validate(img)
 
-    return ig_new(img)
+    return _compute_image_gradients(img)
