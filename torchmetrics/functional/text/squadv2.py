@@ -115,7 +115,7 @@ def get_raw_scores(dataset, preds) -> Tuple[Dict[Any, int], Dict[Any, float]]:
     return exact_scores, f1_scores
 
 
-def apply_no_ans_threshold(scores, na_probs, qid_to_has_ans, na_prob_thresh)-> Dict:
+def apply_no_ans_threshold(scores, na_probs, qid_to_has_ans, na_prob_thresh) -> Dict:
     new_scores = {}
     for qid, s in scores.items():
         pred_na = na_probs[qid] > na_prob_thresh
