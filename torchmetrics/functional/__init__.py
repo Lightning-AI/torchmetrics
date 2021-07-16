@@ -58,4 +58,4 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision  # n
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
-from torchmetrics.functional.text.wer import wer # noqa: F401
+from torchmetrics.functional.text.wer import wer  # noqa: F401
