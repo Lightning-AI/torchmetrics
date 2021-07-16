@@ -52,6 +52,7 @@ from torchmetrics.regression import (  # noqa: F401 E402
     PearsonCorrcoef,
     R2Score,
     SpearmanCorrcoef,
+    SymmetricMeanAbsolutePercentageError,
 )
 from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalFallOut,
