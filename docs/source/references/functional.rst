@@ -299,7 +299,7 @@ Text
 wer [func]
 ~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.text.wer
+.. autofunction:: torchmetrics.functional.wer
     :noindex:
 
 
