@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support in `nDCG` metric for target with values larger than 1 ([#343](https://github.com/PyTorchLightning/metrics/issues/343))
 
+- Added SQuAD V2 and WER metric ([#368](https://github.com/PyTorchLightning/metrics/pull/368))
 
 ### Changed
 
