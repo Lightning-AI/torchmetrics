@@ -60,11 +60,6 @@ class BinnedPrecisionRecallCurve(Metric):
 
     Args:
         num_classes: integer with number of classes. For binary, set to 1.
-        num_thresholds: number of bins used for computation.
-
-            .. deprecated:: v0.4
-                Use `thresholds`. Will be removed in v0.5.
-
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory.
@@ -131,7 +126,6 @@ class BinnedPrecisionRecallCurve(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        num_thresholds: Optional[int] = 100,  # ToDo: remove in v0.5
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -140,12 +134,6 @@ class BinnedPrecisionRecallCurve(Metric):
         )
 
         self.num_classes = num_classes
-        if thresholds is None and num_thresholds is not None:
-            warn(
-                "Argument `num_thresholds` is deprecated in v0.4 and will be removed in v0.5."
-                " Use `thresholds` instead.", DeprecationWarning
-            )
-            thresholds = num_thresholds
         if isinstance(thresholds, int):
             self.num_thresholds = thresholds
             thresholds = torch.linspace(0, 1.0, thresholds)
@@ -220,11 +208,6 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     Args:
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
-        num_thresholds: number of bins used for computation.
-
-            .. deprecated:: v0.4
-                Use `thresholds`. Will be removed in v0.5.
-
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
@@ -278,11 +261,6 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
     Args:
         num_classes: integer with number of classes. Provide 1 for for binary problems.
         min_precision: float value specifying minimum precision threshold.
-        num_thresholds: number of bins used for computation.
-
-            .. deprecated:: v0.4
-                Use `thresholds`. Will be removed in v0.5.
-
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
@@ -323,11 +301,9 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        num_thresholds: int = 100,  # ToDo: remove in v0.5
     ) -> None:
         super().__init__(
             num_classes=num_classes,
-            num_thresholds=num_thresholds,
             thresholds=thresholds,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
