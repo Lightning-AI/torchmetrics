@@ -51,18 +51,18 @@ def make_qid_to_has_ans(dataset) -> Dict[Any, bool]:
 def normalize_answer(s) -> str:
     """Lower text and remove punctuation, articles and extra whitespace."""
 
-    def remove_articles(text):
+    def remove_articles(text) -> str:
         regex = re.compile(r"\b(a|an|the)\b", re.UNICODE)
         return re.sub(regex, " ", text)
 
-    def white_space_fix(text):
+    def white_space_fix(text) -> str:
         return " ".join(text.split())
 
-    def remove_punc(text):
+    def remove_punc(text) -> str:
         exclude = set(string.punctuation)
         return "".join(ch for ch in text if ch not in exclude)
 
-    def lower(text):
+    def lower(text) -> str:
         return text.lower()
 
     return white_space_fix(remove_articles(remove_punc(lower(s))))
@@ -115,7 +115,7 @@ def get_raw_scores(dataset, preds) -> Tuple[Dict[Any, int], Dict[Any, float]]:
     return exact_scores, f1_scores
 
 
-def apply_no_ans_threshold(scores, na_probs, qid_to_has_ans, na_prob_thresh):
+def apply_no_ans_threshold(scores, na_probs, qid_to_has_ans, na_prob_thresh)-> Dict:
     new_scores = {}
     for qid, s in scores.items():
         pred_na = na_probs[qid] > na_prob_thresh
