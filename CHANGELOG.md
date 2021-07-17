@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Moved `psnr` and `ssim` from `torchmetrics.functional.regression.*` to `torchmetrics.functional.image.*` ([#382](https://github.com/PyTorchLightning/metrics/pull/382))
+
+
+- Moved `image_gradient` from `torchmetrics.functional.image_gradients` to `torchmetrics.functional.image.gradients` ([#381](https://github.com/PyTorchLightning/metrics/pull/381))
+
+
 - Pearson metrics now only store 6 statistics instead of all predictions and targets ([#380](https://github.com/PyTorchLightning/metrics/pull/380))
 
 
@@ -33,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Removed restriction that `preds` could not be bigger than `num_classes` to support logit input ([#357](https://github.com/PyTorchLightning/metrics/pull/357))
+
+
+- Removed module `torchmetrics.regression.psnr` and `torchmetrics.regression.ssim` ([#382](https://github.com/PyTorchLightning/metrics/pull/382)):
 
 
 ### Fixed

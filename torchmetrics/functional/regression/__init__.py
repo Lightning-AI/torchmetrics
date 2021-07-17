@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.image.psnr import psnr  # noqa: F401
+from torchmetrics.functional.image.ssim import ssim  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
@@ -20,7 +22,5 @@ from torchmetrics.functional.regression.mean_absolute_percentage_error import ( 
 from torchmetrics.functional.regression.mean_squared_error import mean_squared_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error  # noqa: F401
 from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa: F401
-from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2 import r2_score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
-from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
