@@ -15,9 +15,8 @@ from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
 
 import torch
-from torch import Tensor
-
 from scipy.optimize import linear_sum_assignment
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
