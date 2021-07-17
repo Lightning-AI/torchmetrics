@@ -60,7 +60,7 @@ def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor, eval_func: Un
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
-def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, return_best_perm: bool = False, eval_func: Union[torch.min, torch.max] = torch.max, **kwargs) -> List:
+def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = 'max', return_best_perm: bool = False, **kwargs) -> List:
     """ Permutation invariant training metric
 
     Args:
@@ -70,10 +70,10 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, return
             shape [batch, spk, ...]
         metric_func:
             a metric function accept a batch of target and estimate, i.e. metric_func(target[:, i, ...], estimate[:, j, ...]), and returns a batch of metric tensors [batch]
+        eval_func:
+            the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better or the larger the better.
         return_best_perm:
             whether to return the best permutation
-        eval_func:
-            the function to find the best permutation, can be torch.min or torch.max, i.e. the smaller the better or the larger the better.
         kwargs:
             additional args for metric_func
 
@@ -87,7 +87,7 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, return
         >>> from torchmetrics.functional.audio import si_snr, pit, permutate
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, True, torch.min)
+        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min', True)
         >>> best_metric
         tensor([-29.3482, -11.2862,  -9.2508])
         >>> best_perm
@@ -98,10 +98,10 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, return
 
     Reference:
         [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
-
     """
     _check_same_shape(preds, target)
-
+    assert (eval_func == '')
+    eval_func = torch.max if eval_func == 'max' else torch.min
     if len(target.shape) < 2:
         raise TypeError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
@@ -141,7 +141,7 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
         >>> from torchmetrics.functional.audio import si_snr, pit, permutate
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, True, torch.min)
+        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min', True)
         >>> preds_pmted = permutate(preds, best_perm)
 
     """
