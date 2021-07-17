@@ -78,12 +78,12 @@ class PearsonCorrcoef(Metric):
     """
     preds: List[Tensor]
     target: List[Tensor]
-    mx: Tensor
-    my: Tensor
-    vx: Tensor
-    vy: Tensor
-    cxy: Tensor
-    n: Tensor
+    mean_x: Tensor
+    mean_y: Tensor
+    var_x: Tensor
+    var_y: Tensor
+    corr_xy: Tensor
+    n_total: Tensor
 
     def __init__(
         self,
@@ -97,12 +97,12 @@ class PearsonCorrcoef(Metric):
             process_group=process_group,
         )
 
-        self.add_state("mx", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("my", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("vx", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("vy", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("cxy", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("n", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("mean_x", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("mean_y", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("var_x", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("var_y", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("corr_xy", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("n_total", default=torch.zeros(1), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
@@ -112,23 +112,25 @@ class PearsonCorrcoef(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        self.mx, self.my, self.vx, self.vy, self.cxy, self.n = _pearson_corrcoef_update(
-            preds, target, self.mx, self.my, self.vx, self.vy, self.cxy, self.n
+        self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total = _pearson_corrcoef_update(
+            preds, target, self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
         )
 
     def compute(self) -> Tensor:
         """
         Computes pearson correlation coefficient over state.
         """
-        if isinstance(self.mx, list):  # reduce over multiple devices, need further reduction
-            vx, vy, cxy, n = _final_aggregation(self.mx, self.my, self.vx, self.vy, self.cxy, self.n)
+        if isinstance(self.mean_x, list):  # reduce over multiple devices, need further reduction
+            var_x, var_y, corr_xy, n_total = _final_aggregation(
+                self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
+            )
         else:
-            vx = self.vx
-            vy = self.vy
-            cxy = self.cxy
-            n = self.n
+            var_x = self.var_x
+            var_y = self.var_y
+            corr_xy = self.corr_xy
+            n_total = self.n_total
 
-        return _pearson_corrcoef_compute(vx, vy, cxy, n)
+        return _pearson_corrcoef_compute(var_x, var_y, corr_xy, n_total)
 
     @property
     def is_differentiable(self) -> bool:

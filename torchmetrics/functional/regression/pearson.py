@@ -22,12 +22,12 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _pearson_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    mx: Tensor,
-    my: Tensor,
-    vx: Tensor,
-    vy: Tensor,
-    cxy: Tensor,
-    n: Tensor,
+    mean_x: Tensor,
+    mean_y: Tensor,
+    var_x: Tensor,
+    var_y: Tensor,
+    corr_xy: Tensor,
+    n_prior: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """ updates current estimates of the mean, cov and n_obs with new data for calculating pearsons correlation """
     # Data checking
@@ -38,16 +38,16 @@ def _pearson_corrcoef_update(
         raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
 
     n_obs = preds.numel()
-    mx_new = (n * mx + preds.mean() * n_obs) / (n + n_obs)
-    my_new = (n * my + target.mean() * n_obs) / (n + n_obs)
-    n += n_obs
-    vx += ((preds - mx_new) * (preds - mx)).sum()
-    vy += ((target - my_new) * (target - my)).sum()
-    cxy += ((preds - mx_new) * (target - my)).sum()
-    mx = mx_new
-    my = my_new
+    mx_new = (n_prior * mean_x + preds.mean() * n_obs) / (n_prior + n_obs)
+    my_new = (n_prior * mean_y + target.mean() * n_obs) / (n_prior + n_obs)
+    n_prior += n_obs
+    var_x += ((preds - mx_new) * (preds - mean_x)).sum()
+    var_y += ((target - my_new) * (target - mean_y)).sum()
+    corr_xy += ((preds - mx_new) * (target - mean_y)).sum()
+    mean_x = mx_new
+    mean_y = my_new
 
-    return mx, my, vx, vy, cxy, n
+    return mean_x, mean_y, var_x, var_y, corr_xy, n_prior
 
 
 def _pearson_corrcoef_compute(
