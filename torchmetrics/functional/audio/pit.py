@@ -14,7 +14,7 @@
 from torchmetrics.utilities.checks import _check_same_shape
 
 from itertools import permutations
-from typing import Callable, List, Union
+from typing import Callable, List, Tuple, Union
 import torch
 from torch.tensor import Tensor
 from scipy.optimize import linear_sum_assignment
@@ -60,7 +60,7 @@ def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor, eval_func: Un
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
-def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = 'max', return_best_perm: bool = False, **kwargs) -> List:
+def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = 'max', **kwargs) -> Tuple[Tensor, Tensor]:
     """ Permutation invariant training metric
 
     Args:
@@ -72,22 +72,19 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_f
             a metric function accept a batch of target and estimate, i.e. metric_func(target[:, i, ...], estimate[:, j, ...]), and returns a batch of metric tensors [batch]
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better or the larger the better.
-        return_best_perm:
-            whether to return the best permutation
         kwargs:
             additional args for metric_func
 
     Returns:
-        List:
-            best_metric of shape [batch], 
-            best_perm of shape [batch] if return_best_perm == True
+        best_metric of shape [batch], 
+        best_perm of shape [batch]
     
     Example:
         >>> import torch
         >>> from torchmetrics.functional.audio import si_snr, pit, permutate
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min', True)
+        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min')
         >>> best_metric
         tensor([-29.3482, -11.2862,  -9.2508])
         >>> best_perm
@@ -100,30 +97,24 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_f
         [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
     _check_same_shape(preds, target)
-    assert (eval_func == '')
-    eval_func = torch.max if eval_func == 'max' else torch.min
+    assert (eval_func == 'max' or eval_func == 'min'), 'eval_func can only be "max" or "min"'
     if len(target.shape) < 2:
         raise TypeError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
-    batch_size, spk_num = target.shape[0:2]
-
     # calculate the metric matrix
+    batch_size, spk_num = target.shape[0:2]
     metric_mtx = torch.empty((batch_size, spk_num, spk_num), device=target.device)
     for t in range(spk_num):
         for e in range(spk_num):
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
 
+    # find best
     if spk_num < 3:
-        best_metric, best_perm = _find_best_perm_by_exhuastive_method(metric_mtx, eval_func)
+        best_metric, best_perm = _find_best_perm_by_exhuastive_method(metric_mtx, torch.max if eval_func == 'max' else torch.min)
     else:
-        best_metric, best_perm = _find_best_perm_by_hungarian_method(metric_mtx, eval_func)
+        best_metric, best_perm = _find_best_perm_by_hungarian_method(metric_mtx, torch.max if eval_func == 'max' else torch.min)
 
-    # returns
-    ret = []
-    ret.append(best_metric)
-    if return_best_perm:
-        ret.append(best_perm)
-    return ret
+    return best_metric, best_perm
 
 
 def permutate(preds: Tensor, perm: Tensor) -> Tensor:
@@ -141,7 +132,7 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
         >>> from torchmetrics.functional.audio import si_snr, pit, permutate
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min', True)
+        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min')
         >>> preds_pmted = permutate(preds, best_perm)
 
     """
