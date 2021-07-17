@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional
 
-import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pit import permutate, pit
+from torchmetrics.functional.audio.pit import pit
 from torchmetrics.metric import Metric
 
 
@@ -30,9 +29,11 @@ class PIT(Metric):
 
     Args:
         metric_func:
-            a metric function accept a batch of target and estimate, i.e. metric_func(target[:, i, ...], estimate[:, j, ...]), and returns a batch of metric tensors [batch]
+            a metric function accept a batch of target and estimate, i.e. metric_func(target[:, i, ...], 
+            estimate[:, j, ...]), and returns a batch of metric tensors [batch]
         eval_func:
-            the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better or the larger the better.
+            the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
+            or the larger the better.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -59,7 +60,9 @@ class PIT(Metric):
         >>> avg_pit_metric = pit(preds, target)
 
     Reference:
-        [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
+        [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
+        speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
+        Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
 
     def __init__(

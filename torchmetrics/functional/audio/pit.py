@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from itertools import permutations
-from typing import Callable, List, Tuple, Union
+from typing import Callable, Tuple, Union
 
 import torch
 from scipy.optimize import linear_sum_assignment
@@ -26,8 +26,8 @@ _ps_idx_dict: dict = {}  # cache
 
 def _find_best_perm_by_linear_sum_assignment(metric_mtx: torch.Tensor, eval_func: Union[torch.min, torch.max]):
     mmtx = metric_mtx.detach().cpu()
-    best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1]
-                              for pwm in mmtx]).to(metric_mtx.device)
+    best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx])
+    best_perm = best_perm.to(metric_mtx.device)
     best_metric = torch.gather(metric_mtx, 2, best_perm[:, :, None]).mean([-1, -2])
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
@@ -41,8 +41,7 @@ def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor, eval_func: Un
         # all the permutations, shape [perm_num, spk_num]
         ps = torch.tensor(list(permutations(range(spk_num))), device=metric_mtx.device)
         # shape [perm_num * spk_num]
-        inc = torch.arange(0, spk_num * spk_num, step=spk_num, device=metric_mtx.device,
-                           dtype=ps.dtype).repeat(ps.shape[0])
+        inc = torch.arange(0, spk_num**2, step=spk_num, device=metric_mtx.device, dtype=ps.dtype).repeat(ps.shape[0])
         # the indexes for all permutations, shape [perm_num*spk_num]
         ps_idx = ps.view(-1) + inc
         # cache ps and ps_idx
@@ -53,10 +52,10 @@ def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor, eval_func: Un
         ps = _ps_dict[key]  # all the permutations, shape [perm_num, spk_num]
 
     # find the metric of each permutation
-    metric_of_ps_details = metric_mtx.view(batch_size, -1)[:, ps_idx].reshape(
-        batch_size, -1, spk_num
-    )  # shape [batch_size, perm_num, spk_num]
-    metric_of_ps = metric_of_ps_details.mean(dim=2)  # shape [batch_size, perm_num]
+    # shape [batch_size, perm_num, spk_num]
+    metric_of_ps_details = metric_mtx.view(batch_size, -1)[:, ps_idx].reshape(batch_size, -1, spk_num)
+    # shape [batch_size, perm_num]
+    metric_of_ps = metric_of_ps_details.mean(dim=2)
 
     # find the best metric and best permutation
     best_metric, best_indexes = eval_func(metric_of_ps, dim=1)
@@ -65,11 +64,13 @@ def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor, eval_func: Un
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
-def pit(preds: torch.Tensor,
-        target: torch.Tensor,
-        metric_func: Callable,
-        eval_func: str = 'max',
-        **kwargs) -> Tuple[Tensor, Tensor]:
+def pit(
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    metric_func: Callable,
+    eval_func: str = 'max',
+    **kwargs,
+) -> Tuple[Tensor, Tensor]:
     """ Permutation invariant training metric
 
     Args:
@@ -78,9 +79,11 @@ def pit(preds: torch.Tensor,
         preds:
             shape [batch, spk, ...]
         metric_func:
-            a metric function accept a batch of target and estimate, i.e. metric_func(target[:, i, ...], estimate[:, j, ...]), and returns a batch of metric tensors [batch]
+            a metric function accept a batch of target and estimate,
+            i.e. metric_func(target[:, i, ...], estimate[:, j, ...]), and returns a batch of metric tensors [batch]
         eval_func:
-            the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better or the larger the better.
+            the function to find the best permutation, can be 'min' or 'max',
+            i.e. the smaller the better or the larger the better.
         kwargs:
             additional args for metric_func
 
@@ -103,7 +106,9 @@ def pit(preds: torch.Tensor,
         >>> preds_pmted = permutate(preds, best_perm)
 
     Reference:
-        [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
+        [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
+        speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
+        Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
     _check_same_shape(preds, target)
     if eval_func not in ['max', 'min']:
@@ -121,11 +126,13 @@ def pit(preds: torch.Tensor,
     # find best
     if spk_num < 3:
         best_metric, best_perm = _find_best_perm_by_exhuastive_method(
-            metric_mtx, torch.max if eval_func == 'max' else torch.min
+            metric_mtx,
+            torch.max if eval_func == 'max' else torch.min,
         )
     else:
         best_metric, best_perm = _find_best_perm_by_linear_sum_assignment(
-            metric_mtx, torch.max if eval_func == 'max' else torch.min
+            metric_mtx,
+            torch.max if eval_func == 'max' else torch.min,
         )
 
     return best_metric, best_perm
