@@ -60,7 +60,7 @@ def _pearson_corrcoef_compute(
     vx /= (n - 1)
     vy /= (n - 1)
     cxy /= (n - 1)
-    corrcoef = cxy / (vx * vy).sqrt()
+    corrcoef = (cxy / (vx * vy).sqrt()).squeeze()
     return torch.clamp(corrcoef, -1.0, 1.0)
 
 
