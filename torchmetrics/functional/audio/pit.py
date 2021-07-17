@@ -103,7 +103,7 @@ def pit(
         >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
         >>> best_metric, best_perm = pit(preds, target, si_sdr, 'max')
         >>> best_metric
-        tensor([-5.1089])
+        tensor([-5.1091])
         >>> best_perm
         tensor([[0, 1]])
         >>> preds_pmted = permutate(preds, best_perm)
@@ -162,7 +162,7 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
         >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
         >>> best_metric, best_perm = pit(preds, target, si_sdr, 'max')
         >>> best_metric
-        tensor([-5.1089])
+        tensor([-5.1091])
         >>> best_perm
         tensor([[0, 1]])
         >>> preds_pmted = permutate(preds, best_perm)
