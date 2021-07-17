@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from itertools import permutations
-from typing import Callable, Tuple, Union
+from typing import Any, Callable, Dict, Tuple, Union
 
 import torch
 from scipy.optimize import linear_sum_assignment
@@ -24,7 +24,9 @@ _ps_dict: dict = {}  # cache
 _ps_idx_dict: dict = {}  # cache
 
 
-def _find_best_perm_by_linear_sum_assignment(metric_mtx: torch.Tensor, eval_func: Union[torch.min, torch.max]):
+def _find_best_perm_by_linear_sum_assignment(
+    metric_mtx: torch.Tensor, eval_func: Union[torch.min, torch.max],
+) -> Tuple[Tensor, Tensor]:
     mmtx = metric_mtx.detach().cpu()
     best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx])
     best_perm = best_perm.to(metric_mtx.device)
@@ -32,7 +34,9 @@ def _find_best_perm_by_linear_sum_assignment(metric_mtx: torch.Tensor, eval_func
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
-def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor, eval_func: Union[torch.min, torch.max]):
+def _find_best_perm_by_exhuastive_method(
+    metric_mtx: torch.Tensor, eval_func: Union[torch.min, torch.max]
+) -> Tuple[Tensor, Tensor]:
     # create/read/cache the permutations and its indexes
     # reading from cache would be much faster than creating in CPU then moving to GPU
     batch_size, spk_num = metric_mtx.shape[:2]
@@ -65,11 +69,7 @@ def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor, eval_func: Un
 
 
 def pit(
-    preds: torch.Tensor,
-    target: torch.Tensor,
-    metric_func: Callable,
-    eval_func: str = 'max',
-    **kwargs,
+    preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = 'max', **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
     """ Permutation invariant training metric
 
