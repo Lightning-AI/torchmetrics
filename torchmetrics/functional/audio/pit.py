@@ -98,17 +98,19 @@ def pit(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional.audio import si_snr, pit, permutate
-        >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, 'max')
+        >>> from torchmetrics.functional.audio import si_sdr, pit, permutate
+        >>> # [batch, spk, time]
+        >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
+        >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
+        >>> best_metric, best_perm = pit(preds, target, si_sdr, 'max')
         >>> best_metric
-        tensor([-29.3482, -11.2862,  -9.2508])
+        tensor([-5.1089])
         >>> best_perm
-        tensor([[0, 1],
-                [1, 0],
-                [0, 1]])
+        tensor([[0, 1]])
         >>> preds_pmted = permutate(preds, best_perm)
+        >>> preds_pmted
+        tensor([[[-0.0579,  0.3560, -0.9604],
+                [-0.1719,  0.3205,  0.2951]]])
 
     Reference:
         [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
@@ -155,11 +157,19 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional.audio import si_snr, pit, permutate
-        >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, 'max')
+        >>> from torchmetrics.functional.audio import si_sdr, pit, permutate
+        >>> # [batch, spk, time]
+        >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
+        >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
+        >>> best_metric, best_perm = pit(preds, target, si_sdr, 'max')
+        >>> best_metric
+        tensor([-5.1089])
+        >>> best_perm
+        tensor([[0, 1]])
         >>> preds_pmted = permutate(preds, best_perm)
+        >>> preds_pmted
+        tensor([[[-0.0579,  0.3560, -0.9604],
+                [-0.1719,  0.3205,  0.2951]]])
     """
     preds_pmted = torch.stack([torch.index_select(pred, 0, p) for pred, p in zip(preds, perm)])
     return preds_pmted
