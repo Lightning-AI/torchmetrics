@@ -34,6 +34,8 @@ from torchmetrics.functional.classification.specificity import specificity  # no
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
 from torchmetrics.functional.image_gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.nlp import bleu_score  # noqa: F401
+from torchmetrics.functional.pairwise import pairwise_cosine_distance  # noqa: F401
+from torchmetrics.functional.pairwise import pairwise_euclidean_distance  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
@@ -54,4 +56,4 @@ from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg  # n
 from torchmetrics.functional.retrieval.precision import retrieval_precision  # noqa: F401
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
-from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
+
