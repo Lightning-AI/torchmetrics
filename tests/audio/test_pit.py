@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
-from enum import auto
 from functools import partial
 from typing import Callable
 
@@ -26,7 +25,6 @@ from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import PIT
 from torchmetrics.functional import pit, si_sdr, snr
-from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
