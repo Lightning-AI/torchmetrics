@@ -23,7 +23,7 @@ _ps_dict: dict = {}  # cache
 _ps_idx_dict: dict = {}  # cache
 
 
-def _find_best_perm_by_hungarian_method(metric_mtx: torch.Tensor, eval_func: Union[torch.min, torch.max]):
+def _find_best_perm_by_linear_sum_assignment(metric_mtx: torch.Tensor, eval_func: Union[torch.min, torch.max]):
     mmtx = metric_mtx.detach().cpu()
     best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx]).to(metric_mtx.device)
     best_metric = torch.gather(metric_mtx, 2, best_perm[:, :, None]).mean([-1, -2])
@@ -98,13 +98,13 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_f
     """
     _check_same_shape(preds, target)
     if eval_func not in ['max', 'min']:
-        raise TypeError('eval_func can only be "max" or "min"')
+        raise RuntimeError('eval_func can only be "max" or "min"')
     if len(target.shape) < 2:
-        raise TypeError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
+        raise RuntimeError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
     # calculate the metric matrix
     batch_size, spk_num = target.shape[0:2]
-    metric_mtx = torch.empty((batch_size, spk_num, spk_num), device=target.device)
+    metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=preds.dtype, device=target.device)
     for t in range(spk_num):
         for e in range(spk_num):
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
@@ -113,7 +113,7 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_f
     if spk_num < 3:
         best_metric, best_perm = _find_best_perm_by_exhuastive_method(metric_mtx, torch.max if eval_func == 'max' else torch.min)
     else:
-        best_metric, best_perm = _find_best_perm_by_hungarian_method(metric_mtx, torch.max if eval_func == 'max' else torch.min)
+        best_metric, best_perm = _find_best_perm_by_linear_sum_assignment(metric_mtx, torch.max if eval_func == 'max' else torch.min)
 
     return best_metric, best_perm
 
