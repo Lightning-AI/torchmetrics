@@ -109,7 +109,7 @@ def pit(
         >>> preds_pmted = permutate(preds, best_perm)
         >>> preds_pmted
         tensor([[[-0.0579,  0.3560, -0.9604],
-                [-0.1719,  0.3205,  0.2951]]])
+                 [-0.1719,  0.3205,  0.2951]]])
 
     Reference:
         [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
@@ -168,7 +168,7 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
         >>> preds_pmted = permutate(preds, best_perm)
         >>> preds_pmted
         tensor([[[-0.0579,  0.3560, -0.9604],
-                [-0.1719,  0.3205,  0.2951]]])
+                 [-0.1719,  0.3205,  0.2951]]])
     """
     preds_pmted = torch.stack([torch.index_select(pred, 0, p) for pred, p in zip(preds, perm)])
     return preds_pmted
