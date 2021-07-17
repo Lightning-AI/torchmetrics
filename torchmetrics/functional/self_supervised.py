@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from warnings import warn
+
 import torch
 from torch import Tensor
 
+from torchmetrics.functional.pairwise import pairwise_cosine_distance, pairwise_euclidean_distance
 
 def embedding_similarity(
     batch: Tensor, similarity: str = 'cosine', reduction: str = 'none', zero_diagonal: bool = True
@@ -38,20 +41,19 @@ def embedding_similarity(
     Return:
         A square matrix (batch, batch) with the similarity scores between all elements
         If sum or mean are used, then returns (b, 1) with the reduced value for each row
+
+    .. deprecated:: v0.5
+        Use :func:`torchmetrics.functional.pairwise_cosine_distance` when `similarity='cosine'`
+        else use :func:`torchmetrics.functional.pairwise_euclidean_distance`. Will be removed in v0.6.
+
     """
+    warn(
+        "Function `embedding_similarity` was deprecated v0.5 and will be removed in v0.6."
+        " Use `torchmetrics.functional.pairwise_cosine_distance` instead when argument"
+        " similarity='cosion' else use `torchmetrics.functional.pairwise_euclidean_distance",
+        DeprecationWarning
+    )
     if similarity == 'cosine':
-        norm = torch.norm(batch, p=2, dim=1)
-        batch = batch / norm.unsqueeze(1)
-
-    sqr_mtx = batch.mm(batch.transpose(1, 0))
-
-    if zero_diagonal:
-        sqr_mtx = sqr_mtx.fill_diagonal_(0)
-
-    if reduction == 'mean':
-        sqr_mtx = sqr_mtx.mean(dim=-1)
-
-    if reduction == 'sum':
-        sqr_mtx = sqr_mtx.sum(dim=-1)
-
-    return sqr_mtx
+        return pairwise_cosine_distance(batch, reduction=reduction, zero_diagonal=zero_diagonal)
+    else:
+        return pairwise_euclidean_distance(batch, reduction=reduction, zero_diagonal=zero_diagonal)
