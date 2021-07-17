@@ -322,6 +322,20 @@ KID
 .. autoclass:: torchmetrics.KID
     :noindex:
 
+
+PSNR
+~~~~
+
+.. autoclass:: torchmetrics.PSNR
+    :noindex:
+
+
+SSIM
+~~~~
+
+.. autoclass:: torchmetrics.SSIM
+    :noindex:
+
 ******************
 Regression Metrics
 ******************
@@ -375,13 +389,6 @@ PearsonCorrcoef
     :noindex:
 
 
-PSNR
-~~~~
-
-.. autoclass:: torchmetrics.PSNR
-    :noindex:
-
-
 R2Score
 ~~~~~~~
 
@@ -393,13 +400,6 @@ SpearmanCorrcoef
 ~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.SpearmanCorrcoef
-    :noindex:
-
-
-SSIM
-~~~~
-
-.. autoclass:: torchmetrics.SSIM
     :noindex:
 
 SymmetricMeanAbsolutePercentageError

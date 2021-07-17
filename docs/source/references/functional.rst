@@ -193,6 +193,29 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
+*************
+Image Metrics
+*************
+
+image_gradients [func]
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.image_gradients
+    :noindex:
+
+
+psnr [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.psnr
+    :noindex:
+
+
+ssim [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ssim
+    :noindex:
 
 ******************
 Regression Metrics
@@ -209,13 +232,6 @@ explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.explained_variance
-    :noindex:
-
-
-image_gradients [func]
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.image_gradients
     :noindex:
 
 
@@ -254,13 +270,6 @@ pearson_corrcoef [func]
     :noindex:
 
 
-psnr [func]
-~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.psnr
-    :noindex:
-
-
 r2score [func]
 ~~~~~~~~~~~~~~
 
@@ -272,13 +281,6 @@ spearman_corrcoef [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.spearman_corrcoef
-    :noindex:
-
-
-ssim [func]
-~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.ssim
     :noindex:
 
 

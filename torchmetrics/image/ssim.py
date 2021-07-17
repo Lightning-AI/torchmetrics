@@ -16,7 +16,7 @@ from typing import Any, List, Optional, Sequence
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.ssim import _ssim_compute, _ssim_update
+from torchmetrics.functional.image.ssim import _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
