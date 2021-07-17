@@ -14,20 +14,20 @@
 from collections import namedtuple
 from enum import auto
 from functools import partial
-from torchmetrics.functional.audio.si_snr import si_snr
 from typing import Callable
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
+from scipy.optimize import linear_sum_assignment
 from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import PIT
-from torchmetrics.functional import snr, si_sdr, pit
+from torchmetrics.functional import pit, si_sdr, snr
+from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from scipy.optimize import linear_sum_assignment
 
 seed_all(42)
 
@@ -110,7 +110,9 @@ class TestPIT(MetricTester):
             best_metric_sk, best_perm_sk = sk_metric(preds[i].cpu(), target[i].cpu())
 
             # assert its the same
-            assert np.allclose(best_metric.detach().cpu().numpy(), best_metric_sk.detach().cpu().numpy(), atol=self.atol)
+            assert np.allclose(
+                best_metric.detach().cpu().numpy(), best_metric_sk.detach().cpu().numpy(), atol=self.atol
+            )
             assert (best_perm.detach().cpu().numpy() == best_perm_sk.detach().cpu().numpy()).all()
 
     def test_pit_differentiability(self, preds, target, sk_metric, metric_func, eval_func):
@@ -118,22 +120,35 @@ class TestPIT(MetricTester):
         def pit_diff(preds, target, metric_func, eval_func):
             return pit(preds, target, metric_func, eval_func)[0]
 
-        self.run_differentiability_test(preds=preds, target=target, metric_module=PIT, metric_functional=pit_diff, metric_args={'metric_func': metric_func, 'eval_func': eval_func})
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=PIT,
+            metric_functional=pit_diff,
+            metric_args={
+                'metric_func': metric_func,
+                'eval_func': eval_func
+            }
+        )
 
-    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6')
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+    )
     def test_pit_half_cpu(self, preds, target, sk_metric, metric_func, eval_func):
         pytest.xfail("PIT metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_pit_half_gpu(self, preds, target, sk_metric, metric_func, eval_func):
-        self.run_precision_test_gpu(preds=preds,
-                                    target=target,
-                                    metric_module=PIT,
-                                    metric_functional=partial(pit, metric_func=metric_func, eval_func=eval_func),
-                                    metric_args={
-                                        'metric_func': metric_func,
-                                        'eval_func': eval_func
-                                    })
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=PIT,
+            metric_functional=partial(pit, metric_func=metric_func, eval_func=eval_func),
+            metric_args={
+                'metric_func': metric_func,
+                'eval_func': eval_func
+            }
+        )
 
 
 def test_error_on_different_shape() -> None:

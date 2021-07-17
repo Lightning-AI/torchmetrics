@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Union, Callable, Optional, Dict
+from typing import Any, Callable, Dict, Optional, Union
 
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pit import pit, permutate
+from torchmetrics.functional.audio.pit import permutate, pit
 from torchmetrics.metric import Metric
 
 
