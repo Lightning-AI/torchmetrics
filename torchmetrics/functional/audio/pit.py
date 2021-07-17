@@ -97,7 +97,8 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_f
         [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
     _check_same_shape(preds, target)
-    assert (eval_func == 'max' or eval_func == 'min'), 'eval_func can only be "max" or "min"'
+    if eval_func not in ['max', 'min']:
+        raise TypeError('eval_func can only be "max" or "min"')
     if len(target.shape) < 2:
         raise TypeError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
