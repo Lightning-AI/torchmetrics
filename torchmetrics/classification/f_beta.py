@@ -18,7 +18,6 @@ from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
-from torchmetrics.utilities import _deprecation_warn_arg_multilabel
 from torchmetrics.utilities.enums import AverageMethod
 
 
@@ -118,9 +117,6 @@ class FBeta(StatScores):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Raises:
         ValueError:
@@ -150,10 +146,7 @@ class FBeta(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    ):
-        _deprecation_warn_arg_multilabel(multilabel)
-
+    ) -> None:
         self.beta = beta
         allowed_average = list(AverageMethod)
         if average not in allowed_average:
@@ -268,9 +261,6 @@ class F1(FBeta):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
 
     Example:
@@ -295,10 +285,7 @@ class F1(FBeta):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    ):
-        _deprecation_warn_arg_multilabel(multilabel)
-
+    ) -> None:
         super().__init__(
             num_classes=num_classes,
             beta=1.0,

@@ -21,14 +21,18 @@ from torch.autograd import Function
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3
 else:
 
-    class FeatureExtractorInceptionV3(torch.nn.Module):  # type:ignore
+    class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
         pass
+
+
+if _SCIPY_AVAILABLE:
+    import scipy
 
 
 class NoTrainInceptionV3(FeatureExtractorInceptionV3):
@@ -60,20 +64,17 @@ class MatrixSquareRoot(Function):
     """
 
     @staticmethod
-    def forward(ctx: Any, input: Tensor) -> Tensor:
-        import scipy
-
+    def forward(ctx: Any, input_data: Tensor) -> Tensor:
         # TODO: update whenever pytorch gets an matrix square root function
         # Issue: https://github.com/pytorch/pytorch/issues/9983
-        m = input.detach().cpu().numpy().astype(np.float_)
+        m = input_data.detach().cpu().numpy().astype(np.float_)
         scipy_res, _ = scipy.linalg.sqrtm(m, disp=False)
-        sqrtm = torch.from_numpy(scipy_res.real).to(input)
+        sqrtm = torch.from_numpy(scipy_res.real).to(input_data)
         ctx.save_for_backward(sqrtm)
         return sqrtm
 
     @staticmethod
     def backward(ctx: Any, grad_output: Tensor) -> Tensor:
-        import scipy
         grad_input = None
         if ctx.needs_input_grad[0]:
             sqrtm, = ctx.saved_tensors
@@ -141,6 +142,9 @@ class FID(Metric):
     will be resized to 299 x 299 which is the size of the original training data. The boolian flag ``real``
     determines if the images should update the statistics of the real distribution or the fake distribution.
 
+    .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
+        torchmetrics[image]`` or ``pip install scipy``
+
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
@@ -170,13 +174,14 @@ class FID(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    [1] Rethinking the Inception Architecture for Computer Vision
-    Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
-    https://arxiv.org/abs/1512.00567
+    References:
+        [1] Rethinking the Inception Architecture for Computer Vision
+        Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
+        https://arxiv.org/abs/1512.00567
 
-    [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-    Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-    https://arxiv.org/abs/1706.08500
+        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
+        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
+        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:
@@ -200,6 +205,8 @@ class FID(Metric):
         tensor(12.7202)
 
     """
+    real_features: List[Tensor]
+    fake_features: List[Tensor]
 
     def __init__(
         self,
@@ -208,7 +215,7 @@ class FID(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable[[Tensor], List[Tensor]] = None
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,

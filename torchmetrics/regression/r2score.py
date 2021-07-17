@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.r2score import _r2score_compute, _r2score_update
+from torchmetrics.functional.regression.r2 import _r2_score_compute, _r2_score_update
 from torchmetrics.metric import Metric
 
 
@@ -87,6 +87,10 @@ class R2Score(Metric):
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
     """
+    sum_squared_error: Tensor
+    sum_error: Tensor
+    residual: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -97,7 +101,7 @@ class R2Score(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -123,7 +127,7 @@ class R2Score(Metric):
         self.add_state("residual", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -131,7 +135,7 @@ class R2Score(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_squared_error, sum_error, residual, total = _r2score_update(preds, target)
+        sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
 
         self.sum_squared_error += sum_squared_error
         self.sum_error += sum_error
@@ -139,10 +143,8 @@ class R2Score(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """
-        Computes r2 score over the metric states.
-        """
-        return _r2score_compute(
+        """Computes r2 score over the metric states."""
+        return _r2_score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
         )
 

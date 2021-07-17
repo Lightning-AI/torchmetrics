@@ -20,12 +20,12 @@ from torchmetrics.metric import Metric
 
 
 class SI_SNR(Metric):
-    """ scale-invariant signal-to-noise ratio (SI-SNR)
+    """ Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Forward accepts
 
-    - ``preds``: ``shape [..., time]``
-    - ``target``: ``shape [..., time]``
+    - ``preds``: ``shape [...,time]``
+    - ``target``: ``shape [...,time]``
 
     Args:
         compute_on_step:
@@ -58,9 +58,11 @@ class SI_SNR(Metric):
 
     References:
         [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech
-         Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
-         696-700, doi: 10.1109/ICASSP.2018.8462116.
+        Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
+        696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
+    sum_si_snr: Tensor
+    total: Tensor
 
     def __init__(
         self,

@@ -51,6 +51,8 @@ class MeanSquaredError(Metric):
         tensor(0.8750)
 
     """
+    sum_squared_error: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -59,7 +61,7 @@ class MeanSquaredError(Metric):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
         squared: bool = True,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -71,7 +73,7 @@ class MeanSquaredError(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.squared = squared
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -84,7 +86,7 @@ class MeanSquaredError(Metric):
         self.sum_squared_error += sum_squared_error
         self.total += n_obs
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes mean squared error over state.
         """

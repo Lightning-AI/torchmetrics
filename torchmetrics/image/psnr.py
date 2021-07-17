@@ -16,7 +16,7 @@ from typing import Any, Optional, Sequence, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.psnr import _psnr_compute, _psnr_update
+from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
@@ -68,6 +68,8 @@ class PSNR(Metric):
         Half precision is only support on GPU for this metric
 
     """
+    min_target: Tensor
+    max_target: Tensor
 
     def __init__(
         self,
@@ -78,7 +80,7 @@ class PSNR(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -110,7 +112,7 @@ class PSNR(Metric):
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -131,7 +133,7 @@ class PSNR(Metric):
             self.sum_squared_error.append(sum_squared_error)
             self.total.append(n_obs)
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Compute peak signal-to-noise ratio over state.
         """

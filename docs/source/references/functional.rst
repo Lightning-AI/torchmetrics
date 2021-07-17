@@ -114,6 +114,12 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
+kldivergence [func]
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.kldivergence
+    :noindex:
+
 matthews_corrcoef [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -187,22 +193,45 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
-
-******************
-Regression Metrics
-******************
-
-explained_variance [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.explained_variance
-    :noindex:
-
+*************
+Image Metrics
+*************
 
 image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.image_gradients
+    :noindex:
+
+
+psnr [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.psnr
+    :noindex:
+
+
+ssim [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ssim
+    :noindex:
+
+******************
+Regression Metrics
+******************
+
+cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.cosine_similarity
+    :noindex:
+
+
+explained_variance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.explained_variance
     :noindex:
 
 
@@ -241,13 +270,6 @@ pearson_corrcoef [func]
     :noindex:
 
 
-psnr [func]
-~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.psnr
-    :noindex:
-
-
 r2score [func]
 ~~~~~~~~~~~~~~
 
@@ -262,10 +284,10 @@ spearman_corrcoef [func]
     :noindex:
 
 
-ssim [func]
-~~~~~~~~~~~
+symmetric_mean_absolute_percentage_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.ssim
+.. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
     :noindex:
 
 

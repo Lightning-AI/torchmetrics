@@ -18,7 +18,6 @@ from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.precision_recall import _precision_compute, _recall_compute
-from torchmetrics.utilities import _deprecation_warn_arg_is_multiclass, _deprecation_warn_arg_multilabel
 
 
 class Precision(StatScores):
@@ -104,12 +103,6 @@ class Precision(StatScores):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Raises:
         ValueError:
@@ -141,12 +134,7 @@ class Precision(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    ):
-        _deprecation_warn_arg_multilabel(multilabel)
-        multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
-
+    ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -269,12 +257,6 @@ class Recall(StatScores):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather.
-        multilabel:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
-        is_multiclass:
-            .. deprecated:: 0.3
-                Argument will not have any effect and will be removed in v0.4, please use ``multiclass`` intead.
 
     Raises:
         ValueError:
@@ -306,12 +288,7 @@ class Recall(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        multilabel: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-        is_multiclass: Optional[bool] = None,  # todo: deprecated, remove in v0.4
-    ):
-        _deprecation_warn_arg_multilabel(multilabel)
-        multiclass = _deprecation_warn_arg_is_multiclass(is_multiclass, multiclass)
-
+    ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

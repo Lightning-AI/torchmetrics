@@ -37,7 +37,8 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
 
 def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor:
     with torch.no_grad():
-        return direction * torch.trapz(y, x)
+        auc_: Tensor = torch.trapz(y, x) * direction
+    return auc_
 
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:

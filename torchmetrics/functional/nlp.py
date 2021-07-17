@@ -17,13 +17,13 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
-from typing import List, Sequence
+from typing import Sequence
 
 import torch
 from torch import Tensor, tensor
 
 
-def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
+def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
     """
     Counting how many times each word appears in a given text with ngram
 
@@ -35,7 +35,7 @@ def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
         ngram_counter: a collections.Counter object of ngram
     """
 
-    ngram_counter = Counter()
+    ngram_counter: Counter = Counter()
 
     for i in range(1, n_gram + 1):
         for j in range(len(ngram_input_list) - i + 1):
@@ -46,7 +46,10 @@ def _count_ngram(ngram_input_list: List[str], n_gram: int) -> Counter:
 
 
 def bleu_score(
-    translate_corpus: Sequence[str], reference_corpus: Sequence[str], n_gram: int = 4, smooth: bool = False
+    translate_corpus: Sequence[Sequence[str]],
+    reference_corpus: Sequence[Sequence[Sequence[str]]],
+    n_gram: int = 4,
+    smooth: bool = False
 ) -> Tensor:
     """
     Calculate BLEU score of machine translated text with one or more references
@@ -54,7 +57,7 @@ def bleu_score(
     Args:
         translate_corpus: An iterable of machine translated corpus
         reference_corpus: An iterable of iterables of reference corpus
-        n_gram: Gram value ranged from 1 to 4 (Default 4)
+        n_gram: Gram value ranged from 1 to 4
         smooth: Whether or not to apply smoothing – Lin et al. 2004
 
     Return:
@@ -80,8 +83,8 @@ def bleu_score(
         ref_len_list = [len(ref) for ref in references]
         ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
         r += ref_len_list[ref_len_diff.index(min(ref_len_diff))]
-        translation_counter = _count_ngram(translation, n_gram)
-        reference_counter = Counter()
+        translation_counter: Counter = _count_ngram(translation, n_gram)
+        reference_counter: Counter = Counter()
 
         for ref in references:
             reference_counter |= _count_ngram(ref, n_gram)

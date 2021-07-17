@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 
 
-def _image_gradients_validate(img: Tensor) -> Tensor:
+def _image_gradients_validate(img: Tensor) -> None:
     """ Validates whether img is a 4D torch Tensor """
 
     if not isinstance(img, Tensor):

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -20,7 +21,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _r2score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     _check_same_shape(preds, target)
     if preds.ndim > 2:
         raise ValueError(
@@ -39,7 +40,7 @@ def _r2score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tens
     return sum_squared_error, sum_error, residual, total
 
 
-def _r2score_compute(
+def _r2_score_compute(
     sum_squared_error: Tensor,
     sum_error: Tensor,
     residual: Tensor,
@@ -52,12 +53,12 @@ def _r2score_compute(
     raw_scores = 1 - (residual / diff)
 
     if multioutput == "raw_values":
-        r2score = raw_scores
+        r2 = raw_scores
     elif multioutput == "uniform_average":
-        r2score = torch.mean(raw_scores)
+        r2 = torch.mean(raw_scores)
     elif multioutput == "variance_weighted":
         diff_sum = torch.sum(diff)
-        r2score = torch.sum(diff / diff_sum * raw_scores)
+        r2 = torch.sum(diff / diff_sum * raw_scores)
     else:
         raise ValueError(
             'Argument `multioutput` must be either `raw_values`,'
@@ -76,11 +77,11 @@ def _r2score_compute(
         elif adjusted == total - 1:
             rank_zero_warn("Division by zero in adjusted r2 score. Falls back to" " standard r2 score.", UserWarning)
         else:
-            r2score = 1 - (1 - r2score) * (total - 1) / (total - adjusted - 1)
-    return r2score
+            r2 = 1 - (1 - r2) * (total - 1) / (total - adjusted - 1)
+    return r2
 
 
-def r2score(
+def r2_score(
     preds: Tensor,
     target: Tensor,
     adjusted: int = 0,
@@ -126,6 +127,35 @@ def r2score(
             If ``adjusted`` is not an ``integer`` greater than ``0``.
 
     Example:
+        >>> from torchmetrics.functional import r2_score
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> r2_score(preds, target)
+        tensor(0.9486)
+
+        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
+        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
+        >>> r2_score(preds, target, multioutput='raw_values')
+        tensor([0.9654, 0.9082])
+    """
+    sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
+    return _r2_score_compute(sum_squared_error, sum_error, residual, total, adjusted, multioutput)
+
+
+def r2score(
+    preds: Tensor,
+    target: Tensor,
+    adjusted: int = 0,
+    multioutput: str = "uniform_average",
+) -> Tensor:
+    r"""
+    Computes r2 score also known as `coefficient of determination
+    <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
+
+    .. deprecated:: v0.5
+        `r2score` was renamed as `r2_score` in v0.5 and it will be removed in v0.6
+
+    Example:
         >>> from torchmetrics.functional import r2score
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
@@ -137,5 +167,5 @@ def r2score(
         >>> r2score(preds, target, multioutput='raw_values')
         tensor([0.9654, 0.9082])
     """
-    sum_squared_error, sum_error, residual, total = _r2score_update(preds, target)
-    return _r2score_compute(sum_squared_error, sum_error, residual, total, adjusted, multioutput)
+    warn("`r2score` was renamed as `r2_score` in v0.5 and it will be removed in v0.6", DeprecationWarning)
+    return r2_score(preds, target, adjusted, multioutput)

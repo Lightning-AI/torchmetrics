@@ -167,6 +167,7 @@ the following limitations:
 
   - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
   - :ref:`references/modules:SSIM` and :ref:`references/functional:ssim [func]`
+  - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kldivergence [func]`
 
 ******************
 Metric Arithmetics

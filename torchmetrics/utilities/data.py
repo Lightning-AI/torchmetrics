@@ -37,7 +37,7 @@ def dim_zero_mean(x: Tensor) -> Tensor:
     return torch.mean(x, dim=0)
 
 
-def _flatten(x):
+def _flatten(x: Sequence) -> list:
     return [item for sublist in x for item in sublist]
 
 
@@ -101,12 +101,12 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
     return topk_tensor.int()
 
 
-def to_categorical(tensor: Tensor, argmax_dim: int = 1) -> Tensor:
+def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
     """
     Converts a tensor of probabilities to a dense label tensor
 
     Args:
-        tensor: probabilities to get the categorical label [N, d1, d2, ...]
+        x: probabilities to get the categorical label [N, d1, d2, ...]
         argmax_dim: dimension to apply
 
     Return:
@@ -118,7 +118,7 @@ def to_categorical(tensor: Tensor, argmax_dim: int = 1) -> Tensor:
         tensor([1, 0])
 
     """
-    return torch.argmax(tensor, dim=argmax_dim)
+    return torch.argmax(x, dim=argmax_dim)
 
 
 def get_num_classes(
@@ -157,9 +157,9 @@ def apply_to_collection(
     data: Any,
     dtype: Union[type, tuple],
     function: Callable,
-    *args,
+    *args: Any,
     wrong_dtype: Optional[Union[type, tuple]] = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> Any:
     """
     Recursively applies a function to all elements of a certain dtype.
@@ -221,7 +221,7 @@ def get_group_indexes(indexes: Tensor) -> List[Tensor]:
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
     """
 
-    res = {}
+    res: dict = {}
     for i, _id in enumerate(indexes):
         _id = _id.item()
         if _id in res:

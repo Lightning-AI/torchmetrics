@@ -83,6 +83,8 @@ class PrecisionRecallCurve(Metric):
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
 
     """
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -91,7 +93,7 @@ class PrecisionRecallCurve(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -109,7 +111,7 @@ class PrecisionRecallCurve(Metric):
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -145,6 +147,8 @@ class PrecisionRecallCurve(Metric):
         """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
+        if not self.num_classes:
+            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         return _precision_recall_curve_compute(preds, target, self.num_classes, self.pos_label)
 
     @property
