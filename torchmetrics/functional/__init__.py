@@ -32,7 +32,9 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
-from torchmetrics.functional.image_gradients import image_gradients  # noqa: F401
+from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
+from torchmetrics.functional.image.psnr import psnr  # noqa: F401
+from torchmetrics.functional.image.ssim import ssim  # noqa: F401
 from torchmetrics.functional.nlp import bleu_score  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
@@ -44,10 +46,11 @@ from torchmetrics.functional.regression.mean_relative_error import mean_relative
 from torchmetrics.functional.regression.mean_squared_error import mean_squared_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error  # noqa: F401
 from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa: F401
-from torchmetrics.functional.regression.psnr import psnr  # noqa: F401
 from torchmetrics.functional.regression.r2 import r2_score, r2score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
-from torchmetrics.functional.regression.ssim import ssim  # noqa: F401
+from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (  # noqa: F401
+    symmetric_mean_absolute_percentage_error,
+)
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out  # noqa: F401
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg  # noqa: F401

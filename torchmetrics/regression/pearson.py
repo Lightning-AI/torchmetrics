@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -20,7 +20,8 @@ from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute
 from torchmetrics.metric import Metric
 
 
-def _final_aggregation(mxs, mys, vxs, vys, cxys, ns):
+def _final_aggregation(mxs: Tensor, mys: Tensor, vxs: Tensor, vys: Tensor, cxys: Tensor,
+                       ns: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """
     Aggregate the statistics from multiple devices. Formula taken from here:
     https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
@@ -77,6 +78,12 @@ class PearsonCorrcoef(Metric):
     """
     preds: List[Tensor]
     target: List[Tensor]
+    mx: Tensor
+    my: Tensor
+    vx: Tensor
+    vy: Tensor
+    cxy: Tensor
+    n: Tensor
 
     def __init__(
         self,
