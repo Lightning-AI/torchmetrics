@@ -84,7 +84,7 @@ def pit(preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_f
         >>> from torchmetrics.functional.audio import si_snr, pit, permutate
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min')
+        >>> best_metric, best_perm = pit(preds, target, si_snr, 'max')
         >>> best_metric
         tensor([-29.3482, -11.2862,  -9.2508])
         >>> best_perm
@@ -133,9 +133,8 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
         >>> from torchmetrics.functional.audio import si_snr, pit, permutate
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> best_metric, best_perm = pit(preds, target, si_snr, 'min')
+        >>> best_metric, best_perm = pit(preds, target, si_snr, 'max')
         >>> preds_pmted = permutate(preds, best_perm)
-
     """
     preds_pmted = torch.stack([torch.index_select(pred, 0, p) for pred, p in zip(preds, perm)])
     return preds_pmted
