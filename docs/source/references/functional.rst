@@ -9,6 +9,13 @@ Functional metrics
 Audio Metrics
 *************
 
+pesq [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pesq
+    :noindex:
+
+
 si_sdr [func]
 ~~~~~~~~~~~~~
 

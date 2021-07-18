@@ -40,6 +40,12 @@ the metric will be computed over the ``time`` dimension.
     >>> snr_val
     tensor(16.1805)
 
+PESQ
+~~~~~~
+
+.. autoclass:: torchmetrics.PESQ
+    :noindex:
+
 SI_SDR
 ~~~~~~
 
