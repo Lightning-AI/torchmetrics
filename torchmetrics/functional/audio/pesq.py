@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-import pesq as pesq_backend
-from torch import Tensor
 import numpy as np
+import pesq as pesq_backend
+import torch
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 

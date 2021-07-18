@@ -16,6 +16,7 @@ from functools import partial
 
 import pytest
 import torch
+from pesq import pesq as pesq_backend
 from torch import Tensor
 
 from tests.helpers import seed_all
@@ -23,7 +24,6 @@ from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import PESQ
 from torchmetrics.functional import pesq
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from pesq import pesq as pesq_backend
 
 seed_all(42)
 
@@ -98,34 +98,36 @@ class TestPESQ(MetricTester):
         )
 
     def test_pesq_differentiability(self, preds, target, sk_metric, fs, mode):
-        self.run_differentiability_test(preds=preds,
-                                        target=target,
-                                        metric_module=PESQ,
-                                        metric_functional=pesq,
-                                        metric_args=dict(fs=fs, mode=mode))
+        self.run_differentiability_test(
+            preds=preds, target=target, metric_module=PESQ, metric_functional=pesq, metric_args=dict(fs=fs, mode=mode)
+        )
 
-    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_6,
-                        reason='half support of core operations on not support before pytorch v1.6')
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+    )
     def test_pesq_half_cpu(self, preds, target, sk_metric, fs, mode):
         pytest.xfail("PESQ metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_pesq_half_gpu(self, preds, target, sk_metric, fs, mode):
-        self.run_precision_test_gpu(preds=preds,
-                                    target=target,
-                                    metric_module=PESQ,
-                                    metric_functional=partial(pesq, fs=fs, mode=mode),
-                                    metric_args=dict(fs=fs, mode=mode))
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=PESQ,
+            metric_functional=partial(pesq, fs=fs, mode=mode),
+            metric_args=dict(fs=fs, mode=mode)
+        )
 
 
 def test_error_on_different_shape(metric_class=PESQ):
     metric = metric_class(16000, 'nb')
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100,), torch.randn(50,))
+        metric(torch.randn(100, ), torch.randn(50, ))
 
 
 def test_on_real_audio():
     import os
+
     from scipy.io import wavfile
     current_file_dir = os.path.dirname(__file__)
 
