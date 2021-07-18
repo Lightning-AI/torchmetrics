@@ -18,10 +18,14 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor
 
+from importlib.util import find_spec
+
 from torchmetrics.utilities.checks import _check_same_shape
 
 _ps_dict: dict = {}  # cache
 _ps_idx_dict: dict = {}  # cache
+
+_has_scipy = find_spec("scipy")
 
 
 def _find_best_perm_by_linear_sum_assignment(
@@ -130,7 +134,11 @@ def pit(
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
 
     # find best
-    if spk_num < 3:
+    if spk_num < 3 or _has_scipy is None:
+        if spk_num >= 3 and _has_scipy is None:
+            import warnings
+            warnings.warn(f"Speaker-num is {spk_num}>3, you'd better install scipy to improve pit's performance (we have better implementation based on scipy)!")
+
         best_metric, best_perm = _find_best_perm_by_exhuastive_method(
             metric_mtx,
             torch.max if eval_func == 'max' else torch.min,
