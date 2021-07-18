@@ -16,13 +16,14 @@ from functools import partial
 import numpy as np
 import pytest
 from sklearn.metrics import average_precision_score as sk_average_precision_score
+import torch
 from torch import tensor
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester, BATCH_SIZE
 from torchmetrics.classification.average_precision import AveragePrecision
 from torchmetrics.functional import average_precision
 
@@ -118,3 +119,24 @@ class TestAveragePrecision(MetricTester):
 )
 def test_average_precision(scores, target, expected_score):
     assert average_precision(scores, target) == expected_score
+
+
+@pytest.mark.parametrize(
+    "preds, target, sk_metric, num_classes", [
+        (torch.randn(BATCH_SIZE, NUM_CLASSES),
+         torch.randint(0, 2, (BATCH_SIZE, NUM_CLASSES)),
+         _sk_avg_prec_multiclass_prob,
+         NUM_CLASSES),
+    ]
+)
+def test_average_precision_multilabel(preds, target, sk_metric, num_classes):
+    AP = AveragePrecision(
+        num_classes=num_classes,
+        pos_label=1,
+        compute_on_step=False,
+    )
+    preds = torch.sigmoid(preds)
+    AP.update(preds, target)
+    result = torch.tensor(AP.compute())
+    expected = sk_average_precision_score(target.numpy(), preds.numpy(), average=None)
+    assert np.allclose(result.numpy(), expected)
