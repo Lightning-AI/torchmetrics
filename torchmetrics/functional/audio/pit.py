@@ -16,7 +16,6 @@ from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
 
 import torch
-from scipy.optimize import linear_sum_assignment
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -31,6 +30,7 @@ def _find_best_perm_by_linear_sum_assignment(
     metric_mtx: torch.Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
+    from scipy.optimize import linear_sum_assignment
     mmtx = metric_mtx.detach().cpu()
     best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx])
     best_perm = best_perm.to(metric_mtx.device)
