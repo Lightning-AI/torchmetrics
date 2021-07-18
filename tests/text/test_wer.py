@@ -1,7 +1,7 @@
 import pytest
 
-from torchmetrics.text.wer import WER
 from torchmetrics.functional.text.wer import wer
+from torchmetrics.text.wer import WER
 
 
 @pytest.mark.parametrize(
