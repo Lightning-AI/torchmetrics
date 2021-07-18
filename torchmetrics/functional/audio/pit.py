@@ -11,14 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from importlib.util import find_spec
 from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
 
 import torch
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor
-
-from importlib.util import find_spec
 
 from torchmetrics.utilities.checks import _check_same_shape
 
