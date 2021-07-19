@@ -157,7 +157,7 @@ def _precision_recall_curve_compute_multi_class(
                 sample_weights=sample_weights,
             )
         if target.ndim > 1:
-            prc_args.update(dict(precision_recall_curve(
+            prc_args.update(dict(
                 target=target[:, cls],
                 pos_label=1,
             ))
