@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+from typing import List, Union
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
@@ -57,7 +57,7 @@ class WER(Metric):
         super().__init__()
         self.concatenate_texts = concatenate_texts
 
-    def update(self, preds: List[str], target: List[str]) -> None:
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
         self.preds.append(preds)
         self.target.append(target)
 

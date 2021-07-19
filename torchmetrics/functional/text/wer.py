@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+from typing import List, Union
 
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
@@ -20,7 +20,8 @@ if _JIWER_AVAILABLE:
     from jiwer import compute_measures
 
 
-def wer(references: List[str], predictions: List[str], concatenate_texts: bool = False) -> float:
+def wer(references: Union[str, List[str]], predictions: Union[str, List[str]],
+        concatenate_texts: bool = False) -> float:
     """
     Args:
         references: List of references for each speech input.

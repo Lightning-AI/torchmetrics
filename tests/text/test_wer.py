@@ -7,7 +7,7 @@ from torchmetrics.text.wer import WER
 
 @pytest.mark.parametrize(
     "hyp,ref,score",
-    [("hello world", "hello world", 0.0), ("hello world", "Firwww", 1.0)],
+    [(["hello world"], ["hello world"], 0.0), (["hello world"], ["Firwww"], 1.0)],
 )
 def test_wer_same(hyp, ref, score):
     metric = WER()
@@ -25,7 +25,9 @@ def test_wer_functional(hyp, ref, score):
 
 @pytest.mark.parametrize(
     "hyp,ref,score",
-    [(["hello world"], ["hello world"], 0.0), (["hello world"], ["Firwww"], 1.0)],
+    [(["hello world"], ["hello world"]), (["hello world"], ["Firwww"])],
 )
-def test_jiwer(hyp, ref, score):
-    assert compute_measures(ref, hyp)["wer"] == score
+def test_wer(hyp, ref):
+    metric = WER()
+    metric.update(hyp, ref)
+    assert metric.compute() == compute_measures(ref, hyp)['wer']
