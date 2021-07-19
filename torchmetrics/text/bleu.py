@@ -64,7 +64,7 @@ class BLEUScore(Metric):
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    def update(
+    def update(  # type: ignore
         self, reference_corpus: Sequence[Sequence[Sequence[str]]], translate_corpus: Sequence[Sequence[str]]
     ) -> None:
         """
