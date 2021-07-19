@@ -19,18 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Moved `psnr` and `ssim` from `torchmetrics.functional.regression.*` to `torchmetrics.functional.image.*` ([#382](https://github.com/PyTorchLightning/metrics/pull/382))
+- Moved `psnr` and `ssim` from `functional.regression.*` to `functional.image.*` ([#382](https://github.com/PyTorchLightning/metrics/pull/382))
 
 
-- Moved `image_gradient` from `torchmetrics.functional.image_gradients` to `torchmetrics.functional.image.gradients` ([#381](https://github.com/PyTorchLightning/metrics/pull/381))
+- Moved `image_gradient` from `functional.image_gradients` to `functional.image.gradients` ([#381](https://github.com/PyTorchLightning/metrics/pull/381))
 
 
-- Moved `R2Score` from `torchmetrics.regression.r2score` to `torchmetrics.regression.r2` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
+- Moved `R2Score` from `regression.r2score` to `regression.r2` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
 
 
 ### Deprecated
 
-- Rename `r2score` >> `r2_score` and `kldivergence` >> `kl_divergence` in `torchmetrics.functional` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
+- Rename `r2score` >> `r2_score` and `kldivergence` >> `kl_divergence` in `functional` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
 
 
 ### Removed
@@ -41,11 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed restriction that `preds` could not be bigger than `num_classes` to support logit input ([#357](https://github.com/PyTorchLightning/metrics/pull/357))
 
 
-- Removed module `torchmetrics.regression.psnr` and `torchmetrics.regression.ssim` ([#382](https://github.com/PyTorchLightning/metrics/pull/382)):
+- Removed module `regression.psnr` and `regression.ssim` ([#382](https://github.com/PyTorchLightning/metrics/pull/382)):
 
 
 - Removed ([#379](https://github.com/PyTorchLightning/metrics/pull/379)):
-    * function `torchmetrics.functional.mean_relative_error`
+    * function `functional.mean_relative_error`
     * `num_thresholds` argument in `BinnedPrecisionRecallCurve`
 
 
@@ -100,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
-- Deprecated `torchmetrics.functional.mean_relative_error` ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
+- Deprecated `functional.mean_relative_error` ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
 - Deprecated `num_thresholds` argument in `BinnedPrecisionRecallCurve` ([#322](https://github.com/PyTorchLightning/metrics/pull/322))
 
 ### Removed
