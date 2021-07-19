@@ -15,9 +15,7 @@
 from typing import List
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _module_available
-
-_JIWER_AVAILABLE: bool = _module_available("jiwer")
+from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 if _JIWER_AVAILABLE:
     from jiwer import compute_measures
