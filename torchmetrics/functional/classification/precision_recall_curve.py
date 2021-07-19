@@ -150,12 +150,12 @@ def _precision_recall_curve_compute_multi_class(
         preds_cls = preds[:, cls]
 
         prc_args = dict(
-                preds=preds_cls,
-                target=target,
-                num_classes=1,
-                pos_label=cls,
-                sample_weights=sample_weights,
-            )
+            preds=preds_cls,
+            target=target,
+            num_classes=1,
+            pos_label=cls,
+            sample_weights=sample_weights,
+        )
         if target.ndim > 1:
             prc_args.update(dict(
                 target=target[:, cls],
