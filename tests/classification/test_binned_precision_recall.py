@@ -94,7 +94,7 @@ class TestBinnedRecallAtPrecision(MetricTester):
             metric_args={
                 "num_classes": num_classes,
                 "min_precision": min_precision,
-                "num_thresholds": 101,
+                "thresholds": 101,
             },
         )
 
