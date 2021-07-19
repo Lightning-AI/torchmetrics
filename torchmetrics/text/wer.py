@@ -14,9 +14,17 @@
 
 from typing import List
 
-from jiwer import compute_measures
-
 from torchmetrics.metric import Metric
+
+from torchmetrics.utilities.imports import _module_available
+
+_JIWER_AVAILABLE: bool = _module_available("jiwer")
+
+try:
+    from jiwer import compute_measures
+except ImportError:
+    compute_measures = 0
+    Exception("Jiwer not found")
 
 
 class WER(Metric):
