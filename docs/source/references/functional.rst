@@ -290,17 +290,6 @@ symmetric_mean_absolute_percentage_error [func]
 .. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
     :noindex:
 
-
-***
-NLP
-***
-
-bleu_score [func]
-~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.bleu_score
-    :noindex:
-
 ********
 Pairwise
 ********
@@ -354,4 +343,14 @@ retrieval_normalized_dcg [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
+    :noindex:
+
+****
+Text
+****
+
+bleu_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
