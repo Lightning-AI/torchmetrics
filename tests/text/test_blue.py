@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import pytest
 import torch
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu, sentence_bleu
 from torch import tensor
 
-from torchmetrics.functional import bleu_score
+from torchmetrics.functional.text.bleu import bleu_score
+from torchmetrics.text.bleu import BLEUScore
 
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.sentence_bleu
@@ -39,8 +41,13 @@ REF1B = "It is a guiding principle which makes the military force always being u
 REF1C = "It is the practical guide for the army always to heed the directions of the party".split()
 REF2A = "he was interested in world history because he read the book".split()
 
-LIST_OF_REFERENCES = [[REF1A, REF1B, REF1C], [REF2A]]
-HYPOTHESES = [HYP1, HYP2]
+TUPLE_OF_REFERENCES = ((REF1A, REF1B, REF1C), tuple([REF2A]))
+HYPOTHESES = (HYP1, HYP2)
+
+BATCHES = [
+    dict(reference_corpus=[[REF1A, REF1B, REF1C]], translate_corpus=[HYP1]),
+    dict(reference_corpus=[[REF2A]], translate_corpus=[HYP2])
+]
 
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.SmoothingFunction
 smooth_func = SmoothingFunction().method2
@@ -55,28 +62,87 @@ smooth_func = SmoothingFunction().method2
         pytest.param([0.25, 0.25, 0.25, 0.25], 4, smooth_func, True),
     ],
 )
-def test_bleu_score(weights, n_gram, smooth_func, smooth):
+def test_bleu_score_functional(weights, n_gram, smooth_func, smooth):
     nltk_output = sentence_bleu(
         [REFERENCE1, REFERENCE2, REFERENCE3],
         HYPOTHESIS1,
         weights=weights,
         smoothing_function=smooth_func,
     )
-    pl_output = bleu_score([HYPOTHESIS1], [[REFERENCE1, REFERENCE2, REFERENCE3]], n_gram=n_gram, smooth=smooth)
+    pl_output = bleu_score([[REFERENCE1, REFERENCE2, REFERENCE3]], [HYPOTHESIS1], n_gram=n_gram, smooth=smooth)
     assert torch.allclose(pl_output, tensor(nltk_output))
 
-    nltk_output = corpus_bleu(LIST_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
-    pl_output = bleu_score(HYPOTHESES, LIST_OF_REFERENCES, n_gram=n_gram, smooth=smooth)
+    nltk_output = corpus_bleu(TUPLE_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
+    pl_output = bleu_score(TUPLE_OF_REFERENCES, HYPOTHESES, n_gram=n_gram, smooth=smooth)
     assert torch.allclose(pl_output, tensor(nltk_output))
 
 
-def test_bleu_empty():
+def test_bleu_empty_functional():
     hyp = [[]]
     ref = [[[]]]
-    assert bleu_score(hyp, ref) == tensor(0.0)
+    assert bleu_score(ref, hyp) == tensor(0.0)
 
 
-def test_no_4_gram():
+def test_no_4_gram_functional():
     hyps = [["My", "full", "pytorch-lightning"]]
     refs = [[["My", "full", "pytorch-lightning", "test"], ["Completely", "Different"]]]
-    assert bleu_score(hyps, refs) == tensor(0.0)
+    assert bleu_score(refs, hyps) == tensor(0.0)
+
+
+@pytest.mark.parametrize(
+    ["weights", "n_gram", "smooth_func", "smooth"],
+    [
+        pytest.param([1], 1, None, False),
+        pytest.param([0.5, 0.5], 2, smooth_func, True),
+        pytest.param([0.333333, 0.333333, 0.333333], 3, None, False),
+        pytest.param([0.25, 0.25, 0.25, 0.25], 4, smooth_func, True),
+    ],
+)
+def test_bleu_score_class(weights, n_gram, smooth_func, smooth):
+    bleu = BLEUScore(n_gram=n_gram, smooth=smooth)
+    nltk_output = sentence_bleu(
+        [REFERENCE1, REFERENCE2, REFERENCE3],
+        HYPOTHESIS1,
+        weights=weights,
+        smoothing_function=smooth_func,
+    )
+    pl_output = bleu([[REFERENCE1, REFERENCE2, REFERENCE3]], [HYPOTHESIS1])
+    assert torch.allclose(pl_output, tensor(nltk_output))
+
+    nltk_output = corpus_bleu(TUPLE_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
+    pl_output = bleu(TUPLE_OF_REFERENCES, HYPOTHESES)
+    assert torch.allclose(pl_output, tensor(nltk_output))
+
+
+@pytest.mark.parametrize(
+    ["weights", "n_gram", "smooth_func", "smooth"],
+    [
+        pytest.param([1], 1, None, False),
+        pytest.param([0.5, 0.5], 2, smooth_func, True),
+        pytest.param([0.333333, 0.333333, 0.333333], 3, None, False),
+        pytest.param([0.25, 0.25, 0.25, 0.25], 4, smooth_func, True),
+    ],
+)
+def test_bleu_score_class_batches(weights, n_gram, smooth_func, smooth):
+    bleu = BLEUScore(n_gram=n_gram, smooth=smooth)
+
+    nltk_output = corpus_bleu(TUPLE_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
+
+    for batch in BATCHES:
+        bleu.update(batch['reference_corpus'], batch['translate_corpus'])
+    pl_output = bleu.compute()
+    assert torch.allclose(pl_output, tensor(nltk_output))
+
+
+def test_bleu_empty_class():
+    bleu = BLEUScore()
+    hyp = [[]]
+    ref = [[[]]]
+    assert bleu(ref, hyp) == tensor(0.0)
+
+
+def test_no_4_gram_class():
+    bleu = BLEUScore()
+    hyps = [["My", "full", "pytorch-lightning"]]
+    refs = [[["My", "full", "pytorch-lightning", "test"], ["Completely", "Different"]]]
+    assert bleu(refs, hyps) == tensor(0.0)
