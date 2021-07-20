@@ -165,3 +165,15 @@ def test_error_on_wrong_shape() -> None:
     metric = PIT(snr, 'max')
     with pytest.raises(RuntimeError, match='Inputs must be of shape *'):
         metric(torch.randn(3), torch.randn(3))
+
+
+def test_consistency_of_two_implementations() -> None:
+    from torchmetrics.functional.audio.pit import _find_best_perm_by_exhuastive_method
+    from torchmetrics.functional.audio.pit import _find_best_perm_by_linear_sum_assignment
+    shapes_test = [(5, 2, 2), (4, 3, 3), (4, 4, 4), (3, 5, 5)]
+    for shp in shapes_test:
+        metric_mtx = torch.randn(size=shp)
+        bm1, bp1 = _find_best_perm_by_linear_sum_assignment(metric_mtx, torch.max)
+        bm2, bp2 = _find_best_perm_by_exhuastive_method(metric_mtx, torch.max)
+        assert torch.allclose(bm1, bm2)
+        assert (bp1 == bp2).all()
