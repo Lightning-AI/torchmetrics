@@ -38,8 +38,10 @@ def _find_best_perm_by_linear_sum_assignment(
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
-def _find_best_perm_by_exhuastive_method(metric_mtx: torch.Tensor,
-                                         eval_func: Union[torch.min, torch.max],) -> Tuple[Tensor, Tensor]:
+def _find_best_perm_by_exhuastive_method(
+    metric_mtx: torch.Tensor,
+    eval_func: Union[torch.min, torch.max],
+) -> Tuple[Tensor, Tensor]:
     # create/read/cache the permutations and its indexes
     # reading from cache would be much faster than creating in CPU then moving to GPU
     batch_size, spk_num = metric_mtx.shape[:2]
