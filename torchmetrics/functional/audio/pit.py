@@ -20,8 +20,9 @@ from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
-_ps_dict: dict = {}  # cache
-_ps_idx_dict: dict = {}  # cache
+# _ps_dict: cache of permutations
+# it's necessary to cache it, otherwise it will consume a large amount of time
+_ps_dict: dict = {}  # _ps_dict[str(spk_num)+str(device)] = permutations
 
 _has_scipy = find_spec("scipy")
 
@@ -47,29 +48,26 @@ def _find_best_perm_by_exhuastive_method(
     batch_size, spk_num = metric_mtx.shape[:2]
     key = str(spk_num) + str(metric_mtx.device)
     if key not in _ps_dict:
-        # all the permutations, shape [perm_num, spk_num]
-        ps = torch.tensor(list(permutations(range(spk_num))), device=metric_mtx.device)
-        # shape [perm_num * spk_num]
-        inc = torch.arange(0, spk_num**2, step=spk_num, device=metric_mtx.device, dtype=ps.dtype).repeat(ps.shape[0])
-        # the indexes for all permutations, shape [perm_num*spk_num]
-        ps_idx = ps.view(-1) + inc
-        # cache ps and ps_idx
-        _ps_idx_dict[key] = ps_idx
+        # ps: all the permutations, shape [spk_num, perm_num]
+        # ps: In i-th permutation, the predcition corresponds to the j-th target is ps[j,i]
+        ps = torch.tensor(list(permutations(range(spk_num))), device=metric_mtx.device).T
         _ps_dict[key] = ps
     else:
-        ps_idx = _ps_idx_dict[key]  # the indexes for all permutations, shape [perm_num*spk_num]
-        ps = _ps_dict[key]  # all the permutations, shape [perm_num, spk_num]
+        ps = _ps_dict[key]  # all the permutations, shape [spk_num, perm_num]
 
     # find the metric of each permutation
-    # shape [batch_size, perm_num, spk_num]
-    metric_of_ps_details = metric_mtx.view(batch_size, -1)[:, ps_idx].reshape(batch_size, -1, spk_num)
+    perm_num = ps.shape[-1]
+    # shape [batch_size, spk_num, perm_num]
+    bps = ps[None, ...].expand(batch_size, spk_num, perm_num)
+    # shape [batch_size, spk_num, perm_num]
+    metric_of_ps_details = torch.gather(metric_mtx, 2, bps)
     # shape [batch_size, perm_num]
-    metric_of_ps = metric_of_ps_details.mean(dim=2)
+    metric_of_ps = metric_of_ps_details.mean(dim=1)
 
     # find the best metric and best permutation
     best_metric, best_indexes = eval_func(metric_of_ps, dim=1)
     best_indexes = best_indexes.detach()
-    best_perm = ps[best_indexes, :]
+    best_perm = ps.T[best_indexes, :]
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
