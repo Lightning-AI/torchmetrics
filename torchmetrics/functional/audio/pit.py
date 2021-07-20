@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from importlib.util import find_spec
 from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
-
+from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 import torch
 from torch import Tensor
 
@@ -23,8 +22,6 @@ from torchmetrics.utilities.checks import _check_same_shape
 # _ps_dict: cache of permutations
 # it's necessary to cache it, otherwise it will consume a large amount of time
 _ps_dict: dict = {}  # _ps_dict[str(spk_num)+str(device)] = permutations
-
-_has_scipy = find_spec("scipy")
 
 
 def _find_best_perm_by_linear_sum_assignment(
@@ -133,8 +130,8 @@ def pit(
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
 
     # find best
-    if spk_num < 3 or _has_scipy is None:
-        if spk_num >= 3 and _has_scipy is None:
+    if spk_num < 3 or _SCIPY_AVAILABLE is None:
+        if spk_num >= 3 and _SCIPY_AVAILABLE is None:
             import warnings
             warnings.warn(f"Speaker-num is {spk_num}>3, you'd better install scipy to improve pit's performance!")
 
