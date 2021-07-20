@@ -20,8 +20,9 @@ if _JIWER_AVAILABLE:
     from jiwer import compute_measures
 
 
-def wer(references: Union[str, List[str]], predictions: Union[str, List[str]],
-        concatenate_texts: bool = False) -> float:
+def wer(
+    references: Union[str, List[str]], predictions: Union[str, List[str]], concatenate_texts: bool = False
+) -> float:
     """
     Args:
         references: List of references for each speech input.
