@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `r2score` >> `r2_score` and `kldivergence` >> `kl_divergence` in `torchmetrics.functional` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
 
 
+- Moved `bleu_score` from `functional.nlp` to `functional.text.bleu` ([#360](https://github.com/PyTorchLightning/metrics/pull/360))
+
+
 ### Removed
 
 - Removed restriction that `threshold` has to be in (0,1) range to support logit input ([#351](https://github.com/PyTorchLightning/metrics/pull/351))
