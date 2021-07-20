@@ -10,7 +10,7 @@ Audio Metrics
 *************
 
 pit [func]
-~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.pit
     :noindex:
