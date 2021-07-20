@@ -28,6 +28,21 @@ def _find_best_perm_by_linear_sum_assignment(
     metric_mtx: torch.Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
+    """Solves the linear sum assignment problem using scipy, and returns the best metric values and the corresponding
+    permutations
+
+    Args:
+        metric_mtx:
+            the metric matrix, shape [batch_size, spk_num, spk_num]
+        eval_func:
+            the function to reduce the metric values of different the permutations
+
+    Returns:
+        best_metric:
+            shape [batch]
+        best_perm:
+            shape [batch, spk]
+    """
     from scipy.optimize import linear_sum_assignment
     mmtx = metric_mtx.detach().cpu()
     best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx])
@@ -40,13 +55,14 @@ def _find_best_perm_by_exhuastive_method(
     metric_mtx: torch.Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
-    """Find the best metric value and permutation of each prediction and target pair in one batch using a exhuastive method
+    """Solves the linear sum assignment problem using exhuastive method, i.e. exhuastively calculates the metric values
+    of all possible permutations, and returns the best metric values and the corresponding permutations
 
     Args:
         metric_mtx:
             the metric matrix, shape [batch_size, spk_num, spk_num]
         eval_func:
-            the function to reduce the permutations of one pair
+            the function to reduce the metric values of different the permutations
 
     Returns:
         best_metric:
