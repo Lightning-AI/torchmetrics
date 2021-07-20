@@ -29,17 +29,17 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
-Time = 10
+TIME = 10
 
 Input = namedtuple('Input', ["preds", "target"])
 
 inputs1 = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, Time),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, Time),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
 )
 inputs2 = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, Time),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, Time),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
 )
 
 
