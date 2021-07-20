@@ -40,6 +40,20 @@ def _find_best_perm_by_exhuastive_method(
     metric_mtx: torch.Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
+    """Find the best metric value and permutation of each prediction and target pair in one batch using a exhuastive method
+
+    Args:
+        metric_mtx:
+            the metric matrix, shape [batch_size, spk_num, spk_num]
+        eval_func:
+            the function to reduce the permutations of one pair
+
+    Returns:
+        best_metric:
+            shape [batch]
+        best_perm:
+            shape [batch, spk]
+    """
     # create/read/cache the permutations and its indexes
     # reading from cache would be much faster than creating in CPU then moving to GPU
     batch_size, spk_num = metric_mtx.shape[:2]
