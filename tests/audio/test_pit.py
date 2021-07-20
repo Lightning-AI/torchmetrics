@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections import namedtuple
 from functools import partial
-from typing import Callable
+from typing import Callable, Tuple
 
 import numpy as np
 import pytest
@@ -33,17 +33,38 @@ TIME = 10
 
 Input = namedtuple('Input', ["preds", "target"])
 
+# three speaker examples to test _find_best_perm_by_linear_sum_assignment
 inputs1 = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
 )
+# two speaker examples to test _find_best_perm_by_exhuastive_method
 inputs2 = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
 )
 
 
-def scipy_version(preds: Tensor, target: Tensor, metric_func: Callable, eval_func: str):
+def a_naive_implementation_of_pit_based_on_scipy(
+    preds: Tensor,
+    target: Tensor,
+    metric_func: Callable,
+    eval_func: str,
+) -> Tuple[Tensor, Tensor]:
+    """a naive implementation of pit based on scipy
+
+    Args:
+        preds: predictions, shape[batch, spk, time]
+        target: targets, shape[batch, spk, time]
+        metric_func: which metric
+        eval_func: min or max
+
+    Returns:
+        best_metric:
+            shape [batch]
+        best_perm:
+            shape [batch, spk]
+    """
     batch_size, spk_num = target.shape[0:2]
     metric_mtx = torch.empty((batch_size, spk_num, spk_num), device=target.device)
     for t in range(spk_num):
@@ -61,14 +82,22 @@ def scipy_version(preds: Tensor, target: Tensor, metric_func: Callable, eval_fun
     return torch.from_numpy(np.stack(best_metrics)), torch.from_numpy(np.stack(best_perms))
 
 
-def average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+def average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
+    """average the metric values
+
+    Args:
+        preds: predictions, shape[batch, spk, time]
+        target: targets, shape[batch, spk, time]
+        metric_func: a function which return best_metric and best_perm
+
+    Returns:
+        the average of best_metric
+    """
     return metric_func(preds, target)[0].mean()
 
 
-snr_pit_scipy = partial(scipy_version, metric_func=snr, eval_func='max')
-si_sdr_pit_scipy = partial(scipy_version, metric_func=si_sdr, eval_func='max')
+snr_pit_scipy = partial(a_naive_implementation_of_pit_based_on_scipy, metric_func=snr, eval_func='max')
+si_sdr_pit_scipy = partial(a_naive_implementation_of_pit_based_on_scipy, metric_func=si_sdr, eval_func='max')
 
 
 @pytest.mark.parametrize(
