@@ -197,8 +197,10 @@ def test_error_on_wrong_shape() -> None:
 
 
 def test_consistency_of_two_implementations() -> None:
-    from torchmetrics.functional.audio.pit import _find_best_perm_by_exhuastive_method
-    from torchmetrics.functional.audio.pit import _find_best_perm_by_linear_sum_assignment
+    from torchmetrics.functional.audio.pit import (
+        _find_best_perm_by_exhuastive_method,
+        _find_best_perm_by_linear_sum_assignment,
+    )
     shapes_test = [(5, 2, 2), (4, 3, 3), (4, 4, 4), (3, 5, 5)]
     for shp in shapes_test:
         metric_mtx = torch.randn(size=shp)

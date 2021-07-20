@@ -13,11 +13,12 @@
 # limitations under the License.
 from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
-from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
+
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 # _ps_dict: cache of permutations
 # it's necessary to cache it, otherwise it will consume a large amount of time
