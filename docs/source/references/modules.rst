@@ -513,6 +513,16 @@ RetrievalNormalizedDCG
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
     :noindex:
 
+****
+Text
+****
+
+BLEUScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.BLEUScore
+    :noindex:
+
 
 ********
 Wrappers
