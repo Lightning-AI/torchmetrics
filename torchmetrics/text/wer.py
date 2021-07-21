@@ -45,6 +45,7 @@ class WER(Metric):
         >>> metric = WER()
         >>> metric(predictions, references)
         0.5
+
     """
 
     def __init__(self, concatenate_texts: bool = False):
