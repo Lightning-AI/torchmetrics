@@ -28,6 +28,7 @@ class WER(Metric):
 
     .. math::
         WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
+
     where:
         - S is the number of substitutions,
         - D is the number of deletions,
