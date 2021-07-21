@@ -36,11 +36,9 @@ def wer(
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> wer_score = wer(predictions=predictions, references=references)
-        >>> print(wer_score)
+        >>> wer(predictions=predictions, references=references)
         0.5
-        >>> wer_score, incorrect, total = wer(predictions=predictions, references=references, return_measures=True)
-        >>> print(wer_score, incorrect, total)
+        >>> wer(predictions=predictions, references=references, return_measures=True)
         0.5 4 8
     """
     if concatenate_texts:
