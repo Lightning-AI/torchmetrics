@@ -35,10 +35,12 @@ class WER(Metric):
         - C is the number of correct words,
         - N is the number of words in the reference (N=S+D+C).
     Compute WER score of transcribed segments against references.
+
     Args:
         concatenate_texts (bool, default=False): Whether to concatenate all input texts or compute WER iteratively.
     Returns:
         (float): the word error rate
+
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
