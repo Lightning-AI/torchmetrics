@@ -14,11 +14,8 @@
 
 from typing import List, Union
 
+from torchmetrics.functional import wer
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
-
-if _JIWER_AVAILABLE:
-    from jiwer import compute_measures
 
 
 class WER(Metric):
@@ -39,15 +36,13 @@ class WER(Metric):
         - N is the number of words in the reference (N=S+D+C).
     Compute WER score of transcribed segments against references.
     Args:
-        references: List of references for each speech input.
-        predictions: List of transcriptions to score.
         concatenate_texts (bool, default=False): Whether to concatenate all input texts or compute WER iteratively.
     Returns:
         (float): the word error rate
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> wer = WER(predictions=predictions, references=references)
+        >>> wer = WER(predictions, references)
         >>> wer_score = wer.compute()
         >>> print(wer_score)
         0.5
@@ -56,18 +51,32 @@ class WER(Metric):
     def __init__(self, concatenate_texts: bool = False):
         super().__init__()
         self.concatenate_texts = concatenate_texts
+        self.add_state('predictions', [])
+        self.add_state('references', [])
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
-        self.preds.append(preds)
-        self.target.append(target)
+    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:
+        """
+        Store predictions/references for computing Word Error Rate scores.
+        Args:
+            predictions: List of transcriptions to score.
+            references: List of references for each speech input.
+        """
+        self.predictions.append(predictions)
+        self.references.append(references)
 
     def compute(self) -> float:
+        """
+        Calculate Word Error Rate scores.
+
+        Return:
+            Float with WER Score.
+        """
         if self.concatenate_texts:
-            return compute_measures(self.target, self.preds)["wer"]
+            return wer(self.references, self.predictions)
         incorrect = 0
         total = 0
-        for prediction, reference in zip(self.preds, self.target):
-            measures = compute_measures(reference, prediction)
-            incorrect += measures["substitutions"] + measures["deletions"] + measures["insertions"]
-            total += measures["substitutions"] + measures["deletions"] + measures["hits"]
+        for prediction, reference in zip(self.predictions, self.references):
+            _, pred_incorrect, pred_total = wer(reference, prediction, return_measures=True)
+            incorrect += pred_incorrect
+            total += pred_total
         return incorrect / total

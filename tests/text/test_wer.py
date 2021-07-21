@@ -11,7 +11,7 @@ from torchmetrics.text.wer import WER
 
 @pytest.mark.parametrize(
     "hyp,ref,score",
-    [(["hello world"], ["hello world"], 0.0), (["hello world"], ["Firwww"], 1.0)],
+    [(["hello world"], ["hello world"], 0.0), (["Firwww"], ["hello world"], 1.0)],
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_same(hyp, ref, score):
@@ -24,20 +24,48 @@ def test_wer_same(hyp, ref, score):
 
 
 @pytest.mark.parametrize(
-    "hyp,ref,score",
-    [(["hello world"], ["hello world"], 0.0), (["hello world"], ["Firwww"], 1.0)],
+    "hyp,ref,expected_score,expected_incorrect,expected_total",
+    [(["hello world"], ["hello world"], 0.0, 0, 2), (["Firwww"], ["hello world"], 1.0, 2, 2)],
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
-def test_wer_functional(hyp, ref, score):
+def test_wer_functional(ref, hyp, expected_score, expected_incorrect, expected_total):
     """
     Test to ensure that the torchmetric functional WER matches the jiwer reference
     """
-    assert wer(ref, hyp) == score
+    assert wer(ref, hyp) == expected_score
+
+    score, incorrect, total = wer(ref, hyp, return_measures=True)
+    assert score == expected_score
+    assert incorrect == expected_incorrect
+    assert total == expected_total
 
 
 @pytest.mark.parametrize(
     "hyp,ref",
-    [(["hello world"], ["hello world"]), (["hello world"], ["Firwww"])],
+    [(["hello world"], ["hello world"]), (["Firwww"], ["hello world"])],
+)
+@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
+def test_wer_reference_functional(hyp, ref):
+    """
+    Test to ensure that the torchmetric functional WER matches the jiwer reference
+    """
+    assert wer(ref, hyp) == compute_measures(ref, hyp)['wer']
+
+
+@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
+def test_wer_reference_functional_concatenate():
+    """
+    Test to ensure that the torchmetric functional WER matches the jiwer reference when concatenating
+    """
+    ref = ["hello world", "hello world"]
+    hyp = ["hello world", "Firwww"]
+    assert wer(ref, hyp) == compute_measures(ref, hyp)['wer']
+    assert wer(hyp, ref, concatenate_texts=True) == compute_measures(''.join(ref), ''.join(hyp))['wer']
+
+
+@pytest.mark.parametrize(
+    "hyp,ref",
+    [(["hello world"], ["hello world"]), (["Firwww"], ["hello world"])],
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_reference(hyp, ref):

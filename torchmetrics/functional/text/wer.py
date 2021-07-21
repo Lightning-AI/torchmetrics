@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Union
+from typing import List, Tuple, Union
 
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
@@ -21,21 +21,27 @@ if _JIWER_AVAILABLE:
 
 
 def wer(
-    references: Union[str, List[str]], predictions: Union[str, List[str]], concatenate_texts: bool = False
-) -> float:
+    references: Union[str, List[str]],
+    predictions: Union[str, List[str]],
+    concatenate_texts: bool = False,
+    return_measures: bool = False
+) -> Union[float, Tuple[float, int, int]]:
     """
     Args:
         references: List of references for each speech input.
         predictions: List of transcriptions to score.
         concatenate_texts (bool, default=False): Whether to concatenate all input texts or compute WER iteratively.
     Returns:
-        (float): the word error rate
+        (float): the word error rate, or if ``return_measures`` is True, we include the incorrect and total.
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
         >>> wer_score = wer(predictions=predictions, references=references)
         >>> print(wer_score)
         0.5
+        >>> wer_score, incorrect, total = wer(predictions=predictions, references=references, return_measures=True)
+        >>> print(wer_score, incorrect, total)
+        0.5 4 8
     """
     if concatenate_texts:
         return compute_measures(references, predictions)["wer"]
@@ -45,4 +51,6 @@ def wer(
         measures = compute_measures(reference, prediction)
         incorrect += measures["substitutions"] + measures["deletions"] + measures["insertions"]
         total += measures["substitutions"] + measures["deletions"] + measures["hits"]
+    if return_measures:
+        return (incorrect / total), incorrect, total
     return incorrect / total
