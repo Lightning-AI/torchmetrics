@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Union
+from typing import List, Union, Optional, Any, Callable
 
 from torchmetrics.functional import wer
 from torchmetrics.metric import Metric
@@ -53,8 +53,20 @@ class WER(Metric):
 
     """
 
-    def __init__(self, concatenate_texts: bool = False):
-        super().__init__()
+    def __init__(
+            self,
+            concatenate_texts: bool = False,
+            compute_on_step: bool = True,
+            dist_sync_on_step: bool = False,
+            process_group: Optional[Any] = None,
+            dist_sync_fn: Callable = None,
+    ):
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
         self.concatenate_texts = concatenate_texts
         self.add_state('predictions', [])
         self.add_state('references', [])
