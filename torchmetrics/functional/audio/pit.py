@@ -149,7 +149,7 @@ def pit(
     """
     _check_same_shape(preds, target)
     if eval_func not in ['max', 'min']:
-        raise RuntimeError('eval_func can only be "max" or "min"')
+        raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
     if len(target.shape) < 2:
         raise RuntimeError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
