@@ -163,7 +163,9 @@ def pit(
     # find best
     if spk_num < 3 or _SCIPY_AVAILABLE is None:
         if spk_num >= 3 and _SCIPY_AVAILABLE is None:
-            warnings.warn(f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance")
+            warnings.warn(
+                f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance"
+            )
 
         best_metric, best_perm = _find_best_perm_by_exhuastive_method(
             metric_mtx,
