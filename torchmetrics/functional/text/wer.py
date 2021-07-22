@@ -31,7 +31,7 @@ def wer(
     the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
-    
+
     Args:
         references: List of references for each speech input.
         predictions: List of transcriptions to score.
@@ -52,9 +52,9 @@ def wer(
     """
     if not _JIWER_AVAILABLE:
         raise RuntimeError(
-           'wer metric requires that jiwer is installed.'
-           ' Either install as `pip install torchmetrics[text]`'
-           ' or `pip install jiwer`'
+            'wer metric requires that jiwer is installed.'
+            ' Either install as `pip install torchmetrics[text]`'
+            ' or `pip install jiwer`'
         )
     if concatenate_texts:
         return compute_measures(references, predictions)["wer"]
