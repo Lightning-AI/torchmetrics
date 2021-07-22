@@ -126,21 +126,13 @@ class TestPIT(MetricTester):
         )
 
     def test_pit_functional(self, preds, target, sk_metric, metric_func, eval_func):
-        device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
-
-        # move to device
-        preds = preds.to(device)
-        target = target.to(device)
-
-        for i in range(NUM_BATCHES):
-            best_metric, best_perm = pit(preds[i], target[i], metric_func, eval_func)
-            best_metric_sk, best_perm_sk = sk_metric(preds[i].cpu(), target[i].cpu())
-
-            # assert its the same
-            assert np.allclose(
-                best_metric.detach().cpu().numpy(), best_metric_sk.detach().cpu().numpy(), atol=self.atol
-            )
-            assert (best_perm.detach().cpu().numpy() == best_perm_sk.detach().cpu().numpy()).all()
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=pit,
+            sk_metric=sk_metric,
+            metric_args=dict(metric_func=metric_func, eval_func=eval_func),
+        )
 
     def test_pit_differentiability(self, preds, target, sk_metric, metric_func, eval_func):
 
