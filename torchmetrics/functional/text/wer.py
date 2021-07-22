@@ -50,6 +50,12 @@ def wer(
         (0.5, 4, 8)
 
     """
+    if not _JIWER_AVAILABLE:
+        raise RuntimeError(
+           'wer metric requires that jiwer is installed.'
+           ' Either install as `pip install torchmetrics[text]`'
+           ' or `pip install jiwer`'
+        )
     if concatenate_texts:
         return compute_measures(references, predictions)["wer"]
     incorrect = 0
