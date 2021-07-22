@@ -178,13 +178,13 @@ def test_error_on_different_shape() -> None:
 
 def test_error_on_wrong_eval_func() -> None:
     metric = PIT(snr, 'xxx')
-    with pytest.raises(RuntimeError, match='eval_func can only be "max" or "min"'):
+    with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
     metric = PIT(snr, 'max')
-    with pytest.raises(RuntimeError, match='Inputs must be of shape *'):
+    with pytest.raises(ValueError, match='Inputs must be of shape *'):
         metric(torch.randn(3), torch.randn(3))
 
 
