@@ -151,7 +151,7 @@ def pit(
     if eval_func not in ['max', 'min']:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
     if len(target.shape) < 2:
-        raise RuntimeError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
+        raise ValueError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
     # calculate the metric matrix
     batch_size, spk_num = target.shape[0:2]
