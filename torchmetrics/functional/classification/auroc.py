@@ -98,9 +98,7 @@ def _auroc_compute(
                 class_observed = target_bool_mat.sum(axis=0) > 0
                 for c in range(num_classes):
                     if not class_observed[c]:
-                        warnings.warn(
-                            f'Class {c} had 0 observations, omitted from AUROC calculation', UserWarning
-                        )
+                        warnings.warn(f'Class {c} had 0 observations, omitted from AUROC calculation', UserWarning)
                 preds = preds[:, class_observed]
                 target = target_bool_mat[:, class_observed]
                 target = torch.where(target)[1]
