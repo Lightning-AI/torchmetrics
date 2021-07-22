@@ -30,15 +30,17 @@ class WER(Metric):
         WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 
     where:
+
         - S is the number of substitutions,
         - D is the number of deletions,
         - I is the number of insertions,
         - C is the number of correct words,
         - N is the number of words in the reference (N=S+D+C).
+
     Compute WER score of transcribed segments against references.
 
     Args:
-        concatenate_texts (bool, default=False): Whether to concatenate all input texts or compute WER iteratively.
+        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
     Returns:
         (float): the word error rate
 

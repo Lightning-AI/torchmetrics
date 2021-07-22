@@ -30,10 +30,12 @@ def wer(
     Args:
         references: List of references for each speech input.
         predictions: List of transcriptions to score.
-        concatenate_texts (bool, default=False): Whether to concatenate all input texts or compute WER iteratively.
-        return_measures (bool, default=False): Return the number of incorrect and total in WER calculation.
+        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
+        return_measures: Return the number of incorrect and total in WER calculation.
+
     Returns:
         (float): the word error rate, or if ``return_measures`` is True, we include the incorrect and total.
+
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
