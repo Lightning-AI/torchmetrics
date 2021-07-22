@@ -20,12 +20,13 @@ from torchmetrics.metric import Metric
 
 
 class PIT(Metric):
-    """ Permutation invariant training metric
+    """ Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method in
+    speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     Forward accepts
 
-    - ``preds``: ``shape [..., time]``
-    - ``target``: ``shape [..., time]``
+    - ``preds``: ``shape [batch, spk, ...]``
+    - ``target``: ``shape [batch, spk, ...]``
 
     Args:
         metric_func:

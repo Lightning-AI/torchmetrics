@@ -106,8 +106,9 @@ def pit(
     eval_func: str = 'max',
     **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
-    """ Permutation invariant training metric
-
+    """ Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method in
+    speech separation field in order to calculate audio metrics in a permutation invariant way.
+    
     Args:
         target:
             shape [batch, spk, ...]
