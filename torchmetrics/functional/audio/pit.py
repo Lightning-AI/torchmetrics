@@ -13,6 +13,7 @@
 # limitations under the License.
 from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
+import warnings
 
 import torch
 from torch import Tensor
@@ -108,7 +109,7 @@ def pit(
 ) -> Tuple[Tensor, Tensor]:
     """ Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method in
     speech separation field in order to calculate audio metrics in a permutation invariant way.
-    
+
     Args:
         target:
             shape [batch, spk, ...]
