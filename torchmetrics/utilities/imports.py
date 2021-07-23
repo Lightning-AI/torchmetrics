@@ -76,3 +76,5 @@ _TORCH_GREATER_EQUAL_1_7: Optional[bool] = _compare_version("torch", operator.ge
 _LIGHTNING_AVAILABLE: bool = _module_available("pytorch_lightning")
 _TORCH_FIDELITY_AVAILABLE: bool = _module_available("torch_fidelity")
 _SCIPY_AVAILABLE: bool = _module_available("scipy")
+_ROUGE_SCORE_AVAILABLE = _module_available("rouge_score")
+_NLTK_AVAILABLE = _module_available('nltk')
