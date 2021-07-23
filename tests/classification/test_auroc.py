@@ -210,9 +210,9 @@ def test_weighted_with_empty_classes():
     _auroc = auroc(preds, target, average="weighted", num_classes=num_classes)
 
     # Add in a class with zero observations at second to last index
-    preds = torch.cat((preds[:, :NUM_CLASSES - 1], torch.randn_like(preds[:, 0:1]), preds[:, NUM_CLASSES - 1:]), axis=1)
+    preds = torch.cat((preds[:, :num_classes - 1], torch.rand_like(preds[:, 0:1]), preds[:, num_classes - 1:]), axis=1)
     # Last class (2) gets moved to 3
-    target[target == NUM_CLASSES - 1] = NUM_CLASSES
+    target[target == num_classes - 1] = num_classes
     with pytest.warns(UserWarning, match='Class 2 had 0 observations, omitted from AUROC calculation'):
         _auroc_empty_class = auroc(preds, target, average="weighted", num_classes=num_classes + 1)
     assert _auroc == _auroc_empty_class
