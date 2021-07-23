@@ -27,7 +27,7 @@ def wer(
     return_measures: bool = False
 ) -> Union[float, Tuple[float, int, int]]:
     """
-     `Word error rate (WER) <https://en.wikipedia.org/wiki/Word_error_rate>`_ is a common metric of
+    `Word error rate (WER) <https://en.wikipedia.org/wiki/Word_error_rate>`_ is a common metric of
     the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
