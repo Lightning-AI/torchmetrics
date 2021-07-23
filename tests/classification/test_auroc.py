@@ -198,6 +198,9 @@ def test_error_multiclass_no_num_classes():
 
 
 def test_weighted_with_empty_classes():
+    """ Tests that weighted multiclass AUROC calculation yields the same results if a new
+        but empty class exists. Tests that the proper warnings and errors are raised
+    """
     preds = torch.tensor([
         [0.90, 0.05, 0.05],
         [0.05, 0.90, 0.05],
@@ -218,5 +221,5 @@ def test_weighted_with_empty_classes():
     assert _auroc == _auroc_empty_class
 
     target = torch.zeros_like(target)
-    with pytest.raises(ValueError, match=f'Found 1 non-empty class in `multiclass` AUROC calculation'):
+    with pytest.raises(ValueError, match='Found 1 non-empty class in `multiclass` AUROC calculation'):
         _ = auroc(preds, target, average="weighted", num_classes=num_classes + 1)
