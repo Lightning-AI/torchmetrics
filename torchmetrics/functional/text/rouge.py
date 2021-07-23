@@ -40,13 +40,13 @@ def add_newline_to_end_of_each_sentence(x: str) -> str:
     return "\n".join(nltk.sent_tokenize(x))
 
 
-def format_rouge_results(result: Dict[str, AggregateScore], decimal_places: int = 4) -> Dict[str, float]:
+def format_rouge_results(result: Dict[str, AggregateScore], decimal_places: int = 4) -> Dict[str, Tensor]:
     flattened_result = {}
     for rouge_key, rouge_aggregate_score in result.items():
         for stat in ["precision", "recall", "fmeasure"]:
             mid = rouge_aggregate_score.mid
             score = round(getattr(mid, stat), decimal_places)
-            flattened_result[f"{rouge_key}_{stat}"] = score
+            flattened_result[f"{rouge_key}_{stat}"] = tensor(score)
     return flattened_result
 
 
@@ -94,10 +94,10 @@ def _rouge_score_update(
             scores[key].append(score)
 
 
-def _rouge_score_compute(scores: Dict[str, List[Tensor]], aggregator: RougeBatchAggregator) -> Tensor:
+def _rouge_score_compute(scores: Dict[str, List[Tensor]], aggregator: RougeBatchAggregator) -> Dict[str, Tensor]:
     aggregator.add_scores(scores)
     result = aggregator.aggregate()
-    return result
+    return format_rouge_results(result)
 
 
 def rouge_score(
@@ -106,7 +106,7 @@ def rouge_score(
     rouge_newline_sep: bool = False,
     use_stemmer: bool = False,
     rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum")
-) -> Tensor:
+) -> Dict[str, Tensor]:
     """
     Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_.
     Used for automatic summarization.

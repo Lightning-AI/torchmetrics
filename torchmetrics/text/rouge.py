@@ -13,9 +13,7 @@
 # limitations under the License.
 from typing import Dict, List, Tuple
 
-import numpy as np
-import torch
-from torch import tensor
+from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.rouge import RougeBatchAggregator, _rouge_score_compute, _rouge_score_update
@@ -25,7 +23,7 @@ if _ROUGE_SCORE_AVAILABLE:
     from rouge_score import rouge_scorer
 
 
-class RougeMetric(Metric):
+class ROUGEMetric(Metric):
     """
     Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_.
     Used for automatic summarization.
@@ -45,7 +43,7 @@ class RougeMetric(Metric):
 
         >>> target = "Is your name John".split()
         >>> preds = "My name is John".split()
-        >>> rouge = RougeMetric()   # doctest: +SKIP
+        >>> rouge = ROUGEMetric()   # doctest: +SKIP
         >>> from pprint import pprint
         >>> pprint(rouge(preds, target))  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'rouge1_fmeasure': 0.25,
@@ -91,14 +89,14 @@ class RougeMetric(Metric):
             pred_lns, tgt_lns, scores=self.scores, scorer=self.scorer, rouge_newline_sep=self.rouge_newline_sep
         )
 
-    def compute(self) -> Dict[str, float]:
+    def compute(self) -> Dict[str, Tensor]:
         """
         Calculate (Agregate and provide confidence intervals) ROUGE score
 
         Return:
             Python dictionary of rouge scores for each input rouge key.
         """
-        _rouge_score_compute(self.scores, aggregator=self.aggregator)
+        return _rouge_score_compute(self.scores, aggregator=self.aggregator)
 
     def __hash__(self):
         # override to hash list objects.
