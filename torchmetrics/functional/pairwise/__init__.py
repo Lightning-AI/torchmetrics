@@ -13,4 +13,4 @@
 # limitations under the License.
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance  # noqa: F401
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_distance  # noqa: F401
-
+from torchmetrics.functional.pairwise.linear import pairwise_linear_distance  # noqa: F401
