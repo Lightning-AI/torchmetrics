@@ -71,7 +71,7 @@ class WER(Metric):
         self.add_state('predictions', [])
         self.add_state('references', [])
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:
+    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
         """
         Store predictions/references for computing Word Error Rate scores.
         Args:
