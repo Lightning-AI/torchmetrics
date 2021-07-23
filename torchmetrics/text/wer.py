@@ -41,6 +41,17 @@ class WER(Metric):
 
     Args:
         concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
+        compute_on_step:
+            Forward only calls ``update()`` and return None if this is set to False. default: True
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step. default: False
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
+
     Returns:
         (float): the word error rate
 
