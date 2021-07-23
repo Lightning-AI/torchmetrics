@@ -129,6 +129,13 @@ recall [func]
 .. autofunction:: torchmetrics.functional.recall
     :noindex:
 
+calibration_error [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.calibration_error
+    :noindex:
+
+
 select_topk [func]
 ~~~~~~~~~~~~~~~~~~~~~
 

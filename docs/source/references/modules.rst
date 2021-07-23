@@ -242,6 +242,12 @@ StatScores
 .. autoclass:: torchmetrics.StatScores
     :noindex:
 
+CalibrationError
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CalibrationError
+    :noindex:
+
 
 ******************
 Regression Metrics
