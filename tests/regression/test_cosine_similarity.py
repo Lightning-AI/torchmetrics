@@ -73,7 +73,7 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     return to_return
 
 
-@pytest.mark.parametrize("reduction", ['sum', 'mean'])
+@pytest.mark.parametrize("reduction", ['sum', 'mean', 'none'])
 @pytest.mark.parametrize(
     "preds, target, sk_metric",
     [
@@ -110,3 +110,8 @@ def test_error_on_different_shape(metric_class=CosineSimilarity):
     metric = metric_class()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
         metric(torch.randn(100, ), torch.randn(50, ))
+
+
+def test_error_on_wrong_reduction(metric_class=CosineSimilarity):
+    with pytest.raises(ValueError, match="Expected argument `reduction` to be one .*"):
+        metric_class(reduction='max')

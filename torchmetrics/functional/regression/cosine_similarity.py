@@ -35,7 +35,12 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = '
     preds_norm = preds.norm(dim=-1)
     target_norm = target.norm(dim=-1)
     similarity = dot_product / (preds_norm * target_norm)
-    reduction_mapping = {"sum": torch.sum, "mean": torch.mean, "none": lambda x: x}
+    reduction_mapping = {
+        "sum": torch.sum, 
+        "mean": torch.mean,
+        "none": lambda x: x,
+        None: lambda x: x,
+    }
     return reduction_mapping[reduction](similarity)
 
 

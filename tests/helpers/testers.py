@@ -90,6 +90,16 @@ def _assert_requires_grad(metric: Metric, pl_result: Any):
         assert metric.is_differentiable == pl_result.requires_grad
 
 
+def _concatenate(tensor: Tensor, num_batches: int, world_size: int) -> Tensor:
+    """ Makes sure that a input tensor gets concatenated in the same way as it
+        is given to a metric in distributed mode
+    """
+    correct_order = []
+    for i in range(world_size):
+        correct_order.append(torch.cat([tensor[j] for j in range(i, num_batches, world_size)]))
+    return torch.cat(correct_order)
+
+
 def _class_test(
     rank: int,
     worldsize: int,
@@ -179,10 +189,10 @@ def _class_test(
     result = metric.compute()
     _assert_tensor(result)
 
-    total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)]).cpu()
-    total_target = torch.cat([target[i] for i in range(NUM_BATCHES)]).cpu()
+    total_preds = _concatenate(preds, NUM_BATCHES, worldsize).cpu()
+    total_target = _concatenate(target, NUM_BATCHES, worldsize).cpu()
     total_kwargs_update = {
-        k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
+        k: _concatenate(v, NUM_BATCHES, worldsize).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
