@@ -103,8 +103,8 @@ def _auroc_compute(
                 target = target_bool_mat[:, class_observed]
                 target = torch.where(target)[1]
                 num_classes = class_observed.sum()
-                if num_classes <= 1:
-                    raise ValueError(f'Found {num_classes} non-empty classes in `multiclass` AUROC calculation')
+                if num_classes == 1:
+                    raise ValueError(f'Found 1 non-empty class in `multiclass` AUROC calculation')
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
