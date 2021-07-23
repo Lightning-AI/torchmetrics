@@ -24,7 +24,7 @@ def wer(
     references: Union[str, List[str]],
     predictions: Union[str, List[str]],
     concatenate_texts: bool = False,
-) -> Union[float, Tuple[float, int, int]]:
+) -> float:
     """
     `Word error rate (WER) <https://en.wikipedia.org/wiki/Word_error_rate>`_ is a common metric of
     the performance of an automatic speech recognition system.
