@@ -218,5 +218,5 @@ def test_weighted_with_empty_classes():
     assert _auroc == _auroc_empty_class
 
     target = torch.zeros_like(target)
-    with pytest.raises(ValueError, match=f'Found {num_classes} non-empty classes in `multiclass` AUROC calculation'):
+    with pytest.raises(ValueError, match=f'Found 1 non-empty class in `multiclass` AUROC calculation'):
         _ = auroc(preds, target, average="weighted", num_classes=num_classes + 1)
