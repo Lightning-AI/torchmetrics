@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.rouge import RougeBatchAggregator, _rouge_score_compute, _rouge_score_update
-from torchmetrics.utilities.imports import _ROUGE_SCORE_AVAILABLE
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score import rouge_scorer
@@ -28,23 +28,34 @@ class ROUGEScore(Metric):
     Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
-        pred_lns:
-            An iterable of
-        tgt_lns:
-            An iterable of
-        rouge_newline_sep:
-
+        preds:
+            An iterable of predicted sentences.
+        targets:
+            An iterable of target sentences.
+        newline_sep:
+            New line separate the inputs.
         use_stemmer:
-
-        rouge_keys
+            Use Porter stemmer to strip word suffixes to improve matching.
+        rouge_keys:
+            A list of rouge types to calculate.
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False. default: True
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When `None`, DDP
+            will be used to perform the allgather.
 
     Example:
 
-        >>> target = "Is your name John".split()
+        >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
         >>> rouge = ROUGEScore()   # doctest: +SKIP
         >>> from pprint import pprint
-        >>> pprint(rouge(preds, target))  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> pprint(rouge(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,
@@ -64,30 +75,44 @@ class ROUGEScore(Metric):
 
     def __init__(
         self,
-        rouge_newline_sep: bool = False,
+        newline_sep: bool = False,
         use_stemmer: bool = False,
         rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable] = None,
     ):
-        super().__init__()
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
 
-        self.rouge_newline_sep = rouge_newline_sep
+        if not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE):
+            raise ValueError(
+                'ROUGE metric requires that both nltk and rouge-score is installed.'
+                'Either as `pip install torchmetrics[text]`'
+                ' or `pip install nltk rouge-score`'
+            )
+
+        self.newline_sep = newline_sep
         self.rouge_keys = rouge_keys
         self.use_stemmer = use_stemmer
         self.aggregator = RougeBatchAggregator()
         self.scorer = rouge_scorer.RougeScorer(rouge_keys, use_stemmer=self.use_stemmer)
         self.scores = {key: [] for key in rouge_keys}
 
-    def update(self, pred_lns: List[str], tgt_lns: List[str]) -> None:
+    def update(self, preds: List[str], targets: List[str]) -> None:
         """
         Compute rouge scores.
 
         Args:
-            pred_lns: An iterable of predicted tokens.
-            tgt_lns: An iterable of target tokens.
+            preds: An iterable of predicted sentences.
+            targets: An iterable of target sentences.
         """
-        _rouge_score_update(
-            pred_lns, tgt_lns, scores=self.scores, scorer=self.scorer, rouge_newline_sep=self.rouge_newline_sep
-        )
+        _rouge_score_update(preds, targets, scores=self.scores, scorer=self.scorer, newline_sep=self.newline_sep)
 
     def compute(self) -> Dict[str, Tensor]:
         """

@@ -74,19 +74,19 @@ class RougeBatchAggregator(BootstrapAggregator):
 
 
 def _rouge_score_update(
-    pred_lns: List[str],
-    tgt_lns: List[str],
+    preds: List[str],
+    targets: List[str],
     scores: Dict[str, List[Tensor]],
     scorer: rouge_scorer.RougeScorer,
-    rouge_newline_sep: bool = False,
+    newline_sep: bool = False,
 ) -> None:
 
-    for pred, tgt in zip(pred_lns, tgt_lns):
+    for pred, target in zip(preds, targets):
         # rougeLsum expects "\n" separated sentences within a summary
-        if rouge_newline_sep:
+        if newline_sep:
             pred = add_newline_to_end_of_each_sentence(pred)
-            tgt = add_newline_to_end_of_each_sentence(tgt)
-        results = scorer.score(pred, tgt)
+            target = add_newline_to_end_of_each_sentence(target)
+        results = scorer.score(pred, target)
         for key, score in results.items():
             score = tensor([score.precision, score.recall, score.fmeasure])
             scores[key].append(score)
@@ -99,9 +99,9 @@ def _rouge_score_compute(scores: Dict[str, List[Tensor]], aggregator: RougeBatch
 
 
 def rouge_score(
-    pred_lns: List[str],
-    tgt_lns: List[str],
-    rouge_newline_sep: bool = False,
+    preds: List[str],
+    targets: List[str],
+    newline_sep: bool = False,
     use_stemmer: bool = False,
     rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 ) -> Dict[str, Tensor]:
@@ -109,24 +109,25 @@ def rouge_score(
     Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
-        pred_lns:
-            An iterable of predicted tokens.
-        tgt_lns:
-            An iterable of target tokens.
-        rouge_newline_sep:
-
+        preds:
+            An iterable of predicted sentences.
+        targets:
+            An iterable of target sentences.
+        newline_sep:
+            New line separate the inputs.
         use_stemmer:
-
-        rouge_keys
+            Use Porter stemmer to strip word suffixes to improve matching.
+        rouge_keys:
+            A list of rouge types to calculate.
 
     Return:
         Python dictionary of rouge scores for each input rouge key.
 
     Example:
-        >>> target = "Is your name John".split()
+        >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
         >>> from pprint import pprint
-        >>> pprint(rouge_score(preds, target))  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> pprint(rouge_score(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,
@@ -144,9 +145,15 @@ def rouge_score(
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
     """
 
+    if not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE):
+        raise ValueError(
+            'ROUGE metric requires that both nltk and rouge-score is installed.'
+            'Either as `pip install torchmetrics[text]`'
+        )
+
     aggregator = RougeBatchAggregator()
     scorer = rouge_scorer.RougeScorer(rouge_keys, use_stemmer=use_stemmer)
     scores = {key: [] for key in rouge_keys}
 
-    _rouge_score_update(pred_lns, tgt_lns, scores=scores, scorer=scorer, rouge_newline_sep=rouge_newline_sep)
+    _rouge_score_update(preds, targets, scores=scores, scorer=scorer, newline_sep=newline_sep)
     return _rouge_score_compute(scores, aggregator=aggregator)
