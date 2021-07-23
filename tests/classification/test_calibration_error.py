@@ -22,7 +22,7 @@ import functools
 seed_all(42)
 
 
-def _sk_calibration(preds, target, n_bins, norm, debias):
+def _sk_calibration(preds, target, n_bins, norm, debias=False):
     _, _, mode = _input_format_classification(preds, target, threshold=THRESHOLD)
     sk_preds, sk_target = preds.numpy(), target.numpy()
 
@@ -42,7 +42,6 @@ def _sk_calibration(preds, target, n_bins, norm, debias):
 
 
 @pytest.mark.parametrize("n_bins", [10, 15, 20])
-@pytest.mark.parametrize("debias", [False, True])
 @pytest.mark.parametrize("norm", ["l1", "l2", "max"])
 @pytest.mark.parametrize(
     "preds, target",
@@ -52,25 +51,25 @@ def _sk_calibration(preds, target, n_bins, norm, debias):
      ]
 )
 class TestCE(MetricTester):
-    # @pytest.mark.parametrize("ddp", [True, False])
-    # @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    # def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm, debias):
-    #     self.run_class_metric_test(
-    #         ddp=ddp,
-    #         preds=preds,
-    #         target=target,
-    #         metric_class=CalibrationError,
-    #         sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm, debias=debias),
-    #         dist_sync_on_step=dist_sync_on_step,
-    #         metric_args={"n_bins": n_bins, "debias": debias, "norm": norm})
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm):
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=CalibrationError,
+            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args={"n_bins": n_bins, "norm": norm})
 
-    def test_ce_functional(self, preds, target, n_bins, norm, debias):
+    def test_ce_functional(self, preds, target, n_bins, norm):
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=calibration_error,
-            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm, debias=debias),
-            metric_args={"n_bins": n_bins, "debias": debias, "norm": norm})
+            sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
+            metric_args={"n_bins": n_bins, "norm": norm})
 
 
 @ pytest.mark.parametrize("preds, targets", [(_input_mlb_prob.preds, _input_mlb_prob.target)])
