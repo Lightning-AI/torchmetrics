@@ -517,6 +517,12 @@ BLEUScore
 .. autoclass:: torchmetrics.BLEUScore
     :noindex:
 
+ROUGEScore
+~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ROUGEScore
+    :noindex:
+
 
 ********
 Wrappers

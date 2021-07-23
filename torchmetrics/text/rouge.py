@@ -23,10 +23,9 @@ if _ROUGE_SCORE_AVAILABLE:
     from rouge_score import rouge_scorer
 
 
-class ROUGEMetric(Metric):
+class ROUGEScore(Metric):
     """
-    Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_.
-    Used for automatic summarization.
+    Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
         pred_lns:
@@ -43,7 +42,7 @@ class ROUGEMetric(Metric):
 
         >>> target = "Is your name John".split()
         >>> preds = "My name is John".split()
-        >>> rouge = ROUGEMetric()   # doctest: +SKIP
+        >>> rouge = ROUGEScore()   # doctest: +SKIP
         >>> from pprint import pprint
         >>> pprint(rouge(preds, target))  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'rouge1_fmeasure': 0.25,
@@ -81,9 +80,10 @@ class ROUGEMetric(Metric):
     def update(self, pred_lns: List[str], tgt_lns: List[str]) -> None:
         """
         Compute rouge scores.
+
         Args:
-            pred_lns: An iterable of iterables of reference corpus
-            tgt_lns: An iterable of machine translated corpus
+            pred_lns: An iterable of predicted tokens.
+            tgt_lns: An iterable of target tokens.
         """
         _rouge_score_update(
             pred_lns, tgt_lns, scores=self.scores, scorer=self.scorer, rouge_newline_sep=self.rouge_newline_sep

@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from collections import Counter
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
@@ -55,7 +53,7 @@ class RougeBatchAggregator(BootstrapAggregator):
     Aggregates rouge scores and provides confidence intervals.
     """
 
-    def aggregate(self):
+    def aggregate(self) -> Dict[str, AggregateScore]:
         """
         Override function to wrap the final results in `Score` objects.
         This is due to the scores being replaced with a list of torch tensors.
@@ -71,7 +69,7 @@ class RougeBatchAggregator(BootstrapAggregator):
             result[score_type] = AggregateScore(low=intervals[0], mid=intervals[1], high=intervals[2])
         return result
 
-    def add_scores(self, scores):
+    def add_scores(self, scores) -> None:
         self._scores = scores
 
 
@@ -108,14 +106,13 @@ def rouge_score(
     rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 ) -> Dict[str, Tensor]:
     """
-    Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_.
-    Used for automatic summarization.
+    Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
         pred_lns:
-            An iterable of
+            An iterable of predicted tokens.
         tgt_lns:
-            An iterable of
+            An iterable of target tokens.
         rouge_newline_sep:
 
         use_stemmer:

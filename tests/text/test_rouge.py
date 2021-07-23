@@ -17,7 +17,7 @@ import torch
 from torch import tensor
 
 from torchmetrics.functional.text.rouge import rouge_score
-from torchmetrics.text.rouge import ROUGEMetric
+from torchmetrics.text.rouge import ROUGEScore
 
 PREDS = "My name is John".split()
 TARGET = "Is your name John".split()
@@ -31,6 +31,6 @@ def test_rouge_metric_functional(rouge_metric, expected):
 
 @pytest.mark.parametrize("rouge_metric, expected", [("rouge1_recall", 0.25)])
 def test_rouge_metric_class(rouge_metric, expected):
-    rouge = ROUGEMetric()
+    rouge = ROUGEScore()
     pl_output = tensor(rouge(PREDS, TARGET)[rouge_metric]).float()
     assert torch.allclose(pl_output, tensor(expected), 1e-4)
