@@ -24,7 +24,6 @@ def wer(
     references: Union[str, List[str]],
     predictions: Union[str, List[str]],
     concatenate_texts: bool = False,
-    return_measures: bool = False
 ) -> Union[float, Tuple[float, int, int]]:
     """
     `Word error rate (WER) <https://en.wikipedia.org/wiki/Word_error_rate>`_ is a common metric of
@@ -36,7 +35,6 @@ def wer(
         references: List of references for each speech input.
         predictions: List of transcriptions to score.
         concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
-        return_measures: Return the number of incorrect and total in WER calculation.
 
     Returns:
         (float): the word error rate, or if ``return_measures`` is True, we include the incorrect and total.
@@ -46,8 +44,6 @@ def wer(
         >>> references = ["this is the reference", "there is another one"]
         >>> wer(predictions=predictions, references=references)
         0.5
-        >>> wer(predictions=predictions, references=references, return_measures=True)
-        (0.5, 4, 8)
 
     """
     if not _JIWER_AVAILABLE:
@@ -64,6 +60,4 @@ def wer(
         measures = compute_measures(reference, prediction)
         incorrect += measures["substitutions"] + measures["deletions"] + measures["insertions"]
         total += measures["substitutions"] + measures["deletions"] + measures["hits"]
-    if return_measures:
-        return (incorrect / total), incorrect, total
     return incorrect / total

@@ -34,11 +34,6 @@ def test_wer_functional(ref, hyp, expected_score, expected_incorrect, expected_t
     """
     assert wer(ref, hyp) == expected_score
 
-    score, incorrect, total = wer(ref, hyp, return_measures=True)
-    assert score == expected_score
-    assert incorrect == expected_incorrect
-    assert total == expected_total
-
 
 @pytest.mark.parametrize(
     "hyp,ref",
@@ -75,3 +70,17 @@ def test_wer_reference(hyp, ref):
     metric = WER()
     metric.update(hyp, ref)
     assert metric.compute() == compute_measures(ref, hyp)['wer']
+
+
+@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
+def test_wer_reference_batch():
+    """
+    Test to ensure that the torchmetric WER matches the jiwer reference with accumulation
+    """
+    batches = [("hello world", "Firwww"), ("hello world", "hello world")]
+    metric = WER()
+
+    for hyp, ref in batches:
+        metric.update(ref, hyp)
+    reference_score = compute_measures(truth=[x[0] for x in batches], hypothesis=[x[1] for x in batches])['wer']
+    assert metric.compute() == reference_score

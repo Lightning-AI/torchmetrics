@@ -88,12 +88,4 @@ class WER(Metric):
         Return:
             Float with WER Score.
         """
-        if self.concatenate_texts:
-            return wer(self.references, self.predictions)
-        incorrect = 0
-        total = 0
-        for prediction, reference in zip(self.predictions, self.references):
-            _, pred_incorrect, pred_total = wer(reference, prediction, return_measures=True)
-            incorrect += pred_incorrect
-            total += pred_total
-        return incorrect / total
+        return wer(self.references, self.predictions, concatenate_texts=self.concatenate_texts)
