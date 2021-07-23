@@ -213,5 +213,14 @@ def test_weighted_with_empty_classes():
     preds = torch.cat((preds[:, :NUM_CLASSES - 1], torch.randn_like(preds[:, 0:1]), preds[:, NUM_CLASSES - 1:]), axis=1)
     # Last class (2) gets moved to 3
     target[target == NUM_CLASSES - 1] = NUM_CLASSES
-    _auroc_empty_class = auroc(preds, target, average="weighted", num_classes=num_classes + 1)
+    with pytest.warns(
+        UserWarning, match='Class 2 had 0 observations, omitted from AUROC calculation'
+    ):
+        _auroc_empty_class = auroc(preds, target, average="weighted", num_classes=num_classes+1)
     assert _auroc == _auroc_empty_class
+
+    target = torch.zeros_like(target)
+    with pytest.raises(
+        ValueError, match=f'Found {num_classes} non-empty classes in `multiclass` AUROC calculation'
+    ):
+        _ = auroc(preds, target, average="weighted", num_classes=num_classes+1)
