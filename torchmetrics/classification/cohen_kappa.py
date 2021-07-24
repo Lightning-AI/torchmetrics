@@ -42,7 +42,7 @@ class CohenKappa(Metric):
         - ``target`` (long tensor): ``(N, ...)``
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
+    to convert into integer labels. This is the case for binary and multi-label probabilities or logits.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
@@ -55,7 +55,8 @@ class CohenKappa(Metric):
             - ``'quadratic'``: quadratic weighting
 
         threshold:
-            Threshold value for binary or multi-label probabilites. default: 0.5
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
 
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
