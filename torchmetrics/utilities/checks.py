@@ -235,7 +235,7 @@ def _check_classification_inputs(
         preds: Tensor with predictions (labels or probabilities)
         target: Tensor with ground truth labels, always integers (labels)
         threshold:
-            Threshold probability value for transforming probability predictions to binary
+            Threshold value for transforming probability/logit predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
         num_classes:
             Number of classes. If not explicitly set, the number of classes will be inferred
@@ -371,7 +371,7 @@ def _input_format_classification(
         preds: Tensor with predictions (labels or probabilities)
         target: Tensor with ground truth labels, always integers (labels)
         threshold:
-            Threshold probability value for transforming probability predictions to binary
+            Threshold value for transforming probability/logit predictions to binary
             (0 or 1) predictions, in the case of binary or multi-label inputs.
         num_classes:
             Number of classes. If not explicitly set, the number of classes will be inferred
