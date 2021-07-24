@@ -80,7 +80,9 @@ class TestBinnedRecallAtPrecision(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision):
+    def test_binned_recall_at_precision(
+        self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision
+    ):
         # rounding will simulate binning for both implementations
         preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
@@ -112,8 +114,8 @@ class TestBinnedAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("thresholds", (10, 301, None, torch.linspace(0.0, 1.0, 101)))
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, thresholds):
+    @pytest.mark.parametrize("thresholds", (301, torch.linspace(0.0, 1.0, 101)))
+    def test_binned_average_precision(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, thresholds):
         # rounding will simulate binning for both implementations
         preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
