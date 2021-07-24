@@ -38,7 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed restriction that `threshold` has to be in (0,1) range to support logit input ([#351](https://github.com/PyTorchLightning/metrics/pull/351))
+- Removed restriction that `threshold` has to be in (0,1) range to support logit input (
+    [#351](https://github.com/PyTorchLightning/metrics/pull/351)
+    [#401](https://github.com/PyTorchLightning/metrics/pull/401))
 
 
 - Removed restriction that `preds` could not be bigger than `num_classes` to support logit input ([#357](https://github.com/PyTorchLightning/metrics/pull/357))
