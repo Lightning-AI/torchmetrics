@@ -357,7 +357,7 @@ bleu_score [func]
 
 
 wer [func]
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.wer
     :noindex:
