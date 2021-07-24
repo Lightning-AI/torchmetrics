@@ -44,7 +44,8 @@ jobs:
     - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniconda-version: "4.7.12"
+        miniforge-variant: Mambaforge
+        # miniconda-version: "4.7.12"
         python-version: ${{ matrix.python-version }}
         channels: conda-forge,pytorch,pytorch-test,pytorch-nightly
         channel-priority: true
