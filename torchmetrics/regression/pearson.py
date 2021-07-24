@@ -20,26 +20,27 @@ from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute
 from torchmetrics.metric import Metric
 
 
-def _final_aggregation(mxs: Tensor, mys: Tensor, vxs: Tensor, vys: Tensor, cxys: Tensor,
-                       ns: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _final_aggregation(means_x: Tensor, means_y: Tensor, vars_x: Tensor, vars_y: Tensor, corrs_xy: Tensor,
+                       nbs: Tensor, ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """
     Aggregate the statistics from multiple devices. Formula taken from here:
     https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
     """
-    mx1, my1, vx1, vy1, cxy1, n1 = mxs[0], mys[0], vxs[0], vys[0], cxys[0], ns[0]
-    for i in range(1, len(mxs)):
-        mx2, my2, vx2, vy2, cxy2, n2 = mxs[i], mys[i], vxs[i], vys[i], cxys[i], ns[i]
+    assert len(means_x) > 1 and len(means_y) > 1 and len(vars_x) > 1 and len(vars_y) > 1 and len(corrs_xy) > 1
+    mx1, my1, vx1, vy1, cxy1, n1 = means_x[0], means_y[0], vars_x[0], vars_y[0], corrs_xy[0], nbs[0]
+    for i in range(1, len(means_x)):
+        mx2, my2, vx2, vy2, cxy2, n2 = means_x[i], means_y[i], vars_x[i], vars_y[i], corrs_xy[i], nbs[i]
 
-        n = n1 + n2
-        mx = (n1 * mx1 + n2 * mx2) / n
-        my = (n1 * my1 + n2 * my2) / n
-        vx = n1 * vx1 + n1 * (mx1 - mx) * (my1 - my) + n2 * vx2 + n2 * (mx2 - mx) * (my2 - my)
-        vy = n1 * vy1 + n1 * (my1 - my) * (my1 - my) + n2 * vy2 + n2 * (my2 - my) * (my2 - my)
-        cxy = n1 * cxy1 + n1 * (mx1 - mx) * (my1 - my) + n2 * cxy2 + n2 * (mx2 - mx) * (my2 - my)
+        nb = n1 + n2
+        mean_x = (n1 * mx1 + n2 * mx2) / nb
+        mean_y = (n1 * my1 + n2 * my2) / nb
+        var_x = n1 * vx1 + n1 * (mx1 - mean_x) * (my1 - mean_y) + n2 * vx2 + n2 * (mx2 - mean_x) * (my2 - mean_y)
+        var_y = n1 * vy1 + n1 * (my1 - mean_y) * (my1 - mean_y) + n2 * vy2 + n2 * (my2 - mean_y) * (my2 - mean_y)
+        corr_xy = n1 * cxy1 + n1 * (mx1 - mean_x) * (my1 - mean_y) + n2 * cxy2 + n2 * (mx2 - mean_x) * (my2 - mean_y)
 
-        mx1, my1, vx1, vy1, cxy1, n1 = mx, my, vx, vy, cxy, n
+        mx1, my1, vx1, vy1, cxy1, n1 = mean_x, mean_y, var_x, var_y, corr_xy, nb
 
-    return vx, vy, cxy, n
+    return var_x, var_y, corr_xy, nb
 
 
 class PearsonCorrcoef(Metric):

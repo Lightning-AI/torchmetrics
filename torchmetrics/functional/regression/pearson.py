@@ -51,16 +51,16 @@ def _pearson_corrcoef_update(
 
 
 def _pearson_corrcoef_compute(
-    vx: Tensor,
-    vy: Tensor,
-    cxy: Tensor,
-    n: Tensor,
+    var_x: Tensor,
+    var_y: Tensor,
+    corr_xy: Tensor,
+    nb: Tensor,
 ) -> Tensor:
     """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
-    vx /= (n - 1)
-    vy /= (n - 1)
-    cxy /= (n - 1)
-    corrcoef = (cxy / (vx * vy).sqrt()).squeeze()
+    var_x /= (nb - 1)
+    var_y /= (nb - 1)
+    corr_xy /= (nb - 1)
+    corrcoef = (corr_xy / (var_x * var_y).sqrt()).squeeze()
     return torch.clamp(corrcoef, -1.0, 1.0)
 
 
@@ -80,7 +80,7 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.9849)
     """
     _temp = torch.zeros(1, dtype=preds.dtype, device=preds.device)
-    mx, my, vx = _temp.clone(), _temp.clone(), _temp.clone()
-    vy, cxy, n = _temp.clone(), _temp.clone(), _temp.clone()
-    _, _, vx, vy, cxy, n = _pearson_corrcoef_update(preds, target, mx, my, vx, vy, cxy, n)
-    return _pearson_corrcoef_compute(vx, vy, cxy, n)
+    mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
+    var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
+    _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb)
+    return _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)
