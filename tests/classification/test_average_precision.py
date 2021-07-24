@@ -15,7 +15,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-import torch
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torch import tensor
 
@@ -24,7 +23,7 @@ from tests.classification.inputs import _input_multiclass_prob as _input_mcls_pr
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.average_precision import AveragePrecision
 from torchmetrics.functional import average_precision
 
