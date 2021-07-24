@@ -32,7 +32,7 @@ def _final_aggregation(
     Aggregate the statistics from multiple devices. Formula taken from here:
     https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
     """
-    assert len(means_x) > 1 and len(means_y) > 1 and len(vars_x) > 1 and len(vars_y) > 1 and len(corrs_xy) > 1
+    # assert len(means_x) > 1 and len(means_y) > 1 and len(vars_x) > 1 and len(vars_y) > 1 and len(corrs_xy) > 1
     mx1, my1, vx1, vy1, cxy1, n1 = means_x[0], means_y[0], vars_x[0], vars_y[0], corrs_xy[0], nbs[0]
     for i in range(1, len(means_x)):
         mx2, my2, vx2, vy2, cxy2, n2 = means_x[i], means_y[i], vars_x[i], vars_y[i], corrs_xy[i], nbs[i]
