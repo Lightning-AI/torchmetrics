@@ -88,8 +88,6 @@ class HammingDistance(Metric):
         self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-        if not 0 < threshold < 1:
-            raise ValueError("The `threshold` should lie in the (0,1) interval.")
         self.threshold = threshold
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
