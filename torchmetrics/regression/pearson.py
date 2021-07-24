@@ -20,8 +20,14 @@ from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute
 from torchmetrics.metric import Metric
 
 
-def _final_aggregation(means_x: Tensor, means_y: Tensor, vars_x: Tensor, vars_y: Tensor, corrs_xy: Tensor,
-                       nbs: Tensor, ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _final_aggregation(
+    means_x: Tensor,
+    means_y: Tensor,
+    vars_x: Tensor,
+    vars_y: Tensor,
+    corrs_xy: Tensor,
+    nbs: Tensor,
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """
     Aggregate the statistics from multiple devices. Formula taken from here:
     https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
