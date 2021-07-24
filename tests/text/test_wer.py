@@ -25,7 +25,10 @@ def test_wer_same(hyp, ref, score):
 
 @pytest.mark.parametrize(
     "hyp,ref,expected_score,expected_incorrect,expected_total",
-    [(["hello world"], ["hello world"], 0.0, 0, 2), (["Firwww"], ["hello world"], 1.0, 2, 2),],
+    [
+        (["hello world"], ["hello world"], 0.0, 0, 2),
+        (["Firwww"], ["hello world"], 1.0, 2, 2),
+    ],
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_functional(ref, hyp, expected_score, expected_incorrect, expected_total):
@@ -37,7 +40,10 @@ def test_wer_functional(ref, hyp, expected_score, expected_incorrect, expected_t
 
 @pytest.mark.parametrize(
     "hyp,ref",
-    [(["hello world"], ["hello world"]), (["Firwww"], ["hello world"]),],
+    [
+        (["hello world"], ["hello world"]),
+        (["Firwww"], ["hello world"]),
+    ],
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_reference_functional(hyp, ref):
@@ -60,7 +66,10 @@ def test_wer_reference_functional_concatenate():
 
 @pytest.mark.parametrize(
     "hyp,ref",
-    [(["hello world"], ["hello world"]), (["Firwww"], ["hello world"]),],
+    [
+        (["hello world"], ["hello world"]),
+        (["Firwww"], ["hello world"]),
+    ],
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_reference(hyp, ref):
