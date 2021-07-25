@@ -524,6 +524,13 @@ ROUGEScore
     :noindex:
 
 
+WER
+~~~
+
+.. autoclass:: torchmetrics.WER
+    :noindex:
+
+
 ********
 Wrappers
 ********

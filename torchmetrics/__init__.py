@@ -60,5 +60,5 @@ from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import BLEUScore, ROUGEScore  # noqa: F401 E402
+from torchmetrics.text import WER, BLEUScore, ROUGEScore  # noqa: F401 E402
 from torchmetrics.wrappers import BootStrapper  # noqa: F401 E402
