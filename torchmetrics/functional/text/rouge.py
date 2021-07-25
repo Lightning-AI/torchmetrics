@@ -25,7 +25,6 @@ if _ROUGE_SCORE_AVAILABLE:
 else:
     AggregateScore, Score, BootstrapAggregator = None, None, object
 
-nltk = None
 if _NLTK_AVAILABLE:
     import nltk
     nltk.download("punkt", quiet=True)
@@ -69,7 +68,7 @@ class RougeBatchAggregator(BootstrapAggregator):
             result[score_type] = AggregateScore(low=intervals[0], mid=intervals[1], high=intervals[2])
         return result
 
-    def add_scores(self, scores) -> None:
+    def add_scores(self, scores: Dict[str, List[Tensor]]) -> None:
         self._scores = scores
 
 
@@ -103,7 +102,7 @@ def rouge_score(
     targets: List[str],
     newline_sep: bool = False,
     use_stemmer: bool = False,
-    rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum")
+    rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum")  # type: ignore
 ) -> Dict[str, Tensor]:
     """
     Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
@@ -153,7 +152,7 @@ def rouge_score(
 
     aggregator = RougeBatchAggregator()
     scorer = rouge_scorer.RougeScorer(rouge_keys, use_stemmer=use_stemmer)
-    scores = {key: [] for key in rouge_keys}
+    scores: Dict[str, List[Tensor]] = {key: [] for key in rouge_keys}
 
     _rouge_score_update(preds, targets, scores=scores, scorer=scorer, newline_sep=newline_sep)
     return _rouge_score_compute(scores, aggregator=aggregator)

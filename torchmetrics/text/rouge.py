@@ -77,7 +77,7 @@ class ROUGEScore(Metric):
         self,
         newline_sep: bool = False,
         use_stemmer: bool = False,
-        rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
+        rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -102,9 +102,9 @@ class ROUGEScore(Metric):
         self.use_stemmer = use_stemmer
         self.aggregator = RougeBatchAggregator()
         self.scorer = rouge_scorer.RougeScorer(rouge_keys, use_stemmer=self.use_stemmer)
-        self.scores = {key: [] for key in rouge_keys}
+        self.scores: Dict[str, List[Tensor]] = {key: [] for key in rouge_keys}
 
-    def update(self, preds: List[str], targets: List[str]) -> None:
+    def update(self, preds: List[str], targets: List[str]) -> None:  # type: ignore
         """
         Compute rouge scores.
 
@@ -123,7 +123,7 @@ class ROUGEScore(Metric):
         """
         return _rouge_score_compute(self.scores, aggregator=self.aggregator)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # override to hash list objects.
         # this is a bug in the upstream pytorch release.
         hash_vals = [self.__class__.__name__]
