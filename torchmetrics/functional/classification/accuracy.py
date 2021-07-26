@@ -123,6 +123,8 @@ def _subset_accuracy_update(
         sample_correct = (preds * target).sum(dim=(1, 2))
         correct = (sample_correct == target.shape[2]).sum()
         total = tensor(target.shape[0], device=target.device)
+    else:
+        correct, total = tensor(0), tensor(0)
 
     return correct, total
 
@@ -240,8 +242,6 @@ def accuracy(
 
     Raises:
         ValueError:
-            If ``threshold`` is not a ``float`` between ``0`` and ``1``.
-        ValueError:
             If ``top_k`` parameter is set for ``multi-label`` inputs.
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
@@ -268,10 +268,6 @@ def accuracy(
         >>> accuracy(preds, target, top_k=2)
         tensor(0.6667)
     """
-
-    if not 0 < threshold < 1:
-        raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
-
     allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

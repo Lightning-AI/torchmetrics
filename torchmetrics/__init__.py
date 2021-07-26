@@ -38,11 +38,9 @@ from torchmetrics.classification import (  # noqa: F401 E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: F401 E402
-from torchmetrics.image import FID, IS, KID  # noqa: F401 E402
+from torchmetrics.image import FID, IS, KID, PSNR, SSIM  # noqa: F401 E402
 from torchmetrics.metric import Metric  # noqa: F401 E402
 from torchmetrics.regression import (  # noqa: F401 E402
-    PSNR,
-    SSIM,
     CosineSimilarity,
     ExplainedVariance,
     MeanAbsoluteError,
@@ -52,6 +50,7 @@ from torchmetrics.regression import (  # noqa: F401 E402
     PearsonCorrcoef,
     R2Score,
     SpearmanCorrcoef,
+    SymmetricMeanAbsolutePercentageError,
 )
 from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalFallOut,
@@ -61,4 +60,5 @@ from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalPrecision,
     RetrievalRecall,
 )
+from torchmetrics.text import WER, BLEUScore  # noqa: F401 E402
 from torchmetrics.wrappers import BootStrapper  # noqa: F401 E402

@@ -20,7 +20,7 @@ from sklearn.metrics import r2_score as sk_r2score
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import r2score
+from torchmetrics.functional import r2_score
 from torchmetrics.regression import R2Score
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
@@ -88,7 +88,7 @@ class TestR2Score(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            r2score,
+            r2_score,
             partial(sk_metric, adjusted=adjusted, multioutput=multioutput),
             metric_args=dict(adjusted=adjusted, multioutput=multioutput),
         )
@@ -98,7 +98,7 @@ class TestR2Score(MetricTester):
             preds=preds,
             target=target,
             metric_module=partial(R2Score, num_outputs=num_outputs),
-            metric_functional=r2score,
+            metric_functional=r2_score,
             metric_args=dict(adjusted=adjusted, multioutput=multioutput)
         )
 
@@ -107,7 +107,7 @@ class TestR2Score(MetricTester):
     )
     def test_r2_half_cpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
         self.run_precision_test_cpu(
-            preds, target, partial(R2Score, num_outputs=num_outputs), r2score, {
+            preds, target, partial(R2Score, num_outputs=num_outputs), r2_score, {
                 'adjusted': adjusted,
                 'multioutput': multioutput
             }
@@ -116,7 +116,7 @@ class TestR2Score(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
     def test_r2_half_gpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
         self.run_precision_test_gpu(
-            preds, target, partial(R2Score, num_outputs=num_outputs), r2score, {
+            preds, target, partial(R2Score, num_outputs=num_outputs), r2_score, {
                 'adjusted': adjusted,
                 'multioutput': multioutput
             }

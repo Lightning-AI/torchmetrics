@@ -27,6 +27,7 @@ long_description = setup_tools._load_readme_description(
 def _prepare_extras():
     extras = {
         'image': setup_tools._load_requirements(path_dir=_PATH_REQUIRE, file_name='image.txt'),
+        'text': setup_tools._load_requirements(path_dir=_PATH_REQUIRE, file_name='text.txt'),
     }
     return extras
 

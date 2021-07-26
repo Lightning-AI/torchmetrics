@@ -195,3 +195,31 @@ def test_error_multiclass_no_num_classes():
         ValueError, match="Detected input to `multiclass` but you did not provide `num_classes` argument"
     ):
         _ = auroc(torch.randn(20, 3).softmax(dim=-1), torch.randint(3, (20, )))
+
+
+def test_weighted_with_empty_classes():
+    """ Tests that weighted multiclass AUROC calculation yields the same results if a new
+        but empty class exists. Tests that the proper warnings and errors are raised
+    """
+    preds = torch.tensor([
+        [0.90, 0.05, 0.05],
+        [0.05, 0.90, 0.05],
+        [0.05, 0.05, 0.90],
+        [0.85, 0.05, 0.10],
+        [0.10, 0.10, 0.80],
+    ])
+    target = torch.tensor([0, 1, 1, 2, 2])
+    num_classes = 3
+    _auroc = auroc(preds, target, average="weighted", num_classes=num_classes)
+
+    # Add in a class with zero observations at second to last index
+    preds = torch.cat((preds[:, :num_classes - 1], torch.rand_like(preds[:, 0:1]), preds[:, num_classes - 1:]), axis=1)
+    # Last class (2) gets moved to 3
+    target[target == num_classes - 1] = num_classes
+    with pytest.warns(UserWarning, match='Class 2 had 0 observations, omitted from AUROC calculation'):
+        _auroc_empty_class = auroc(preds, target, average="weighted", num_classes=num_classes + 1)
+    assert _auroc == _auroc_empty_class
+
+    target = torch.zeros_like(target)
+    with pytest.raises(ValueError, match='Found 1 non-empty class in `multiclass` AUROC calculation'):
+        _ = auroc(preds, target, average="weighted", num_classes=num_classes + 1)

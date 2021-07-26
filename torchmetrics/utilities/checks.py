@@ -162,8 +162,6 @@ def _check_num_classes_mc(
             )
         if num_classes <= target.max():
             raise ValueError("The highest label in `target` should be smaller than `num_classes`.")
-        if num_classes <= preds.max():
-            raise ValueError("The highest label in `preds` should be smaller than `num_classes`.")
         if preds.shape != target.shape and num_classes != implied_classes:
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
 
@@ -237,7 +235,7 @@ def _check_classification_inputs(
         preds: Tensor with predictions (labels or probabilities)
         target: Tensor with ground truth labels, always integers (labels)
         threshold:
-            Threshold probability value for transforming probability predictions to binary
+            Threshold value for transforming probability/logit predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
         num_classes:
             Number of classes. If not explicitly set, the number of classes will be inferred
@@ -373,7 +371,7 @@ def _input_format_classification(
         preds: Tensor with predictions (labels or probabilities)
         target: Tensor with ground truth labels, always integers (labels)
         threshold:
-            Threshold probability value for transforming probability predictions to binary
+            Threshold value for transforming probability/logit predictions to binary
             (0 or 1) predictions, in the case of binary or multi-label inputs.
         num_classes:
             Number of classes. If not explicitly set, the number of classes will be inferred
