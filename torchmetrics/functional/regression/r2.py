@@ -21,6 +21,15 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute R2 score.
+    Checks for same shape and 1D/2D input tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     _check_same_shape(preds, target)
     if preds.ndim > 2:
         raise ValueError(

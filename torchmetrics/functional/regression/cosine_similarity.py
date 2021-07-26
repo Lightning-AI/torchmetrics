@@ -23,6 +23,15 @@ def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute Cosine Similarity.
+    Checks for same shape of input tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     _check_same_shape(preds, target)
     preds = preds.float()
     target = target.float()
@@ -31,6 +40,25 @@ def _cosine_similarity_update(
 
 
 def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = 'sum') -> Tensor:
+    """
+    Computes Cosine Similarity.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor 
+        reduction:
+            The method of reducing along the batch dimension using sum, mean or taking the individual scores
+
+    Example:
+        >>> target = torch.tensor([[1, 2, 3, 4],
+        ...                        [1, 2, 3, 4]])
+        >>> preds = torch.tensor([[1, 2, 3, 4],
+        ...                       [-1, -2, -3, -4]])
+        >>> preds, target = _cosine_similarity_update(preds, target)
+        >>> _cosine_similarity_compute(preds, target, 'none')
+        tensor([ 1.0000, -1.0000])
+    """
+
     dot_product = (preds * target).sum(dim=-1)
     preds_norm = preds.norm(dim=-1)
     target_norm = target.norm(dim=-1)

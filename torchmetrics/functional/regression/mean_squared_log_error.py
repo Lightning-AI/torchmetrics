@@ -20,6 +20,15 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+    """
+    Returns variables required to compute Mean Squared Log Error.
+    Checks for same shape of tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     _check_same_shape(preds, target)
     sum_squared_log_error = torch.sum(torch.pow(torch.log1p(preds) - torch.log1p(target), 2))
     n_obs = target.numel()
@@ -27,6 +36,21 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
 
 
 def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -> Tensor:
+    """
+    Computes Mean Squared Log Error.
+
+    Args:
+        sum_squared_log_error: Sum of square of log errors over all observations (log error = log(target) - log(prediction))
+        n_obs: Number of predictions or observations
+
+    Example:
+        >>> x = torch.tensor([0., 1, 2, 3])
+        >>> y = torch.tensor([0., 1, 2, 2])
+        >>> sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
+        >>> _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
+        tensor(0.0207)
+    """
+
     return sum_squared_log_error / n_obs
 
 
