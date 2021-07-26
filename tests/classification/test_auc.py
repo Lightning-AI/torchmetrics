@@ -43,8 +43,8 @@ _examples = []
 # generate already ordered samples, sorted in both directions
 for batch_size in (8, 4049):
     for i in range(4):
-        x = np.random.rand((NUM_BATCHES * batch_size))
-        y = np.random.rand((NUM_BATCHES * batch_size))
+        x = np.random.rand(NUM_BATCHES * batch_size)
+        y = np.random.rand(NUM_BATCHES * batch_size)
         idx = np.argsort(x, kind='stable')
         x = x[idx] if i % 2 == 0 else x[idx[::-1]]
         y = y[idx] if i % 2 == 0 else x[idx[::-1]]
