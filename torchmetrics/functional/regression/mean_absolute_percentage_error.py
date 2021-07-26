@@ -59,7 +59,7 @@ def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: 
     Example:
         >>> target = torch.tensor([1, 10, 1e6])
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
-        >>> _mean_absolute_percentage_error_update(preds, target)
+        >>> sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
         >>> _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
         tensor(0.2667)
     """

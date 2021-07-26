@@ -45,7 +45,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = '
 
     Args:
         preds: Predicted tensor
-        target: Ground truth tensor 
+        target: Ground truth tensor
         reduction:
             The method of reducing along the batch dimension using sum, mean or taking the individual scores
 

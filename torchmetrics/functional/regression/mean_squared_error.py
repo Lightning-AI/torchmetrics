@@ -45,10 +45,10 @@ def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: 
         squared: Returns RMSE value if set to False. default: True
 
     Example:
-        >>> x = torch.tensor([0., 1, 2, 3])
-        >>> y = torch.tensor([0., 1, 2, 2])
+        >>> preds = torch.tensor([0., 1, 2, 3])
+        >>> target = torch.tensor([0., 1, 2, 2])
         >>> sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
-        >>> _mean_squared_error_compute(sum_squared_error, n_obs, squared=squared)
+        >>> _mean_squared_error_compute(sum_squared_error, n_obs)
         tensor(0.2500)
     """
     return sum_squared_error / n_obs if squared else torch.sqrt(sum_squared_error / n_obs)

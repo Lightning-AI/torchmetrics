@@ -69,8 +69,14 @@ def _explained_variance_compute(
     Example:
         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
         >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
-        >>> n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
-        >>> _explained_variance_compute(n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target, multioutput='raw_values')
+        >>> n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds,
+        ...                                                                                                  target)
+        >>> _explained_variance_compute(n_obs,
+        ...                             sum_error,
+        ...                             sum_squared_error,
+        ...                             sum_target,
+        ...                             sum_squared_target,
+        ...                             multioutput='raw_values')
         tensor([0.9677, 1.0000])
     """
 

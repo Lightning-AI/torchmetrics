@@ -40,12 +40,13 @@ def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -
     Computes Mean Squared Log Error.
 
     Args:
-        sum_squared_log_error: Sum of square of log errors over all observations (log error = log(target) - log(prediction))
+        sum_squared_log_error: Sum of square of log errors over all observations
+                                (log error = log(target) - log(prediction))
         n_obs: Number of predictions or observations
 
     Example:
-        >>> x = torch.tensor([0., 1, 2, 3])
-        >>> y = torch.tensor([0., 1, 2, 2])
+        >>> preds = torch.tensor([0., 1, 2, 3])
+        >>> target = torch.tensor([0., 1, 2, 2])
         >>> sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
         >>> _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
         tensor(0.0207)
