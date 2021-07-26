@@ -43,13 +43,11 @@ repos:
         name: imports
         require_serial: false
 
-  - repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.31.0
+  - repo: https://github.com/psf/black
+    rev: 21.7b0
     hooks:
-      - id: yapf
-        name: formatting
-        language: python
-        require_serial: false
+      - id: black
+        name: Format code
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.23.0
