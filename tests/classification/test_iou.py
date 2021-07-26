@@ -153,7 +153,7 @@ class TestIoU(MetricTester):
     pytest.param(False, 'none', 0, Tensor([1, 1])),
     pytest.param(True, 'none', None, Tensor([0.5, 0.5, 0.5])),
     pytest.param(True, 'elementwise_mean', None, Tensor([0.5])),
-    pytest.param(True, 'none', 0, Tensor([0.5, 0.5])),
+    pytest.param(True, 'none', 0, Tensor([2/3, 1/2])),
 ])
 def test_iou(half_ones, reduction, ignore_index, expected):
     preds = (torch.arange(120) % 3).view(-1, 1)
@@ -226,7 +226,7 @@ def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes,
         # Ignoring a valid index drops only that index from the result.
         pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, 'none', [1 / 2, 2 / 3]),
         pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 1, 3, 'none', [1, 2 / 3]),
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 2, 3, 'none', [1, 1 / 2]),
+        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 2, 3, 'none', [1, 1]),
         # When reducing to mean or sum, the ignored index does not contribute to the output.
         pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, 'elementwise_mean', [7 / 12]),
         pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, 'sum', [7 / 6]),
