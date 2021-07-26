@@ -35,7 +35,7 @@ _input_retrieval_scores_extra = Input(
 _input_retrieval_scores_non_binary_target = Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-    target=torch.randint(low=-2, high=4, size=(NUM_BATCHES, BATCH_SIZE)),
+    target=torch.randint(low=-1, high=4, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
 # with errors

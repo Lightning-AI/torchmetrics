@@ -21,7 +21,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 def _dcg(target: Tensor) -> Tensor:
     denom = torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0)
-    return (target / denom).sum()
+    return (target / denom).sum(dim=-1)
 
 
 def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
@@ -55,10 +55,14 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = N
     if not (isinstance(k, int) and k > 0):
         raise ValueError("`k` has to be a positive integer or None")
 
-    if not target.sum():
-        return tensor(0.0, device=preds.device)
-
     sorted_target = target[torch.argsort(preds, dim=-1, descending=True)][:k]
     ideal_target = torch.sort(target, descending=True)[0][:k]
 
-    return _dcg(sorted_target) / _dcg(ideal_target)
+    ideal_dcg = _dcg(ideal_target)
+    target_dcg = _dcg(sorted_target)
+
+    all_irrelevant = ideal_dcg == 0
+    target_dcg[all_irrelevant] = 0
+    target_dcg[~all_irrelevant] /= ideal_dcg[~all_irrelevant]
+
+    return target_dcg.mean()
