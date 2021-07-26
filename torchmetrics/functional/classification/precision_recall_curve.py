@@ -148,13 +148,20 @@ def _precision_recall_curve_compute_multi_class(
     precision, recall, thresholds = [], [], []
     for cls in range(num_classes):
         preds_cls = preds[:, cls]
-        res = precision_recall_curve(
+
+        prc_args = dict(
             preds=preds_cls,
             target=target,
             num_classes=1,
             pos_label=cls,
             sample_weights=sample_weights,
         )
+        if target.ndim > 1:
+            prc_args.update(dict(
+                target=target[:, cls],
+                pos_label=1,
+            ))
+        res = precision_recall_curve(**prc_args)
         precision.append(res[0])
         recall.append(res[1])
         thresholds.append(res[2])

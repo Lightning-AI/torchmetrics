@@ -51,6 +51,8 @@ jobs:
         auto-activate-base: true
         # environment-file: ./environment.yml
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+      # prevent hanging Conda creations
+      timeout-minutes: 5
 
     - name: Update Environment
       run: |

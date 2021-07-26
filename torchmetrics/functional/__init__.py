@@ -41,11 +41,11 @@ from torchmetrics.functional.regression.mean_absolute_error import mean_absolute
 from torchmetrics.functional.regression.mean_absolute_percentage_error import (  # noqa: F401
     mean_absolute_percentage_error,
 )
-from torchmetrics.functional.regression.mean_relative_error import mean_relative_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_error import mean_squared_error  # noqa: F401
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error  # noqa: F401
 from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa: F401
-from torchmetrics.functional.regression.r2 import r2_score, r2score  # noqa: F401
+from torchmetrics.functional.regression.r2 import r2_score  # noqa: F401
+from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (  # noqa: F401
     symmetric_mean_absolute_percentage_error,
@@ -58,3 +58,4 @@ from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
+from torchmetrics.functional.text.wer import wer  # noqa: F401

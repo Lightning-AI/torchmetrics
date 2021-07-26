@@ -518,6 +518,13 @@ BLEUScore
     :noindex:
 
 
+WER
+~~~
+
+.. autoclass:: torchmetrics.WER
+    :noindex:
+
+
 ********
 Wrappers
 ********
