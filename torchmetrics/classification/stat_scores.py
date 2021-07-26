@@ -104,8 +104,6 @@ class StatScores(Metric):
 
     Raises:
         ValueError:
-            If ``threshold`` is not a ``float`` between ``0`` and ``1``.
-        ValueError:
             If ``reduce`` is none of ``"micro"``, ``"macro"`` or ``"samples"``.
         ValueError:
             If ``mdmc_reduce`` is none of ``None``, ``"samplewise"``, ``"global"``.

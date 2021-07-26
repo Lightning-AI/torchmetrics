@@ -114,10 +114,10 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
-kldivergence [func]
-~~~~~~~~~~~~~~~~~~~
+kl_divergence [func]
+~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.kldivergence
+.. autofunction:: torchmetrics.functional.kl_divergence
     :noindex:
 
 matthews_corrcoef [func]
@@ -127,7 +127,7 @@ matthews_corrcoef [func]
     :noindex:
 
 roc [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.roc
     :noindex:
@@ -270,10 +270,10 @@ pearson_corrcoef [func]
     :noindex:
 
 
-r2score [func]
-~~~~~~~~~~~~~~
+r2_score [func]
+~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.r2score
+.. autofunction:: torchmetrics.functional.r2_score
     :noindex:
 
 
@@ -353,4 +353,11 @@ bleu_score [func]
 ~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.bleu_score
+    :noindex:
+
+
+wer [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.wer
     :noindex:
