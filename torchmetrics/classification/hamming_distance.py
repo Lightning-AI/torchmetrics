@@ -40,8 +40,8 @@ class HammingDistance(Metric):
 
     Args:
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0 or 1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
@@ -67,6 +67,8 @@ class HammingDistance(Metric):
         tensor(0.2500)
 
     """
+    correct: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -75,7 +77,7 @@ class HammingDistance(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -86,17 +88,15 @@ class HammingDistance(Metric):
         self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-        if not 0 < threshold < 1:
-            raise ValueError("The `threshold` should lie in the (0,1) interval.")
         self.threshold = threshold
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
 
         Args:
-            preds: Predictions from model (probabilities, or labels)
+            preds: Predictions from model (probabilities, logits or labels)
             target: Ground truth labels
         """
         correct, total = _hamming_distance_update(preds, target, self.threshold)
@@ -109,3 +109,7 @@ class HammingDistance(Metric):
         Computes hamming distance based on inputs passed in to ``update`` previously.
         """
         return _hamming_distance_compute(self.correct, self.total)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False

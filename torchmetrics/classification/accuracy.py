@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_compute,
     _subset_accuracy_update,
 )
+from torchmetrics.utilities.enums import DataType
 
 from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 
@@ -37,9 +38,9 @@ class Accuracy(StatScores):
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a
     tensor of predictions.
 
-    For multi-class and multi-dimensional multi-class data with probability predictions, the
+    For multi-class and multi-dimensional multi-class data with probability or logits predictions, the
     parameter ``top_k`` generalizes this metric to a Top-K accuracy metric: for each sample the
-    top-K highest probability items are considered to find the correct label.
+    top-K highest probability or logit score items are considered to find the correct label.
 
     For multi-label and multi-dimensional multi-class inputs, this metric computes the "global"
     accuracy by default, which counts all labels or sub-samples separately. This can be
@@ -52,8 +53,8 @@ class Accuracy(StatScores):
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
         threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs.
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         average:
             Defines the reduction that is applied. Should be one of the following:
 
@@ -69,6 +70,9 @@ class Accuracy(StatScores):
 
             .. note:: What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
 
         mdmc_average:
             Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
@@ -94,8 +98,8 @@ class Accuracy(StatScores):
             or ``'none'``, the score for the ignored class will be returned as ``nan``.
 
         top_k:
-            Number of highest probability predictions considered to find the correct label, relevant
-            only for (multi-dimensional) multi-class inputs with probability predictions. The
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
             default value (``None``) will be interpreted as 1 for these inputs.
 
             Should be left at default (``None``) for all other types of inputs.
@@ -136,13 +140,11 @@ class Accuracy(StatScores):
 
     Raises:
         ValueError:
-            If ``threshold`` is not between ``0`` and ``1``.
-        ValueError:
             If ``top_k`` is not an ``integer`` larger than ``0``.
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
         ValueError:
-            If two different input modes are provided, eg. using ``mult-label`` with ``multi-class``.
+            If two different input modes are provided, eg. using ``multi-label`` with ``multi-class``.
         ValueError:
             If ``top_k`` parameter is set for ``multi-label`` inputs.
 
@@ -162,6 +164,8 @@ class Accuracy(StatScores):
         tensor(0.6667)
 
     """
+    correct: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -177,7 +181,7 @@ class Accuracy(StatScores):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -199,9 +203,6 @@ class Accuracy(StatScores):
         self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-        if not 0 < threshold < 1:
-            raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
-
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
@@ -209,25 +210,25 @@ class Accuracy(StatScores):
         self.threshold = threshold
         self.top_k = top_k
         self.subset_accuracy = subset_accuracy
-        self.mode = None
+        self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets. See :ref:`references/modules:input types` for more information
         on input types.
 
         Args:
-            preds: Predictions from model (probabilities, or labels)
+            preds: Predictions from model (logits, probabilities, or labels)
             target: Ground truth labels
         """
         """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
         mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
 
-        if self.mode is None:
+        if not self.mode:
             self.mode = mode
         elif self.mode != mode:
-            raise ValueError("You can not use {} inputs with {} inputs.".format(mode, self.mode))
+            raise ValueError(f"You can not use {mode} inputs with {self.mode} inputs.")
 
         if self.subset_accuracy and not _check_subset_validity(self.mode):
             self.subset_accuracy = False
@@ -237,6 +238,8 @@ class Accuracy(StatScores):
             self.correct += correct
             self.total += total
         else:
+            if not self.mode:
+                raise RuntimeError("You have to have determined mode.")
             tp, fp, tn, fn = _accuracy_update(
                 preds,
                 target,
@@ -266,12 +269,13 @@ class Accuracy(StatScores):
         """
         Computes accuracy based on inputs passed in to ``update`` previously.
         """
+        if not self.mode:
+            raise RuntimeError("You have to have determined mode.")
         if self.subset_accuracy:
             return _subset_accuracy_compute(self.correct, self.total)
-        else:
-            tp, fp, tn, fn = self._get_final_stats()
-            return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
+        tp, fp, tn, fn = self._get_final_stats()
+        return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False

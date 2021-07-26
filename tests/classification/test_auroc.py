@@ -89,12 +89,12 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average='macr
 @pytest.mark.parametrize("average", ['macro', 'weighted', 'micro'])
 @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes", [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
-        (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
+    "preds, target, sk_metric, num_classes",
+    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_auroc_binary_prob, 1),
+     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_auroc_multiclass_prob, NUM_CLASSES),
+     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_auroc_multidim_multiclass_prob, NUM_CLASSES),
+     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_auroc_multilabel_prob, NUM_CLASSES),
+     (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_auroc_multilabel_multidim_prob, NUM_CLASSES)]
 )
 class TestAUROC(MetricTester):
 
@@ -188,3 +188,10 @@ def test_error_on_different_mode():
     with pytest.raises(ValueError, match=r"The mode of data.* should be constant.*"):
         # pass in multi-label data
         metric.update(torch.rand(10, 5), torch.randint(0, 2, (10, 5)))
+
+
+def test_error_multiclass_no_num_classes():
+    with pytest.raises(
+        ValueError, match="Detected input to `multiclass` but you did not provide `num_classes` argument"
+    ):
+        _ = auroc(torch.randn(20, 3).softmax(dim=-1), torch.randint(3, (20, )))

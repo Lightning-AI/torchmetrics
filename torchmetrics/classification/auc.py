@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Callable, List, Optional
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.auc import _auc_compute, _auc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class AUC(Metric):
@@ -43,6 +43,8 @@ class AUC(Metric):
             Callback that performs the ``allgather`` operation on the metric state. When ``None``, DDP
             will be used to perform the ``allgather``.
     """
+    x: List[Tensor]
+    y: List[Tensor]
 
     def __init__(
         self,
@@ -51,7 +53,7 @@ class AUC(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -61,23 +63,23 @@ class AUC(Metric):
 
         self.reorder = reorder
 
-        self.add_state("x", default=[], dist_reduce_fx=None)
-        self.add_state("y", default=[], dist_reduce_fx=None)
+        self.add_state("x", default=[], dist_reduce_fx="cat")
+        self.add_state("y", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             'Metric `AUC` will save all targets and predictions in buffer.'
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, x: Tensor, y: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
         Args:
-            x: Predictions from model (probabilities, or labels)
-            y: Ground truth labels
+            preds: Predictions from model (probabilities, or labels)
+            target: Ground truth labels
         """
-        x, y = _auc_update(x, y)
+        x, y = _auc_update(preds, target)
 
         self.x.append(x)
         self.y.append(y)
@@ -86,12 +88,12 @@ class AUC(Metric):
         """
         Computes AUC based on inputs passed in to ``update`` previously.
         """
-        x = torch.cat(self.x, dim=0)
-        y = torch.cat(self.y, dim=0)
+        x = dim_zero_cat(self.x)
+        y = dim_zero_cat(self.y)
         return _auc_compute(x, y, reorder=self.reorder)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         """
         AUC metrics is considered as non differentiable so it should have `false`
         value for `is_differentiable` property

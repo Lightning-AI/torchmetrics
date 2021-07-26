@@ -16,14 +16,14 @@ from typing import Optional, Sequence, Tuple
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.classification.auc import auc
+from torchmetrics.functional.classification.auc import _auc_compute_without_check
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod, DataType
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
-def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, str]:
+def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
     # use _input_format_classification for validating the input and get the mode of data
     _, _, mode = _input_format_classification(preds, target)
 
@@ -42,7 +42,7 @@ def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, str]:
 def _auroc_compute(
     preds: Tensor,
     target: Tensor,
-    mode: str,
+    mode: DataType,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
     average: Optional[str] = 'macro',
@@ -50,7 +50,7 @@ def _auroc_compute(
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
     # binary mode override num_classes
-    if mode == 'binary':
+    if mode == DataType.BINARY:
         num_classes = 1
 
     # check max_fpr parameter
@@ -65,7 +65,7 @@ def _auroc_compute(
             )
 
         # max_fpr parameter is only support for binary
-        if mode != 'binary':
+        if mode != DataType.BINARY:
             raise ValueError(
                 f"Partial AUC computation not available in"
                 f" multilabel/multiclass setting, 'max_fpr' must be"
@@ -73,10 +73,10 @@ def _auroc_compute(
             )
 
     # calculate fpr, tpr
-    if mode == 'multi-label':
+    if mode == DataType.MULTILABEL:
         if average == AverageMethod.MICRO:
             fpr, tpr, _ = roc(preds.flatten(), target.flatten(), 1, pos_label, sample_weights)
-        else:
+        elif num_classes:
             # for multilabel we iteratively evaluate roc in a binary fashion
             output = [
                 roc(preds[:, i], target[:, i], num_classes=1, pos_label=1, sample_weights=sample_weights)
@@ -84,23 +84,27 @@ def _auroc_compute(
             ]
             fpr = [o[0] for o in output]
             tpr = [o[1] for o in output]
+        else:
+            raise ValueError('Detected input to be `multilabel` but you did not provide `num_classes` argument')
     else:
+        if mode != DataType.BINARY and num_classes is None:
+            raise ValueError('Detected input to `multiclass` but you did not provide `num_classes` argument')
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
     if max_fpr is None or max_fpr == 1:
-        if mode == 'multi-label' and average == AverageMethod.MICRO:
+        if mode == DataType.MULTILABEL and average == AverageMethod.MICRO:
             pass
         elif num_classes != 1:
             # calculate auc scores per class
-            auc_scores = [auc(x, y) for x, y in zip(fpr, tpr)]
+            auc_scores = [_auc_compute_without_check(x, y, 1.0) for x, y in zip(fpr, tpr)]
 
             # calculate average
             if average == AverageMethod.NONE:
-                return auc_scores
-            elif average == AverageMethod.MACRO:
+                return tensor(auc_scores)
+            if average == AverageMethod.MACRO:
                 return torch.mean(torch.stack(auc_scores))
-            elif average == AverageMethod.WEIGHTED:
+            if average == AverageMethod.WEIGHTED:
                 if mode == DataType.MULTILABEL:
                     support = torch.sum(target, dim=0)
                 else:
@@ -113,23 +117,22 @@ def _auroc_compute(
                 f" {allowed_average} but got {average}"
             )
 
-        return auc(fpr, tpr)
+        return _auc_compute_without_check(fpr, tpr, 1.0)
 
-    max_fpr = tensor(max_fpr, device=fpr.device)
+    _device = fpr.device if isinstance(fpr, Tensor) else fpr[0].device
+    max_area: Tensor = tensor(max_fpr, device=_device)
     # Add a single point at max_fpr and interpolate its tpr value
-    stop = torch.bucketize(max_fpr, fpr, out_int32=True, right=True)
-    weight = (max_fpr - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
-    interp_tpr = torch.lerp(tpr[stop - 1], tpr[stop], weight)
+    stop = torch.bucketize(max_area, fpr, out_int32=True, right=True)
+    weight = (max_area - fpr[stop - 1]) / (fpr[stop] - fpr[stop - 1])
+    interp_tpr: Tensor = torch.lerp(tpr[stop - 1], tpr[stop], weight)
     tpr = torch.cat([tpr[:stop], interp_tpr.view(1)])
-    fpr = torch.cat([fpr[:stop], max_fpr.view(1)])
+    fpr = torch.cat([fpr[:stop], max_area.view(1)])
 
     # Compute partial AUC
-    partial_auc = auc(fpr, tpr)
+    partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
-    # McClish correction: standardize result to be 0.5 if non-discriminant
-    # and 1 if maximal
-    min_area = 0.5 * max_fpr**2
-    max_area = max_fpr
+    # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
+    min_area: Tensor = 0.5 * max_area**2
     return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
 
 
@@ -148,8 +151,8 @@ def auroc(
     Args:
         preds: predictions from model (logits or probabilities)
         target: Ground truth labels
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translate to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the

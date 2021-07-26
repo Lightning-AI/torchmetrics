@@ -27,53 +27,52 @@ def _roc_update(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, int, int, str]:
-    preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes, pos_label)
-    return preds, target, num_classes, pos_label
+) -> Tuple[Tensor, Tensor, int, Optional[int]]:
+    return _precision_recall_curve_update(preds, target, num_classes, pos_label)
 
 
-def _roc_compute(
+def _roc_compute_single_class(
+    preds: Tensor,
+    target: Tensor,
+    pos_label: int,
+    sample_weights: Optional[Sequence] = None,
+) -> Tuple[Tensor, Tensor, Tensor]:
+    fps, tps, thresholds = _binary_clf_curve(
+        preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
+    )
+    # Add an extra threshold position to make sure that the curve starts at (0, 0)
+    tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
+    fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
+    thresholds = torch.cat([thresholds[0][None] + 1, thresholds])
+
+    if fps[-1] <= 0:
+        raise ValueError("No negative samples in targets, false positive value should be meaningless")
+    fpr = fps / fps[-1]
+
+    if tps[-1] <= 0:
+        raise ValueError("No positive samples in targets, true positive value should be meaningless")
+    tpr = tps / tps[-1]
+
+    return fpr, tpr, thresholds
+
+
+def _roc_compute_multi_class(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    pos_label: int,
     sample_weights: Optional[Sequence] = None,
-) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-
-    if num_classes == 1 and preds.ndim == 1:  # binary
-        fps, tps, thresholds = _binary_clf_curve(
-            preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
-        )
-        # Add an extra threshold position
-        # to make sure that the curve starts at (0, 0)
-        tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
-        fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
-        thresholds = torch.cat([thresholds[0][None] + 1, thresholds])
-
-        if fps[-1] <= 0:
-            raise ValueError("No negative samples in targets, false positive value should be meaningless")
-        fpr = fps / fps[-1]
-
-        if tps[-1] <= 0:
-            raise ValueError("No positive samples in targets, true positive value should be meaningless")
-        tpr = tps / tps[-1]
-
-        return fpr, tpr, thresholds
-
-    # Recursively call per class
+) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
     fpr, tpr, thresholds = [], [], []
-    for c in range(num_classes):
+    for cls in range(num_classes):
         if preds.shape == target.shape:
-            preds_c = preds[:, c]
-            target_c = target[:, c]
+            target_cls = target[:, cls]
             pos_label = 1
         else:
-            preds_c = preds[:, c]
-            target_c = target
-            pos_label = c
+            target_cls = target
+            pos_label = cls
         res = roc(
-            preds=preds_c,
-            target=target_c,
+            preds=preds[:, cls],
+            target=target_cls,
             num_classes=1,
             pos_label=pos_label,
             sample_weights=sample_weights,
@@ -83,6 +82,21 @@ def _roc_compute(
         thresholds.append(res[2])
 
     return fpr, tpr, thresholds
+
+
+def _roc_compute(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    pos_label: Optional[int] = None,
+    sample_weights: Optional[Sequence] = None,
+) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    with torch.no_grad():
+        if num_classes == 1 and preds.ndim == 1:  # binary
+            if pos_label is None:
+                pos_label = 1
+            return _roc_compute_single_class(preds, target, pos_label, sample_weights)
+        return _roc_compute_multi_class(preds, target, num_classes, sample_weights)
 
 
 def roc(
@@ -99,8 +113,8 @@ def roc(
     Args:
         preds: predictions from model (logits or probabilities)
         target: ground truth values
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translate to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the

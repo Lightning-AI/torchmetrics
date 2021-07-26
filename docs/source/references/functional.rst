@@ -5,6 +5,31 @@
 Functional metrics
 ##################
 
+*************
+Audio Metrics
+*************
+
+si_sdr [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.si_sdr
+    :noindex:
+
+
+si_snr [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.si_snr
+    :noindex:
+
+
+snr [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.snr
+    :noindex:
+
+
 **********************
 Classification Metrics
 **********************
@@ -89,6 +114,12 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
+kl_divergence [func]
+~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.kl_divergence
+    :noindex:
+
 matthews_corrcoef [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -96,7 +127,7 @@ matthews_corrcoef [func]
     :noindex:
 
 roc [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.roc
     :noindex:
@@ -142,6 +173,12 @@ select_topk [func]
 .. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:
 
+specificity [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.specificity
+    :noindex:
+
 
 stat_scores [func]
 ~~~~~~~~~~~~~~~~~~
@@ -163,17 +200,9 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
-
-******************
-Regression Metrics
-******************
-
-explained_variance [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.explained_variance
-    :noindex:
-
+*************
+Image Metrics
+*************
 
 image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -182,10 +211,48 @@ image_gradients [func]
     :noindex:
 
 
+psnr [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.psnr
+    :noindex:
+
+
+ssim [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ssim
+    :noindex:
+
+******************
+Regression Metrics
+******************
+
+cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.cosine_similarity
+    :noindex:
+
+
+explained_variance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.explained_variance
+    :noindex:
+
+
 mean_absolute_error [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.mean_absolute_error
+    :noindex:
+
+
+mean_absolute_percentage_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.mean_absolute_percentage_error
     :noindex:
 
 
@@ -210,17 +277,10 @@ pearson_corrcoef [func]
     :noindex:
 
 
-psnr [func]
-~~~~~~~~~~~
+r2_score [func]
+~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.psnr
-    :noindex:
-
-
-r2score [func]
-~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.r2score
+.. autofunction:: torchmetrics.functional.r2_score
     :noindex:
 
 
@@ -231,21 +291,10 @@ spearman_corrcoef [func]
     :noindex:
 
 
-ssim [func]
-~~~~~~~~~~~
+symmetric_mean_absolute_percentage_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.ssim
-    :noindex:
-
-
-***
-NLP
-***
-
-bleu_score [func]
-~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.bleu_score
+.. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
     :noindex:
 
 ********
@@ -301,4 +350,21 @@ retrieval_normalized_dcg [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
+    :noindex:
+
+****
+Text
+****
+
+bleu_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bleu_score
+    :noindex:
+
+
+wer [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.wer
     :noindex:

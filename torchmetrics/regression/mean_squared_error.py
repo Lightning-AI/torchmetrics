@@ -39,6 +39,8 @@ class MeanSquaredError(Metric):
             before returning the value at the step. default: False
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        squared:
+            If True returns MSE value, if False returns RMSE value.
 
     Example:
         >>> from torchmetrics import MeanSquaredError
@@ -49,6 +51,8 @@ class MeanSquaredError(Metric):
         tensor(0.8750)
 
     """
+    sum_squared_error: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -56,7 +60,8 @@ class MeanSquaredError(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
+        squared: bool = True,
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -66,8 +71,9 @@ class MeanSquaredError(Metric):
 
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.squared = squared
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -80,12 +86,12 @@ class MeanSquaredError(Metric):
         self.sum_squared_error += sum_squared_error
         self.total += n_obs
 
-    def compute(self):
+    def compute(self) -> Tensor:
         """
         Computes mean squared error over state.
         """
-        return _mean_squared_error_compute(self.sum_squared_error, self.total)
+        return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return True

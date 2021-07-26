@@ -5,21 +5,9 @@ on:
 - pull_request
 
 jobs:
-  #check-docs:
-  #  runs-on: ubuntu-20.04
-  #  steps:
-  #  - uses: actions/checkout@v2
-  #  - uses: ammaraskar/sphinx-action@master
-  #    with:
-  #      # git is required to clone the docs theme
-  #      # before custom requirement are resolved https://github.com/ammaraskar/sphinx-action/issues/16
-  #      pre-build-command: "apt-get update -y && apt-get install -y git && pip install -r requirements/docs.txt --use-feature=2020-resolver"
-  #      docs-folder: "docs/"
-  #      repo-token: "${{ secrets.GITHUB_TOKEN }}"
 
   test-docs:
     runs-on: ubuntu-20.04
-
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -55,7 +43,6 @@ jobs:
 
   make-docs:
     runs-on: ubuntu-20.04
-
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -68,7 +55,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('test.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/docs.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -94,6 +81,6 @@ jobs:
       - name: Upload built docs
         uses: actions/upload-artifact@v2
         with:
-          name: docs-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}
+          name: docs-build
           path: docs/build/html/
         if: success()

@@ -65,14 +65,13 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
         if squared:
             measures = measures**2
         return measures.mean(axis=0)
-    else:
-        if multiclass_mode == MulticlassMode.ONE_VS_ALL:
-            result = np.zeros(sk_preds.shape[1])
-            for i in range(result.shape[0]):
-                result[i] = sk_hinge(y_true=sk_target[:, i], pred_decision=sk_preds[:, i])
-            return result
+    if multiclass_mode == MulticlassMode.ONE_VS_ALL:
+        result = np.zeros(sk_preds.shape[1])
+        for i in range(result.shape[0]):
+            result[i] = sk_hinge(y_true=sk_target[:, i], pred_decision=sk_preds[:, i])
+        return result
 
-        return sk_hinge(y_true=sk_target, pred_decision=sk_preds)
+    return sk_hinge(y_true=sk_target, pred_decision=sk_preds)
 
 
 @pytest.mark.parametrize(
@@ -108,10 +107,18 @@ class TestHinge(MetricTester):
 
     def test_hinge_fn(self, preds, target, squared, multiclass_mode):
         self.run_functional_metric_test(
-            preds,
-            target,
+            preds=preds,
+            target=target,
             metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode),
             sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
+        )
+
+    def test_hinge_differentiability(self, preds, target, squared, multiclass_mode):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=Hinge,
+            metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode)
         )
 
 

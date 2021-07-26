@@ -29,6 +29,7 @@ from tests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
 from tests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
+from tests.retrieval.inputs import _input_retrieval_scores_non_binary_target as _irs_non_binary
 from tests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 
 seed_all(42)
@@ -54,7 +55,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
     """
     structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
 
-    res = dict()
+    res = {}
     for i, _id in enumerate(indexes):
         _id = _id.item()
         if _id in res:
@@ -117,7 +118,7 @@ def _compute_sklearn_metric(
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
-    assert all([tests[0]['argnames'] == x['argnames'] for x in tests[1:]]), "the header must be the same for all tests"
+    assert all(tests[0]['argnames'] == x['argnames'] for x in tests[1:]), "the header must be the same for all tests"
     return dict(argnames=tests[0]['argnames'], argvalues=sum([x['argvalues'] for x in tests], []))
 
 
@@ -223,12 +224,32 @@ _default_metric_class_input_arguments = dict(
     ]
 )
 
+_default_metric_class_input_arguments_with_non_binary_target = dict(
+    argnames="indexes,preds,target",
+    argvalues=[
+        (_irs.indexes, _irs.preds, _irs.target),
+        (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
+        (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
+        (_irs_non_binary.indexes, _irs_non_binary.preds, _irs_non_binary.target),
+    ]
+)
+
 _default_metric_functional_input_arguments = dict(
     argnames="preds,target",
     argvalues=[
         (_irs.preds, _irs.target),
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
+    ]
+)
+
+_default_metric_functional_input_arguments_with_non_binary_target = dict(
+    argnames="preds,target",
+    argvalues=[
+        (_irs.preds, _irs.target),
+        (_irs_extra.preds, _irs_extra.target),
+        (_irs_no_tgt.preds, _irs_no_tgt.target),
+        (_irs_non_binary.preds, _irs_non_binary.target),
     ]
 )
 
@@ -381,8 +402,8 @@ class RetrievalMetricTester(MetricTester):
             indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
         )
 
+    @staticmethod
     def run_metric_class_arguments_test(
-        self,
         indexes: Tensor,
         preds: Tensor,
         target: Tensor,
@@ -403,8 +424,8 @@ class RetrievalMetricTester(MetricTester):
             **kwargs_update,
         )
 
+    @staticmethod
     def run_functional_metric_arguments_test(
-        self,
         preds: Tensor,
         target: Tensor,
         metric_functional: Callable,

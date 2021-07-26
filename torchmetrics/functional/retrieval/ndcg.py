@@ -11,18 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def _dcg(target):
+def _dcg(target: Tensor) -> Tensor:
     denom = torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0)
     return (target / denom).sum()
 
 
-def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
+def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
     """
     Computes Normalized Discounted Cumulative Gain (for information retrieval), as explained
     `here <https://en.wikipedia.org/wiki/Discounted_cumulative_gain>`__.

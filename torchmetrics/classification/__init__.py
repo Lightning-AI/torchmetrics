@@ -24,9 +24,11 @@ from torchmetrics.classification.f_beta import F1, FBeta  # noqa: F401
 from torchmetrics.classification.hamming_distance import HammingDistance  # noqa: F401
 from torchmetrics.classification.hinge import Hinge  # noqa: F401
 from torchmetrics.classification.iou import IoU  # noqa: F401
+from torchmetrics.classification.kl_divergence import KLDivergence  # noqa: F401
 from torchmetrics.classification.matthews_corrcoef import MatthewsCorrcoef  # noqa: F401
 from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.roc import ROC  # noqa: F401
+from torchmetrics.classification.specificity import Specificity  # noqa: F401
 from torchmetrics.classification.stat_scores import StatScores  # noqa: F401
 from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401

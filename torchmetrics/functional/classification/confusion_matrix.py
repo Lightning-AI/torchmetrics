@@ -28,7 +28,6 @@ def _confusion_matrix_update(
     if mode not in (DataType.BINARY, DataType.MULTILABEL):
         preds = preds.argmax(dim=1)
         target = target.argmax(dim=1)
-
     if multilabel:
         unique_mapping = ((2 * target + preds) + 4 * torch.arange(num_classes, device=preds.device)).flatten()
         minlength = 4 * num_classes
@@ -46,22 +45,21 @@ def _confusion_matrix_update(
 
 def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
     allowed_normalize = ('true', 'pred', 'all', 'none', None)
-    assert normalize in allowed_normalize, \
-        f"Argument average needs to one of the following: {allowed_normalize}"
-    confmat = confmat.float()
+    if normalize not in allowed_normalize:
+        raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
     if normalize is not None and normalize != 'none':
-        cm = None
+        confmat = confmat.float() if not confmat.is_floating_point() else confmat
         if normalize == 'true':
-            cm = confmat / confmat.sum(axis=1, keepdim=True)
+            confmat = confmat / confmat.sum(axis=1, keepdim=True)
         elif normalize == 'pred':
-            cm = confmat / confmat.sum(axis=0, keepdim=True)
+            confmat = confmat / confmat.sum(axis=0, keepdim=True)
         elif normalize == 'all':
-            cm = confmat / confmat.sum()
-        nan_elements = cm[torch.isnan(cm)].nelement()
+            confmat = confmat / confmat.sum()
+
+        nan_elements = confmat[torch.isnan(confmat)].nelement()
         if nan_elements != 0:
-            cm[torch.isnan(cm)] = 0
+            confmat[torch.isnan(confmat)] = 0
             rank_zero_warn(f'{nan_elements} nan values found in confusion matrix have been replaced with zeros.')
-        return cm
     return confmat
 
 
@@ -76,11 +74,12 @@ def confusion_matrix(
     """
     Computes the `confusion matrix
     <https://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix>`_.  Works with binary,
-    multiclass, and multilabel data.  Accepts probabilities from a model output or integer class values in prediction.
-    Works with multi-dimensional preds and target, but it should be noted that additional dimensions will be flattened.
+    multiclass, and multilabel data.  Accepts probabilities or logits from a model output or integer class
+    values in prediction. Works with multi-dimensional preds and target, but it should be noted that
+    additional dimensions will be flattened.
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
+    to convert into integer labels. This is the case for binary and multi-label probabilities or logits.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
@@ -90,7 +89,7 @@ def confusion_matrix(
 
     Args:
         preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
-            ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
+            ``(N, C, ...)`` where C is the number of classes, tensor with labels/logits/probabilities
         target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
         num_classes: Number of classes in the dataset.
         normalize: Normalization mode for confusion matrix. Choose from
@@ -101,7 +100,9 @@ def confusion_matrix(
             - ``'all'``: normalization over the whole matrix
 
         threshold:
-            Threshold value for binary or multi-label probabilities. default: 0.5
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+
         multilabel:
             determines if data is multilabel or not.
 

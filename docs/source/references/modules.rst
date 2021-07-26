@@ -18,6 +18,47 @@ your own metric type might be too burdensome.
 .. autoclass:: torchmetrics.AverageMeter
     :noindex:
 
+*************
+Audio Metrics
+*************
+
+About Audio Metrics
+~~~~~~~~~~~~~~~~~~~
+
+For the purposes of audio metrics, inputs (predictions, targets) must have the same size.
+If the input is 1D tensors the output will be a scalar. If the input is multi-dimensional with shape ``[...,time]``
+the metric will be computed over the ``time`` dimension.
+
+.. doctest::
+
+    >>> import torch
+    >>> from torchmetrics import SNR
+    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> snr = SNR()
+    >>> snr_val = snr(preds, target)
+    >>> snr_val
+    tensor(16.1805)
+
+SI_SDR
+~~~~~~
+
+.. autoclass:: torchmetrics.SI_SDR
+    :noindex:
+
+SI_SNR
+~~~~~~
+
+.. autoclass:: torchmetrics.SI_SNR
+    :noindex:
+
+SNR
+~~~
+
+.. autoclass:: torchmetrics.SNR
+    :noindex:
+
+
 **********************
 Classification Metrics
 **********************
@@ -34,10 +75,10 @@ into these categories (``N`` stands for the batch size and ``C`` for number of c
 
     "Binary", "(N,)", "``float``", "(N,)", "``binary``\*"
     "Multi-class", "(N,)", "``int``", "(N,)", "``int``"
-    "Multi-class with probabilities", "(N, C)", "``float``", "(N,)", "``int``"
+    "Multi-class with logits or probabilities", "(N, C)", "``float``", "(N,)", "``int``"
     "Multi-label", "(N, ...)", "``float``", "(N, ...)", "``binary``\*"
     "Multi-dimensional multi-class", "(N, ...)", "``int``", "(N, ...)", "``int``"
-    "Multi-dimensional multi-class with probabilities", "(N, C, ...)", "``float``", "(N, ...)", "``int``"
+    "Multi-dimensional multi-class with logits or probabilities", "(N, C, ...)", "``float``", "(N, ...)", "``int``"
 
 .. note::
     All dimensions of size 1 (except ``N``) are "squeezed out" at the beginning, so
@@ -204,6 +245,12 @@ IoU
 .. autoclass:: torchmetrics.IoU
     :noindex:
 
+KLDivergence
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.KLDivergence
+    :noindex:
+
 MatthewsCorrcoef
 ~~~~~~~~~~~~~~~~
 
@@ -236,6 +283,13 @@ ROC
     :noindex:
 
 
+Specificity
+~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.Specificity
+    :noindex:
+
+
 StatScores
 ~~~~~~~~~~
 
@@ -249,9 +303,55 @@ CalibrationError
     :noindex:
 
 
+*************
+Image Metrics
+*************
+
+Image quality metrics can be used to access the quality of synthetic generated images from machine
+learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
+
+FID
+~~~
+
+.. autoclass:: torchmetrics.FID
+    :noindex:
+
+IS
+~~
+
+.. autoclass:: torchmetrics.IS
+    :noindex:
+
+KID
+~~~
+
+.. autoclass:: torchmetrics.KID
+    :noindex:
+
+
+PSNR
+~~~~
+
+.. autoclass:: torchmetrics.PSNR
+    :noindex:
+
+
+SSIM
+~~~~
+
+.. autoclass:: torchmetrics.SSIM
+    :noindex:
+
 ******************
 Regression Metrics
 ******************
+
+CosineSimilarity
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CosineSimilarity
+    :noindex:
+
 
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~
@@ -264,6 +364,13 @@ MeanAbsoluteError
 ~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MeanAbsoluteError
+    :noindex:
+
+
+MeanAbsolutePercentageError
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MeanAbsolutePercentageError
     :noindex:
 
 
@@ -288,13 +395,6 @@ PearsonCorrcoef
     :noindex:
 
 
-PSNR
-~~~~
-
-.. autoclass:: torchmetrics.PSNR
-    :noindex:
-
-
 R2Score
 ~~~~~~~
 
@@ -308,13 +408,11 @@ SpearmanCorrcoef
 .. autoclass:: torchmetrics.SpearmanCorrcoef
     :noindex:
 
+SymmetricMeanAbsolutePercentageError
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-SSIM
-~~~~
-
-.. autoclass:: torchmetrics.SSIM
+.. autoclass:: torchmetrics.SymmetricMeanAbsolutePercentageError
     :noindex:
-
 
 
 *********
@@ -415,6 +513,23 @@ RetrievalNormalizedDCG
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
     :noindex:
 
+****
+Text
+****
+
+BLEUScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.BLEUScore
+    :noindex:
+
+
+WER
+~~~
+
+.. autoclass:: torchmetrics.WER
+    :noindex:
+
 
 ********
 Wrappers
@@ -422,6 +537,9 @@ Wrappers
 
 Modular wrapper metrics are not metrics in themself, but instead take a metric and alter the internal logic
 of the base metric.
+
+BootStrapper
+~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BootStrapper
     :noindex:

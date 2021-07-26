@@ -40,7 +40,7 @@ def _explained_variance_compute(
     sum_target: Tensor,
     sum_squared_target: Tensor,
     multioutput: str = "uniform_average",
-) -> Union[Tensor, Sequence[Tensor]]:
+) -> Tensor:
     diff_avg = sum_error / n_obs
     numerator = sum_squared_error / n_obs - (diff_avg * diff_avg)
 

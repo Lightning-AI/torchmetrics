@@ -88,7 +88,7 @@ class IoU(ConfusionMatrix):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             num_classes=num_classes,
             normalize=None,
@@ -106,3 +106,7 @@ class IoU(ConfusionMatrix):
         Computes intersection over union (IoU)
         """
         return _iou_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False

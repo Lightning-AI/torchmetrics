@@ -103,7 +103,7 @@ class TestIoU(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_confusion_matrix(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+    def test_iou(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
         average = 'macro' if reduction == 'elementwise_mean' else None  # convert tags
         self.run_class_metric_test(
             ddp=ddp,
@@ -119,13 +119,26 @@ class TestIoU(MetricTester):
             }
         )
 
-    def test_confusion_matrix_functional(self, reduction, preds, target, sk_metric, num_classes):
+    def test_iou_functional(self, reduction, preds, target, sk_metric, num_classes):
         average = 'macro' if reduction == 'elementwise_mean' else None  # convert tags
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=iou,
             sk_metric=partial(sk_metric, average=average),
+            metric_args={
+                "num_classes": num_classes,
+                "threshold": THRESHOLD,
+                "reduction": reduction
+            }
+        )
+
+    def test_iou_differentiability(self, reduction, preds, target, sk_metric, num_classes):
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=IoU,
+            metric_functional=iou,
             metric_args={
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,

@@ -18,36 +18,43 @@ default_language_version:
 ci:
   autofix_prs: true
   autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'
+  autoupdate_schedule: quarterly
+  # submodules: true
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.0.1
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-toml
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=250', '--enforce-all']
+      - id: detect-private-key
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.8.0
+    rev: 5.9.2
     hooks:
       - id: isort
         name: imports
-        entry: isort
-        language: python
-        args: [--settings-path, "./pyproject.toml"]
+        require_serial: false
 
   - repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.29.0
+    rev: v0.31.0
     hooks:
       - id: yapf
         name: formatting
-        entry: yapf
-        args: [--parallel]
         language: python
+        require_serial: false
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: 3.9.1
-    hooks:
-      - id: flake8
-        name: PEP8
-        entry: flake8
-        language: python
+# ToDo: use autopep8 when ingoing issue is properly resolved
+# see: https://github.com/hhatto/autopep8/issues/509#issuecomment-872197908
+#  - repo: https://github.com/PyCQA/flake8
+#    rev: 3.9.2
+#    hooks:
+#      - id: flake8
+#        name: PEP8

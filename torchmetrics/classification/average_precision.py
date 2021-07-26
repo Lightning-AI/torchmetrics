@@ -22,6 +22,7 @@ from torchmetrics.functional.classification.average_precision import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class AveragePrecision(Metric):
@@ -71,6 +72,8 @@ class AveragePrecision(Metric):
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
 
     """
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -79,7 +82,7 @@ class AveragePrecision(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -89,15 +92,15 @@ class AveragePrecision(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             'Metric `AveragePrecision` will save all targets and predictions in buffer.'
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -122,10 +125,12 @@ class AveragePrecision(Metric):
             of such tensors, one for each class
 
         """
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+        if not self.num_classes:
+            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         return _average_precision_compute(preds, target, self.num_classes, self.pos_label)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         return False

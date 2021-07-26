@@ -1,4 +1,4 @@
-name: Check Code formatting
+name: Code formatting
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
@@ -24,21 +24,6 @@ jobs:
         run: |
           flake8 .
 
-  imports-check-isort:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install isort
-        run: |
-          pip install "isort==5.6.4"
-          pip list
-      - name: isort
-        run: |
-          isort --settings-path=./pyproject.toml . --check --diff
-
   typing-check-mypy:
     runs-on: ubuntu-20.04
     steps:
@@ -52,7 +37,22 @@ jobs:
           pip list
       - name: mypy
         run: |
-          mypy
+          mypy --show-error-codes --warn-unused-configs
+
+#  imports-check-isort:
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - uses: actions/checkout@master
+#      - uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.8
+#      - name: Install isort
+#        run: |
+#          pip install "isort==5.6.4"
+#          pip list
+#      - name: isort
+#        run: |
+#          isort --settings-path=./pyproject.toml . --check --diff
 
 #  format-check-yapf:
 #    runs-on: ubuntu-20.04

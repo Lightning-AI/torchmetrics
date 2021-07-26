@@ -42,7 +42,7 @@ class CohenKappa(Metric):
         - ``target`` (long tensor): ``(N, ...)``
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
+    to convert into integer labels. This is the case for binary and multi-label probabilities or logits.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
@@ -55,7 +55,8 @@ class CohenKappa(Metric):
             - ``'quadratic'``: quadratic weighting
 
         threshold:
-            Threshold value for binary or multi-label probabilites. default: 0.5
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
 
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
@@ -75,6 +76,7 @@ class CohenKappa(Metric):
         >>> cohenkappa(preds, target)
         tensor(0.5000)
     """
+    confmat: Tensor
 
     def __init__(
         self,
@@ -84,8 +86,7 @@ class CohenKappa(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
-
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -96,12 +97,12 @@ class CohenKappa(Metric):
         self.threshold = threshold
 
         allowed_weights = ('linear', 'quadratic', 'none', None)
-        assert self.weights in allowed_weights, \
-            f"Argument weights needs to one of the following: {allowed_weights}"
+        if self.weights not in allowed_weights:
+            raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -119,7 +120,7 @@ class CohenKappa(Metric):
         return _cohen_kappa_compute(self.confmat, self.weights)
 
     @property
-    def is_differentiable(self):
+    def is_differentiable(self) -> bool:
         """
         cohen kappa is not differentiable since the implementation
         is based on calculating the confusion matrix which in general

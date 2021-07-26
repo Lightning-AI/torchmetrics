@@ -38,7 +38,7 @@ def recall_at_precision_x_multilabel(predictions: Tensor, targets: Tensor, min_p
 
     try:
         tuple_all = [(r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision]
-        max_recall, max_precision, best_threshold = max(tuple_all)
+        max_recall, _, best_threshold = max(tuple_all)
     except ValueError:
         max_recall, best_threshold = 0, 1e6
 
@@ -80,7 +80,9 @@ class TestBinnedRecallAtPrecision(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision):
+    def test_binned_recall_at_precision(
+        self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision
+    ):
         # rounding will simulate binning for both implementations
         preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
@@ -94,7 +96,7 @@ class TestBinnedRecallAtPrecision(MetricTester):
             metric_args={
                 "num_classes": num_classes,
                 "min_precision": min_precision,
-                "num_thresholds": 101,
+                "thresholds": 101,
             },
         )
 
@@ -109,12 +111,11 @@ class TestBinnedRecallAtPrecision(MetricTester):
     ],
 )
 class TestBinnedAveragePrecision(MetricTester):
-    atol = 0.02
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("num_thresholds", [101, 301])
-    def test_binned_pr(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, num_thresholds):
+    @pytest.mark.parametrize("thresholds", (301, torch.linspace(0.0, 1.0, 101)))
+    def test_binned_average_precision(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, thresholds):
         # rounding will simulate binning for both implementations
         preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
@@ -127,6 +128,6 @@ class TestBinnedAveragePrecision(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
             metric_args={
                 "num_classes": num_classes,
-                "num_thresholds": num_thresholds,
+                "thresholds": thresholds
             },
         )

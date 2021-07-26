@@ -168,11 +168,58 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for name in names:
         assert f"new_prefix_{name}" in out, 'prefix argument not working as intended with clone method'
 
+    for k, _ in new_metric_collection.items():
+        assert 'new_prefix_' in k
+
+    for k in new_metric_collection.keys():
+        assert 'new_prefix_' in k
+
+    for k, _ in new_metric_collection.items(keep_base=True):
+        assert 'new_prefix_' not in k
+
+    for k in new_metric_collection.keys(keep_base=True):
+        assert 'new_prefix_' not in k
+
+    assert isinstance(new_metric_collection.keys(keep_base=True), type(new_metric_collection.keys(keep_base=False)))
+    assert isinstance(new_metric_collection.items(keep_base=True), type(new_metric_collection.items(keep_base=False)))
+
     new_metric_collection = new_metric_collection.clone(postfix='_new_postfix')
     out = new_metric_collection(5)
     names = [n[:-len(postfix)] if postfix is not None else n for n in names]  # strip away old postfix
     for name in names:
         assert f"new_prefix_{name}_new_postfix" in out, 'postfix argument not working as intended with clone method'
+
+
+def test_metric_collection_repr():
+    """
+    Test MetricCollection
+    """
+
+    class A(DummyMetricSum):
+        pass
+
+    class B(DummyMetricDiff):
+        pass
+
+    m1 = A()
+    m2 = B()
+    metric_collection = MetricCollection([m1, m2], prefix=None, postfix=None)
+
+    expected = "MetricCollection(\n  (A): A()\n  (B): B()\n)"
+    assert metric_collection.__repr__() == expected
+
+    metric_collection = MetricCollection([m1, m2], prefix="a", postfix=None)
+
+    expected = 'MetricCollection(\n  (A): A()\n  (B): B(),\n  prefix=a\n)'
+    assert metric_collection.__repr__() == expected
+
+    metric_collection = MetricCollection([m1, m2], prefix=None, postfix="a")
+    expected = 'MetricCollection(\n  (A): A()\n  (B): B(),\n  postfix=a\n)'
+    assert metric_collection.__repr__() == expected
+
+    metric_collection = MetricCollection([m1, m2], prefix="a", postfix="b")
+    expected = 'MetricCollection(\n  (A): A()\n  (B): B(),\n  prefix=a,\n  postfix=b\n)'
+    assert metric_collection.__repr__() == expected
 
 
 def test_metric_collection_same_order():
@@ -182,6 +229,20 @@ def test_metric_collection_same_order():
     col2 = MetricCollection({"b": m2, "a": m1})
     for k1, k2 in zip(col1.keys(), col2.keys()):
         assert k1 == k2
+
+
+def test_collection_add_metrics():
+    m1 = DummyMetricSum()
+    m2 = DummyMetricDiff()
+
+    collection = MetricCollection([m1])
+    collection.add_metrics({'m1_': DummyMetricSum()})
+    collection.add_metrics(m2)
+
+    collection.update(5)
+    results = collection.compute()
+    assert results['DummyMetricSum'] == results['m1_'] and results['m1_'] == 5
+    assert results['DummyMetricDiff'] == -5
 
 
 def test_collection_check_arg():

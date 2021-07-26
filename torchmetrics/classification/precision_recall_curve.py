@@ -22,6 +22,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class PrecisionRecallCurve(Metric):
@@ -38,8 +39,8 @@ class PrecisionRecallCurve(Metric):
     - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
 
     Args:
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translate to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
@@ -82,6 +83,8 @@ class PrecisionRecallCurve(Metric):
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
 
     """
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -90,7 +93,7 @@ class PrecisionRecallCurve(Metric):
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-    ):
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -100,15 +103,15 @@ class PrecisionRecallCurve(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-        self.add_state("preds", default=[], dist_reduce_fx=None)
-        self.add_state("target", default=[], dist_reduce_fx=None)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
             'Metric `PrecisionRecallCurve` will save all targets and predictions in buffer.'
             ' For large datasets this may lead to large memory footprint.'
         )
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -142,6 +145,12 @@ class PrecisionRecallCurve(Metric):
             thresholds:
                 Thresholds used for computing precision/recall scores
         """
-        preds = torch.cat(self.preds, dim=0)
-        target = torch.cat(self.target, dim=0)
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+        if not self.num_classes:
+            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
         return _precision_recall_curve_compute(preds, target, self.num_classes, self.pos_label)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False

@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
 
+import torch
 from torch import nn
 
 from torchmetrics.metric import Metric
@@ -92,15 +94,74 @@ class MetricCollection(nn.ModuleDict):
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None
-    ):
+    ) -> None:
         super().__init__()
+
+        self.add_metrics(metrics, *additional_metrics)
+
+        self.prefix = self._check_arg(prefix, 'prefix')
+        self.postfix = self._check_arg(postfix, 'postfix')
+
+    @torch.jit.unused
+    def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Iteratively call forward for each metric. Positional arguments (args) will
+        be passed to every metric in the collection, while keyword arguments (kwargs)
+        will be filtered based on the signature of the individual metric.
+        """
+        return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Iteratively call update for each metric. Positional arguments (args) will
+        be passed to every metric in the collection, while keyword arguments (kwargs)
+        will be filtered based on the signature of the individual metric.
+        """
+        for _, m in self.items(keep_base=True):
+            m_kwargs = m._filter_kwargs(**kwargs)
+            m.update(*args, **m_kwargs)
+
+    def compute(self) -> Dict[str, Any]:
+        return {k: m.compute() for k, m in self.items()}
+
+    def reset(self) -> None:
+        """ Iteratively call reset for each metric """
+        for _, m in self.items(keep_base=True):
+            m.reset()
+
+    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> 'MetricCollection':
+        """ Make a copy of the metric collection
+        Args:
+            prefix: a string to append in front of the metric keys
+            postfix: a string to append after the keys of the output dict
+
+        """
+        mc = deepcopy(self)
+        if prefix:
+            mc.prefix = self._check_arg(prefix, 'prefix')
+        if postfix:
+            mc.postfix = self._check_arg(postfix, 'postfix')
+        return mc
+
+    def persistent(self, mode: bool = True) -> None:
+        """Method for post-init to change if metric states should be saved to
+        its state_dict
+        """
+        for _, m in self.items(keep_base=True):
+            m.persistent(mode)
+
+    def add_metrics(
+        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
+    ) -> None:
+        """Add new metrics to Metric Collection
+        """
         if isinstance(metrics, Metric):
             # set compatible with original type expectations
             metrics = [metrics]
         if isinstance(metrics, Sequence):
             # prepare for optional additions
             metrics = list(metrics)
-            remain = []
+            remain: list = []
             for m in additional_metrics:
                 (metrics if isinstance(m, Metric) else remain).append(m)
 
@@ -135,63 +196,45 @@ class MetricCollection(nn.ModuleDict):
         else:
             raise ValueError("Unknown input to MetricCollection.")
 
-        self.prefix = self._check_arg(prefix, 'prefix')
-        self.postfix = self._check_arg(postfix, 'postfix')
-
-    def forward(self, *args, **kwargs) -> Dict[str, Any]:  # pylint: disable=E0202
-        """
-        Iteratively call forward for each metric. Positional arguments (args) will
-        be passed to every metric in the collection, while keyword arguments (kwargs)
-        will be filtered based on the signature of the individual metric.
-        """
-        return {self._set_name(k): m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
-
-    def update(self, *args, **kwargs):  # pylint: disable=E0202
-        """
-        Iteratively call update for each metric. Positional arguments (args) will
-        be passed to every metric in the collection, while keyword arguments (kwargs)
-        will be filtered based on the signature of the individual metric.
-        """
-        for _, m in self.items():
-            m_kwargs = m._filter_kwargs(**kwargs)
-            m.update(*args, **m_kwargs)
-
-    def compute(self) -> Dict[str, Any]:
-        return {self._set_name(k): m.compute() for k, m in self.items()}
-
-    def reset(self) -> None:
-        """ Iteratively call reset for each metric """
-        for _, m in self.items():
-            m.reset()
-
-    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> 'MetricCollection':
-        """ Make a copy of the metric collection
-        Args:
-            prefix: a string to append in front of the metric keys
-            postfix: a string to append after the keys of the output dict
-
-        """
-        mc = deepcopy(self)
-        if prefix:
-            mc.prefix = self._check_arg(prefix, 'prefix')
-        if postfix:
-            mc.postfix = self._check_arg(postfix, 'postfix')
-        return mc
-
-    def persistent(self, mode: bool = True) -> None:
-        """Method for post-init to change if metric states should be saved to
-        its state_dict
-        """
-        for _, m in self.items():
-            m.persistent(mode)
-
     def _set_name(self, base: str) -> str:
         name = base if self.prefix is None else self.prefix + base
         name = name if self.postfix is None else name + self.postfix
         return name
+
+    def _to_renamed_ordered_dict(self) -> OrderedDict:
+        od = OrderedDict()
+        for k, v in self._modules.items():
+            od[self._set_name(k)] = v
+        return od
+
+    def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
+        r"""Return an iterable of the ModuleDict key.
+        Args:
+            keep_base: Whether to add prefix/postfix on the items collection.
+        """
+        if keep_base:
+            return self._modules.keys()
+        return self._to_renamed_ordered_dict().keys()
+
+    def items(self, keep_base: bool = False) -> Iterable[Tuple[str, nn.Module]]:
+        r"""Return an iterable of the ModuleDict key/value pairs.
+        Args:
+            keep_base: Whether to add prefix/postfix on the items collection.
+        """
+        if keep_base:
+            return self._modules.items()
+        return self._to_renamed_ordered_dict().items()
 
     @staticmethod
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
         if arg is None or isinstance(arg, str):
             return arg
         raise ValueError(f'Expected input `{name}` to be a string, but got {type(arg)}')
+
+    def __repr__(self) -> str:
+        repr_str = super().__repr__()[:-2]
+        if self.prefix:
+            repr_str += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
+        if self.postfix:
+            repr_str += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
+        return repr_str + "\n)"

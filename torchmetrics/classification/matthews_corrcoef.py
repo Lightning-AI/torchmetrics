@@ -74,6 +74,7 @@ class MatthewsCorrcoef(Metric):
         tensor(0.5774)
 
     """
+    confmat: Tensor
 
     def __init__(
         self,
@@ -83,8 +84,7 @@ class MatthewsCorrcoef(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
-
+    ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -96,7 +96,7 @@ class MatthewsCorrcoef(Metric):
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 
@@ -112,3 +112,7 @@ class MatthewsCorrcoef(Metric):
         Computes matthews correlation coefficient
         """
         return _matthews_corrcoef_compute(self.confmat)
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False

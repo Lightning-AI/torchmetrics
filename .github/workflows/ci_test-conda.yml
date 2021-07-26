@@ -13,28 +13,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7]
-        pytorch-version: [1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9]
+        python-version: ["3.7"]
+        pytorch-version: ["1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10"]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 35
+    timeout-minutes: 55
     steps:
     - uses: actions/checkout@v2
+
+    - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
+      id: times
 
     - name: Cache conda
       uses: actions/cache@v2
       with:
         path: ~/conda_pkgs_dir
-        key: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('environment.yml') }}
-        restore-keys: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
+        key: conda-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('environment.yml') }}
+        restore-keys: conda-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
 
     # Add another cache for Pip as not all packages lives in Conda env
     - name: Cache pip
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('requirements/base.txt') }}
-        restore-keys: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
+        key: pip-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('requirements/base.txt') }}
+        restore-keys: pip-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
 
     # https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf
     # https://gist.github.com/mwouts/9842452d020c08faf9e84a3bba38a66f
@@ -48,17 +51,24 @@ jobs:
         auto-activate-base: true
         # environment-file: ./environment.yml
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+      # prevent hanging Conda creations
+      timeout-minutes: 5
 
     - name: Update Environment
       run: |
+        sudo apt install libsndfile1
         conda info
         conda install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
+        conda install cpuonly $(python ./requirements/adjust-versions.py conda)
+        conda install -c conda-forge ffmpeg
         conda list
         pip --version
-        pip install --requirement requirements.txt --upgrade-strategy only-if-needed --quiet
-        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed --quiet
+        python ./requirements/adjust-versions.py requirements.txt
+        python ./.github/prune-packages.py requirements/image.txt torchvision
+        pip install --requirement requirements.txt --quiet
+        pip install --requirement requirements/test.txt --quiet
         pip list
-        python -c "import torch; assert torch.__version__[:3] == '${{ matrix.pytorch-version }}', torch.__version__"
+        python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
       shell: bash -l {0}
 
     - name: Testing
