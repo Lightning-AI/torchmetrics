@@ -20,7 +20,9 @@ from torchmetrics.functional.text.rouge import RougeBatchAggregator, _rouge_scor
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 
 if _ROUGE_SCORE_AVAILABLE:
-    from rouge_score import rouge_scorer
+    from rouge_score.rouge_scorer import RougeScorer
+else:
+    RougeScorer = ...
 
 
 class ROUGEScore(Metric):
@@ -93,15 +95,14 @@ class ROUGEScore(Metric):
         if not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE):
             raise ValueError(
                 'ROUGE metric requires that both nltk and rouge-score is installed.'
-                'Either as `pip install torchmetrics[text]`'
-                ' or `pip install nltk rouge-score`'
+                'Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
             )
 
         self.newline_sep = newline_sep
         self.rouge_keys = rouge_keys
         self.use_stemmer = use_stemmer
         self.aggregator = RougeBatchAggregator()
-        self.scorer = rouge_scorer.RougeScorer(rouge_keys, use_stemmer=self.use_stemmer)
+        self.scorer = RougeScorer(rouge_keys, use_stemmer=self.use_stemmer)
         self.scores: Dict[str, List[Tensor]] = {key: [] for key in rouge_keys}
 
     def update(self, preds: List[str], targets: List[str]) -> None:  # type: ignore
