@@ -20,18 +20,18 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 
 if _ROUGE_SCORE_AVAILABLE:
-    from rouge_score import rouge_scorer
+    from rouge_score.rouge_scorer import RougeScorer
     from rouge_score.scoring import AggregateScore, BootstrapAggregator, Score
 else:
-    AggregateScore, Score, BootstrapAggregator = None, None, object
-
-if _NLTK_AVAILABLE:
-    import nltk
-    nltk.download("punkt", quiet=True)
+    RougeScorer, AggregateScore, Score, BootstrapAggregator = object, object, object, object
 
 
 def add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
+    if _NLTK_AVAILABLE:
+        import nltk
+        nltk.download("punkt", quiet=True, force=False)
+
     re.sub("<n>", "", x)  # remove pegasus newline char
     assert nltk, "nltk must be installed to separate newlines between sentences. (pip install nltk)"
     return "\n".join(nltk.sent_tokenize(x))
@@ -76,7 +76,7 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     scores: Dict[str, List[Tensor]],
-    scorer: rouge_scorer.RougeScorer,
+    scorer: RougeScorer,
     newline_sep: bool = False,
 ) -> None:
 
@@ -151,7 +151,7 @@ def rouge_score(
         )
 
     aggregator = RougeBatchAggregator()
-    scorer = rouge_scorer.RougeScorer(rouge_keys, use_stemmer=use_stemmer)
+    scorer = RougeScorer(rouge_keys, use_stemmer=use_stemmer)
     scores: Dict[str, List[Tensor]] = {key: [] for key in rouge_keys}
 
     _rouge_score_update(preds, targets, scores=scores, scorer=scorer, newline_sep=newline_sep)
