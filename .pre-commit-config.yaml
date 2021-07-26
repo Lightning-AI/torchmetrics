@@ -51,6 +51,13 @@ repos:
         language: python
         require_serial: false
 
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.23.0
+    hooks:
+      - id: pyupgrade
+        args: [--py36-plus]
+        name: Upgrade code
+
 # ToDo: use autopep8 when ingoing issue is properly resolved
 # see: https://github.com/hhatto/autopep8/issues/509#issuecomment-872197908
 #  - repo: https://github.com/PyCQA/flake8
