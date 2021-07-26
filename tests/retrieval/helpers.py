@@ -119,7 +119,7 @@ def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
     assert all(tests[0]['argnames'] == x['argnames'] for x in tests[1:]), "the header must be the same for all tests"
-    return dict(argnames=tests[0]['argnames'], argvalues=sum([x['argvalues'] for x in tests], []))
+    return dict(argnames=tests[0]['argnames'], argvalues=sum((x['argvalues'] for x in tests), []))
 
 
 _errors_test_functional_metric_parameters_default = dict(
