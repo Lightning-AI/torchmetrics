@@ -153,7 +153,7 @@ class TestIoU(MetricTester):
     pytest.param(False, 'none', 0, Tensor([1, 1])),
     pytest.param(True, 'none', None, Tensor([0.5, 0.5, 0.5])),
     pytest.param(True, 'elementwise_mean', None, Tensor([0.5])),
-    pytest.param(True, 'none', 0, Tensor([2/3, 1/2])),
+    pytest.param(True, 'none', 0, Tensor([2 / 3, 1 / 2])),
 ])
 def test_iou(half_ones, reduction, ignore_index, expected):
     preds = (torch.arange(120) % 3).view(-1, 1)
