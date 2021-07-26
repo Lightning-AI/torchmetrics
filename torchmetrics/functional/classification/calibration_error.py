@@ -21,7 +21,9 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
-def _ce_compute(confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor, norm: str = "l1", debias: bool = False) -> Tensor:
+def _ce_compute(
+    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor, norm: str = "l1", debias: bool = False
+) -> Tensor:
 
     conf_bin = torch.zeros_like(bin_boundaries)
     acc_bin = torch.zeros_like(bin_boundaries)
@@ -70,7 +72,8 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
         accuracies = predictions.eq(target.flatten())
     else:
         raise ValueError(
-            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}")
+            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}"
+        )
 
     return confidences, accuracies
 

@@ -18,6 +18,7 @@ from torchmetrics.functional.classification.accuracy import accuracy  # noqa: F4
 from torchmetrics.functional.classification.auc import auc  # noqa: F401
 from torchmetrics.functional.classification.auroc import auroc  # noqa: F401
 from torchmetrics.functional.classification.average_precision import average_precision  # noqa: F401
+from torchmetrics.functional.classification.calibration_error import calibration_error  # noqa: F401
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa  # noqa: F401
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix  # noqa: F401
 from torchmetrics.functional.classification.dice import dice_score  # noqa: F401
@@ -57,6 +58,5 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision  # n
 from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F401
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
-from torchmetrics.functional.classification.calibration_error import calibration_error  # noqa: F401
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
 from torchmetrics.functional.text.wer import wer  # noqa: F401

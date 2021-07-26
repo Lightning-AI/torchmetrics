@@ -1,15 +1,10 @@
 # TODO: replace this with official implementation once PR is merged!
-from ._sklearn_calibration import calibration_error as sk_calib
+import functools
+
 import numpy as np
 import pytest
 from torch import tensor
-from tests.classification.inputs import _input_multiclass as _input_mcls
-from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics import CalibrationError
-from torchmetrics.functional import calibration_error
-from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import DataType
+
 from tests.classification.inputs import _input_binary, _input_binary_prob
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -17,7 +12,14 @@ from tests.classification.inputs import _input_multidim_multiclass as _input_mdm
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-import functools
+from tests.helpers import seed_all
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from torchmetrics import CalibrationError
+from torchmetrics.functional import calibration_error
+from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.enums import DataType
+
+from ._sklearn_calibration import calibration_error as sk_calib
 
 seed_all(42)
 
@@ -44,13 +46,14 @@ def _sk_calibration(preds, target, n_bins, norm, debias=False):
 @pytest.mark.parametrize("n_bins", [10, 15, 20])
 @pytest.mark.parametrize("norm", ["l1", "l2", "max"])
 @pytest.mark.parametrize(
-    "preds, target",
-    [(_input_binary_prob.preds, _input_binary_prob.target),
-     (_input_mcls_prob.preds, _input_mcls_prob.target),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target),
-     ]
+    "preds, target", [
+        (_input_binary_prob.preds, _input_binary_prob.target),
+        (_input_mcls_prob.preds, _input_mcls_prob.target),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target),
+    ]
 )
 class TestCE(MetricTester):
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm):
@@ -61,7 +64,11 @@ class TestCE(MetricTester):
             metric_class=CalibrationError,
             sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"n_bins": n_bins, "norm": norm})
+            metric_args={
+                "n_bins": n_bins,
+                "norm": norm
+            }
+        )
 
     def test_ce_functional(self, preds, target, n_bins, norm):
         self.run_functional_metric_test(
@@ -69,21 +76,25 @@ class TestCE(MetricTester):
             target,
             metric_functional=calibration_error,
             sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
-            metric_args={"n_bins": n_bins, "norm": norm})
+            metric_args={
+                "n_bins": n_bins,
+                "norm": norm
+            }
+        )
 
 
-@ pytest.mark.parametrize("preds, targets", [(_input_mlb_prob.preds, _input_mlb_prob.target)])
+@pytest.mark.parametrize("preds, targets", [(_input_mlb_prob.preds, _input_mlb_prob.target)])
 def test_invalid_input(preds, targets):
     with pytest.raises(ValueError):
         calibration_error(preds, targets)
 
 
 @pytest.mark.parametrize(
-    "preds, target",
-    [(_input_binary_prob.preds, _input_binary_prob.target),
-     (_input_mcls_prob.preds, _input_mcls_prob.target),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target),
-     ]
+    "preds, target", [
+        (_input_binary_prob.preds, _input_binary_prob.target),
+        (_input_mcls_prob.preds, _input_mcls_prob.target),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target),
+    ]
 )
 def test_invalid_norm(preds, target):
     with pytest.raises(ValueError):

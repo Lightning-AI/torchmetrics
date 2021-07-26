@@ -6,9 +6,9 @@ from sklearn.utils import assert_all_finite, check_consistent_length, column_or_
 # TODO: when the PR into sklearn is accepted, update this to use the official function.
 
 
-def calibration_error(y_true, y_prob, sample_weight=None, norm='l2',
-                      n_bins=10, strategy='uniform', pos_label=None,
-                      reduce_bias=True):
+def calibration_error(
+    y_true, y_prob, sample_weight=None, norm='l2', n_bins=10, strategy='uniform', pos_label=None, reduce_bias=True
+):
     """Compute calibration error of a binary classifier.
     Across all items in a set of N predictions, the calibration error measures
     the aggregated difference between (1) the average predicted probabilities
@@ -77,14 +77,12 @@ def calibration_error(y_true, y_prob, sample_weight=None, norm='l2',
 
     labels = np.unique(y_true)
     if len(labels) > 2:
-        raise ValueError("Only binary classification is supported. "
-                         "Provided labels %s." % labels)
+        raise ValueError("Only binary classification is supported. " "Provided labels %s." % labels)
 
     if pos_label is None:
         pos_label = y_true.max()
     if pos_label not in labels:
-        raise ValueError("pos_label=%r is not a valid label: "
-                         "%r" % (pos_label, labels))
+        raise ValueError("pos_label=%r is not a valid label: " "%r" % (pos_label, labels))
     y_true = np.array(y_true == pos_label, int)
 
     norm_options = ('l1', 'l2', 'max')
@@ -125,21 +123,15 @@ def calibration_error(y_true, y_prob, sample_weight=None, norm='l2',
         if i_end == i_start:
             continue
         delta_count[i] = float(sample_weight[i_start:i_end].sum())
-        avg_pred_true[i] = (np.dot(y_true[i_start:i_end],
-                                   sample_weight[i_start:i_end]) /
-                            delta_count[i])
-        bin_centroid[i] = (np.dot(y_prob[i_start:i_end],
-                                  sample_weight[i_start:i_end]) /
-                           delta_count[i])
+        avg_pred_true[i] = (np.dot(y_true[i_start:i_end], sample_weight[i_start:i_end]) / delta_count[i])
+        bin_centroid[i] = (np.dot(y_prob[i_start:i_end], sample_weight[i_start:i_end]) / delta_count[i])
         if norm == "l2" and reduce_bias:
             # NOTE: I think there's a mistake in the original implementation.
             # delta_debias = (
             #     avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i]
             # )
             # delta_debias /= (count * delta_count[i] - 1)
-            delta_debias = (
-                avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i]
-            )
+            delta_debias = (avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i])
             delta_debias /= count * (delta_count[i] - 1)
             debias[i] = delta_debias
 

@@ -11,21 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
 import torch
 from torch import Tensor
-from torchmetrics.metric import Metric
+
 from torchmetrics.functional.classification.calibration_error import _ce_compute, _ce_update
+from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
 
 class CalibrationError(Metric):
 
-    def __init__(self, n_bins: int = 15, norm: str = "l1", compute_on_step: bool = False, dist_sync_on_step: bool = False, process_group: Optional[Any] = None, dist_sync_fn: Callable = None):
+    def __init__(
+        self,
+        n_bins: int = 15,
+        norm: str = "l1",
+        compute_on_step: bool = False,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None
+    ):
         """
 
-        Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`. 
+        Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`.
 
         Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
@@ -44,14 +53,14 @@ class CalibrationError(Metric):
         .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-        Where p_i is the top-1 prediction accuracy in bin i and c_i is the average confidence of predictions in bin i. 
+        Where p_i is the top-1 prediction accuracy in bin i and c_i is the average confidence of predictions in bin i.
 
         # NOTE: L2-norm debiasing is not yet supported.
 
 
         Args:
             n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
-            norm (str, optional): Norm used to compare empirical and expected probability bins. 
+            norm (str, optional): Norm used to compare empirical and expected probability bins.
                 Defaults to "l1", or Expected Calibration Error.
             debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
             compute_on_step (bool, optional):  Forward only calls ``update()`` and return None if this is set to False. Defaults to False.
@@ -61,8 +70,12 @@ class CalibrationError(Metric):
             dist_sync_fn (Callable, optional): Callback that performs the ``allgather`` operation on the metric state. When ``None``, DDP
                 will be used to perform the ``allgather``.. Defaults to None.
         """
-        super().__init__(compute_on_step=compute_on_step, dist_sync_on_step=dist_sync_on_step,
-                         process_group=process_group, dist_sync_fn=dist_sync_fn)
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn
+        )
 
         if norm not in ["l1", "l2", "max"]:
             raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")

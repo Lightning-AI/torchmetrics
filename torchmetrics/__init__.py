@@ -23,6 +23,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     BinnedAveragePrecision,
     BinnedPrecisionRecallCurve,
     BinnedRecallAtFixedPrecision,
+    CalibrationError,
     CohenKappa,
     ConfusionMatrix,
     FBeta,
@@ -36,8 +37,6 @@ from torchmetrics.classification import (  # noqa: F401 E402
     Recall,
     Specificity,
     StatScores,
-    CalibrationError,
-
 )
 from torchmetrics.collections import MetricCollection  # noqa: F401 E402
 from torchmetrics.image import FID, IS, KID, PSNR, SSIM  # noqa: F401 E402
