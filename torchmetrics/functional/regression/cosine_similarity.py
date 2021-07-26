@@ -50,10 +50,8 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = '
             The method of reducing along the batch dimension using sum, mean or taking the individual scores
 
     Example:
-        >>> target = torch.tensor([[1, 2, 3, 4],
-        ...                        [1, 2, 3, 4]])
-        >>> preds = torch.tensor([[1, 2, 3, 4],
-        ...                       [-1, -2, -3, -4]])
+        >>> target = torch.tensor([[1, 2, 3, 4], [1, 2, 3, 4]])
+        >>> preds = torch.tensor([[1, 2, 3, 4], [-1, -2, -3, -4]])
         >>> preds, target = _cosine_similarity_update(preds, target)
         >>> _cosine_similarity_compute(preds, target, 'none')
         tensor([ 1.0000, -1.0000])
