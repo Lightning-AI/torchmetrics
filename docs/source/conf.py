@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -56,7 +55,7 @@ github_repo = "metrics"
 
 
 def _transform_changelog(path_in: str, path_out: str) -> None:
-    with open(path_in, 'r') as fp:
+    with open(path_in) as fp:
         chlog_lines = fp.readlines()
     # enrich short subsub-titles to be unique
     chlog_ver = ''
@@ -290,7 +289,7 @@ for path_ipynb in glob.glob(os.path.join(_PATH_ROOT, "notebooks", "*.ipynb")):
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule
 def package_list_from_file(file):
     mocked_packages = []
-    with open(file, "r") as fp:
+    with open(file) as fp:
         for ln in fp.readlines():
             found = [ln.index(ch) for ch in list(",=<>#") if ch in ln]
             pkg = ln[:min(found)] if found else ln
@@ -349,7 +348,7 @@ def linkcode_resolve(domain, info):
     # do mapping from latest tags to master
     branch = {"latest": "master", "stable": "master"}.get(branch, branch)
     filename = "/".join([branch] + filename.split("/")[1:])
-    return "https://github.com/%s/%s/blob/%s" % (github_user, github_repo, filename)
+    return f"https://github.com/{github_user}/{github_repo}/blob/{filename}"
 
 
 autosummary_generate = True
