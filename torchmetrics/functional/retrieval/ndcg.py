@@ -14,7 +14,7 @@
 from typing import Optional
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
