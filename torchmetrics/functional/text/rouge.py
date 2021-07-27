@@ -64,7 +64,7 @@ class RougeBatchAggregator(BootstrapAggregator):
             # Percentiles are returned as (interval, measure).
             percentiles = self._bootstrap_resample(score_matrix)
             # Extract the three intervals (low, mid, high).
-            intervals = tuple((Score(*percentiles[j, :]) for j in range(3)))
+            intervals = tuple(Score(*percentiles[j, :]) for j in range(3))
             result[score_type] = AggregateScore(low=intervals[0], mid=intervals[1], high=intervals[2])
         return result
 
