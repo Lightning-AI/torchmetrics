@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
+import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score.rouge_scorer import RougeScorer
-    from rouge_score.scoring import AggregateScore, BootstrapAggregator, Score
+    from rouge_score.scoring import AggregateScore, BootstrapAggregator
 else:
-    RougeScorer, AggregateScore, Score, BootstrapAggregator = object, object, object, object
+    RougeScorer, AggregateScore, BootstrapAggregator = object, object, object
 
 
 def add_newline_to_end_of_each_sentence(x: str) -> str:
@@ -38,45 +39,21 @@ def add_newline_to_end_of_each_sentence(x: str) -> str:
 
 
 def format_rouge_results(result: Dict[str, AggregateScore], decimal_places: int = 4) -> Dict[str, Tensor]:
+    """Formats the computed (aggregated) rouge score to a dictionary of tensors format. """
     flattened_result = {}
     for rouge_key, rouge_aggregate_score in result.items():
         for stat in ["precision", "recall", "fmeasure"]:
             mid = rouge_aggregate_score.mid
             score = round(getattr(mid, stat), decimal_places)
-            flattened_result[f"{rouge_key}_{stat}"] = tensor(score)
+            flattened_result[f"{rouge_key}_{stat}"] = tensor(score, dtype=torch.float)
     return flattened_result
-
-
-class RougeBatchAggregator(BootstrapAggregator):
-    """
-    Aggregates rouge scores and provides confidence intervals.
-    """
-
-    def aggregate(self) -> Dict[str, AggregateScore]:
-        """
-        Override function to wrap the final results in `Score` objects.
-        This is due to the scores being replaced with a list of torch tensors.
-        """
-        result = {}
-        for score_type, scores in self._scores.items():
-            # Stack scores into a 2-d matrix of (sample, measure).
-            score_matrix = np.vstack(tuple(scores))
-            # Percentiles are returned as (interval, measure).
-            percentiles = self._bootstrap_resample(score_matrix)
-            # Extract the three intervals (low, mid, high).
-            intervals = tuple(Score(*percentiles[j, :]) for j in range(3))
-            result[score_type] = AggregateScore(low=intervals[0], mid=intervals[1], high=intervals[2])
-        return result
-
-    def add_scores(self, scores: Dict[str, List[Tensor]]) -> None:
-        self._scores = scores
 
 
 def _rouge_score_update(
     preds: List[str],
     targets: List[str],
-    scores: Dict[str, List[Tensor]],
     scorer: RougeScorer,
+    aggregator: BootstrapAggregator,
     newline_sep: bool = False,
 ) -> None:
 
@@ -86,23 +63,21 @@ def _rouge_score_update(
             pred = add_newline_to_end_of_each_sentence(pred)
             target = add_newline_to_end_of_each_sentence(target)
         results = scorer.score(pred, target)
-        for key, score in results.items():
-            score = tensor([score.precision, score.recall, score.fmeasure])
-            scores[key].append(score)
+        aggregator.add_scores(results)
 
 
-def _rouge_score_compute(scores: Dict[str, List[Tensor]], aggregator: RougeBatchAggregator) -> Dict[str, Tensor]:
-    aggregator.add_scores(scores)
+def _rouge_score_compute(aggregator: BootstrapAggregator, decimal_places: int = 4) -> Dict[str, Tensor]:
     result = aggregator.aggregate()
-    return format_rouge_results(result)
+    return format_rouge_results(result, decimal_places)
 
 
 def rouge_score(
-    preds: List[str],
-    targets: List[str],
+    preds: Union[str, List[str]],
+    targets: Union[str, List[str]],
     newline_sep: bool = False,
     use_stemmer: bool = False,
-    rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum")  # type: ignore
+    rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+    decimal_places: int = 4
 ) -> Dict[str, Tensor]:
     """
     Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
@@ -118,6 +93,8 @@ def rouge_score(
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
             A list of rouge types to calculate.
+        decimal_places:
+            The number of digits to round the computed the values to.
 
     Return:
         Python dictionary of rouge scores for each input rouge key.
@@ -150,9 +127,14 @@ def rouge_score(
             'Either as `pip install torchmetrics[text]`'
         )
 
-    aggregator = RougeBatchAggregator()
-    scorer = RougeScorer(rouge_keys, use_stemmer=use_stemmer)
-    scores: Dict[str, List[Tensor]] = {key: [] for key in rouge_keys}
+    if isinstance(preds, str):
+        preds = [preds]
 
-    _rouge_score_update(preds, targets, scores=scores, scorer=scorer, newline_sep=newline_sep)
-    return _rouge_score_compute(scores, aggregator=aggregator)
+    if isinstance(targets, str):
+        targets = [targets]
+
+    aggregator = BootstrapAggregator()
+    scorer = RougeScorer(rouge_keys, use_stemmer=use_stemmer)
+
+    _rouge_score_update(preds, targets, scorer=scorer, aggregator=aggregator, newline_sep=newline_sep)
+    return _rouge_score_compute(aggregator=aggregator, decimal_places=decimal_places)

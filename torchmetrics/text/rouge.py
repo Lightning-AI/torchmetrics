@@ -16,13 +16,14 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.rouge import RougeBatchAggregator, _rouge_score_compute, _rouge_score_update
+from torchmetrics.functional.text.rouge import _rouge_score_compute, _rouge_score_update
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score.rouge_scorer import RougeScorer
+    from rouge_score.scoring import BootstrapAggregator
 else:
-    RougeScorer = ...
+    RougeScorer, BootstrapAggregator = object, object
 
 
 class ROUGEScore(Metric):
@@ -40,6 +41,8 @@ class ROUGEScore(Metric):
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
             A list of rouge types to calculate.
+        decimal_places:
+            The number of digits to round the computed the values to.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -80,6 +83,7 @@ class ROUGEScore(Metric):
         newline_sep: bool = False,
         use_stemmer: bool = False,
         rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+        decimal_places: int = 4,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -101,9 +105,9 @@ class ROUGEScore(Metric):
         self.newline_sep = newline_sep
         self.rouge_keys = rouge_keys
         self.use_stemmer = use_stemmer
-        self.aggregator = RougeBatchAggregator()
+        self.aggregator = BootstrapAggregator()
         self.scorer = RougeScorer(rouge_keys, use_stemmer=self.use_stemmer)
-        self.scores: Dict[str, List[Tensor]] = {key: [] for key in rouge_keys}
+        self.decimal_places = decimal_places
 
     def update(self, preds: List[str], targets: List[str]) -> None:  # type: ignore
         """
@@ -113,7 +117,9 @@ class ROUGEScore(Metric):
             preds: An iterable of predicted sentences.
             targets: An iterable of target sentences.
         """
-        _rouge_score_update(preds, targets, scores=self.scores, scorer=self.scorer, newline_sep=self.newline_sep)
+        _rouge_score_update(
+            preds, targets, scorer=self.scorer, aggregator=self.aggregator, newline_sep=self.newline_sep
+        )
 
     def compute(self) -> Dict[str, Tensor]:
         """
@@ -122,7 +128,7 @@ class ROUGEScore(Metric):
         Return:
             Python dictionary of rouge scores for each input rouge key.
         """
-        return _rouge_score_compute(self.scores, aggregator=self.aggregator)
+        return _rouge_score_compute(aggregator=self.aggregator, decimal_places=self.decimal_places)
 
     def __hash__(self) -> int:
         # override to hash list objects.
