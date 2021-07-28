@@ -134,7 +134,7 @@ def rouge_score(
     if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
         raise ValueError(
             'ROUGE metric requires that both nltk and rouge-score is installed.'
-            'Either as `pip install torchmetrics[text]`'
+            ' Either as `pip install torchmetrics[text]`'
         )
 
     if not isinstance(rouge_keys, tuple):

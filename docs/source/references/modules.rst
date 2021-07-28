@@ -518,7 +518,7 @@ BLEUScore
     :noindex:
 
 ROUGEScore
-~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autoclass:: torchmetrics.ROUGEScore
     :noindex:
