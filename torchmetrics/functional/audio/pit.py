@@ -129,8 +129,7 @@ def pit(
         best_perm of shape [batch]
 
     Example:
-        >>> import torch
-        >>> from torchmetrics.functional.audio import si_sdr, pit, permutate
+        >>> from torchmetrics.functional.audio import si_sdr
         >>> # [batch, spk, time]
         >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
         >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
@@ -139,8 +138,7 @@ def pit(
         tensor([-5.1091])
         >>> best_perm
         tensor([[0, 1]])
-        >>> preds_pmted = permutate(preds, best_perm)
-        >>> preds_pmted
+        >>> pit_permutate(preds, best_perm)
         tensor([[[-0.0579,  0.3560, -0.9604],
                  [-0.1719,  0.3205,  0.2951]]])
 
@@ -182,7 +180,7 @@ def pit(
     return best_metric, best_perm
 
 
-def permutate(preds: Tensor, perm: Tensor) -> Tensor:
+def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
     """ permutate estimate according to perm
 
     Args:
@@ -193,8 +191,7 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
         Tensor: the permutated version of estimate
 
     Example:
-        >>> import torch
-        >>> from torchmetrics.functional.audio import si_sdr, pit, permutate
+        >>> from torchmetrics.functional.audio import si_sdr
         >>> # [batch, spk, time]
         >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
         >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
@@ -203,8 +200,7 @@ def permutate(preds: Tensor, perm: Tensor) -> Tensor:
         tensor([-5.1091])
         >>> best_perm
         tensor([[0, 1]])
-        >>> preds_pmted = permutate(preds, best_perm)
-        >>> preds_pmted
+        >>> pit_permutate(preds, best_perm)
         tensor([[[-0.0579,  0.3560, -0.9604],
                  [-0.1719,  0.3205,  0.2951]]])
     """

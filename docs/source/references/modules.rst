@@ -41,7 +41,7 @@ the metric will be computed over the ``time`` dimension.
     tensor(16.1805)
 
 PIT
-~~~~~~
+~~~
 
 .. autoclass:: torchmetrics.PIT
     :noindex:

@@ -58,7 +58,7 @@ class PIT(Metric):
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> pit = PIT(si_snr, 'max')
-        >>> avg_pit_metric = pit(preds, target)
+        >>> pit(preds, target)
 
     Reference:
         [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for

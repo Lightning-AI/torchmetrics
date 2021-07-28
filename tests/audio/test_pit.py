@@ -45,7 +45,7 @@ inputs2 = Input(
 )
 
 
-def a_naive_implementation_of_pit_based_on_scipy(
+def naive_implementation_pit_scipy(
     preds: Tensor,
     target: Tensor,
     metric_func: Callable,
@@ -82,7 +82,7 @@ def a_naive_implementation_of_pit_based_on_scipy(
     return torch.from_numpy(np.stack(best_metrics)), torch.from_numpy(np.stack(best_perms))
 
 
-def average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
+def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
     """average the metric values
 
     Args:
@@ -96,8 +96,8 @@ def average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tens
     return metric_func(preds, target)[0].mean()
 
 
-snr_pit_scipy = partial(a_naive_implementation_of_pit_based_on_scipy, metric_func=snr, eval_func='max')
-si_sdr_pit_scipy = partial(a_naive_implementation_of_pit_based_on_scipy, metric_func=si_sdr, eval_func='max')
+snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=snr, eval_func='max')
+si_sdr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=si_sdr, eval_func='max')
 
 
 @pytest.mark.parametrize(
