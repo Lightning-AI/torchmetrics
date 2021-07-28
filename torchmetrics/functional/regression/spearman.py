@@ -53,6 +53,15 @@ def _rank_data(data: Tensor) -> Tensor:
 
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute Spearman Correlation Coefficient.
+    Checks for same shape and type of input tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
@@ -67,6 +76,22 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Te
 
 
 def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
+    """
+    Computes Spearman Correlation Coefficient.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        eps: Avoids ZeroDivisionError. default: 1e-6
+
+    Example:
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> preds, target = _spearman_corrcoef_update(preds, target)
+        >>> _spearman_corrcoef_compute(preds, target)
+        tensor(1.0000)
+    """
+
     preds = _rank_data(preds)
     target = _rank_data(target)
 
