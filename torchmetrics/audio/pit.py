@@ -54,11 +54,13 @@ class PIT(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics import PIT
-        >>> from torchmetrics.functional.audio import si_snr
+        >>> from torchmetrics.functional import si_snr
+        >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> pit = PIT(si_snr, 'max')
         >>> pit(preds, target)
+        tensor(-2.1065)
 
     Reference:
         [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
