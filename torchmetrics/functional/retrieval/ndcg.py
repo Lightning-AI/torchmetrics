@@ -61,6 +61,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = N
     ideal_dcg = _dcg(ideal_target)
     target_dcg = _dcg(sorted_target)
 
+    # filter undefined scores
     all_irrelevant = ideal_dcg == 0
     target_dcg[all_irrelevant] = 0
     target_dcg[~all_irrelevant] /= ideal_dcg[~all_irrelevant]
