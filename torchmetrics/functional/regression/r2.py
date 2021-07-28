@@ -56,6 +56,30 @@ def _r2_score_compute(
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
+    """
+    Computes R2 score.
+
+    Args:
+        sum_squared_obs: Sum of square of all observations
+        sum_obs: Sum of all observations
+        rss: Residual sum of squares
+        n_obs: Number of predictions or observations
+        adjusted: number of independent regressors for calculating adjusted r2 score.
+            Default 0 (standard r2 score).
+        multioutput: Defines aggregation in the case of multiple output scores. Can be one
+            of the following strings (default is `'uniform_average'`.):
+
+            * `'raw_values'` returns full set of scores
+            * `'uniform_average'` scores are uniformly averaged
+            * `'variance_weighted'` scores are weighted by their individual variances
+
+    Example:
+        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
+        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
+        >>> sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
+        >>> _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, multioutput="raw_values")
+        tensor([0.9654, 0.9082])
+    """
     mean_obs = sum_obs / n_obs
     tss = sum_squared_obs - sum_obs * mean_obs
     raw_scores = 1 - (rss / tss)
@@ -146,5 +170,5 @@ def r2_score(
         >>> r2_score(preds, target, multioutput='raw_values')
         tensor([0.9654, 0.9082])
     """
-    sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
-    return _r2_score_compute(sum_squared_error, sum_error, residual, total, adjusted, multioutput)
+    sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
+    return _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, adjusted, multioutput)
