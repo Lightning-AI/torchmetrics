@@ -53,15 +53,14 @@ class TestPearsonCorrcoef(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pearson_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_pearson_corrcoef(self, preds, target, ddp):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=PearsonCorrcoef,
             sk_metric=_sk_pearsonr,
-            dist_sync_on_step=dist_sync_on_step,
+            dist_sync_on_step=False,
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
