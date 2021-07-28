@@ -67,16 +67,16 @@ def _pearson_corrcoef_compute(
     corr_xy: Tensor,
     nb: Tensor,
 ) -> Tensor:
-    """ 
+    """
     Computes the final pearson correlation based on accumulated statistics
-    
+
     Args:
         var_x: variance estimate of x tensor
         var_y: variance estimate of y tensor
         corr_xy: covariance estimate between x and y tensor
         nb: number of observations
-        
-    
+
+
     """
     var_x /= (nb - 1)
     var_y /= (nb - 1)
