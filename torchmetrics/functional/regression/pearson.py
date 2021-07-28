@@ -20,6 +20,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _pearson_corrcoef_update(
+    preds: Tensor,
+    target: Tensor,
     mean_x: Tensor,
     mean_y: Tensor,
     var_x: Tensor,
