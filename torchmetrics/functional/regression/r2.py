@@ -39,34 +39,34 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
     if len(preds) < 2:
         raise ValueError('Needs at least two samples to calculate r2 score.')
 
-    sum_error = torch.sum(target, dim=0)
-    sum_squared_error = torch.sum(target * target, dim=0)
-    diff = target - preds
-    residual = torch.sum(diff * diff, dim=0)
-    total = target.size(0)
+    sum_obs = torch.sum(target, dim=0)
+    sum_squared_obs = torch.sum(target * target, dim=0)
+    residual = target - preds
+    rss = torch.sum(residual * residual, dim=0)
+    n_obs = target.size(0)
 
-    return sum_squared_error, sum_error, residual, total
+    return sum_squared_obs, sum_obs, rss, n_obs
 
 
 def _r2_score_compute(
-    sum_squared_error: Tensor,
-    sum_error: Tensor,
-    residual: Tensor,
-    total: Tensor,
+    sum_squared_obs: Tensor,
+    sum_obs: Tensor,
+    rss: Tensor,
+    n_obs: Tensor,
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
-    mean_error = sum_error / total
-    diff = sum_squared_error - sum_error * mean_error
-    raw_scores = 1 - (residual / diff)
+    mean_obs = sum_obs / n_obs
+    tss = sum_squared_obs - sum_obs * mean_obs
+    raw_scores = 1 - (rss / tss)
 
     if multioutput == "raw_values":
         r2 = raw_scores
     elif multioutput == "uniform_average":
         r2 = torch.mean(raw_scores)
     elif multioutput == "variance_weighted":
-        diff_sum = torch.sum(diff)
-        r2 = torch.sum(diff / diff_sum * raw_scores)
+        tss_sum = torch.sum(tss)
+        r2 = torch.sum(tss / tss_sum * raw_scores)
     else:
         raise ValueError(
             'Argument `multioutput` must be either `raw_values`,'
@@ -77,15 +77,15 @@ def _r2_score_compute(
         raise ValueError('`adjusted` parameter should be an integer larger or' ' equal to 0.')
 
     if adjusted != 0:
-        if adjusted > total - 1:
+        if adjusted > n_obs - 1:
             rank_zero_warn(
                 "More independent regressions than data points in"
                 " adjusted r2 score. Falls back to standard r2 score.", UserWarning
             )
-        elif adjusted == total - 1:
+        elif adjusted == n_obs - 1:
             rank_zero_warn("Division by zero in adjusted r2 score. Falls back to" " standard r2 score.", UserWarning)
         else:
-            r2 = 1 - (1 - r2) * (total - 1) / (total - adjusted - 1)
+            r2 = 1 - (1 - r2) * (n_obs - 1) / (n_obs - adjusted - 1)
     return r2
 
 
