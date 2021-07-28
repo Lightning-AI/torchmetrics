@@ -20,8 +20,6 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _pearson_corrcoef_update(
-    preds: Tensor,
-    target: Tensor,
     mean_x: Tensor,
     mean_y: Tensor,
     var_x: Tensor,
@@ -29,7 +27,18 @@ def _pearson_corrcoef_update(
     corr_xy: Tensor,
     n_prior: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
-    """ updates current estimates of the mean, cov and n_obs with new data for calculating pearsons correlation """
+    """
+    Updates and returns variables required to compute Pearson Correlation Coefficient.
+    Checks for same shape of input tensors.
+
+    Args:
+        mean_x: current mean estimate of x tensor
+        mean_y: current mean estimate of y tensor
+        var_x: current variance estimate of x tensor
+        var_y: current variance estimate of y tensor
+        corr_xy: current covariance estimate between x and y tensor
+        n_prior: current number of observed observations
+    """
     # Data checking
     _check_same_shape(preds, target)
     preds = preds.squeeze()
@@ -56,7 +65,17 @@ def _pearson_corrcoef_compute(
     corr_xy: Tensor,
     nb: Tensor,
 ) -> Tensor:
-    """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
+    """ 
+    Computes the final pearson correlation based on accumulated statistics
+    
+    Args:
+        var_x: variance estimate of x tensor
+        var_y: variance estimate of y tensor
+        corr_xy: covariance estimate between x and y tensor
+        nb: number of observations
+        
+    
+    """
     var_x /= (nb - 1)
     var_y /= (nb - 1)
     corr_xy /= (nb - 1)
