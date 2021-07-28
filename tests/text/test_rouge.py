@@ -18,7 +18,7 @@ import pytest
 import torch
 from torch import tensor
 
-from torchmetrics.functional.text.rouge import ALLOWED_ROUGE_KEYS, rouge_score
+from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 
