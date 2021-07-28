@@ -18,7 +18,7 @@ import pytest
 import torch
 from torch import tensor
 
-from torchmetrics.functional.text.rouge import rouge_score
+from torchmetrics.functional.text.rouge import ALLOWED_ROUGE_KEYS, rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 
@@ -187,11 +187,20 @@ def test_rouge_metric_class_batches(
 
 def test_rouge_metric_raises_errors_and_warnings():
     """ Test that expected warnings and errors are raised """
-    if not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE):
+    if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
         with pytest.raises(
             ValueError,
             match='ROUGE metric requires that both nltk and rouge-score is installed.'
-            'Either as `pip install torchmetrics[text]`'
-            ' or `pip install nltk rouge-score`'
+            'Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
         ):
             ROUGEScore()
+
+
+def test_rouge_metric_wrong_key_value_error():
+    key = ("rouge1", "rouge")
+
+    with pytest.raises(ValueError):
+        ROUGEScore(rouge_keys=key)
+
+    with pytest.raises(ValueError):
+        rouge_score(PREDS, TARGETS, rouge_keys=key)

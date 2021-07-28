@@ -25,6 +25,10 @@ if _ROUGE_SCORE_AVAILABLE:
 else:
     RougeScorer, AggregateScore, BootstrapAggregator = object, object, object
 
+ALLOWED_ROUGE_KEYS = (
+    "rouge1", "rouge2", "rouge3", "rouge4", "rouge5", "rouge6", "rouge7", "rouge8", "rouge9", "rougeL", "rougeLsum"
+)
+
 
 def add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
@@ -75,7 +79,7 @@ def rouge_score(
     targets: Union[str, List[str]],
     newline_sep: bool = False,
     use_stemmer: bool = False,
-    rouge_keys: Tuple[str] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+    rouge_keys: Union[str, Tuple[str]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
     decimal_places: int = 4
 ) -> Dict[str, Tensor]:
     """
@@ -92,6 +96,7 @@ def rouge_score(
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
             A list of rouge types to calculate.
+            Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
         decimal_places:
             The number of digits to round the computed the values to.
 
@@ -116,15 +121,27 @@ def rouge_score(
          'rougeLsum_precision': 0.25,
          'rougeLsum_recall': 0.25}
 
+    Raises:
+        ValueError:
+            If the python packages ``nltk`` or ``rouge-score`` are not installed.
+        ValueError:
+            If any of the ``rouge_keys`` does not belong to the allowed set of keys.
+
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
     """
 
-    if not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE):
+    if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
         raise ValueError(
             'ROUGE metric requires that both nltk and rouge-score is installed.'
             'Either as `pip install torchmetrics[text]`'
         )
+
+    if not isinstance(rouge_keys, tuple):
+        rouge_keys = tuple([rouge_keys])
+    for key in rouge_keys:
+        if key not in ALLOWED_ROUGE_KEYS:
+            raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")
 
     if isinstance(preds, str):
         preds = [preds]
