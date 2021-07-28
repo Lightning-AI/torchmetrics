@@ -161,20 +161,21 @@ def pit(
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
 
     # find best
-    if spk_num < 3 or _SCIPY_AVAILABLE is None:
-        if spk_num >= 3 and _SCIPY_AVAILABLE is None:
+    op = torch.max if eval_func == 'max' else torch.min
+    if spk_num < 3 or not _SCIPY_AVAILABLE:
+        if spk_num >= 3 and not _SCIPY_AVAILABLE:
             warnings.warn(
                 f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance"
             )
 
         best_metric, best_perm = _find_best_perm_by_exhuastive_method(
             metric_mtx,
-            torch.max if eval_func == 'max' else torch.min,
+            op
         )
     else:
         best_metric, best_perm = _find_best_perm_by_linear_sum_assignment(
             metric_mtx,
-            torch.max if eval_func == 'max' else torch.min,
+            op
         )
 
     return best_metric, best_perm
