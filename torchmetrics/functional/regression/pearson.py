@@ -23,7 +23,15 @@ def _pearson_corrcoef_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, Tensor]:
-    """ updates current estimates of the mean, cov and n_obs with new data for calculating pearsons correlation """
+    """
+    Updates and returns variables required to compute Pearson Correlation Coefficient.
+    Checks for same shape of input tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     # Data checking
     _check_same_shape(preds, target)
     preds = preds.squeeze()
@@ -35,7 +43,22 @@ def _pearson_corrcoef_update(
 
 
 def _pearson_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
-    """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
+    """
+    Computes Pearson Correlation Coefficient.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        eps: Avoids ZeroDivisionError. default: 1e-6
+
+    Example:
+        >>> target = torch.tensor([3, -0.5, 2, 7])
+        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> preds, target = _pearson_corrcoef_update(preds, target)
+        >>> _pearson_corrcoef_compute(preds, target)
+        tensor(0.9849)
+    """
+
     preds_diff = preds - preds.mean()
     target_diff = target - target.mean()
 
