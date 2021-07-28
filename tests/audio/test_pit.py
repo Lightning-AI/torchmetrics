@@ -120,7 +120,7 @@ class TestPIT(MetricTester):
             preds,
             target,
             PIT,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
+            sk_metric=partial(_average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
