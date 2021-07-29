@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Tuple, Union, Callable
+from typing import Any, Optional, Callable
 
 import torch
 from torch import Tensor, tensor
@@ -21,15 +21,15 @@ from torchmetrics.metric import Metric
 
 
 class CRPS(Metric):
-    r""" 
+    r"""
     CRPS metric calculates the Continuous Ranked Probability Score which corresponds to the
     that is mean squared error between a predicted cumulative density function (CDF) and the
     true underlying CDF:
-    
+
     .. math::
         CRPS(F, x) = \int_{-\infty}^\infty (F(y) - \mathbb{1}(y - x))^2 dy
 
-    where :math:`F` is the CDF function and :math:`x` is a observation. It should be noted 
+    where :math:`F` is the CDF function and :math:`x` is a observation. It should be noted
     the CRPS metric is closely related to the `Brier Score <https://en.wikipedia.org/wiki/Brier_score>`_.
 
     Forward accepts

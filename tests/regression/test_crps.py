@@ -15,64 +15,75 @@
 
 from collections import namedtuple
 
-import properscoring as ps
+from properscoring import crps_ensemble
 import pytest
 import torch
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, EXTRA_DIM
 from torchmetrics.functional.regression.crps import crps
 from torchmetrics.regression.crps import CRPS
 
 seed_all(42)
 
-num_targets = 5
+num_ensemble = 5
 
 Input = namedtuple('Input', ["preds", "target"])
 
-_single_target_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+_single_ensample_inputs = Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+_multi_ensample_inputs = Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_ensemble),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
+
+_extra_dim_inputs = Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_ensemble, EXTRA_DIM),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)
+)
+
+
+def _compare_fn(preds, target):
+    n_ensemble_members = preds.shape[1]
+    ensemble_sum_scale_factor = (1 / (n_ensemble_members * (n_ensemble_members - 1))) if n_ensemble_members > 1 else 1.0
+    return ensemble_sum_scale_factor * crps_ensemble(target, preds, axis=1).mean()
+
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
+        (_single_ensample_inputs.preds, _single_ensample_inputs.target),
+        (_multi_ensample_inputs.preds, _multi_ensample_inputs.target),
+        (_extra_dim_inputs.preds, _extra_dim_inputs.target)
     ],
 )
-class TestCosineSimilarity(MetricTester):
-
+class TestCSPR(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_cosine_similarity(self, reduction, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_cspr_module(self, preds, target, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            CosineSimilarity,
-            partial(sk_metric, reduction=reduction),
+            CRPS,
+            _compare_fn,
             dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
         )
 
-    def test_cosine_similarity_functional(self, reduction, preds, target, sk_metric):
+    def test_cspr_functional(self, preds, target):
         self.run_functional_metric_test(
             preds,
             target,
-            cosine_similarity,
-            partial(sk_metric, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            crps,
+            _compare_fn
         )
 
 
-def test_error_on_different_shape(metric_class=CosineSimilarity):
-    metric = metric_class()
+@pytest.mark.parametrize("preds_shape, target_shape", [((10, 3, 5), (10,)), ((10, 3), (5,))])
+def test_error_on_different_shape(preds_shape, target_shape):
+    metric = CRPS()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+        metric(torch.randn(*preds_shape), torch.randn(*target_shape))
