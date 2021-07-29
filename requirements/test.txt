@@ -20,6 +20,7 @@ properscoring
 
 # add extra requirements
 -r image.txt
+-r text.txt
 
 # audio
 pypesq

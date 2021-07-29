@@ -31,6 +31,7 @@
 [![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-pw5v393p-qRaDgEk24~EjiZNBpSQFgQ)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PyTorchLightning/metrics/master.svg)](https://results.pre-commit.ci/latest/github/PyTorchLightning/metrics/master)
 
 ---
 
@@ -64,12 +65,18 @@ Pip from archive
 pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
 
+Extra dependencies for specialized metrics:
+```bash
+pip install torchmetrics[image]
+pip install torchmetrics[text]
+```
+
 </details>
 
 ---
 
 ## What is Torchmetrics
-TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 50+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
 * Reduces boilerplate
@@ -238,22 +245,45 @@ target = torch.randint(5, (10,))
 acc = torchmetrics.functional.accuracy(preds, target)
 ```
 
-### Implemented metrics
+### Covered domains and example metrics
+We currently have implemented metrics within the following domains:
 
-* [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy)
-* [AveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#averageprecision)
-* [AUC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auc)
-* [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
-* [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1)
-* [Hamming Distance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#hamming-distance)
-* [ROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#roc)
-* [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance)
-* [MeanSquaredError](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meansquarederror)
-* [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-* [bleu_score](https://torchmetrics.readthedocs.io/en/latest/references/functional.html#bleu-score-func)
-* [embedding_similarity](https://torchmetrics.readthedocs.io/en/latest/references/functional.html#embedding-similarity-func)
+- Audio (
+    [SI_SDR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-sdr),
+    [SI_SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-snr),
+    [SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#snr)
+)
+- Classification (
+    [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
+    [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1),
+    [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
+    and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
+)
+- Image (
+    [FID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#fid),
+    [KID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#kid),
+    [SSIM](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ssim)
+    and [2 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
+)
+- Regression (
+    [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
+    [PearsonCorrcoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
+    [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
+    and [7 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
+)
+- Information Retrieval (
+    [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
+    [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
+    [RetrievalNormalizedDCG](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalnormalizeddcg)
+    and [3 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
+)
+- Text (
+    [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
+    [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
+    [WER](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#wer)
+)
 
-And many more!
+In total torchmetrics contains 50+ metrics!
 
 ## Contribute!
 The lightning + torchmetric team is hard at work adding even more metrics.

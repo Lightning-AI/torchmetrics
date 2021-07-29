@@ -114,10 +114,10 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
-kldivergence [func]
-~~~~~~~~~~~~~~~~~~~
+kl_divergence [func]
+~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.kldivergence
+.. autofunction:: torchmetrics.functional.kl_divergence
     :noindex:
 
 matthews_corrcoef [func]
@@ -127,7 +127,7 @@ matthews_corrcoef [func]
     :noindex:
 
 roc [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.roc
     :noindex:
@@ -193,6 +193,29 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
+*************
+Image Metrics
+*************
+
+image_gradients [func]
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.image_gradients
+    :noindex:
+
+
+psnr [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.psnr
+    :noindex:
+
+
+ssim [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ssim
+    :noindex:
 
 ******************
 Regression Metrics
@@ -216,13 +239,6 @@ explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.explained_variance
-    :noindex:
-
-
-image_gradients [func]
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.image_gradients
     :noindex:
 
 
@@ -261,17 +277,10 @@ pearson_corrcoef [func]
     :noindex:
 
 
-psnr [func]
-~~~~~~~~~~~
+r2_score [func]
+~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.psnr
-    :noindex:
-
-
-r2score [func]
-~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.r2score
+.. autofunction:: torchmetrics.functional.r2_score
     :noindex:
 
 
@@ -282,21 +291,10 @@ spearman_corrcoef [func]
     :noindex:
 
 
-ssim [func]
-~~~~~~~~~~~
+symmetric_mean_absolute_percentage_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.ssim
-    :noindex:
-
-
-***
-NLP
-***
-
-bleu_score [func]
-~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.bleu_score
+.. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
     :noindex:
 
 ********
@@ -352,4 +350,25 @@ retrieval_normalized_dcg [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
+    :noindex:
+
+****
+Text
+****
+
+bleu_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bleu_score
+    :noindex:
+
+rouge_score [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.rouge_score
+
+wer [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.wer
     :noindex:

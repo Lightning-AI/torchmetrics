@@ -21,6 +21,7 @@ from torch import tensor
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
+from tests.classification.inputs import _input_multilabel
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.average_precision import AveragePrecision
@@ -55,6 +56,12 @@ def _sk_avg_prec_multiclass_prob(preds, target, num_classes=1):
     return _sk_average_precision_score(y_true=sk_target, probas_pred=sk_preds, num_classes=num_classes)
 
 
+def _sk_avg_prec_multilabel_prob(preds, target, num_classes):
+    sk_preds = preds.reshape(-1, num_classes).numpy()
+    sk_target = target.view(-1, num_classes).numpy()
+    return sk_average_precision_score(sk_target, sk_preds, average=None)
+
+
 def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1):
     sk_preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1).numpy()
     sk_target = target.view(-1).numpy()
@@ -66,6 +73,7 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1):
         (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_binary_prob, 1),
         (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_avg_prec_multiclass_prob, NUM_CLASSES),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_avg_prec_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_multilabel.preds, _input_multilabel.target, _sk_avg_prec_multilabel_prob, NUM_CLASSES),
     ]
 )
 class TestAveragePrecision(MetricTester):

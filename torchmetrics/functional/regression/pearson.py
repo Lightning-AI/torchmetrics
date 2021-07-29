@@ -22,8 +22,25 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _pearson_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
-    """ updates current estimates of the mean, cov and n_obs with new data for calculating pearsons correlation """
+    mean_x: Tensor,
+    mean_y: Tensor,
+    var_x: Tensor,
+    var_y: Tensor,
+    corr_xy: Tensor,
+    n_prior: Tensor,
+) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute Pearson Correlation Coefficient.
+    Checks for same shape of input tensors.
+
+    Args:
+        mean_x: current mean estimate of x tensor
+        mean_y: current mean estimate of y tensor
+        var_x: current variance estimate of x tensor
+        var_y: current variance estimate of y tensor
+        corr_xy: current covariance estimate between x and y tensor
+        n_prior: current number of observed observations
+    """
     # Data checking
     _check_same_shape(preds, target)
     preds = preds.squeeze()
@@ -31,24 +48,40 @@ def _pearson_corrcoef_update(
     if preds.ndim > 1 or target.ndim > 1:
         raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
 
-    return preds, target
+    n_obs = preds.numel()
+    mx_new = (n_prior * mean_x + preds.mean() * n_obs) / (n_prior + n_obs)
+    my_new = (n_prior * mean_y + target.mean() * n_obs) / (n_prior + n_obs)
+    n_prior += n_obs
+    var_x += ((preds - mx_new) * (preds - mean_x)).sum()
+    var_y += ((target - my_new) * (target - mean_y)).sum()
+    corr_xy += ((preds - mx_new) * (target - mean_y)).sum()
+    mean_x = mx_new
+    mean_y = my_new
+
+    return mean_x, mean_y, var_x, var_y, corr_xy, n_prior
 
 
-def _pearson_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
-    """ computes the final pearson correlation based on covariance matrix and number of observatiosn """
-    preds_diff = preds - preds.mean()
-    target_diff = target - target.mean()
+def _pearson_corrcoef_compute(
+    var_x: Tensor,
+    var_y: Tensor,
+    corr_xy: Tensor,
+    nb: Tensor,
+) -> Tensor:
+    """
+    Computes the final pearson correlation based on accumulated statistics
 
-    cov = (preds_diff * target_diff).mean()
-    preds_std = torch.sqrt((preds_diff * preds_diff).mean())
-    target_std = torch.sqrt((target_diff * target_diff).mean())
+    Args:
+        var_x: variance estimate of x tensor
+        var_y: variance estimate of y tensor
+        corr_xy: covariance estimate between x and y tensor
+        nb: number of observations
 
-    denom = preds_std * target_std
-    # prevent division by zero
-    if denom == 0:
-        denom += eps
 
-    corrcoef = cov / denom
+    """
+    var_x /= (nb - 1)
+    var_y /= (nb - 1)
+    corr_xy /= (nb - 1)
+    corrcoef = (corr_xy / (var_x * var_y).sqrt()).squeeze()
     return torch.clamp(corrcoef, -1.0, 1.0)
 
 
@@ -67,5 +100,8 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> pearson_corrcoef(preds, target)
         tensor(0.9849)
     """
-    preds, target = _pearson_corrcoef_update(preds, target)
-    return _pearson_corrcoef_compute(preds, target)
+    _temp = torch.zeros(1, dtype=preds.dtype, device=preds.device)
+    mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
+    var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
+    _, _, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb)
+    return _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)
