@@ -139,7 +139,7 @@ class ROUGEScore(Metric):
 
     def compute(self) -> Dict[str, Tensor]:
         """
-        Calculate (Agregate and provide confidence intervals) ROUGE score
+        Calculate (Aggregate and provide confidence intervals) ROUGE score
 
         Return:
             Python dictionary of rouge scores for each input rouge key.

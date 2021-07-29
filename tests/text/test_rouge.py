@@ -24,9 +24,9 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILAB
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score.rouge_scorer import RougeScorer
-    from rouge_score.scoring import AggregateScore, BootstrapAggregator
+    from rouge_score.scoring import BootstrapAggregator
 else:
-    RougeScorer, AggregateScore, BootstrapAggregator = object, object, object
+    RougeScorer, BootstrapAggregator = object, object
 
 ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
@@ -93,7 +93,6 @@ def test_rouge_metric_functional_single_sentence(
 
 
 @pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason='test requires nltk and rouge-score')
-# @pytest.mark.parametrize("rouge_metric, expected", [("rouge1_recall", 0.25)])
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
     [
