@@ -78,7 +78,7 @@ class CRPS(Metric):
         self.add_state("ensemble_sum_scale_factor", default=tensor(1.0), dist_reduce_fx="mean")
         self.add_state("ensemble_sum", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor):
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Update state with predictions and targets.
 

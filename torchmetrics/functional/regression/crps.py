@@ -45,7 +45,7 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, float, flo
     return batch_size, diff, ensemble_sum_scale_factor, ensemble_sum
 
 
-def _crps_compute(batch_size: int, diff: Tensor, ensemble_sum_scale_factor, ensemble_sum) -> Tensor:
+def _crps_compute(batch_size: int, diff: Tensor, ensemble_sum_scale_factor: float, ensemble_sum: Tensor) -> Tensor:
     return (1 / batch_size) * (diff - (ensemble_sum_scale_factor * ensemble_sum))
 
 
