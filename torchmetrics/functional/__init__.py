@@ -58,4 +58,5 @@ from torchmetrics.functional.retrieval.recall import retrieval_recall  # noqa: F
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank  # noqa: F401
 from torchmetrics.functional.self_supervised import embedding_similarity  # noqa: F401
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
+from torchmetrics.functional.text.rouge import rouge_score  # noqa: F401
 from torchmetrics.functional.text.wer import wer  # noqa: F401
