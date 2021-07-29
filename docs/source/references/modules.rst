@@ -40,6 +40,12 @@ the metric will be computed over the ``time`` dimension.
     >>> snr_val
     tensor(16.1805)
 
+PIT
+~~~
+
+.. autoclass:: torchmetrics.PIT
+    :noindex:
+
 SI_SDR
 ~~~~~~
 
@@ -515,6 +521,12 @@ BLEUScore
 ~~~~~~~~~
 
 .. autoclass:: torchmetrics.BLEUScore
+    :noindex:
+
+ROUGEScore
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ROUGEScore
     :noindex:
 
 
