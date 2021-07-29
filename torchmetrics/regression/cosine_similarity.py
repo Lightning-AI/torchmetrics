@@ -79,7 +79,7 @@ class CosineSimilarity(Metric):
         )
         allowed_reduction = ('sum', 'mean', 'none', None)
         if reduction not in allowed_reduction:
-            raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction}" f" but got {reduction}")
+            raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction} but got {reduction}")
         self.reduction = reduction
 
         self.add_state("preds", [], dist_reduce_fx="cat")
