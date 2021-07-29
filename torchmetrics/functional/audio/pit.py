@@ -107,8 +107,9 @@ def pit(
     eval_func: str = 'max',
     **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
-    """ Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method in
-    speech separation field in order to calculate audio metrics in a permutation invariant way.
+    """ 
+    Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method [1]
+    in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     Args:
         target:
@@ -150,7 +151,7 @@ def pit(
     _check_same_shape(preds, target)
     if eval_func not in ['max', 'min']:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
-    if len(target.shape) < 2:
+    if target.ndim < 2:
         raise ValueError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
     # calculate the metric matrix
