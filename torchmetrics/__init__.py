@@ -37,12 +37,12 @@ from torchmetrics.classification import (  # noqa: E402, F401
     Specificity,
     StatScores,
 )
-from torchmetrics.collections import MetricCollection  # noqa: F401 E402
-from torchmetrics.image import FID, IS, KID  # noqa: F401 E402
-from torchmetrics.metric import Metric  # noqa: F401 E402
-from torchmetrics.regression import (  # noqa: F401 E402
-    CosineSimilarity,
+from torchmetrics.collections import MetricCollection  # noqa: E402, F401
+from torchmetrics.image import FID, IS, KID  # noqa: E402, F401
+from torchmetrics.metric import Metric  # noqa: E402, F401
+from torchmetrics.regression import (  # noqa: E402, F401
     CRPS,
+    CosineSimilarity,
     ExplainedVariance,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,

@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from collections import namedtuple
 
-from properscoring import crps_ensemble
 import pytest
 import torch
+from properscoring import crps_ensemble
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, EXTRA_DIM
+from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
 from torchmetrics.functional.regression.crps import crps
 from torchmetrics.regression.crps import CRPS
 
@@ -54,13 +53,12 @@ def _compare_fn(preds, target):
 
 @pytest.mark.parametrize(
     "preds, target",
-    [
-        (_single_ensample_inputs.preds, _single_ensample_inputs.target),
-        (_multi_ensample_inputs.preds, _multi_ensample_inputs.target),
-        (_extra_dim_inputs.preds, _extra_dim_inputs.target)
-    ],
+    [(_single_ensample_inputs.preds, _single_ensample_inputs.target),
+     (_multi_ensample_inputs.preds, _multi_ensample_inputs.target),
+     (_extra_dim_inputs.preds, _extra_dim_inputs.target)],
 )
 class TestCSPR(MetricTester):
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_cspr_module(self, preds, target, ddp, dist_sync_on_step):
@@ -74,15 +72,10 @@ class TestCSPR(MetricTester):
         )
 
     def test_cspr_functional(self, preds, target):
-        self.run_functional_metric_test(
-            preds,
-            target,
-            crps,
-            _compare_fn
-        )
+        self.run_functional_metric_test(preds, target, crps, _compare_fn)
 
 
-@pytest.mark.parametrize("preds_shape, target_shape", [((10, 3, 5), (10,)), ((10, 3), (5,))])
+@pytest.mark.parametrize("preds_shape, target_shape", [((10, 3, 5), (10, )), ((10, 3), (5, ))])
 def test_error_on_different_shape(preds_shape, target_shape):
     metric = CRPS()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
