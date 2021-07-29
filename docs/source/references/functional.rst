@@ -9,6 +9,13 @@ Functional metrics
 Audio Metrics
 *************
 
+pit [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pit
+    :noindex:
+
+
 si_sdr [func]
 ~~~~~~~~~~~~~
 
