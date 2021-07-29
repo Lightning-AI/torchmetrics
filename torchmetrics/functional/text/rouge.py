@@ -59,7 +59,28 @@ def _rouge_score_update(
     aggregator: BootstrapAggregator,
     newline_sep: bool = False,
 ) -> None:
+    """
+    Update the rouge score with the current set of predicted and target sentences.
 
+    Args:
+        preds:
+            An iterable of predicted sentences.
+        targets:
+            An iterable of target sentences.
+        scorer:
+            An instance of the ``RougeScorer`` class from the ``rouge_score`` package.
+        aggregator:
+            An instance of the ``BootstrapAggregator`` from the from the ``rouge_score`` package.
+        newline_sep:
+            New line separate the inputs.
+
+    Example:
+        >>> targets = "Is your name John".split()
+        >>> preds = "My name is John".split()
+        >>> aggregator = BootstrapAggregator()
+        >>> scorer = RougeScorer(rouge_types=("rouge1", "rouge2", "rougeL", "rougeLsum"), use_stemmer=False)
+        >>> _rouge_score_update(preds, targets, scorer=scorer, aggregator=aggregator, newline_sep=False)
+    """
     for pred, target in zip(preds, targets):
         # rougeLsum expects "\n" separated sentences within a summary
         if newline_sep:
@@ -70,6 +91,15 @@ def _rouge_score_update(
 
 
 def _rouge_score_compute(aggregator: BootstrapAggregator, decimal_places: int = 4) -> Dict[str, Tensor]:
+    """
+    Compute the combined ROUGE metric for all the input set of predicted and target sentences.
+
+    Args:
+        aggregator:
+            An instance of the ``BootstrapAggregator`` from the from the ``rouge_score`` package.
+        decimal_places:
+            The number of digits to round the computed the values to.
+    """
     result = aggregator.aggregate()
     return format_rouge_results(result, decimal_places)
 
@@ -79,7 +109,7 @@ def rouge_score(
     targets: Union[str, List[str]],
     newline_sep: bool = False,
     use_stemmer: bool = False,
-    rouge_keys: Union[str, Tuple[str]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+    rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
     decimal_places: int = 4
 ) -> Dict[str, Tensor]:
     """
@@ -134,7 +164,7 @@ def rouge_score(
     if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
         raise ValueError(
             'ROUGE metric requires that both nltk and rouge-score is installed.'
-            ' Either as `pip install torchmetrics[text]`'
+            ' Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
         )
 
     if not isinstance(rouge_keys, tuple):

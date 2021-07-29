@@ -85,7 +85,7 @@ class ROUGEScore(Metric):
         self,
         newline_sep: bool = False,
         use_stemmer: bool = False,
-        rouge_keys: Union[str, Tuple[str]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+        rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         decimal_places: int = 4,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -102,7 +102,7 @@ class ROUGEScore(Metric):
         if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
             raise ValueError(
                 'ROUGE metric requires that both nltk and rouge-score is installed.'
-                'Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
+                ' Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
             )
 
         if not isinstance(rouge_keys, tuple):
