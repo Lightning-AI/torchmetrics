@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class PIT(Metric):
-    """ 
+    """
     Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method [1]
     in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
