@@ -49,7 +49,7 @@ def main(path_req: str, torch_version: Optional[str] = None) -> None:
         print(req)
         return
 
-    with open(path_req, "r") as fp:
+    with open(path_req) as fp:
         req = fp.readlines()
     # remove comments
     req = [r[:r.index("#")] if "#" in r else r for r in req]

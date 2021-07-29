@@ -119,7 +119,7 @@ def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
     assert all(tests[0]['argnames'] == x['argnames'] for x in tests[1:]), "the header must be the same for all tests"
-    return dict(argnames=tests[0]['argnames'], argvalues=sum([x['argvalues'] for x in tests], []))
+    return dict(argnames=tests[0]['argnames'], argvalues=sum((x['argvalues'] for x in tests), []))
 
 
 _errors_test_functional_metric_parameters_default = dict(
@@ -134,6 +134,19 @@ _errors_test_functional_metric_parameters_default = dict(
         (_irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers", {}),
         # check targets are between 0 and 1
         (_irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values", {}),
+    ]
+)
+
+_errors_test_functional_metric_parameters_with_nonbinary = dict(
+    argnames="preds,target,message,metric_args",
+    argvalues=[
+        # check input shapes are consistent (func)
+        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        # check input tensors are not empty
+        (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
+        # check on input dtypes
+        (_irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats", {}),
+        (_irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers", {}),
     ]
 )
 
@@ -164,6 +177,42 @@ _errors_test_class_metric_parameters_no_neg_target = dict(
             _irs_all.indexes, _irs_all.preds, _irs_all.target,
             "`compute` method was provided with a query with no negative target.", dict(empty_target_action="error")
         ),
+    ]
+)
+
+_errors_test_class_metric_parameters_with_nonbinary = dict(
+    argnames="indexes,preds,target,message,metric_args",
+    argvalues=[
+        (None, _irs.preds, _irs.target, "`indexes` cannot be None", dict(empty_target_action="error")),
+        # check when input arguments are invalid
+        (
+            _irs.indexes, _irs.preds, _irs.target, "`empty_target_action` received a wrong value `casual_argument`.",
+            dict(empty_target_action="casual_argument")
+        ),
+        # check input shapes are consistent
+        (
+            _irs_mis_sz.indexes, _irs_mis_sz.preds, _irs_mis_sz.target,
+            "`indexes`, `preds` and `target` must be of the same shape", dict(empty_target_action="skip")
+        ),
+        # check input tensors are not empty
+        (
+            _irs_empty.indexes, _irs_empty.preds,
+            _irs_empty.target, "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
+            dict(empty_target_action="skip")
+        ),
+        # check on input dtypes
+        (
+            _irs.indexes.bool(), _irs.preds, _irs.target, "`indexes` must be a tensor of long integers",
+            dict(empty_target_action="skip")
+        ),
+        (
+            _irs.indexes, _irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats",
+            dict(empty_target_action="skip")
+        ),
+        (
+            _irs.indexes, _irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers",
+            dict(empty_target_action="skip")
+        )
     ]
 )
 
