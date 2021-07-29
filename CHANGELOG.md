@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `None` as reduction option in `CosineSimilarity` metric ([#400](https://github.com/PyTorchLightning/metrics/pull/400))
 
 
+- Added Permutation Invariant Training metric (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
+
+
 - Added ROUGE Metric ([#399](https://github.com/PyTorchLightning/metrics/issues/399))
 
 
