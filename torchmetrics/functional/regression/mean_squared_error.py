@@ -20,6 +20,14 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+    """
+    Updates and returns variables required to compute Mean Squared Error.
+    Checks for same shape of input tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
     _check_same_shape(preds, target)
     diff = preds - target
     sum_squared_error = torch.sum(diff * diff)
@@ -28,6 +36,21 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, i
 
 
 def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: bool = True) -> Tensor:
+    """
+    Computes Mean Squared Error.
+
+    Args:
+        sum_squared_error: Sum of square of errors over all observations
+        n_obs: Number of predictions or observations
+        squared: Returns RMSE value if set to False. default: True
+
+    Example:
+        >>> preds = torch.tensor([0., 1, 2, 3])
+        >>> target = torch.tensor([0., 1, 2, 2])
+        >>> sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
+        >>> _mean_squared_error_compute(sum_squared_error, n_obs)
+        tensor(0.2500)
+    """
     return sum_squared_error / n_obs if squared else torch.sqrt(sum_squared_error / n_obs)
 
 

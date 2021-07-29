@@ -235,7 +235,7 @@ def _check_classification_inputs(
         preds: Tensor with predictions (labels or probabilities)
         target: Tensor with ground truth labels, always integers (labels)
         threshold:
-            Threshold probability value for transforming probability predictions to binary
+            Threshold value for transforming probability/logit predictions to binary
             (0,1) predictions, in the case of binary or multi-label inputs.
         num_classes:
             Number of classes. If not explicitly set, the number of classes will be inferred
@@ -371,7 +371,7 @@ def _input_format_classification(
         preds: Tensor with predictions (labels or probabilities)
         target: Tensor with ground truth labels, always integers (labels)
         threshold:
-            Threshold probability value for transforming probability predictions to binary
+            Threshold value for transforming probability/logit predictions to binary
             (0 or 1) predictions, in the case of binary or multi-label inputs.
         num_classes:
             Number of classes. If not explicitly set, the number of classes will be inferred
@@ -531,7 +531,7 @@ def _check_retrieval_functional_inputs(
     if not preds.is_floating_point():
         raise ValueError("`preds` must be a tensor of floats")
 
-    if not allow_non_binary_target and target.max() > 1 or target.min() < 0:
+    if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
         raise ValueError("`target` must contain `binary` values")
 
     return preds.float().flatten(), target.long().flatten()
@@ -575,7 +575,7 @@ def _check_retrieval_inputs(
     if target.dtype not in (torch.bool, torch.long, torch.int):
         raise ValueError("`target` must be a tensor of booleans or integers")
 
-    if not allow_non_binary_target and target.max() > 1 or target.min() < 0:
+    if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
         raise ValueError("`target` must contain `binary` values")
 
     return indexes.long().flatten(), preds.float().flatten(), target.long().flatten()

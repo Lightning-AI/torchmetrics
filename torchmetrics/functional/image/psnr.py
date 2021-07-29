@@ -27,8 +27,8 @@ def _psnr_compute(
     reduction: str = 'elementwise_mean',
 ) -> Tensor:
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / n_obs)
-    psnr = psnr_base_e * (10 / torch.log(tensor(base)))
-    return reduce(psnr, reduction=reduction)
+    psnr_vals = psnr_base_e * (10 / torch.log(tensor(base)))
+    return reduce(psnr_vals, reduction=reduction)
 
 
 def _psnr_update(

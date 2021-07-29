@@ -16,7 +16,7 @@ from typing import Any, Optional, Sequence, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.psnr import _psnr_compute, _psnr_update
+from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 

@@ -22,11 +22,10 @@ from tests.retrieval.helpers import (
     _concat_tests,
     _default_metric_class_input_arguments_with_non_binary_target,
     _default_metric_functional_input_arguments_with_non_binary_target,
-    _errors_test_class_metric_parameters_default,
     _errors_test_class_metric_parameters_k,
-    _errors_test_class_metric_parameters_no_pos_target,
-    _errors_test_functional_metric_parameters_default,
+    _errors_test_class_metric_parameters_with_nonbinary,
     _errors_test_functional_metric_parameters_k,
+    _errors_test_functional_metric_parameters_with_nonbinary,
 )
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
 from torchmetrics.retrieval.retrieval_ndcg import RetrievalNormalizedDCG
@@ -114,8 +113,7 @@ class TestNDCG(RetrievalMetricTester):
 
     @pytest.mark.parametrize(
         **_concat_tests(
-            _errors_test_class_metric_parameters_default,
-            _errors_test_class_metric_parameters_no_pos_target,
+            _errors_test_class_metric_parameters_with_nonbinary,
             _errors_test_class_metric_parameters_k,
         )
     )
@@ -135,7 +133,7 @@ class TestNDCG(RetrievalMetricTester):
 
     @pytest.mark.parametrize(
         **_concat_tests(
-            _errors_test_functional_metric_parameters_default,
+            _errors_test_functional_metric_parameters_with_nonbinary,
             _errors_test_functional_metric_parameters_k,
         )
     )
