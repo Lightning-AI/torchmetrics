@@ -28,8 +28,11 @@ class MetricTracker(nn.ModuleList):
     additional methods are provided:
 
         -``MetricTracker.n_steps``: number of metrics being tracked
+
         -``MetricTracker.increment()``: initialize a new metric for being tracked
+
         -``MetricTracker.compute_all()``: get the metric value for all steps
+
         -``MetricTracker.best_metric()``: returns the best value
 
     Args:
@@ -37,15 +40,15 @@ class MetricTracker(nn.ModuleList):
         maximize: bool indicating if higher metric values are better (`True`) or lower
             is better (`False`)
 
-    Example:
+    Example::
         >>> from torchmetrics import Accuracy, MetricTracker
         >>> tracker = MetricTracker(Accuracy(num_classes=10))
         >>> for epoch in range(5):  # doctest: +SKIP
-        >>>     tracker.increment()  # doctest: +SKIP
-        >>>     for batch in range(train_dataloader):  # doctest: +SKIP
-        >>>         preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))  # doctest: +SKIP
-        >>>         tracker.update(preds, target)  # doctest: +SKIP
-        >>>     print(f"current acc={tracker.compute()}")  # doctest: +SKIP
+        ...     tracker.increment()  # doctest: +SKIP
+        ...     for batch_idx in range(5):  # doctest: +SKIP
+        ...         preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))  # doctest: +SKIP
+        ...         tracker.update(preds, target)  # doctest: +SKIP
+        ...     print(f"current acc={tracker.compute()}")  # doctest: +SKIP
         >>> best_acc, which_epoch = tracker.best_metric(return_step=True)  # doctest: +SKIP
         >>> all_values = tracker.compute_all()  # doctest: +SKIP
 
@@ -70,12 +73,12 @@ class MetricTracker(nn.ModuleList):
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
-    def forward(self, *args, **kwargs) -> None:
+    def forward(self, *args, **kwargs) -> None:  # type: ignore
         """ Calls forward of the current metric being tracked """
         self._check_for_increment("forward")
         return self[-1](*args, **kwargs)
 
-    def update(self, *args, **kwargs) -> None:
+    def update(self, *args, **kwargs) -> None:  # type: ignore
         """ Updates the current metric being tracked """
         self._check_for_increment("update")
         self[-1].update(*args, **kwargs)
