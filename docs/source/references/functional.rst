@@ -362,6 +362,10 @@ bleu_score [func]
 .. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
 
+rouge_score [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.rouge_score
 
 wer [func]
 ~~~~~~~~~~
