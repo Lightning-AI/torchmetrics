@@ -541,3 +541,8 @@ class DummyMetricDiff(DummyMetric):
 
     def compute(self):
         return self.x
+
+
+class DummyMetricMultiOutput(DummyMetricSum):
+    def compute(self):
+        return [self.x, self.x]
