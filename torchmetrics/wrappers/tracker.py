@@ -118,6 +118,6 @@ class MetricTracker(nn.ModuleList):
             return idx.item(), max.item()
         return max.item()
 
-    def _check_for_increment(self, method: str):
+    def _check_for_increment(self, method: str) -> None:
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called")
