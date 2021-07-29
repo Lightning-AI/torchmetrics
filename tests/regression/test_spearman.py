@@ -100,7 +100,7 @@ class TestSpearmanCorrcoef(MetricTester):
 def test_error_on_different_shape():
     metric = SpearmanCorrcoef()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+        metric(torch.randn(100), torch.randn(50))
 
     with pytest.raises(ValueError, match='Expected both predictions and target to be 1 dimensional tensors.'):
         metric(torch.randn(100, 2), torch.randn(100, 2))

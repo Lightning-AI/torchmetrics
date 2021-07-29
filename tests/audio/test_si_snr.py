@@ -109,4 +109,4 @@ class TestSISNR(MetricTester):
 def test_error_on_different_shape(metric_class=SI_SNR):
     metric = metric_class()
     with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+        metric(torch.randn(100), torch.randn(50))
