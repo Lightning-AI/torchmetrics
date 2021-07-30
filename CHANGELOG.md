@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Symmetric Mean Absolute Percentage error (SMAPE) ([#375](https://github.com/PyTorchLightning/metrics/issues/375))
 
 
+- Added `None` as reduction option in `CosineSimilarity` metric ([#400](https://github.com/PyTorchLightning/metrics/pull/400))
+
+
 - Added Permutation Invariant Training metric (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
 
 
@@ -78,6 +81,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed that `_forward_cache` and `_computed` attributes are also moved to the correct device if metric is moved ([#413](https://github.com/PyTorchLightning/metrics/pull/413))
+
+
+- Fixed calculation in `IoU` metric when using `ignore_index` argument ([#328](https://github.com/PyTorchLightning/metrics/pull/328))
 
 
 ## [0.4.1] - 2021-07-05
