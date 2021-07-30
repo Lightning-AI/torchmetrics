@@ -54,6 +54,19 @@ def _bleu_score_update(
     ref_len: Tensor,
     n_gram: int = 4
 ) -> Tuple[Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute the BLEU score.
+
+    Args:
+        reference_corpus: An iterable of iterables of reference corpus
+        translate_corpus: An iterable of machine translated corpus
+        numerator:
+        denominator:
+        trans_len:
+        ref_len:
+        n_gram: gram value ranged 1 to 4
+    """
+
     for (translation, references) in zip(translate_corpus, reference_corpus):
         trans_len += len(translation)
         ref_len_list = [len(ref) for ref in references]
@@ -84,6 +97,17 @@ def _bleu_score_compute(
     n_gram: int = 4,
     smooth: bool = False
 ) -> Tensor:
+    """
+    Computes the BLEU score.
+
+    Args:
+        trans_len:
+        ref_len:
+        numerator:
+        denominator:
+        n_gram: gram value ranged 1 to 4
+        smooth: Whether or not to apply smoothing
+    """
     if min(numerator) == 0.0:
         return tensor(0.0)
 
