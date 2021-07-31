@@ -297,7 +297,7 @@ StatScores
     :noindex:
 
 CalibrationError
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.CalibrationError
     :noindex:
