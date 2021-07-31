@@ -87,7 +87,11 @@ class TestCE(MetricTester):
 @pytest.mark.parametrize("preds, targets", [(_input_mlb_prob.preds, _input_mlb_prob.target)])
 def test_invalid_input(preds, targets):
     for p, t in zip(preds, targets):
-        with pytest.raises(ValueError, match=re.escape(f"Calibration error is not well-defined for data with size {p.size()} and targets {t.size()}.")):
+        with pytest.raises(
+            ValueError,
+            match=re.
+            escape(f"Calibration error is not well-defined for data with size {p.size()} and targets {t.size()}.")
+        ):
             calibration_error(p, t)
 
 
