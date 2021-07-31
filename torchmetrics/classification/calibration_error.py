@@ -55,7 +55,7 @@ class CalibrationError(Metric):
             compute_on_step (bool, optional):  Forward only calls ``update()`` and return None if this is set to False. Defaults to False.
             dist_sync_on_step (bool, optional): Synchronize metric state across processes at each ``forward()``
                 before returning the value at the step. Defaults to False.
-            process_group (Optional[Any], optional): Specify the process group on which synchronization is called. 
+            process_group (Optional[Any], optional): Specify the process group on which synchronization is called.
                 default: None (which selects the entire world). Defaults to None.
         """
 
@@ -89,7 +89,7 @@ class CalibrationError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
-        Computes top-level confidences and accuracies for 
+        Computes top-level confidences and accuracies for
         the input probabilites and appends them to internal state.
 
         Args:
