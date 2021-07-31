@@ -18,6 +18,7 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.calibration_error import _ce_compute, _ce_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities import rank_zero_warn
 
 
@@ -30,9 +31,8 @@ class CalibrationError(Metric):
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
     ):
-        """
+        r"""
 
         Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`.
 
@@ -41,19 +41,19 @@ class CalibrationError(Metric):
         L1 norm (Expected Calibration Error)
 
         .. math::
-            \text{Accuracy} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
+            \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
 
         Infinity norm (Maximum Calibration Error)
 
         .. math::
-        \text{Accuracy} =  \max_{i} (p_i - c_i)
+        \text{RMSCE} =  \max_{i} (p_i - c_i)
 
         L2 norm (Root Mean Square Calibration Error)
 
         .. math::
-        \text{Accuracy} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
+        \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-        Where p_i is the top-1 prediction accuracy in bin i and c_i is the average confidence of predictions in bin i.
+        Where :math:p_i is the top-1 prediction accuracy in bin i and :math:c_i is the average confidence of predictions in bin i.
 
         # NOTE: L2-norm debiasing is not yet supported.
 
@@ -74,18 +74,18 @@ class CalibrationError(Metric):
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=None
         )
 
         if norm not in ["l1", "l2", "max"]:
             raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
         self.n_bins = n_bins
-        self.bin_boundaries = torch.linspace(0, 1, n_bins + 1)
+        self.register_buffer("bin_boundaries", torch.linspace(0, 1, n_bins + 1))
         self.norm = norm
 
-        self.add_state("confidences", list(), dist_reduce_fx=None)
-        self.add_state("accuracies", list(), dist_reduce_fx=None)
+        self.add_state("confidences", [], dist_reduce_fx="cat")
+        self.add_state("accuracies", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor):
         """
@@ -107,6 +107,6 @@ class CalibrationError(Metric):
         Returns:
             Tensor: [description]
         """
-        confidences = torch.cat(self.confidences, dim=0)
-        accuracies = torch.cat(self.accuracies, dim=0)
+        confidences = dim_zero_cat(self.confidences)
+        accuracies = dim_zero_cat(self.accuracies)
         return _ce_compute(confidences, accuracies, self.bin_boundaries, norm=self.norm)

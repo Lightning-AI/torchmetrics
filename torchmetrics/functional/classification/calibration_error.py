@@ -79,7 +79,7 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1"):
-    """
+    r"""
 
         Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`.
 
@@ -88,17 +88,17 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
         L1 norm (Expected Calibration Error)
 
         .. math::
-            \text{Accuracy} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
+            \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
 
         Infinity norm (Maximum Calibration Error)
 
         .. math::
-        \text{Accuracy} =  \max_{i} (p_i - c_i)
+        \text{RMSCE} =  \max_{i} (p_i - c_i)
 
         L2 norm (Root Mean Square Calibration Error)
 
         .. math::
-        \text{Accuracy} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
+        \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
         Where p_i is the top-1 prediction accuracy in bin i and c_i is the average confidence of predictions in bin i.
 
@@ -118,6 +118,6 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
 
     confidences, accuracies = _ce_update(preds, target)
 
-    bin_boundaries = torch.linspace(0, 1, n_bins + 1)
+    bin_boundaries = torch.linspace(0, 1, n_bins + 1).to(preds.device)
 
     return _ce_compute(confidences, accuracies, bin_boundaries, norm=norm)
