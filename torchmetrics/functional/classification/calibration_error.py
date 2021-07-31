@@ -14,7 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor, tensor, FloatTensor
+from torch import FloatTensor, Tensor, tensor
 from torch.nn import functional as F
 
 from torchmetrics.utilities.checks import _input_format_classification
@@ -22,7 +22,11 @@ from torchmetrics.utilities.enums import DataType
 
 
 def _ce_compute(
-    confidences: FloatTensor, accuracies: FloatTensor, bin_boundaries: FloatTensor, norm: str = "l1", debias: bool = False
+    confidences: FloatTensor,
+    accuracies: FloatTensor,
+    bin_boundaries: FloatTensor,
+    norm: str = "l1",
+    debias: bool = False
 ) -> Tensor:
 
     conf_bin = torch.zeros_like(bin_boundaries)
