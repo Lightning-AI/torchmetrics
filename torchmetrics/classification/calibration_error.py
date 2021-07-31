@@ -18,8 +18,8 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.calibration_error import _ce_compute, _ce_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CalibrationError(Metric):

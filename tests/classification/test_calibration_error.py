@@ -12,13 +12,15 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+
 # TODO: replace this with official sklearn implementation after next sklearn release
 from tests.helpers.non_sklearn_metrics import calibration_error as sk_calib
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import CalibrationError
 from torchmetrics.functional import calibration_error
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
+
 seed_all(42)
 
 

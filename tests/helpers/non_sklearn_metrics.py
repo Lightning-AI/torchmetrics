@@ -3,8 +3,8 @@ from typing import Optional, Union
 
 import numpy as np
 from sklearn.metrics._regression import _check_reg_targets
-from sklearn.utils.validation import check_consistent_length
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
+from sklearn.utils.validation import check_consistent_length
 
 
 def symmetric_mean_absolute_percentage_error(
@@ -67,14 +67,17 @@ def symmetric_mean_absolute_percentage_error(
 # https://github.com/samronsin/scikit-learn/blob/calibration-loss/sklearn/metrics/_classification.py.
 # TODO: when the PR into sklearn is accepted, update this to use the official function.
 
-def calibration_error(y_true: np.ndarray,
-                      y_prob: np.ndarray,
-                      sample_weight: Optional[np.ndarray] = None,
-                      norm: str = 'l2',
-                      n_bins: int = 10,
-                      strategy: str = 'uniform',
-                      pos_label: Optional[Union[int, str]] = None,
-                      reduce_bias: bool = True) -> float:
+
+def calibration_error(
+    y_true: np.ndarray,
+    y_prob: np.ndarray,
+    sample_weight: Optional[np.ndarray] = None,
+    norm: str = 'l2',
+    n_bins: int = 10,
+    strategy: str = 'uniform',
+    pos_label: Optional[Union[int, str]] = None,
+    reduce_bias: bool = True
+) -> float:
     """Compute calibration error of a binary classifier.
     Across all items in a set of N predictions, the calibration error measures
     the aggregated difference between (1) the average predicted probabilities
