@@ -103,7 +103,7 @@ def test_invalid_norm(preds, target):
         calibration_error(preds, target, norm="l3")
 
 
-@pytest.mark.parametrize("n_bins", [-10, -1])
+@pytest.mark.parametrize("n_bins", [-10, -1, "fsd"])
 @pytest.mark.parametrize(
     "preds, targets", [
         (_input_binary_prob.preds, _input_binary_prob.target),
