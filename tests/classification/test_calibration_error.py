@@ -3,20 +3,16 @@ import re
 
 import numpy as np
 import pytest
-from torch import tensor
 
-from tests.classification.inputs import _input_binary, _input_binary_prob
-from tests.classification.inputs import _input_multiclass as _input_mcls
+from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
-from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 
 # TODO: replace this with official sklearn implementation after next sklearn release
 from tests.helpers.non_sklearn_metrics import calibration_error as sk_calib
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import THRESHOLD, MetricTester
 from torchmetrics import CalibrationError
 from torchmetrics.functional import calibration_error
 from torchmetrics.utilities.checks import _input_format_classification

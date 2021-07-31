@@ -11,14 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.calibration_error import _ce_compute, _ce_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -55,8 +54,9 @@ class CalibrationError(Metric):
             debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
             compute_on_step (bool, optional):  Forward only calls ``update()`` and return None if this is set to False. Defaults to False.
             dist_sync_on_step (bool, optional): Synchronize metric state across processes at each ``forward()``
-                before returning the value at the step.. Defaults to False.
-            process_group (Optional[Any], optional): Specify the process group on which synchronization is called. default: None (which selects the entire world). Defaults to None.
+                before returning the value at the step. Defaults to False.
+            process_group (Optional[Any], optional): Specify the process group on which synchronization is called. 
+                default: None (which selects the entire world). Defaults to None.
         """
 
     def __init__(
@@ -87,9 +87,10 @@ class CalibrationError(Metric):
         self.add_state("confidences", [], dist_reduce_fx="cat")
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
-        Computes top-level confidences and accuracies for the input probabilites and appends them to internal state.
+        Computes top-level confidences and accuracies for 
+        the input probabilites and appends them to internal state.
 
         Args:
             preds (Tensor): Model output probabilities.

@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Tuple
 
 import torch
-from torch import FloatTensor, Tensor, tensor
-from torch.nn import functional as F
+from torch import FloatTensor, Tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
@@ -105,7 +104,8 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
         .. math::
             \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-        Where :math:p_i is the top-1 prediction accuracy in bin i and :math:c_i is the average confidence of predictions in bin i.
+        Where :math:p_i is the top-1 prediction accuracy in
+        bin i and :math:c_i is the average confidence of predictions in bin i.
 
         # NOTE: L2-norm debiasing is not yet supported.
 
@@ -116,7 +116,6 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
             n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
             norm (str, optional): Norm used to compare empirical and expected probability bins.
                 Defaults to "l1", or Expected Calibration Error.
-            debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
     """
     if norm not in ("l1", "l2", "max"):
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
