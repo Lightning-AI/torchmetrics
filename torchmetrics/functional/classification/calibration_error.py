@@ -14,7 +14,7 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor, tensor, FloatTensor
 from torch.nn import functional as F
 
 from torchmetrics.utilities.checks import _input_format_classification
@@ -22,7 +22,7 @@ from torchmetrics.utilities.enums import DataType
 
 
 def _ce_compute(
-    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor, norm: str = "l1", debias: bool = False
+    confidences: FloatTensor, accuracies: FloatTensor, bin_boundaries: FloatTensor, norm: str = "l1", debias: bool = False
 ) -> Tensor:
 
     conf_bin = torch.zeros_like(bin_boundaries)
@@ -56,7 +56,7 @@ def _ce_compute(
     return ce
 
 
-def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]:
     _, _, mode = _input_format_classification(preds, target)
 
     if mode == DataType.BINARY:
@@ -74,8 +74,8 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
         raise ValueError(
             f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}"
         )
-
-    return confidences, accuracies
+    # must be cast to float for ddp allgather to work
+    return confidences.float(), accuracies.float()
 
 
 def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1"):
@@ -106,8 +106,8 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
 
 
         Args:
-            preds (Tensor): [description]
-            target (Tensor): [description]
+            preds (Tensor): Model output probabilities.
+            target (Tensor): Ground-truth target class labels.
             n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
             norm (str, optional): Norm used to compare empirical and expected probability bins.
                 Defaults to "l1", or Expected Calibration Error.
@@ -118,6 +118,9 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
 
     confidences, accuracies = _ce_update(preds, target)
 
-    bin_boundaries = torch.linspace(0, 1, n_bins + 1).to(preds.device)
+    if not isinstance(n_bins, int) and n_bins <= 0:
+        raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
+
+    bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float).to(preds.device)
 
     return _ce_compute(confidences, accuracies, bin_boundaries, norm=norm)

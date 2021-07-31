@@ -97,5 +97,18 @@ def test_invalid_input(preds, targets):
     ]
 )
 def test_invalid_norm(preds, target):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Norm l3 is not supported. Please select from l1, l2, or max. "):
         calibration_error(preds, target, norm="l3")
+
+
+@pytest.mark.parametrize("n_bins", [-10, 0, -1])
+@pytest.mark.parametrize(
+    "preds, target", [
+        (_input_binary_prob.preds, _input_binary_prob.target),
+        (_input_mcls_prob.preds, _input_mcls_prob.target),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target),
+    ]
+)
+def test_invalid_bins(preds, target, n_bins):
+    with pytest.raises(ValueError, match=f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}"):
+        calibration_error(preds, target, n_bins=n_bins)
