@@ -29,6 +29,9 @@ def _ce_compute(
     debias: bool = False
 ) -> Tensor:
 
+    if norm not in ("l1", "l2", "max"):
+        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
+
     conf_bin = torch.zeros_like(bin_boundaries)
     acc_bin = torch.zeros_like(bin_boundaries)
     prop_bin = torch.zeros_like(bin_boundaries)
@@ -55,8 +58,6 @@ def _ce_compute(
             debias_bins = (acc_bin * (acc_bin - 1) * prop_bin) / (prop_bin * accuracies.size()[0] - 1)
             ce += torch.sum(torch.nan_to_num(debias_bins))  # replace nans with zeros if nothing appeared in a bin
         ce = torch.sqrt(ce) if ce > 0 else torch.tensor(0)
-    else:
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
     return ce
 
 
@@ -76,13 +77,13 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]
         accuracies = predictions.eq(target.flatten())
     else:
         raise ValueError(
-            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}"
+            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}."
         )
     # must be cast to float for ddp allgather to work
     return confidences.float(), accuracies.float()
 
 
-def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1"):
+def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1") -> Tensor:
     r"""
 
         Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`.
@@ -118,11 +119,11 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
             debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
     """
     if norm not in ("l1", "l2", "max"):
-        raise ValueError(f"Norm {norm} is not supported.")
+        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
     confidences, accuracies = _ce_update(preds, target)
 
-    if not isinstance(n_bins, int) and n_bins <= 0:
+    if not isinstance(n_bins, int) or n_bins <= 0:
         raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
 
     bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float).to(preds.device)

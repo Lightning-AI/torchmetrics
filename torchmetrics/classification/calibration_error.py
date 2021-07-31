@@ -77,7 +77,7 @@ class CalibrationError(Metric):
         if norm not in ["l1", "l2", "max"]:
             raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
-        if not isinstance(n_bins, int) and n_bins <= 0:
+        if not isinstance(n_bins, int) or n_bins <= 0:
             raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
         self.n_bins = n_bins
         self.register_buffer("bin_boundaries", torch.linspace(0, 1, n_bins + 1))

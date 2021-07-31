@@ -1,4 +1,5 @@
 import functools
+import re
 
 import numpy as np
 import pytest
@@ -85,8 +86,9 @@ class TestCE(MetricTester):
 
 @pytest.mark.parametrize("preds, targets", [(_input_mlb_prob.preds, _input_mlb_prob.target)])
 def test_invalid_input(preds, targets):
-    with pytest.raises(ValueError):
-        calibration_error(preds, targets)
+    for p, t in zip(preds, targets):
+        with pytest.raises(ValueError, match=re.escape(f"Calibration error is not well-defined for data with size {p.size()} and targets {t.size()}.")):
+            calibration_error(p, t)
 
 
 @pytest.mark.parametrize(
@@ -101,14 +103,15 @@ def test_invalid_norm(preds, target):
         calibration_error(preds, target, norm="l3")
 
 
-@pytest.mark.parametrize("n_bins", [-10, 0, -1])
+@pytest.mark.parametrize("n_bins", [-10, -1])
 @pytest.mark.parametrize(
-    "preds, target", [
+    "preds, targets", [
         (_input_binary_prob.preds, _input_binary_prob.target),
         (_input_mcls_prob.preds, _input_mcls_prob.target),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target),
     ]
 )
-def test_invalid_bins(preds, target, n_bins):
-    with pytest.raises(ValueError, match=f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}"):
-        calibration_error(preds, target, n_bins=n_bins)
+def test_invalid_bins(preds, targets, n_bins):
+    for p, t in zip(preds, targets):
+        with pytest.raises(ValueError, match=f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}"):
+            calibration_error(p, t, n_bins=n_bins)
