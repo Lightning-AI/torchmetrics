@@ -23,16 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class CalibrationError(Metric):
-
-    def __init__(
-        self,
-        n_bins: int = 15,
-        norm: str = "l1",
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ):
-        r"""
+    r"""
 
         Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`.
 
@@ -67,6 +58,16 @@ class CalibrationError(Metric):
                 before returning the value at the step.. Defaults to False.
             process_group (Optional[Any], optional): Specify the process group on which synchronization is called. default: None (which selects the entire world). Defaults to None.
         """
+
+    def __init__(
+        self,
+        n_bins: int = 15,
+        norm: str = "l1",
+        compute_on_step: bool = False,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+    ):
+
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,

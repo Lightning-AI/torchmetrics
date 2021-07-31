@@ -4,7 +4,6 @@ from typing import Optional, Union
 import numpy as np
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
-from sklearn.utils.validation import check_consistent_length
 
 
 def symmetric_mean_absolute_percentage_error(
@@ -116,25 +115,6 @@ def calibration_error(
     -------
     score : float
         calibration error
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from sklearn.metrics import calibration_error
-    >>> y_true = np.array([0, 0, 0, 1] + [0, 1, 1, 1])
-    >>> y_pred = np.array([0.25, 0.25, 0.25, 0.25] + [0.75, 0.75, 0.75, 0.75])
-    >>> calibration_error(y_true, y_pred, n_bins=5)
-    0.0
-    >>> calibration_error(
-    ...     y_true, y_pred, n_bins=5, norm="max"
-    ... )
-    0.0
-    >>> y_true = np.array([0, 0, 0, 0] + [1, 1, 1, 1])
-    >>> calibration_error(y_true, y_pred, n_bins=5)
-    0.25
-    >>> calibration_error(
-    ...     y_true, y_pred, n_bins=5, norm="max"
-    ... )
-    0.25
     """
     y_true = column_or_1d(y_true)
     y_prob = column_or_1d(y_prob)
