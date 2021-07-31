@@ -60,10 +60,10 @@ def _bleu_score_update(
     Args:
         reference_corpus: An iterable of iterables of reference corpus
         translate_corpus: An iterable of machine translated corpus
-        numerator:
-        denominator:
-        trans_len:
-        ref_len:
+        numerator: Numerator of precision score (true positives)
+        denominator: Denominator of precision score (true positives + false positives)
+        trans_len: count of words in a candidate translation
+        ref_len: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
     """
 
@@ -101,10 +101,10 @@ def _bleu_score_compute(
     Computes the BLEU score.
 
     Args:
-        trans_len:
-        ref_len:
-        numerator:
-        denominator:
+        trans_len: count of words in a candidate translation
+        ref_len: count of words in a reference translation
+        numerator: Numerator of precision score (true positives)
+        denominator: Denominator of precision score (true positives + false positives)
         n_gram: gram value ranged 1 to 4
         smooth: Whether or not to apply smoothing
     """
