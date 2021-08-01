@@ -65,6 +65,7 @@ repos:
         additional_dependencies:
           - mdformat-gfm
           - mdformat-black
+          - mdformat_frontmatter
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.2.3
