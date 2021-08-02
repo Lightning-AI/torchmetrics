@@ -24,13 +24,14 @@ from tests.classification.inputs import _input_binary, _input_binary_logits, _in
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
 from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Metric, Precision, Recall
 from torchmetrics.functional import precision, precision_recall, recall
 from torchmetrics.utilities.checks import _input_format_classification
@@ -132,7 +133,7 @@ def test_wrong_params(metric, fn_metric, average, mdmc_average, num_classes, ign
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Recall, recall), (Precision, precision)])
 def test_zero_division(metric_class, metric_fn):
-    """ Test that zero_division works correctly (currently should just set to 0). """
+    """Test that zero_division works correctly (currently should just set to 0)."""
 
     preds = tensor([0, 2, 1, 1])
     target = tensor([2, 1, 2, 1])
@@ -189,20 +190,27 @@ def test_no_support(metric_class, metric_fn):
         (_input_mcls.preds, _input_mcls.target, NUM_CLASSES, None, None, _sk_prec_recall),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "global", _sk_prec_recall_multidim_multiclass),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "global",
-            _sk_prec_recall_multidim_multiclass
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            NUM_CLASSES,
+            None,
+            "global",
+            _sk_prec_recall_multidim_multiclass,
         ),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "samplewise", _sk_prec_recall_multidim_multiclass),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "samplewise",
-            _sk_prec_recall_multidim_multiclass
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            NUM_CLASSES,
+            None,
+            "samplewise",
+            _sk_prec_recall_multidim_multiclass,
         ),
     ],
 )
 class TestPrecisionRecall(MetricTester):
-
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_precision_recall_class(
         self,
         ddp: bool,
@@ -430,3 +438,24 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     cl_metric(preds, target)
     result_cl = cl_metric.compute()
     assert torch.allclose(expected, result_cl, equal_nan=True)
+
+
+@pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
+@pytest.mark.parametrize(
+    "metric_class, metric_functional, sk_fn", [(Precision, precision, precision_score), (Recall, recall, recall_score)]
+)
+def test_same_input(metric_class, metric_functional, sk_fn, average):
+    preds = _input_miss_class.preds
+    target = _input_miss_class.target
+    preds_flat = torch.cat([p for p in preds], dim=0)
+    target_flat = torch.cat([t for t in target], dim=0)
+
+    mc = metric_class(num_classes=NUM_CLASSES, average=average)
+    for i in range(NUM_BATCHES):
+        mc.update(preds[i], target[i])
+    class_res = mc.compute()
+    func_res = metric_functional(preds_flat, target_flat, num_classes=NUM_CLASSES, average=average)
+    sk_res = sk_fn(target_flat, preds_flat, average=average, zero_division=1)
+
+    assert torch.allclose(class_res, torch.tensor(sk_res).float())
+    assert torch.allclose(func_res, torch.tensor(sk_res).float())

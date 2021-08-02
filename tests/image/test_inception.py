@@ -25,10 +25,9 @@ torch.manual_seed(42)
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
-    """ Assert that metric never leaves evaluation mode """
+    """Assert that metric never leaves evaluation mode"""
 
     class MyModel(torch.nn.Module):
-
         def __init__(self):
             super().__init__()
             self.metric = IS()
@@ -39,12 +38,12 @@ def test_no_train():
     model = MyModel()
     model.train()
     assert model.training
-    assert not model.metric.inception.training, 'IS metric was changed to training mode which should not happen'
+    assert not model.metric.inception.training, "IS metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_is_pickle():
-    """ Assert that we can initialize the metric and pickle it"""
+    """Assert that we can initialize the metric and pickle it"""
     metric = IS()
     assert metric
 
@@ -54,31 +53,31 @@ def test_is_pickle():
 
 
 def test_is_raises_errors_and_warnings():
-    """ Test that expected warnings and errors are raised """
+    """Test that expected warnings and errors are raised"""
     with pytest.warns(
         UserWarning,
-        match='Metric `IS` will save all extracted features in buffer.'
-        ' For large datasets this may lead to large memory footprint.'
+        match="Metric `IS` will save all extracted features in buffer."
+        " For large datasets this may lead to large memory footprint.",
     ):
         IS()
 
     if _TORCH_FIDELITY_AVAILABLE:
-        with pytest.raises(ValueError, match='Integer input to argument `feature` must be one of .*'):
+        with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
             _ = IS(feature=2)
     else:
         with pytest.raises(
             ValueError,
-            match='IS metric requires that Torch-fidelity is installed.'
-            'Either install as `pip install torchmetrics[image-quality]`'
-            ' or `pip install torch-fidelity`'
+            match="IS metric requires that Torch-fidelity is installed."
+            "Either install as `pip install torchmetrics[image-quality]`"
+            " or `pip install torch-fidelity`",
         ):
             IS()
 
-    with pytest.raises(TypeError, match='Got unknown input to argument `feature`'):
+    with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
         IS(feature=[1, 2])
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_is_update_compute():
     metric = IS()
 
@@ -92,7 +91,6 @@ def test_is_update_compute():
 
 
 class _ImgDataset(Dataset):
-
     def __init__(self, imgs):
         self.imgs = imgs
 
@@ -103,10 +101,10 @@ class _ImgDataset(Dataset):
         return self.imgs.shape[0]
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='test is too slow without gpu')
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_compare_is(tmpdir):
-    """ check that the hole pipeline give the same result as torch-fidelity """
+    """check that the hole pipeline give the same result as torch-fidelity"""
     from torch_fidelity import calculate_metrics
 
     metric = IS(splits=1).cuda()
@@ -116,7 +114,7 @@ def test_compare_is(tmpdir):
 
     batch_size = 10
     for i in range(img1.shape[0] // batch_size):
-        metric.update(img1[batch_size * i:batch_size * (i + 1)].cuda())
+        metric.update(img1[batch_size * i : batch_size * (i + 1)].cuda())
 
     torch_fid = calculate_metrics(
         input1=_ImgDataset(img1), isc=True, isc_splits=1, batch_size=batch_size, save_cpu_ram=True
@@ -124,4 +122,4 @@ def test_compare_is(tmpdir):
 
     tm_mean, _ = metric.compute()
 
-    assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid['inception_score_mean']]), atol=1e-3)
+    assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid["inception_score_mean"]]), atol=1e-3)

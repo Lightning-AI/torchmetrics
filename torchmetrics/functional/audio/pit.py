@@ -46,6 +46,7 @@ def _find_best_perm_by_linear_sum_assignment(
             shape [batch, spk]
     """
     from scipy.optimize import linear_sum_assignment
+
     mmtx = metric_mtx.detach().cpu()
     best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx])
     best_perm = best_perm.to(metric_mtx.device)
@@ -101,11 +102,7 @@ def _find_best_perm_by_exhuastive_method(
 
 
 def pit(
-    preds: torch.Tensor,
-    target: torch.Tensor,
-    metric_func: Callable,
-    eval_func: str = 'max',
-    **kwargs: Dict[str, Any]
+    preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
     """
     Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method [1]
@@ -149,7 +146,7 @@ def pit(
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
     _check_same_shape(preds, target)
-    if eval_func not in ['max', 'min']:
+    if eval_func not in ["max", "min"]:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
     if target.ndim < 2:
         raise ValueError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
@@ -162,7 +159,7 @@ def pit(
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
 
     # find best
-    op = torch.max if eval_func == 'max' else torch.min
+    op = torch.max if eval_func == "max" else torch.min
     if spk_num < 3 or not _SCIPY_AVAILABLE:
         if spk_num >= 3 and not _SCIPY_AVAILABLE:
             warnings.warn(
@@ -177,7 +174,7 @@ def pit(
 
 
 def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
-    """ permutate estimate according to perm
+    """permutate estimate according to perm
 
     Args:
         preds (Tensor): the estimates you want to permutate, shape [batch, spk, ...]

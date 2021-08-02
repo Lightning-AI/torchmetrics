@@ -84,7 +84,7 @@ class IoU(ConfusionMatrix):
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
-        reduction: str = 'elementwise_mean',
+        reduction: str = "elementwise_mean",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,

@@ -40,8 +40,8 @@ def _final_aggregation(
         nb = n1 + n2
         mean_x = (n1 * mx1 + n2 * mx2) / nb
         mean_y = (n1 * my1 + n2 * my2) / nb
-        var_x = (1 / (n1 + n2 - 1) * ((n1 - 1) * vx1 + (n2 - 1) * vx2 + ((n1 * n2) / (n1 + n2)) * (mx1 - mx2)**2))
-        var_y = (1 / (n1 + n2 - 1) * ((n1 - 1) * vy1 + (n2 - 1) * vy2 + ((n1 * n2) / (n1 + n2)) * (my1 - my2)**2))
+        var_x = 1 / (n1 + n2 - 1) * ((n1 - 1) * vx1 + (n2 - 1) * vx2 + ((n1 * n2) / (n1 + n2)) * (mx1 - mx2) ** 2)
+        var_y = 1 / (n1 + n2 - 1) * ((n1 - 1) * vy1 + (n2 - 1) * vy2 + ((n1 * n2) / (n1 + n2)) * (my1 - my2) ** 2)
 
         corr1 = n1 * cxy1 + n1 * (mx1 - mean_x) * (my1 - mean_y)
         corr2 = n2 * cxy2 + n2 * (mx2 - mean_x) * (my2 - mean_y)

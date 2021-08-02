@@ -25,10 +25,9 @@ torch.manual_seed(42)
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
-    """ Assert that metric never leaves evaluation mode """
+    """Assert that metric never leaves evaluation mode"""
 
     class MyModel(torch.nn.Module):
-
         def __init__(self):
             super().__init__()
             self.metric = KID()
@@ -39,12 +38,12 @@ def test_no_train():
     model = MyModel()
     model.train()
     assert model.training
-    assert not model.metric.inception.training, 'FID metric was changed to training mode which should not happen'
+    assert not model.metric.inception.training, "FID metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_kid_pickle():
-    """ Assert that we can initialize the metric and pickle it"""
+    """Assert that we can initialize the metric and pickle it"""
     metric = KID()
     assert metric
 
@@ -54,37 +53,37 @@ def test_kid_pickle():
 
 
 def test_kid_raises_errors_and_warnings():
-    """ Test that expected warnings and errors are raised """
+    """Test that expected warnings and errors are raised"""
     with pytest.warns(
         UserWarning,
-        match='Metric `KID` will save all extracted features in buffer.'
-        ' For large datasets this may lead to large memory footprint.'
+        match="Metric `KID` will save all extracted features in buffer."
+        " For large datasets this may lead to large memory footprint.",
     ):
         KID()
 
     if _TORCH_FIDELITY_AVAILABLE:
-        with pytest.raises(ValueError, match='Integer input to argument `feature` must be one of .*'):
+        with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
             KID(feature=2)
     else:
         with pytest.raises(
             ValueError,
-            match='KID metric requires that Torch-fidelity is installed.'
-            'Either install as `pip install torchmetrics[image]`'
-            ' or `pip install torch-fidelity`'
+            match="KID metric requires that Torch-fidelity is installed."
+            "Either install as `pip install torchmetrics[image]`"
+            " or `pip install torch-fidelity`",
         ):
             KID()
 
-    with pytest.raises(TypeError, match='Got unknown input to argument `feature`'):
+    with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
         KID(feature=[1, 2])
 
-    with pytest.raises(ValueError, match='Argument `subset_size` should be smaller than the number of samples'):
+    with pytest.raises(ValueError, match="Argument `subset_size` should be smaller than the number of samples"):
         m = KID()
         m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=True)
         m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=False)
         m.compute()
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_kid_extra_parameters():
     with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
         KID(subsets=-1)
@@ -102,10 +101,10 @@ def test_kid_extra_parameters():
         KID(coef=-1)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_kid_same_input(feature):
-    """ test that the metric works """
+    """test that the metric works"""
     metric = KID(feature=feature, subsets=5, subset_size=2)
 
     for _ in range(2):
@@ -121,7 +120,6 @@ def test_kid_same_input(feature):
 
 
 class _ImgDataset(Dataset):
-
     def __init__(self, imgs):
         self.imgs = imgs
 
@@ -132,10 +130,10 @@ class _ImgDataset(Dataset):
         return self.imgs.shape[0]
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='test is too slow without gpu')
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_compare_kid(tmpdir, feature=2048):
-    """ check that the hole pipeline give the same result as torch-fidelity """
+    """check that the hole pipeline give the same result as torch-fidelity"""
     from torch_fidelity import calculate_metrics
 
     metric = KID(feature=feature, subsets=1, subset_size=100).cuda()
@@ -146,10 +144,10 @@ def test_compare_kid(tmpdir, feature=2048):
 
     batch_size = 10
     for i in range(img1.shape[0] // batch_size):
-        metric.update(img1[batch_size * i:batch_size * (i + 1)].cuda(), real=True)
+        metric.update(img1[batch_size * i : batch_size * (i + 1)].cuda(), real=True)
 
     for i in range(img2.shape[0] // batch_size):
-        metric.update(img2[batch_size * i:batch_size * (i + 1)].cuda(), real=False)
+        metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
 
     torch_fid = calculate_metrics(
         input1=_ImgDataset(img1),
@@ -159,10 +157,10 @@ def test_compare_kid(tmpdir, feature=2048):
         batch_size=batch_size,
         kid_subsets=1,
         kid_subset_size=100,
-        save_cpu_ram=True
+        save_cpu_ram=True,
     )
 
     tm_mean, tm_std = metric.compute()
 
-    assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid['kernel_inception_distance_mean']]), atol=1e-3)
-    assert torch.allclose(tm_std.cpu(), torch.tensor([torch_fid['kernel_inception_distance_std']]), atol=1e-3)
+    assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid["kernel_inception_distance_mean"]]), atol=1e-3)
+    assert torch.allclose(tm_std.cpu(), torch.tensor([torch_fid["kernel_inception_distance_std"]]), atol=1e-3)

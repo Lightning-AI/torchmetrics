@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SI_SNR(Metric):
-    """ Scale-invariant signal-to-noise ratio (SI-SNR).
+    """Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Forward accepts
 
@@ -61,6 +61,7 @@ class SI_SNR(Metric):
         Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
         696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
+
     sum_si_snr: Tensor
     total: Tensor
 

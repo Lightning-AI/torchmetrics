@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SNR(Metric):
-    r""" `Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
+    r"""`Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}

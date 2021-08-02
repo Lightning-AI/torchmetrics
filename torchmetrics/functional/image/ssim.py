@@ -153,12 +153,12 @@ def _ssim_compute(
     pad_w = (kernel_size[0] - 1) // 2
     pad_h = (kernel_size[1] - 1) // 2
 
-    preds = F.pad(preds, (pad_w, pad_w, pad_h, pad_h), mode='reflect')
-    target = F.pad(target, (pad_w, pad_w, pad_h, pad_h), mode='reflect')
+    preds = F.pad(preds, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
+    target = F.pad(target, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
     outputs = F.conv2d(input_list, kernel, groups=channel)
-    output_list = [outputs[x * preds.size(0):(x + 1) * preds.size(0)] for x in range(len(outputs))]
+    output_list = [outputs[x * preds.size(0) : (x + 1) * preds.size(0)] for x in range(len(outputs))]
 
     mu_pred_sq = output_list[0].pow(2)
     mu_target_sq = output_list[1].pow(2)

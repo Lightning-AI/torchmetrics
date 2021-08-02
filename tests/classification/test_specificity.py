@@ -160,7 +160,7 @@ def test_wrong_params(metric, fn_metric, average, mdmc_average, num_classes, ign
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Specificity, specificity)])
 def test_zero_division(metric_class, metric_fn):
-    """ Test that zero_division works correctly (currently should just set to 0). """
+    """Test that zero_division works correctly (currently should just set to 0)."""
 
     preds = tensor([1, 2, 1, 1])
     target = tensor([0, 0, 0, 0])
@@ -217,7 +217,6 @@ def test_no_support(metric_class, metric_fn):
     ],
 )
 class TestSpecificity(MetricTester):
-
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_specificity_class(
@@ -351,7 +350,7 @@ class TestSpecificity(MetricTester):
                 "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "mdmc_average": mdmc_average,
-            }
+            },
         )
 
 

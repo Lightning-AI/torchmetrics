@@ -9,7 +9,6 @@ check-manifest
 twine>=3.2
 isort>=5.0
 mypy>=0.790
-yapf>=0.29.0
 phmdoctest>=1.1.1
 
 cloudpickle>=1.3
