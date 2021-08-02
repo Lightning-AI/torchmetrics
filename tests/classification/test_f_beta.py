@@ -427,10 +427,10 @@ def test_top_k(
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
 
-@pytest.mark.parametrize('average', ['micro', 'macro', 'weighted'])
+@pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
 @pytest.mark.parametrize(
-    'metric_class, metric_functional, sk_fn',
-    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)]
+    "metric_class, metric_functional, sk_fn",
+    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)],
 )
 def test_same_input(metric_class, metric_functional, sk_fn, average):
     preds = _input_miss_class.preds

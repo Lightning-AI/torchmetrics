@@ -345,7 +345,7 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     assert torch.allclose(expected, result_cl, equal_nan=True)
 
 
-@pytest.mark.parametrize('average', ['micro', 'macro', 'weighted'])
+@pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
 def test_same_input(average):
     preds = _input_miss_class.preds
     target = _input_miss_class.target
