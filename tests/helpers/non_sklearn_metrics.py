@@ -12,40 +12,40 @@ def symmetric_mean_absolute_percentage_error(
     sample_weight: Optional[np.ndarray] = None,
     multioutput: str = 'uniform_average'
 ):
-    r"""Symmetric mean absolute percentage error regression loss.
+    r"""
+    Symmetric mean absolute percentage error regression loss.
     <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
-    Parameters
-    ----------
-    y_true : array-like of shape (n_samples,) or (n_samples, n_outputs)
-        Ground truth (correct) target values.
-    y_pred : array-like of shape (n_samples,) or (n_samples, n_outputs)
-        Estimated target values.
-    sample_weight : array-like of shape (n_samples,), default=None
-        Sample weights.
-    multioutput : {'raw_values', 'uniform_average'} or array-like
-        Defines aggregating of multiple output values.
-        Array-like value defines weights used to average errors.
-        If input is list then the shape must be (n_outputs,).
-        'raw_values' :
-            Returns a full set of errors in case of multioutput input.
-        'uniform_average' :
-            Errors of all outputs are averaged with uniform weight.
-    Returns
-    -------
-    loss : float or ndarray of floats in the range [0, 1]
-        If multioutput is 'raw_values', then symmetric mean absolute percentage error
-        is returned for each output separately.
-        If multioutput is 'uniform_average' or an ndarray of weights, then the
-        weighted average of all output errors is returned.
-        MAPE output is non-negative floating point. The best value is 0.0.
-        But note the fact that bad predictions can lead to arbitarily large
-        MAPE values, especially if some y_true values are very close to zero.
-        Note that we return a large value instead of `inf` when y_true is zero.
+    Args:
+        y_true : array-like of shape (n_samples,) or (n_samples, n_outputs)
+            Ground truth (correct) target values.
+        y_pred : array-like of shape (n_samples,) or (n_samples, n_outputs)
+            Estimated target values.
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+        multioutput : {'raw_values', 'uniform_average'} or array-like
+            Defines aggregating of multiple output values.
+            Array-like value defines weights used to average errors.
+            If input is list then the shape must be (n_outputs,).
+            'raw_values' :
+                Returns a full set of errors in case of multioutput input.
+            'uniform_average' :
+                Errors of all outputs are averaged with uniform weight.
+    
+    Returns:
+        loss : float or ndarray of floats in the range [0, 1]
+            If multioutput is 'raw_values', then symmetric mean absolute percentage error
+            is returned for each output separately.
+            If multioutput is 'uniform_average' or an ndarray of weights, then the
+            weighted average of all output errors is returned.
+            MAPE output is non-negative floating point. The best value is 0.0.
+            But note the fact that bad predictions can lead to arbitarily large
+            MAPE values, especially if some y_true values are very close to zero.
+            Note that we return a large value instead of `inf` when y_true is zero.
 
     """
     _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
@@ -65,8 +65,6 @@ def symmetric_mean_absolute_percentage_error(
 # sklearn reference function from
 # https://github.com/samronsin/scikit-learn/blob/calibration-loss/sklearn/metrics/_classification.py.
 # TODO: when the PR into sklearn is accepted, update this to use the official function.
-
-
 def calibration_error(
     y_true: np.ndarray,
     y_prob: np.ndarray,
@@ -77,7 +75,8 @@ def calibration_error(
     pos_label: Optional[Union[int, str]] = None,
     reduce_bias: bool = True
 ) -> float:
-    """Compute calibration error of a binary classifier.
+    """
+    Compute calibration error of a binary classifier.
     Across all items in a set of N predictions, the calibration error measures
     the aggregated difference between (1) the average predicted probabilities
     assigned to the positive class, and (2) the frequencies
@@ -85,36 +84,34 @@ def calibration_error(
     The calibration error is only appropriate for binary categorical outcomes.
     Which label is considered to be the positive label is controlled via the
     parameter pos_label, which defaults to 1.
-    Read more in the :ref:`User Guide <calibration>`.
-    Parameters
-    ----------
-    y_true : array-like of shape (n_samples,)
-        True targets of a binary classification task.
-    y_prob : array-like of (n_samples,)
-        Probabilities of the positive class.
-    sample_weight : array-like of shape (n_samples,), default=None
-        Sample weights.
-    norm : {'l1', 'l2', 'max'}, default='l2'
-        Norm method. The l1-norm is the Expected Calibration Error (ECE),
-        and the max-norm corresponds to Maximum Calibration Error (MCE).
-    n_bins : int, default=10
-       The number of bins to compute error on.
-    strategy : {'uniform', 'quantile'}, default='uniform'
-        Strategy used to define the widths of the bins.
-        uniform
-            All bins have identical widths.
-        quantile
-            All bins have the same number of points.
-    pos_label : int or str, default=None
-        Label of the positive class. If None, the maximum label is used as
-        positive class.
-    reduce_bias : bool, default=True
-        Add debiasing term as in Verified Uncertainty Calibration, A. Kumar.
-        Only effective for the l2-norm.
-    Returns
-    -------
-    score : float
-        calibration error
+
+    Args:
+        y_true : array-like of shape (n_samples,)
+            True targets of a binary classification task.
+        y_prob : array-like of (n_samples,)
+            Probabilities of the positive class.
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+        norm : {'l1', 'l2', 'max'}, default='l2'
+            Norm method. The l1-norm is the Expected Calibration Error (ECE),
+            and the max-norm corresponds to Maximum Calibration Error (MCE).
+        n_bins : int, default=10
+        The number of bins to compute error on.
+        strategy : {'uniform', 'quantile'}, default='uniform'
+            Strategy used to define the widths of the bins.
+            uniform
+                All bins have identical widths.
+            quantile
+                All bins have the same number of points.
+        pos_label : int or str, default=None
+            Label of the positive class. If None, the maximum label is used as
+            positive class.
+        reduce_bias : bool, default=True
+            Add debiasing term as in Verified Uncertainty Calibration, A. Kumar.
+            Only effective for the l2-norm.
+
+    Returns:
+        score : float with calibration error
     """
     y_true = column_or_1d(y_true)
     y_prob = column_or_1d(y_prob)
