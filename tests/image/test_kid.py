@@ -144,10 +144,10 @@ def test_compare_kid(tmpdir, feature=2048):
 
     batch_size = 10
     for i in range(img1.shape[0] // batch_size):
-        metric.update(img1[batch_size * i: batch_size * (i + 1)].cuda(), real=True)
+        metric.update(img1[batch_size * i : batch_size * (i + 1)].cuda(), real=True)
 
     for i in range(img2.shape[0] // batch_size):
-        metric.update(img2[batch_size * i: batch_size * (i + 1)].cuda(), real=False)
+        metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
 
     torch_fid = calculate_metrics(
         input1=_ImgDataset(img1),
