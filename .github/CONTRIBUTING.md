@@ -16,27 +16,29 @@ We are always looking for help implementing new features or fixing bugs.
    - Add details on how to reproduce the issue - a minimal test case is always best, colab is also great.
      Note, that the sample code shall be minimal and if needed with publicly available data.
 
-2. Try to fix it or recommend a solution. We highly recommend to use test-driven approach:
+1. Try to fix it or recommend a solution. We highly recommend to use test-driven approach:
 
    - Convert your minimal code example to a unit/integration test with assert on expected results.
    - Start by debugging the issue... You can run just this particular test in your IDE and draft a fix.
    - Verify that your test case fails on the master branch and only passes with the fix applied.
 
-3. Submit a PR!
+1. Submit a PR!
 
 _**Note**, even if you do not find the solution, sending a PR with a test covering the issue is a valid contribution and we can
-help you or finish it with you :]_
+help you or finish it with you :\]_
 
 ### New Features:
 
 1. Submit a github issue - describe what is the motivation of such feature (adding the use case or an example is helpful).
-2. Let's discuss to determine the feature scope.
-3. Submit a PR! We recommend test driven approach to adding new features as well:
+
+1. Let's discuss to determine the feature scope.
+
+1. Submit a PR! We recommend test driven approach to adding new features as well:
 
    - Write a test for the functionality you want to add.
    - Write the functional code until the test passes.
 
-4. Add/update the relevant tests!
+1. Add/update the relevant tests!
 
 - [This PR](https://github.com/PyTorchLightning/pytorch-lightning/pull/5241) is a good example for adding a new metric
 
@@ -46,12 +48,14 @@ Want to keep Torchmetrics healthy? Love seeing those green tests? So do we! How 
 We write tests! We value tests contribution even more than new features. One of the core values of torchmetrics
 is that our users can trust our metric implementation. We can only guarantee this if our metrics are well tested.
 
----
+______________________________________________________________________
 
 ## Guidelines
 
 ### Developments scripts
+
 To build the documentation locally, simply execute the following commands from project root (only for Unix):
+
 - `make clean` cleans repo from temp/generated files
 - `make docs` builds documentation under _docs/build/html_
 - `make test` runs all project's tests with coverage
@@ -67,7 +71,7 @@ In case you adding new dependencies, make sure that they are compatible with the
 ### Coding Style
 
 1. Use f-strings for output formation (except logging when we stay with lazy `logging.info("Hello %s!", name)`.
-2. You can use `pre-commit` to make sure your code style is correct.
+1. You can use `pre-commit` to make sure your code style is correct.
 
 ### Documentation
 
@@ -82,6 +86,7 @@ See following short example of a sample function taking one position string and 
 
 ```python
 from typing import Optional
+
 
 def my_func(param_a: int, param_b: Optional[float] = None) -> str:
     """Sample function.
