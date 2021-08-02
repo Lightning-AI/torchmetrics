@@ -21,7 +21,7 @@ import torch
 from torch import nn, tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
-from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
+from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 
 seed_all(42)
@@ -279,6 +279,7 @@ def test_device_and_dtype_transfer(tmpdir):
 
 
 def test_warning_on_compute_before_update():
+    """ test that an warning is raised if user tries to call compute before update """
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
@@ -301,13 +302,33 @@ def test_warning_on_compute_before_update():
 
 
 def test_metric_scripts():
+    """ test that metrics are scriptable """
     torch.jit.script(DummyMetric())
     torch.jit.script(DummyMetricSum())
 
 
 def test_metric_forward_cache_reset():
+    """ test that forward cache is reset when `reset` is called """
     metric = DummyMetricSum()
     _ = metric(2.0)
     assert metric._forward_cache == 2.0
     metric.reset()
     assert metric._forward_cache is None
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+@pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
+def test_forward_and_compute_to_device(metric_class):
+    metric = metric_class()
+    metric(1)
+    metric.to(device='cuda')
+
+    assert metric._forward_cache is not None
+    is_cuda = metric._forward_cache[0].is_cuda if isinstance(metric._forward_cache, list) \
+        else metric._forward_cache.is_cuda
+    assert is_cuda, 'forward cache was not moved to the correct device'
+
+    metric.compute()
+    assert metric._computed is not None
+    is_cuda = metric._computed[0].is_cuda if isinstance(metric._computed, list) else metric._computed.is_cuda
+    assert is_cuda, 'computed result was not moved to the correct device'
