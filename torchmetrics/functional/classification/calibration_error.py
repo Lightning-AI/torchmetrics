@@ -84,46 +84,45 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]
 
 def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1") -> Tensor:
     r"""
+    Computes the top-label calibration error as described in `this paper <https://arxiv.org/pdf/1909.10155.pdf>`_.
 
-        Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`.
+    Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
-        Three different norms are implemented, each corresponding to variations on the calibration error metric.
+    L1 norm (Expected Calibration Error)
 
-        L1 norm (Expected Calibration Error)
+    .. math::
+        \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
 
-        .. math::
-            \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
+    Infinity norm (Maximum Calibration Error)
 
-        Infinity norm (Maximum Calibration Error)
+    .. math::
+        \text{RMSCE} =  \max_{i} (p_i - c_i)
 
-        .. math::
-            \text{RMSCE} =  \max_{i} (p_i - c_i)
+    L2 norm (Root Mean Square Calibration Error)
 
-        L2 norm (Root Mean Square Calibration Error)
+    .. math::
+        \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-        .. math::
-            \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
+    Where :math:`p_i` is the top-1 prediction accuracy in
+    bin i and :math:`c_i` is the average confidence of predictions in bin i.
 
-        Where :math:`p_i` is the top-1 prediction accuracy in
-        bin i and :math:`c_i` is the average confidence of predictions in bin i.
+    .. note: 
+        L2-norm debiasing is not yet supported.
 
-        # NOTE: L2-norm debiasing is not yet supported.
-
-
-        Args:
-            preds (Tensor): Model output probabilities.
-            target (Tensor): Ground-truth target class labels.
-            n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
-            norm (str, optional): Norm used to compare empirical and expected probability bins.
-                Defaults to "l1", or Expected Calibration Error.
+    Args:
+        preds (Tensor): Model output probabilities.
+        target (Tensor): Ground-truth target class labels.
+        n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
+        norm (str, optional): Norm used to compare empirical and expected probability bins.
+            Defaults to "l1", or Expected Calibration Error.
     """
     if norm not in ("l1", "l2", "max"):
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
-    confidences, accuracies = _ce_update(preds, target)
-
     if not isinstance(n_bins, int) or n_bins <= 0:
         raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
+
+    confidences, accuracies = _ce_update(preds, target)
 
     bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float, device=preds.device)
 
