@@ -33,7 +33,7 @@ def _confusion_matrix_update(
         minlength = 4 * num_classes
     else:
         unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
-        minlength = num_classes**2
+        minlength = num_classes ** 2
 
     bins = torch.bincount(unique_mapping, minlength=minlength)
     if multilabel:
@@ -44,22 +44,22 @@ def _confusion_matrix_update(
 
 
 def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    allowed_normalize = ('true', 'pred', 'all', 'none', None)
+    allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
-    if normalize is not None and normalize != 'none':
+    if normalize is not None and normalize != "none":
         confmat = confmat.float() if not confmat.is_floating_point() else confmat
-        if normalize == 'true':
+        if normalize == "true":
             confmat = confmat / confmat.sum(axis=1, keepdim=True)
-        elif normalize == 'pred':
+        elif normalize == "pred":
             confmat = confmat / confmat.sum(axis=0, keepdim=True)
-        elif normalize == 'all':
+        elif normalize == "all":
             confmat = confmat / confmat.sum()
 
         nan_elements = confmat[torch.isnan(confmat)].nelement()
         if nan_elements != 0:
             confmat[torch.isnan(confmat)] = 0
-            rank_zero_warn(f'{nan_elements} nan values found in confusion matrix have been replaced with zeros.')
+            rank_zero_warn(f"{nan_elements} nan values found in confusion matrix have been replaced with zeros.")
     return confmat
 
 
@@ -69,7 +69,7 @@ def confusion_matrix(
     num_classes: int,
     normalize: Optional[str] = None,
     threshold: float = 0.5,
-    multilabel: bool = False
+    multilabel: bool = False,
 ) -> Tensor:
     """
     Computes the `confusion matrix

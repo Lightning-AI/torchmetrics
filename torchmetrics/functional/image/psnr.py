@@ -24,7 +24,7 @@ def _psnr_compute(
     n_obs: Tensor,
     data_range: Tensor,
     base: float = 10.0,
-    reduction: str = 'elementwise_mean',
+    reduction: str = "elementwise_mean",
 ) -> Tensor:
     """
     Computes peak signal-to-noise ratio.
@@ -98,7 +98,7 @@ def psnr(
     target: Tensor,
     data_range: Optional[float] = None,
     base: float = 10.0,
-    reduction: str = 'elementwise_mean',
+    reduction: str = "elementwise_mean",
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
     """
@@ -138,8 +138,8 @@ def psnr(
         Half precision is only support on GPU for this metric
 
     """
-    if dim is None and reduction != 'elementwise_mean':
-        rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
+    if dim is None and reduction != "elementwise_mean":
+        rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")
 
     if data_range is None:
         if dim is not None:

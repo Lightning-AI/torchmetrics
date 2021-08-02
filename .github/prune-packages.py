@@ -10,7 +10,7 @@ def main(req_file: str, *pkgs):
         lines = [ln for ln in lines if not ln.startswith(pkg)]
     pprint(lines)
 
-    with open(req_file, 'w') as fp:
+    with open(req_file, "w") as fp:
         fp.writelines(lines)
 
 

@@ -23,7 +23,7 @@ def bleu_score(
     reference_corpus: Sequence[Sequence[Sequence[str]]],
     translate_corpus: Sequence[Sequence[str]],
     n_gram: int = 4,
-    smooth: bool = False
+    smooth: bool = False,
 ) -> Tensor:
     """
     Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more references
@@ -40,6 +40,7 @@ def bleu_score(
     """
     warn(
         "Function `functional.nlp.bleu_score` is deprecated in v0.5 and will be removed in v0.6."
-        " Use `functional.text.bleu.bleu_score` instead.", DeprecationWarning
+        " Use `functional.text.bleu.bleu_score` instead.",
+        DeprecationWarning,
     )
     return _bleu_score(reference_corpus, translate_corpus, n_gram, smooth)

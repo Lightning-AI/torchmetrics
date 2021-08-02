@@ -43,7 +43,7 @@ def _binary_clf_curve(
     if sample_weights is not None:
         weight = sample_weights[desc_score_indices]
     else:
-        weight = 1.
+        weight = 1.0
 
     # pred typically has many tied values. Here we extract
     # the indices associated with the distinct values. We also
@@ -71,15 +71,15 @@ def _precision_recall_curve_update(
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
     if len(preds.shape) == len(target.shape):
         if pos_label is None:
-            rank_zero_warn('`pos_label` automatically set 1.')
+            rank_zero_warn("`pos_label` automatically set 1.")
             pos_label = 1
         if num_classes is not None and num_classes != 1:
             # multilabel problem
             if num_classes != preds.shape[1]:
                 raise ValueError(
-                    f'Argument `num_classes` was set to {num_classes} in'
-                    f' metric `precision_recall_curve` but detected {preds.shape[1]}'
-                    ' number of classes from predictions'
+                    f"Argument `num_classes` was set to {num_classes} in"
+                    f" metric `precision_recall_curve` but detected {preds.shape[1]}"
+                    " number of classes from predictions"
                 )
             preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
             target = target.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
@@ -93,14 +93,14 @@ def _precision_recall_curve_update(
     elif len(preds.shape) == len(target.shape) + 1:
         if pos_label is not None:
             rank_zero_warn(
-                'Argument `pos_label` should be `None` when running'
-                f' multiclass precision recall curve. Got {pos_label}'
+                "Argument `pos_label` should be `None` when running"
+                f" multiclass precision recall curve. Got {pos_label}"
             )
         if num_classes != preds.shape[1]:
             raise ValueError(
-                f'Argument `num_classes` was set to {num_classes} in'
-                f' metric `precision_recall_curve` but detected {preds.shape[1]}'
-                ' number of classes from predictions'
+                f"Argument `num_classes` was set to {num_classes} in"
+                f" metric `precision_recall_curve` but detected {preds.shape[1]}"
+                " number of classes from predictions"
             )
         preds = preds.transpose(0, 1).reshape(num_classes, -1).transpose(0, 1)
         target = target.flatten()
@@ -157,10 +157,12 @@ def _precision_recall_curve_compute_multi_class(
             sample_weights=sample_weights,
         )
         if target.ndim > 1:
-            prc_args.update(dict(
-                target=target[:, cls],
-                pos_label=1,
-            ))
+            prc_args.update(
+                dict(
+                    target=target[:, cls],
+                    pos_label=1,
+                )
+            )
         res = precision_recall_curve(**prc_args)
         precision.append(res[0])
         recall.append(res[1])

@@ -25,7 +25,7 @@ def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     x = x if isinstance(x, (list, tuple)) else [x]
     x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
     if not x:  # empty list
-        raise ValueError('No samples to concatenate')
+        raise ValueError("No samples to concatenate")
     return torch.cat(x, dim=0)
 
 
@@ -194,7 +194,7 @@ def apply_to_collection(
     if isinstance(data, Mapping):
         return elem_type({k: apply_to_collection(v, dtype, function, *args, **kwargs) for k, v in data.items()})
 
-    if isinstance(data, tuple) and hasattr(data, '_fields'):  # named tuple
+    if isinstance(data, tuple) and hasattr(data, "_fields"):  # named tuple
         return elem_type(*(apply_to_collection(d, dtype, function, *args, **kwargs) for d in data))
 
     if isinstance(data, Sequence) and not isinstance(data, str):

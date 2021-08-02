@@ -23,10 +23,12 @@ from torchmetrics.utilities.data import get_num_classes, to_categorical, to_oneh
 
 def test_onehot():
     test_tensor = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-    expected = torch.stack([
-        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)])
-    ])
+    expected = torch.stack(
+        [
+            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+        ]
+    )
 
     assert test_tensor.shape == (2, 5)
     assert expected.shape == (2, 10, 5)
@@ -44,10 +46,12 @@ def test_onehot():
 
 
 def test_to_categorical():
-    test_tensor = torch.stack([
-        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)])
-    ]).to(torch.float)
+    test_tensor = torch.stack(
+        [
+            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+        ]
+    ).to(torch.float)
 
     expected = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
     assert expected.shape == (2, 5)
@@ -59,25 +63,31 @@ def test_to_categorical():
     assert torch.allclose(result, expected.to(result.dtype))
 
 
-@pytest.mark.parametrize(['preds', 'target', 'num_classes', 'expected_num_classes'], [
-    pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), 10, 10),
-    pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
-    pytest.param(torch.rand(32, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
-])
+@pytest.mark.parametrize(
+    ["preds", "target", "num_classes", "expected_num_classes"],
+    [
+        pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), 10, 10),
+        pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
+        pytest.param(torch.rand(32, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
+    ],
+)
 def test_get_num_classes(preds, target, num_classes, expected_num_classes):
     assert get_num_classes(preds, target, num_classes) == expected_num_classes
 
 
-@pytest.mark.parametrize(['sample_weight', 'pos_label', "exp_shape"], [
-    pytest.param(1, 1., 42),
-    pytest.param(None, 1., 42),
-])
+@pytest.mark.parametrize(
+    ["sample_weight", "pos_label", "exp_shape"],
+    [
+        pytest.param(1, 1.0, 42),
+        pytest.param(None, 1.0, 42),
+    ],
+)
 def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
     # TODO: move back the pred and target to test func arguments
     #  if you fix the array inside the function, you'd also have fix the shape,
     #  because when the array changes, you also have to fix the shape
     seed_all(0)
-    pred = torch.randint(low=51, high=99, size=(100, ), dtype=torch.float) / 100
+    pred = torch.randint(low=51, high=99, size=(100,), dtype=torch.float) / 100
     target = tensor([0, 1] * 50, dtype=torch.int)
     if sample_weight is not None:
         sample_weight = torch.ones_like(pred) * sample_weight
@@ -87,17 +97,20 @@ def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
     assert isinstance(tps, Tensor)
     assert isinstance(fps, Tensor)
     assert isinstance(thresh, Tensor)
-    assert tps.shape == (exp_shape, )
-    assert fps.shape == (exp_shape, )
-    assert thresh.shape == (exp_shape, )
+    assert tps.shape == (exp_shape,)
+    assert fps.shape == (exp_shape,)
+    assert thresh.shape == (exp_shape,)
 
 
-@pytest.mark.parametrize(['pred', 'target', 'expected'], [
-    pytest.param([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.),
-    pytest.param([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.),
-    pytest.param([[1, 1], [1, 1]], [[1, 1], [0, 0]], 2 / 3),
-    pytest.param([[1, 1], [0, 0]], [[1, 1], [0, 0]], 1.),
-])
+@pytest.mark.parametrize(
+    ["pred", "target", "expected"],
+    [
+        pytest.param([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
+        pytest.param([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),
+        pytest.param([[1, 1], [1, 1]], [[1, 1], [0, 0]], 2 / 3),
+        pytest.param([[1, 1], [0, 0]], [[1, 1], [0, 0]], 1.0),
+    ],
+)
 def test_dice_score(pred, target, expected):
     score = dice_score(tensor(pred), tensor(target))
     assert score == expected

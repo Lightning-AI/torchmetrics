@@ -31,7 +31,7 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
 
     if weights is None:
         w_mat = torch.ones_like(confmat).flatten()
-        w_mat[::n_classes + 1] = 0
+        w_mat[:: n_classes + 1] = 0
         w_mat = w_mat.reshape(n_classes, n_classes)
     elif weights in ("linear", "quadratic"):
         w_mat = torch.zeros_like(confmat)
@@ -42,8 +42,7 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
             w_mat = torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
-            f"Received {weights} for argument ``weights`` but should be either"
-            " None, 'linear' or 'quadratic'"
+            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
         )
 
     k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)

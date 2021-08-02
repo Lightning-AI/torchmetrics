@@ -46,7 +46,7 @@ HYPOTHESES = (HYP1, HYP2)
 
 BATCHES = [
     dict(reference_corpus=[[REF1A, REF1B, REF1C]], translate_corpus=[HYP1]),
-    dict(reference_corpus=[[REF2A]], translate_corpus=[HYP2])
+    dict(reference_corpus=[[REF2A]], translate_corpus=[HYP2]),
 ]
 
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.SmoothingFunction
@@ -129,7 +129,7 @@ def test_bleu_score_class_batches(weights, n_gram, smooth_func, smooth):
     nltk_output = corpus_bleu(TUPLE_OF_REFERENCES, HYPOTHESES, weights=weights, smoothing_function=smooth_func)
 
     for batch in BATCHES:
-        bleu.update(batch['reference_corpus'], batch['translate_corpus'])
+        bleu.update(batch["reference_corpus"], batch["translate_corpus"])
     pl_output = bleu.compute()
     assert torch.allclose(pl_output, tensor(nltk_output))
 

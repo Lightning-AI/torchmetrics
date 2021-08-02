@@ -65,7 +65,7 @@ class CosineSimilarity(Metric):
 
     def __init__(
         self,
-        reduction: str = 'sum',
+        reduction: str = "sum",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -75,9 +75,9 @@ class CosineSimilarity(Metric):
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=dist_sync_fn,
         )
-        allowed_reduction = ('sum', 'mean', 'none', None)
+        allowed_reduction = ("sum", "mean", "none", None)
         if reduction not in allowed_reduction:
             raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction} but got {reduction}")
         self.reduction = reduction

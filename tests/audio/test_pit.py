@@ -31,7 +31,7 @@ seed_all(42)
 
 TIME = 10
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 # three speaker examples to test _find_best_perm_by_linear_sum_assignment
 inputs1 = Input(
@@ -76,7 +76,7 @@ def naive_implementation_pit_scipy(
     best_metrics = []
     best_perms = []
     for b in range(batch_size):
-        row_idx, col_idx = linear_sum_assignment(metric_mtx[b, ...], eval_func == 'max')
+        row_idx, col_idx = linear_sum_assignment(metric_mtx[b, ...], eval_func == "max")
         best_metrics.append(metric_mtx[b, row_idx, col_idx].mean())
         best_perms.append(col_idx)
     return torch.from_numpy(np.stack(best_metrics)), torch.from_numpy(np.stack(best_perms))
@@ -96,17 +96,17 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
     return metric_func(preds, target)[0].mean()
 
 
-snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=snr, eval_func='max')
-si_sdr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=si_sdr, eval_func='max')
+snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=snr, eval_func="max")
+si_sdr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=si_sdr, eval_func="max")
 
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, metric_func, eval_func",
     [
-        (inputs1.preds, inputs1.target, snr_pit_scipy, snr, 'max'),
-        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, si_sdr, 'max'),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, snr, 'max'),
-        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, si_sdr, 'max'),
+        (inputs1.preds, inputs1.target, snr_pit_scipy, snr, "max"),
+        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, si_sdr, "max"),
+        (inputs2.preds, inputs2.target, snr_pit_scipy, snr, "max"),
+        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, si_sdr, "max"),
     ],
 )
 class TestPIT(MetricTester):
@@ -135,7 +135,6 @@ class TestPIT(MetricTester):
         )
 
     def test_pit_differentiability(self, preds, target, sk_metric, metric_func, eval_func):
-
         def pit_diff(preds, target, metric_func, eval_func):
             return pit(preds, target, metric_func, eval_func)[0]
 
@@ -144,47 +143,41 @@ class TestPIT(MetricTester):
             target=target,
             metric_module=PIT,
             metric_functional=pit_diff,
-            metric_args={
-                'metric_func': metric_func,
-                'eval_func': eval_func
-            }
+            metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_pit_half_cpu(self, preds, target, sk_metric, metric_func, eval_func):
         pytest.xfail("PIT metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pit_half_gpu(self, preds, target, sk_metric, metric_func, eval_func):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=PIT,
             metric_functional=partial(pit, metric_func=metric_func, eval_func=eval_func),
-            metric_args={
-                'metric_func': metric_func,
-                'eval_func': eval_func
-            }
+            metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
 
 def test_error_on_different_shape() -> None:
-    metric = PIT(snr, 'max')
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+    metric = PIT(snr, "max")
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(3, 3, 10), torch.randn(3, 2, 10))
 
 
 def test_error_on_wrong_eval_func() -> None:
-    metric = PIT(snr, 'xxx')
+    metric = PIT(snr, "xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
-    metric = PIT(snr, 'max')
-    with pytest.raises(ValueError, match='Inputs must be of shape *'):
+    metric = PIT(snr, "max")
+    with pytest.raises(ValueError, match="Inputs must be of shape *"):
         metric(torch.randn(3), torch.randn(3))
 
 
@@ -193,6 +186,7 @@ def test_consistency_of_two_implementations() -> None:
         _find_best_perm_by_exhuastive_method,
         _find_best_perm_by_linear_sum_assignment,
     )
+
     shapes_test = [(5, 2, 2), (4, 3, 3), (4, 4, 4), (3, 5, 5)]
     for shp in shapes_test:
         metric_mtx = torch.randn(size=shp)

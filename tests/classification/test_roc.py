@@ -33,7 +33,7 @@ seed_all(42)
 
 
 def _sk_roc_curve(y_true, probas_pred, num_classes: int = 1, multilabel: bool = False):
-    """ Adjusted comparison function that can also handles multiclass """
+    """Adjusted comparison function that can also handles multiclass"""
     if num_classes == 1:
         return sk_roc_curve(y_true, probas_pred, drop_intermediate=False)
 
@@ -86,14 +86,15 @@ def _sk_roc_multilabel_multidim_prob(preds, target, num_classes=1):
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
-    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_roc_binary_prob, 1),
-     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_roc_multiclass_prob, NUM_CLASSES),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_roc_multidim_multiclass_prob, NUM_CLASSES),
-     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_roc_multilabel_prob, NUM_CLASSES),
-     (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_roc_multilabel_multidim_prob, NUM_CLASSES)]
+    [
+        (_input_binary_prob.preds, _input_binary_prob.target, _sk_roc_binary_prob, 1),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_roc_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_roc_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_roc_multilabel_prob, NUM_CLASSES),
+        (_input_mlmd_prob.preds, _input_mlmd_prob.target, _sk_roc_multilabel_multidim_prob, NUM_CLASSES),
+    ],
 )
 class TestROC(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_roc(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
@@ -104,7 +105,7 @@ class TestROC(MetricTester):
             metric_class=ROC,
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"num_classes": num_classes}
+            metric_args={"num_classes": num_classes},
         )
 
     def test_roc_functional(self, preds, target, sk_metric, num_classes):
@@ -126,13 +127,16 @@ class TestROC(MetricTester):
         )
 
 
-@pytest.mark.parametrize(['pred', 'target', 'expected_tpr', 'expected_fpr'], [
-    pytest.param([0, 1], [0, 1], [0, 1, 1], [0, 0, 1]),
-    pytest.param([1, 0], [0, 1], [0, 0, 1], [0, 1, 1]),
-    pytest.param([1, 1], [1, 0], [0, 1], [0, 1]),
-    pytest.param([1, 0], [1, 0], [0, 1, 1], [0, 0, 1]),
-    pytest.param([0.5, 0.5], [0, 1], [0, 1], [0, 1]),
-])
+@pytest.mark.parametrize(
+    ["pred", "target", "expected_tpr", "expected_fpr"],
+    [
+        pytest.param([0, 1], [0, 1], [0, 1, 1], [0, 0, 1]),
+        pytest.param([1, 0], [0, 1], [0, 0, 1], [0, 1, 1]),
+        pytest.param([1, 1], [1, 0], [0, 1], [0, 1]),
+        pytest.param([1, 0], [1, 0], [0, 1, 1], [0, 0, 1]),
+        pytest.param([0.5, 0.5], [0, 1], [0, 1], [0, 1]),
+    ],
+)
 def test_roc_curve(pred, target, expected_tpr, expected_fpr):
     fpr, tpr, thresh = roc(tensor(pred), tensor(target))
 

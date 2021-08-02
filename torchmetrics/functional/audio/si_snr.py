@@ -17,7 +17,7 @@ from torchmetrics.functional.audio.si_sdr import si_sdr
 
 
 def si_snr(preds: Tensor, target: Tensor) -> Tensor:
-    """ Scale-invariant signal-to-noise ratio (SI-SNR).
+    """Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Args:
         preds:

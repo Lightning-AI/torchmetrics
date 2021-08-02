@@ -31,13 +31,13 @@ def sk_auc(x, y, reorder=False):
     x = x.flatten()
     y = y.flatten()
     if reorder:
-        idx = np.argsort(x, kind='stable')
+        idx = np.argsort(x, kind="stable")
         x = x[idx]
         y = y[idx]
     return _sk_auc(x, y)
 
 
-Input = namedtuple('Input', ["x", "y"])
+Input = namedtuple("Input", ["x", "y"])
 
 _examples = []
 # generate already ordered samples, sorted in both directions
@@ -45,7 +45,7 @@ for batch_size in (8, 4049):
     for i in range(4):
         x = np.random.rand(NUM_BATCHES * batch_size)
         y = np.random.rand(NUM_BATCHES * batch_size)
-        idx = np.argsort(x, kind='stable')
+        idx = np.argsort(x, kind="stable")
         x = x[idx] if i % 2 == 0 else x[idx[::-1]]
         y = y[idx] if i % 2 == 0 else x[idx[::-1]]
         x = x.reshape(NUM_BATCHES, batch_size)
@@ -55,7 +55,6 @@ for batch_size in (8, 4049):
 
 @pytest.mark.parametrize("x, y", _examples)
 class TestAUC(MetricTester):
-
     @pytest.mark.parametrize("ddp", [False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_auc(self, x, y, ddp, dist_sync_on_step):
@@ -81,15 +80,18 @@ class TestAUC(MetricTester):
         )
 
 
-@pytest.mark.parametrize('unsqueeze_x', (True, False))
-@pytest.mark.parametrize('unsqueeze_y', (True, False))
-@pytest.mark.parametrize(['x', 'y', 'expected'], [
-    pytest.param([0, 1], [0, 1], 0.5),
-    pytest.param([1, 0], [0, 1], 0.5),
-    pytest.param([1, 0, 0], [0, 1, 1], 0.5),
-    pytest.param([0, 1], [1, 1], 1),
-    pytest.param([0, 0.5, 1], [0, 0.5, 1], 0.5),
-])
+@pytest.mark.parametrize("unsqueeze_x", (True, False))
+@pytest.mark.parametrize("unsqueeze_y", (True, False))
+@pytest.mark.parametrize(
+    ["x", "y", "expected"],
+    [
+        pytest.param([0, 1], [0, 1], 0.5),
+        pytest.param([1, 0], [0, 1], 0.5),
+        pytest.param([1, 0, 0], [0, 1, 1], 0.5),
+        pytest.param([0, 1], [1, 1], 1),
+        pytest.param([0, 0.5, 1], [0, 0.5, 1], 0.5),
+    ],
+)
 def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
     x = tensor(x)
     y = tensor(y)

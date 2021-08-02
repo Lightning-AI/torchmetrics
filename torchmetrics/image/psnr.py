@@ -75,7 +75,7 @@ class PSNR(Metric):
         self,
         data_range: Optional[float] = None,
         base: float = 10.0,
-        reduction: str = 'elementwise_mean',
+        reduction: str = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -87,8 +87,8 @@ class PSNR(Metric):
             process_group=process_group,
         )
 
-        if dim is None and reduction != 'elementwise_mean':
-            rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
+        if dim is None and reduction != "elementwise_mean":
+            rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")
 
         if dim is None:
             self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
@@ -107,7 +107,7 @@ class PSNR(Metric):
             self.add_state("min_target", default=tensor(0.0), dist_reduce_fx=torch.min)
             self.add_state("max_target", default=tensor(0.0), dist_reduce_fx=torch.max)
         else:
-            self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx='mean')
+            self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx="mean")
         self.base = base
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim

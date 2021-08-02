@@ -21,8 +21,8 @@ from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 def _del_column(data: Tensor, idx: int) -> Tensor:
-    """ Delete the column at index."""
-    return torch.cat([data[:, :idx], data[:, (idx + 1):]], 1)
+    """Delete the column at index."""
+    return torch.cat([data[:, :idx], data[:, (idx + 1) :]], 1)
 
 
 def _stat_scores(
@@ -194,7 +194,7 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, tensor(float('nan'), device=scores.device), scores)
+        scores = torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
     else:
         scores = scores.sum()
 

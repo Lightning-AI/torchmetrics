@@ -26,7 +26,7 @@ torch.manual_seed(42)
 
 @pytest.mark.parametrize("matrix_size", [2, 10, 100, 500])
 def test_matrix_sqrt(matrix_size):
-    """ test that metrix sqrt function works as expected """
+    """test that metrix sqrt function works as expected"""
 
     def generate_cov(n):
         data = torch.randn(2 * n, n)
@@ -42,10 +42,9 @@ def test_matrix_sqrt(matrix_size):
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
-    """ Assert that metric never leaves evaluation mode """
+    """Assert that metric never leaves evaluation mode"""
 
     class MyModel(torch.nn.Module):
-
         def __init__(self):
             super().__init__()
             self.metric = FID()
@@ -56,12 +55,12 @@ def test_no_train():
     model = MyModel()
     model.train()
     assert model.training
-    assert not model.metric.inception.training, 'FID metric was changed to training mode which should not happen'
+    assert not model.metric.inception.training, "FID metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_fid_pickle():
-    """ Assert that we can initialize the metric and pickle it"""
+    """Assert that we can initialize the metric and pickle it"""
     metric = FID()
     assert metric
 
@@ -71,34 +70,34 @@ def test_fid_pickle():
 
 
 def test_fid_raises_errors_and_warnings():
-    """ Test that expected warnings and errors are raised """
+    """Test that expected warnings and errors are raised"""
     with pytest.warns(
         UserWarning,
-        match='Metric `FID` will save all extracted features in buffer.'
-        ' For large datasets this may lead to large memory footprint.'
+        match="Metric `FID` will save all extracted features in buffer."
+        " For large datasets this may lead to large memory footprint.",
     ):
         _ = FID()
 
     if _TORCH_FIDELITY_AVAILABLE:
-        with pytest.raises(ValueError, match='Integer input to argument `feature` must be one of .*'):
+        with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
             _ = FID(feature=2)
     else:
         with pytest.raises(
             ValueError,
-            match='FID metric requires that Torch-fidelity is installed.'
-            'Either install as `pip install torchmetrics[image-quality]`'
-            ' or `pip install torch-fidelity`'
+            match="FID metric requires that Torch-fidelity is installed."
+            "Either install as `pip install torchmetrics[image-quality]`"
+            " or `pip install torch-fidelity`",
         ):
             _ = FID()
 
-    with pytest.raises(TypeError, match='Got unknown input to argument `feature`'):
+    with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
         _ = FID(feature=[1, 2])
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
-    """ if real and fake are update on the same data the fid score should be 0 """
+    """if real and fake are update on the same data the fid score should be 0"""
     metric = FID(feature=feature)
 
     for _ in range(2):
@@ -113,7 +112,6 @@ def test_fid_same_input(feature):
 
 
 class _ImgDataset(Dataset):
-
     def __init__(self, imgs):
         self.imgs = imgs
 
@@ -124,10 +122,10 @@ class _ImgDataset(Dataset):
         return self.imgs.shape[0]
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='test is too slow without gpu')
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason='test requires torch-fidelity')
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_compare_fid(tmpdir, feature=2048):
-    """ check that the hole pipeline give the same result as torch-fidelity """
+    """check that the hole pipeline give the same result as torch-fidelity"""
     from torch_fidelity import calculate_metrics
 
     metric = FID(feature=feature).cuda()
@@ -138,10 +136,10 @@ def test_compare_fid(tmpdir, feature=2048):
 
     batch_size = 10
     for i in range(img1.shape[0] // batch_size):
-        metric.update(img1[batch_size * i:batch_size * (i + 1)].cuda(), real=True)
+        metric.update(img1[batch_size * i : batch_size * (i + 1)].cuda(), real=True)
 
     for i in range(img2.shape[0] // batch_size):
-        metric.update(img2[batch_size * i:batch_size * (i + 1)].cuda(), real=False)
+        metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
 
     torch_fid = calculate_metrics(
         input1=_ImgDataset(img1),
@@ -149,9 +147,9 @@ def test_compare_fid(tmpdir, feature=2048):
         fid=True,
         feature_layer_fid=str(feature),
         batch_size=batch_size,
-        save_cpu_ram=True
+        save_cpu_ram=True,
     )
 
     tm_res = metric.compute()
 
-    assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid['frechet_inception_distance']]), atol=1e-3)
+    assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid["frechet_inception_distance"]]), atol=1e-3)

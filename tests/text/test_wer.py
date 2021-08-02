@@ -50,7 +50,7 @@ def test_wer_reference_functional(hyp, ref):
     """
     Test to ensure that the torchmetric functional WER matches the jiwer reference
     """
-    assert wer(ref, hyp) == compute_measures(ref, hyp)['wer']
+    assert wer(ref, hyp) == compute_measures(ref, hyp)["wer"]
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
@@ -60,8 +60,8 @@ def test_wer_reference_functional_concatenate():
     """
     ref = ["hello world", "hello world"]
     hyp = ["hello world", "Firwww"]
-    assert wer(ref, hyp) == compute_measures(ref, hyp)['wer']
-    assert wer(hyp, ref, concatenate_texts=True) == compute_measures(''.join(ref), ''.join(hyp))['wer']
+    assert wer(ref, hyp) == compute_measures(ref, hyp)["wer"]
+    assert wer(hyp, ref, concatenate_texts=True) == compute_measures("".join(ref), "".join(hyp))["wer"]
 
 
 @pytest.mark.parametrize(
@@ -78,7 +78,7 @@ def test_wer_reference(hyp, ref):
     """
     metric = WER()
     metric.update(hyp, ref)
-    assert metric.compute() == compute_measures(ref, hyp)['wer']
+    assert metric.compute() == compute_measures(ref, hyp)["wer"]
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
@@ -91,5 +91,5 @@ def test_wer_reference_batch():
 
     for hyp, ref in batches:
         metric.update(ref, hyp)
-    reference_score = compute_measures(truth=[x[0] for x in batches], hypothesis=[x[1] for x in batches])['wer']
+    reference_score = compute_measures(truth=[x[0] for x in batches], hypothesis=[x[1] for x in batches])["wer"]
     assert metric.compute() == reference_score
