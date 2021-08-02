@@ -30,6 +30,7 @@ def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.
         sigma: Standard deviation of the gaussian kernel
         dtype: data type of the output tensor
         device: device of the output tensor
+
     Example:
         >>> _gaussian(3, 1, torch.float, 'cpu')
         tensor([[0.2741, 0.4519, 0.2741]])
@@ -51,6 +52,7 @@ def _gaussian_kernel(
         sigma: Standard deviation of the gaussian kernel
         dtype: data type of the output tensor
         device: device of the output tensor
+
     Example:
         >>> _gaussian_kernel(1, (5,5), (1,1), torch.float, "cpu")
         tensor([[[[0.0030, 0.0133, 0.0219, 0.0133, 0.0030],
