@@ -43,14 +43,14 @@ def _sk_calibration(preds, target, n_bins, norm, debias=False):
 @pytest.mark.parametrize("n_bins", [10, 15, 20])
 @pytest.mark.parametrize("norm", ["l1", "l2", "max"])
 @pytest.mark.parametrize(
-    "preds, target", [
+    "preds, target",
+    [
         (_input_binary_prob.preds, _input_binary_prob.target),
         (_input_mcls_prob.preds, _input_mcls_prob.target),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target),
-    ]
+    ],
 )
 class TestCE(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm):
@@ -61,10 +61,7 @@ class TestCE(MetricTester):
             metric_class=CalibrationError,
             sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={
-                "n_bins": n_bins,
-                "norm": norm
-            }
+            metric_args={"n_bins": n_bins, "norm": norm},
         )
 
     def test_ce_functional(self, preds, target, n_bins, norm):
@@ -73,10 +70,7 @@ class TestCE(MetricTester):
             target,
             metric_functional=calibration_error,
             sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
-            metric_args={
-                "n_bins": n_bins,
-                "norm": norm
-            }
+            metric_args={"n_bins": n_bins, "norm": norm},
         )
 
 
@@ -85,18 +79,20 @@ def test_invalid_input(preds, targets):
     for p, t in zip(preds, targets):
         with pytest.raises(
             ValueError,
-            match=re.
-            escape(f"Calibration error is not well-defined for data with size {p.size()} and targets {t.size()}.")
+            match=re.escape(
+                f"Calibration error is not well-defined for data with size {p.size()} and targets {t.size()}."
+            ),
         ):
             calibration_error(p, t)
 
 
 @pytest.mark.parametrize(
-    "preds, target", [
+    "preds, target",
+    [
         (_input_binary_prob.preds, _input_binary_prob.target),
         (_input_mcls_prob.preds, _input_mcls_prob.target),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target),
-    ]
+    ],
 )
 def test_invalid_norm(preds, target):
     with pytest.raises(ValueError, match="Norm l3 is not supported. Please select from l1, l2, or max. "):
@@ -105,11 +101,12 @@ def test_invalid_norm(preds, target):
 
 @pytest.mark.parametrize("n_bins", [-10, -1, "fsd"])
 @pytest.mark.parametrize(
-    "preds, targets", [
+    "preds, targets",
+    [
         (_input_binary_prob.preds, _input_binary_prob.target),
         (_input_mcls_prob.preds, _input_mcls_prob.target),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target),
-    ]
+    ],
 )
 def test_invalid_bins(preds, targets, n_bins):
     for p, t in zip(preds, targets):
