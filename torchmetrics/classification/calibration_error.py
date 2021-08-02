@@ -50,17 +50,18 @@ class CalibrationError(Metric):
         L2-norm debiasing is not yet supported.
 
     Args:
-        n_bins (int, optional): Number of bins to use when computing probabilites and accuracies. Defaults to 15.
-        norm (str, optional): Norm used to compare empirical and expected probability bins.
+        n_bins: Number of bins to use when computing probabilites and accuracies.
+        norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
-        debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
-        compute_on_step (bool, optional):  Forward only calls ``update()`` and return None if this is set to False.
-            Defaults to False.
-        dist_sync_on_step (bool, optional): Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. Defaults to False.
-        process_group (Optional[Any], optional): Specify the process group on which synchronization is called.
-            default: None (which selects the entire world). Defaults to None.
+        debias: Applies debiasing term, only implemented for l2 norm. Defaults to True.
+        compute_on_step:  Forward only calls ``update()`` and return None if this is set to False.
+        dist_sync_on_step: Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step
+        process_group: Specify the process group on which synchronization is called.
+            default: None (which selects the entire world)
     """
+    confidences: List
+    accuracies: List
 
     def __init__(
         self,
