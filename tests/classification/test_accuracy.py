@@ -32,7 +32,7 @@ from tests.classification.inputs import _input_multilabel_multidim as _input_mlm
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, NUM_BATCHES
+from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Accuracy
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
@@ -351,7 +351,6 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     cl_metric(preds, target)
     result_cl = cl_metric.compute()
     assert torch.allclose(expected, result_cl, equal_nan=True)
-
 
 
 @pytest.mark.parametrize('average', ['micro', 'macro', 'weighted'])
