@@ -203,7 +203,7 @@ def test_no_support(metric_class, metric_fn):
 class TestPrecisionRecall(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_precision_recall_class(
         self,
         ddp: bool,
