@@ -35,7 +35,7 @@ def symmetric_mean_absolute_percentage_error(
                 Returns a full set of errors in case of multioutput input.
             'uniform_average' :
                 Errors of all outputs are averaged with uniform weight.
-    
+
     Returns:
         loss : float or ndarray of floats in the range [0, 1]
             If multioutput is 'raw_values', then symmetric mean absolute percentage error

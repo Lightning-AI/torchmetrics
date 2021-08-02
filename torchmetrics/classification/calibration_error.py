@@ -43,7 +43,7 @@ class CalibrationError(Metric):
     .. math::
         \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-    Where :math:`p_i` is the top-1 prediction accuracy in bin i 
+    Where :math:`p_i` is the top-1 prediction accuracy in bin i
     and :math:`c_i` is the average confidence of predictions in bin i.
 
     .. note::
@@ -54,7 +54,7 @@ class CalibrationError(Metric):
         norm (str, optional): Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
         debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
-        compute_on_step (bool, optional):  Forward only calls ``update()`` and return None if this is set to False. 
+        compute_on_step (bool, optional):  Forward only calls ``update()`` and return None if this is set to False.
             Defaults to False.
         dist_sync_on_step (bool, optional): Synchronize metric state across processes at each ``forward()``
             before returning the value at the step. Defaults to False.
