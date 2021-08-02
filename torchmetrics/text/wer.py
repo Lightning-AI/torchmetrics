@@ -79,8 +79,8 @@ class WER(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         self.concatenate_texts = concatenate_texts
-        self.add_state('predictions', [], dist_reduce_fx='cat')
-        self.add_state('references', [], dist_reduce_fx='cat')
+        self.add_state("predictions", [], dist_reduce_fx="cat")
+        self.add_state("references", [], dist_reduce_fx="cat")
 
     def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
         """

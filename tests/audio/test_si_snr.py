@@ -29,14 +29,14 @@ seed_all(42)
 
 Time = 100
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
 )
 
-speechmetrics_sisdr = speechmetrics.load('sisdr')
+speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
 def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
@@ -52,7 +52,7 @@ def speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
         ms = []
         for j in range(preds.shape[1]):
             metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
-            ms.append(metric['sisdr'][0])
+            ms.append(metric["sisdr"][0])
         mss.append(ms)
     return torch.tensor(mss)
 
@@ -96,17 +96,17 @@ class TestSISNR(MetricTester):
         self.run_differentiability_test(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_si_snr_half_cpu(self, preds, target, sk_metric):
         pytest.xfail("SI-SNR metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_si_snr_half_gpu(self, preds, target, sk_metric):
         self.run_precision_test_gpu(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
 
 
 def test_error_on_different_shape(metric_class=SI_SNR):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

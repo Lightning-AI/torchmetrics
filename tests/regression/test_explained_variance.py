@@ -28,7 +28,7 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _single_target_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
@@ -53,7 +53,7 @@ def _multi_target_sk_metric(preds, target, sk_fn=explained_variance_score):
     return sk_fn(sk_target, sk_preds)
 
 
-@pytest.mark.parametrize("multioutput", ['raw_values', 'uniform_average', 'variance_weighted'])
+@pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
 @pytest.mark.parametrize(
     "preds, target, sk_metric",
     [
@@ -62,7 +62,6 @@ def _multi_target_sk_metric(preds, target, sk_fn=explained_variance_score):
     ],
 )
 class TestExplainedVariance(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_explained_variance(self, multioutput, preds, target, sk_metric, ddp, dist_sync_on_step):
@@ -91,21 +90,21 @@ class TestExplainedVariance(MetricTester):
             target=target,
             metric_module=ExplainedVariance,
             metric_functional=explained_variance,
-            metric_args={'multioutput': multioutput}
+            metric_args={"multioutput": multioutput},
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_explained_variance_half_cpu(self, multioutput, preds, target, sk_metric):
         self.run_precision_test_cpu(preds, target, ExplainedVariance, explained_variance)
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_explained_variance_half_gpu(self, multioutput, preds, target, sk_metric):
         self.run_precision_test_gpu(preds, target, ExplainedVariance, explained_variance)
 
 
 def test_error_on_different_shape(metric_class=ExplainedVariance):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

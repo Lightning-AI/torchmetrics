@@ -89,10 +89,13 @@ def _sk_fbeta_f1_multidim_multiclass(
         return np.concatenate(scores).mean(axis=0)
 
 
-@pytest.mark.parametrize("metric_class, metric_fn", [
-    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-    (F1, f1),
-])
+@pytest.mark.parametrize(
+    "metric_class, metric_fn",
+    [
+        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
+        (F1, f1),
+    ],
+)
 @pytest.mark.parametrize(
     "average, mdmc_average, num_classes, ignore_index, match_str",
     [
@@ -122,12 +125,15 @@ def test_wrong_params(metric_class, metric_fn, average, mdmc_average, num_classe
         )
 
 
-@pytest.mark.parametrize("metric_class, metric_fn", [
-    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-    (F1, f1),
-])
+@pytest.mark.parametrize(
+    "metric_class, metric_fn",
+    [
+        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
+        (F1, f1),
+    ],
+)
 def test_zero_division(metric_class, metric_fn):
-    """ Test that zero_division works correctly (currently should just set to 0). """
+    """Test that zero_division works correctly (currently should just set to 0)."""
 
     preds = torch.tensor([1, 2, 1, 1])
     target = torch.tensor([2, 0, 2, 1])
@@ -141,10 +147,13 @@ def test_zero_division(metric_class, metric_fn):
     assert result_cl[0] == result_fn[0] == 0
 
 
-@pytest.mark.parametrize("metric_class, metric_fn", [
-    (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-    (F1, f1),
-])
+@pytest.mark.parametrize(
+    "metric_class, metric_fn",
+    [
+        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
+        (F1, f1),
+    ],
+)
 def test_no_support(metric_class, metric_fn):
     """This tests a rare edge case, where there is only one class present
     in target, and ignore_index is set to exactly that class - and the
@@ -193,7 +202,7 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
 
 @pytest.mark.parametrize(
     "metric_class, metric_fn, sk_fn",
-    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)]
+    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)],
 )
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
@@ -211,18 +220,25 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
         (_input_mcls.preds, _input_mcls.target, NUM_CLASSES, None, None, _sk_fbeta_f1),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "global", _sk_fbeta_f1_multidim_multiclass),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "global",
-            _sk_fbeta_f1_multidim_multiclass
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            NUM_CLASSES,
+            None,
+            "global",
+            _sk_fbeta_f1_multidim_multiclass,
         ),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "samplewise", _sk_fbeta_f1_multidim_multiclass),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "samplewise",
-            _sk_fbeta_f1_multidim_multiclass
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            NUM_CLASSES,
+            None,
+            "samplewise",
+            _sk_fbeta_f1_multidim_multiclass,
         ),
     ],
 )
 class TestFBeta(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_fbeta_f1(
@@ -369,10 +385,11 @@ _ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
-    "metric_class, metric_fn", [
+    "metric_class, metric_fn",
+    [
         (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
         (F1, fbeta),
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "k, preds, target, average, expected_fbeta, expected_f1",

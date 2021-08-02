@@ -148,13 +148,25 @@ def test_wrong_params(reduce, mdmc_reduce, num_classes, inputs, ignore_index):
         (_input_multiclass.preds, _input_multiclass.target, _sk_stat_scores, None, NUM_CLASSES, None, None, 0.0),
         (_input_mdmc.preds, _input_mdmc.target, _sk_stat_scores_mdim_mcls, "samplewise", NUM_CLASSES, None, None, 0.0),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_stat_scores_mdim_mcls, "samplewise", NUM_CLASSES, None,
-            None, 0.0
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            _sk_stat_scores_mdim_mcls,
+            "samplewise",
+            NUM_CLASSES,
+            None,
+            None,
+            0.0,
         ),
         (_input_mdmc.preds, _input_mdmc.target, _sk_stat_scores_mdim_mcls, "global", NUM_CLASSES, None, None, 0.0),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_stat_scores_mdim_mcls, "global", NUM_CLASSES, None,
-            None, 0.0
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            _sk_stat_scores_mdim_mcls,
+            "global",
+            NUM_CLASSES,
+            None,
+            None,
+            0.0,
         ),
     ],
 )
@@ -193,7 +205,7 @@ class TestStatScores(MetricTester):
                 multiclass=multiclass,
                 ignore_index=ignore_index,
                 top_k=top_k,
-                threshold=threshold
+                threshold=threshold,
             ),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={
@@ -237,7 +249,7 @@ class TestStatScores(MetricTester):
                 multiclass=multiclass,
                 ignore_index=ignore_index,
                 top_k=top_k,
-                threshold=threshold
+                threshold=threshold,
             ),
             metric_args={
                 "num_classes": num_classes,
@@ -303,7 +315,7 @@ _ml_k_preds = tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
     ],
 )
 def test_top_k(k: int, preds: Tensor, target: Tensor, reduce: str, expected: Tensor):
-    """ A simple test to check that top_k works as expected """
+    """A simple test to check that top_k works as expected"""
 
     class_metric = StatScores(top_k=k, reduce=reduce, num_classes=3)
     class_metric.update(preds, target)

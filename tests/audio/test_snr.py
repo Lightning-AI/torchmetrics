@@ -30,7 +30,7 @@ seed_all(42)
 
 Time = 100
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
@@ -103,23 +103,23 @@ class TestSNR(MetricTester):
 
     def test_snr_differentiability(self, preds, target, sk_metric, zero_mean):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
+            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={"zero_mean": zero_mean}
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_snr_half_cpu(self, preds, target, sk_metric, zero_mean):
         pytest.xfail("SNR metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_snr_half_gpu(self, preds, target, sk_metric, zero_mean):
         self.run_precision_test_gpu(
-            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={'zero_mean': zero_mean}
+            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={"zero_mean": zero_mean}
         )
 
 
 def test_error_on_different_shape(metric_class=SNR):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

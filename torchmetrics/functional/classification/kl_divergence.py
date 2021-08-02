@@ -39,17 +39,17 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
     return measures, total
 
 
-def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = 'mean') -> Tensor:
-    if reduction == 'sum':
+def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "mean") -> Tensor:
+    if reduction == "sum":
         return measures.sum()
-    if reduction == 'mean':
+    if reduction == "mean":
         return measures.sum() / total
-    if reduction is None or reduction == 'none':
+    if reduction is None or reduction == "none":
         return measures
     return measures / total
 
 
-def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = 'mean') -> Tensor:
+def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = "mean") -> Tensor:
     r"""Computes the `KL divergence <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_:
 
     .. math::
@@ -83,7 +83,7 @@ def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optio
     return _kld_compute(measures, total, reduction)
 
 
-def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = 'mean') -> Tensor:
+def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = "mean") -> Tensor:
     r"""Computes the `KL divergence <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_:
 
     .. deprecated:: v0.5

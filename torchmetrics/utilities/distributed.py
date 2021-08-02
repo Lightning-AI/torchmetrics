@@ -84,8 +84,7 @@ def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: s
         return fraction
 
     raise ValueError(
-        f"Reduction parameter {class_reduction} unknown."
-        f" Choose between one of these: {valid_reduction}"
+        f"Reduction parameter {class_reduction} unknown." f" Choose between one of these: {valid_reduction}"
     )
 
 

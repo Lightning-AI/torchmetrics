@@ -46,7 +46,7 @@ def _pearson_corrcoef_update(
     preds = preds.squeeze()
     target = target.squeeze()
     if preds.ndim > 1 or target.ndim > 1:
-        raise ValueError('Expected both predictions and target to be 1 dimensional tensors.')
+        raise ValueError("Expected both predictions and target to be 1 dimensional tensors.")
 
     n_obs = preds.numel()
     mx_new = (n_prior * mean_x + preds.mean() * n_obs) / (n_prior + n_obs)
@@ -78,9 +78,9 @@ def _pearson_corrcoef_compute(
 
 
     """
-    var_x /= (nb - 1)
-    var_y /= (nb - 1)
-    corr_xy /= (nb - 1)
+    var_x /= nb - 1
+    var_y /= nb - 1
+    corr_xy /= nb - 1
     corrcoef = (corr_xy / (var_x * var_y).sqrt()).squeeze()
     return torch.clamp(corrcoef, -1.0, 1.0)
 

@@ -104,12 +104,12 @@ class IS(Metric):
 
     def __init__(
         self,
-        feature: Union[str, int, torch.nn.Module] = 'logits_unbiased',
+        feature: Union[str, int, torch.nn.Module] = "logits_unbiased",
         splits: int = 10,
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None
+        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -119,35 +119,35 @@ class IS(Metric):
         )
 
         rank_zero_warn(
-            'Metric `IS` will save all extracted features in buffer.'
-            ' For large datasets this may lead to large memory footprint.', UserWarning
+            "Metric `IS` will save all extracted features in buffer."
+            " For large datasets this may lead to large memory footprint.",
+            UserWarning,
         )
 
         if isinstance(feature, (str, int)):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
-                    'IS metric requires that Torch-fidelity is installed.'
-                    'Either install as `pip install torchmetrics[image]`'
-                    ' or `pip install torch-fidelity`'
+                    "IS metric requires that Torch-fidelity is installed."
+                    "Either install as `pip install torchmetrics[image]`"
+                    " or `pip install torch-fidelity`"
                 )
-            valid_int_input = ('logits_unbiased', 64, 192, 768, 2048)
+            valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
-                    f'Integer input to argument `feature` must be one of {valid_int_input},'
-                    f' but got {feature}.'
+                    f"Integer input to argument `feature` must be one of {valid_int_input}," f" but got {feature}."
                 )
 
-            self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+            self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
         elif isinstance(feature, torch.nn.Module):
             self.inception = feature
         else:
-            raise TypeError('Got unknown input to argument `feature`')
+            raise TypeError("Got unknown input to argument `feature`")
 
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor) -> None:  # type: ignore
-        """ Update the state with extracted features
+        """Update the state with extracted features
 
         Args:
             imgs: tensor with images feed to the feature extractor

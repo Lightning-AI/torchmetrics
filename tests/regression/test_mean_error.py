@@ -49,7 +49,7 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _single_target_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
@@ -70,7 +70,7 @@ def _single_target_sk_metric(preds, target, sk_fn, metric_args):
     # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
     res = sk_fn(sk_target, sk_preds)
 
-    return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
+    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
 
 
 def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
@@ -81,7 +81,7 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
     res = sk_fn(sk_target, sk_preds)
 
-    return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
+    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
 
 
 @pytest.mark.parametrize(
@@ -94,23 +94,20 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
 @pytest.mark.parametrize(
     "metric_class, metric_functional, sk_fn, metric_args",
     [
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {
-            'squared': True
-        }),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {
-            'squared': False
-        }),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
         (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
         (
-            SymmetricMeanAbsolutePercentageError, symmetric_mean_absolute_percentage_error,
-            sk_sym_mean_abs_percentage_error, {}
+            SymmetricMeanAbsolutePercentageError,
+            symmetric_mean_absolute_percentage_error,
+            sk_sym_mean_abs_percentage_error,
+            {},
         ),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
     ],
 )
 class TestMeanError(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_mean_error_class(
@@ -124,7 +121,7 @@ class TestMeanError(MetricTester):
             metric_class=metric_class,
             sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=metric_args
+            metric_args=metric_args,
         )
 
     def test_mean_error_functional(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
@@ -134,7 +131,7 @@ class TestMeanError(MetricTester):
             target=target,
             metric_functional=metric_functional,
             sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
-            metric_args=metric_args
+            metric_args=metric_args,
         )
 
     def test_mean_error_differentiability(
@@ -145,11 +142,11 @@ class TestMeanError(MetricTester):
             target=target,
             metric_module=metric_class,
             metric_functional=metric_functional,
-            metric_args=metric_args
+            metric_args=metric_args,
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
         if metric_class == MeanSquaredLogError:
@@ -166,7 +163,7 @@ class TestMeanError(MetricTester):
 
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
@@ -176,5 +173,5 @@ class TestMeanError(MetricTester):
 )
 def test_error_on_different_shape(metric_class):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

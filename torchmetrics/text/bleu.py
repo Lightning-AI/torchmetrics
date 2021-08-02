@@ -49,6 +49,7 @@ class BLEUScore(Metric):
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
     """
+
     trans_len: Tensor
     ref_len: Tensor
     numerator: Tensor
@@ -74,8 +75,13 @@ class BLEUScore(Metric):
             translate_corpus: An iterable of machine translated corpus
         """
         self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus, translate_corpus, self.numerator, self.denominator, self.trans_len, self.ref_len,
-            self.n_gram
+            reference_corpus,
+            translate_corpus,
+            self.numerator,
+            self.denominator,
+            self.trans_len,
+            self.ref_len,
+            self.n_gram,
         )
 
     def compute(self) -> Tensor:

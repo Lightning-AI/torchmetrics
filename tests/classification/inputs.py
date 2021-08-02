@@ -17,7 +17,7 @@ import torch
 
 from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _input_binary_prob = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
@@ -25,7 +25,7 @@ _input_binary_prob = Input(
 
 _input_binary = Input(
     preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
-    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
 _input_binary_logits = Input(
@@ -34,27 +34,27 @@ _input_binary_logits = Input(
 
 _input_multilabel_prob = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
-    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES))
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
 )
 
 _input_multilabel_multidim_prob = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM),
-    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM))
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
 )
 
 _input_multilabel_logits = Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
-    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES))
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
 )
 
 _input_multilabel = Input(
     preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
-    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES))
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
 )
 
 _input_multilabel_multidim = Input(
     preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
-    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM))
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
 )
 
 # Generate edge multilabel edge case, where nothing matches (scores are undefined)
@@ -76,7 +76,7 @@ _input_multiclass_logits = Input(
 
 _input_multiclass = Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))
+    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
 __mdmc_prob_preds = torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)
@@ -88,7 +88,7 @@ _input_multidim_multiclass_prob = Input(
 
 _input_multidim_multiclass = Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM))
+    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
 )
 
 

@@ -132,7 +132,7 @@ def test_wrong_params(metric, fn_metric, average, mdmc_average, num_classes, ign
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Recall, recall), (Precision, precision)])
 def test_zero_division(metric_class, metric_fn):
-    """ Test that zero_division works correctly (currently should just set to 0). """
+    """Test that zero_division works correctly (currently should just set to 0)."""
 
     preds = tensor([0, 2, 1, 1])
     target = tensor([2, 1, 2, 1])
@@ -189,18 +189,25 @@ def test_no_support(metric_class, metric_fn):
         (_input_mcls.preds, _input_mcls.target, NUM_CLASSES, None, None, _sk_prec_recall),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "global", _sk_prec_recall_multidim_multiclass),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "global",
-            _sk_prec_recall_multidim_multiclass
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            NUM_CLASSES,
+            None,
+            "global",
+            _sk_prec_recall_multidim_multiclass,
         ),
         (_input_mdmc.preds, _input_mdmc.target, NUM_CLASSES, None, "samplewise", _sk_prec_recall_multidim_multiclass),
         (
-            _input_mdmc_prob.preds, _input_mdmc_prob.target, NUM_CLASSES, None, "samplewise",
-            _sk_prec_recall_multidim_multiclass
+            _input_mdmc_prob.preds,
+            _input_mdmc_prob.target,
+            NUM_CLASSES,
+            None,
+            "samplewise",
+            _sk_prec_recall_multidim_multiclass,
         ),
     ],
 )
 class TestPrecisionRecall(MetricTester):
-
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_precision_recall_class(

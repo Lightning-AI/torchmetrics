@@ -70,8 +70,8 @@ class SpearmanCorrcoef(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         rank_zero_warn(
-            'Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer.'
-            ' For large datasets, this may lead to large memory footprint.'
+            "Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer."
+            " For large datasets, this may lead to large memory footprint."
         )
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")

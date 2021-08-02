@@ -42,7 +42,7 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
     k_xy_sum = k_xy_sums.sum()
 
     value = (kt_xx_sum + kt_yy_sum) / (m * (m - 1))
-    value -= 2 * k_xy_sum / (m**2)
+    value -= 2 * k_xy_sum / (m ** 2)
     return value
 
 
@@ -52,7 +52,7 @@ def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] 
     """
     if gamma is None:
         gamma = 1.0 / f1.shape[1]
-    kernel = (f1 @ f2.T * gamma + coef)**degree
+    kernel = (f1 @ f2.T * gamma + coef) ** degree
     return kernel
 
 
@@ -182,7 +182,7 @@ class KID(Metric):
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -192,29 +192,29 @@ class KID(Metric):
         )
 
         rank_zero_warn(
-            'Metric `KID` will save all extracted features in buffer.'
-            ' For large datasets this may lead to large memory footprint.', UserWarning
+            "Metric `KID` will save all extracted features in buffer."
+            " For large datasets this may lead to large memory footprint.",
+            UserWarning,
         )
 
         if isinstance(feature, (str, int)):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise RuntimeError(
-                    'KID metric requires that Torch-fidelity is installed.'
-                    ' Either install as `pip install torchmetrics[image]`'
-                    ' or `pip install torch-fidelity`'
+                    "KID metric requires that Torch-fidelity is installed."
+                    " Either install as `pip install torchmetrics[image]`"
+                    " or `pip install torch-fidelity`"
                 )
-            valid_int_input = ('logits_unbiased', 64, 192, 768, 2048)
+            valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
-                    f'Integer input to argument `feature` must be one of {valid_int_input},'
-                    f' but got {feature}.'
+                    f"Integer input to argument `feature` must be one of {valid_int_input}," f" but got {feature}."
                 )
 
-            self.inception: Module = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+            self.inception: Module = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
         elif isinstance(feature, Module):
             self.inception = feature
         else:
-            raise TypeError('Got unknown input to argument `feature`')
+            raise TypeError("Got unknown input to argument `feature`")
 
         if not (isinstance(subsets, int) and subsets > 0):
             raise ValueError("Argument `subsets` expected to be integer larger than 0")
@@ -241,7 +241,7 @@ class KID(Metric):
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
-        """ Update the state with extracted features
+        """Update the state with extracted features
 
         Args:
             imgs: tensor with images feed to the feature extractor
@@ -255,28 +255,28 @@ class KID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        """ Calculate KID score based on accumulated extracted features from the two distributions.
-            Returns a tuple of mean and standard deviation of KID scores calculated on subsets of
-            extracted features.
+        """Calculate KID score based on accumulated extracted features from the two distributions.
+        Returns a tuple of mean and standard deviation of KID scores calculated on subsets of
+        extracted features.
 
-            Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
+        Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
         """
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
 
         n_samples_real = real_features.shape[0]
         if n_samples_real < self.subset_size:
-            raise ValueError('Argument `subset_size` should be smaller than the number of samples')
+            raise ValueError("Argument `subset_size` should be smaller than the number of samples")
         n_samples_fake = fake_features.shape[0]
         if n_samples_fake < self.subset_size:
-            raise ValueError('Argument `subset_size` should be smaller than the number of samples')
+            raise ValueError("Argument `subset_size` should be smaller than the number of samples")
 
         kid_scores_ = []
         for _ in range(self.subsets):
             perm = torch.randperm(n_samples_real)
-            f_real = real_features[perm[:self.subset_size]]
+            f_real = real_features[perm[: self.subset_size]]
             perm = torch.randperm(n_samples_fake)
-            f_fake = fake_features[perm[:self.subset_size]]
+            f_fake = fake_features[perm[: self.subset_size]]
 
             o = poly_mmd(f_real, f_fake, self.degree, self.gamma, self.coef)
             kid_scores_.append(o)

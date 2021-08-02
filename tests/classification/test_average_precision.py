@@ -69,15 +69,15 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1):
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes", [
+    "preds, target, sk_metric, num_classes",
+    [
         (_input_binary_prob.preds, _input_binary_prob.target, _sk_avg_prec_binary_prob, 1),
         (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_avg_prec_multiclass_prob, NUM_CLASSES),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_avg_prec_multidim_multiclass_prob, NUM_CLASSES),
         (_input_multilabel.preds, _input_multilabel.target, _sk_avg_prec_multilabel_prob, NUM_CLASSES),
-    ]
+    ],
 )
 class TestAveragePrecision(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_average_precision(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
@@ -88,7 +88,7 @@ class TestAveragePrecision(MetricTester):
             metric_class=AveragePrecision,
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"num_classes": num_classes}
+            metric_args={"num_classes": num_classes},
         )
 
     def test_average_precision_functional(self, preds, target, sk_metric, num_classes):
@@ -111,7 +111,7 @@ class TestAveragePrecision(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ['scores', 'target', 'expected_score'],
+    ["scores", "target", "expected_score"],
     [
         # Check the average_precision_score of a constant predictor is
         # the TPR
@@ -119,10 +119,10 @@ class TestAveragePrecision(MetricTester):
         # And a constant score
         # The precision is then the fraction of positive whatever the recall
         # is, as there is only one threshold:
-        pytest.param(tensor([1, 1, 1, 1]), tensor([0, 0, 0, 1]), .25),
+        pytest.param(tensor([1, 1, 1, 1]), tensor([0, 0, 0, 1]), 0.25),
         # With threshold 0.8 : 1 TP and 2 TN and one FN
-        pytest.param(tensor([.6, .7, .8, 9]), tensor([1, 0, 0, 1]), .75),
-    ]
+        pytest.param(tensor([0.6, 0.7, 0.8, 9]), tensor([1, 0, 0, 1]), 0.75),
+    ],
 )
 def test_average_precision(scores, target, expected_score):
     assert average_precision(scores, target) == expected_score

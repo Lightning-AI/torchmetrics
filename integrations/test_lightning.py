@@ -25,7 +25,6 @@ from torchmetrics import Accuracy, AveragePrecision, Metric
 
 
 class SumMetric(Metric):
-
     def __init__(self):
         super().__init__()
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
@@ -38,7 +37,6 @@ class SumMetric(Metric):
 
 
 class DiffMetric(Metric):
-
     def __init__(self):
         super().__init__()
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
@@ -51,9 +49,7 @@ class DiffMetric(Metric):
 
 
 def test_metric_lightning(tmpdir):
-
     class TestModel(BoringModel):
-
         def __init__(self):
             super().__init__()
             self.metric = SumMetric()
@@ -68,7 +64,7 @@ def test_metric_lightning(tmpdir):
 
         def training_epoch_end(self, outs):
             if not torch.allclose(self.sum, self.metric.compute()):
-                raise ValueError('Sum and computed value must be equal')
+                raise ValueError("Sum and computed value must be equal")
             self.sum = 0.0
             self.metric.reset()
 
@@ -86,7 +82,7 @@ def test_metric_lightning(tmpdir):
     trainer.fit(model)
 
 
-@pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_1_3, reason='test requires lightning v1.3 or higher')
+@pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_1_3, reason="test requires lightning v1.3 or higher")
 def test_metrics_reset(tmpdir):
     """Tests that metrics are reset correctly after the end of the train/val/test epoch.
     Taken from:
@@ -94,12 +90,11 @@ def test_metrics_reset(tmpdir):
     """
 
     class TestModel(LightningModule):
-
         def __init__(self):
             super().__init__()
             self.layer = torch.nn.Linear(32, 1)
 
-            for stage in ['train', 'val', 'test']:
+            for stage in ["train", "val", "test"]:
                 acc = Accuracy()
                 acc.reset = mock.Mock(side_effect=acc.reset)
                 ap = AveragePrecision(num_classes=1, pos_label=1)
@@ -134,13 +129,13 @@ def test_metrics_reset(tmpdir):
             return loss
 
         def training_step(self, batch, batch_idx, *args, **kwargs):
-            return self._step('train', batch)
+            return self._step("train", batch)
 
         def validation_step(self, batch, batch_idx, *args, **kwargs):
-            return self._step('val', batch)
+            return self._step("val", batch)
 
         def test_step(self, batch, batch_idx, *args, **kwargs):
-            return self._step('test', batch)
+            return self._step("test", batch)
 
         def configure_optimizers(self):
             optimizer = torch.optim.SGD(self.layer.parameters(), lr=0.1)
@@ -167,13 +162,13 @@ def test_metrics_reset(tmpdir):
             ap.reset.assert_not_called()
 
         def train_epoch_end(self, outputs):
-            self._assert_epoch_end('train')
+            self._assert_epoch_end("train")
 
         def validation_epoch_end(self, outputs):
-            self._assert_epoch_end('val')
+            self._assert_epoch_end("val")
 
         def test_epoch_end(self, outputs):
-            self._assert_epoch_end('test')
+            self._assert_epoch_end("test")
 
     def _assert_called(model, stage):
         acc = model._modules[f"acc_{stage}"]
@@ -196,14 +191,14 @@ def test_metrics_reset(tmpdir):
     )
 
     trainer.fit(model)
-    _assert_called(model, 'train')
-    _assert_called(model, 'val')
+    _assert_called(model, "train")
+    _assert_called(model, "val")
 
     trainer.validate(model)
-    _assert_called(model, 'val')
+    _assert_called(model, "val")
 
     trainer.test(model)
-    _assert_called(model, 'test')
+    _assert_called(model, "test")
 
 
 # todo: reconsider if it make sense to keep here

@@ -10,7 +10,7 @@ def symmetric_mean_absolute_percentage_error(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
-    multioutput: str = 'uniform_average'
+    multioutput: str = "uniform_average",
 ):
     r"""Symmetric mean absolute percentage error regression loss.
     <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
@@ -54,7 +54,7 @@ def symmetric_mean_absolute_percentage_error(
     smape = 2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_true) + np.abs(y_pred), epsilon)
     output_errors = np.average(smape, weights=sample_weight, axis=0)
     if isinstance(multioutput, str):
-        if multioutput == 'raw_values':
+        if multioutput == "raw_values":
             return output_errors
         # pass None as weights to np.average: uniform mean
         multioutput = None
