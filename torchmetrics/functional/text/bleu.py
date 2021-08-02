@@ -39,7 +39,7 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
 
     for i in range(1, n_gram + 1):
         for j in range(len(ngram_input_list) - i + 1):
-            ngram_key = tuple(ngram_input_list[j : (i + j)])
+            ngram_key = tuple(ngram_input_list[j: (i + j)])
             ngram_counter[ngram_key] += 1
 
     return ngram_counter

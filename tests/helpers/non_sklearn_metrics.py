@@ -21,13 +21,13 @@ def symmetric_mean_absolute_percentage_error(
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
-        y_true : array-like of shape (n_samples,) or (n_samples, n_outputs)
+        y_true: array-like of shape (n_samples,) or (n_samples, n_outputs)
             Ground truth (correct) target values.
-        y_pred : array-like of shape (n_samples,) or (n_samples, n_outputs)
+        y_pred: array-like of shape (n_samples,) or (n_samples, n_outputs)
             Estimated target values.
-        sample_weight : array-like of shape (n_samples,), default=None
+        sample_weight: array-like of shape (n_samples,), default=None
             Sample weights.
-        multioutput : {'raw_values', 'uniform_average'} or array-like
+        multioutput: {'raw_values', 'uniform_average'} or array-like
             Defines aggregating of multiple output values.
             Array-like value defines weights used to average errors.
             If input is list then the shape must be (n_outputs,).
@@ -37,7 +37,7 @@ def symmetric_mean_absolute_percentage_error(
                 Errors of all outputs are averaged with uniform weight.
 
     Returns:
-        loss : float or ndarray of floats in the range [0, 1]
+        loss: float or ndarray of floats in the range [0, 1]
             If multioutput is 'raw_values', then symmetric mean absolute percentage error
             is returned for each output separately.
             If multioutput is 'uniform_average' or an ndarray of weights, then the
@@ -86,32 +86,30 @@ def calibration_error(
     parameter pos_label, which defaults to 1.
 
     Args:
-        y_true : array-like of shape (n_samples,)
+        y_true: array-like of shape (n_samples,)
             True targets of a binary classification task.
-        y_prob : array-like of (n_samples,)
+        y_prob: array-like of (n_samples,)
             Probabilities of the positive class.
-        sample_weight : array-like of shape (n_samples,), default=None
-            Sample weights.
-        norm : {'l1', 'l2', 'max'}, default='l2'
+        sample_weight: array-like of shape (n_samples,)
+        norm: {'l1', 'l2', 'max'}
             Norm method. The l1-norm is the Expected Calibration Error (ECE),
             and the max-norm corresponds to Maximum Calibration Error (MCE).
-        n_bins : int, default=10
+        n_bins: int, default=10
         The number of bins to compute error on.
-        strategy : {'uniform', 'quantile'}, default='uniform'
+        strategy: {'uniform', 'quantile'}
             Strategy used to define the widths of the bins.
             uniform
                 All bins have identical widths.
             quantile
                 All bins have the same number of points.
-        pos_label : int or str, default=None
-            Label of the positive class. If None, the maximum label is used as
-            positive class.
-        reduce_bias : bool, default=True
+        pos_label: int or str, default=None
+            Label of the positive class. If None, the maximum label is used as positive class.
+        reduce_bias: bool, default=True
             Add debiasing term as in Verified Uncertainty Calibration, A. Kumar.
             Only effective for the l2-norm.
 
     Returns:
-        score : float with calibration error
+        score: float with calibration error
     """
     y_true = column_or_1d(y_true)
     y_prob = column_or_1d(y_prob)
