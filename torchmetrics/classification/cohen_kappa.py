@@ -96,7 +96,7 @@ class CohenKappa(Metric):
         self.weights = weights
         self.threshold = threshold
 
-        allowed_weights = ('linear', 'quadratic', 'none', None)
+        allowed_weights = ("linear", "quadratic", "none", None)
         if self.weights not in allowed_weights:
             raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
 

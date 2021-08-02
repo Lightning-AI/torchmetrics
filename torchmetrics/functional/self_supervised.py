@@ -16,7 +16,7 @@ from torch import Tensor
 
 
 def embedding_similarity(
-    batch: Tensor, similarity: str = 'cosine', reduction: str = 'none', zero_diagonal: bool = True
+    batch: Tensor, similarity: str = "cosine", reduction: str = "none", zero_diagonal: bool = True
 ) -> Tensor:
     """
     Computes representation similarity
@@ -39,7 +39,7 @@ def embedding_similarity(
         A square matrix (batch, batch) with the similarity scores between all elements
         If sum or mean are used, then returns (b, 1) with the reduced value for each row
     """
-    if similarity == 'cosine':
+    if similarity == "cosine":
         norm = torch.norm(batch, p=2, dim=1)
         batch = batch / norm.unsqueeze(1)
 
@@ -48,10 +48,10 @@ def embedding_similarity(
     if zero_diagonal:
         sqr_mtx = sqr_mtx.fill_diagonal_(0)
 
-    if reduction == 'mean':
+    if reduction == "mean":
         sqr_mtx = sqr_mtx.mean(dim=-1)
 
-    if reduction == 'sum':
+    if reduction == "sum":
         sqr_mtx = sqr_mtx.sum(dim=-1)
 
     return sqr_mtx

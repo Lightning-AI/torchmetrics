@@ -66,7 +66,7 @@ def dice_score(
     bg: bool = False,
     nan_score: float = 0.0,
     no_fg_score: float = 0.0,
-    reduction: str = 'elementwise_mean',
+    reduction: str = "elementwise_mean",
 ) -> Tensor:
     """
     Compute dice score from prediction scores
@@ -98,7 +98,7 @@ def dice_score(
 
     """
     num_classes = preds.shape[1]
-    bg_inv = (1 - int(bg))
+    bg_inv = 1 - int(bg)
     scores = torch.zeros(num_classes - bg_inv, device=preds.device, dtype=torch.float32)
     for i in range(bg_inv, num_classes):
         if not (target == i).any():

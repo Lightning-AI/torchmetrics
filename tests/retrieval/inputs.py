@@ -17,7 +17,7 @@ import torch
 
 from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 
-Input = namedtuple('InputMultiple', ["indexes", "preds", "target"])
+Input = namedtuple("InputMultiple", ["indexes", "preds", "target"])
 
 # correct
 _input_retrieval_scores = Input(
@@ -72,5 +72,5 @@ _input_retrieval_scores_mismatching_sizes_func = Input(
 _input_retrieval_scores_wrong_targets = Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-    target=torch.randint(low=-2**31, high=2**31, size=(NUM_BATCHES, BATCH_SIZE)),
+    target=torch.randint(low=-(2 ** 31), high=2 ** 31, size=(NUM_BATCHES, BATCH_SIZE)),
 )

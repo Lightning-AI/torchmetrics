@@ -89,17 +89,18 @@ def _sk_matthews_corrcoef_multidim_multiclass(preds, target):
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
-    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_matthews_corrcoef_binary_prob, 2),
-     (_input_binary.preds, _input_binary.target, _sk_matthews_corrcoef_binary, 2),
-     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_matthews_corrcoef_multilabel_prob, 2),
-     (_input_mlb.preds, _input_mlb.target, _sk_matthews_corrcoef_multilabel, 2),
-     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_matthews_corrcoef_multiclass_prob, NUM_CLASSES),
-     (_input_mcls.preds, _input_mcls.target, _sk_matthews_corrcoef_multiclass, NUM_CLASSES),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_matthews_corrcoef_multidim_multiclass_prob, NUM_CLASSES),
-     (_input_mdmc.preds, _input_mdmc.target, _sk_matthews_corrcoef_multidim_multiclass, NUM_CLASSES)]
+    [
+        (_input_binary_prob.preds, _input_binary_prob.target, _sk_matthews_corrcoef_binary_prob, 2),
+        (_input_binary.preds, _input_binary.target, _sk_matthews_corrcoef_binary, 2),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_matthews_corrcoef_multilabel_prob, 2),
+        (_input_mlb.preds, _input_mlb.target, _sk_matthews_corrcoef_multilabel, 2),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_matthews_corrcoef_multiclass_prob, NUM_CLASSES),
+        (_input_mcls.preds, _input_mcls.target, _sk_matthews_corrcoef_multiclass, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_matthews_corrcoef_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc.preds, _input_mdmc.target, _sk_matthews_corrcoef_multidim_multiclass, NUM_CLASSES),
+    ],
 )
 class TestMatthewsCorrCoef(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_matthews_corrcoef(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
@@ -113,7 +114,7 @@ class TestMatthewsCorrCoef(MetricTester):
             metric_args={
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
-            }
+            },
         )
 
     def test_matthews_corrcoef_functional(self, preds, target, sk_metric, num_classes):
@@ -125,7 +126,7 @@ class TestMatthewsCorrCoef(MetricTester):
             metric_args={
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
-            }
+            },
         )
 
     def test_matthews_corrcoef_differentiability(self, preds, target, sk_metric, num_classes):
@@ -137,5 +138,5 @@ class TestMatthewsCorrCoef(MetricTester):
             metric_args={
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
-            }
+            },
         )

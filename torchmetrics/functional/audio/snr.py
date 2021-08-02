@@ -18,7 +18,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    r""" `Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
+    r"""`Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -59,7 +59,7 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
 
     noise = target - preds
 
-    snr_value = (torch.sum(target**2, dim=-1) + EPS) / (torch.sum(noise**2, dim=-1) + EPS)
+    snr_value = (torch.sum(target ** 2, dim=-1) + EPS) / (torch.sum(noise ** 2, dim=-1) + EPS)
     snr_value = 10 * torch.log10(snr_value)
 
     return snr_value

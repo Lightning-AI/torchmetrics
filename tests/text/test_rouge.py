@@ -34,8 +34,8 @@ PRECISION = 0
 RECALL = 1
 F_MEASURE = 2
 
-SINGLE_SENTENCE_EXAMPLE_PREDS = 'The quick brown fox jumps over the lazy dog'
-SINGLE_SENTENCE_EXAMPLE_TARGET = 'The quick brown dog jumps on the log.'
+SINGLE_SENTENCE_EXAMPLE_PREDS = "The quick brown fox jumps over the lazy dog"
+SINGLE_SENTENCE_EXAMPLE_TARGET = "The quick brown dog jumps on the log."
 
 PREDS = "My name is John".split()
 TARGETS = "Is your name John".split()
@@ -47,7 +47,7 @@ BATCHES_RS_TARGETS.extend(TARGETS)
 
 BATCHES = [
     dict(preds=[SINGLE_SENTENCE_EXAMPLE_PREDS], targets=[SINGLE_SENTENCE_EXAMPLE_TARGET]),
-    dict(preds=PREDS, targets=TARGETS)
+    dict(preds=PREDS, targets=TARGETS),
 ]
 
 
@@ -59,7 +59,7 @@ def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool
     return aggregator.aggregate()
 
 
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason='test requires nltk and rouge-score')
+@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
     [
@@ -84,15 +84,18 @@ def test_rouge_metric_functional_single_sentence(
     rs_scores = scorer.score(SINGLE_SENTENCE_EXAMPLE_PREDS, SINGLE_SENTENCE_EXAMPLE_TARGET)
     rs_output = round(rs_scores[rouge_score_key][metric], decimal_places)
 
-    pl_output = rouge_score([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET],
-                            newline_sep=newline_sep,
-                            use_stemmer=use_stemmer,
-                            decimal_places=decimal_places)
+    pl_output = rouge_score(
+        [SINGLE_SENTENCE_EXAMPLE_PREDS],
+        [SINGLE_SENTENCE_EXAMPLE_TARGET],
+        newline_sep=newline_sep,
+        use_stemmer=use_stemmer,
+        decimal_places=decimal_places,
+    )
 
     assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
 
 
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason='test requires nltk and rouge-score')
+@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
     [
@@ -123,7 +126,7 @@ def test_rouge_metric_functional(
     assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
 
 
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason='test requires nltk and rouge-score')
+@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
     [
@@ -152,7 +155,7 @@ def test_rouge_metric_class(pl_rouge_metric_key, rouge_score_key, metric, decima
     assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
 
 
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason='test requires nltk and rouge-score')
+@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
     [
@@ -178,19 +181,19 @@ def test_rouge_metric_class_batches(
 
     rouge = ROUGEScore(newline_sep=newline_sep, use_stemmer=use_stemmer, decimal_places=decimal_places)
     for batch in BATCHES:
-        rouge.update(batch['preds'], batch['targets'])
+        rouge.update(batch["preds"], batch["targets"])
     pl_output = rouge.compute()
 
     assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
 
 
 def test_rouge_metric_raises_errors_and_warnings():
-    """ Test that expected warnings and errors are raised """
+    """Test that expected warnings and errors are raised"""
     if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
         with pytest.raises(
             ValueError,
-            match='ROUGE metric requires that both nltk and rouge-score is installed.'
-            'Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
+            match="ROUGE metric requires that both nltk and rouge-score is installed."
+            "Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`",
         ):
             ROUGEScore()
 

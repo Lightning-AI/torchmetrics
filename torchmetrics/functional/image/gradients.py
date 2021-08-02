@@ -18,7 +18,7 @@ from torch import Tensor
 
 
 def _image_gradients_validate(img: Tensor) -> None:
-    """ Validates whether img is a 4D torch Tensor """
+    """Validates whether img is a 4D torch Tensor"""
 
     if not isinstance(img, Tensor):
         raise TypeError(f"The `img` expects a value of <Tensor> type but got {type(img)}")
@@ -27,7 +27,7 @@ def _image_gradients_validate(img: Tensor) -> None:
 
 
 def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
-    """ Computes image gradients (dy/dx) for a given image """
+    """Computes image gradients (dy/dx) for a given image"""
 
     batch_size, channels, height, width = img.shape
 

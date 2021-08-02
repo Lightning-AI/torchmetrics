@@ -26,11 +26,11 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
 
     if x.ndim > 1 or y.ndim > 1:
         raise ValueError(
-            f'Expected both `x` and `y` tensor to be 1d, but got tensors with dimension {x.ndim} and {y.ndim}'
+            f"Expected both `x` and `y` tensor to be 1d, but got tensors with dimension {x.ndim} and {y.ndim}"
         )
     if x.numel() != y.numel():
         raise ValueError(
-            f'Expected the same number of elements in `x` and `y` tensor but received {x.numel()} and {y.numel()}'
+            f"Expected the same number of elements in `x` and `y` tensor but received {x.numel()} and {y.numel()}"
         )
     return x, y
 
@@ -51,13 +51,13 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
         dx = x[1:] - x[:-1]
         if (dx < 0).any():
             if (dx <= 0).all():
-                direction = -1.
+                direction = -1.0
             else:
                 raise ValueError(
                     "The `x` tensor is neither increasing or decreasing. Try setting the reorder argument to `True`."
                 )
         else:
-            direction = 1.
+            direction = 1.0
         return _auc_compute_without_check(x, y, direction)
 
 

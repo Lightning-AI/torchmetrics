@@ -29,8 +29,8 @@ _target = torch.randint(10, (10, 32))
 
 
 class TestBootStrapper(BootStrapper):
-    """ For testing purpose, we subclass the bootstrapper class so we can get the exact permutation
-        the class is creating
+    """For testing purpose, we subclass the bootstrapper class so we can get the exact permutation
+    the class is creating
     """
 
     def update(self, *args) -> None:
@@ -53,9 +53,9 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
     return found_one
 
 
-@pytest.mark.parametrize("sampling_strategy", ['poisson', 'multinomial'])
+@pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
-    """ make sure that the bootstrap sampler works as intended """
+    """make sure that the bootstrap sampler works as intended"""
     old_samples = torch.randn(10, 2)
 
     # make sure that the new samples are only made up of old samples
@@ -71,13 +71,13 @@ def test_bootstrap_sampler(sampling_strategy):
     assert found_zero, "resampling did not work because all samples were atleast sampled once"
 
 
-@pytest.mark.parametrize("sampling_strategy", ['poisson', 'multinomial'])
+@pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 @pytest.mark.parametrize(
-    "metric, sk_metric", [[Precision(average='micro'), precision_score], [Recall(average='micro'), recall_score]]
+    "metric, sk_metric", [[Precision(average="micro"), precision_score], [Recall(average="micro"), recall_score]]
 )
 def test_bootstrap(sampling_strategy, metric, sk_metric):
-    """ Test that the different bootstraps gets updated as we expected and that the compute method works """
-    _kwargs = {'base_metric': metric, 'mean': True, 'std': True, 'raw': True, 'sampling_strategy': sampling_strategy}
+    """Test that the different bootstraps gets updated as we expected and that the compute method works"""
+    _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
     if _TORCH_GREATER_EQUAL_1_7:
         _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95])))
 
@@ -96,14 +96,14 @@ def test_bootstrap(sampling_strategy, metric, sk_metric):
     collected_preds = [torch.cat(cp) for cp in collected_preds]
     collected_target = [torch.cat(ct) for ct in collected_target]
 
-    sk_scores = [sk_metric(ct, cp, average='micro') for ct, cp in zip(collected_target, collected_preds)]
+    sk_scores = [sk_metric(ct, cp, average="micro") for ct, cp in zip(collected_target, collected_preds)]
 
     output = bootstrapper.compute()
     # quantile only avaible for pytorch v1.7 and forward
     if _TORCH_GREATER_EQUAL_1_7:
-        assert np.allclose(output['quantile'][0], np.quantile(sk_scores, 0.05))
-        assert np.allclose(output['quantile'][1], np.quantile(sk_scores, 0.95))
+        assert np.allclose(output["quantile"][0], np.quantile(sk_scores, 0.05))
+        assert np.allclose(output["quantile"][1], np.quantile(sk_scores, 0.95))
 
-    assert np.allclose(output['mean'], np.mean(sk_scores))
-    assert np.allclose(output['std'], np.std(sk_scores, ddof=1))
-    assert np.allclose(output['raw'], sk_scores)
+    assert np.allclose(output["mean"], np.mean(sk_scores))
+    assert np.allclose(output["std"], np.std(sk_scores, ddof=1))
+    assert np.allclose(output["raw"], sk_scores)

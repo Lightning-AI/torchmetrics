@@ -18,7 +18,7 @@ from typing import List
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 
 
-def _load_requirements(path_dir: str, file_name: str = 'requirements.txt', comment_char: str = '#') -> List[str]:
+def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comment_char: str = "#") -> List[str]:
     """Load requirements from a file
 
     >>> _load_requirements(_PROJECT_ROOT)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
@@ -30,9 +30,9 @@ def _load_requirements(path_dir: str, file_name: str = 'requirements.txt', comme
     for ln in lines:
         # filer all comments
         if comment_char in ln:
-            ln = ln[:ln.index(comment_char)].strip()
+            ln = ln[: ln.index(comment_char)].strip()
         # skip directly installed dependencies
-        if ln.startswith('http'):
+        if ln.startswith("http"):
             continue
         if ln:  # if requirement is not empty
             reqs.append(ln)
@@ -56,19 +56,19 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     text = text.replace("docs/source/_static/", f"{os.path.join(github_source_url, 'docs/source/_static/')}")
 
     # readthedocs badge
-    text = text.replace('badge/?version=stable', f'badge/?version={version}')
-    text = text.replace('torchmetrics.readthedocs.io/en/stable/', f'torchmetrics.readthedocs.io/en/{version}')
+    text = text.replace("badge/?version=stable", f"badge/?version={version}")
+    text = text.replace("torchmetrics.readthedocs.io/en/stable/", f"torchmetrics.readthedocs.io/en/{version}")
     # codecov badge
-    text = text.replace('/branch/master/graph/badge.svg', f'/release/{version}/graph/badge.svg')
+    text = text.replace("/branch/master/graph/badge.svg", f"/release/{version}/graph/badge.svg")
     # replace github badges for release ones
-    text = text.replace('badge.svg?branch=master&event=push', f'badge.svg?tag={version}')
+    text = text.replace("badge.svg?branch=master&event=push", f"badge.svg?tag={version}")
     # Azure...
-    text = text.replace('?branchName=master', f'?branchName=refs%2Ftags%2F{version}')
-    text = re.sub(r'\?definitionId=\d+&branchName=master', f'?definitionId=2&branchName=refs%2Ftags%2F{version}', text)
+    text = text.replace("?branchName=master", f"?branchName=refs%2Ftags%2F{version}")
+    text = re.sub(r"\?definitionId=\d+&branchName=master", f"?definitionId=2&branchName=refs%2Ftags%2F{version}", text)
 
-    skip_begin = r'<!-- following section will be skipped from PyPI description -->'
-    skip_end = r'<!-- end skipping PyPI description -->'
+    skip_begin = r"<!-- following section will be skipped from PyPI description -->"
+    skip_end = r"<!-- end skipping PyPI description -->"
     # todo: wrap content as commented description
-    text = re.sub(rf"{skip_begin}.+?{skip_end}", '<!--  -->', text, flags=re.IGNORECASE + re.DOTALL)
+    text = re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
 
     return text
