@@ -104,8 +104,8 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
         .. math::
             \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-        Where :math:p_i is the top-1 prediction accuracy in
-        bin i and :math:c_i is the average confidence of predictions in bin i.
+        Where :math:`p_i` is the top-1 prediction accuracy in
+        bin i and :math:`c_i` is the average confidence of predictions in bin i.
 
         # NOTE: L2-norm debiasing is not yet supported.
 
@@ -125,6 +125,6 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
     if not isinstance(n_bins, int) or n_bins <= 0:
         raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
 
-    bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float).to(preds.device)
+    bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float, device=preds.device)
 
     return _ce_compute(confidences, accuracies, bin_boundaries, norm=norm)

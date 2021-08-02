@@ -168,14 +168,14 @@ recall [func]
     :noindex:
 
 calibration_error [func]
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.calibration_error
     :noindex:
 
 
 select_topk [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:

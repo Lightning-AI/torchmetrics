@@ -43,7 +43,7 @@ class CalibrationError(Metric):
         .. math::
             \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-        Where :math:p_i is the top-1 prediction accuracy in bin i and :math:c_i is the average confidence of predictions in bin i.
+        Where :math:`p_i` is the top-1 prediction accuracy in bin i and :math:`c_i` is the average confidence of predictions in bin i.
 
         NOTE: L2-norm debiasing is not yet supported.
 
