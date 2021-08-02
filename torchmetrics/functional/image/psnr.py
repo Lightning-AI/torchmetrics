@@ -26,6 +26,31 @@ def _psnr_compute(
     base: float = 10.0,
     reduction: str = 'elementwise_mean',
 ) -> Tensor:
+    """
+    Computes peak signal-to-noise ratio.
+
+    Args:
+        sum_squared_error: Sum of square of errors over all observations
+        n_obs: Number of predictions or observations
+        data_range:
+            the range of the data. If None, it is determined from the data (max - min). ``data_range`` must be given
+            when ``dim`` is not None.
+        base: a base of a logarithm to use (default: 10)
+        reduction: a method to reduce metric score over labels.
+
+            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
+            - ``'none'``: no reduction will be applied
+
+    Example:
+        >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
+        >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
+        >>> data_range = target.max() - target.min()
+        >>> sum_squared_error, n_obs = _psnr_update(preds, target)
+        >>> _psnr_compute(sum_squared_error, n_obs, data_range)
+        tensor(2.5527)
+    """
+
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / n_obs)
     psnr_vals = psnr_base_e * (10 / torch.log(tensor(base)))
     return reduce(psnr_vals, reduction=reduction)
@@ -36,6 +61,17 @@ def _psnr_update(
     target: Tensor,
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tuple[Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute peak signal-to-noise ratio.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        dim:
+            Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
+            None meaning scores will be reduced across all dimensions.
+    """
+
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         n_obs = tensor(target.numel(), device=target.device)
@@ -66,7 +102,7 @@ def psnr(
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
     """
-    Computes the peak signal-to-noise ratio
+    Computes the peak signal-to-noise ratio.
 
     Args:
         preds: estimated signal

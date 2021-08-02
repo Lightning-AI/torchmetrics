@@ -58,15 +58,23 @@ repos:
         args: [--py36-plus]
         name: Upgrade code
 
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.7
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-black
+          - mdformat_frontmatter
+        exclude: CHANGELOG.md
+
   - repo: https://github.com/asottile/yesqa
     rev: v1.2.3
     hooks:
       - id: yesqa
 
-# ToDo: use autopep8 when ingoing issue is properly resolved
-# see: https://github.com/hhatto/autopep8/issues/509#issuecomment-872197908
-#  - repo: https://github.com/PyCQA/flake8
-#    rev: 3.9.2
-#    hooks:
-#      - id: flake8
-#        name: PEP8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        name: PEP8
