@@ -20,6 +20,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def _dcg(target: Tensor) -> Tensor:
+    """ Computes Discounted Cumulative Gain for input tensor """
     denom = torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0)
     return (target / denom).sum(dim=-1)
 
