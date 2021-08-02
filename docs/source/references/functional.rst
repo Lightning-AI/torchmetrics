@@ -9,6 +9,13 @@ Functional metrics
 Audio Metrics
 *************
 
+pit [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pit
+    :noindex:
+
+
 si_sdr [func]
 ~~~~~~~~~~~~~
 
@@ -362,6 +369,10 @@ bleu_score [func]
 .. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
 
+rouge_score [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.rouge_score
 
 wer [func]
 ~~~~~~~~~~

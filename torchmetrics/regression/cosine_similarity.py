@@ -77,10 +77,13 @@ class CosineSimilarity(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn
         )
+        allowed_reduction = ('sum', 'mean', 'none', None)
+        if reduction not in allowed_reduction:
+            raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction} but got {reduction}")
+        self.reduction = reduction
 
         self.add_state("preds", [], dist_reduce_fx="cat")
         self.add_state("target", [], dist_reduce_fx="cat")
-        self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
