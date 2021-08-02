@@ -444,6 +444,13 @@ class Metric(nn.Module, ABC):
                     "Expected metric state to be either a Tensor"
                     f"or a list of Tensor, but encountered {current_val}"
                 )
+
+        # Additional apply to forward cache and computed attributes (may be nested)
+        if this._computed is not None:
+            this._computed = apply_to_collection(this._computed, Tensor, fn)
+        if this._forward_cache is not None:
+            this._forward_cache = apply_to_collection(this._forward_cache, Tensor, fn)
+
         return this
 
     def persistent(self, mode: bool = False) -> None:
