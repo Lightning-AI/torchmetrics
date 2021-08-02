@@ -69,11 +69,11 @@ def calibration_error(
     y_true: np.ndarray,
     y_prob: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
-    norm: str = 'l2',
+    norm: str = "l2",
     n_bins: int = 10,
-    strategy: str = 'uniform',
+    strategy: str = "uniform",
     pos_label: Optional[Union[int, str]] = None,
-    reduce_bias: bool = True
+    reduce_bias: bool = True,
 ) -> float:
     """
     Compute calibration error of a binary classifier.
@@ -129,9 +129,9 @@ def calibration_error(
         raise ValueError("pos_label=%r is not a valid label: " "%r" % (pos_label, labels))
     y_true = np.array(y_true == pos_label, int)
 
-    norm_options = ('l1', 'l2', 'max')
+    norm_options = ("l1", "l2", "max")
     if norm not in norm_options:
-        raise ValueError(f'norm has to be one of {norm_options}, got: {norm}.')
+        raise ValueError(f"norm has to be one of {norm_options}, got: {norm}.")
 
     remapping = np.argsort(y_prob)
     y_true = y_true[remapping]
@@ -142,9 +142,9 @@ def calibration_error(
         sample_weight = np.ones(y_true.shape[0])
 
     n_bins = int(n_bins)
-    if strategy == 'quantile':
+    if strategy == "quantile":
         quantiles = np.percentile(y_prob, np.arange(0, 1, 1.0 / n_bins) * 100)
-    elif strategy == 'uniform':
+    elif strategy == "uniform":
         quantiles = np.arange(0, 1, 1.0 / n_bins)
     else:
         raise ValueError(
@@ -158,7 +158,7 @@ def calibration_error(
     delta_count = np.zeros(n_bins)
     debias = np.zeros(n_bins)
 
-    loss = 0.
+    loss = 0.0
     count = float(sample_weight.sum())
     for i, i_start in enumerate(threshold_indices[:-1]):
         i_end = threshold_indices[i + 1]
@@ -166,15 +166,15 @@ def calibration_error(
         if i_end == i_start:
             continue
         delta_count[i] = float(sample_weight[i_start:i_end].sum())
-        avg_pred_true[i] = (np.dot(y_true[i_start:i_end], sample_weight[i_start:i_end]) / delta_count[i])
-        bin_centroid[i] = (np.dot(y_prob[i_start:i_end], sample_weight[i_start:i_end]) / delta_count[i])
+        avg_pred_true[i] = np.dot(y_true[i_start:i_end], sample_weight[i_start:i_end]) / delta_count[i]
+        bin_centroid[i] = np.dot(y_prob[i_start:i_end], sample_weight[i_start:i_end]) / delta_count[i]
         if norm == "l2" and reduce_bias:
             # NOTE: I think there's a mistake in the original implementation.
             # delta_debias = (
             #     avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i]
             # )
             # delta_debias /= (count * delta_count[i] - 1)
-            delta_debias = (avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i])
+            delta_debias = avg_pred_true[i] * (avg_pred_true[i] - 1) * delta_count[i]
             delta_debias /= count * (delta_count[i] - 1)
             debias[i] = delta_debias
 
@@ -184,10 +184,10 @@ def calibration_error(
         delta_loss = np.abs(avg_pred_true - bin_centroid) * delta_count
         loss = np.sum(delta_loss) / count
     elif norm == "l2":
-        delta_loss = (avg_pred_true - bin_centroid)**2 * delta_count
+        delta_loss = (avg_pred_true - bin_centroid) ** 2 * delta_count
         loss = np.sum(delta_loss) / count
         if reduce_bias:
             # convert nans to zero
             loss += np.sum(np.nan_to_num(debias))
-        loss = np.sqrt(max(loss, 0.))
+        loss = np.sqrt(max(loss, 0.0))
     return loss

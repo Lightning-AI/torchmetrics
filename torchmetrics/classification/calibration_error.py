@@ -76,7 +76,7 @@ class CalibrationError(Metric):
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=None
+            dist_sync_fn=None,
         )
 
         if norm not in ["l1", "l2", "max"]:

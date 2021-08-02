@@ -25,7 +25,7 @@ def _ce_compute(
     accuracies: FloatTensor,
     bin_boundaries: FloatTensor,
     norm: str = "l1",
-    debias: bool = False
+    debias: bool = False,
 ) -> Tensor:
 
     if norm not in ("l1", "l2", "max"):
