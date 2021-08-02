@@ -63,10 +63,8 @@ repos:
     hooks:
       - id: yesqa
 
-# ToDo: use autopep8 when ingoing issue is properly resolved
-# see: https://github.com/hhatto/autopep8/issues/509#issuecomment-872197908
-#  - repo: https://github.com/PyCQA/flake8
-#    rev: 3.9.2
-#    hooks:
-#      - id: flake8
-#        name: PEP8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        name: PEP8
