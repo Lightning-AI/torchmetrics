@@ -205,11 +205,18 @@ def _recall_compute(
 ) -> Tensor:
     numerator = tp
     denominator = tp + fn
+
+    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        cond = tp + fp + fn == 0
+        numerator = numerator[~cond]
+        denominator = denominator[~cond]
+
     if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         # a class is not present if there exists no TPs, no FPs, and no FNs
         meaningless_indeces = ((tp | fn | fp) == 0).nonzero().cpu()
         numerator[meaningless_indeces, ...] = -1
         denominator[meaningless_indeces, ...] = -1
+
     return _reduce_stat_scores(
         numerator=numerator,
         denominator=denominator,
