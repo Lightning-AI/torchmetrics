@@ -148,7 +148,8 @@ def calibration_error(
         quantiles = np.arange(0, 1, 1.0 / n_bins)
     else:
         raise ValueError(
-            f"Invalid entry to 'strategy' input. The strategy must be either quantile' or 'uniform'. Got {strategy} instead."
+            f"Invalid entry to 'strategy' input. \
+                The strategy must be either quantile' or 'uniform'. Got {strategy} instead."
         )
 
     threshold_indices = np.searchsorted(y_prob, quantiles).tolist()
