@@ -25,7 +25,7 @@ from torchmetrics.image import SSIM
 
 seed_all(42)
 
-Input = namedtuple('Input', ["preds", "target", "multichannel"])
+Input = namedtuple("Input", ["preds", "target", "multichannel"])
 
 _inputs = []
 for size, channel, coef, multichannel, dtype in [
@@ -35,11 +35,13 @@ for size, channel, coef, multichannel, dtype in [
     (15, 3, 0.6, True, torch.float64),
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(Input(
-        preds=preds,
-        target=preds * coef,
-        multichannel=multichannel,
-    ))
+    _inputs.append(
+        Input(
+            preds=preds,
+            target=preds * coef,
+            multichannel=multichannel,
+        )
+    )
 
 
 def _sk_ssim(preds, target, data_range, multichannel):
@@ -58,7 +60,7 @@ def _sk_ssim(preds, target, data_range, multichannel):
         gaussian_weights=True,
         win_size=11,
         sigma=1.5,
-        use_sample_covariance=False
+        use_sample_covariance=False,
     )
 
 
@@ -96,13 +98,13 @@ class TestSSIM(MetricTester):
     def test_ssim_half_cpu(self, preds, target, multichannel):
         self.run_precision_test_cpu(preds, target, SSIM, ssim, {"data_range": 1.0})
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ssim_half_gpu(self, preds, target, multichannel):
         self.run_precision_test_gpu(preds, target, SSIM, ssim, {"data_range": 1.0})
 
 
 @pytest.mark.parametrize(
-    ['pred', 'target', 'kernel', 'sigma'],
+    ["pred", "target", "kernel", "sigma"],
     [
         pytest.param([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
         pytest.param([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)

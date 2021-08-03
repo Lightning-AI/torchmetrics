@@ -56,11 +56,11 @@ def _sk_cm_multilabel_prob(preds, target, normalize=None):
 
     cm = sk_multilabel_confusion_matrix(y_true=sk_target, y_pred=sk_preds)
     if normalize is not None:
-        if normalize == 'true':
+        if normalize == "true":
             cm = cm / cm.sum(axis=1, keepdims=True)
-        elif normalize == 'pred':
+        elif normalize == "pred":
             cm = cm / cm.sum(axis=0, keepdims=True)
-        elif normalize == 'all':
+        elif normalize == "all":
             cm = cm / cm.sum()
         cm[np.isnan(cm)] = 0
     return cm
@@ -72,11 +72,11 @@ def _sk_cm_multilabel(preds, target, normalize=None):
 
     cm = sk_multilabel_confusion_matrix(y_true=sk_target, y_pred=sk_preds)
     if normalize is not None:
-        if normalize == 'true':
+        if normalize == "true":
             cm = cm / cm.sum(axis=1, keepdims=True)
-        elif normalize == 'pred':
+        elif normalize == "pred":
             cm = cm / cm.sum(axis=0, keepdims=True)
-        elif normalize == 'all':
+        elif normalize == "all":
             cm = cm / cm.sum()
         cm[np.isnan(cm)] = 0
     return cm
@@ -110,23 +110,24 @@ def _sk_cm_multidim_multiclass(preds, target, normalize=None):
     return sk_confusion_matrix(y_true=sk_target, y_pred=sk_preds, normalize=normalize)
 
 
-@pytest.mark.parametrize("normalize", ['true', 'pred', 'all', None])
+@pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes, multilabel",
-    [(_input_binary_prob.preds, _input_binary_prob.target, _sk_cm_binary_prob, 2, False),
-     (_input_binary_logits.preds, _input_binary_logits.target, _sk_cm_binary_prob, 2, False),
-     (_input_binary.preds, _input_binary.target, _sk_cm_binary, 2, False),
-     (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
-     (_input_mlb_logits.preds, _input_mlb_logits.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
-     (_input_mlb.preds, _input_mlb.target, _sk_cm_multilabel, NUM_CLASSES, True),
-     (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
-     (_input_mcls_logits.preds, _input_mcls_logits.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
-     (_input_mcls.preds, _input_mcls.target, _sk_cm_multiclass, NUM_CLASSES, False),
-     (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cm_multidim_multiclass_prob, NUM_CLASSES, False),
-     (_input_mdmc.preds, _input_mdmc.target, _sk_cm_multidim_multiclass, NUM_CLASSES, False)]
+    [
+        (_input_binary_prob.preds, _input_binary_prob.target, _sk_cm_binary_prob, 2, False),
+        (_input_binary_logits.preds, _input_binary_logits.target, _sk_cm_binary_prob, 2, False),
+        (_input_binary.preds, _input_binary.target, _sk_cm_binary, 2, False),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
+        (_input_mlb_logits.preds, _input_mlb_logits.target, _sk_cm_multilabel_prob, NUM_CLASSES, True),
+        (_input_mlb.preds, _input_mlb.target, _sk_cm_multilabel, NUM_CLASSES, True),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
+        (_input_mcls_logits.preds, _input_mcls_logits.target, _sk_cm_multiclass_prob, NUM_CLASSES, False),
+        (_input_mcls.preds, _input_mcls.target, _sk_cm_multiclass, NUM_CLASSES, False),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_cm_multidim_multiclass_prob, NUM_CLASSES, False),
+        (_input_mdmc.preds, _input_mdmc.target, _sk_cm_multidim_multiclass, NUM_CLASSES, False),
+    ],
 )
 class TestConfusionMatrix(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_confusion_matrix(
@@ -143,8 +144,8 @@ class TestConfusionMatrix(MetricTester):
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
                 "normalize": normalize,
-                "multilabel": multilabel
-            }
+                "multilabel": multilabel,
+            },
         )
 
     def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel):
@@ -157,8 +158,8 @@ class TestConfusionMatrix(MetricTester):
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
                 "normalize": normalize,
-                "multilabel": multilabel
-            }
+                "multilabel": multilabel,
+            },
         )
 
     def test_confusion_matrix_differentiability(self, normalize, preds, target, sk_metric, num_classes, multilabel):
@@ -171,17 +172,17 @@ class TestConfusionMatrix(MetricTester):
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
                 "normalize": normalize,
-                "multilabel": multilabel
-            }
+                "multilabel": multilabel,
+            },
         )
 
 
 def test_warning_on_nan(tmpdir):
-    preds = torch.randint(3, size=(20, ))
-    target = torch.randint(3, size=(20, ))
+    preds = torch.randint(3, size=(20,))
+    target = torch.randint(3, size=(20,))
 
     with pytest.warns(
         UserWarning,
-        match='.* nan values found in confusion matrix have been replaced with zeros.',
+        match=".* nan values found in confusion matrix have been replaced with zeros.",
     ):
-        confusion_matrix(preds, target, num_classes=5, normalize='true')
+        confusion_matrix(preds, target, num_classes=5, normalize="true")

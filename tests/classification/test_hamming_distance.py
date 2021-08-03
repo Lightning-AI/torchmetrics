@@ -61,7 +61,6 @@ def _sk_hamming_loss(preds, target):
     ],
 )
 class TestHammingDistance(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_hamming_distance_class(self, ddp, dist_sync_on_step, preds, target):

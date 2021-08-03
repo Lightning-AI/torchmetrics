@@ -73,19 +73,19 @@ class RetrievalFallOut(RetrievalMetric):
 
     def __init__(
         self,
-        empty_target_action: str = 'pos',
+        empty_target_action: str = "pos",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        k: int = None
+        k: int = None,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=dist_sync_fn,
         )
 
         if (k is not None) and not (isinstance(k, int) and k > 0):
@@ -111,11 +111,11 @@ class RetrievalFallOut(RetrievalMetric):
             mini_target = target[group]
 
             if not (1 - mini_target).sum():
-                if self.empty_target_action == 'error':
+                if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no negative target.")
-                if self.empty_target_action == 'pos':
+                if self.empty_target_action == "pos":
                     res.append(tensor(1.0))
-                elif self.empty_target_action == 'neg':
+                elif self.empty_target_action == "neg":
                     res.append(tensor(0.0))
             else:
                 # ensure list containt only float tensors

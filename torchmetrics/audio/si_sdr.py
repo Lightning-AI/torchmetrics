@@ -64,6 +64,7 @@ class SI_SDR(Metric):
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
         and Signal Processing (ICASSP) 2019.
     """
+
     sum_si_sdr: Tensor
     total: Tensor
 

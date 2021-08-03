@@ -28,7 +28,7 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _single_target_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
@@ -47,9 +47,9 @@ def _multi_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     result_array = sk_fn(sk_target, sk_preds)
     col = np.diagonal(result_array)
     col_sum = col.sum()
-    if reduction == 'sum':
+    if reduction == "sum":
         to_return = col_sum
-    elif reduction == 'mean':
+    elif reduction == "mean":
         mean = col_sum / len(col)
         to_return = mean
     else:
@@ -63,9 +63,9 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     result_array = sk_fn(np.expand_dims(sk_preds, axis=0), np.expand_dims(sk_target, axis=0))
     col = np.diagonal(result_array)
     col_sum = col.sum()
-    if reduction == 'sum':
+    if reduction == "sum":
         to_return = col_sum
-    elif reduction == 'mean':
+    elif reduction == "mean":
         mean = col_sum / len(col)
         to_return = mean
     else:
@@ -73,7 +73,7 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     return to_return
 
 
-@pytest.mark.parametrize("reduction", ['sum', 'mean'])
+@pytest.mark.parametrize("reduction", ["sum", "mean"])
 @pytest.mark.parametrize(
     "preds, target, sk_metric",
     [
@@ -82,7 +82,6 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     ],
 )
 class TestCosineSimilarity(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_cosine_similarity(self, reduction, preds, target, sk_metric, ddp, dist_sync_on_step):
@@ -108,5 +107,5 @@ class TestCosineSimilarity(MetricTester):
 
 def test_error_on_different_shape(metric_class=CosineSimilarity):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        metric(torch.randn(100), torch.randn(50))

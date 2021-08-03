@@ -21,7 +21,7 @@ from torchmetrics.utilities.enums import DataType
 
 
 def _check_same_shape(preds: Tensor, target: Tensor) -> None:
-    """ Check that predictions and target have the same shape, else raise error """
+    """Check that predictions and target have the same shape, else raise error"""
     if preds.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
@@ -298,8 +298,7 @@ def _input_squeeze(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, Tensor]:
-    """Remove excess dimensions
-    """
+    """Remove excess dimensions"""
     if preds.shape[0] == 1:
         preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
     else:
@@ -564,7 +563,9 @@ def _check_retrieval_inputs(
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
 
     if not indexes.numel() or not indexes.size():
-        raise ValueError("`indexes`, `preds` and `target` must be non-empty and non-scalar tensors", )
+        raise ValueError(
+            "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
+        )
 
     if indexes.dtype is not torch.long:
         raise ValueError("`indexes` must be a tensor of long integers")

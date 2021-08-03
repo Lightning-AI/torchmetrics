@@ -54,10 +54,9 @@ def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
 
 
 class TestFallOut(RetrievalMetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
+    @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
@@ -70,7 +69,7 @@ class TestFallOut(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {'empty_target_action': empty_target_action, 'k': k}
+        metric_args = {"empty_target_action": empty_target_action, "k": k}
 
         self.run_class_metric_test(
             ddp=ddp,

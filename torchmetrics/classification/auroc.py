@@ -107,7 +107,7 @@ class AUROC(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        average: Optional[str] = 'macro',
+        average: Optional[str] = "macro",
         max_fpr: Optional[float] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -126,10 +126,10 @@ class AUROC(Metric):
         self.average = average
         self.max_fpr = max_fpr
 
-        allowed_average = (None, 'macro', 'weighted', 'micro')
+        allowed_average = (None, "macro", "weighted", "micro")
         if self.average not in allowed_average:
             raise ValueError(
-                f'Argument `average` expected to be one of the following: {allowed_average} but got {average}'
+                f"Argument `average` expected to be one of the following: {allowed_average} but got {average}"
             )
 
         if self.max_fpr is not None:
@@ -138,7 +138,7 @@ class AUROC(Metric):
 
             if _TORCH_LOWER_1_6:
                 raise RuntimeError(
-                    '`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6'
+                    "`max_fpr` argument requires `torch.bucketize` which is not available below PyTorch version 1.6"
                 )
 
         self.mode: DataType = None  # type: ignore
@@ -146,8 +146,8 @@ class AUROC(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
-            'Metric `AUROC` will save all targets and predictions in buffer.'
-            ' For large datasets this may lead to large memory footprint.'
+            "Metric `AUROC` will save all targets and predictions in buffer."
+            " For large datasets this may lead to large memory footprint."
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
@@ -165,8 +165,8 @@ class AUROC(Metric):
 
         if self.mode and self.mode != mode:
             raise ValueError(
-                'The mode of data (binary, multi-label, multi-class) should be constant, but changed'
-                f' between batches from {self.mode} to {mode}'
+                "The mode of data (binary, multi-label, multi-class) should be constant, but changed"
+                f" between batches from {self.mode} to {mode}"
             )
         self.mode = mode
 

@@ -93,14 +93,14 @@ class MetricCollection(nn.ModuleDict):
         metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
-        postfix: Optional[str] = None
+        postfix: Optional[str] = None,
     ) -> None:
         super().__init__()
 
         self.add_metrics(metrics, *additional_metrics)
 
-        self.prefix = self._check_arg(prefix, 'prefix')
-        self.postfix = self._check_arg(postfix, 'postfix')
+        self.prefix = self._check_arg(prefix, "prefix")
+        self.postfix = self._check_arg(postfix, "postfix")
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
@@ -125,12 +125,12 @@ class MetricCollection(nn.ModuleDict):
         return {k: m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
-        """ Iteratively call reset for each metric """
+        """Iteratively call reset for each metric"""
         for _, m in self.items(keep_base=True):
             m.reset()
 
-    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> 'MetricCollection':
-        """ Make a copy of the metric collection
+    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
+        """Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
             postfix: a string to append after the keys of the output dict
@@ -138,9 +138,9 @@ class MetricCollection(nn.ModuleDict):
         """
         mc = deepcopy(self)
         if prefix:
-            mc.prefix = self._check_arg(prefix, 'prefix')
+            mc.prefix = self._check_arg(prefix, "prefix")
         if postfix:
-            mc.postfix = self._check_arg(postfix, 'postfix')
+            mc.postfix = self._check_arg(postfix, "postfix")
         return mc
 
     def persistent(self, mode: bool = True) -> None:
@@ -153,8 +153,7 @@ class MetricCollection(nn.ModuleDict):
     def add_metrics(
         self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
     ) -> None:
-        """Add new metrics to Metric Collection
-        """
+        """Add new metrics to Metric Collection"""
         if isinstance(metrics, Metric):
             # set compatible with original type expectations
             metrics = [metrics]
@@ -229,7 +228,7 @@ class MetricCollection(nn.ModuleDict):
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
         if arg is None or isinstance(arg, str):
             return arg
-        raise ValueError(f'Expected input `{name}` to be a string, but got {type(arg)}')
+        raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
 
     def __repr__(self) -> str:
         repr_str = super().__repr__()[:-2]

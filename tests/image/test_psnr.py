@@ -27,14 +27,15 @@ from torchmetrics.image import PSNR
 
 seed_all(42)
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _input_size = (NUM_BATCHES, BATCH_SIZE, 32, 32)
 _inputs = [
     Input(
         preds=torch.randint(n_cls_pred, _input_size, dtype=torch.float),
         target=torch.randint(n_cls_target, _input_size, dtype=torch.float),
-    ) for n_cls_pred, n_cls_target in [(10, 10), (5, 10), (10, 5)]
+    )
+    for n_cls_pred, n_cls_target in [(10, 10), (5, 10), (10, 5)]
 ]
 
 
@@ -61,10 +62,12 @@ def _sk_psnr(preds, target, data_range, reduction, dim):
     sk_preds_lists = _to_sk_peak_signal_noise_ratio_inputs(preds, dim=dim)
     sk_target_lists = _to_sk_peak_signal_noise_ratio_inputs(target, dim=dim)
     np_reduce_map = {"elementwise_mean": np.mean, "none": np.array, "sum": np.sum}
-    return np_reduce_map[reduction]([
-        peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
-        for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
-    ])
+    return np_reduce_map[reduction](
+        [
+            peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
+            for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
+        ]
+    )
 
 
 def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
@@ -90,7 +93,6 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
     ],
 )
 class TestPSNR(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_psnr(self, preds, target, data_range, base, reduction, dim, sk_metric, ddp, dist_sync_on_step):
@@ -119,23 +121,13 @@ class TestPSNR(MetricTester):
     @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
     def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
         self.run_precision_test_cpu(
-            preds, target, PSNR, psnr, {
-                "data_range": data_range,
-                "base": base,
-                "reduction": reduction,
-                "dim": dim
-            }
+            preds, target, PSNR, psnr, {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
         self.run_precision_test_gpu(
-            preds, target, PSNR, psnr, {
-                "data_range": data_range,
-                "base": base,
-                "reduction": reduction,
-                "dim": dim
-            }
+            preds, target, PSNR, psnr, {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         )
 
 

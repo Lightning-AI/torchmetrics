@@ -24,9 +24,9 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
 def _bootstrap_sampler(
     size: int,
-    sampling_strategy: str = 'poisson',
+    sampling_strategy: str = "poisson",
 ) -> Tensor:
-    """ Resample a tensor along its first dimension with replacement
+    """Resample a tensor along its first dimension with replacement
     Args:
         size: number of samples
         sampling_strategy: the strategy to use for sampling, either ``'poisson'`` or ``'multinomial'``
@@ -36,18 +36,17 @@ def _bootstrap_sampler(
         resampled tensor
 
     """
-    if sampling_strategy == 'poisson':
+    if sampling_strategy == "poisson":
         p = torch.distributions.Poisson(1)
-        n = p.sample((size, ))
+        n = p.sample((size,))
         return torch.arange(size).repeat_interleave(n.long(), dim=0)
-    if sampling_strategy == 'multinomial':
+    if sampling_strategy == "multinomial":
         idx = torch.multinomial(torch.ones(size), num_samples=size, replacement=True)
         return idx
-    raise ValueError('Unknown sampling strategy')
+    raise ValueError("Unknown sampling strategy")
 
 
 class BootStrapper(Metric):
-
     def __init__(
         self,
         base_metric: Metric,
@@ -56,11 +55,11 @@ class BootStrapper(Metric):
         std: bool = True,
         quantile: Optional[Union[float, Tensor]] = None,
         raw: bool = False,
-        sampling_strategy: str = 'poisson',
+        sampling_strategy: str = "poisson",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ) -> None:
         r"""
         Use to turn a metric into a `bootstrapped <https://en.wikipedia.org/wiki/Bootstrapping_(statistics)>`_
@@ -115,8 +114,7 @@ class BootStrapper(Metric):
         super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
         if not isinstance(base_metric, Metric):
             raise ValueError(
-                "Expected base metric to be an instance of torchmetrics.Metric"
-                f" but received {base_metric}"
+                "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
             )
 
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
@@ -125,11 +123,11 @@ class BootStrapper(Metric):
         self.mean = mean
         self.std = std
         if quantile is not None and not _TORCH_GREATER_EQUAL_1_7:
-            raise ValueError('quantile argument can only be used with pytorch v1.7 or higher')
+            raise ValueError("quantile argument can only be used with pytorch v1.7 or higher")
         self.quantile = quantile
         self.raw = raw
 
-        allowed_sampling = ('poisson', 'multinomial')
+        allowed_sampling = ("poisson", "multinomial")
         if sampling_strategy not in allowed_sampling:
             raise ValueError(
                 f"Expected argument ``sampling_strategy`` to be one of {allowed_sampling}"
@@ -138,7 +136,7 @@ class BootStrapper(Metric):
         self.sampling_strategy = sampling_strategy
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """ Updates the state of the base metric. Any tensor passed in will be bootstrapped along dimension 0 """
+        """Updates the state of the base metric. Any tensor passed in will be bootstrapped along dimension 0"""
         for idx in range(self.num_bootstraps):
             args_sizes = apply_to_collection(args, Tensor, len)
             kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
@@ -147,24 +145,24 @@ class BootStrapper(Metric):
             elif len(kwargs_sizes) > 0:
                 size = kwargs_sizes[0]
             else:
-                raise ValueError('None of the input contained tensors, so could not determine the sampling size')
+                raise ValueError("None of the input contained tensors, so could not determine the sampling size")
             sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy)
             new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
     def compute(self) -> Dict[str, Tensor]:
-        """ Computes the bootstrapped metric values. Allways returns a dict of tensors, which can contain the
+        """Computes the bootstrapped metric values. Allways returns a dict of tensors, which can contain the
         following keys: ``mean``, ``std``, ``quantile`` and ``raw`` depending on how the class was initialized
         """
         computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
         output_dict = {}
         if self.mean:
-            output_dict['mean'] = computed_vals.mean(dim=0)
+            output_dict["mean"] = computed_vals.mean(dim=0)
         if self.std:
-            output_dict['std'] = computed_vals.std(dim=0)
+            output_dict["std"] = computed_vals.std(dim=0)
         if self.quantile is not None:
-            output_dict['quantile'] = torch.quantile(computed_vals, self.quantile)
+            output_dict["quantile"] = torch.quantile(computed_vals, self.quantile)
         if self.raw:
-            output_dict['raw'] = computed_vals
+            output_dict["raw"] = computed_vals
         return output_dict

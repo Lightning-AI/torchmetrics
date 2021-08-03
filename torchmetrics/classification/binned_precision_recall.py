@@ -28,8 +28,9 @@ def _recall_at_precision(
     min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
     try:
-        max_recall, _, best_threshold = \
-            max((r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision)
+        max_recall, _, best_threshold = max(
+            (r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision
+        )
 
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
@@ -114,6 +115,7 @@ class BinnedPrecisionRecallCurve(Metric):
         tensor([0.0000, 0.5000, 1.0000]),
         tensor([0.0000, 0.5000, 1.0000])]
     """
+
     TPs: Tensor
     FPs: Tensor
     FNs: Tensor
@@ -139,7 +141,7 @@ class BinnedPrecisionRecallCurve(Metric):
             self.register_buffer("thresholds", thresholds)
         elif thresholds is not None:
             if not isinstance(thresholds, (list, Tensor)):
-                raise ValueError('Expected argument `thresholds` to either be an integer, list of floats or a tensor')
+                raise ValueError("Expected argument `thresholds` to either be an integer, list of floats or a tensor")
             thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
             self.num_thresholds = thresholds.numel()
             self.register_buffer("thresholds", thresholds)

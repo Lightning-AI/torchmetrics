@@ -67,8 +67,8 @@ class AUC(Metric):
         self.add_state("y", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
-            'Metric `AUC` will save all targets and predictions in buffer.'
-            ' For large datasets this may lead to large memory footprint.'
+            "Metric `AUC` will save all targets and predictions in buffer."
+            " For large datasets this may lead to large memory footprint."
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore

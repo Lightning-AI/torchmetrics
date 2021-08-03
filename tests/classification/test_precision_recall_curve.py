@@ -31,7 +31,7 @@ seed_all(42)
 
 
 def _sk_precision_recall_curve(y_true, probas_pred, num_classes=1):
-    """ Adjusted comparison function that can also handles multiclass """
+    """Adjusted comparison function that can also handles multiclass"""
     if num_classes == 1:
         return sk_precision_recall_curve(y_true, probas_pred)
 
@@ -67,14 +67,14 @@ def _sk_prec_rc_multidim_multiclass_prob(preds, target, num_classes=1):
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_classes", [
+    "preds, target, sk_metric, num_classes",
+    [
         (_input_binary_prob.preds, _input_binary_prob.target, _sk_prec_rc_binary_prob, 1),
         (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_prec_rc_multiclass_prob, NUM_CLASSES),
         (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_prec_rc_multidim_multiclass_prob, NUM_CLASSES),
-    ]
+    ],
 )
 class TestPrecisionRecallCurve(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_precision_recall_curve(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
@@ -85,7 +85,7 @@ class TestPrecisionRecallCurve(MetricTester):
             metric_class=PrecisionRecallCurve,
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"num_classes": num_classes}
+            metric_args={"num_classes": num_classes},
         )
 
     def test_precision_recall_curve_functional(self, preds, target, sk_metric, num_classes):
@@ -108,8 +108,8 @@ class TestPrecisionRecallCurve(MetricTester):
 
 
 @pytest.mark.parametrize(
-    ['pred', 'target', 'expected_p', 'expected_r', 'expected_t'],
-    [pytest.param([1, 2, 3, 4], [1, 0, 0, 1], [0.5, 1 / 3, 0.5, 1., 1.], [1, 0.5, 0.5, 0.5, 0.], [1, 2, 3, 4])]
+    ["pred", "target", "expected_p", "expected_r", "expected_t"],
+    [pytest.param([1, 2, 3, 4], [1, 0, 0, 1], [0.5, 1 / 3, 0.5, 1.0, 1.0], [1, 0.5, 0.5, 0.5, 0.0], [1, 2, 3, 4])],
 )
 def test_pr_curve(pred, target, expected_p, expected_r, expected_t):
     p, r, t = precision_recall_curve(tensor(pred), tensor(target))

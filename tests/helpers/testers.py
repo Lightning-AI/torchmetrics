@@ -43,7 +43,7 @@ CURRENT_PORT = START_PORT
 
 
 def setup_ddp(rank, world_size):
-    """ Setup ddp environment """
+    """Setup ddp environment"""
     global CURRENT_PORT
 
     os.environ["MASTER_ADDR"] = "localhost"
@@ -58,7 +58,7 @@ def setup_ddp(rank, world_size):
 
 
 def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
-    """Utility function for recursively asserting that two results are within a certain tolerance """
+    """Utility function for recursively asserting that two results are within a certain tolerance"""
     # single output compare
     if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.cpu().numpy(), sk_result, atol=atol, equal_nan=True)
@@ -71,7 +71,7 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
 
 
 def _assert_tensor(pl_result: Any):
-    """ Utility function for recursively checking that some input only consists of torch tensors """
+    """Utility function for recursively checking that some input only consists of torch tensors"""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_tensor(plr)
@@ -80,8 +80,8 @@ def _assert_tensor(pl_result: Any):
 
 
 def _assert_requires_grad(metric: Metric, pl_result: Any):
-    """ Utility function for recursively asserting that metric output is consistent
-        with the `is_differentiable` attribute
+    """Utility function for recursively asserting that metric output is consistent
+    with the `is_differentiable` attribute
     """
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
@@ -102,7 +102,7 @@ def _class_test(
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
-    device: str = 'cpu',
+    device: str = "cpu",
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
     **kwargs_update: Any,
@@ -198,7 +198,7 @@ def _functional_test(
     sk_metric: Callable,
     metric_args: dict = None,
     atol: float = 1e-8,
-    device: str = 'cpu',
+    device: str = "cpu",
     fragment_kwargs: bool = False,
     **kwargs_update,
 ):
@@ -245,7 +245,7 @@ def _assert_half_support(
     preds: Tensor,
     target: Tensor,
     device: str = "cpu",
-    **kwargs_update
+    **kwargs_update,
 ):
     """
     Test if an metric can be used with half precision tensors
@@ -292,7 +292,7 @@ class MetricTester:
         self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
 
     def teardown_class(self):
-        """ Close pool of workers """
+        """Close pool of workers"""
         self.pool.close()
         self.pool.join()
 
@@ -319,7 +319,7 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
-        device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
+        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
         _functional_test(
             preds=preds,
@@ -393,7 +393,7 @@ class MetricTester:
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
         else:
-            device = 'cuda' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu'
+            device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
             _class_test(
                 rank=0,
@@ -526,7 +526,6 @@ class DummyListMetric(Metric):
 
 
 class DummyMetricSum(DummyMetric):
-
     def update(self, x):
         self.x += x
 
@@ -535,7 +534,6 @@ class DummyMetricSum(DummyMetric):
 
 
 class DummyMetricDiff(DummyMetric):
-
     def update(self, y):
         self.x -= y
 
@@ -544,6 +542,5 @@ class DummyMetricDiff(DummyMetric):
 
 
 class DummyMetricMultiOutput(DummyMetricSum):
-
     def compute(self):
         return [self.x, self.x]
