@@ -30,7 +30,7 @@ def bertscore(
     batch_size: int = 64,
     nthreads: int = 4,
     all_layers: bool = False,
-    lang: str = None,
+    lang: str = "en",
     rescale_with_baseline: bool = False,
     baseline_path: str = None,
 ) -> Dict:
