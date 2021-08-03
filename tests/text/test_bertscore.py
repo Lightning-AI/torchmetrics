@@ -13,7 +13,6 @@ def assertTensorsAlmostEqual(expected, actual, decimal=5):
     np.testing.assert_almost_equal(expected, actual, decimal=decimal)
 
 
-
 preds = [
     "28-year-old chef found dead in San Francisco mall",
     "A 28-year-old chef who recently moved to San Francisco was "
@@ -44,7 +43,6 @@ def test_score_fn(preds, refs):
     assertTensorsAlmostEqual([0.9833561182022095, 0.9782299995422363, 0.916214644908905])
 
 
-
 @pytest.mark.parametrize(
     "preds,refs",
     [(preds, refs)],
@@ -59,4 +57,3 @@ def test_score(preds, refs):
     assertTensorsAlmostEqual([0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
     assertTensorsAlmostEqual([0.9823839068412781, 0.9732863903045654, 0.920428991317749])
     assertTensorsAlmostEqual([0.9833561182022095, 0.9782299995422363, 0.916214644908905])
-
