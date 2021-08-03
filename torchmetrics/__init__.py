@@ -23,6 +23,7 @@ from torchmetrics.classification import (  # noqa: E402, F401
     BinnedAveragePrecision,
     BinnedPrecisionRecallCurve,
     BinnedRecallAtFixedPrecision,
+    CalibrationError,
     CohenKappa,
     ConfusionMatrix,
     FBeta,

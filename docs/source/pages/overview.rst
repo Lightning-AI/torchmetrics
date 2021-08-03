@@ -132,7 +132,7 @@ it will lead to wrong accumulation. In practice do the following:
         data, target = batch
         preds = self(data)
         ...
-        return {'loss' : loss, 'preds' : preds, 'target' : target}
+        return {'loss': loss, 'preds': preds, 'target': target}
 
     def training_step_end(self, outputs):
         #update and log

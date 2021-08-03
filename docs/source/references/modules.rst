@@ -209,6 +209,12 @@ BinnedRecallAtFixedPrecision
 .. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
     :noindex:
 
+CalibrationError
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CalibrationError
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -301,7 +307,6 @@ StatScores
 
 .. autoclass:: torchmetrics.StatScores
     :noindex:
-
 
 *************
 Image Metrics

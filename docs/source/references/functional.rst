@@ -69,6 +69,13 @@ average_precision [func]
     :noindex:
 
 
+calibration_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.calibration_error
+    :noindex:
+
+
 cohen_kappa [func]
 ~~~~~~~~~~~~~~~~~~
 
@@ -167,8 +174,9 @@ recall [func]
 .. autofunction:: torchmetrics.functional.recall
     :noindex:
 
+
 select_topk [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:

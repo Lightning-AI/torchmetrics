@@ -95,7 +95,7 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
                 data, target = batch
                 preds = self(data)
                 # ...
-                return {'loss' : loss, 'preds' : preds, 'target' : target}
+                return {'loss': loss, 'preds': preds, 'target': target}
 
             def training_step_end(self, outputs):
                 #update and log

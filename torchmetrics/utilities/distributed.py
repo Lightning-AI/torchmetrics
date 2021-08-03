@@ -23,8 +23,8 @@ def reduce(to_reduce: Tensor, reduction: str) -> Tensor:
     Reduces a given tensor by a given reduction method
 
     Args:
-        to_reduce : the tensor, which shall be reduced
-       reduction :  a string specifying the reduction method ('elementwise_mean', 'none', 'sum')
+        to_reduce: the tensor, which shall be reduced
+        reduction:  a string specifying the reduction method ('elementwise_mean', 'none', 'sum')
 
     Return:
         reduced Tensor
