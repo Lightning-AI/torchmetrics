@@ -11,18 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Any, Callable, List, Dict
+from typing import Any, Callable, Dict, List, Optional
 
 from torchmetrics.functional import bertscore
 from torchmetrics.metric import Metric
 
+
 class BERTScore(Metric):
-    """
-    BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
-    sentences by cosine similarity.
-    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
-    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different language
-    generation tasks.
+    """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
+    reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
+    and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be
+    useful for evaluating different language generation tasks.
 
     Args:
         - :param: `cands` (list of str): candidate sentences
@@ -59,7 +58,6 @@ class BERTScore(Metric):
         >>> results = bertscore(predictions=predictions, references=references, lang="en")
         >>> print([round(v, 2) for v in results["f1"]])
         [1.0, 1.0]
-
     """
 
     def __init__(
@@ -116,15 +114,16 @@ class BERTScore(Metric):
         Return:
             Dict with Bertscores.
         """
-        return bertscore(predictions=self.predictions,
-                         references=self.references,
-                         model_type=self.model_type,
-                         num_layers=self.num_layers,
-                         verbose=self.verbose,
-                         idf=self.idf,
-                         device=self.device,
-                         baseline_path=self.baseline_path,
-                         batch_size=self.batch_size,
-                         lang=self.lang,
-                         all_layers=self.all_layers)
-
+        return bertscore(
+            predictions=self.predictions,
+            references=self.references,
+            model_type=self.model_type,
+            num_layers=self.num_layers,
+            verbose=self.verbose,
+            idf=self.idf,
+            device=self.device,
+            baseline_path=self.baseline_path,
+            batch_size=self.batch_size,
+            lang=self.lang,
+            all_layers=self.all_layers,
+        )

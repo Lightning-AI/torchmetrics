@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Dict
+from typing import Dict, List
 
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
@@ -20,26 +20,24 @@ if _BERTSCORE_AVAILABLE:
 
 
 def bertscore(
-        predictions: List,
-        references: List,
-        model_type: str = None,
-        num_layers: int = None,
-        verbose: bool = False,
-        idf: bool = False,
-        device: str = None,
-        batch_size: int = 64,
-        nthreads: int = 4,
-        all_layers: bool = False,
-        lang: str = None,
-        rescale_with_baseline: bool = False,
-        baseline_path: str = None,
-    )-> Dict:
-    """
-    BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
-    sentences by cosine similarity.
-    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
-    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different language
-    generation tasks.
+    predictions: List,
+    references: List,
+    model_type: str = None,
+    num_layers: int = None,
+    verbose: bool = False,
+    idf: bool = False,
+    device: str = None,
+    batch_size: int = 64,
+    nthreads: int = 4,
+    all_layers: bool = False,
+    lang: str = None,
+    rescale_with_baseline: bool = False,
+    baseline_path: str = None,
+) -> Dict:
+    """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
+    reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
+    and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be
+    useful for evaluating different language generation tasks.
 
     Args:
         - :param: `predictions` (list of str): candidate sentences
@@ -74,8 +72,6 @@ def bertscore(
         >>> results = bertscore(predictions=predictions, references=references, lang="en")
         >>> print([round(v, 2) for v in results["f1"]])
         [1.0, 1.0]
-
-
     """
     if model_type is None:
         assert lang is not None, "either lang or model_type should be specified"
@@ -93,16 +89,16 @@ def bertscore(
     )
 
     cached_bertscorer = bert_score.BERTScorer(
-            model_type=model_type,
-            num_layers=num_layers,
-            batch_size=batch_size,
-            nthreads=nthreads,
-            all_layers=all_layers,
-            idf=idf,
-            device=device,
-            lang=lang,
-            rescale_with_baseline=rescale_with_baseline,
-            baseline_path=baseline_path,
+        model_type=model_type,
+        num_layers=num_layers,
+        batch_size=batch_size,
+        nthreads=nthreads,
+        all_layers=all_layers,
+        idf=idf,
+        device=device,
+        lang=lang,
+        rescale_with_baseline=rescale_with_baseline,
+        baseline_path=baseline_path,
     )
     if cached_bertscorer.hash != hashcode:
         cached_bertscorer = bert_score.BERTScorer(
