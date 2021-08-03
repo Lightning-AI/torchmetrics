@@ -38,7 +38,7 @@ class CosineSimilarity(Metric):
     - ``target`` (float tensor): ``(N,d)``
 
     Args:
-        reduction : how to reduce over the batch dimension using 'sum', 'mean' or 'none'
+        reduction: how to reduce over the batch dimension using 'sum', 'mean' or 'none'
                     (taking the individual scores)
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
