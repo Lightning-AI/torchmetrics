@@ -32,7 +32,7 @@ def _ce_compute(
     Args:
         confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
         accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1. 
+        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
         norm (str, optional): Norm function to use when computing calibration error. Defaults to "l1".
         debias (bool, optional): Apply debiasing to L2 norm computation as in Verified Uncertainty Calibration (https://arxiv.org/abs/1909.10155). Defaults to False.
 
@@ -76,7 +76,7 @@ def _ce_compute(
 
 
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]:
-    """Given a predictions and targets tensor, computes the confidences of the 
+    """Given a predictions and targets tensor, computes the confidences of the
     top-1 prediction and records their correctness.
 
     Args:
