@@ -308,13 +308,6 @@ StatScores
 .. autoclass:: torchmetrics.StatScores
     :noindex:
 
-CalibrationError
-~~~~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.CalibrationError
-    :noindex:
-
-
 *************
 Image Metrics
 *************
