@@ -22,11 +22,10 @@ from tests.retrieval.helpers import (
     _concat_tests,
     _default_metric_class_input_arguments_with_non_binary_target,
     _default_metric_functional_input_arguments_with_non_binary_target,
-    _errors_test_class_metric_parameters_default,
     _errors_test_class_metric_parameters_k,
-    _errors_test_class_metric_parameters_no_pos_target,
-    _errors_test_functional_metric_parameters_default,
+    _errors_test_class_metric_parameters_with_nonbinary,
     _errors_test_functional_metric_parameters_k,
+    _errors_test_functional_metric_parameters_with_nonbinary,
 )
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
 from torchmetrics.retrieval.retrieval_ndcg import RetrievalNormalizedDCG
@@ -51,10 +50,9 @@ def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
 
 
 class TestNDCG(RetrievalMetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
+    @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_with_non_binary_target)
     def test_class_metric(
@@ -67,7 +65,7 @@ class TestNDCG(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {'empty_target_action': empty_target_action, 'k': k}
+        metric_args = {"empty_target_action": empty_target_action, "k": k}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -114,8 +112,7 @@ class TestNDCG(RetrievalMetricTester):
 
     @pytest.mark.parametrize(
         **_concat_tests(
-            _errors_test_class_metric_parameters_default,
-            _errors_test_class_metric_parameters_no_pos_target,
+            _errors_test_class_metric_parameters_with_nonbinary,
             _errors_test_class_metric_parameters_k,
         )
     )
@@ -135,7 +132,7 @@ class TestNDCG(RetrievalMetricTester):
 
     @pytest.mark.parametrize(
         **_concat_tests(
-            _errors_test_functional_metric_parameters_default,
+            _errors_test_functional_metric_parameters_with_nonbinary,
             _errors_test_functional_metric_parameters_k,
         )
     )

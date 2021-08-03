@@ -23,8 +23,8 @@ def reduce(to_reduce: Tensor, reduction: str) -> Tensor:
     Reduces a given tensor by a given reduction method
 
     Args:
-        to_reduce : the tensor, which shall be reduced
-       reduction :  a string specifying the reduction method ('elementwise_mean', 'none', 'sum')
+        to_reduce: the tensor, which shall be reduced
+        reduction:  a string specifying the reduction method ('elementwise_mean', 'none', 'sum')
 
     Return:
         reduced Tensor
@@ -84,8 +84,7 @@ def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: s
         return fraction
 
     raise ValueError(
-        f"Reduction parameter {class_reduction} unknown."
-        f" Choose between one of these: {valid_reduction}"
+        f"Reduction parameter {class_reduction} unknown." f" Choose between one of these: {valid_reduction}"
     )
 
 

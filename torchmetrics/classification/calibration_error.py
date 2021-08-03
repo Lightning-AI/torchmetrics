@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import torch
 from torch import Tensor
@@ -24,40 +24,44 @@ from torchmetrics.utilities.data import dim_zero_cat
 class CalibrationError(Metric):
     r"""
 
-        Computes the top-label calibration error as described in `https://arxiv.org/pdf/1909.10155.pdf`.
+    Computes the top-label calibration error as described in `this paper <https://arxiv.org/pdf/1909.10155.pdf>`_.
 
-        Three different norms are implemented, each corresponding to variations on the calibration error metric.
+    Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
-        L1 norm (Expected Calibration Error)
+    L1 norm (Expected Calibration Error)
 
-        .. math::
-            \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
+    .. math::
+        \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
 
-        Infinity norm (Maximum Calibration Error)
+    Infinity norm (Maximum Calibration Error)
 
-        .. math::
-            \text{RMSCE} =  \max_{i} (p_i - c_i)
+    .. math::
+        \text{RMSCE} =  \max_{i} (p_i - c_i)
 
-        L2 norm (Root Mean Square Calibration Error)
+    L2 norm (Root Mean Square Calibration Error)
 
-        .. math::
-            \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
+    .. math::
+        \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
 
-        Where :math:p_i is the top-1 prediction accuracy in bin i and :math:c_i is the average confidence of predictions in bin i.
+    Where :math:`p_i` is the top-1 prediction accuracy in bin i
+    and :math:`c_i` is the average confidence of predictions in bin i.
 
-        NOTE: L2-norm debiasing is not yet supported.
+    .. note::
+        L2-norm debiasing is not yet supported.
 
-        Args:
-            n_bins (int, optional): Number of bins to use when computing probabilites and accuracies. Defaults to 15.
-            norm (str, optional): Norm used to compare empirical and expected probability bins.
-                Defaults to "l1", or Expected Calibration Error.
-            debias (bool, optional): Applies debiasing term, only implemented for l2 norm. Defaults to True.
-            compute_on_step (bool, optional):  Forward only calls ``update()`` and return None if this is set to False. Defaults to False.
-            dist_sync_on_step (bool, optional): Synchronize metric state across processes at each ``forward()``
-                before returning the value at the step. Defaults to False.
-            process_group (Optional[Any], optional): Specify the process group on which synchronization is called. 
-                default: None (which selects the entire world). Defaults to None.
-        """
+    Args:
+        n_bins: Number of bins to use when computing probabilites and accuracies.
+        norm: Norm used to compare empirical and expected probability bins.
+            Defaults to "l1", or Expected Calibration Error.
+        debias: Applies debiasing term, only implemented for l2 norm. Defaults to True.
+        compute_on_step:  Forward only calls ``update()`` and return None if this is set to False.
+        dist_sync_on_step: Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step
+        process_group: Specify the process group on which synchronization is called.
+            default: None (which selects the entire world)
+    """
+    confidences: List
+    accuracies: List
 
     def __init__(
         self,
@@ -72,7 +76,7 @@ class CalibrationError(Metric):
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=None
+            dist_sync_fn=None,
         )
 
         if norm not in ["l1", "l2", "max"]:
@@ -89,7 +93,7 @@ class CalibrationError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
-        Computes top-level confidences and accuracies for 
+        Computes top-level confidences and accuracies for
         the input probabilites and appends them to internal state.
 
         Args:

@@ -92,6 +92,7 @@ class ConfusionMatrix(Metric):
                 [[1., 0.], [1., 0.]],
                 [[0., 1.], [0., 1.]]])
     """
+
     confmat: Tensor
 
     def __init__(
@@ -114,7 +115,7 @@ class ConfusionMatrix(Metric):
         self.threshold = threshold
         self.multilabel = multilabel
 
-        allowed_normalize = ('true', 'pred', 'all', 'none', None)
+        allowed_normalize = ("true", "pred", "all", "none", None)
         if self.normalize not in allowed_normalize:
             raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
 

@@ -36,7 +36,6 @@ if _SCIPY_AVAILABLE:
 
 
 class NoTrainInceptionV3(FeatureExtractorInceptionV3):
-
     def __init__(
         self,
         name: str,
@@ -47,8 +46,8 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
         # put into evaluation mode
         self.eval()
 
-    def train(self, mode: bool) -> 'NoTrainInceptionV3':
-        """ the inception network should not be able to be switched away from evaluation mode """
+    def train(self, mode: bool) -> "NoTrainInceptionV3":
+        """the inception network should not be able to be switched away from evaluation mode"""
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -77,7 +76,7 @@ class MatrixSquareRoot(Function):
     def backward(ctx: Any, grad_output: Tensor) -> Tensor:
         grad_input = None
         if ctx.needs_input_grad[0]:
-            sqrtm, = ctx.saved_tensors
+            (sqrtm,) = ctx.saved_tensors
             sqrtm = sqrtm.data.cpu().numpy().astype(np.float_)
             gm = grad_output.data.cpu().numpy().astype(np.float_)
 
@@ -116,7 +115,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
     covmean = sqrtm(sigma1.mm(sigma2))
     # Product might be almost singular
     if not torch.isfinite(covmean).all():
-        rank_zero_info(f'FID calculation produces singular product; adding {eps} to diagonal of covariance estimates')
+        rank_zero_info(f"FID calculation produces singular product; adding {eps} to diagonal of covariance estimates")
         offset = torch.eye(sigma1.size(0), device=mu1.device, dtype=mu1.dtype) * eps
         covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
 
@@ -214,7 +213,7 @@ class FID(Metric):
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None
+        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -224,33 +223,34 @@ class FID(Metric):
         )
 
         rank_zero_warn(
-            'Metric `FID` will save all extracted features in buffer.'
-            ' For large datasets this may lead to large memory footprint.', UserWarning
+            "Metric `FID` will save all extracted features in buffer."
+            " For large datasets this may lead to large memory footprint.",
+            UserWarning,
         )
 
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ValueError(
-                    'FID metric requires that Torch-fidelity is installed.'
-                    'Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`'
+                    "FID metric requires that Torch-fidelity is installed."
+                    "Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`"
                 )
             valid_int_input = [64, 192, 768, 2048]
             if feature not in valid_int_input:
                 raise ValueError(
-                    f'Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}.'
+                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
                 )
 
-            self.inception = NoTrainInceptionV3(name='inception-v3-compat', features_list=[str(feature)])
+            self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
         elif isinstance(feature, torch.nn.Module):
             self.inception = feature
         else:
-            raise TypeError('Got unknown input to argument `feature`')
+            raise TypeError("Got unknown input to argument `feature`")
 
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
-        """ Update the state with extracted features
+        """Update the state with extracted features
 
         Args:
             imgs: tensor with images feed to the feature extractor
@@ -264,7 +264,7 @@ class FID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tensor:
-        """ Calculate FID score based on accumulated extracted features from the two distributions """
+        """Calculate FID score based on accumulated extracted features from the two distributions"""
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
         # computation is extremely sensitive so it needs to happen in double precision

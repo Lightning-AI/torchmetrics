@@ -38,7 +38,7 @@ class CosineSimilarity(Metric):
     - ``target`` (float tensor): ``(N,d)``
 
     Args:
-        reduction : how to reduce over the batch dimension using 'sum', 'mean' or 'none'
+        reduction: how to reduce over the batch dimension using 'sum', 'mean' or 'none'
                     (taking the individual scores)
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
@@ -65,7 +65,7 @@ class CosineSimilarity(Metric):
 
     def __init__(
         self,
-        reduction: str = 'sum',
+        reduction: str = "sum",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -75,12 +75,15 @@ class CosineSimilarity(Metric):
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=dist_sync_fn,
         )
+        allowed_reduction = ("sum", "mean", "none", None)
+        if reduction not in allowed_reduction:
+            raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction} but got {reduction}")
+        self.reduction = reduction
 
         self.add_state("preds", [], dist_reduce_fx="cat")
         self.add_state("target", [], dist_reduce_fx="cat")
-        self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """

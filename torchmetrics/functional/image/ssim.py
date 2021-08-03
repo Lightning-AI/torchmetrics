@@ -22,6 +22,19 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
+    """
+    Computes 1D gaussian kernel
+
+    Args:
+        kernel_size: size of the gaussian kernel
+        sigma: Standard deviation of the gaussian kernel
+        dtype: data type of the output tensor
+        device: device of the output tensor
+
+    Example:
+        >>> _gaussian(3, 1, torch.float, 'cpu')
+        tensor([[0.2741, 0.4519, 0.2741]])
+    """
     dist = torch.arange(start=(1 - kernel_size) / 2, end=(1 + kernel_size) / 2, step=1, dtype=dtype, device=device)
     gauss = torch.exp(-torch.pow(dist / sigma, 2) / 2)
     return (gauss / gauss.sum()).unsqueeze(dim=0)  # (1, kernel_size)
@@ -30,6 +43,25 @@ def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.
 def _gaussian_kernel(
     channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
 ) -> Tensor:
+    """
+    Computes 2D gaussian kernel
+
+    Args:
+        channel: number of channels in the image
+        kernel_size: size of the gaussian kernel as a tuple (h, w)
+        sigma: Standard deviation of the gaussian kernel
+        dtype: data type of the output tensor
+        device: device of the output tensor
+
+    Example:
+        >>> _gaussian_kernel(1, (5,5), (1,1), torch.float, "cpu")
+        tensor([[[[0.0030, 0.0133, 0.0219, 0.0133, 0.0030],
+                  [0.0133, 0.0596, 0.0983, 0.0596, 0.0133],
+                  [0.0219, 0.0983, 0.1621, 0.0983, 0.0219],
+                  [0.0133, 0.0596, 0.0983, 0.0596, 0.0133],
+                  [0.0030, 0.0133, 0.0219, 0.0133, 0.0030]]]])
+    """
+
     gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
     kernel = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
@@ -38,6 +70,15 @@ def _gaussian_kernel(
 
 
 def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute Structural Similarity Index Measure.
+    Checks for same shape and type of the input tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
@@ -62,6 +103,31 @@ def _ssim_compute(
     k1: float = 0.01,
     k2: float = 0.03,
 ) -> Tensor:
+    """
+    Computes Structual Similarity Index Measure
+
+    Args:
+        preds: estimated image
+        target: ground truth image
+        kernel_size: size of the gaussian kernel (default: (11, 11))
+        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
+        reduction: a method to reduce metric score over labels.
+
+            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
+            - ``'none'``: no reduction will be applied
+
+        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
+        k1: Parameter of SSIM. Default: 0.01
+        k2: Parameter of SSIM. Default: 0.03
+
+    Example:
+        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> target = preds * 0.75
+        >>> preds, target = _ssim_update(preds, target)
+        >>> _ssim_compute(preds, target)
+        tensor(0.9219)
+    """
     if len(kernel_size) != 2 or len(sigma) != 2:
         raise ValueError(
             "Expected `kernel_size` and `sigma` to have the length of two."
@@ -87,12 +153,12 @@ def _ssim_compute(
     pad_w = (kernel_size[0] - 1) // 2
     pad_h = (kernel_size[1] - 1) // 2
 
-    preds = F.pad(preds, (pad_w, pad_w, pad_h, pad_h), mode='reflect')
-    target = F.pad(target, (pad_w, pad_w, pad_h, pad_h), mode='reflect')
+    preds = F.pad(preds, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
+    target = F.pad(target, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
     outputs = F.conv2d(input_list, kernel, groups=channel)
-    output_list = [outputs[x * preds.size(0):(x + 1) * preds.size(0)] for x in range(len(outputs))]
+    output_list = [outputs[x * preds.size(0) : (x + 1) * preds.size(0)] for x in range(len(outputs))]
 
     mu_pred_sq = output_list[0].pow(2)
     mu_target_sq = output_list[1].pow(2)

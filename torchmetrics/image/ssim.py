@@ -51,6 +51,7 @@ class SSIM(Metric):
         >>> ssim(preds, target)
         tensor(0.9219)
     """
+
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -72,9 +73,9 @@ class SSIM(Metric):
             process_group=process_group,
         )
         rank_zero_warn(
-            'Metric `SSIM` will save all targets and'
-            ' predictions in buffer. For large datasets this may lead'
-            ' to large memory footprint.'
+            "Metric `SSIM` will save all targets and"
+            " predictions in buffer. For large datasets this may lead"
+            " to large memory footprint."
         )
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")

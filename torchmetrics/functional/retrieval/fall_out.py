@@ -49,7 +49,7 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     if not (isinstance(k, int) and k > 0):
         raise ValueError("`k` has to be a positive integer or None")
 
-    target = (1 - target)
+    target = 1 - target
 
     if not target.sum():
         return tensor(0.0, device=preds.device)

@@ -112,13 +112,13 @@ class R2Score(Metric):
         self.num_outputs = num_outputs
 
         if adjusted < 0 or not isinstance(adjusted, int):
-            raise ValueError('`adjusted` parameter should be an integer larger or equal to 0.')
+            raise ValueError("`adjusted` parameter should be an integer larger or equal to 0.")
         self.adjusted = adjusted
 
-        allowed_multioutput = ('raw_values', 'uniform_average', 'variance_weighted')
+        allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
         if multioutput not in allowed_multioutput:
             raise ValueError(
-                f'Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}'
+                f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
             )
         self.multioutput = multioutput
 
