@@ -31,7 +31,7 @@ seed_all(42)
 
 
 def _sk_precision_recall_curve(y_true, probas_pred, num_classes=1):
-    """Adjusted comparison function that can also handles multiclass"""
+    """Adjusted comparison function that can also handles multiclass."""
     if num_classes == 1:
         return sk_precision_recall_curve(y_true, probas_pred)
 

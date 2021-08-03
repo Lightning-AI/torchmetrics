@@ -25,7 +25,7 @@ torch.manual_seed(42)
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
-    """Assert that metric never leaves evaluation mode"""
+    """Assert that metric never leaves evaluation mode."""
 
     class MyModel(torch.nn.Module):
         def __init__(self):
@@ -43,7 +43,7 @@ def test_no_train():
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_is_pickle():
-    """Assert that we can initialize the metric and pickle it"""
+    """Assert that we can initialize the metric and pickle it."""
     metric = IS()
     assert metric
 
@@ -53,7 +53,7 @@ def test_is_pickle():
 
 
 def test_is_raises_errors_and_warnings():
-    """Test that expected warnings and errors are raised"""
+    """Test that expected warnings and errors are raised."""
     with pytest.warns(
         UserWarning,
         match="Metric `IS` will save all extracted features in buffer."
@@ -104,7 +104,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_compare_is(tmpdir):
-    """check that the hole pipeline give the same result as torch-fidelity"""
+    """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = IS(splits=1).cuda()

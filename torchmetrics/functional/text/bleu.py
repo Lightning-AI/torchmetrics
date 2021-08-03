@@ -24,8 +24,7 @@ from torch import Tensor, tensor
 
 
 def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
-    """
-    Counting how many times each word appears in a given text with ngram
+    """Counting how many times each word appears in a given text with ngram.
 
     Args:
         ngram_input_list: A list of translated text or reference texts
@@ -54,8 +53,7 @@ def _bleu_score_update(
     ref_len: Tensor,
     n_gram: int = 4,
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns variables required to compute the BLEU score.
+    """Updates and returns variables required to compute the BLEU score.
 
     Args:
         reference_corpus: An iterable of iterables of reference corpus
@@ -92,8 +90,7 @@ def _bleu_score_update(
 def _bleu_score_compute(
     trans_len: Tensor, ref_len: Tensor, numerator: Tensor, denominator: Tensor, n_gram: int = 4, smooth: bool = False
 ) -> Tensor:
-    """
-    Computes the BLEU score.
+    """Computes the BLEU score.
 
     Args:
         trans_len: count of words in a candidate translation
@@ -126,8 +123,8 @@ def bleu_score(
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
-    """
-    Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more references
+    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine
+    translated text with one or more references.
 
     Args:
         reference_corpus:

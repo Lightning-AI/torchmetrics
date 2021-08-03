@@ -26,8 +26,8 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 
 
 class BLEUScore(Metric):
-    """
-    Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more references.
+    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine
+    translated text with one or more references.
 
     Args:
         n_gram:
@@ -68,8 +68,8 @@ class BLEUScore(Metric):
     def update(  # type: ignore
         self, reference_corpus: Sequence[Sequence[Sequence[str]]], translate_corpus: Sequence[Sequence[str]]
     ) -> None:
-        """
-        Compute Precision Scores.
+        """Compute Precision Scores.
+
         Args:
             reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
@@ -85,8 +85,7 @@ class BLEUScore(Metric):
         )
 
     def compute(self) -> Tensor:
-        """
-        Calculate BLEU score
+        """Calculate BLEU score.
 
         Return:
             Tensor with BLEU Score

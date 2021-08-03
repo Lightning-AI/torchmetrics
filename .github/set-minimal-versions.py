@@ -12,7 +12,7 @@ REQUIREMENTS_FILES = ("requirements.txt",) + tuple(glob.glob(os.path.join("requi
 
 
 def set_min_torch_by_python(fpath: str = "requirements.txt") -> None:
-    """set minimal torch version"""
+    """set minimal torch version."""
     py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
     if py_ver not in LUT_PYTHON_TORCH:
         return
@@ -24,7 +24,7 @@ def set_min_torch_by_python(fpath: str = "requirements.txt") -> None:
 
 
 def replace_min_requirements(fpath: str) -> None:
-    """replace all `>=` by `==` in given file"""
+    """replace all `>=` by `==` in given file."""
     logging.info(f"processing: {fpath}")
     with open(fpath) as fp:
         req = fp.read()

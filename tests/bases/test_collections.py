@@ -84,7 +84,7 @@ def test_device_and_dtype_transfer_metriccollection(tmpdir):
 
 
 def test_metric_collection_wrong_input(tmpdir):
-    """Check that errors are raised on wrong input"""
+    """Check that errors are raised on wrong input."""
     dms = DummyMetricSum()
 
     # Not all input are metrics (list)
@@ -106,8 +106,7 @@ def test_metric_collection_wrong_input(tmpdir):
 
 def test_metric_collection_args_kwargs(tmpdir):
     """Check that args and kwargs gets passed correctly in metric collection,
-    Checks both update and forward method
-    """
+    Checks both update and forward method."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -143,7 +142,7 @@ def test_metric_collection_args_kwargs(tmpdir):
     ],
 )
 def test_metric_collection_prefix_postfix_args(prefix, postfix):
-    """Test that the prefix arg alters the keywords in the output"""
+    """Test that the prefix arg alters the keywords in the output."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
     names = ["DummyMetricSum", "DummyMetricDiff"]
@@ -192,9 +191,7 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
 
 
 def test_metric_collection_repr():
-    """
-    Test MetricCollection
-    """
+    """Test MetricCollection."""
 
     class A(DummyMetricSum):
         pass

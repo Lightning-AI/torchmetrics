@@ -36,8 +36,7 @@ def jit_distributed_available() -> bool:
 
 
 class Metric(nn.Module, ABC):
-    """
-    Base class for all metrics present in the Metrics API.
+    """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
     handle distributed synchronization and per-step metric computation.
@@ -115,8 +114,7 @@ class Metric(nn.Module, ABC):
         dist_reduce_fx: Optional[Union[str, Callable]] = None,
         persistent: bool = False,
     ) -> None:
-        """
-        Adds metric state variable. Only used by subclasses.
+        """Adds metric state variable. Only used by subclasses.
 
         Args:
             name: The name of the state variable. The variable will then be accessible at ``self.name``.
@@ -176,8 +174,10 @@ class Metric(nn.Module, ABC):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
+        """Automatically calls ``update()``.
+
+        Returns the metric value over inputs if ``compute_on_step`` is
+        True.
         """
         # add current step
         if self._is_synced:
@@ -256,8 +256,8 @@ class Metric(nn.Module, ABC):
         should_sync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> None:
-        """
-        Sync function for manually controlling when metrics states should be synced across processes
+        """Sync function for manually controlling when metrics states should be
+        synced across processes.
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
@@ -267,7 +267,6 @@ class Metric(nn.Module, ABC):
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
-
         """
         if self._is_synced and should_sync:
             raise TorchMetricsUserError("The Metric has already been synced.")
@@ -288,12 +287,11 @@ class Metric(nn.Module, ABC):
         self._is_synced = True
 
     def unsync(self, should_unsync: bool = True) -> None:
-        """
-        Unsync function for manually controlling when metrics states should be reverted back to their local states.
+        """Unsync function for manually controlling when metrics states should
+        be reverted back to their local states.
 
         Args:
             should_unsync: Whether to perform unsync
-
         """
         if not should_unsync:
             return
@@ -319,9 +317,9 @@ class Metric(nn.Module, ABC):
         should_unsync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> Generator:
-        """
-        Context manager to synchronize the states between processes when running in a distributed setting
-        and restore the local cache states after yielding.
+        """Context manager to synchronize the states between processes when
+        running in a distributed setting and restore the local cache states
+        after yielding.
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
@@ -374,21 +372,17 @@ class Metric(nn.Module, ABC):
 
     @abstractmethod
     def update(self, *_: Any, **__: Any) -> None:
-        """
-        Override this method to update the state variables of your metric class.
-        """
+        """Override this method to update the state variables of your metric
+        class."""
 
     @abstractmethod
     def compute(self) -> Any:
-        """
-        Override this method to compute the final metric value from state variables
-        synchronized across the distributed backend.
-        """
+        """Override this method to compute the final metric value from state
+        variables synchronized across the distributed backend."""
 
     def reset(self) -> None:
-        """
-        This method automatically resets the metric state variables to their default value.
-        """
+        """This method automatically resets the metric state variables to their
+        default value."""
         self._update_called = False
         self._forward_cache = None
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log
@@ -407,7 +401,7 @@ class Metric(nn.Module, ABC):
         self._is_synced = False
 
     def clone(self) -> "Metric":
-        """Make a copy of the metric"""
+        """Make a copy of the metric."""
         return deepcopy(self)
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -423,8 +417,7 @@ class Metric(nn.Module, ABC):
 
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states
-        to the correct device when `.to`, `.cuda`, etc methods are called
-        """
+        to the correct device when `.to`, `.cuda`, etc methods are called."""
         this = super()._apply(fn)
         # Also apply fn to metric states and defaults
         for key, value in this._defaults.items():
@@ -453,8 +446,7 @@ class Metric(nn.Module, ABC):
 
     def persistent(self, mode: bool = False) -> None:
         """Method for post-init to change if metric states should be saved to
-        its state_dict
-        """
+        its state_dict."""
         for key in self._persistent:
             self._persistent[key] = mode
 
@@ -488,7 +480,7 @@ class Metric(nn.Module, ABC):
         unexpected_keys: List[str],
         error_msgs: List[str],
     ) -> None:
-        """Loads metric states from state_dict"""
+        """Loads metric states from state_dict."""
 
         for key in self._defaults:
             name = prefix + key
@@ -499,7 +491,8 @@ class Metric(nn.Module, ABC):
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
-        """filter kwargs such that they match the update signature of the metric"""
+        """filter kwargs such that they match the update signature of the
+        metric."""
 
         # filter all parameters based on update signature except those of
         # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
@@ -645,7 +638,8 @@ def _neg(x: Tensor) -> Tensor:
 
 
 class CompositionalMetric(Metric):
-    """Composition of two metrics with a specific operator which will be executed upon metrics compute"""
+    """Composition of two metrics with a specific operator which will be
+    executed upon metrics compute."""
 
     def __init__(
         self,

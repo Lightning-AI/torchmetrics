@@ -26,9 +26,8 @@ def _binary_clf_curve(
     sample_weights: Optional[Sequence] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    adapted from https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
-    """
+    """adapted from https://github.com/scikit-learn/scikit-
+    learn/blob/master/sklearn/metrics/_ranking.py."""
     if sample_weights is not None and not isinstance(sample_weights, Tensor):
         sample_weights = tensor(sample_weights, device=preds.device, dtype=torch.float)
 
@@ -193,8 +192,7 @@ def precision_recall_curve(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """
-    Computes precision-recall pairs for different thresholds.
+    """Computes precision-recall pairs for different thresholds.
 
     Args:
         preds: predictions from model (probabilities)

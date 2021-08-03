@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SNR(Metric):
-    r"""`Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
+    r"""Signal-to-noise ratio (SNR_):
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -68,6 +68,7 @@ class SNR(Metric):
     References:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
         and Signal Processing (ICASSP) 2019.
+
     """
     sum_snr: Tensor
     total: Tensor
@@ -92,8 +93,7 @@ class SNR(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -105,9 +105,7 @@ class SNR(Metric):
         self.total += snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average SNR.
-        """
+        """Computes average SNR."""
         return self.sum_snr / self.total
 
     @property

@@ -43,8 +43,7 @@ def _recall_at_precision(
 
 
 class BinnedPrecisionRecallCurve(Metric):
-    """
-    Computes precision-recall pairs for different thresholds. Works for both
+    """Computes precision-recall pairs for different thresholds. Works for both
     binary and multiclass problems. In the case of multiclass, the values will
     be calculated based on a one-vs-the-rest approach.
 
@@ -176,7 +175,7 @@ class BinnedPrecisionRecallCurve(Metric):
             self.FNs[:, i] += ((target) & (~predictions)).sum(dim=0)
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """Returns float tensor of size n_classes"""
+        """Returns float tensor of size n_classes."""
         precisions = (self.TPs + METRIC_EPS) / (self.TPs + self.FPs + METRIC_EPS)
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
 
@@ -191,10 +190,10 @@ class BinnedPrecisionRecallCurve(Metric):
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
-    """
-    Computes the average precision score, which summarises the precision recall
-    curve into one number. Works for both binary and multiclass problems.
-    In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
+    """Computes the average precision score, which summarises the precision
+    recall curve into one number. Works for both binary and multiclass
+    problems. In the case of multiclass, the values will be calculated based on
+    a one-vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
@@ -246,8 +245,8 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
 
 
 class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
-    """
-    Computes the higest possible recall value given the minimum precision thresholds provided.
+    """Computes the higest possible recall value given the minimum precision
+    thresholds provided.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
@@ -313,7 +312,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         self.min_precision = min_precision
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
-        """Returns float tensor of size n_classes"""
+        """Returns float tensor of size n_classes."""
         precisions, recalls, thresholds = super().compute()
 
         if self.num_classes == 1:

@@ -18,8 +18,7 @@ from torch import Tensor
 def embedding_similarity(
     batch: Tensor, similarity: str = "cosine", reduction: str = "none", zero_diagonal: bool = True
 ) -> Tensor:
-    """
-    Computes representation similarity
+    """Computes representation similarity.
 
     Example:
         >>> from torchmetrics.functional import embedding_similarity

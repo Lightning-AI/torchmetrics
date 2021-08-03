@@ -26,9 +26,8 @@ def _stat_scores(
     class_index: int,
     argmax_dim: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
-    """
-    Calculates the number of true positive, false positive, true negative
-    and false negative for a specific class
+    """Calculates the number of true positive, false positive, true negative
+    and false negative for a specific class.
 
     Args:
         preds: prediction tensor
@@ -46,7 +45,6 @@ def _stat_scores(
         >>> tp, fp, tn, fn, sup = _stat_scores(x, y, class_index=1)
         >>> tp, fp, tn, fn, sup
         (tensor(0), tensor(1), tensor(2), tensor(0), tensor(0))
-
     """
     if preds.ndim == target.ndim + 1:
         preds = to_categorical(preds, argmax_dim=argmax_dim)
@@ -68,8 +66,7 @@ def dice_score(
     no_fg_score: float = 0.0,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """
-    Compute dice score from prediction scores
+    """Compute dice score from prediction scores.
 
     Args:
         preds: estimated probabilities
@@ -95,7 +92,6 @@ def dice_score(
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> dice_score(pred, target)
         tensor(0.3333)
-
     """
     num_classes = preds.shape[1]
     bg_inv = 1 - int(bg)

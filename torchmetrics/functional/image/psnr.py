@@ -26,8 +26,7 @@ def _psnr_compute(
     base: float = 10.0,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """
-    Computes peak signal-to-noise ratio.
+    """Computes peak signal-to-noise ratio.
 
     Args:
         sum_squared_error: Sum of square of errors over all observations
@@ -61,8 +60,8 @@ def _psnr_update(
     target: Tensor,
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns variables required to compute peak signal-to-noise ratio.
+    """Updates and returns variables required to compute peak signal-to-noise
+    ratio.
 
     Args:
         preds: Predicted tensor
@@ -101,8 +100,7 @@ def psnr(
     reduction: str = "elementwise_mean",
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
-    """
-    Computes the peak signal-to-noise ratio.
+    """Computes the peak signal-to-noise ratio.
 
     Args:
         preds: estimated signal
@@ -136,7 +134,6 @@ def psnr(
 
     .. note::
         Half precision is only support on GPU for this metric
-
     """
     if dim is None and reduction != "elementwise_mean":
         rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")

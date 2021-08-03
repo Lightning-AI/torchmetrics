@@ -16,7 +16,8 @@ from typing import Optional, Union
 
 
 class EnumStr(str, Enum):
-    """Type of any enumerator with allowed comparison to string invariant to cases.
+    """Type of any enumerator with allowed comparison to string invariant to
+    cases.
 
     Example:
         >>> class MyEnum(EnumStr):
@@ -46,7 +47,7 @@ class EnumStr(str, Enum):
 
 
 class DataType(EnumStr):
-    """Enum to represent data type
+    """Enum to represent data type.
 
     >>> "Binary" in list(DataType)
     True
@@ -59,7 +60,7 @@ class DataType(EnumStr):
 
 
 class AverageMethod(EnumStr):
-    """Enum to represent average method
+    """Enum to represent average method.
 
     >>> None in list(AverageMethod)
     True
@@ -77,7 +78,7 @@ class AverageMethod(EnumStr):
 
 
 class MDMCAverageMethod(EnumStr):
-    """Enum to represent multi-dim multi-class average method"""
+    """Enum to represent multi-dim multi-class average method."""
 
     GLOBAL = "global"
     SAMPLEWISE = "samplewise"

@@ -327,9 +327,9 @@ def test_average_accuracy_bin(preds, target, num_classes, exp_result, average, m
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
 )
 def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
-    """This tests that when metric is computed per class and a given class is not present
-    in both the `preds` and `target`, the resulting score is `nan`.
-    """
+    """This tests that when metric is computed per class and a given class is
+    not present in both the `preds` and `target`, the resulting score is
+    `nan`."""
     preds = torch.tensor([0, 0, 0])
     target = torch.tensor([0, 0, 0])
     num_classes = 2

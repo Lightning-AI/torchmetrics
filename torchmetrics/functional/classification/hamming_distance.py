@@ -38,7 +38,7 @@ def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Ten
 
 def hamming_distance(preds: Tensor, target: Tensor, threshold: float = 0.5) -> Tensor:
     r"""
-    Computes the average `Hamming distance <https://en.wikipedia.org/wiki/Hamming_distance>`_ (also
+    Computes the average `Hamming distance`_ (also
     known as Hamming loss) between targets and predictions:
 
     .. math::

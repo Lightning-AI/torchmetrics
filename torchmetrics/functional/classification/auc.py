@@ -62,8 +62,7 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
 
 
 def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
-    """
-    Computes Area Under the Curve (AUC) using the trapezoidal rule
+    """Computes Area Under the Curve (AUC) using the trapezoidal rule.
 
     Args:
         x: x-coordinates

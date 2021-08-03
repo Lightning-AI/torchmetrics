@@ -22,7 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KLDivergence(Metric):
-    r"""Computes the `KL divergence <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_:
+    r"""Computes the `KL divergence`_:
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
@@ -59,6 +59,7 @@ class KLDivergence(Metric):
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
+
     """
     # TODO: canot be used because if scripting
     # measures: Union[List[Tensor], Tensor]

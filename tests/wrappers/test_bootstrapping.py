@@ -29,9 +29,8 @@ _target = torch.randint(10, (10, 32))
 
 
 class TestBootStrapper(BootStrapper):
-    """For testing purpose, we subclass the bootstrapper class so we can get the exact permutation
-    the class is creating
-    """
+    """For testing purpose, we subclass the bootstrapper class so we can get
+    the exact permutation the class is creating."""
 
     def update(self, *args) -> None:
         self.out = []
@@ -55,7 +54,7 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
 
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
-    """make sure that the bootstrap sampler works as intended"""
+    """make sure that the bootstrap sampler works as intended."""
     old_samples = torch.randn(10, 2)
 
     # make sure that the new samples are only made up of old samples
@@ -76,7 +75,8 @@ def test_bootstrap_sampler(sampling_strategy):
     "metric, sk_metric", [[Precision(average="micro"), precision_score], [Recall(average="micro"), recall_score]]
 )
 def test_bootstrap(sampling_strategy, metric, sk_metric):
-    """Test that the different bootstraps gets updated as we expected and that the compute method works"""
+    """Test that the different bootstraps gets updated as we expected and that
+    the compute method works."""
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
     if _TORCH_GREATER_EQUAL_1_7:
         _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95])))
