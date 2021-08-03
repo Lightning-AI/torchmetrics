@@ -62,3 +62,5 @@ from torchmetrics.functional.self_supervised import embedding_similarity  # noqa
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
 from torchmetrics.functional.text.rouge import rouge_score  # noqa: F401
 from torchmetrics.functional.text.wer import wer  # noqa: F401
+from torchmetrics.functional.text.bertscore import bertscore  # noqa: F401
+

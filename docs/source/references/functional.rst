@@ -382,3 +382,8 @@ wer [func]
 
 .. autofunction:: torchmetrics.functional.wer
     :noindex:
+
+bertscore [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bertscore

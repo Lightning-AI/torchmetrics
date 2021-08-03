@@ -543,6 +543,11 @@ WER
 .. autoclass:: torchmetrics.WER
     :noindex:
 
+BERTScore
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BERTScore
+    :noindex:
 
 ********
 Wrappers
