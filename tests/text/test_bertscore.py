@@ -36,12 +36,14 @@ refs = [
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_fn(preds, refs):
     Score = bertscore(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
-    assertTensorsAlmostEqual(expected=Score["precision"],
-                             actual=[0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
-    assertTensorsAlmostEqual(expected=Score["recall"],
-                             actual=[0.9823839068412781, 0.9732863903045654, 0.920428991317749])
-    assertTensorsAlmostEqual(expected=Score["f1"],
-                             actual=[0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+    assertTensorsAlmostEqual(
+        expected=Score["precision"], actual=[0.9843302369117737, 0.9832239747047424, 0.9120386242866516]
+    )
+    assertTensorsAlmostEqual(
+        expected=Score["recall"], actual=[0.9823839068412781, 0.9732863903045654, 0.920428991317749]
+    )
+    assertTensorsAlmostEqual(expected=Score["f1"], actual=[0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+
 
 @pytest.mark.parametrize(
     "preds,refs",
@@ -52,9 +54,10 @@ def test_score(preds, refs):
     Scorer = BERTScore(model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
     Scorer.update(predictions=preds, references=refs)
     Score = Scorer.compute()
-    assertTensorsAlmostEqual(expected=Score["precision"],
-                             actual=[0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
-    assertTensorsAlmostEqual(expected=Score["recall"],
-                             actual=[0.9823839068412781, 0.9732863903045654, 0.920428991317749])
-    assertTensorsAlmostEqual(expected=Score["f1"], 
-                             actual=[0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+    assertTensorsAlmostEqual(
+        expected=Score["precision"], actual=[0.9843302369117737, 0.9832239747047424, 0.9120386242866516]
+    )
+    assertTensorsAlmostEqual(
+        expected=Score["recall"], actual=[0.9823839068412781, 0.9732863903045654, 0.920428991317749]
+    )
+    assertTensorsAlmostEqual(expected=Score["f1"], actual=[0.9833561182022095, 0.9782299995422363, 0.916214644908905])
