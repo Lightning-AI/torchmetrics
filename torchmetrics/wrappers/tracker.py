@@ -21,11 +21,9 @@ from torchmetrics.metric import Metric
 
 
 class MetricTracker(nn.ModuleList):
-    """
-    A wrapper class that can help keeping track of a metric over time and implement useful
-    methods. The wrapper implements the standard `update`, `compute`, `reset` methods that
-    just calls corresponding method of the currently tracked metric. However, the following
-    additional methods are provided:
+    """A wrapper class that can help keeping track of a metric over time and implement useful methods. The wrapper
+    implements the standard `update`, `compute`, `reset` methods that just calls corresponding method of the
+    currently tracked metric. However, the following additional methods are provided:
 
         -``MetricTracker.n_steps``: number of metrics being tracked
 
@@ -51,7 +49,6 @@ class MetricTracker(nn.ModuleList):
         ...     print(f"current acc={tracker.compute()}")  # doctest: +SKIP
         >>> best_acc, which_epoch = tracker.best_metric(return_step=True)  # doctest: +SKIP
         >>> all_values = tracker.compute_all()  # doctest: +SKIP
-
     """
 
     def __init__(self, metric: Metric, maximize: bool = True) -> None:
@@ -65,46 +62,45 @@ class MetricTracker(nn.ModuleList):
 
     @property
     def n_steps(self) -> int:
-        """ Returns the number of times the tracker has been incremented"""
+        """Returns the number of times the tracker has been incremented."""
         return len(self) - 1  # subtract the base metric
 
     def increment(self) -> None:
-        """ Creates a new instace of the input metric that will be updated next """
+        """Creates a new instace of the input metric that will be updated next."""
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
     def forward(self, *args, **kwargs) -> None:  # type: ignore
-        """ Calls forward of the current metric being tracked """
+        """Calls forward of the current metric being tracked."""
         self._check_for_increment("forward")
         return self[-1](*args, **kwargs)
 
     def update(self, *args, **kwargs) -> None:  # type: ignore
-        """ Updates the current metric being tracked """
+        """Updates the current metric being tracked."""
         self._check_for_increment("update")
         self[-1].update(*args, **kwargs)
 
     def compute(self) -> Any:
-        """ Call compute of the current metric being tracked """
+        """Call compute of the current metric being tracked."""
         self._check_for_increment("compute")
         return self[-1].compute()
 
     def compute_all(self) -> Tensor:
-        """ Compute the metric value for all tracked metrics """
+        """Compute the metric value for all tracked metrics."""
         self._check_for_increment("compute_all")
         return torch.stack([metric.compute() for i, metric in enumerate(self) if i != 0], dim=0)
 
     def reset(self) -> None:
-        """ Resets the current metric being tracked """
+        """Resets the current metric being tracked."""
         self[-1].reset()
 
     def reset_all(self) -> None:
-        """ Resets all metrics being tracked """
+        """Resets all metrics being tracked."""
         for metric in self:
             metric.reset()
 
     def best_metric(self, return_step: bool = False) -> Union[float, Tuple[int, float]]:
-        """
-        Returns the highest metric out of all tracked.
+        """Returns the highest metric out of all tracked.
 
         Args:
             return_step: If `True` will also return the step with the highest metric value.
