@@ -27,6 +27,21 @@ def _ce_compute(
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
+    """Computes the calibration error given the provided bin boundaries and norm.
+
+    Args:
+        confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1. 
+        norm (str, optional): Norm function to use when computing calibration error. Defaults to "l1".
+        debias (bool, optional): Apply debiasing to L2 norm computation as in Verified Uncertainty Calibration (https://arxiv.org/abs/1909.10155). Defaults to False.
+
+    Raises:
+        ValueError: If an unsupported norm function is provided.
+
+    Returns:
+        Tensor: Calibration error scalar.
+    """
 
     if norm not in ("l1", "l2", "max"):
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
@@ -61,6 +76,19 @@ def _ce_compute(
 
 
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]:
+    """Given a predictions and targets tensor, computes the confidences of the 
+    top-1 prediction and records their correctness.
+
+    Args:
+        preds (Tensor):  Input softmaxed predictions.
+        target (Tensor): Labels.
+
+    Raises:
+        ValueError: If the dataset shape is not binary, multiclass, or multidimensional-multiclass.
+
+    Returns:
+        Tuple[FloatTensor, FloatTensor]: [description]
+    """
     _, _, mode = _input_format_classification(preds, target)
 
     if mode == DataType.BINARY:
