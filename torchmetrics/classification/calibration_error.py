@@ -60,6 +60,7 @@ class CalibrationError(Metric):
         process_group: Specify the process group on which synchronization is called.
             default: None (which selects the entire world)
     """
+    DISTANCES = {"l1", "l2", "max"}
     confidences: List[Tensor]
     accuracies: List[Tensor]
 
@@ -79,7 +80,7 @@ class CalibrationError(Metric):
             dist_sync_fn=None,
         )
 
-        if norm not in ["l1", "l2", "max"]:
+        if norm not in self.DISTANCES:
             raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
         if not isinstance(n_bins, int) or n_bins <= 0:

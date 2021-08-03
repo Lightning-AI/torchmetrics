@@ -43,8 +43,7 @@ def _ce_compute(
     Returns:
         Tensor: Calibration error scalar.
     """
-
-    if norm not in ("l1", "l2", "max"):
+    if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
     conf_bin = torch.zeros_like(bin_boundaries)
@@ -61,7 +60,6 @@ def _ce_compute(
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
-        print(ce)
     elif norm == "max":
         ce = torch.max(torch.abs(acc_bin - conf_bin))
     elif norm == "l2":

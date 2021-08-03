@@ -31,10 +31,9 @@ def symmetric_mean_absolute_percentage_error(
             Defines aggregating of multiple output values.
             Array-like value defines weights used to average errors.
             If input is list then the shape must be (n_outputs,).
-            'raw_values':
-                Returns a full set of errors in case of multioutput input.
-            'uniform_average':
-                Errors of all outputs are averaged with uniform weight.
+
+                - 'raw_values': Returns a full set of errors in case of multioutput input.
+                - 'uniform_average': Errors of all outputs are averaged with uniform weight.
 
     Returns:
         loss: float or ndarray of floats in the range [0, 1]
