@@ -16,7 +16,8 @@ class CustomAssertions:
 
 preds = [
     "28-year-old chef found dead in San Francisco mall",
-    "A 28-year-old chef who recently moved to San Francisco was found dead in the staircase of a local shopping center.",
+    "A 28-year-old chef who recently moved to San Francisco was "
+    "found dead in the staircase of a local shopping center.",
     "The victim's brother said he cannot imagine anyone who would want to harm him,\"Finally, it went uphill again at "
     'him."',
 ]
@@ -36,7 +37,7 @@ refs = [
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score(preds, refs):
     Score = bertscore(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
-    P, R, F, hash_code = Score["P"], Score["R"], Score["F"], Score["hash_code"]
+    P, R, F, _ = Score["P"], Score["R"], Score["F"], Score["hash_code"]
 
     CustomAssertions.assertTensorsAlmostEqual(P, [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
     CustomAssertions.assertTensorsAlmostEqual(R, [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
