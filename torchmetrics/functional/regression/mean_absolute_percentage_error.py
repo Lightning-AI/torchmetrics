@@ -79,9 +79,7 @@ def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
         Tensor with MAPE
 
     Note:
-        The epsilon value is taken from `scikit-learn's
-        implementation
-        <https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197>`_.
+        The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
 
     Example:
         >>> from torchmetrics.functional import mean_absolute_percentage_error
@@ -89,6 +87,7 @@ def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
         >>> mean_absolute_percentage_error(preds, target)
         tensor(0.2667)
+
     """
     sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
     mean_ape = _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)

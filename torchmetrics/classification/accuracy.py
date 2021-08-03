@@ -30,7 +30,7 @@ from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 
 class Accuracy(StatScores):
     r"""
-    Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`__:
+    Computes Accuracy_:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 class CohenKappa(Metric):
     r"""
-    Calculates `Cohen's kappa score <https://en.wikipedia.org/wiki/Cohen%27s_kappa>`_ that measures
+    Calculates `Cohen's kappa score`_ that measures
     inter-annotator agreement. It is defined as
 
     .. math::
@@ -75,6 +75,7 @@ class CohenKappa(Metric):
         >>> cohenkappa = CohenKappa(num_classes=2)
         >>> cohenkappa(preds, target)
         tensor(0.5000)
+
     """
     confmat: Tensor
 

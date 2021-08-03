@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.iou import _iou_from_confmat
 
 class IoU(ConfusionMatrix):
     r"""
-    Computes `Intersection over union, or Jaccard index calculation <https://en.wikipedia.org/wiki/Jaccard_index>`_:
+    Computes Intersection over union, or `Jaccard index`_:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 

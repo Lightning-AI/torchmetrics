@@ -24,8 +24,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 class SpearmanCorrcoef(Metric):
     r"""
-    Computes `spearmans rank correlation coefficient
-    <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_.
+    Computes `spearmans rank correlation coefficient`_.
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
@@ -52,6 +51,7 @@ class SpearmanCorrcoef(Metric):
         >>> spearman = SpearmanCorrcoef()
         >>> spearman(preds, target)
         tensor(1.0000)
+
     """
     preds: List[Tensor]
     target: List[Tensor]

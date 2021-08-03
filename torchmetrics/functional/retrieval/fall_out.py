@@ -19,8 +19,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 def retrieval_fall_out(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     """
-    Computes the Fall-out (for information retrieval),
-    as explained `here <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out>`__.
+    Computes the Fall-out (for information retrieval), as explained in `IR Fall-out`_
     Fall-out is the fraction of non-relevant documents retrieved among all the non-relevant documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
@@ -41,6 +40,7 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
         >>> target = tensor([True, False, True])
         >>> retrieval_fall_out(preds, target, k=2)
         tensor(1.)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

@@ -25,8 +25,7 @@ from torchmetrics.metric import Metric
 
 class ExplainedVariance(Metric):
     r"""
-    Computes `explained variance
-    <https://en.wikipedia.org/wiki/Explained_variation>`_:
+    Computes `explained variance`_:
 
     .. math:: \text{ExplainedVariance} = 1 - \frac{\text{Var}(y - \hat{y})}{\text{Var}(y)}
 
@@ -76,6 +75,7 @@ class ExplainedVariance(Metric):
         >>> explained_variance = ExplainedVariance(multioutput='raw_values')
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
+
     """
     n_obs: Tensor
     sum_error: Tensor

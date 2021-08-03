@@ -21,8 +21,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
     """
-    Computes the recall metric (for information retrieval),
-    as explained `here <https://en.wikipedia.org/wiki/Precision_and_recall#Recall>`__.
+    Computes the recall metric (for information retrieval).
     Recall is the fraction of relevant documents retrieved among all the relevant documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
@@ -43,6 +42,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> 
         >>> target = tensor([True, False, True])
         >>> retrieval_recall(preds, target, k=2)
         tensor(0.5000)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

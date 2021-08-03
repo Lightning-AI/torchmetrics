@@ -22,9 +22,9 @@ from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 class StatScores(Metric):
-    """Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
-    and the `confusion matrix <https://en.wikipedia.org/wiki/Confusion_matrix#Table_of_confusion>`__.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives.
+    Related to `Type I and Type II errors`_
+    and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the

@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.precision_recall import _precision_c
 
 class Precision(StatScores):
     r"""
-    Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Computes `Precision`_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -176,7 +176,7 @@ class Precision(StatScores):
 
 class Recall(StatScores):
     r"""
-    Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Computes `Recall`_:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 

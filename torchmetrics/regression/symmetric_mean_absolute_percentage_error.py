@@ -25,8 +25,7 @@ from torchmetrics.metric import Metric
 
 class SymmetricMeanAbsolutePercentageError(Metric):
     r"""
-    Computes symmetric mean absolute percentage error (`SMAPE`_.)
-     .. _SMAPE: https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error
+    Computes symmetric mean absolute percentage error (`SMAPE`_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
 
@@ -41,8 +40,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Note:
-        The epsilon value is taken from `scikit-learn's implementation
-        <https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197>`_.
+        The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.
 
     Note:
         SMAPE output is a non-negative floating point between 0 and 1. Best result is 0.0 .

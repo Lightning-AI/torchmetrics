@@ -24,8 +24,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 class SSIM(Metric):
     """
-    Computes `Structual Similarity Index Measure
-    <https://en.wikipedia.org/wiki/Structural_similarity>`_ (SSIM).
+    Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
         kernel_size: size of the gaussian kernel (default: (11, 11))
@@ -50,6 +49,7 @@ class SSIM(Metric):
         >>> ssim = SSIM()
         >>> ssim(preds, target)
         tensor(0.9219)
+
     """
 
     preds: List[Tensor]

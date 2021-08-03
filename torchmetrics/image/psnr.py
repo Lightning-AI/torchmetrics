@@ -27,8 +27,7 @@ class PSNR(Metric):
 
     .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
 
-    Where :math:`\text{MSE}` denotes the `mean-squared-error
-    <https://en.wikipedia.org/wiki/Mean_squared_error>`_ function.
+    Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
     Args:
         data_range:

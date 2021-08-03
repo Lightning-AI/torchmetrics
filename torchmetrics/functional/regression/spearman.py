@@ -108,8 +108,7 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
 
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     r"""
-     Computes `spearmans rank correlation coefficient
-     <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_:
+     Computes `spearmans rank correlation coefficient`_:
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}

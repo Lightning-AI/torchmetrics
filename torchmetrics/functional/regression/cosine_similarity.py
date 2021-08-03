@@ -72,7 +72,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = "
 
 def cosine_similarity(preds: Tensor, target: Tensor, reduction: str = "sum") -> Tensor:
     r"""
-    Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
+    Computes the `Cosine Similarity`_
     between targets and predictions:
 
     .. math::
@@ -95,6 +95,7 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction: str = "sum") -> 
         ...                       [-1, -2, -3, -4]])
         >>> cosine_similarity(preds, target, 'none')
         tensor([ 1.0000, -1.0000])
+
     """
     preds, target = _cosine_similarity_update(preds, target)
     return _cosine_similarity_compute(preds, target, reduction)

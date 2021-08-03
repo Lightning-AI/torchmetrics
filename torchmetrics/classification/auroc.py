@@ -25,8 +25,7 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 class AUROC(Metric):
-    r"""Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
-    <https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Further_interpretations>`_.
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
     Works for both binary, multilabel and multiclass problems. In the case of
     multiclass, the values will be calculated based on a one-vs-the-rest approach.
 

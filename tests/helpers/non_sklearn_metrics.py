@@ -12,9 +12,7 @@ def symmetric_mean_absolute_percentage_error(
     sample_weight: Optional[np.ndarray] = None,
     multioutput: str = "uniform_average",
 ):
-    r"""
-    Symmetric mean absolute percentage error regression loss.
-    <https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error>`_ (SMAPE):
+    r"""Symmetric mean absolute percentage error regression loss (SMAPE_):
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
 

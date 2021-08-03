@@ -23,8 +23,7 @@ from torchmetrics.utilities.data import get_group_indexes
 
 class RetrievalFallOut(RetrievalMetric):
     """
-    Computes `Fall-out
-    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out>`__.
+    Computes `Fall-out`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 

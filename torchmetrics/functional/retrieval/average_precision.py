@@ -19,8 +19,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
     """
-    Computes average precision (for information retrieval), as explained
-    `here <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`__.
+    Computes average precision (for information retrieval), as explained in `IR Average precision`_.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
@@ -39,6 +38,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = tensor([True, False, True])
         >>> retrieval_average_precision(preds, target)
         tensor(0.8333)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

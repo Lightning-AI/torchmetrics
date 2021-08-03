@@ -18,7 +18,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    r"""`Signal-to-noise ratio (SNR) <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`_:
+    r"""Signal-to-noise ratio (SNR_):
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -49,6 +49,7 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     References:
         [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
          and Signal Processing (ICASSP) 2019.
+
     """
     _check_same_shape(preds, target)
     EPS = torch.finfo(preds.dtype).eps

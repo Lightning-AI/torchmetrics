@@ -23,7 +23,7 @@ from torchmetrics.utilities.enums import AverageMethod
 
 class FBeta(StatScores):
     r"""
-    Computes `F-score <https://en.wikipedia.org/wiki/F-score>`_, specifically:
+    Computes `F-score`_, specifically:
 
     .. math::
         F_\beta = (1 + \beta^2) * \frac{\text{precision} * \text{recall}}

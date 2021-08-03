@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 class HammingDistance(Metric):
     r"""
-    Computes the average `Hamming distance <https://en.wikipedia.org/wiki/Hamming_distance>`_ (also
+    Computes the average `Hamming distance`_ (also
     known as Hamming loss) between targets and predictions:
 
     .. math::
