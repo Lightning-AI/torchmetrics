@@ -60,8 +60,8 @@ class CalibrationError(Metric):
         process_group: Specify the process group on which synchronization is called.
             default: None (which selects the entire world)
     """
-    confidences: List
-    accuracies: List
+    confidences: List[Tensor]
+    accuracies: List[Tensor]
 
     def __init__(
         self,
