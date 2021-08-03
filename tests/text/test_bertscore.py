@@ -6,12 +6,12 @@ from torchmetrics.text import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
 
-class CustomAssertions:
-    def assertTensorsAlmostEqual(self, expected, actual, decimal=5):
-        """
-        Test tensors are almost equal (EPS = 1e-5 by default)
-        """
-        np.testing.assert_almost_equal(expected, actual, decimal=decimal)
+def assertTensorsAlmostEqual(expected, actual, decimal=5):
+    """
+    Test tensors are almost equal (EPS = 1e-5 by default)
+    """
+    np.testing.assert_almost_equal(expected, actual, decimal=decimal)
+
 
 
 preds = [
@@ -39,9 +39,10 @@ def test_score_fn(preds, refs):
     Score = bertscore(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
     P, R, F, _ = Score["P"], Score["R"], Score["F"], Score["hash_code"]
 
-    CustomAssertions.assertTensorsAlmostEqual(P, [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
-    CustomAssertions.assertTensorsAlmostEqual(R, [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
-    CustomAssertions.assertTensorsAlmostEqual(F, [0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+    assertTensorsAlmostEqual([0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
+    assertTensorsAlmostEqual([0.9823839068412781, 0.9732863903045654, 0.920428991317749])
+    assertTensorsAlmostEqual([0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+
 
 
 @pytest.mark.parametrize(
@@ -55,7 +56,7 @@ def test_score(preds, refs):
     Scorer.update(predictions=preds, references=refs)
     Score = Scorer.compute()
     P, R, F, _ = Score["P"], Score["R"], Score["F"], Score["hash_code"]
+    assertTensorsAlmostEqual([0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
+    assertTensorsAlmostEqual([0.9823839068412781, 0.9732863903045654, 0.920428991317749])
+    assertTensorsAlmostEqual([0.9833561182022095, 0.9782299995422363, 0.916214644908905])
 
-    CustomAssertions.assertTensorsAlmostEqual(P, [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
-    CustomAssertions.assertTensorsAlmostEqual(R, [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
-    CustomAssertions.assertTensorsAlmostEqual(F, [0.9833561182022095, 0.9782299995422363, 0.916214644908905])

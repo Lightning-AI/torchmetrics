@@ -74,7 +74,6 @@ def bertscore(
         [1.0, 1.0]
     """
     if model_type is None:
-        assert lang is not None, "either lang or model_type should be specified"
         model_type = bert_score.lang2model[lang.lower()]
 
     if num_layers is None:
