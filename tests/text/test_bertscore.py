@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-import torch
 
 from torchmetrics.functional import bertscore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
