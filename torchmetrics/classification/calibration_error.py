@@ -93,9 +93,8 @@ class CalibrationError(Metric):
         self.add_state("accuracies", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Computes top-level confidences and accuracies for
-        the input probabilites and appends them to internal state.
+        """Computes top-level confidences and accuracies for the input probabilites and appends them to internal
+        state.
 
         Args:
             preds (Tensor): Model output probabilities.
@@ -107,8 +106,7 @@ class CalibrationError(Metric):
         self.accuracies.append(accuracies)
 
     def compute(self) -> Tensor:
-        """
-        Computes calibration error across all confidences and accuracies.
+        """Computes calibration error across all confidences and accuracies.
 
         Returns:
             Tensor: Calibration error across previously collected examples.

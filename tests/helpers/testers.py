@@ -43,7 +43,7 @@ CURRENT_PORT = START_PORT
 
 
 def setup_ddp(rank, world_size):
-    """Setup ddp environment"""
+    """Setup ddp environment."""
     global CURRENT_PORT
 
     os.environ["MASTER_ADDR"] = "localhost"
@@ -58,7 +58,7 @@ def setup_ddp(rank, world_size):
 
 
 def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
-    """Utility function for recursively asserting that two results are within a certain tolerance"""
+    """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.cpu().numpy(), sk_result, atol=atol, equal_nan=True)
@@ -71,7 +71,7 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
 
 
 def _assert_tensor(pl_result: Any):
-    """Utility function for recursively checking that some input only consists of torch tensors"""
+    """Utility function for recursively checking that some input only consists of torch tensors."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_tensor(plr)
@@ -80,9 +80,8 @@ def _assert_tensor(pl_result: Any):
 
 
 def _assert_requires_grad(metric: Metric, pl_result: Any):
-    """Utility function for recursively asserting that metric output is consistent
-    with the `is_differentiable` attribute
-    """
+    """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
+    attribute."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_requires_grad(metric, plr)
@@ -107,8 +106,7 @@ def _class_test(
     check_scriptable: bool = True,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between lightning class metric
-    and reference metric.
+    """Utility function doing the actual comparison between lightning class metric and reference metric.
 
     Args:
         rank: rank of current process
@@ -202,8 +200,7 @@ def _functional_test(
     fragment_kwargs: bool = False,
     **kwargs_update,
 ):
-    """Utility function doing the actual comparison between lightning functional metric
-    and reference metric.
+    """Utility function doing the actual comparison between lightning functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
@@ -247,8 +244,7 @@ def _assert_half_support(
     device: str = "cpu",
     **kwargs_update,
 ):
-    """
-    Test if an metric can be used with half precision tensors
+    """Test if an metric can be used with half precision tensors.
 
     Args:
         metric_module: the metric module to test
@@ -271,20 +267,19 @@ def _assert_half_support(
 
 
 class MetricTester:
-    """Class used for efficiently run alot of parametrized tests in ddp mode.
-    Makes sure that ddp is only setup once and that pool of processes are
-    used for all tests.
+    """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
+    once and that pool of processes are used for all tests.
 
-    All tests should subclass from this and implement a new method called
-        `test_metric_name`
-    where the method `self.run_metric_test` is called inside.
+    All tests should subclass from this and implement a new method called     `test_metric_name` where the method
+    `self.run_metric_test` is called inside.
     """
 
     atol = 1e-8
 
     def setup_class(self):
-        """Setup the metric class. This will spawn the pool of workers that are
-        used for metric testing and setup_ddp
+        """Setup the metric class.
+
+        This will spawn the pool of workers that are used for metric testing and setup_ddp
         """
 
         self.poolSize = NUM_PROCESSES
@@ -292,7 +287,7 @@ class MetricTester:
         self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
 
     def teardown_class(self):
-        """Close pool of workers"""
+        """Close pool of workers."""
         self.pool.close()
         self.pool.join()
 
@@ -306,8 +301,7 @@ class MetricTester:
         fragment_kwargs: bool = False,
         **kwargs_update,
     ):
-        """Main method that should be used for testing functions. Call this inside
-        testing method
+        """Main method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -348,8 +342,7 @@ class MetricTester:
         check_scriptable: bool = True,
         **kwargs_update,
     ):
-        """Main method that should be used for testing class. Call this inside testing
-        methods.
+        """Main method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -469,7 +462,7 @@ class MetricTester:
         metric_functional: Callable,
         metric_args: dict = None,
     ):
-        """Test if a metric is differentiable or not
+        """Test if a metric is differentiable or not.
 
         Args:
             preds: torch tensor with predictions

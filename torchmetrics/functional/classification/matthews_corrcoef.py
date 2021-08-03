@@ -34,8 +34,7 @@ def matthews_corrcoef(
     threshold: float = 0.5,
 ) -> Tensor:
     r"""
-    Calculates `Matthews correlation coefficient
-    <https://en.wikipedia.org/wiki/Matthews_correlation_coefficient>`_ that measures
+    Calculates `Matthews correlation coefficient`_ that measures
     the general correlation or quality of a classification. In the binary case it
     is defined as:
 

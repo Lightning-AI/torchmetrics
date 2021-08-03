@@ -18,9 +18,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    """
-    Calculates Scale-invariant signal-to-distortion ratio (SI-SDR) metric. The SI-SDR value
-    is in general considered an overall measure of how good a source sound.
+    """Calculates Scale-invariant signal-to-distortion ratio (SI-SDR) metric. The SI-SDR value is in general
+    considered an overall measure of how good a source sound.
 
     Args:
         preds:

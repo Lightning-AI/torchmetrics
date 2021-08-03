@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. include:: ../links.rst
+
 ##################
 Functional metrics
 ##################

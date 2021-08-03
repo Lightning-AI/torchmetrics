@@ -210,7 +210,7 @@ def test_pickle(tmpdir):
 
 
 def test_state_dict(tmpdir):
-    """test that metric states can be removed and added to state dict"""
+    """test that metric states can be removed and added to state dict."""
     metric = DummyMetric()
     assert metric.state_dict() == OrderedDict()
     metric.persistent(True)
@@ -220,7 +220,7 @@ def test_state_dict(tmpdir):
 
 
 def test_load_state_dict(tmpdir):
-    """test that metric states can be loaded with state dict"""
+    """test that metric states can be loaded with state dict."""
     metric = DummyMetricSum()
     metric.persistent(True)
     metric.update(5)
@@ -230,7 +230,7 @@ def test_load_state_dict(tmpdir):
 
 
 def test_child_metric_state_dict():
-    """test that child metric states will be added to parent state dict"""
+    """test that child metric states will be added to parent state dict."""
 
     class TestModule(nn.Module):
         def __init__(self):
@@ -270,7 +270,7 @@ def test_device_and_dtype_transfer(tmpdir):
 
 
 def test_warning_on_compute_before_update():
-    """test that an warning is raised if user tries to call compute before update"""
+    """test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
@@ -293,13 +293,13 @@ def test_warning_on_compute_before_update():
 
 
 def test_metric_scripts():
-    """test that metrics are scriptable"""
+    """test that metrics are scriptable."""
     torch.jit.script(DummyMetric())
     torch.jit.script(DummyMetricSum())
 
 
 def test_metric_forward_cache_reset():
-    """test that forward cache is reset when `reset` is called"""
+    """test that forward cache is reset when `reset` is called."""
     metric = DummyMetricSum()
     _ = metric(2.0)
     assert metric._forward_cache == 2.0

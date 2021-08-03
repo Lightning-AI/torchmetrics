@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 class CosineSimilarity(Metric):
     r"""
-    Computes the `Cosine Similarity <https://en.wikipedia.org/wiki/Cosine_similarity>`_
+    Computes the `Cosine Similarity`_
     between targets and predictions:
 
     .. math::
@@ -59,6 +59,7 @@ class CosineSimilarity(Metric):
         >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
         >>> cosine_similarity(preds, target)
         tensor(0.8536)
+
     """
     preds: List[Tensor]
     target: List[Tensor]
@@ -86,13 +87,11 @@ class CosineSimilarity(Metric):
         self.add_state("target", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update metric states with predictions and targets.
+        """Update metric states with predictions and targets.
 
         Args:
             preds: Predicted tensor with shape ``(N,d)``
             target: Ground truth tensor with shape ``(N,d)``
-
         """
         preds, target = _cosine_similarity_update(preds, target)
 

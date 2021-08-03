@@ -20,9 +20,9 @@ from torchmetrics.metric import Metric
 
 
 class PIT(Metric):
-    """
-    Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method [1]
-    in speech separation field in order to calculate audio metrics in a permutation invariant way.
+    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
+
+    [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     Forward accepts
 
@@ -96,8 +96,7 @@ class PIT(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -109,9 +108,7 @@ class PIT(Metric):
         self.total += pit_metric.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average PIT metric.
-        """
+        """Computes average PIT metric."""
         return self.sum_pit_metric / self.total
 
     @property

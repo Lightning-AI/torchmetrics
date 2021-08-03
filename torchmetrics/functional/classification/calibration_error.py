@@ -75,8 +75,8 @@ def _ce_compute(
 
 
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]:
-    """Given a predictions and targets tensor, computes the confidences of the
-    top-1 prediction and records their correctness.
+    """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
+    correctness.
 
     Args:
         preds (Tensor):  Input softmaxed predictions.

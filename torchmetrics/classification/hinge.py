@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 class Hinge(Metric):
     r"""
-    Computes the mean `Hinge loss <https://en.wikipedia.org/wiki/Hinge_loss>`_, typically used for Support Vector
+    Computes the mean `Hinge loss`_, typically used for Support Vector
     Machines (SVMs). In the binary case it is defined as:
 
     .. math::
@@ -82,6 +82,7 @@ class Hinge(Metric):
         >>> hinge = Hinge(multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([2.2333, 1.5000, 1.2333])
+
     """
     measure: Tensor
     total: Tensor

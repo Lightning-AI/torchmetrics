@@ -25,8 +25,7 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 class AUROC(Metric):
-    r"""Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
-    <https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Further_interpretations>`_.
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
     Works for both binary, multilabel and multiclass problems. In the case of
     multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
@@ -151,8 +150,7 @@ class AUROC(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model (probabilities, or labels)
@@ -171,9 +169,7 @@ class AUROC(Metric):
         self.mode = mode
 
     def compute(self) -> Tensor:
-        """
-        Computes AUROC based on inputs passed in to ``update`` previously.
-        """
+        """Computes AUROC based on inputs passed in to ``update`` previously."""
         if not self.mode:
             raise RuntimeError("You have to have determined mode.")
         preds = dim_zero_cat(self.preds)
@@ -190,8 +186,6 @@ class AUROC(Metric):
 
     @property
     def is_differentiable(self) -> bool:
-        """
-        AUROC metrics is considered as non differentiable
-         so it should have `false` value for `is_differentiable` property
-        """
+        """AUROC metrics is considered as non differentiable so it should have `false` value for
+        `is_differentiable` property."""
         return False

@@ -27,8 +27,7 @@ class PSNR(Metric):
 
     .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
 
-    Where :math:`\text{MSE}` denotes the `mean-squared-error
-    <https://en.wikipedia.org/wiki/Mean_squared_error>`_ function.
+    Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
     Args:
         data_range:
@@ -113,8 +112,7 @@ class PSNR(Metric):
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -134,9 +132,7 @@ class PSNR(Metric):
             self.total.append(n_obs)
 
     def compute(self) -> Tensor:
-        """
-        Compute peak signal-to-noise ratio over state.
-        """
+        """Compute peak signal-to-noise ratio over state."""
         if self.data_range is not None:
             data_range = self.data_range
         else:

@@ -33,7 +33,7 @@ seed_all(42)
 
 
 def _sk_roc_curve(y_true, probas_pred, num_classes: int = 1, multilabel: bool = False):
-    """Adjusted comparison function that can also handles multiclass"""
+    """Adjusted comparison function that can also handles multiclass."""
     if num_classes == 1:
         return sk_roc_curve(y_true, probas_pred, drop_intermediate=False)
 

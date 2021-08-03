@@ -83,8 +83,7 @@ class SI_SNR(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -96,9 +95,7 @@ class SI_SNR(Metric):
         self.total += si_snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average SI-SNR.
-        """
+        """Computes average SI-SNR."""
         return self.sum_si_snr / self.total
 
     @property

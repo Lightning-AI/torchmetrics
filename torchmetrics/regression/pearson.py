@@ -28,8 +28,9 @@ def _final_aggregation(
     corrs_xy: Tensor,
     nbs: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """
-    Aggregate the statistics from multiple devices. Formula taken from here:
+    """Aggregate the statistics from multiple devices.
+
+    Formula taken from here:
     https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
     """
     # assert len(means_x) > 1 and len(means_y) > 1 and len(vars_x) > 1 and len(vars_y) > 1 and len(corrs_xy) > 1
@@ -54,8 +55,7 @@ def _final_aggregation(
 
 class PearsonCorrcoef(Metric):
     r"""
-    Computes `pearson correlation coefficient
-    <https://en.wikipedia.org/wiki/Pearson_correlation_coefficient>`_:
+    Computes `pearson correlation coefficient <https://en.wikipedia.org/wiki/Pearson_correlation_coefficient>`_:
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
@@ -115,8 +115,7 @@ class PearsonCorrcoef(Metric):
         self.add_state("n_total", default=torch.zeros(1), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -127,9 +126,7 @@ class PearsonCorrcoef(Metric):
         )
 
     def compute(self) -> Tensor:
-        """
-        Computes pearson correlation coefficient over state.
-        """
+        """Computes pearson correlation coefficient over state."""
         if self.mean_x.numel() > 1:  # multiple devices, need further reduction
             var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total

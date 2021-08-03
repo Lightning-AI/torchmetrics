@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Import utilities"""
+"""Import utilities."""
 import operator
 from importlib import import_module
 from importlib.util import find_spec
@@ -22,8 +22,7 @@ from pkg_resources import DistributionNotFound, get_distribution
 
 
 def _module_available(module_path: str) -> bool:
-    """
-    Check if a path is available in your environment
+    """Check if a path is available in your environment.
 
     >>> _module_available('os')
     True
@@ -41,8 +40,7 @@ def _module_available(module_path: str) -> bool:
 
 
 def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]:
-    """
-    Compare package version with some requirements
+    """Compare package version with some requirements.
 
     >>> import operator
     >>> _compare_version("torch", operator.ge, "0.1")

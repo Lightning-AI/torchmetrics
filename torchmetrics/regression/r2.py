@@ -22,8 +22,7 @@ from torchmetrics.metric import Metric
 
 class R2Score(Metric):
     r"""
-    Computes r2 score also known as `coefficient of determination
-    <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
+    Computes r2 score also known as `coefficient of determination`_:
 
     .. math:: R^2 = 1 - \frac{SS_res}{SS_tot}
 
@@ -86,6 +85,7 @@ class R2Score(Metric):
         >>> r2score = R2Score(num_outputs=2, multioutput='raw_values')
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
+
     """
     sum_squared_error: Tensor
     sum_error: Tensor
@@ -128,8 +128,7 @@ class R2Score(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model

@@ -2,6 +2,8 @@
 Module metrics
 ##############
 
+.. include:: ../links.rst
+
 **********
 Base class
 **********
