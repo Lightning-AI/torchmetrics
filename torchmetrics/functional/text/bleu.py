@@ -24,8 +24,7 @@ from torch import Tensor, tensor
 
 
 def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
-    """
-    Counting how many times each word appears in a given text with ngram
+    """Counting how many times each word appears in a given text with ngram.
 
     Args:
         ngram_input_list: A list of translated text or reference texts
@@ -39,7 +38,7 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
 
     for i in range(1, n_gram + 1):
         for j in range(len(ngram_input_list) - i + 1):
-            ngram_key = tuple(ngram_input_list[j:(i + j)])
+            ngram_key = tuple(ngram_input_list[j : (i + j)])
             ngram_counter[ngram_key] += 1
 
     return ngram_counter
@@ -52,8 +51,20 @@ def _bleu_score_update(
     denominator: Tensor,
     trans_len: Tensor,
     ref_len: Tensor,
-    n_gram: int = 4
+    n_gram: int = 4,
 ) -> Tuple[Tensor, Tensor]:
+    """Updates and returns variables required to compute the BLEU score.
+
+    Args:
+        reference_corpus: An iterable of iterables of reference corpus
+        translate_corpus: An iterable of machine translated corpus
+        numerator: Numerator of precision score (true positives)
+        denominator: Denominator of precision score (true positives + false positives)
+        trans_len: count of words in a candidate translation
+        ref_len: count of words in a reference translation
+        n_gram: gram value ranged 1 to 4
+    """
+
     for (translation, references) in zip(translate_corpus, reference_corpus):
         trans_len += len(translation)
         ref_len_list = [len(ref) for ref in references]
@@ -77,13 +88,18 @@ def _bleu_score_update(
 
 
 def _bleu_score_compute(
-    trans_len: Tensor,
-    ref_len: Tensor,
-    numerator: Tensor,
-    denominator: Tensor,
-    n_gram: int = 4,
-    smooth: bool = False
+    trans_len: Tensor, ref_len: Tensor, numerator: Tensor, denominator: Tensor, n_gram: int = 4, smooth: bool = False
 ) -> Tensor:
+    """Computes the BLEU score.
+
+    Args:
+        trans_len: count of words in a candidate translation
+        ref_len: count of words in a reference translation
+        numerator: Numerator of precision score (true positives)
+        denominator: Denominator of precision score (true positives + false positives)
+        n_gram: gram value ranged 1 to 4
+        smooth: Whether or not to apply smoothing
+    """
     if min(numerator) == 0.0:
         return tensor(0.0)
 
@@ -105,10 +121,10 @@ def bleu_score(
     reference_corpus: Sequence[Sequence[Sequence[str]]],
     translate_corpus: Sequence[Sequence[str]],
     n_gram: int = 4,
-    smooth: bool = False
+    smooth: bool = False,
 ) -> Tensor:
-    """
-    Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more references
+    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more
+    references.
 
     Args:
         reference_corpus:

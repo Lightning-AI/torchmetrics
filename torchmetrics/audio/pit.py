@@ -20,9 +20,9 @@ from torchmetrics.metric import Metric
 
 
 class PIT(Metric):
-    """
-    Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method [1]
-    in speech separation field in order to calculate audio metrics in a permutation invariant way.
+    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
+
+    [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     Forward accepts
 
@@ -68,13 +68,14 @@ class PIT(Metric):
         speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
+
     sum_pit_metric: Tensor
     total: Tensor
 
     def __init__(
         self,
         metric_func: Callable,
-        eval_func: str = 'max',
+        eval_func: str = "max",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -95,8 +96,7 @@ class PIT(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -108,9 +108,7 @@ class PIT(Metric):
         self.total += pit_metric.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average PIT metric.
-        """
+        """Computes average PIT metric."""
         return self.sum_pit_metric / self.total
 
     @property

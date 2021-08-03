@@ -25,9 +25,7 @@ from torchmetrics.metric import Metric
 
 class MeanSquaredLogError(Metric):
     r"""
-    Computes `mean squared logarithmic error
-    <https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error>`_
-    (MSLE):
+    Computes `mean squared logarithmic error`_ (MSLE):
 
     .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
 
@@ -75,8 +73,7 @@ class MeanSquaredLogError(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -88,9 +85,7 @@ class MeanSquaredLogError(Metric):
         self.total += n_obs
 
     def compute(self) -> Tensor:
-        """
-        Compute mean squared logarithmic error over state.
-        """
+        """Compute mean squared logarithmic error over state."""
         return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)
 
     @property

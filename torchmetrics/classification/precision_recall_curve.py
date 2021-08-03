@@ -26,10 +26,8 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class PrecisionRecallCurve(Metric):
-    """
-    Computes precision-recall pairs for different thresholds. Works for both
-    binary and multiclass problems. In the case of multiclass, the values will
-    be calculated based on a one-vs-the-rest approach.
+    """Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
+    the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Forward accepts
 
@@ -81,8 +79,8 @@ class PrecisionRecallCurve(Metric):
         [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
-
     """
+
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -107,13 +105,12 @@ class PrecisionRecallCurve(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
-            'Metric `PrecisionRecallCurve` will save all targets and predictions in buffer.'
-            ' For large datasets this may lead to large memory footprint.'
+            "Metric `PrecisionRecallCurve` will save all targets and predictions in buffer."
+            " For large datasets this may lead to large memory footprint."
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -128,8 +125,7 @@ class PrecisionRecallCurve(Metric):
         self.pos_label = pos_label
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """
-        Compute the precision-recall curve
+        """Compute the precision-recall curve.
 
         Returns:
             3-element tuple containing
@@ -148,7 +144,7 @@ class PrecisionRecallCurve(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         if not self.num_classes:
-            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
+            raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
         return _precision_recall_curve_compute(preds, target, self.num_classes, self.pos_label)
 
     @property

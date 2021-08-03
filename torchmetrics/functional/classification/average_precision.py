@@ -67,8 +67,7 @@ def average_precision(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[List[Tensor], Tensor]:
-    """
-    Computes the average precision score.
+    """Computes the average precision score.
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -100,7 +99,6 @@ def average_precision(
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> average_precision(pred, target, num_classes=5)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
-
     """
     # fixme: `sample_weights` is unused
     preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes, pos_label)

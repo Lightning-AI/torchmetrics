@@ -26,8 +26,8 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 
 
 class BLEUScore(Metric):
-    """
-    Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more references.
+    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more
+    references.
 
     Args:
         n_gram:
@@ -49,6 +49,7 @@ class BLEUScore(Metric):
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
     """
+
     trans_len: Tensor
     ref_len: Tensor
     numerator: Tensor
@@ -67,20 +68,24 @@ class BLEUScore(Metric):
     def update(  # type: ignore
         self, reference_corpus: Sequence[Sequence[Sequence[str]]], translate_corpus: Sequence[Sequence[str]]
     ) -> None:
-        """
-        Compute Precision Scores.
+        """Compute Precision Scores.
+
         Args:
             reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
         """
         self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus, translate_corpus, self.numerator, self.denominator, self.trans_len, self.ref_len,
-            self.n_gram
+            reference_corpus,
+            translate_corpus,
+            self.numerator,
+            self.denominator,
+            self.trans_len,
+            self.ref_len,
+            self.n_gram,
         )
 
     def compute(self) -> Tensor:
-        """
-        Calculate BLEU score
+        """Calculate BLEU score.
 
         Return:
             Tensor with BLEU Score

@@ -22,9 +22,9 @@ from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 class StatScores(Metric):
-    """Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
-    and the `confusion matrix <https://en.wikipedia.org/wiki/Confusion_matrix#Table_of_confusion>`__.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives.
+    Related to `Type I and Type II errors`_
+    and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
@@ -191,9 +191,9 @@ class StatScores(Metric):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets. See :ref:`references/modules:input types` for more information
-        on input types.
+        """Update state with predictions and targets. See
+        :ref:`references/modules:input types` for more information on input
+        types.
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)
@@ -225,9 +225,7 @@ class StatScores(Metric):
             self.fn.append(fn)
 
     def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Performs concatenation on the stat scores if neccesary,
-        before passing them to a compute function.
-        """
+        """Performs concatenation on the stat scores if neccesary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
@@ -235,8 +233,7 @@ class StatScores(Metric):
         return tp, fp, tn, fn
 
     def compute(self) -> Tensor:
-        """
-        Computes the stat scores based on inputs passed in to ``update`` previously.
+        """Computes the stat scores based on inputs passed in to ``update`` previously.
 
         Return:
             The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -265,7 +262,6 @@ class StatScores(Metric):
               - If ``reduce='micro'``, the shape will be ``(N, 5)``
               - If ``reduce='macro'``, the shape will be ``(N, C, 5)``
               - If ``reduce='samples'``, the shape will be ``(N, X, 5)``
-
         """
         tp, fp, tn, fn = self._get_final_stats()
         return _stat_scores_compute(tp, fp, tn, fn)

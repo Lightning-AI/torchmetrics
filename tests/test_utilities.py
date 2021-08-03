@@ -16,6 +16,6 @@ from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_wa
 
 
 def test_prints():
-    rank_zero_debug('DEBUG')
-    rank_zero_info('INFO')
-    rank_zero_warn('WARN')
+    rank_zero_debug("DEBUG")
+    rank_zero_info("INFO")
+    rank_zero_warn("WARN")

@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SI_SNR(Metric):
-    """ Scale-invariant signal-to-noise ratio (SI-SNR).
+    """Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Forward accepts
 
@@ -61,6 +61,7 @@ class SI_SNR(Metric):
         Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
         696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
+
     sum_si_snr: Tensor
     total: Tensor
 
@@ -82,8 +83,7 @@ class SI_SNR(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -95,9 +95,7 @@ class SI_SNR(Metric):
         self.total += si_snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average SI-SNR.
-        """
+        """Computes average SI-SNR."""
         return self.sum_si_snr / self.total
 
     @property

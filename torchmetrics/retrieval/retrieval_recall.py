@@ -20,9 +20,7 @@ from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalRecall(RetrievalMetric):
-    """
-    Computes `Recall
-    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Recall>`__.
+    """Computes `IR Recall`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
@@ -71,19 +69,19 @@ class RetrievalRecall(RetrievalMetric):
 
     def __init__(
         self,
-        empty_target_action: str = 'neg',
+        empty_target_action: str = "neg",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        k: int = None
+        k: int = None,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=dist_sync_fn,
         )
 
         if (k is not None) and not (isinstance(k, int) and k > 0):

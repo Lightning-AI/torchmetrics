@@ -20,9 +20,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """
-    Updates and returns variables required to compute Mean Absolute Error.
-    Checks for same shape of input tensors.
+    """Updates and returns variables required to compute Mean Absolute Error. Checks for same shape of input
+    tensors.
 
     Args:
         preds: Predicted tensor
@@ -36,8 +35,7 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, 
 
 
 def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
-    """
-    Computes Mean Absolute Error.
+    """Computes Mean Absolute Error.
 
     Args:
         sum_abs_error: Sum of absolute value of errors over all observations
@@ -55,8 +53,7 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: int) -> Tensor:
 
 
 def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
-    """
-    Computes mean absolute error
+    """Computes mean absolute error.
 
     Args:
         preds: estimated labels

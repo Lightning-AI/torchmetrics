@@ -21,8 +21,8 @@ from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
 
 def _del_column(data: Tensor, idx: int) -> Tensor:
-    """ Delete the column at index."""
-    return torch.cat([data[:, :idx], data[:, (idx + 1):]], 1)
+    """Delete the column at index."""
+    return torch.cat([data[:, :idx], data[:, (idx + 1) :]], 1)
 
 
 def _stat_scores(
@@ -143,8 +143,8 @@ def _reduce_stat_scores(
     mdmc_average: Optional[str],
     zero_division: int = 0,
 ) -> Tensor:
-    """
-    Reduces scores of type ``numerator/denominator`` or
+    """Reduces scores of type ``numerator/denominator`` or.
+
     ``weights * (numerator/denominator)``, if ``average='weighted'``.
 
     Args:
@@ -159,8 +159,7 @@ def _reduce_stat_scores(
         average:
             The method to average the scores. Should be one of ``'micro'``, ``'macro'``,
             ``'weighted'``, ``'none'``, ``None`` or ``'samples'``. The behavior
-            corresponds to `sklearn averaging methods <https://scikit-learn.org/stable/modules/\
-model_evaluation.html#multiclass-and-multilabel-classification>`__.
+            corresponds to `sklearn averaging methods`_.
         mdmc_average:
             The method to average the scores if inputs were multi-dimensional multi-class (MDMC).
             Should be either ``'global'`` or ``'samplewise'``. If inputs were not
@@ -194,7 +193,7 @@ model_evaluation.html#multiclass-and-multilabel-classification>`__.
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, tensor(float('nan'), device=scores.device), scores)
+        scores = torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
     else:
         scores = scores.sum()
 
@@ -212,9 +211,9 @@ def stat_scores(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
-    """Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors <https://en.wikipedia.org/wiki/Type_I_and_type_II_errors>`__
-    and the `confusion matrix <https://en.wikipedia.org/wiki/Confusion_matrix#Table_of_confusion>`__.
+    r"""Computes the number of true positives, false positives, true negatives, false negatives.
+    Related to `Type I and Type II errors`_
+    and the `confusion matrix`_.
 
     The reduction method (how the statistics are aggregated) is controlled by the
     ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
@@ -333,6 +332,7 @@ def stat_scores(
                 [1, 0, 3, 0, 1]])
         >>> stat_scores(preds, target, reduce='micro')
         tensor([2, 2, 6, 2, 4])
+
     """
     if reduce not in ["micro", "macro", "samples"]:
         raise ValueError(f"The `reduce` {reduce} is not valid.")

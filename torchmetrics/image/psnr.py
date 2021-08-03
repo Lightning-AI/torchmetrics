@@ -27,8 +27,7 @@ class PSNR(Metric):
 
     .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
 
-    Where :math:`\text{MSE}` denotes the `mean-squared-error
-    <https://en.wikipedia.org/wiki/Mean_squared_error>`_ function.
+    Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
     Args:
         data_range:
@@ -75,7 +74,7 @@ class PSNR(Metric):
         self,
         data_range: Optional[float] = None,
         base: float = 10.0,
-        reduction: str = 'elementwise_mean',
+        reduction: str = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -87,8 +86,8 @@ class PSNR(Metric):
             process_group=process_group,
         )
 
-        if dim is None and reduction != 'elementwise_mean':
-            rank_zero_warn(f'The `reduction={reduction}` will not have any effect when `dim` is None.')
+        if dim is None and reduction != "elementwise_mean":
+            rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")
 
         if dim is None:
             self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
@@ -107,14 +106,13 @@ class PSNR(Metric):
             self.add_state("min_target", default=tensor(0.0), dist_reduce_fx=torch.min)
             self.add_state("max_target", default=tensor(0.0), dist_reduce_fx=torch.max)
         else:
-            self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx='mean')
+            self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx="mean")
         self.base = base
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -134,9 +132,7 @@ class PSNR(Metric):
             self.total.append(n_obs)
 
     def compute(self) -> Tensor:
-        """
-        Compute peak signal-to-noise ratio over state.
-        """
+        """Compute peak signal-to-noise ratio over state."""
         if self.data_range is not None:
             data_range = self.data_range
         else:

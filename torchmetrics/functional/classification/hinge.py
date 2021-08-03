@@ -36,7 +36,9 @@ def _check_shape_and_type_consistency_hinge(
     target: Tensor,
 ) -> DataType:
     if target.ndim > 1:
-        raise ValueError(f"The `target` should be one dimensional, got `target` with shape={target.shape}.", )
+        raise ValueError(
+            f"The `target` should be one dimensional, got `target` with shape={target.shape}.",
+        )
 
     if preds.ndim == 1:
         if preds.shape != target.shape:

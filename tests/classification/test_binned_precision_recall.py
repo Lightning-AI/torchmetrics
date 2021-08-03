@@ -111,7 +111,6 @@ class TestBinnedRecallAtPrecision(MetricTester):
     ],
 )
 class TestBinnedAveragePrecision(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("thresholds", (301, torch.linspace(0.0, 1.0, 101)))
@@ -126,8 +125,5 @@ class TestBinnedAveragePrecision(MetricTester):
             metric_class=BinnedAveragePrecision,
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={
-                "num_classes": num_classes,
-                "thresholds": thresholds
-            },
+            metric_args={"num_classes": num_classes, "thresholds": thresholds},
         )
