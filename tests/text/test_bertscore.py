@@ -31,7 +31,7 @@ refs = [
 
 @pytest.mark.parametrize(
     "preds,refs",
-    [preds, refs],
+    [(preds, refs)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score(preds, refs):
