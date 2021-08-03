@@ -20,14 +20,14 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def _dcg(target: Tensor) -> Tensor:
-    """Computes Discounted Cumulative Gain for input tensor"""
+    """Computes Discounted Cumulative Gain for input tensor."""
     denom = torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0)
     return (target / denom).sum(dim=-1)
 
 
 def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
-    """
-    Computes `Normalized Discounted Cumulative Gain`_ (for information retrieval).
+    """Computes `Normalized Discounted Cumulative Gain`_ (for information
+    retrieval).
 
     ``preds`` and ``target`` should be of the same shape and live on the same device.
     ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
@@ -47,7 +47,6 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = N
         >>> target = torch.tensor([10, 0, 0, 1, 5])
         >>> retrieval_normalized_dcg(preds, target)
         tensor(0.6957)
-
     """
     preds, target = _check_retrieval_functional_inputs(preds, target, allow_non_binary_target=True)
 

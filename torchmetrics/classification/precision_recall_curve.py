@@ -26,8 +26,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class PrecisionRecallCurve(Metric):
-    """
-    Computes precision-recall pairs for different thresholds. Works for both
+    """Computes precision-recall pairs for different thresholds. Works for both
     binary and multiclass problems. In the case of multiclass, the values will
     be calculated based on a one-vs-the-rest approach.
 
@@ -81,7 +80,6 @@ class PrecisionRecallCurve(Metric):
         [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
-
     """
 
     preds: List[Tensor]
@@ -113,8 +111,7 @@ class PrecisionRecallCurve(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -129,8 +126,7 @@ class PrecisionRecallCurve(Metric):
         self.pos_label = pos_label
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """
-        Compute the precision-recall curve
+        """Compute the precision-recall curve.
 
         Returns:
             3-element tuple containing

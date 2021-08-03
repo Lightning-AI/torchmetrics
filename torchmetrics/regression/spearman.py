@@ -78,8 +78,7 @@ class SpearmanCorrcoef(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -90,9 +89,7 @@ class SpearmanCorrcoef(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """
-        Computes spearmans correlation coefficient
-        """
+        """Computes spearmans correlation coefficient."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)

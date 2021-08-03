@@ -75,8 +75,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -88,9 +87,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         self.total += num_obs
 
     def compute(self) -> Tensor:
-        """
-        Computes mean absolute percentage error over state.
-        """
+        """Computes mean absolute percentage error over state."""
         return _symmetric_mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
 
     @property

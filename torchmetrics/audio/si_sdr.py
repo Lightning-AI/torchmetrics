@@ -20,9 +20,8 @@ from torchmetrics.metric import Metric
 
 
 class SI_SDR(Metric):
-    """
-    Scale-invariant signal-to-distortion ratio (SI-SDR). The SI-SDR value
-    is in general considered an overall measure of how good a source sound.
+    """Scale-invariant signal-to-distortion ratio (SI-SDR). The SI-SDR value is
+    in general considered an overall measure of how good a source sound.
 
     Forward accepts
 
@@ -88,8 +87,7 @@ class SI_SDR(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -101,9 +99,7 @@ class SI_SDR(Metric):
         self.total += si_sdr_batch.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average SI-SDR.
-        """
+        """Computes average SI-SDR."""
         return self.sum_si_sdr / self.total
 
     @property

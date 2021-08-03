@@ -122,8 +122,7 @@ class ConfusionMatrix(Metric):
         self.add_state("confmat", default=default, dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -133,8 +132,7 @@ class ConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """
-        Computes confusion matrix.
+        """Computes confusion matrix.
 
         Returns:
             If `multilabel=False` this will be a `[n_classes, n_classes]` tensor and if `multilabel=True`

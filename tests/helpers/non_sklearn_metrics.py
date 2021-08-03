@@ -1,4 +1,4 @@
-"""File for non sklearn metrics that are to be used for reference for tests"""
+"""File for non sklearn metrics that are to be used for reference for tests."""
 from typing import Optional, Union
 
 import numpy as np
@@ -72,15 +72,13 @@ def calibration_error(
     pos_label: Optional[Union[int, str]] = None,
     reduce_bias: bool = True,
 ) -> float:
-    """
-    Compute calibration error of a binary classifier.
-    Across all items in a set of N predictions, the calibration error measures
-    the aggregated difference between (1) the average predicted probabilities
-    assigned to the positive class, and (2) the frequencies
-    of the positive class in the actual outcome.
-    The calibration error is only appropriate for binary categorical outcomes.
-    Which label is considered to be the positive label is controlled via the
-    parameter pos_label, which defaults to 1.
+    """Compute calibration error of a binary classifier. Across all items in a
+    set of N predictions, the calibration error measures the aggregated
+    difference between (1) the average predicted probabilities assigned to the
+    positive class, and (2) the frequencies of the positive class in the actual
+    outcome. The calibration error is only appropriate for binary categorical
+    outcomes. Which label is considered to be the positive label is controlled
+    via the parameter pos_label, which defaults to 1.
 
     Args:
         y_true: array-like of shape (n_samples,)

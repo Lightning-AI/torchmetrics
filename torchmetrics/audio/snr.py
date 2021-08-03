@@ -93,8 +93,7 @@ class SNR(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -106,9 +105,7 @@ class SNR(Metric):
         self.total += snr_batch.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average SNR.
-        """
+        """Computes average SNR."""
         return self.sum_snr / self.total
 
     @property

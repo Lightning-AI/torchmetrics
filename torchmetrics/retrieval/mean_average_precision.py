@@ -18,8 +18,7 @@ from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalMAP(RetrievalMetric):
-    """
-    Computes `Mean Average Precision`_.
+    """Computes `Mean Average Precision`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 

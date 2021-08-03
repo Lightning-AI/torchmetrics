@@ -25,9 +25,8 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
 def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
-    """
-    Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
-    """
+    """Adapted from https://github.com/toshas/torch-
+    fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py."""
     m = k_xx.shape[0]
 
     diag_x = torch.diag(k_xx)
@@ -47,9 +46,8 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
 
 
 def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] = None, coef: float = 1.0) -> Tensor:
-    """
-    Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
-    """
+    """Adapted from https://github.com/toshas/torch-
+    fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py."""
     if gamma is None:
         gamma = 1.0 / f1.shape[1]
     kernel = (f1 @ f2.T * gamma + coef) ** degree
@@ -59,9 +57,8 @@ def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] 
 def poly_mmd(
     f_real: Tensor, f_fake: Tensor, degree: int = 3, gamma: Optional[float] = None, coef: float = 1.0
 ) -> Tensor:
-    """
-    Adapted from https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
-    """
+    """Adapted from https://github.com/toshas/torch-
+    fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py."""
     k_11 = poly_kernel(f_real, f_real, degree, gamma, coef)
     k_22 = poly_kernel(f_fake, f_fake, degree, gamma, coef)
     k_12 = poly_kernel(f_real, f_fake, degree, gamma, coef)
@@ -241,7 +238,7 @@ class KID(Metric):
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
-        """Update the state with extracted features
+        """Update the state with extracted features.
 
         Args:
             imgs: tensor with images feed to the feature extractor
@@ -255,9 +252,9 @@ class KID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:
-        """Calculate KID score based on accumulated extracted features from the two distributions.
-        Returns a tuple of mean and standard deviation of KID scores calculated on subsets of
-        extracted features.
+        """Calculate KID score based on accumulated extracted features from the
+        two distributions. Returns a tuple of mean and standard deviation of
+        KID scores calculated on subsets of extracted features.
 
         Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
         """

@@ -113,12 +113,14 @@ def _sk_stat_scores_mdim_mcls(
     ],
 )
 def test_wrong_params(reduce, mdmc_reduce, num_classes, inputs, ignore_index):
-    """Test a combination of parameters that are invalid and should raise an error.
+    """Test a combination of parameters that are invalid and should raise an
+    error.
 
-    This includes invalid ``reduce`` and ``mdmc_reduce`` parameter values, not setting
-    ``num_classes`` when ``reduce='macro'`, not setting ``mdmc_reduce`` when inputs
-    are multi-dim multi-class``, setting ``ignore_index`` when inputs are binary, as well
-    as setting ``ignore_index`` to a value higher than the number of classes.
+    This includes invalid ``reduce`` and ``mdmc_reduce`` parameter
+    values, not setting ``num_classes`` when ``reduce='macro'`, not
+    setting ``mdmc_reduce`` when inputs are multi-dim multi-class``,
+    setting ``ignore_index`` when inputs are binary, as well as setting
+    ``ignore_index`` to a value higher than the number of classes.
     """
     with pytest.raises(ValueError):
         stat_scores(
@@ -315,7 +317,7 @@ _ml_k_preds = tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
     ],
 )
 def test_top_k(k: int, preds: Tensor, target: Tensor, reduce: str, expected: Tensor):
-    """A simple test to check that top_k works as expected"""
+    """A simple test to check that top_k works as expected."""
 
     class_metric = StatScores(top_k=k, reduce=reduce, num_classes=3)
     class_metric.update(preds, target)

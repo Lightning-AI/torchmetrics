@@ -104,8 +104,7 @@ class CohenKappa(Metric):
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -115,16 +114,12 @@ class CohenKappa(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """
-        Computes cohen kappa score
-        """
+        """Computes cohen kappa score."""
         return _cohen_kappa_compute(self.confmat, self.weights)
 
     @property
     def is_differentiable(self) -> bool:
-        """
-        cohen kappa is not differentiable since the implementation
-        is based on calculating the confusion matrix which in general
-        is not differentiable
-        """
+        """cohen kappa is not differentiable since the implementation is based
+        on calculating the confusion matrix which in general is not
+        differentiable."""
         return False

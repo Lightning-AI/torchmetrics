@@ -83,8 +83,8 @@ class WER(Metric):
         self.add_state("references", [], dist_reduce_fx="cat")
 
     def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
-        """
-        Store predictions/references for computing Word Error Rate scores.
+        """Store predictions/references for computing Word Error Rate scores.
+
         Args:
             predictions: List of transcriptions to score.
             references: List of references for each speech input.
@@ -93,8 +93,7 @@ class WER(Metric):
         self.references.append(references)
 
     def compute(self) -> float:
-        """
-        Calculate Word Error Rate scores.
+        """Calculate Word Error Rate scores.
 
         Return:
             Float with WER Score.

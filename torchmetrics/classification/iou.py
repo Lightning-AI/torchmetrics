@@ -102,9 +102,7 @@ class IoU(ConfusionMatrix):
         self.absent_score = absent_score
 
     def compute(self) -> Tensor:
-        """
-        Computes intersection over union (IoU)
-        """
+        """Computes intersection over union (IoU)"""
         return _iou_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
 
     @property

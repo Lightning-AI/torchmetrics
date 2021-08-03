@@ -150,8 +150,7 @@ class AUROC(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model (probabilities, or labels)
@@ -170,9 +169,8 @@ class AUROC(Metric):
         self.mode = mode
 
     def compute(self) -> Tensor:
-        """
-        Computes AUROC based on inputs passed in to ``update`` previously.
-        """
+        """Computes AUROC based on inputs passed in to ``update``
+        previously."""
         if not self.mode:
             raise RuntimeError("You have to have determined mode.")
         preds = dim_zero_cat(self.preds)
@@ -189,8 +187,6 @@ class AUROC(Metric):
 
     @property
     def is_differentiable(self) -> bool:
-        """
-        AUROC metrics is considered as non differentiable
-         so it should have `false` value for `is_differentiable` property
-        """
+        """AUROC metrics is considered as non differentiable so it should have
+        `false` value for `is_differentiable` property."""
         return False

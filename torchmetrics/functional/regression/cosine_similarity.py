@@ -23,8 +23,7 @@ def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns variables required to compute Cosine Similarity.
+    """Updates and returns variables required to compute Cosine Similarity.
     Checks for same shape of input tensors.
 
     Args:
@@ -40,8 +39,7 @@ def _cosine_similarity_update(
 
 
 def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = "sum") -> Tensor:
-    """
-    Computes Cosine Similarity.
+    """Computes Cosine Similarity.
 
     Args:
         preds: Predicted tensor

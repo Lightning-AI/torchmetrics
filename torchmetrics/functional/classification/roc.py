@@ -106,9 +106,8 @@ def roc(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """
-    Computes the Receiver Operating Characteristic (ROC).
-    Works with both binary, multiclass and multilabel input.
+    """Computes the Receiver Operating Characteristic (ROC). Works with both
+    binary, multiclass and multilabel input.
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -182,7 +181,6 @@ def roc(
         [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
-
     """
     preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes, pos_label)
     return _roc_compute(preds, target, num_classes, pos_label, sample_weights)

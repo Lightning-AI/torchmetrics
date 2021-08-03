@@ -18,8 +18,7 @@ from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalMRR(RetrievalMetric):
-    """
-    Computes `Mean Reciprocal Rank`_.
+    """Computes `Mean Reciprocal Rank`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 

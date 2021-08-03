@@ -188,7 +188,7 @@ def test_rouge_metric_class_batches(
 
 
 def test_rouge_metric_raises_errors_and_warnings():
-    """Test that expected warnings and errors are raised"""
+    """Test that expected warnings and errors are raised."""
     if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
         with pytest.raises(
             ValueError,

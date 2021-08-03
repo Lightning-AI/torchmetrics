@@ -23,8 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SSIM(Metric):
-    """
-    Computes Structual Similarity Index Measure (SSIM_).
+    """Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
         kernel_size: size of the gaussian kernel (default: (11, 11))
@@ -49,7 +48,6 @@ class SSIM(Metric):
         >>> ssim = SSIM()
         >>> ssim(preds, target)
         tensor(0.9219)
-
     """
 
     preds: List[Tensor]
@@ -88,8 +86,7 @@ class SSIM(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -100,9 +97,7 @@ class SSIM(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """
-        Computes explained variance over state.
-        """
+        """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ssim_compute(

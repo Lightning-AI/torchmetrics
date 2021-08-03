@@ -133,7 +133,8 @@ def test_wrong_params(metric, fn_metric, average, mdmc_average, num_classes, ign
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Recall, recall), (Precision, precision)])
 def test_zero_division(metric_class, metric_fn):
-    """Test that zero_division works correctly (currently should just set to 0)."""
+    """Test that zero_division works correctly (currently should just set to
+    0)."""
 
     preds = tensor([0, 2, 1, 1])
     target = tensor([2, 1, 2, 1])
@@ -149,7 +150,8 @@ def test_zero_division(metric_class, metric_fn):
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Recall, recall), (Precision, precision)])
 def test_no_support(metric_class, metric_fn):
-    """This tests a rare edge case, where there is only one class present
+    """This tests a rare edge case, where there is only one class present.
+
     in target, and ignore_index is set to exactly that class - and the
     average method is equal to 'weighted'.
 
@@ -355,8 +357,8 @@ class TestPrecisionRecall(MetricTester):
 def test_precision_recall_joint(average):
     """A simple test of the joint precision_recall metric.
 
-    No need to test this thorougly, as it is just a combination of precision and recall,
-    which are already tested thoroughly.
+    No need to test this thorougly, as it is just a combination of
+    precision and recall, which are already tested thoroughly.
     """
 
     precision_result = precision(
@@ -402,7 +404,8 @@ def test_top_k(
 ):
     """A simple test to check that top_k works as expected.
 
-    Just a sanity check, the tests in StatScores should already guarantee the correctness of results.
+    Just a sanity check, the tests in StatScores should already
+    guarantee the correctness of results.
     """
 
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
@@ -422,9 +425,9 @@ def test_top_k(
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
 )
 def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
-    """This tests that when metric is computed per class and a given class is not present
-    in both the `preds` and `target`, the resulting score is `nan`.
-    """
+    """This tests that when metric is computed per class and a given class is
+    not present in both the `preds` and `target`, the resulting score is
+    `nan`."""
     preds = torch.tensor([0, 0, 0])
     target = torch.tensor([0, 0, 0])
     num_classes = 2

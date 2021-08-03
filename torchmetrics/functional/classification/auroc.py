@@ -159,7 +159,8 @@ def auroc(
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
-    """Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
+    """Compute Area Under the Receiver Operating Characteristic Curve (`ROC
+    AUC`_)
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -209,7 +210,6 @@ def auroc(
         >>> target = torch.tensor([0, 1, 1, 2, 2])
         >>> auroc(preds, target, num_classes=3)
         tensor(0.7778)
-
     """
     preds, target, mode = _auroc_update(preds, target)
     return _auroc_compute(preds, target, mode, num_classes, pos_label, average, max_fpr, sample_weights)

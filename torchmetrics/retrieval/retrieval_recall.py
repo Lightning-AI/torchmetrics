@@ -20,8 +20,7 @@ from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalRecall(RetrievalMetric):
-    """
-    Computes `IR Recall`_.
+    """Computes `IR Recall`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 

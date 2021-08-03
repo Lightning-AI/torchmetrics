@@ -143,8 +143,8 @@ def _reduce_stat_scores(
     mdmc_average: Optional[str],
     zero_division: int = 0,
 ) -> Tensor:
-    """
-    Reduces scores of type ``numerator/denominator`` or
+    """Reduces scores of type ``numerator/denominator`` or.
+
     ``weights * (numerator/denominator)``, if ``average='weighted'``.
 
     Args:
@@ -166,7 +166,6 @@ def _reduce_stat_scores(
             multi-dimensional multi-class, it should be ``None`` (default).
         zero_division:
             The value to use for the score if denominator equals zero.
-
     """
     numerator, denominator = numerator.float(), denominator.float()
     zero_div_mask = denominator == 0

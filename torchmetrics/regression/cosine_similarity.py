@@ -87,13 +87,11 @@ class CosineSimilarity(Metric):
         self.add_state("target", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update metric states with predictions and targets.
+        """Update metric states with predictions and targets.
 
         Args:
             preds: Predicted tensor with shape ``(N,d)``
             target: Ground truth tensor with shape ``(N,d)``
-
         """
         preds, target = _cosine_similarity_update(preds, target)
 
