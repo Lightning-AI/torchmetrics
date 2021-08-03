@@ -16,7 +16,8 @@ class CustomAssertions:
 
 preds = [
     "28-year-old chef found dead in San Francisco mall",
-    "A 28-year-old chef who recently moved to San Francisco was found dead in the staircase of a local shopping center.",
+    "A 28-year-old chef who recently moved to San Francisco was found dead in the staircase of a local shopping center."
+    ,
     "The victim's brother said he cannot imagine anyone who would want to harm him,\"Finally, it went uphill again at "
     'him."',
 ]
