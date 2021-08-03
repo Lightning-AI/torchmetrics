@@ -229,8 +229,7 @@ def f1(
     top_k: Optional[int] = None,
     multiclass: Optional[bool] = None,
 ) -> Tensor:
-    """Computes F1 metric. F1 metrics correspond to a equally weighted average
-    of the precision and recall scores.
+    """Computes F1 metric. F1 metrics correspond to a equally weighted average of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data.
     Accepts probabilities or logits from a model output or integer class values in prediction.

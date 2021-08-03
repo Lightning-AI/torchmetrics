@@ -270,8 +270,7 @@ def test_device_and_dtype_transfer(tmpdir):
 
 
 def test_warning_on_compute_before_update():
-    """test that an warning is raised if user tries to call compute before
-    update."""
+    """test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward

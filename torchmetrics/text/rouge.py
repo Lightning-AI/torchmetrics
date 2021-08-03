@@ -27,8 +27,7 @@ else:
 
 
 class ROUGEScore(Metric):
-    """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_,
-    used for automatic summarization.
+    """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
         newline_sep:

@@ -133,8 +133,7 @@ def test_wrong_params(metric_class, metric_fn, average, mdmc_average, num_classe
     ],
 )
 def test_zero_division(metric_class, metric_fn):
-    """Test that zero_division works correctly (currently should just set to
-    0)."""
+    """Test that zero_division works correctly (currently should just set to 0)."""
 
     preds = torch.tensor([1, 2, 1, 1])
     target = torch.tensor([2, 0, 2, 1])
@@ -184,9 +183,8 @@ def test_no_support(metric_class, metric_fn):
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
 )
 def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
-    """This tests that when metric is computed per class and a given class is
-    not present in both the `preds` and `target`, the resulting score is
-    `nan`."""
+    """This tests that when metric is computed per class and a given class is not present in both the `preds` and
+    `target`, the resulting score is `nan`."""
     preds = torch.tensor([0, 0, 0])
     target = torch.tensor([0, 0, 0])
     num_classes = 2
@@ -414,8 +412,7 @@ def test_top_k(
 ):
     """A simple test to check that top_k works as expected.
 
-    Just a sanity check, the tests in StatScores should already
-    guarantee the corectness of results.
+    Just a sanity check, the tests in StatScores should already guarantee the corectness of results.
     """
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)

@@ -105,8 +105,8 @@ def test_metric_collection_wrong_input(tmpdir):
 
 
 def test_metric_collection_args_kwargs(tmpdir):
-    """Check that args and kwargs gets passed correctly in metric collection,
-    Checks both update and forward method."""
+    """Check that args and kwargs gets passed correctly in metric collection, Checks both update and forward
+    method."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 

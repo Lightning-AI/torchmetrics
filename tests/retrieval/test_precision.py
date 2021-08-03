@@ -34,8 +34,7 @@ seed_all(42)
 
 
 def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
-    """Didn't find a reliable implementation of Precision in Information
-    Retrieval, so, reimplementing here.
+    """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
 
     A good explanation can be found
     `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.

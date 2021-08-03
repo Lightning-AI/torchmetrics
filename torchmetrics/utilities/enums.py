@@ -16,8 +16,7 @@ from typing import Optional, Union
 
 
 class EnumStr(str, Enum):
-    """Type of any enumerator with allowed comparison to string invariant to
-    cases.
+    """Type of any enumerator with allowed comparison to string invariant to cases.
 
     Example:
         >>> class MyEnum(EnumStr):

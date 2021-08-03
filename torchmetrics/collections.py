@@ -24,8 +24,7 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class MetricCollection(nn.ModuleDict):
-    """MetricCollection class can be used to chain metrics that have the same
-    call pattern into one single class.
+    """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
         metrics: One of the following
@@ -105,18 +104,16 @@ class MetricCollection(nn.ModuleDict):
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """Iteratively call forward for each metric.
 
-        Positional arguments (args) will be passed to every metric in
-        the collection, while keyword arguments (kwargs) will be
-        filtered based on the signature of the individual metric.
+        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
+        will be filtered based on the signature of the individual metric.
         """
         return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Iteratively call update for each metric.
 
-        Positional arguments (args) will be passed to every metric in
-        the collection, while keyword arguments (kwargs) will be
-        filtered based on the signature of the individual metric.
+        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
+        will be filtered based on the signature of the individual metric.
         """
         for _, m in self.items(keep_base=True):
             m_kwargs = m._filter_kwargs(**kwargs)
@@ -145,8 +142,7 @@ class MetricCollection(nn.ModuleDict):
         return mc
 
     def persistent(self, mode: bool = True) -> None:
-        """Method for post-init to change if metric states should be saved to
-        its state_dict."""
+        """Method for post-init to change if metric states should be saved to its state_dict."""
         for _, m in self.items(keep_base=True):
             m.persistent(mode)
 

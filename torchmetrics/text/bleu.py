@@ -26,8 +26,8 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 
 
 class BLEUScore(Metric):
-    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine
-    translated text with one or more references.
+    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more
+    references.
 
     Args:
         n_gram:

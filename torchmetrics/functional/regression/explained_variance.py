@@ -20,8 +20,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute Explained Variance.
-    Checks for same shape of input tensors.
+    """Updates and returns variables required to compute Explained Variance. Checks for same shape of input
+    tensors.
 
     Args:
         preds: Predicted tensor

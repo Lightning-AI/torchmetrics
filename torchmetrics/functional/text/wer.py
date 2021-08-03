@@ -25,9 +25,8 @@ def wer(
     predictions: Union[str, List[str]],
     concatenate_texts: bool = False,
 ) -> float:
-    """Word error rate (WER_) is a common metric of the performance of an
-    automatic speech recognition system. This value indicates the percentage of
-    words that were incorrectly predicted. The lower the value, the better the
+    """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
+    value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
     performance of the ASR system with a WER of 0 being a perfect score.
 
     Args:

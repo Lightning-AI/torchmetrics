@@ -119,7 +119,6 @@ class CohenKappa(Metric):
 
     @property
     def is_differentiable(self) -> bool:
-        """cohen kappa is not differentiable since the implementation is based
-        on calculating the confusion matrix which in general is not
-        differentiable."""
+        """cohen kappa is not differentiable since the implementation is based on calculating the confusion matrix
+        which in general is not differentiable."""
         return False

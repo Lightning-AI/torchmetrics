@@ -51,8 +51,7 @@ def naive_implementation_pit_scipy(
     metric_func: Callable,
     eval_func: str,
 ) -> Tuple[Tensor, Tensor]:
-    """A naive implementation of `Permutation Invariant Training` based on
-    Scipy.
+    """A naive implementation of `Permutation Invariant Training` based on Scipy.
 
     Args:
         preds: predictions, shape[batch, spk, time]

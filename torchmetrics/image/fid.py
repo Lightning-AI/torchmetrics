@@ -47,8 +47,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
         self.eval()
 
     def train(self, mode: bool) -> "NoTrainInceptionV3":
-        """the inception network should not be able to be switched away from
-        evaluation mode."""
+        """the inception network should not be able to be switched away from evaluation mode."""
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -264,8 +263,7 @@ class FID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tensor:
-        """Calculate FID score based on accumulated extracted features from the
-        two distributions."""
+        """Calculate FID score based on accumulated extracted features from the two distributions."""
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
         # computation is extremely sensitive so it needs to happen in double precision

@@ -26,9 +26,8 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class PrecisionRecallCurve(Metric):
-    """Computes precision-recall pairs for different thresholds. Works for both
-    binary and multiclass problems. In the case of multiclass, the values will
-    be calculated based on a one-vs-the-rest approach.
+    """Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
+    the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Forward accepts
 

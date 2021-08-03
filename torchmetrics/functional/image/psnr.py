@@ -60,8 +60,7 @@ def _psnr_update(
     target: Tensor,
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute peak signal-to-noise
-    ratio.
+    """Updates and returns variables required to compute peak signal-to-noise ratio.
 
     Args:
         preds: Predicted tensor

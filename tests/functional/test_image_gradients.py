@@ -27,8 +27,7 @@ def test_invalid_input_img_type():
 
 
 def test_invalid_input_ndims():
-    """Test whether the module successfully handles invalid number of
-    dimensions of input tensor."""
+    """Test whether the module successfully handles invalid number of dimensions of input tensor."""
 
     BATCH_SIZE = 1
     HEIGHT = 5
@@ -43,9 +42,8 @@ def test_invalid_input_ndims():
 
 
 def test_multi_batch_image_gradients():
-    """Test whether the module correctly calculates gradients for known input
-    with non-unity batch size.Example input-output pair taken from TF's
-    implementation of i mage-gradients."""
+    """Test whether the module correctly calculates gradients for known input with non-unity batch size.Example
+    input-output pair taken from TF's implementation of i mage-gradients."""
 
     BATCH_SIZE = 5
     HEIGHT = 5
@@ -76,8 +74,7 @@ def test_multi_batch_image_gradients():
 def test_image_gradients():
     """Test whether the module correctly calculates gradients for known input.
 
-    Example input-output pair taken from TF's implementation of image-
-    gradients
+    Example input-output pair taken from TF's implementation of image- gradients
     """
 
     BATCH_SIZE = 1

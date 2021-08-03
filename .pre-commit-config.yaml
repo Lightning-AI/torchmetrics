@@ -47,7 +47,7 @@ repos:
     rev: v1.4
     hooks:
       - id: docformatter
-        args: [--in-place]
+        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.9.2

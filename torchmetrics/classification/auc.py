@@ -91,6 +91,6 @@ class AUC(Metric):
 
     @property
     def is_differentiable(self) -> bool:
-        """AUC metrics is considered as non differentiable so it should have
-        `false` value for `is_differentiable` property."""
+        """AUC metrics is considered as non differentiable so it should have `false` value for `is_differentiable`
+        property."""
         return False

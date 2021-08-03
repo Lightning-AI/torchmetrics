@@ -105,8 +105,7 @@ class HammingDistance(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """Computes hamming distance based on inputs passed in to ``update``
-        previously."""
+        """Computes hamming distance based on inputs passed in to ``update`` previously."""
         return _hamming_distance_compute(self.correct, self.total)
 
     @property

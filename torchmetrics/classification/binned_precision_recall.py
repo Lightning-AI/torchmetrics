@@ -43,9 +43,8 @@ def _recall_at_precision(
 
 
 class BinnedPrecisionRecallCurve(Metric):
-    """Computes precision-recall pairs for different thresholds. Works for both
-    binary and multiclass problems. In the case of multiclass, the values will
-    be calculated based on a one-vs-the-rest approach.
+    """Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
+    the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
@@ -190,10 +189,9 @@ class BinnedPrecisionRecallCurve(Metric):
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
-    """Computes the average precision score, which summarises the precision
-    recall curve into one number. Works for both binary and multiclass
-    problems. In the case of multiclass, the values will be calculated based on
-    a one-vs-the-rest approach.
+    """Computes the average precision score, which summarises the precision recall curve into one number. Works for
+    both binary and multiclass problems. In the case of multiclass, the values will be calculated based on a one-
+    vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
@@ -245,8 +243,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
 
 
 class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
-    """Computes the higest possible recall value given the minimum precision
-    thresholds provided.
+    """Computes the higest possible recall value given the minimum precision thresholds provided.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).

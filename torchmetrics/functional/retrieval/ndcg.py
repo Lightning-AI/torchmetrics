@@ -26,8 +26,7 @@ def _dcg(target: Tensor) -> Tensor:
 
 
 def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
-    """Computes `Normalized Discounted Cumulative Gain`_ (for information
-    retrieval).
+    """Computes `Normalized Discounted Cumulative Gain`_ (for information retrieval).
 
     ``preds`` and ``target`` should be of the same shape and live on the same device.
     ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,

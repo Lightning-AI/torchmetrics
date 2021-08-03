@@ -94,11 +94,9 @@ def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> L
 
 
 def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tensor]:
-    """Function to gather all tensors from several ddp processes onto a list
-    that is broadcasted to all processes. Works on tensors that have the same
-    number of dimensions, but where each dimension may differ. In this case
-    tensors are padded, gathered and then trimmed to secure equal workload for
-    all processes.
+    """Function to gather all tensors from several ddp processes onto a list that is broadcasted to all processes.
+    Works on tensors that have the same number of dimensions, but where each dimension may differ. In this case
+    tensors are padded, gathered and then trimmed to secure equal workload for all processes.
 
     Args:
         result: the value to sync

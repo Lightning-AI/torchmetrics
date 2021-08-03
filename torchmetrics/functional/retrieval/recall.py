@@ -20,8 +20,8 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_recall(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
-    """Computes the recall metric (for information retrieval). Recall is the
-    fraction of relevant documents retrieved among all the relevant documents.
+    """Computes the recall metric (for information retrieval). Recall is the fraction of relevant documents
+    retrieved among all the relevant documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,

@@ -175,8 +175,7 @@ class FBeta(StatScores):
 
 
 class F1(FBeta):
-    """Computes F1 metric. F1 metrics correspond to a harmonic mean of the
-    precision and recall scores.
+    """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
     output or integer class values in prediction. Works with multi-dimensional preds and target.

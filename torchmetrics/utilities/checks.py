@@ -21,15 +21,13 @@ from torchmetrics.utilities.enums import DataType
 
 
 def _check_same_shape(preds: Tensor, target: Tensor) -> None:
-    """Check that predictions and target have the same shape, else raise
-    error."""
+    """Check that predictions and target have the same shape, else raise error."""
     if preds.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
 def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool]) -> None:
-    """Perform basic validation of inputs that does not require deducing any
-    information of the type of inputs."""
+    """Perform basic validation of inputs that does not require deducing any information of the type of inputs."""
 
     if target.is_floating_point():
         raise ValueError("The `target` has to be an integer tensor.")
@@ -51,14 +49,12 @@ def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, mul
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
-    """This checks that the shape and type of inputs are consistent with each
-    other and fall into one of the allowed input types (see the documentation
-    of docstring of ``_input_format_classification``). It does not check for
-    consistency of number of classes, other functions take care of that.
+    """This checks that the shape and type of inputs are consistent with each other and fall into one of the
+    allowed input types (see the documentation of docstring of ``_input_format_classification``). It does not check
+    for consistency of number of classes, other functions take care of that.
 
-    It returns the name of the case in which the inputs fall, and the
-    implied number of classes (from the ``C`` dim for multi-class data,
-    or extra dim(s) for multi-label data).
+    It returns the name of the case in which the inputs fall, and the implied number of classes (from the ``C`` dim for
+    multi-class data, or extra dim(s) for multi-label data).
     """
 
     preds_float = preds.is_floating_point()
@@ -111,8 +107,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
 
 def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> None:
-    """This checks that the consistency of `num_classes` with the data and
-    `multiclass` param for binary data."""
+    """This checks that the consistency of `num_classes` with the data and `multiclass` param for binary data."""
 
     if num_classes > 2:
         raise ValueError("Your data is binary, but `num_classes` is larger than 2.")
@@ -136,8 +131,8 @@ def _check_num_classes_mc(
     multiclass: Optional[bool],
     implied_classes: int,
 ) -> None:
-    """This checks that the consistency of `num_classes` with the data and
-    `multiclass` param for (multi-dimensional) multi-class data."""
+    """This checks that the consistency of `num_classes` with the data and `multiclass` param for (multi-
+    dimensional) multi-class data."""
 
     if num_classes == 1 and multiclass is not False:
         raise ValueError(
@@ -161,8 +156,8 @@ def _check_num_classes_mc(
 
 
 def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_classes: int) -> None:
-    """This checks that the consistency of `num_classes` with the data and
-    `multiclass` param for multi-label data."""
+    """This checks that the consistency of `num_classes` with the data and `multiclass` param for multi-label
+    data."""
 
     if multiclass and num_classes != 2:
         raise ValueError(
@@ -494,8 +489,7 @@ def _check_retrieval_functional_inputs(
     target: Tensor,
     allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor]:
-    """Check ``preds`` and ``target`` tensors are of the same shape and of the
-    correct dtype.
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
     Args:
         preds: either tensor with scores/logits
@@ -535,8 +529,7 @@ def _check_retrieval_inputs(
     target: Tensor,
     allow_non_binary_target: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same
-    shape and of the correct dtype.
+    """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
     Args:
         indexes: tensor with queries indexes

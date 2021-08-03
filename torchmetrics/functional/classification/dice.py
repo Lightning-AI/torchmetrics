@@ -26,8 +26,8 @@ def _stat_scores(
     class_index: int,
     argmax_dim: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
-    """Calculates the number of true positive, false positive, true negative
-    and false negative for a specific class.
+    """Calculates the number of true positive, false positive, true negative and false negative for a specific
+    class.
 
     Args:
         preds: prediction tensor

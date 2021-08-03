@@ -25,8 +25,7 @@ from torchmetrics.utilities.data import get_group_indexes
 
 
 class RetrievalMetric(Metric, ABC):
-    """Works with binary target data. Accepts float predictions from a model
-    output.
+    """Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts
 
@@ -96,8 +95,7 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
-        """Check shape, check and convert dtypes, flatten and add to
-        accumulators."""
+        """Check shape, check and convert dtypes, flatten and add to accumulators."""
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
 
@@ -110,14 +108,11 @@ class RetrievalMetric(Metric, ABC):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """First concat state ``indexes``, ``preds`` and ``target`` since they
-        were stored as lists.
+        """First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
 
-        After that, compute list of groups that will help in keeping
-        together predictions about the same query. Finally, for each
-        group compute the ``_metric`` if the number of positive targets
-        is at least 1, otherwise behave as specified by
-        ``self.empty_target_action``.
+        After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
+        for each group compute the ``_metric`` if the number of positive targets is at least 1, otherwise behave as
+        specified by ``self.empty_target_action``.
         """
         indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)

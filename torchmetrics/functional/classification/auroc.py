@@ -159,8 +159,7 @@ def auroc(
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
-    """Compute Area Under the Receiver Operating Characteristic Curve (`ROC
-    AUC`_)
+    """Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
 
     Args:
         preds: predictions from model (logits or probabilities)

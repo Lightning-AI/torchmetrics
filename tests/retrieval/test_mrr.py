@@ -35,10 +35,9 @@ seed_all(42)
 def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
     """Adaptation of `sklearn.metrics.label_ranking_average_precision_score`.
 
-    Since the original sklearn metric works as RR only when the number
-    of positive targets is exactly 1, here we remove every positive
-    target that is not the most important. Remember that in RR only the
-    positive target with the highest score is considered.
+    Since the original sklearn metric works as RR only when the number of positive targets is exactly 1, here we remove
+    every positive target that is not the most important. Remember that in RR only the positive target with the highest
+    score is considered.
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

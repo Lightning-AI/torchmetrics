@@ -46,8 +46,8 @@ def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
-    """Computes the `gradients <https://en.wikipedia.org/wiki/Image_gradient>`_
-    of a given image using finite difference.
+    """Computes the `gradients <https://en.wikipedia.org/wiki/Image_gradient>`_ of a given image using finite
+    difference.
 
     Args:
         img: An ``(N, C, H, W)`` input tensor where C is the number of image channels

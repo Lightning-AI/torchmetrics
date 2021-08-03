@@ -34,11 +34,9 @@ seed_all(42)
 
 
 def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
-    """Didn't find a reliable implementation of Fall-out in Information
-    Retrieval, so, reimplementing here.
+    """Didn't find a reliable implementation of Fall-out in Information Retrieval, so, reimplementing here.
 
-    See Wikipedia for `Fall-out`_ for more information about the metric
-    definition.
+    See Wikipedia for `Fall-out`_ for more information about the metric definition.
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

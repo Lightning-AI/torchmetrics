@@ -30,8 +30,8 @@ def _find_best_perm_by_linear_sum_assignment(
     metric_mtx: torch.Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
-    """Solves the linear sum assignment problem using scipy, and returns the
-    best metric values and the corresponding permutations.
+    """Solves the linear sum assignment problem using scipy, and returns the best metric values and the
+    corresponding permutations.
 
     Args:
         metric_mtx:
@@ -58,9 +58,8 @@ def _find_best_perm_by_exhuastive_method(
     metric_mtx: torch.Tensor,
     eval_func: Union[torch.min, torch.max],
 ) -> Tuple[Tensor, Tensor]:
-    """Solves the linear sum assignment problem using exhuastive method, i.e.
-    exhuastively calculates the metric values of all possible permutations, and
-    returns the best metric values and the corresponding permutations.
+    """Solves the linear sum assignment problem using exhuastive method, i.e. exhuastively calculates the metric
+    values of all possible permutations, and returns the best metric values and the corresponding permutations.
 
     Args:
         metric_mtx:
@@ -105,9 +104,9 @@ def _find_best_perm_by_exhuastive_method(
 def pit(
     preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
-    """Permutation invariant training (PIT). The PIT implements the famous
-    Permutation Invariant Training method [1] in speech separation field in
-    order to calculate audio metrics in a permutation invariant way.
+    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
+
+    [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     Args:
         target:

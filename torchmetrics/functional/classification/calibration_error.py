@@ -27,8 +27,7 @@ def _ce_compute(
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
-    """Computes the calibration error given the provided bin boundaries and
-    norm.
+    """Computes the calibration error given the provided bin boundaries and norm.
 
     Args:
         confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
@@ -76,8 +75,8 @@ def _ce_compute(
 
 
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]:
-    """Given a predictions and targets tensor, computes the confidences of the
-    top-1 prediction and records their correctness.
+    """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
+    correctness.
 
     Args:
         preds (Tensor):  Input softmaxed predictions.

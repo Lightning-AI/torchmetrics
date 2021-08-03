@@ -68,8 +68,8 @@ def _gaussian_kernel(
 
 
 def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Structural Similarity
-    Index Measure. Checks for same shape and type of the input tensors.
+    """Updates and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
+    and type of the input tensors.
 
     Args:
         preds: Predicted tensor

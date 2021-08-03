@@ -157,9 +157,8 @@ class BootStrapper(Metric):
     def compute(self) -> Dict[str, Tensor]:
         """Computes the bootstrapped metric values.
 
-        Allways returns a dict of tensors, which can contain the
-        following keys: ``mean``, ``std``, ``quantile`` and ``raw``
-        depending on how the class was initialized
+        Allways returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
+        ``raw`` depending on how the class was initialized
         """
         computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
         output_dict = {}

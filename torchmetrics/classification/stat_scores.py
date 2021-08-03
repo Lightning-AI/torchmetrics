@@ -225,8 +225,7 @@ class StatScores(Metric):
             self.fn.append(fn)
 
     def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Performs concatenation on the stat scores if neccesary, before
-        passing them to a compute function."""
+        """Performs concatenation on the stat scores if neccesary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
@@ -234,8 +233,7 @@ class StatScores(Metric):
         return tp, fp, tn, fn
 
     def compute(self) -> Tensor:
-        """Computes the stat scores based on inputs passed in to ``update``
-        previously.
+        """Computes the stat scores based on inputs passed in to ``update`` previously.
 
         Return:
             The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds

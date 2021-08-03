@@ -22,9 +22,8 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class ROC(Metric):
-    """Computes the Receiver Operating Characteristic (ROC). Works for both
-    binary, multiclass and multilabel problems. In the case of multiclass, the
-    values will be calculated based on a one-vs-the-rest approach.
+    """Computes the Receiver Operating Characteristic (ROC). Works for both binary, multiclass and multilabel
+    problems. In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Forward accepts
 
