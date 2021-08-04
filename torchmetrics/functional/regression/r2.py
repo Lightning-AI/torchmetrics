@@ -34,8 +34,6 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
             "Expected both prediction and target to be 1D or 2D tensors,"
             f" but received tensors with dimension {preds.shape}"
         )
-    if len(preds) < 2:
-        raise ValueError("Needs at least two samples to calculate r2 score.")
 
     sum_obs = torch.sum(target, dim=0)
     sum_squared_obs = torch.sum(target * target, dim=0)
@@ -77,6 +75,9 @@ def _r2_score_compute(
         >>> _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, multioutput="raw_values")
         tensor([0.9654, 0.9082])
     """
+    if n_obs < 2:
+        raise ValueError("Needs at least two samples to calculate r2 score.")
+
     mean_obs = sum_obs / n_obs
     tss = sum_squared_obs - sum_obs * mean_obs
     raw_scores = 1 - (rss / tss)

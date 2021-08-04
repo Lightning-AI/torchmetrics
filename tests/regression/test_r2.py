@@ -143,6 +143,12 @@ def test_error_on_too_few_samples(metric_class=R2Score):
     metric = metric_class()
     with pytest.raises(ValueError, match="Needs at least two samples to calculate r2 score."):
         metric(torch.randn(1), torch.randn(1))
+    metric.reset()
+
+    # calling update twice should still work
+    metric.update(torch.randn(1), torch.randn(1))
+    metric.update(torch.randn(1), torch.randn(1))
+    assert metric.compute()
 
 
 def test_warning_on_too_large_adjusted(metric_class=R2Score):
