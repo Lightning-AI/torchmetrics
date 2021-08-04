@@ -46,7 +46,7 @@ class EnumStr(str, Enum):
 
 
 class DataType(EnumStr):
-    """Enum to represent data type
+    """Enum to represent data type.
 
     >>> "Binary" in list(DataType)
     True
@@ -59,7 +59,7 @@ class DataType(EnumStr):
 
 
 class AverageMethod(EnumStr):
-    """Enum to represent average method
+    """Enum to represent average method.
 
     >>> None in list(AverageMethod)
     True
@@ -77,7 +77,7 @@ class AverageMethod(EnumStr):
 
 
 class MDMCAverageMethod(EnumStr):
-    """Enum to represent multi-dim multi-class average method"""
+    """Enum to represent multi-dim multi-class average method."""
 
     GLOBAL = "global"
     SAMPLEWISE = "samplewise"

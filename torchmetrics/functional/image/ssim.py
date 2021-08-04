@@ -22,8 +22,7 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
-    """
-    Computes 1D gaussian kernel
+    """Computes 1D gaussian kernel.
 
     Args:
         kernel_size: size of the gaussian kernel
@@ -43,8 +42,7 @@ def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.
 def _gaussian_kernel(
     channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
 ) -> Tensor:
-    """
-    Computes 2D gaussian kernel
+    """Computes 2D gaussian kernel.
 
     Args:
         channel: number of channels in the image
@@ -70,9 +68,8 @@ def _gaussian_kernel(
 
 
 def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns variables required to compute Structural Similarity Index Measure.
-    Checks for same shape and type of the input tensors.
+    """Updates and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
+    and type of the input tensors.
 
     Args:
         preds: Predicted tensor
@@ -103,8 +100,7 @@ def _ssim_compute(
     k1: float = 0.01,
     k2: float = 0.03,
 ) -> Tensor:
-    """
-    Computes Structual Similarity Index Measure
+    """Computes Structual Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -187,8 +183,7 @@ def ssim(
     k1: float = 0.01,
     k2: float = 0.03,
 ) -> Tensor:
-    """
-    Computes Structual Similarity Index Measure
+    """Computes Structual Similarity Index Measure.
 
     Args:
         preds: estimated image

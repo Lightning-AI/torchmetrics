@@ -19,6 +19,7 @@ from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
 from torchmetrics.functional.classification.average_precision import average_precision
+from torchmetrics.functional.classification.calibration_error import calibration_error
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice_score
@@ -39,7 +40,9 @@ from torchmetrics.functional.image.ssim import ssim
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error
-from torchmetrics.functional.regression.mean_absolute_percentage_error import mean_absolute_percentage_error
+from torchmetrics.functional.regression.mean_absolute_percentage_error import (
+    mean_absolute_percentage_error,
+)
 from torchmetrics.functional.regression.mean_squared_error import mean_squared_error
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
@@ -67,6 +70,7 @@ __all__ = [
     "auroc",
     "average_precision",
     "bleu_score",
+    "calibration_error",
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",

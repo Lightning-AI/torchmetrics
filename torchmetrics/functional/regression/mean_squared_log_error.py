@@ -20,9 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """
-    Returns variables required to compute Mean Squared Log Error.
-    Checks for same shape of tensors.
+    """Returns variables required to compute Mean Squared Log Error. Checks for same shape of tensors.
 
     Args:
         preds: Predicted tensor
@@ -36,8 +34,7 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
 
 
 def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -> Tensor:
-    """
-    Computes Mean Squared Log Error.
+    """Computes Mean Squared Log Error.
 
     Args:
         sum_squared_log_error: Sum of square of log errors over all observations
@@ -56,8 +53,7 @@ def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -
 
 
 def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
-    """
-    Computes mean squared log error
+    """Computes mean squared log error.
 
     Args:
         preds: estimated labels
@@ -75,7 +71,6 @@ def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
 
     .. note::
         Half precision is only support on GPU for this metric
-
     """
     sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
     return _mean_squared_log_error_compute(sum_squared_log_error, n_obs)

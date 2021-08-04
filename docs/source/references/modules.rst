@@ -2,6 +2,8 @@
 Module metrics
 ##############
 
+.. include:: ../links.rst
+
 **********
 Base class
 **********
@@ -209,6 +211,12 @@ BinnedRecallAtFixedPrecision
 .. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
     :noindex:
 
+CalibrationError
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CalibrationError
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -301,7 +309,6 @@ StatScores
 
 .. autoclass:: torchmetrics.StatScores
     :noindex:
-
 
 *************
 Image Metrics

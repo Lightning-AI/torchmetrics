@@ -117,7 +117,7 @@ def _test_non_contiguous_tensors(rank, worldsize):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_non_contiguous_tensors():
-    """Test that gather_all operation works for non contiguous tensors"""
+    """Test that gather_all operation works for non contiguous tensors."""
     torch.multiprocessing.spawn(_test_non_contiguous_tensors, args=(2,), nprocs=2)
 
 
@@ -225,8 +225,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_state_dict_is_synced(tmpdir):
-    """
-    This test asserts that metrics are synced while creating the state
-    dict but restored after to continue accumulation.
-    """
+    """This test asserts that metrics are synced while creating the state dict but restored after to continue
+    accumulation."""
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)

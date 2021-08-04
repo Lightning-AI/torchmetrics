@@ -101,7 +101,7 @@ def iou(
             - ``'none'``: no reduction will be applied
 
     Return:
-        IoU score : Tensor containing single value if reduction is
+        IoU score: Tensor containing single value if reduction is
         'elementwise_mean', or number of classes if reduction is 'none'
 
     Example:

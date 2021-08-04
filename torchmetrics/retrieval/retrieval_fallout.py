@@ -22,9 +22,7 @@ from torchmetrics.utilities.data import get_group_indexes
 
 
 class RetrievalFallOut(RetrievalMetric):
-    """
-    Computes `Fall-out
-    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out>`__.
+    """Computes `Fall-out`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
@@ -93,11 +91,11 @@ class RetrievalFallOut(RetrievalMetric):
         self.k = k
 
     def compute(self) -> Tensor:
-        """
-        First concat state `indexes`, `preds` and `target` since they were stored as lists. After that,
-        compute list of groups that will help in keeping together predictions about the same query.
-        Finally, for each group compute the `_metric` if the number of negative targets is at least
-        1, otherwise behave as specified by `self.empty_target_action`.
+        """First concat state `indexes`, `preds` and `target` since they were stored as lists.
+
+        After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
+        for each group compute the `_metric` if the number of negative targets is at least 1, otherwise behave as
+        specified by `self.empty_target_action`.
         """
         indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)

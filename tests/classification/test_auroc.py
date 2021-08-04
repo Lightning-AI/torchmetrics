@@ -168,9 +168,8 @@ class TestAUROC(MetricTester):
 
 
 def test_error_on_different_mode():
-    """test that an error is raised if the user pass in data of
-    different modes (binary, multi-label, multi-class)
-    """
+    """test that an error is raised if the user pass in data of different modes (binary, multi-label, multi-
+    class)"""
     metric = AUROC()
     # pass in multi-class data
     metric.update(torch.randn(10, 5).softmax(dim=-1), torch.randint(0, 5, (10,)))
@@ -187,8 +186,9 @@ def test_error_multiclass_no_num_classes():
 
 
 def test_weighted_with_empty_classes():
-    """Tests that weighted multiclass AUROC calculation yields the same results if a new
-    but empty class exists. Tests that the proper warnings and errors are raised
+    """Tests that weighted multiclass AUROC calculation yields the same results if a new but empty class exists.
+
+    Tests that the proper warnings and errors are raised
     """
     preds = torch.tensor(
         [

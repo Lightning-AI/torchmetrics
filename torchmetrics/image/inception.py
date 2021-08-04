@@ -147,7 +147,7 @@ class IS(Metric):
         self.add_state("features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor) -> None:  # type: ignore
-        """Update the state with extracted features
+        """Update the state with extracted features.
 
         Args:
             imgs: tensor with images feed to the feature extractor

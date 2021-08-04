@@ -21,9 +21,8 @@ from torchmetrics.metric import Metric
 
 
 class ConfusionMatrix(Metric):
-    """
-    Computes the `confusion matrix
-    <https://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix>`_.  Works with binary,
+    r"""
+    Computes the `confusion matrix`_.  Works with binary,
     multiclass, and multilabel data.  Accepts probabilities or logits from a model output or integer class
     values in prediction. Works with multi-dimensional preds and target, but it should be noted that
     additional dimensions will be flattened.
@@ -39,8 +38,7 @@ class ConfusionMatrix(Metric):
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
     If working with multilabel data, setting the `is_multilabel` argument to `True` will make sure that a
-    `confusion matrix gets calculated per label
-    <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html>`_.
+    `confusion matrix gets calculated per label`_.
 
     Args:
         num_classes: Number of classes in the dataset.
@@ -91,6 +89,7 @@ class ConfusionMatrix(Metric):
         tensor([[[1., 0.], [0., 1.]],
                 [[1., 0.], [1., 0.]],
                 [[0., 1.], [0., 1.]]])
+
     """
 
     confmat: Tensor
@@ -123,8 +122,7 @@ class ConfusionMatrix(Metric):
         self.add_state("confmat", default=default, dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -134,8 +132,7 @@ class ConfusionMatrix(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """
-        Computes confusion matrix.
+        """Computes confusion matrix.
 
         Returns:
             If `multilabel=False` this will be a `[n_classes, n_classes]` tensor and if `multilabel=True`

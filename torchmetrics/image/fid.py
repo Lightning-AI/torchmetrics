@@ -47,7 +47,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
         self.eval()
 
     def train(self, mode: bool) -> "NoTrainInceptionV3":
-        """the inception network should not be able to be switched away from evaluation mode"""
+        """the inception network should not be able to be switched away from evaluation mode."""
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -57,9 +57,9 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 
 class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
+
     All credit to:
         https://github.com/steveli/pytorch-sqrtm/blob/master/sqrtm.py
-
     """
 
     @staticmethod
@@ -125,8 +125,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
 
 class FID(Metric):
     r"""
-    Calculates `Fréchet inception distance (FID) <https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance>`_
-    which is used to access the quality of generated images. Given by
+    Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images. Given by
 
     .. math::
         FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
@@ -250,7 +249,7 @@ class FID(Metric):
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
-        """Update the state with extracted features
+        """Update the state with extracted features.
 
         Args:
             imgs: tensor with images feed to the feature extractor
@@ -264,7 +263,7 @@ class FID(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tensor:
-        """Calculate FID score based on accumulated extracted features from the two distributions"""
+        """Calculate FID score based on accumulated extracted features from the two distributions."""
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
         # computation is extremely sensitive so it needs to happen in double precision

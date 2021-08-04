@@ -26,7 +26,7 @@ torch.manual_seed(42)
 
 @pytest.mark.parametrize("matrix_size", [2, 10, 100, 500])
 def test_matrix_sqrt(matrix_size):
-    """test that metrix sqrt function works as expected"""
+    """test that metrix sqrt function works as expected."""
 
     def generate_cov(n):
         data = torch.randn(2 * n, n)
@@ -42,7 +42,7 @@ def test_matrix_sqrt(matrix_size):
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
-    """Assert that metric never leaves evaluation mode"""
+    """Assert that metric never leaves evaluation mode."""
 
     class MyModel(torch.nn.Module):
         def __init__(self):
@@ -60,7 +60,7 @@ def test_no_train():
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_fid_pickle():
-    """Assert that we can initialize the metric and pickle it"""
+    """Assert that we can initialize the metric and pickle it."""
     metric = FID()
     assert metric
 
@@ -70,7 +70,7 @@ def test_fid_pickle():
 
 
 def test_fid_raises_errors_and_warnings():
-    """Test that expected warnings and errors are raised"""
+    """Test that expected warnings and errors are raised."""
     with pytest.warns(
         UserWarning,
         match="Metric `FID` will save all extracted features in buffer."
@@ -97,7 +97,8 @@ def test_fid_raises_errors_and_warnings():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
-    """if real and fake are update on the same data the fid score should be 0"""
+    """if real and fake are update on the same data the fid score should be
+    0."""
     metric = FID(feature=feature)
 
     for _ in range(2):
@@ -125,7 +126,7 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_compare_fid(tmpdir, feature=2048):
-    """check that the hole pipeline give the same result as torch-fidelity"""
+    """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = FID(feature=feature).cuda()

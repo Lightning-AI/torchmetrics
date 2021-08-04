@@ -24,8 +24,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 class SpearmanCorrcoef(Metric):
     r"""
-    Computes `spearmans rank correlation coefficient
-    <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_.
+    Computes `spearmans rank correlation coefficient`_.
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}
@@ -52,6 +51,7 @@ class SpearmanCorrcoef(Metric):
         >>> spearman = SpearmanCorrcoef()
         >>> spearman(preds, target)
         tensor(1.0000)
+
     """
     preds: List[Tensor]
     target: List[Tensor]
@@ -78,8 +78,7 @@ class SpearmanCorrcoef(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -90,9 +89,7 @@ class SpearmanCorrcoef(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """
-        Computes spearmans correlation coefficient
-        """
+        """Computes spearmans correlation coefficient."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)

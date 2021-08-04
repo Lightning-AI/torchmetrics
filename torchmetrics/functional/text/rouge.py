@@ -70,8 +70,7 @@ def _rouge_score_update(
     aggregator: BootstrapAggregator,
     newline_sep: bool = False,
 ) -> None:
-    """
-    Update the rouge score with the current set of predicted and target sentences.
+    """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
         preds:
@@ -102,8 +101,7 @@ def _rouge_score_update(
 
 
 def _rouge_score_compute(aggregator: BootstrapAggregator, decimal_places: int = 4) -> Dict[str, Tensor]:
-    """
-    Compute the combined ROUGE metric for all the input set of predicted and target sentences.
+    """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
         aggregator:
@@ -123,8 +121,7 @@ def rouge_score(
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
     decimal_places: int = 4,
 ) -> Dict[str, Tensor]:
-    """
-    Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
+    """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
         preds:

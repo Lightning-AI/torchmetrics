@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _find_repeats(data: Tensor) -> Tensor:
-    """find and return values which have repeats i.e. the same value are more than once in the tensor"""
+    """find and return values which have repeats i.e. the same value are more than once in the tensor."""
     temp = data.detach().clone()
     temp = temp.sort()[0]
 
@@ -34,8 +34,8 @@ def _find_repeats(data: Tensor) -> Tensor:
 
 def _rank_data(data: Tensor) -> Tensor:
     """Calculate the rank for each element of a tensor. The rank refers to the indices of an element in the
-    corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of
-    their rank
+    corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of their
+    rank.
 
     Adopted from:
         https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
@@ -53,9 +53,8 @@ def _rank_data(data: Tensor) -> Tensor:
 
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns variables required to compute Spearman Correlation Coefficient.
-    Checks for same shape and type of input tensors.
+    """Updates and returns variables required to compute Spearman Correlation Coefficient. Checks for same shape
+    and type of input tensors.
 
     Args:
         preds: Predicted tensor
@@ -76,8 +75,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Te
 
 
 def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6) -> Tensor:
-    """
-    Computes Spearman Correlation Coefficient.
+    """Computes Spearman Correlation Coefficient.
 
     Args:
         preds: Predicted tensor
@@ -108,8 +106,7 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
 
 def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     r"""
-     Computes `spearmans rank correlation coefficient
-     <https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_:
+     Computes `spearmans rank correlation coefficient`_:
 
     .. math:
         r_s = = \frac{cov(rg_x, rg_y)}{\sigma_{rg_x} * \sigma_{rg_y}}

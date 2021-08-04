@@ -1,4 +1,4 @@
-"""Root package info."""
+r"""Root package info."""
 import logging as __logging
 import os
 
@@ -24,6 +24,7 @@ from torchmetrics.classification import (  # noqa: E402
     BinnedAveragePrecision,
     BinnedPrecisionRecallCurve,
     BinnedRecallAtFixedPrecision,
+    CalibrationError,
     CohenKappa,
     ConfusionMatrix,
     FBeta,
@@ -76,6 +77,7 @@ __all__ = [
     "BinnedRecallAtFixedPrecision",
     "BLEUScore",
     "BootStrapper",
+    "CalibrationError",
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",

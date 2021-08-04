@@ -15,9 +15,7 @@ from torchmetrics.text.wer import WER
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_same(hyp, ref, score):
-    """
-    Test to ensure that the torchmetric WER matches reference scores
-    """
+    """Test to ensure that the torchmetric WER matches reference scores."""
     metric = WER()
     metric.update(hyp, ref)
     assert metric.compute() == score
@@ -32,9 +30,7 @@ def test_wer_same(hyp, ref, score):
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_functional(ref, hyp, expected_score, expected_incorrect, expected_total):
-    """
-    Test to ensure that the torchmetric functional WER matches the jiwer reference
-    """
+    """Test to ensure that the torchmetric functional WER matches the jiwer reference."""
     assert wer(ref, hyp) == expected_score
 
 
@@ -47,17 +43,13 @@ def test_wer_functional(ref, hyp, expected_score, expected_incorrect, expected_t
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_reference_functional(hyp, ref):
-    """
-    Test to ensure that the torchmetric functional WER matches the jiwer reference
-    """
+    """Test to ensure that the torchmetric functional WER matches the jiwer reference."""
     assert wer(ref, hyp) == compute_measures(ref, hyp)["wer"]
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_reference_functional_concatenate():
-    """
-    Test to ensure that the torchmetric functional WER matches the jiwer reference when concatenating
-    """
+    """Test to ensure that the torchmetric functional WER matches the jiwer reference when concatenating."""
     ref = ["hello world", "hello world"]
     hyp = ["hello world", "Firwww"]
     assert wer(ref, hyp) == compute_measures(ref, hyp)["wer"]
@@ -73,9 +65,7 @@ def test_wer_reference_functional_concatenate():
 )
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_reference(hyp, ref):
-    """
-    Test to ensure that the torchmetric WER matches the jiwer reference
-    """
+    """Test to ensure that the torchmetric WER matches the jiwer reference."""
     metric = WER()
     metric.update(hyp, ref)
     assert metric.compute() == compute_measures(ref, hyp)["wer"]
@@ -83,9 +73,7 @@ def test_wer_reference(hyp, ref):
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 def test_wer_reference_batch():
-    """
-    Test to ensure that the torchmetric WER matches the jiwer reference with accumulation
-    """
+    """Test to ensure that the torchmetric WER matches the jiwer reference with accumulation."""
     batches = [("hello world", "Firwww"), ("hello world", "hello world")]
     metric = WER()
 
