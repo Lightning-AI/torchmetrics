@@ -105,19 +105,6 @@ def bert_score(
         rescale_with_baseline=rescale_with_baseline,
         baseline_path=baseline_path,
     )
-    if cached_bertscorer.hash != hashcode:
-        cached_bertscorer = bert.BERTScorer(
-            model_type=model_type,
-            num_layers=num_layers,
-            batch_size=batch_size,
-            nthreads=nthreads,
-            all_layers=all_layers,
-            idf=idf,
-            device=device,
-            lang=lang,
-            rescale_with_baseline=rescale_with_baseline,
-            baseline_path=baseline_path,
-        )
 
     (P, R, F) = cached_bertscorer.score(
         cands=predictions,

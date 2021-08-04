@@ -101,8 +101,8 @@ class BERTScore(Metric):
             predictions: List of predicted sentences
             references: List of refernces
         """
-        self.predictions = predictions
-        self.references = references
+        self.predictions.append(predictions)
+        self.references.append(references)
 
     def compute(self) -> Dict:
         """Calculate Bertscores.
@@ -111,8 +111,8 @@ class BERTScore(Metric):
             Dict with Bertscores.
         """
         return bert_score(
-            predictions=self.predictions,
-            references=self.references,
+            predictions=self.predictions[0],
+            references=self.references[0],
             model_type=self.model_type,
             num_layers=self.num_layers,
             verbose=self.verbose,
