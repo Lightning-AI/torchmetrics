@@ -28,7 +28,7 @@ from torchmetrics.functional import kl_divergence
 
 seed_all(42)
 
-Input = namedtuple('Input', ["p", "q"])
+Input = namedtuple("Input", ["p", "q"])
 
 _probs_inputs = Input(
     p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
@@ -41,19 +41,19 @@ _log_probs_inputs = Input(
 )
 
 
-def _sk_metric(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = 'mean'):
+def _sk_metric(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = "mean"):
     if log_prob:
         p = p.softmax(dim=-1)
         q = q.softmax(dim=-1)
     res = entropy(p, q, axis=1)
-    if reduction == 'mean':
+    if reduction == "mean":
         return np.mean(res)
-    if reduction == 'sum':
+    if reduction == "sum":
         return np.sum(res)
     return res
 
 
-@pytest.mark.parametrize("reduction", ['mean', 'sum'])
+@pytest.mark.parametrize("reduction", ["mean", "sum"])
 @pytest.mark.parametrize(
     "p, q, log_prob", [(_probs_inputs.p, _probs_inputs.q, False), (_log_probs_inputs.p, _log_probs_inputs.q, True)]
 )
@@ -89,26 +89,26 @@ class TestKLDivergence(MetricTester):
             q,
             metric_module=KLDivergence,
             metric_functional=kl_divergence,
-            metric_args=dict(log_prob=log_prob, reduction=reduction)
+            metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
 
     # KLDivergence half + cpu does not work due to missing support in torch.clamp
     @pytest.mark.xfail(reason="KLDivergence metric does not support cpu + half precision")
     def test_kldivergence_half_cpu(self, reduction, p, q, log_prob):
-        self.run_precision_test_cpu(p, q, KLDivergence, kl_divergence, {'log_prob': log_prob, 'reduction': reduction})
+        self.run_precision_test_cpu(p, q, KLDivergence, kl_divergence, {"log_prob": log_prob, "reduction": reduction})
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_r2_half_gpu(self, reduction, p, q, log_prob):
-        self.run_precision_test_gpu(p, q, KLDivergence, kl_divergence, {'log_prob': log_prob, 'reduction': reduction})
+        self.run_precision_test_gpu(p, q, KLDivergence, kl_divergence, {"log_prob": log_prob, "reduction": reduction})
 
 
 def test_error_on_different_shape():
     metric = KLDivergence()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        metric(torch.randn(100), torch.randn(50))
 
 
 def test_error_on_multidim_tensors():
     metric = KLDivergence()
-    with pytest.raises(ValueError, match='Expected both p and q distribution to be 2D but got 3 and 3 respectively'):
+    with pytest.raises(ValueError, match="Expected both p and q distribution to be 2D but got 3 and 3 respectively"):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))

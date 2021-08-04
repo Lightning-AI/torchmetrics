@@ -24,8 +24,7 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class MetricCollection(nn.ModuleDict):
-    """
-    MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
+    """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
         metrics: One of the following
@@ -85,7 +84,6 @@ class MetricCollection(nn.ModuleDict):
         >>> pprint(same_metric(preds, target))
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
         >>> metrics.persistent()
-
     """
 
     def __init__(
@@ -93,28 +91,28 @@ class MetricCollection(nn.ModuleDict):
         metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
-        postfix: Optional[str] = None
+        postfix: Optional[str] = None,
     ) -> None:
         super().__init__()
 
         self.add_metrics(metrics, *additional_metrics)
 
-        self.prefix = self._check_arg(prefix, 'prefix')
-        self.postfix = self._check_arg(postfix, 'postfix')
+        self.prefix = self._check_arg(prefix, "prefix")
+        self.postfix = self._check_arg(postfix, "postfix")
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """
-        Iteratively call forward for each metric. Positional arguments (args) will
-        be passed to every metric in the collection, while keyword arguments (kwargs)
+        """Iteratively call forward for each metric.
+
+        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
         return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Iteratively call update for each metric. Positional arguments (args) will
-        be passed to every metric in the collection, while keyword arguments (kwargs)
+        """Iteratively call update for each metric.
+
+        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
         for _, m in self.items(keep_base=True):
@@ -125,12 +123,12 @@ class MetricCollection(nn.ModuleDict):
         return {k: m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
-        """ Iteratively call reset for each metric """
+        """Iteratively call reset for each metric."""
         for _, m in self.items(keep_base=True):
             m.reset()
 
-    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> 'MetricCollection':
-        """ Make a copy of the metric collection
+    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
+        """Make a copy of the metric collection
         Args:
             prefix: a string to append in front of the metric keys
             postfix: a string to append after the keys of the output dict
@@ -138,23 +136,20 @@ class MetricCollection(nn.ModuleDict):
         """
         mc = deepcopy(self)
         if prefix:
-            mc.prefix = self._check_arg(prefix, 'prefix')
+            mc.prefix = self._check_arg(prefix, "prefix")
         if postfix:
-            mc.postfix = self._check_arg(postfix, 'postfix')
+            mc.postfix = self._check_arg(postfix, "postfix")
         return mc
 
     def persistent(self, mode: bool = True) -> None:
-        """Method for post-init to change if metric states should be saved to
-        its state_dict
-        """
+        """Method for post-init to change if metric states should be saved to its state_dict."""
         for _, m in self.items(keep_base=True):
             m.persistent(mode)
 
     def add_metrics(
         self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
     ) -> None:
-        """Add new metrics to Metric Collection
-        """
+        """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
             # set compatible with original type expectations
             metrics = [metrics]
@@ -229,7 +224,7 @@ class MetricCollection(nn.ModuleDict):
     def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
         if arg is None or isinstance(arg, str):
             return arg
-        raise ValueError(f'Expected input `{name}` to be a string, but got {type(arg)}')
+        raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
 
     def __repr__(self) -> str:
         repr_str = super().__repr__()[:-2]

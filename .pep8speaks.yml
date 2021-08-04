@@ -1,4 +1,4 @@
-# File : .pep8speaks.yml
+# File: .pep8speaks.yml
 
 scanner:
     diff_only: True  # If False, the entire file touched by the Pull Request is scanned for errors. If True, only the diff is scanned.

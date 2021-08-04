@@ -26,7 +26,17 @@ else:
     RougeScorer, AggregateScore, BootstrapAggregator = object, object, object
 
 ALLOWED_ROUGE_KEYS = (
-    "rouge1", "rouge2", "rouge3", "rouge4", "rouge5", "rouge6", "rouge7", "rouge8", "rouge9", "rougeL", "rougeLsum"
+    "rouge1",
+    "rouge2",
+    "rouge3",
+    "rouge4",
+    "rouge5",
+    "rouge6",
+    "rouge7",
+    "rouge8",
+    "rouge9",
+    "rougeL",
+    "rougeLsum",
 )
 
 
@@ -34,6 +44,7 @@ def add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if _NLTK_AVAILABLE:
         import nltk
+
         nltk.download("punkt", quiet=True, force=False)
 
     re.sub("<n>", "", x)  # remove pegasus newline char
@@ -42,7 +53,7 @@ def add_newline_to_end_of_each_sentence(x: str) -> str:
 
 
 def format_rouge_results(result: Dict[str, AggregateScore], decimal_places: int = 4) -> Dict[str, Tensor]:
-    """Formats the computed (aggregated) rouge score to a dictionary of tensors format. """
+    """Formats the computed (aggregated) rouge score to a dictionary of tensors format."""
     flattened_result = {}
     for rouge_key, rouge_aggregate_score in result.items():
         for stat in ["precision", "recall", "fmeasure"]:
@@ -59,8 +70,7 @@ def _rouge_score_update(
     aggregator: BootstrapAggregator,
     newline_sep: bool = False,
 ) -> None:
-    """
-    Update the rouge score with the current set of predicted and target sentences.
+    """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
         preds:
@@ -91,8 +101,7 @@ def _rouge_score_update(
 
 
 def _rouge_score_compute(aggregator: BootstrapAggregator, decimal_places: int = 4) -> Dict[str, Tensor]:
-    """
-    Compute the combined ROUGE metric for all the input set of predicted and target sentences.
+    """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
         aggregator:
@@ -110,10 +119,9 @@ def rouge_score(
     newline_sep: bool = False,
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
-    decimal_places: int = 4
+    decimal_places: int = 4,
 ) -> Dict[str, Tensor]:
-    """
-    Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
+    """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
         preds:
@@ -163,8 +171,8 @@ def rouge_score(
 
     if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
         raise ValueError(
-            'ROUGE metric requires that both nltk and rouge-score is installed.'
-            ' Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
+            "ROUGE metric requires that both nltk and rouge-score is installed."
+            " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
         )
 
     if not isinstance(rouge_keys, tuple):

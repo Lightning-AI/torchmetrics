@@ -24,7 +24,7 @@ def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
     pk = confmat.sum(dim=0).float()
     c = torch.trace(confmat).float()
     s = confmat.sum().float()
-    return (c * s - sum(tk * pk)) / (torch.sqrt(s**2 - sum(pk * pk)) * torch.sqrt(s**2 - sum(tk * tk)))
+    return (c * s - sum(tk * pk)) / (torch.sqrt(s ** 2 - sum(pk * pk)) * torch.sqrt(s ** 2 - sum(tk * tk)))
 
 
 def matthews_corrcoef(
@@ -34,8 +34,7 @@ def matthews_corrcoef(
     threshold: float = 0.5,
 ) -> Tensor:
     r"""
-    Calculates `Matthews correlation coefficient
-    <https://en.wikipedia.org/wiki/Matthews_correlation_coefficient>`_ that measures
+    Calculates `Matthews correlation coefficient`_ that measures
     the general correlation or quality of a classification. In the binary case it
     is defined as:
 

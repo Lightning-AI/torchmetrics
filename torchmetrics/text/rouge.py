@@ -27,8 +27,7 @@ else:
 
 
 class ROUGEScore(Metric):
-    """
-    Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
+    """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
     Args:
         newline_sep:
@@ -101,8 +100,8 @@ class ROUGEScore(Metric):
 
         if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
             raise ValueError(
-                'ROUGE metric requires that both nltk and rouge-score is installed.'
-                ' Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`'
+                "ROUGE metric requires that both nltk and rouge-score is installed."
+                " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
             )
 
         if not isinstance(rouge_keys, tuple):
@@ -119,8 +118,7 @@ class ROUGEScore(Metric):
         self.decimal_places = decimal_places
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
-        """
-        Compute rouge scores.
+        """Compute rouge scores.
 
         Args:
             preds: An iterable of predicted sentences.
@@ -138,8 +136,7 @@ class ROUGEScore(Metric):
         )
 
     def compute(self) -> Dict[str, Tensor]:
-        """
-        Calculate (Aggregate and provide confidence intervals) ROUGE score
+        """Calculate (Aggregate and provide confidence intervals) ROUGE score.
 
         Return:
             Python dictionary of rouge scores for each input rouge key.

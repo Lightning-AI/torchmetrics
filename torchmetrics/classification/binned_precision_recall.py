@@ -28,8 +28,9 @@ def _recall_at_precision(
     min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
     try:
-        max_recall, _, best_threshold = \
-            max((r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision)
+        max_recall, _, best_threshold = max(
+            (r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision
+        )
 
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
@@ -42,10 +43,8 @@ def _recall_at_precision(
 
 
 class BinnedPrecisionRecallCurve(Metric):
-    """
-    Computes precision-recall pairs for different thresholds. Works for both
-    binary and multiclass problems. In the case of multiclass, the values will
-    be calculated based on a one-vs-the-rest approach.
+    """Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
+    the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
@@ -114,6 +113,7 @@ class BinnedPrecisionRecallCurve(Metric):
         tensor([0.0000, 0.5000, 1.0000]),
         tensor([0.0000, 0.5000, 1.0000])]
     """
+
     TPs: Tensor
     FPs: Tensor
     FNs: Tensor
@@ -139,7 +139,7 @@ class BinnedPrecisionRecallCurve(Metric):
             self.register_buffer("thresholds", thresholds)
         elif thresholds is not None:
             if not isinstance(thresholds, (list, Tensor)):
-                raise ValueError('Expected argument `thresholds` to either be an integer, list of floats or a tensor')
+                raise ValueError("Expected argument `thresholds` to either be an integer, list of floats or a tensor")
             thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
             self.num_thresholds = thresholds.numel()
             self.register_buffer("thresholds", thresholds)
@@ -174,7 +174,7 @@ class BinnedPrecisionRecallCurve(Metric):
             self.FNs[:, i] += ((target) & (~predictions)).sum(dim=0)
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """Returns float tensor of size n_classes"""
+        """Returns float tensor of size n_classes."""
         precisions = (self.TPs + METRIC_EPS) / (self.TPs + self.FPs + METRIC_EPS)
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
 
@@ -189,10 +189,9 @@ class BinnedPrecisionRecallCurve(Metric):
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
-    """
-    Computes the average precision score, which summarises the precision recall
-    curve into one number. Works for both binary and multiclass problems.
-    In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
+    """Computes the average precision score, which summarises the precision recall curve into one number. Works for
+    both binary and multiclass problems. In the case of multiclass, the values will be calculated based on a one-
+    vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
@@ -244,8 +243,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
 
 
 class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
-    """
-    Computes the higest possible recall value given the minimum precision thresholds provided.
+    """Computes the higest possible recall value given the minimum precision thresholds provided.
 
     Computation is performed in constant-memory by computing precision and recall
     for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
@@ -311,7 +309,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         self.min_precision = min_precision
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
-        """Returns float tensor of size n_classes"""
+        """Returns float tensor of size n_classes."""
         precisions, recalls, thresholds = super().compute()
 
         if self.num_classes == 1:

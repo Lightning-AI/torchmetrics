@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. include:: ../links.rst
+
 ##################
 Functional metrics
 ##################
@@ -8,6 +10,13 @@ Functional metrics
 *************
 Audio Metrics
 *************
+
+pit [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pit
+    :noindex:
+
 
 si_sdr [func]
 ~~~~~~~~~~~~~
@@ -59,6 +68,13 @@ average_precision [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.average_precision
+    :noindex:
+
+
+calibration_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.calibration_error
     :noindex:
 
 
@@ -160,8 +176,9 @@ recall [func]
 .. autofunction:: torchmetrics.functional.recall
     :noindex:
 
+
 select_topk [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:

@@ -34,11 +34,9 @@ seed_all(42)
 
 
 def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
-    """
-    Didn't find a reliable implementation of Fall-out in Information Retrieval, so,
-    reimplementing here.
-    See `Wikipedia <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out>`__
-    for more information about the metric definition.
+    """Didn't find a reliable implementation of Fall-out in Information Retrieval, so, reimplementing here.
+
+    See Wikipedia for `Fall-out`_ for more information about the metric definition.
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
@@ -54,10 +52,9 @@ def _fallout_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
 
 
 class TestFallOut(RetrievalMetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
+    @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
@@ -70,7 +67,7 @@ class TestFallOut(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {'empty_target_action': empty_target_action, 'k': k}
+        metric_args = {"empty_target_action": empty_target_action, "k": k}
 
         self.run_class_metric_test(
             ddp=ddp,

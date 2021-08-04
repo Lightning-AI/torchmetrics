@@ -20,9 +20,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """
-    Updates and returns variables required to compute Mean Squared Error.
-    Checks for same shape of input tensors.
+    """Updates and returns variables required to compute Mean Squared Error. Checks for same shape of input
+    tensors.
 
     Args:
         preds: Predicted tensor
@@ -36,8 +35,7 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, i
 
 
 def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: bool = True) -> Tensor:
-    """
-    Computes Mean Squared Error.
+    """Computes Mean Squared Error.
 
     Args:
         sum_squared_error: Sum of square of errors over all observations
@@ -55,8 +53,7 @@ def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: 
 
 
 def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> Tensor:
-    """
-    Computes mean squared error
+    """Computes mean squared error.
 
     Args:
         preds: estimated labels

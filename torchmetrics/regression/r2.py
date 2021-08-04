@@ -22,16 +22,15 @@ from torchmetrics.metric import Metric
 
 class R2Score(Metric):
     r"""
-    Computes r2 score also known as `coefficient of determination
-    <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
+    Computes r2 score also known as `coefficient of determination`_:
 
-    .. math:: R^2 = 1 - \frac{SS_res}{SS_tot}
+    .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 
-    where :math:`SS_res=\sum_i (y_i - f(x_i))^2` is the sum of residual squares, and
-    :math:`SS_tot=\sum_i (y_i - \bar{y})^2` is total sum of squares. Can also calculate
+    where :math:`SS_{res}=\sum_i (y_i - f(x_i))^2` is the sum of residual squares, and
+    :math:`SS_{tot}=\sum_i (y_i - \bar{y})^2` is total sum of squares. Can also calculate
     adjusted r2 score given by
 
-    .. math:: R^2_adj = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
+    .. math:: R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
 
     where the parameter :math:`k` (the number of independent regressors) should
     be provided as the `adjusted` argument.
@@ -86,6 +85,7 @@ class R2Score(Metric):
         >>> r2score = R2Score(num_outputs=2, multioutput='raw_values')
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
+
     """
     sum_squared_error: Tensor
     sum_error: Tensor
@@ -112,13 +112,13 @@ class R2Score(Metric):
         self.num_outputs = num_outputs
 
         if adjusted < 0 or not isinstance(adjusted, int):
-            raise ValueError('`adjusted` parameter should be an integer larger or equal to 0.')
+            raise ValueError("`adjusted` parameter should be an integer larger or equal to 0.")
         self.adjusted = adjusted
 
-        allowed_multioutput = ('raw_values', 'uniform_average', 'variance_weighted')
+        allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
         if multioutput not in allowed_multioutput:
             raise ValueError(
-                f'Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}'
+                f"Invalid input to argument `multioutput`. Choose one of the following: {allowed_multioutput}"
             )
         self.multioutput = multioutput
 
@@ -128,8 +128,7 @@ class R2Score(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model

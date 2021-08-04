@@ -23,6 +23,7 @@ from tests.classification.inputs import _input_binary, _input_binary_logits, _in
 from tests.classification.inputs import _input_multiclass as _input_mcls
 from tests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
+from tests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
 from tests.classification.inputs import _input_multidim_multiclass as _input_mdmc
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
@@ -31,7 +32,7 @@ from tests.classification.inputs import _input_multilabel_multidim as _input_mlm
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import Accuracy
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
@@ -80,7 +81,6 @@ def _sk_accuracy(preds, target, subset_accuracy):
     ],
 )
 class TestAccuracies(MetricTester):
-
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_accuracy_class(self, ddp, dist_sync_on_step, preds, target, subset_accuracy):
@@ -91,10 +91,7 @@ class TestAccuracies(MetricTester):
             metric_class=Accuracy,
             sk_metric=partial(_sk_accuracy, subset_accuracy=subset_accuracy),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={
-                "threshold": THRESHOLD,
-                "subset_accuracy": subset_accuracy
-            },
+            metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
 
     def test_accuracy_fn(self, preds, target, subset_accuracy):
@@ -103,10 +100,7 @@ class TestAccuracies(MetricTester):
             target,
             metric_functional=accuracy,
             sk_metric=partial(_sk_accuracy, subset_accuracy=subset_accuracy),
-            metric_args={
-                "threshold": THRESHOLD,
-                "subset_accuracy": subset_accuracy
-            },
+            metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
 
     def test_accuracy_differentiability(self, preds, target, subset_accuracy):
@@ -115,10 +109,7 @@ class TestAccuracies(MetricTester):
             target=target,
             metric_module=Accuracy,
             metric_functional=accuracy,
-            metric_args={
-                "threshold": THRESHOLD,
-                "subset_accuracy": subset_accuracy
-            }
+            metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
 
 
@@ -136,7 +127,7 @@ _topk_preds_mdmc = tensor([_l1to4t3_mcls, _l1to4t3_mcls]).float()
 _topk_target_mdmc = tensor([[[1, 1, 0], [2, 2, 2], [3, 3, 3]], [[2, 2, 0], [1, 1, 1], [0, 0, 0]]])
 
 # Multilabel
-_ml_t1 = [.8, .2, .8, .2]
+_ml_t1 = [0.8, 0.2, 0.8, 0.2]
 _ml_t2 = [_ml_t1, _ml_t1]
 _ml_ta2 = [[1, 0, 1, 1], [0, 1, 1, 0]]
 _av_preds_ml = tensor([_ml_t2, _ml_t2]).float()
@@ -228,7 +219,7 @@ def test_wrong_params(average, mdmc_average, num_classes, inputs, ignore_index, 
             num_classes=num_classes,
             ignore_index=ignore_index,
             threshold=threshold,
-            top_k=top_k
+            top_k=top_k,
         )
         acc(preds[0], target[0])
         acc.compute()
@@ -242,18 +233,20 @@ def test_wrong_params(average, mdmc_average, num_classes, inputs, ignore_index, 
             num_classes=num_classes,
             ignore_index=ignore_index,
             threshold=threshold,
-            top_k=top_k
+            top_k=top_k,
         )
 
 
 @pytest.mark.parametrize(
     "preds_mc, target_mc, preds_ml, target_ml",
-    [(
-        tensor([0, 1, 1, 1]),
-        tensor([2, 2, 1, 1]),
-        tensor([[0.8, 0.2, 0.8, 0.7], [0.6, 0.4, 0.6, 0.5]]),
-        tensor([[1, 0, 1, 1], [0, 0, 1, 0]]),
-    )],
+    [
+        (
+            tensor([0, 1, 1, 1]),
+            tensor([2, 2, 1, 1]),
+            tensor([[0.8, 0.2, 0.8, 0.7], [0.6, 0.4, 0.6, 0.5]]),
+            tensor([[1, 0, 1, 1], [0, 0, 1, 0]]),
+        )
+    ],
 )
 def test_different_modes(preds_mc, target_mc, preds_ml, target_ml):
     acc = Accuracy()
@@ -272,16 +265,16 @@ _av_target_bin = tensor([[1, 0, 0, 0], [0, 1, 1, 0]])
     [
         (_topk_preds_mcls, _topk_target_mcls, 4, 1 / 4, "macro", None),
         (_topk_preds_mcls, _topk_target_mcls, 4, 1 / 6, "weighted", None),
-        (_topk_preds_mcls, _topk_target_mcls, 4, [0., 0., 0., 1.], "none", None),
+        (_topk_preds_mcls, _topk_target_mcls, 4, [0.0, 0.0, 0.0, 1.0], "none", None),
         (_topk_preds_mcls, _topk_target_mcls, 4, 1 / 6, "samples", None),
         (_topk_preds_mdmc, _topk_target_mdmc, 4, 1 / 24, "macro", "samplewise"),
         (_topk_preds_mdmc, _topk_target_mdmc, 4, 1 / 6, "weighted", "samplewise"),
-        (_topk_preds_mdmc, _topk_target_mdmc, 4, [0., 0., 0., 1 / 6], "none", "samplewise"),
+        (_topk_preds_mdmc, _topk_target_mdmc, 4, [0.0, 0.0, 0.0, 1 / 6], "none", "samplewise"),
         (_topk_preds_mdmc, _topk_target_mdmc, 4, 1 / 6, "samples", "samplewise"),
         (_topk_preds_mdmc, _topk_target_mdmc, 4, 1 / 6, "samples", "global"),
         (_av_preds_ml, _av_target_ml, 4, 5 / 8, "macro", None),
         (_av_preds_ml, _av_target_ml, 4, 0.70000005, "weighted", None),
-        (_av_preds_ml, _av_target_ml, 4, [1 / 2, 1 / 2, 1., 1 / 2], "none", None),
+        (_av_preds_ml, _av_target_ml, 4, [1 / 2, 1 / 2, 1.0, 1 / 2], "none", None),
         (_av_preds_ml, _av_target_ml, 4, 5 / 8, "samples", None),
     ],
 )
@@ -334,9 +327,8 @@ def test_average_accuracy_bin(preds, target, num_classes, exp_result, average, m
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
 )
 def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
-    """This tests that when metric is computed per class and a given class is not present
-    in both the `preds` and `target`, the resulting score is `nan`.
-    """
+    """This tests that when metric is computed per class and a given class is not present in both the `preds` and
+    `target`, the resulting score is `nan`."""
     preds = torch.tensor([0, 0, 0])
     target = torch.tensor([0, 0, 0])
     num_classes = 2
@@ -350,3 +342,21 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     cl_metric(preds, target)
     result_cl = cl_metric.compute()
     assert torch.allclose(expected, result_cl, equal_nan=True)
+
+
+@pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
+def test_same_input(average):
+    preds = _input_miss_class.preds
+    target = _input_miss_class.target
+    preds_flat = torch.cat([p for p in preds], dim=0)
+    target_flat = torch.cat([t for t in target], dim=0)
+
+    mc = Accuracy(num_classes=NUM_CLASSES, average=average)
+    for i in range(NUM_BATCHES):
+        mc.update(preds[i], target[i])
+    class_res = mc.compute()
+    func_res = accuracy(preds_flat, target_flat, num_classes=NUM_CLASSES, average=average)
+    sk_res = sk_accuracy(target_flat, preds_flat)
+
+    assert torch.allclose(class_res, torch.tensor(sk_res).float())
+    assert torch.allclose(func_res, torch.tensor(sk_res).float())

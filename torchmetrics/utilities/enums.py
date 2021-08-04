@@ -16,7 +16,7 @@ from typing import Optional, Union
 
 
 class EnumStr(str, Enum):
-    """ Type of any enumerator with allowed comparison to string invariant to cases.
+    """Type of any enumerator with allowed comparison to string invariant to cases.
 
     Example:
         >>> class MyEnum(EnumStr):
@@ -28,14 +28,14 @@ class EnumStr(str, Enum):
     """
 
     @classmethod
-    def from_str(cls, value: str) -> Optional['EnumStr']:
-        statuses = [status for status in dir(cls) if not status.startswith('_')]
+    def from_str(cls, value: str) -> Optional["EnumStr"]:
+        statuses = [status for status in dir(cls) if not status.startswith("_")]
         for st in statuses:
             if st.lower() == value.lower():
                 return getattr(cls, st)
         return None
 
-    def __eq__(self, other: Union[str, 'EnumStr', None]) -> bool:  # type: ignore
+    def __eq__(self, other: Union[str, "EnumStr", None]) -> bool:  # type: ignore
         other = other.value if isinstance(other, Enum) else str(other)
         return self.value.lower() == other.lower()
 
@@ -46,7 +46,7 @@ class EnumStr(str, Enum):
 
 
 class DataType(EnumStr):
-    """Enum to represent data type
+    """Enum to represent data type.
 
     >>> "Binary" in list(DataType)
     True
@@ -59,7 +59,7 @@ class DataType(EnumStr):
 
 
 class AverageMethod(EnumStr):
-    """Enum to represent average method
+    """Enum to represent average method.
 
     >>> None in list(AverageMethod)
     True
@@ -77,7 +77,7 @@ class AverageMethod(EnumStr):
 
 
 class MDMCAverageMethod(EnumStr):
-    """Enum to represent multi-dim multi-class average method"""
+    """Enum to represent multi-dim multi-class average method."""
 
     GLOBAL = "global"
     SAMPLEWISE = "samplewise"

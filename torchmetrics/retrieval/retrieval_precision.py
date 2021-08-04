@@ -20,9 +20,7 @@ from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
 class RetrievalPrecision(RetrievalMetric):
-    """
-    Computes `Precision
-    <https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision>`__.
+    """Computes `IR Precision`_.
 
     Works with binary target data. Accepts float predictions from a model output.
 
@@ -71,19 +69,19 @@ class RetrievalPrecision(RetrievalMetric):
 
     def __init__(
         self,
-        empty_target_action: str = 'neg',
+        empty_target_action: str = "neg",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        k: int = None
+        k: int = None,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=dist_sync_fn,
         )
 
         if (k is not None) and not (isinstance(k, int) and k > 0):

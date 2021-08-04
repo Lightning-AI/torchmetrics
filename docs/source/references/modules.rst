@@ -2,6 +2,8 @@
 Module metrics
 ##############
 
+.. include:: ../links.rst
+
 **********
 Base class
 **********
@@ -39,6 +41,12 @@ the metric will be computed over the ``time`` dimension.
     >>> snr_val = snr(preds, target)
     >>> snr_val
     tensor(16.1805)
+
+PIT
+~~~
+
+.. autoclass:: torchmetrics.PIT
+    :noindex:
 
 SI_SDR
 ~~~~~~
@@ -203,6 +211,12 @@ BinnedRecallAtFixedPrecision
 .. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
     :noindex:
 
+CalibrationError
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CalibrationError
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -295,7 +309,6 @@ StatScores
 
 .. autoclass:: torchmetrics.StatScores
     :noindex:
-
 
 *************
 Image Metrics
