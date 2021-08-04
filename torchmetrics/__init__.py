@@ -11,6 +11,7 @@ _logger.setLevel(__logging.INFO)
 _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
+from torchmetrics import functional  # noqa: E402
 from torchmetrics.audio import PIT, SI_SDR, SI_SNR, SNR  # noqa: E402
 from torchmetrics.average import AverageMeter  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402
@@ -64,6 +65,7 @@ from torchmetrics.text import WER, BLEUScore, ROUGEScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper  # noqa: E402
 
 __all__ = [
+    "functional",
     "Accuracy",
     "AUC",
     "AUROC",
