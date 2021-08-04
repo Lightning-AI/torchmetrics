@@ -24,9 +24,7 @@ refs = [
 
 
 def _assert_list(preds: Any, refs: Any, threshold: float = 1e-8):
-    """
-    Assert two lists are equal
-    """
+    """Assert two lists are equal."""
     assert np.allclose(preds, refs, atol=threshold, equal_nan=True)
 
 
@@ -36,9 +34,7 @@ def _assert_list(preds: Any, refs: Any, threshold: float = 1e-8):
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_fn(preds, refs):
-    """
-    Tests for functional
-    """
+    """Tests for functional."""
     Score = bert_score(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
     _assert_list(Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
     _assert_list(Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
@@ -51,13 +47,10 @@ def test_score_fn(preds, refs):
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score(preds, refs):
-    """
-    Tests for metric
-    """
+    """Tests for metric."""
     Scorer = BERTScore(model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
     Scorer.update(predictions=preds, references=refs)
     Score = Scorer.compute()
     _assert_list(Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
     _assert_list(Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
     _assert_list(Score["f1"], [0.9833561182022095, 0.9782299995422363, 0.916214644908905])
-    
