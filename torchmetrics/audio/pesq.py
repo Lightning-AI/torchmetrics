@@ -92,7 +92,7 @@ class PESQ(Metric):
 
     def compute(self) -> Tensor:
         """
-        Computes average SI-SDR.
+        Computes average PESQ.
         """
         return self.sum_pesq / self.total
 
