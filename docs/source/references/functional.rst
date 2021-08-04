@@ -386,4 +386,4 @@ wer [func]
 bertscore [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.bertscore
+.. autofunction:: torchmetrics.functional.bert_score

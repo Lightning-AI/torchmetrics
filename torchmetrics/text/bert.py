@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import Any, Callable, Dict, List, Optional
 
-from torchmetrics.functional import bertscore
+from torchmetrics.functional import bert_score
 from torchmetrics.metric import Metric
 
 
@@ -114,7 +114,7 @@ class BERTScore(Metric):
         Return:
             Dict with Bertscores.
         """
-        return bertscore(
+        return bert_score(
             predictions=self.predictions,
             references=self.references,
             model_type=self.model_type,

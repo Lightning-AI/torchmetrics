@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from torchmetrics.functional import bertscore
+from torchmetrics.functional import bert_score
 from torchmetrics.text import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
@@ -35,7 +35,7 @@ refs = [
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_fn(preds, refs):
-    Score = bertscore(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
+    Score = bert_score(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
     assertTensorsAlmostEqual(
         expected=Score["precision"], actual=[0.9843302369117737, 0.9832239747047424, 0.9120386242866516]
     )
