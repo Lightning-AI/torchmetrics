@@ -34,8 +34,6 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
             "Expected both prediction and target to be 1D or 2D tensors,"
             f" but received tensors with dimension {preds.shape}"
         )
-    if len(preds) < 2:
-        raise ValueError("Needs at least two samples to calculate r2 score.")
 
     sum_obs = torch.sum(target, dim=0)
     sum_squared_obs = torch.sum(target * target, dim=0)
@@ -77,6 +75,9 @@ def _r2_score_compute(
         >>> _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, multioutput="raw_values")
         tensor([0.9654, 0.9082])
     """
+    if n_obs < 2:
+        raise ValueError("Needs at least two samples to calculate r2 score.")
+
     mean_obs = sum_obs / n_obs
     tss = sum_squared_obs - sum_obs * mean_obs
     raw_scores = 1 - (rss / tss)
@@ -120,13 +121,13 @@ def r2_score(
     r"""
     Computes r2 score also known as `coefficient of determination`_:
 
-    .. math:: R^2 = 1 - \frac{SS_res}{SS_tot}
+    .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 
-    where :math:`SS_res=\sum_i (y_i - f(x_i))^2` is the sum of residual squares, and
-    :math:`SS_tot=\sum_i (y_i - \bar{y})^2` is total sum of squares. Can also calculate
+    where :math:`SS_{res}=\sum_i (y_i - f(x_i))^2` is the sum of residual squares, and
+    :math:`SS_{tot}=\sum_i (y_i - \bar{y})^2` is total sum of squares. Can also calculate
     adjusted r2 score given by
 
-    .. math:: R^2_adj = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
+    .. math:: R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
 
     where the parameter :math:`k` (the number of independent regressors) should
     be provided as the ``adjusted`` argument.

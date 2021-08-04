@@ -560,3 +560,9 @@ BootStrapper
 
 .. autoclass:: torchmetrics.BootStrapper
     :noindex:
+
+MetricTracker
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MetricTracker
+    :noindex:
