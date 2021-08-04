@@ -4,13 +4,7 @@ import pytest
 from torchmetrics.functional import bert_score
 from torchmetrics.text import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
-
-
-def assertTensorsAlmostEqual(expected, actual, decimal=5):
-    """
-    Test tensors are almost equal (EPS = 1e-5 by default)
-    """
-    np.testing.assert_almost_equal(expected, actual, decimal=decimal)
+from tests.helpers.testers import _assert_allclose
 
 
 preds = [
@@ -36,13 +30,13 @@ refs = [
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_fn(preds, refs):
     Score = bert_score(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
-    assertTensorsAlmostEqual(
-        expected=Score["precision"], actual=[0.9843302369117737, 0.9832239747047424, 0.9120386242866516]
+    _assert_allclose(
+        Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516]
     )
-    assertTensorsAlmostEqual(
-        expected=Score["recall"], actual=[0.9823839068412781, 0.9732863903045654, 0.920428991317749]
+    _assert_allclose(
+        Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749]
     )
-    assertTensorsAlmostEqual(expected=Score["f1"], actual=[0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+    _assert_allclose(Score["f1"], [0.9833561182022095, 0.9782299995422363, 0.916214644908905])
 
 
 @pytest.mark.parametrize(
@@ -54,10 +48,10 @@ def test_score(preds, refs):
     Scorer = BERTScore(model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
     Scorer.update(predictions=preds, references=refs)
     Score = Scorer.compute()
-    assertTensorsAlmostEqual(
-        expected=Score["precision"], actual=[0.9843302369117737, 0.9832239747047424, 0.9120386242866516]
+    _assert_allclose(
+        Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516]
     )
-    assertTensorsAlmostEqual(
-        expected=Score["recall"], actual=[0.9823839068412781, 0.9732863903045654, 0.920428991317749]
+    _assert_allclose(
+        Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749]
     )
-    assertTensorsAlmostEqual(expected=Score["f1"], actual=[0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+    _assert_allclose(Score["f1"], [0.9833561182022095, 0.9782299995422363, 0.916214644908905])

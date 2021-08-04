@@ -24,33 +24,29 @@ class BERTScore(Metric):
     useful for evaluating different language generation tasks.
 
     Args:
-        - :param: `cands` (list of str): candidate sentences
-        - :param: `refs` (list of str or list of list of str): reference sentences
-        - :param: `model_type` (str): bert specification, default using the suggested
+        - `model_type` (str): bert specification, default using the suggested
                   model for the target langauge; has to specify at least one of
                   `model_type` or `lang`
-        - :param: `num_layers` (int): the layer of representation to use.
+        - `num_layers` (int): the layer of representation to use.
                   default using the number of layer tuned on WMT16 correlation data
-        - :param: `verbose` (bool): turn on intermediate status update
-        - :param: `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
-        - :param: `device` (str): on which the contextual embedding model will be allocated on.
+        - `verbose` (bool): turn on intermediate status update
+        - `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
+        - `device` (str): on which the contextual embedding model will be allocated on.
                   If this argument is None, the model lives on cuda:0 if cuda is available.
-        - :param: `nthreads` (int): number of threads
-        - :param: `batch_size` (int): bert score processing batch size
-        - :param: `lang` (str): language of the sentences; has to specify
+        - `nthreads` (int): number of threads
+        - `batch_size` (int): bert score processing batch size
+        - `lang` (str): language of the sentences; has to specify
                   at least one of `model_type` or `lang`. `lang` needs to be
                   specified when `rescale_with_baseline` is True.
-        - :param: `return_hash` (bool): return hash code of the setting
-        - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
-        - :param: `baseline_path` (str): customized baseline file
-        - :param: `use_fast_tokenizer` (bool): `use_fast` parameter passed to HF tokenizer
+        - `return_hash` (bool): return hash code of the setting
+        - `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
+        - `baseline_path` (str): customized baseline file
 
     Returns:
-        - :param: `(P, R, F)`: each is of shape (N); N = number of input
-                      candidate reference pairs. if returning hashcode, the
-                      output will be ((P, R, F), hashcode). If a candidate have
-                      multiple references, the returned score of this candidate is
-                      the *best* score among all references.
+        - precision: Precision.
+        - recall: Recall.
+        - f1: F1 score.
+        - hashcode: Hashcode of the library.
 
     Example:
         >>> predictions = ["hello there", "general kenobi"]
@@ -62,17 +58,17 @@ class BERTScore(Metric):
 
     def __init__(
         self,
-        model_type: str = None,
+        model_type: Optional[str] = None,
         num_layers: int = None,
         verbose: bool = False,
         idf: bool = False,
-        device: str = None,
+        device: Optional[str] = None,
         batch_size: int = 64,
         nthreads: int = 4,
         all_layers: bool = False,
-        lang: str = None,
+        lang: Optional[str] = None,
         rescale_with_baseline: bool = False,
-        baseline_path: str = None,
+        baseline_path: Optional[str] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,

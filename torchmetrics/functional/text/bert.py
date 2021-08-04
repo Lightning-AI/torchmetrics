@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
@@ -22,17 +22,17 @@ if _BERTSCORE_AVAILABLE:
 def bert_score(
     predictions: List,
     references: List,
-    model_type: str = None,
+    model_type: Optional[str] = None,
     num_layers: int = None,
     verbose: bool = False,
     idf: bool = False,
-    device: str = None,
+    device: Optional[str] = None,
     batch_size: int = 64,
     nthreads: int = 4,
     all_layers: bool = False,
-    lang: str = "en",
+    lang: Optional[str] = "en",
     rescale_with_baseline: bool = False,
-    baseline_path: str = None,
+    baseline_path: Optional[str] = None,
 ) -> Dict:
     """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
     reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
@@ -73,6 +73,10 @@ def bert_score(
         >>> print([round(v, 2) for v in results["f1"]])
         [1.0, 1.0]
     """
+    if not _BERTSCORE_AVAILABLE:
+        raise ValueError("bert_score metric requires that bert-score package is installed."
+                         " Either install with `pip install bert-score` or `pip install torchmetrics[text]`")
+
     if model_type is None:
         model_type = bert.lang2model[lang.lower()]
 
