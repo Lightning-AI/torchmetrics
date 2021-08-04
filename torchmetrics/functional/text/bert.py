@@ -22,6 +22,7 @@ if _BERTSCORE_AVAILABLE:
 def bert_score(
     predictions: List,
     references: List,
+    lang: str = "en",
     model_type: Optional[str] = None,
     num_layers: int = None,
     verbose: bool = False,
@@ -30,7 +31,6 @@ def bert_score(
     batch_size: int = 64,
     nthreads: int = 4,
     all_layers: bool = False,
-    lang: Optional[str] = "en",
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
 ) -> Dict:
