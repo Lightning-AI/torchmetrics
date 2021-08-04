@@ -59,6 +59,7 @@ class BERTScore(Metric):
     def __init__(
         self,
         model_type: Optional[str] = None,
+        lang: str = 'en',
         num_layers: int = None,
         verbose: bool = False,
         idf: bool = False,
@@ -66,7 +67,6 @@ class BERTScore(Metric):
         batch_size: int = 64,
         nthreads: int = 4,
         all_layers: bool = False,
-        lang: Optional[str] = None,
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         compute_on_step: bool = True,
