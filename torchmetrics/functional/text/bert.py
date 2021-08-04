@@ -16,10 +16,10 @@ from typing import Dict, List
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
 if _BERTSCORE_AVAILABLE:
-    import bert_score
+    import bert_score as bert
 
 
-def bertscore(
+def bert_score(
     predictions: List,
     references: List,
     model_type: str = None,
@@ -74,12 +74,12 @@ def bertscore(
         [1.0, 1.0]
     """
     if model_type is None:
-        model_type = bert_score.lang2model[lang.lower()]
+        model_type = bert.lang2model[lang.lower()]
 
     if num_layers is None:
-        num_layers = bert_score.model2layers[model_type]
+        num_layers = bert.model2layers[model_type]
 
-    hashcode = bert_score.get_hash(
+    hashcode = bert.get_hash(
         model=model_type,
         num_layers=num_layers,
         idf=idf,
@@ -87,7 +87,7 @@ def bertscore(
         use_custom_baseline=baseline_path is not None,
     )
 
-    cached_bertscorer = bert_score.BERTScorer(
+    cached_bertscorer = bert.BERTScorer(
         model_type=model_type,
         num_layers=num_layers,
         batch_size=batch_size,
@@ -100,7 +100,7 @@ def bertscore(
         baseline_path=baseline_path,
     )
     if cached_bertscorer.hash != hashcode:
-        cached_bertscorer = bert_score.BERTScorer(
+        cached_bertscorer = bert.BERTScorer(
             model_type=model_type,
             num_layers=num_layers,
             batch_size=batch_size,
