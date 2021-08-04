@@ -59,7 +59,7 @@ class BERTScore(Metric):
     def __init__(
         self,
         model_type: Optional[str] = None,
-        lang: str = 'en',
+        lang: str = "en",
         num_layers: int = None,
         verbose: bool = False,
         idf: bool = False,
