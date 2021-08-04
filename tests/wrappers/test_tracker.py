@@ -51,22 +51,8 @@ def test_raises_error_if_increment_not_called(method, method_input):
         (partial(Accuracy, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
         (partial(Precision, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
         (partial(Recall, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (
-            MeanSquaredError,
-            (
-                torch.randn(50),
-                torch.randn(50)
-            ),
-            False
-        ),
-        (
-            MeanAbsoluteError,
-            (
-                torch.randn(50),
-                torch.randn(50)
-            ),
-            False
-        ),
+        (MeanSquaredError, (torch.randn(50), torch.randn(50)), False),
+        (MeanAbsoluteError, (torch.randn(50), torch.randn(50)), False),
     ],
 )
 def test_tracker(base_metric, metric_input, maximize):
