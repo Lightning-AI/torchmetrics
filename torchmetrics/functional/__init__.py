@@ -64,7 +64,6 @@ from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.wer import wer
 
 __all__ = [
-    "functional",
     "accuracy",
     "auc",
     "auroc",
