@@ -50,8 +50,7 @@ def _crps_compute(batch_size: int, diff: Tensor, ensemble_sum_scale_factor: floa
 
 
 def crps(preds: Tensor, target: Tensor) -> Tensor:
-    """
-    Computes continuous ranked probability score.
+    """Computes continuous ranked probability score.
 
     Args:
         preds: estimated labels. Second dimension is the number of ensemble members.

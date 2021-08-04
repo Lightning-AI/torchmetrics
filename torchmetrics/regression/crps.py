@@ -70,7 +70,7 @@ class CRPS(Metric):
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=dist_sync_fn,
         )
 
         self.add_state("batch_size", default=tensor(0), dist_reduce_fx="sum")
@@ -79,8 +79,7 @@ class CRPS(Metric):
         self.add_state("ensemble_sum", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -93,7 +92,5 @@ class CRPS(Metric):
         self.ensemble_sum += ensemble_sum
 
     def compute(self) -> Tensor:
-        """
-        Compute the continuous ranked probability score over state.
-        """
+        """Compute the continuous ranked probability score over state."""
         return _crps_compute(self.batch_size, self.diff, self.ensemble_sum_scale_factor, self.ensemble_sum)

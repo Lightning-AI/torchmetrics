@@ -27,7 +27,7 @@ seed_all(42)
 
 num_ensemble = 5
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _single_ensample_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1),
@@ -41,7 +41,7 @@ _multi_ensample_inputs = Input(
 
 _extra_dim_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_ensemble, EXTRA_DIM),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
 
@@ -53,12 +53,13 @@ def _compare_fn(preds, target):
 
 @pytest.mark.parametrize(
     "preds, target",
-    [(_single_ensample_inputs.preds, _single_ensample_inputs.target),
-     (_multi_ensample_inputs.preds, _multi_ensample_inputs.target),
-     (_extra_dim_inputs.preds, _extra_dim_inputs.target)],
+    [
+        (_single_ensample_inputs.preds, _single_ensample_inputs.target),
+        (_multi_ensample_inputs.preds, _multi_ensample_inputs.target),
+        (_extra_dim_inputs.preds, _extra_dim_inputs.target),
+    ],
 )
 class TestCSPR(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_cspr_module(self, preds, target, ddp, dist_sync_on_step):
@@ -75,8 +76,8 @@ class TestCSPR(MetricTester):
         self.run_functional_metric_test(preds, target, crps, _compare_fn)
 
 
-@pytest.mark.parametrize("preds_shape, target_shape", [((10, 3, 5), (10, )), ((10, 3), (5, ))])
+@pytest.mark.parametrize("preds_shape, target_shape", [((10, 3, 5), (10,)), ((10, 3), (5,))])
 def test_error_on_different_shape(preds_shape, target_shape):
     metric = CRPS()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(*preds_shape), torch.randn(*target_shape))
