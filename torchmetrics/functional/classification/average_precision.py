@@ -38,6 +38,39 @@ def _average_precision_compute(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[List[Tensor], Tensor]:
+    """
+    Computes the average precision score.
+
+    Args:
+        preds: predictions from model (logits or probabilities)
+        target: ground truth values
+        num_classes: integer with number of classes. Not nessesary to provide
+            for binary problems.
+        pos_label: integer determining the positive class. Default is ``None``
+            which for binary problem is translate to 1. For multiclass problems
+            this argument should not be set as we iteratively change it in the
+            range [0,num_classes-1]
+        sample_weights: sample weights for each data point
+
+    Example:
+        >>> # binary case
+        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=1)
+        >>> _average_precision_compute(preds, target, num_classes, pos_label)
+        tensor(1.)
+
+        >>> # multiclass case
+        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes=5)
+        >>> _average_precision_compute(preds, target, num_classes, pos_label)
+        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
+    """
+
     # todo: `sample_weights` is unused
     precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
     return _average_precision_compute_with_precision_recall(precision, recall, num_classes)
@@ -48,6 +81,36 @@ def _average_precision_compute_with_precision_recall(
     recall: Tensor,
     num_classes: int,
 ) -> Union[List[Tensor], Tensor]:
+    """
+    Computes the average precision score from precision and recall.
+
+    Args:
+        precision: precision values
+        recall: recall values
+        num_classes: integer with number of classes. Not nessesary to provide
+            for binary problems.
+
+    Example:
+        >>> # binary case
+        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> target = torch.tensor([0, 1, 1, 1])
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=1)
+        >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
+        >>> _average_precision_compute_with_precision_recall(preds, target, num_classes)
+        tensor(1.)
+
+        >>> # multiclass case
+        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes=5)
+        >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
+        >>> _average_precision_compute_with_precision_recall(preds, target, num_classes)
+        [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
+    """
+    
     # Return the step function integral
     # The following works because the last entry of precision is
     # guaranteed to be 1, as returned by precision_recall_curve

@@ -22,6 +22,25 @@ _cohen_kappa_update = _confusion_matrix_update
 
 
 def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tensor:
+    """
+    Computes Cohen's kappa based on the weighting type.
+
+    Args:
+        confmat: Confusion matrix without normalization
+        weights: Weighting type to calculate the score. Choose from
+            - ``None`` or ``'none'``: no weighting
+            - ``'linear'``: linear weighting
+            - ``'quadratic'``: quadratic weighting
+
+    Example:
+        >>> from torchmetrics.functional import cohen_kappa
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> confmat = _cohen_kappa_update(preds, target, num_classes=2)
+        >>> _cohen_kappa_compute(confmat)
+        tensor(0.5000)
+    """
+
     confmat = _confusion_matrix_compute(confmat)
     confmat = confmat.float() if not confmat.is_floating_point() else confmat
     n_classes = confmat.shape[0]
