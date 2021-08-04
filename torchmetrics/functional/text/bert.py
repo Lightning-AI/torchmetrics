@@ -74,8 +74,10 @@ def bert_score(
         [1.0, 1.0]
     """
     if not _BERTSCORE_AVAILABLE:
-        raise ValueError("bert_score metric requires that bert-score package is installed."
-                         " Either install with `pip install bert-score` or `pip install torchmetrics[text]`")
+        raise ValueError(
+            "bert_score metric requires that bert-score package is installed."
+            " Either install with `pip install bert-score` or `pip install torchmetrics[text]`"
+        )
 
     if model_type is None:
         model_type = bert.lang2model[lang.lower()]
