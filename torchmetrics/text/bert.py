@@ -55,7 +55,7 @@ class BERTScore(Metric):
     Example:
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "general kenobi"]
-        >>> results = bertscore(predictions=predictions, references=references, lang="en")
+        >>> results = bert_score(predictions=predictions, references=references, lang="en")
         >>> print([round(v, 2) for v in results["f1"]])
         [1.0, 1.0]
     """
