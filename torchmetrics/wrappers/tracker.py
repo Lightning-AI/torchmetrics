@@ -39,16 +39,17 @@ class MetricTracker(nn.ModuleList):
             is better (`False`)
 
     Example::
-        >>> from torchmetrics import Accuracy, MetricTracker
-        >>> tracker = MetricTracker(Accuracy(num_classes=10))
-        >>> for epoch in range(5):  # doctest: +SKIP
-        ...     tracker.increment()  # doctest: +SKIP
-        ...     for batch_idx in range(5):  # doctest: +SKIP
-        ...         preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))  # doctest: +SKIP
-        ...         tracker.update(preds, target)  # doctest: +SKIP
-        ...     print(f"current acc={tracker.compute()}")  # doctest: +SKIP
-        >>> best_acc, which_epoch = tracker.best_metric(return_step=True)  # doctest: +SKIP
-        >>> all_values = tracker.compute_all()  # doctest: +SKIP
+
+        from torchmetrics import Accuracy, MetricTracker
+        tracker = MetricTracker(Accuracy(num_classes=10))
+        for epoch in range(5):
+            tracker.increment()
+            for batch_idx in range(5):
+                preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))
+                tracker.update(preds, target)
+            print(f"current acc={tracker.compute()}")
+        best_acc, which_epoch = tracker.best_metric(return_step=True)
+        all_values = tracker.compute_all()
     """
 
     def __init__(self, metric: Metric, maximize: bool = True) -> None:
