@@ -36,7 +36,7 @@ def _assert_list(preds: Any, refs: Any, threshold: float = 1e-8):
 def test_score_fn(preds, refs):
     Score = bert_score(preds, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
     print(type(Score))
-    print(type(Score['f1']))
+    print(type(Score["f1"]))
     _assert_list(Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
     _assert_list(Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
     _assert_list(Score["f1"], [0.9833561182022095, 0.9782299995422363, 0.916214644908905])
@@ -52,7 +52,7 @@ def test_score(preds, refs):
     Scorer.update(predictions=preds, references=refs)
     Score = Scorer.compute()
     print(type(Score))
-    print(type(Score['f1']))
+    print(type(Score["f1"]))
     _assert_list(Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
     _assert_list(Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
     _assert_list(Score["f1"], [0.9833561182022095, 0.9782299995422363, 0.916214644908905])
