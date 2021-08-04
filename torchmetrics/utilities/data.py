@@ -94,7 +94,10 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
                 [1, 1, 0]], dtype=torch.int32)
     """
     zeros = torch.zeros_like(prob_tensor)
-    topk_tensor = zeros.scatter(dim, prob_tensor.topk(k=topk, dim=dim).indices, 1.0)
+    if topk == 1:  # argmax has better performance than topk
+        topk_tensor = zeros.scatter(dim, prob_tensor.argmax(dim=dim, keepdim=True), 1.0)
+    else:
+        topk_tensor = zeros.scatter(dim, prob_tensor.topk(k=topk, dim=dim).indices, 1.0)
     return topk_tensor.int()
 
 
