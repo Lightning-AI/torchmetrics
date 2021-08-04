@@ -55,17 +55,17 @@ def test_raises_error_if_increment_not_called(method, method_input):
             MeanSquaredError,
             (
                 torch.randn(50),
-                torch.randn(50),
+                torch.randn(50)
             ),
-            False,
+            False
         ),
         (
             MeanAbsoluteError,
             (
                 torch.randn(50),
-                torch.randn(50),
+                torch.randn(50)
             ),
-            False,
+            False
         ),
     ],
 )
