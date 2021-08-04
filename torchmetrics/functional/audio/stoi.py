@@ -1,0 +1,75 @@
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import numpy as np
+from pystoi import stoi as stoi_backend
+import torch
+from torch import Tensor
+
+from torchmetrics.utilities.checks import _check_same_shape
+
+
+def stoi(preds: Tensor, target: Tensor, fs: int, extended=False, keep_same_device: bool = False) -> Tensor:
+    r""" STOI (Short Term Objective Intelligibility, see [2,3])
+
+    This is a wrapper for the pystoi package [1].
+    
+    Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative to the speech intelligibility index (SII) or the speech transmission index (STI), when you are interested in the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech intelligibility. Description taken from [Cees Taal's website](http://www.ceestaal.nl/code/).
+
+    Args:
+        preds:
+            shape ``[...,time]``
+        target:
+            shape ``[...,time]``
+        fs:
+            sampling frequency (Hz)
+        extended:
+            whether to use the extended STOI described in [4]
+        keep_same_device:
+            whether to move the stoi value to the device of preds
+
+    Returns:
+        stoi value of shape [...]
+
+    Example:
+        >>> from torchmetrics.functional.audio import stoi
+        >>> import torch
+        >>> preds = torch.randn(8000)
+        >>> target = torch.randn(8000)
+        >>> stoi_val = stoi(preds, target, 8000)
+
+    References:
+        [1] https://github.com/mpariente/pystoi 
+        [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time Objective Intelligibility Measure for Time-Frequency Weighted Noisy Speech', ICASSP 2010, Texas, Dallas.
+        [3] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for Intelligibility Prediction of Time-Frequency Weighted Noisy Speech', IEEE Transactions on Audio, Speech, and Language Processing, 2011.
+        [4] J. Jensen and C. H. Taal, 'An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated Noise Maskers', IEEE Transactions on Audio, Speech and Language Processing, 2016.
+
+    """
+    _check_same_shape(preds, target)
+
+    if len(preds.shape) == 1:
+        stoi_val_np = stoi_backend(target.detach().cpu().numpy(), preds.detach().cpu().numpy(), fs, extended)
+        stoi_val = torch.tensor(stoi_val_np)
+    else:
+        preds_np = preds.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
+        target_np = target.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
+        stoi_val_np = np.empty(shape=(preds_np.shape[0]))
+        for b in range(preds_np.shape[0]):
+            stoi_val_np[b] = stoi_backend(target_np[b, :], preds_np[b, :], fs, extended)
+        stoi_val = torch.from_numpy(stoi_val_np)
+        stoi_val = stoi_val.reshape(preds.shape[:-1])
+
+    if keep_same_device:
+        stoi_val = stoi_val.to(preds.device)
+
+    return stoi_val
