@@ -38,18 +38,25 @@ class MetricTracker(nn.ModuleList):
         maximize: bool indicating if higher metric values are better (`True`) or lower
             is better (`False`)
 
-    Example::
+    Example:
 
-        from torchmetrics import Accuracy, MetricTracker
-        tracker = MetricTracker(Accuracy(num_classes=10))
-        for epoch in range(5):
-            tracker.increment()
-            for batch_idx in range(5):
-                preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))
-                tracker.update(preds, target)
-            print(f"current acc={tracker.compute()}")
-        best_acc, which_epoch = tracker.best_metric(return_step=True)
-        all_values = tracker.compute_all()
+        >>> from torchmetrics import Accuracy, MetricTracker
+        >>> _ = torch.manual_seed(42)
+        >>> tracker = MetricTracker(Accuracy(num_classes=10))
+        >>> for epoch in range(5):
+        ...     tracker.increment()
+        ...     for batch_idx in range(5):
+        ...         preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))
+        ...         tracker.update(preds, target)
+        ...     print(f"current acc={tracker.compute()}")  # doctest: +NORMALIZE_WHITESPACE
+        current acc=0.1120000034570694
+        current acc=0.08799999952316284
+        current acc=0.12600000202655792
+        current acc=0.07999999821186066
+        current acc=0.10199999809265137
+        >>> best_acc, which_epoch = tracker.best_metric(return_step=True)
+        >>> tracker.compute_all()
+        tensor([0.1120, 0.0880, 0.1260, 0.0800, 0.1020])
     """
 
     def __init__(self, metric: Metric, maximize: bool = True) -> None:
