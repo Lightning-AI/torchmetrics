@@ -11,35 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added **Text-related (NLP) metrics**:
+  - Word Error Rate (WER) ([#52](https://github.com/PyTorchLightning/metrics/issues/52))
+
+  - ROUGE ([#399](https://github.com/PyTorchLightning/metrics/issues/399))
+
+
+- Added `MetricTracker` wrapper metric for keeping track of the same metric over multiple epochs ([#238](https://github.com/PyTorchLightning/metrics/pull/238))
+
+
+- Added other metrics:
+  - Symmetric Mean Absolute Percentage error (SMAPE) ([#375](https://github.com/PyTorchLightning/metrics/issues/375))
+
+  - Calibration error ([#394](https://github.com/PyTorchLightning/metrics/issues/394))
+
+  - Permutation Invariant Training (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
+
+
 - Added support in `nDCG` metric for target with values larger than 1 ([#343](https://github.com/PyTorchLightning/metrics/issues/343))
-
-
-- Added Word error rate (WER) ([#52](https://github.com/PyTorchLightning/metrics/issues/52))
-
-
-- Added Symmetric Mean Absolute Percentage error (SMAPE) ([#375](https://github.com/PyTorchLightning/metrics/issues/375))
-
-
-- Added `None` as reduction option in `CosineSimilarity` metric ([#400](https://github.com/PyTorchLightning/metrics/pull/400))
-
-
-- Added Permutation Invariant Training metric (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
-
-
-- Added ROUGE Metric ([#399](https://github.com/PyTorchLightning/metrics/issues/399))
-
-
-- Allowed passing labels in (n_samples, n_classes) to `AveragePrecision` ([#386](https://github.com/PyTorchLightning/metrics/issues/386))
-
-
-
-- Added calibration error metric ([#394](https://github.com/PyTorchLightning/metrics/issues/394))
 
 
 - Added support for negative targets in `nDCG` metric ([#378](https://github.com/PyTorchLightning/metrics/pull/378))
 
 
-- Added `MetricTracker` wrapper metric for keeping track of the same metric over multiple epochs ([#238](https://github.com/PyTorchLightning/metrics/pull/238))
+- Added `None` as reduction option in `CosineSimilarity` metric ([#400](https://github.com/PyTorchLightning/metrics/pull/400))
+
+
+- Allowed passing labels in (n_samples, n_classes) to `AveragePrecision` ([#386](https://github.com/PyTorchLightning/metrics/issues/386))
 
 
 ### Changed
@@ -53,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved `R2Score` from `regression.r2score` to `regression.r2` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
 
 
-- Pearson metrics now only store 6 statistics instead of all predictions and targets ([#380](https://github.com/PyTorchLightning/metrics/pull/380))
+- Pearson metric now only store 6 statistics instead of all predictions and targets ([#380](https://github.com/PyTorchLightning/metrics/pull/380))
 
 
 - Use `torch.argmax` instead of `torch.topk` when `k=1` for better performance ([#419](https://github.com/PyTorchLightning/metrics/pull/419))
@@ -120,21 +118,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Cosine Similarity Metric ([#305](https://github.com/PyTorchLightning/metrics/pull/305))
-- Added Specificity metric ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
+- Added **Image-related metrics**:
+  - Fréchet inception distance (FID) ([#213](https://github.com/PyTorchLightning/metrics/pull/213))
+  - Kernel Inception Distance (KID) ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
+  - Inception Score ([#299](https://github.com/PyTorchLightning/metrics/pull/299))
+  - KL divergence ([#247](https://github.com/PyTorchLightning/metrics/pull/247))
+- Added **Audio metrics**: SNR, SI_SDR, SI_SNR ([#292](https://github.com/PyTorchLightning/metrics/pull/292))
+- Added other metrics:
+  - Cosine Similarity ([#305](https://github.com/PyTorchLightning/metrics/pull/305))
+  - Specificity ([#210](https://github.com/PyTorchLightning/metrics/pull/210))
+  - Mean Absolute Percentage error (MAPE) ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
 - Added `add_metrics` method to `MetricCollection` for adding additional metrics after initialization ([#221](https://github.com/PyTorchLightning/metrics/pull/221))
 - Added pre-gather reduction in the case of `dist_reduce_fx="cat"` to reduce communication cost ([#217](https://github.com/PyTorchLightning/metrics/pull/217))
 - Added better error message for `AUROC` when `num_classes` is not provided for multiclass input ([#244](https://github.com/PyTorchLightning/metrics/pull/244))
 - Added support for unnormalized scores (e.g. logits) in `Accuracy`, `Precision`, `Recall`, `FBeta`, `F1`, `StatScore`, `Hamming`, `ConfusionMatrix` metrics ([#200](https://github.com/PyTorchLightning/metrics/pull/200))
-- Added `MeanAbsolutePercentageError(MAPE)` metric. ([#248](https://github.com/PyTorchLightning/metrics/pull/248))
 - Added `squared` argument to `MeanSquaredError` for computing `RMSE` ([#249](https://github.com/PyTorchLightning/metrics/pull/249))
-- Added FID metric ([#213](https://github.com/PyTorchLightning/metrics/pull/213))
 - Added `is_differentiable` property to `ConfusionMatrix`, `F1`, `FBeta`, `Hamming`, `Hinge`, `IOU`, `MatthewsCorrcoef`, `Precision`, `Recall`, `PrecisionRecallCurve`, `ROC`, `StatScores` ([#253](https://github.com/PyTorchLightning/metrics/pull/253))
-- Added audio metrics: SNR, SI_SDR, SI_SNR ([#292](https://github.com/PyTorchLightning/metrics/pull/292))
-- Added Inception Score metric to image module ([#299](https://github.com/PyTorchLightning/metrics/pull/299))
-- Added KID metric to image module ([#301](https://github.com/PyTorchLightning/metrics/pull/301))
 - Added `sync` and `sync_context` methods for manually controlling when metric states are synced ([#302](https://github.com/PyTorchLightning/metrics/pull/302))
-- Added `KLDivergence` metric ([#247](https://github.com/PyTorchLightning/metrics/pull/247))
 
 ### Changed
 
@@ -204,18 +204,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `BootStrapper` to easily calculate confidence intervals for metrics ([#101](https://github.com/PyTorchLightning/metrics/pull/101))
 - Added Binned metrics  ([#128](https://github.com/PyTorchLightning/metrics/pull/128))
 - Added metrics for Information Retrieval ([(PL^5032)](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032)):
-    * Added `RetrievalMAP` ([PL^5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
-    * Added `RetrievalMRR` ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
-    * Added `RetrievalPrecision` ([#139](https://github.com/PyTorchLightning/metrics/pull/139))
-    * Added `RetrievalRecall` ([#146](https://github.com/PyTorchLightning/metrics/pull/146))
-    * Added `RetrievalNormalizedDCG` ([#160](https://github.com/PyTorchLightning/metrics/pull/160))
-    * Added `RetrievalFallOut` ([#161](https://github.com/PyTorchLightning/metrics/pull/161))
+    * `RetrievalMAP` ([PL^5032](https://github.com/PyTorchLightning/pytorch-lightning/pull/5032))
+    * `RetrievalMRR` ([#119](https://github.com/PyTorchLightning/metrics/pull/119))
+    * `RetrievalPrecision` ([#139](https://github.com/PyTorchLightning/metrics/pull/139))
+    * `RetrievalRecall` ([#146](https://github.com/PyTorchLightning/metrics/pull/146))
+    * `RetrievalNormalizedDCG` ([#160](https://github.com/PyTorchLightning/metrics/pull/160))
+    * `RetrievalFallOut` ([#161](https://github.com/PyTorchLightning/metrics/pull/161))
 - Added other metrics:
-    * Added `CohenKappa` ([#69](https://github.com/PyTorchLightning/metrics/pull/69))
-    * Added `MatthewsCorrcoef` ([#98](https://github.com/PyTorchLightning/metrics/pull/98))
-    * Added `PearsonCorrcoef` ([#157](https://github.com/PyTorchLightning/metrics/pull/157))
-    * Added `SpearmanCorrcoef` ([#158](https://github.com/PyTorchLightning/metrics/pull/158))
-    * Added `Hinge` ([#120](https://github.com/PyTorchLightning/metrics/pull/120))
+    * `CohenKappa` ([#69](https://github.com/PyTorchLightning/metrics/pull/69))
+    * `MatthewsCorrcoef` ([#98](https://github.com/PyTorchLightning/metrics/pull/98))
+    * `PearsonCorrcoef` ([#157](https://github.com/PyTorchLightning/metrics/pull/157))
+    * `SpearmanCorrcoef` ([#158](https://github.com/PyTorchLightning/metrics/pull/158))
+    * `Hinge` ([#120](https://github.com/PyTorchLightning/metrics/pull/120))
 - Added `average='micro'` as an option in AUROC for multilabel problems ([#110](https://github.com/PyTorchLightning/metrics/pull/110))
 - Added multilabel support to `ROC` metric ([#114](https://github.com/PyTorchLightning/metrics/pull/114))
 - Added testing for `half` precision ([#77](https://github.com/PyTorchLightning/metrics/pull/77),
