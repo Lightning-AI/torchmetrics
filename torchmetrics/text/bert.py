@@ -94,7 +94,7 @@ class BERTScore(Metric):
         self.add_state("predictions", [], dist_reduce_fx="cat")
         self.add_state("references", [], dist_reduce_fx="cat")
 
-    def update(self, predictions: List, references: List) -> None:  # type: ignore
+    def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores.
 
         Args:

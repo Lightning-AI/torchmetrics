@@ -365,6 +365,7 @@ retrieval_normalized_dcg [func]
 ****
 Text
 ****
+
 bert_score [func]
 ~~~~~~~~~~~~~~~~~~
 

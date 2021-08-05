@@ -523,6 +523,7 @@ RetrievalNormalizedDCG
 ****
 Text
 ****
+
 BERTScore
 ~~~~~~~~~~
 

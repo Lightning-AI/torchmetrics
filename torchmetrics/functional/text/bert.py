@@ -20,8 +20,8 @@ if _BERTSCORE_AVAILABLE:
 
 
 def bert_score(
-    predictions: List,
-    references: List,
+    predictions: List[str],
+    references: List[str],
     lang: str = "en",
     model_type: Optional[str] = None,
     num_layers: int = None,
