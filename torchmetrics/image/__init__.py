@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.image.fid import FID  # noqa: F401
 from torchmetrics.image.inception import IS  # noqa: F401
+from torchmetrics.image.lpips import LPIPS  # noqa: F401
 from torchmetrics.image.kid import KID  # noqa: F401
 from torchmetrics.image.psnr import PSNR  # noqa: F401
 from torchmetrics.image.ssim import SSIM  # noqa: F401
