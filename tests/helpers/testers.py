@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 import numpy as np
 import pytest
@@ -238,7 +238,7 @@ def _functional_test(
 
 def _assert_half_support(
     metric_module: Metric,
-    metric_functional: Callable,
+    metric_functional: Optional[Callable],
     preds: Tensor,
     target: Tensor,
     device: str = "cpu",
@@ -263,7 +263,8 @@ def _assert_half_support(
     }
     metric_module = metric_module.to(device)
     _assert_tensor(metric_module(y_hat, y, **kwargs_update))
-    _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
+    if metric_functional is not None:
+        _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
 class MetricTester:
@@ -411,8 +412,8 @@ class MetricTester:
         preds: Tensor,
         target: Tensor,
         metric_module: Metric,
-        metric_functional: Callable,
-        metric_args: dict = None,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on cpu
@@ -435,8 +436,8 @@ class MetricTester:
         preds: Tensor,
         target: Tensor,
         metric_module: Metric,
-        metric_functional: Callable,
-        metric_args: dict = None,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on gpu
@@ -459,8 +460,8 @@ class MetricTester:
         preds: Tensor,
         target: Tensor,
         metric_module: Metric,
-        metric_functional: Callable,
-        metric_args: dict = None,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
     ):
         """Test if a metric is differentiable or not.
 
@@ -480,7 +481,7 @@ class MetricTester:
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
 
-            if metric.is_differentiable:
+            if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
                     partial(metric_functional, **metric_args), (preds[0].double(), target[0])
