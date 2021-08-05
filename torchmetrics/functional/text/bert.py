@@ -34,8 +34,7 @@ def bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
 ) -> Dict:
-    """
-    BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
+    """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
     reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
     and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be
     useful for evaluating different language generation tasks.
