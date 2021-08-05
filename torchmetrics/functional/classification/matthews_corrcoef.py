@@ -20,8 +20,7 @@ _matthews_corrcoef_update = _confusion_matrix_update
 
 
 def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
-    """
-    Computes Matthews correlation coefficient.
+    """Computes Matthews correlation coefficient.
 
     Args:
         confmat: Confusion matrix

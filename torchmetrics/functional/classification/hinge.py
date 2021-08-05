@@ -35,9 +35,8 @@ def _check_shape_and_type_consistency_hinge(
     preds: Tensor,
     target: Tensor,
 ) -> DataType:
-    """
-    Checks shape and type of `preds` and `target` and returns mode of the input tensors.
-    Raises `ValueError` if:
+    """Checks shape and type of `preds` and `target` and returns mode of the input tensors. Raises `ValueError` if:
+
         - `target` is not one dimensional
         - `preds` and `target` do not have the same shape in the first dimension
         - `pred` is neither one nor two dimensional
@@ -77,8 +76,7 @@ def _hinge_update(
     squared: bool = False,
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns sum over Hinge loss scores for each observation and the total number of observations.
+    """Updates and returns sum over Hinge loss scores for each observation and the total number of observations.
 
     Args:
         preds: Predicted tensor
@@ -127,8 +125,7 @@ def _hinge_update(
 
 
 def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
-    """
-    Computes mean Hinge loss.
+    """Computes mean Hinge loss.
 
     Args:
         measure: Sum over hinge losses for each each observation

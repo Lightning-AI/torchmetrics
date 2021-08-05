@@ -22,7 +22,7 @@ from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMet
 
 
 def _check_subset_validity(mode: DataType) -> bool:
-    """Checks input mode is valid"""
+    """Checks input mode is valid."""
     return mode in (DataType.MULTILABEL, DataType.MULTIDIM_MULTICLASS)
 
 
@@ -34,8 +34,7 @@ def _mode(
     num_classes: Optional[int],
     multiclass: Optional[bool],
 ) -> DataType:
-    """
-    Finds the mode of the input tensors
+    """Finds the mode of the input tensors.
 
     Args:
         preds: Predicted tensor
@@ -78,9 +77,8 @@ def _accuracy_update(
     ignore_index: Optional[int],
     mode: DataType,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """
-    Updates and returns stat scores (true positives, false positives, true negatives, false negatives)
-        required to compute accuracy
+    """Updates and returns stat scores (true positives, false positives, true negatives, false negatives) required
+    to compute accuracy.
 
     Args:
         preds: Predicted tensor
@@ -171,8 +169,7 @@ def _accuracy_compute(
     mdmc_average: Optional[str],
     mode: DataType,
 ) -> Tensor:
-    """
-    Computes accuracy from stat scores: true positives, false positives, true negatives, false negatives.
+    """Computes accuracy from stat scores: true positives, false positives, true negatives, false negatives.
 
     Args:
         tp: True positives
@@ -253,8 +250,7 @@ def _subset_accuracy_update(
     threshold: float,
     top_k: Optional[int],
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns variables required to compute subset accuracy
+    """Updates and returns variables required to compute subset accuracy.
 
     Args:
         preds: Predicted tensor
@@ -294,8 +290,7 @@ def _subset_accuracy_update(
 
 
 def _subset_accuracy_compute(correct: Tensor, total: Tensor) -> Tensor:
-    """
-    Computes subset accuracy from number of correct observations and total number of observations
+    """Computes subset accuracy from number of correct observations and total number of observations.
 
     Args:
         correct: Number of correct observations

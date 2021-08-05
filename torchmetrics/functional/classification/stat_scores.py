@@ -84,9 +84,9 @@ def _stat_scores_update(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """
-    Updates and returns the the number of true positives, false positives, true negatives, false negatives.
+    """Updates and returns the the number of true positives, false positives, true negatives, false negatives.
     Raises ValueError if:
+
         - The `ignore_index` is not valid
         - When `ignore_index` is used with binary data
         - When inputs are multi-dimensional multi-class, and the `mdmc_reduce` parameter is not set
@@ -189,9 +189,8 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-    """
-    Computes the number of true positives, false positives, true negatives, false negatives.
-    Concatenates the input tensors along with the support into one output.
+    """Computes the number of true positives, false positives, true negatives, false negatives. Concatenates the
+    input tensors along with the support into one output.
 
     Args:
         tp: True positives
