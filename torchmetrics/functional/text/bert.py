@@ -20,20 +20,20 @@ if _BERTSCORE_AVAILABLE:
 
 
 def bert_score(
-        predictions: List[str],
-        references: List[str],
-        lang: str = "en",
-        model_type: Optional[str] = None,
-        num_layers: int = None,
-        verbose: bool = False,
-        idf: bool = False,
-        device: Optional[str] = None,
-        batch_size: int = 64,
-        nthreads: int = 4,
-        all_layers: bool = False,
-        rescale_with_baseline: bool = False,
-        baseline_path: Optional[str] = None,
-    ) -> Dict:
+    predictions: List[str],
+    references: List[str],
+    lang: str = "en",
+    model_type: Optional[str] = None,
+    num_layers: int = None,
+    verbose: bool = False,
+    idf: bool = False,
+    device: Optional[str] = None,
+    batch_size: int = 64,
+    nthreads: int = 4,
+    all_layers: bool = False,
+    rescale_with_baseline: bool = False,
+    baseline_path: Optional[str] = None,
+) -> Dict:
     """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
     reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
     and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be
@@ -91,7 +91,7 @@ def bert_score(
         idf=idf,
         rescale_with_baseline=rescale_with_baseline,
         use_custom_baseline=baseline_path is not None,
-        use_fast_tokenizer=True
+        use_fast_tokenizer=True,
     )
 
     cached_bertscorer = bert.BERTScorer(
