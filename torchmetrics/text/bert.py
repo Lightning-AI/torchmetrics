@@ -16,6 +16,10 @@ from typing import Any, Callable, Dict, List, Optional
 from torchmetrics.functional import bert_score
 from torchmetrics.metric import Metric
 
+def _flatten(x: List[List[str]]) -> List[str]:
+    """ converts list of list to single list of strings """
+    return [e for y in x for e in y]
+
 
 class BERTScore(Metric):
     """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
