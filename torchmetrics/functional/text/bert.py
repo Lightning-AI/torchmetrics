@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
 if _BERTSCORE_AVAILABLE:
-    import bert_score as bert
+    from bert_score import BERTScorer, lang2model, model2layers, get_hash
 
 
 def bert_score(
@@ -71,12 +71,12 @@ def bert_score(
         )
 
     if model_type is None:
-        model_type = bert.lang2model[lang.lower()]
+        model_type = lang2model[lang.lower()]
 
     if num_layers is None:
-        num_layers = bert.model2layers[model_type]
+        num_layers = model2layers[model_type]
 
-    hashcode = bert.get_hash(
+    hashcode = get_hash(
         model=model_type,
         num_layers=num_layers,
         idf=idf,
@@ -85,7 +85,7 @@ def bert_score(
         use_fast_tokenizer=True,
     )
 
-    cached_bertscorer = bert.BERTScorer(
+    cached_bertscorer = BERTScorer(
         model_type=model_type,
         num_layers=num_layers,
         batch_size=batch_size,
