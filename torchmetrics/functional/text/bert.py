@@ -29,42 +29,33 @@ def bert_score(
     idf: bool = False,
     device: Optional[str] = None,
     batch_size: int = 64,
-    nthreads: int = 4,
+    num_threads: int = 4,
     all_layers: bool = False,
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
 ) -> Dict:
-    """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
+    """
+    BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
     reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
     and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be
     useful for evaluating different language generation tasks.
 
     Args:
-        - `predictions` (list of str): candidate sentences
-        - `references: `refs` (list of str): reference sentences
-        - `model_type` (str): bert specification, default using the suggested
-                  model for the target langauge; has to specify at least one of
-                  `model_type` or `lang`
-        - `num_layers` (int): the layer of representation to use.
-                  default using the number of layer tuned on WMT16 correlation data
-        - `verbose` (bool): turn on intermediate status update
-        - `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
-        - `device` (str): on which the contextual embedding model will be allocated on.
-                  If this argument is None, the model lives on cuda:0 if cuda is available.
-        - `nthreads` (int): number of threads
-        - `batch_size` (int): bert score processing batch size
-        - `lang` (str): language of the sentences; has to specify
-                  at least one of `model_type` or `lang`. `lang` needs to be
-                  specified when `rescale_with_baseline` is True.
-        - `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
-        - `baseline_path` (str): customized baseline file
+        predictions: candidate sentences
+        references: reference sentences
+        model_type: bert specification
+        num_layers: the layer of representation to use.
+        verbose: turn on intermediate status update
+        idf: use idf weighting, can also be a precomputed idf_dict
+        device: on which the contextual embedding model will be allocated on.
+        num_threads: number of threads
+        batch_size: bert score processing batch size
+        lang: language of the sentences
+        rescale_with_baseline: rescale bertscore with pre-computed baseline
+        baseline_path: customized baseline file
 
     Returns:
-        - `(P, R, F)`: each is of shape (N); N = number of input
-                      candidate reference pairs. if returning hashcode, the
-                      output will be ((P, R, F), hashcode). If a candidate have
-                      multiple references, the returned score of this candidate is
-                      the *best* score among all references.
+        (Dict): containing: Precision, Recall, F1 score, Hashcode of the library
 
     Example:
         >>> predictions = ["hello there", "general kenobi"]
@@ -98,7 +89,7 @@ def bert_score(
         model_type=model_type,
         num_layers=num_layers,
         batch_size=batch_size,
-        nthreads=nthreads,
+        nthreads=num_threads,
         all_layers=all_layers,
         idf=idf,
         device=device,
@@ -107,7 +98,7 @@ def bert_score(
         baseline_path=baseline_path,
     )
 
-    (P, R, F) = cached_bertscorer.score(
+    P, R, F = cached_bertscorer.score(
         cands=predictions,
         refs=references,
         verbose=verbose,

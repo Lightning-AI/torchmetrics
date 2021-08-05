@@ -23,35 +23,38 @@ def _flatten(x: List[List[str]]) -> List[str]:
 
 
 class BERTScore(Metric):
-    """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
+    """
+    BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
     reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
     and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be
     useful for evaluating different language generation tasks.
 
     Args:
-        - `model_type` (str): bert specification, default using the suggested
-                  model for the target langauge; has to specify at least one of
-                  `model_type` or `lang`
-        - `num_layers` (int): the layer of representation to use.
-                  default using the number of layer tuned on WMT16 correlation data
-        - `verbose` (bool): turn on intermediate status update
-        - `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
-        - `device` (str): on which the contextual embedding model will be allocated on.
-                  If this argument is None, the model lives on cuda:0 if cuda is available.
-        - `nthreads` (int): number of threads
-        - `batch_size` (int): bert score processing batch size
-        - `lang` (str): language of the sentences; has to specify
-                  at least one of `model_type` or `lang`. `lang` needs to be
-                  specified when `rescale_with_baseline` is True.
-        - `return_hash` (bool): return hash code of the setting
-        - `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
-        - `baseline_path` (str): customized baseline file
+        predictions: candidate sentences
+        references: reference sentences
+        model_type: bert specification
+        num_layers: the layer of representation to use.
+        verbose: turn on intermediate status update
+        idf: use idf weighting, can also be a precomputed idf_dict
+        device: on which the contextual embedding model will be allocated on.
+        num_threads: number of threads
+        batch_size: bert score processing batch size
+        lang: language of the sentences
+        rescale_with_baseline: rescale bertscore with pre-computed baseline
+        baseline_path: customized baseline file
+        compute_on_step:
+            Forward only calls ``update()`` and return None if this is set to False. default: True
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step. default: False
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
 
     Returns:
-        - precision: Precision.
-        - recall: Recall.
-        - f1: F1 score.
-        - hashcode: Hashcode of the library.
+        (Dict): containing: Precision, Recall, F1 score, Hashcode of the library
 
     Example:
         >>> predictions = ["hello there", "general kenobi"]
@@ -70,7 +73,7 @@ class BERTScore(Metric):
         idf: bool = False,
         device: Optional[str] = None,
         batch_size: int = 64,
-        nthreads: int = 4,
+        num_threads: int = 4,
         all_layers: bool = False,
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
@@ -89,7 +92,7 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.lang = lang
         self.all_layers = all_layers
-        self.nthreads = nthreads
+        self.num_threads = num_threads
         self.batch_size = batch_size
         self.device = device
         self.idf = idf
@@ -127,4 +130,5 @@ class BERTScore(Metric):
             batch_size=self.batch_size,
             lang=self.lang,
             all_layers=self.all_layers,
+            num_threads=self.num_threads,
         )
