@@ -19,7 +19,7 @@ from torchmetrics.functional import image_gradients
 
 
 def test_invalid_input_img_type():
-    """Test Whether the module successfully handles invalid input data type"""
+    """Test Whether the module successfully handles invalid input data type."""
     invalid_dummy_input = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
     with pytest.raises(TypeError):
@@ -27,10 +27,7 @@ def test_invalid_input_img_type():
 
 
 def test_invalid_input_ndims():
-    """
-    Test whether the module successfully handles invalid number of dimensions
-    of input tensor
-    """
+    """Test whether the module successfully handles invalid number of dimensions of input tensor."""
 
     BATCH_SIZE = 1
     HEIGHT = 5
@@ -45,10 +42,8 @@ def test_invalid_input_ndims():
 
 
 def test_multi_batch_image_gradients():
-    """Test whether the module correctly calculates gradients for known input
-    with non-unity batch size.Example input-output pair taken from TF's implementation of i
-    mage-gradients
-    """
+    """Test whether the module correctly calculates gradients for known input with non-unity batch size.Example
+    input-output pair taken from TF's implementation of i mage-gradients."""
 
     BATCH_SIZE = 5
     HEIGHT = 5
@@ -60,11 +55,11 @@ def test_multi_batch_image_gradients():
     image = torch.stack([single_channel_img for _ in range(BATCH_SIZE)], dim=0)
 
     true_dy = [
-        [5., 5., 5., 5., 5.],
-        [5., 5., 5., 5., 5.],
-        [5., 5., 5., 5., 5.],
-        [5., 5., 5., 5., 5.],
-        [0., 0., 0., 0., 0.],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0],
     ]
     true_dy = Tensor(true_dy)
 
@@ -78,7 +73,8 @@ def test_multi_batch_image_gradients():
 
 def test_image_gradients():
     """Test whether the module correctly calculates gradients for known input.
-    Example input-output pair taken from TF's implementation of image-gradients
+
+    Example input-output pair taken from TF's implementation of image- gradients
     """
 
     BATCH_SIZE = 1
@@ -90,19 +86,19 @@ def test_image_gradients():
     image = torch.reshape(image, (BATCH_SIZE, CHANNELS, HEIGHT, WIDTH))
 
     true_dy = [
-        [5., 5., 5., 5., 5.],
-        [5., 5., 5., 5., 5.],
-        [5., 5., 5., 5., 5.],
-        [5., 5., 5., 5., 5.],
-        [0., 0., 0., 0., 0.],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [5.0, 5.0, 5.0, 5.0, 5.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0],
     ]
 
     true_dx = [
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
-        [1., 1., 1., 1., 0.],
+        [1.0, 1.0, 1.0, 1.0, 0.0],
+        [1.0, 1.0, 1.0, 1.0, 0.0],
+        [1.0, 1.0, 1.0, 1.0, 0.0],
+        [1.0, 1.0, 1.0, 1.0, 0.0],
+        [1.0, 1.0, 1.0, 1.0, 0.0],
     ]
 
     true_dy = Tensor(true_dy)

@@ -18,7 +18,6 @@ from torch.utils.data import Dataset
 
 
 class RandomDictStringDataset(Dataset):
-
     def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)
@@ -31,7 +30,6 @@ class RandomDictStringDataset(Dataset):
 
 
 class RandomDataset(Dataset):
-
     def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)
@@ -44,10 +42,8 @@ class RandomDataset(Dataset):
 
 
 class BoringModel(LightningModule):
-
     def __init__(self):
-        """
-        Testing PL Module
+        """Testing PL Module.
 
         Use as follows:
         - subclass
@@ -61,7 +57,6 @@ class BoringModel(LightningModule):
 
         model = BaseTestModel()
         model.training_epoch_end = None
-
         """
         super().__init__()
         self.layer = torch.nn.Linear(32, 2)
@@ -99,7 +94,7 @@ class BoringModel(LightningModule):
 
     @staticmethod
     def validation_epoch_end(outputs) -> None:
-        torch.stack([x['x'] for x in outputs]).mean()
+        torch.stack([x["x"] for x in outputs]).mean()
 
     def test_step(self, batch, batch_idx):
         output = self.layer(batch)

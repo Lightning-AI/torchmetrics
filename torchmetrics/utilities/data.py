@@ -25,7 +25,7 @@ def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     x = x if isinstance(x, (list, tuple)) else [x]
     x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
     if not x:  # empty list
-        raise ValueError('No samples to concatenate')
+        raise ValueError("No samples to concatenate")
     return torch.cat(x, dim=0)
 
 
@@ -45,8 +45,7 @@ def to_onehot(
     label_tensor: Tensor,
     num_classes: Optional[int] = None,
 ) -> Tensor:
-    """
-    Converts a dense label tensor to one-hot format
+    """Converts a dense label tensor to one-hot format.
 
     Args:
         label_tensor: dense label tensor, with shape [N, d1, d2, ...]
@@ -61,7 +60,6 @@ def to_onehot(
         tensor([[0, 1, 0, 0],
                 [0, 0, 1, 0],
                 [0, 0, 0, 1]])
-
     """
     if num_classes is None:
         num_classes = int(label_tensor.max().detach().item() + 1)
@@ -78,8 +76,7 @@ def to_onehot(
 
 
 def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
-    """
-    Convert a probability tensor to binary by selecting top-k highest entries.
+    """Convert a probability tensor to binary by selecting top-k highest entries.
 
     Args:
         prob_tensor: dense tensor of shape ``[..., C, ...]``, where ``C`` is in the
@@ -97,13 +94,15 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
                 [1, 1, 0]], dtype=torch.int32)
     """
     zeros = torch.zeros_like(prob_tensor)
-    topk_tensor = zeros.scatter(dim, prob_tensor.topk(k=topk, dim=dim).indices, 1.0)
+    if topk == 1:  # argmax has better performance than topk
+        topk_tensor = zeros.scatter(dim, prob_tensor.argmax(dim=dim, keepdim=True), 1.0)
+    else:
+        topk_tensor = zeros.scatter(dim, prob_tensor.topk(k=topk, dim=dim).indices, 1.0)
     return topk_tensor.int()
 
 
 def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
-    """
-    Converts a tensor of probabilities to a dense label tensor
+    """Converts a tensor of probabilities to a dense label tensor.
 
     Args:
         x: probabilities to get the categorical label [N, d1, d2, ...]
@@ -116,7 +115,6 @@ def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
         >>> x = torch.tensor([[0.2, 0.5], [0.9, 0.1]])
         >>> to_categorical(x)
         tensor([1, 0])
-
     """
     return torch.argmax(x, dim=argmax_dim)
 
@@ -126,8 +124,7 @@ def get_num_classes(
     target: Tensor,
     num_classes: Optional[int] = None,
 ) -> int:
-    """
-    Calculates the number of classes for a given prediction and target tensor.
+    """Calculates the number of classes for a given prediction and target tensor.
 
     Args:
         preds: predicted values
@@ -161,8 +158,7 @@ def apply_to_collection(
     wrong_dtype: Optional[Union[type, tuple]] = None,
     **kwargs: Any,
 ) -> Any:
-    """
-    Recursively applies a function to all elements of a certain dtype.
+    """Recursively applies a function to all elements of a certain dtype.
 
     Args:
         data: the collection to apply the function to
@@ -194,7 +190,7 @@ def apply_to_collection(
     if isinstance(data, Mapping):
         return elem_type({k: apply_to_collection(v, dtype, function, *args, **kwargs) for k, v in data.items()})
 
-    if isinstance(data, tuple) and hasattr(data, '_fields'):  # named tuple
+    if isinstance(data, tuple) and hasattr(data, "_fields"):  # named tuple
         return elem_type(*(apply_to_collection(d, dtype, function, *args, **kwargs) for d in data))
 
     if isinstance(data, Sequence) and not isinstance(data, str):
@@ -205,9 +201,8 @@ def apply_to_collection(
 
 
 def get_group_indexes(indexes: Tensor) -> List[Tensor]:
-    """
-    Given an integer `torch.Tensor` `indexes`, return a `torch.Tensor` of indexes for
-    each different value in `indexes`.
+    """Given an integer `torch.Tensor` `indexes`, return a `torch.Tensor` of indexes for each different value in
+    `indexes`.
 
     Args:
         indexes: a `torch.Tensor`

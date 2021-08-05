@@ -132,7 +132,7 @@ it will lead to wrong accumulation. In practice do the following:
         data, target = batch
         preds = self(data)
         ...
-        return {'loss' : loss, 'preds' : preds, 'target' : target}
+        return {'loss': loss, 'preds': preds, 'target': target}
 
     def training_step_end(self, outputs):
         #update and log
@@ -167,7 +167,7 @@ the following limitations:
 
   - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
   - :ref:`references/modules:SSIM` and :ref:`references/functional:ssim [func]`
-  - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kldivergence [func]`
+  - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kl_divergence [func]`
 
 ******************
 Metric Arithmetics

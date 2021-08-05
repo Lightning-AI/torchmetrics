@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.audio.pesq import pesq  # noqa: F401
+from torchmetrics.functional.audio.pit import pit, pit_permutate  # noqa: F401
 from torchmetrics.functional.audio.si_sdr import si_sdr  # noqa: F401
 from torchmetrics.functional.audio.si_snr import si_snr  # noqa: F401
 from torchmetrics.functional.audio.snr import snr  # noqa: F401

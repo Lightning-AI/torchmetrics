@@ -160,7 +160,7 @@ def test_wrong_params(metric, fn_metric, average, mdmc_average, num_classes, ign
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Specificity, specificity)])
 def test_zero_division(metric_class, metric_fn):
-    """ Test that zero_division works correctly (currently should just set to 0). """
+    """Test that zero_division works correctly (currently should just set to 0)."""
 
     preds = tensor([1, 2, 1, 1])
     target = tensor([0, 0, 0, 0])
@@ -176,7 +176,8 @@ def test_zero_division(metric_class, metric_fn):
 
 @pytest.mark.parametrize("metric_class, metric_fn", [(Specificity, specificity)])
 def test_no_support(metric_class, metric_fn):
-    """This tests a rare edge case, where there is only one class present
+    """This tests a rare edge case, where there is only one class present.
+
     in target, and ignore_index is set to exactly that class - and the
     average method is equal to 'weighted'.
 
@@ -217,7 +218,6 @@ def test_no_support(metric_class, metric_fn):
     ],
 )
 class TestSpecificity(MetricTester):
-
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_specificity_class(
@@ -351,7 +351,7 @@ class TestSpecificity(MetricTester):
                 "multiclass": multiclass,
                 "ignore_index": ignore_index,
                 "mdmc_average": mdmc_average,
-            }
+            },
         )
 
 
@@ -397,9 +397,8 @@ def test_top_k(
     "ignore_index, expected", [(None, torch.tensor([0.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
 )
 def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
-    """This tests that when metric is computed per class and a given class is not present
-    in both the `preds` and `target`, the resulting score is `nan`.
-    """
+    """This tests that when metric is computed per class and a given class is not present in both the `preds` and
+    `target`, the resulting score is `nan`."""
     preds = torch.tensor([0, 0, 0])
     target = torch.tensor([0, 0, 0])
     num_classes = 2

@@ -24,7 +24,7 @@ from torchmetrics.regression.pearson import PearsonCorrcoef
 
 seed_all(42)
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _single_target_inputs1 = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
@@ -44,24 +44,24 @@ def _sk_pearsonr(preds, target):
 
 
 @pytest.mark.parametrize(
-    "preds, target", [
+    "preds, target",
+    [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
-    ]
+    ],
 )
 class TestPearsonCorrcoef(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pearson_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_pearson_corrcoef(self, preds, target, ddp):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=PearsonCorrcoef,
             sk_metric=_sk_pearsonr,
-            dist_sync_on_step=dist_sync_on_step,
+            dist_sync_on_step=False,
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
@@ -79,15 +79,15 @@ class TestPearsonCorrcoef(MetricTester):
     def test_pearson_corrcoef_half_cpu(self, preds, target):
         self.run_precision_test_cpu(preds, target, PearsonCorrcoef, pearson_corrcoef)
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pearson_corrcoef_half_gpu(self, preds, target):
         self.run_precision_test_gpu(preds, target, PearsonCorrcoef, pearson_corrcoef)
 
 
 def test_error_on_different_shape():
     metric = PearsonCorrcoef()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        metric(torch.randn(100), torch.randn(50))
 
-    with pytest.raises(ValueError, match='Expected both predictions and target to be 1 dimensional tensors.'):
+    with pytest.raises(ValueError, match="Expected both predictions and target to be 1 dimensional tensors."):
         metric(torch.randn(100, 2), torch.randn(100, 2))

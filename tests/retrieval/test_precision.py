@@ -34,9 +34,9 @@ seed_all(42)
 
 
 def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
-    """
-    Didn't find a reliable implementation of Precision in Information Retrieval, so,
-    reimplementing here. A good explanation can be found
+    """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
+
+    A good explanation can be found
     `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
     """
     assert target.shape == preds.shape
@@ -53,10 +53,9 @@ def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
 
 
 class TestPrecision(RetrievalMetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
+    @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
@@ -69,7 +68,7 @@ class TestPrecision(RetrievalMetricTester):
         empty_target_action: str,
         k: int,
     ):
-        metric_args = {'empty_target_action': empty_target_action, 'k': k}
+        metric_args = {"empty_target_action": empty_target_action, "k": k}
 
         self.run_class_metric_test(
             ddp=ddp,

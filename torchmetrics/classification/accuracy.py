@@ -30,7 +30,7 @@ from torchmetrics.classification.stat_scores import StatScores  # isort:skip
 
 class Accuracy(StatScores):
     r"""
-    Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`__:
+    Computes Accuracy_:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -140,8 +140,6 @@ class Accuracy(StatScores):
 
     Raises:
         ValueError:
-            If ``threshold`` is not between ``0`` and ``1``.
-        ValueError:
             If ``top_k`` is not an ``integer`` larger than ``0``.
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
@@ -205,9 +203,6 @@ class Accuracy(StatScores):
         self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-        if not 0 < threshold < 1:
-            raise ValueError(f"The `threshold` should be a float in the (0,1) interval, got {threshold}")
-
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
@@ -219,9 +214,9 @@ class Accuracy(StatScores):
         self.multiclass = multiclass
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets. See :ref:`references/modules:input types` for more information
-        on input types.
+        """Update state with predictions and targets. See
+        :ref:`references/modules:input types` for more information on input
+        types.
 
         Args:
             preds: Predictions from model (logits, probabilities, or labels)
@@ -271,9 +266,7 @@ class Accuracy(StatScores):
                 self.fn.append(fn)
 
     def compute(self) -> Tensor:
-        """
-        Computes accuracy based on inputs passed in to ``update`` previously.
-        """
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
         if not self.mode:
             raise RuntimeError("You have to have determined mode.")
         if self.subset_accuracy:

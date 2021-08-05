@@ -1,8 +1,8 @@
-"""Root package info."""
+r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *  # noqa: F401 F403
+from torchmetrics.__about__ import *  # noqa: F401, F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -11,9 +11,10 @@ _logger.setLevel(__logging.INFO)
 _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
-from torchmetrics.audio import PESQ, SI_SDR, SI_SNR, SNR  # noqa: F401 E402
-from torchmetrics.average import AverageMeter  # noqa: F401 E402
-from torchmetrics.classification import (  # noqa: F401 E402
+from torchmetrics import functional  # noqa: E402
+from torchmetrics.audio import PESQ, PIT, SI_SDR, SI_SNR, SNR  # noqa: E402
+from torchmetrics.average import AverageMeter  # noqa: E402
+from torchmetrics.classification import (  # noqa: E402
     AUC,
     AUROC,
     F1,
@@ -23,6 +24,7 @@ from torchmetrics.classification import (  # noqa: F401 E402
     BinnedAveragePrecision,
     BinnedPrecisionRecallCurve,
     BinnedRecallAtFixedPrecision,
+    CalibrationError,
     CohenKappa,
     ConfusionMatrix,
     FBeta,
@@ -37,10 +39,10 @@ from torchmetrics.classification import (  # noqa: F401 E402
     Specificity,
     StatScores,
 )
-from torchmetrics.collections import MetricCollection  # noqa: F401 E402
-from torchmetrics.image import FID, IS, KID, PSNR, SSIM  # noqa: F401 E402
-from torchmetrics.metric import Metric  # noqa: F401 E402
-from torchmetrics.regression import (  # noqa: F401 E402
+from torchmetrics.collections import MetricCollection  # noqa: E402
+from torchmetrics.image import FID, IS, KID, PSNR, SSIM  # noqa: E402
+from torchmetrics.metric import Metric  # noqa: E402
+from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
     ExplainedVariance,
     MeanAbsoluteError,
@@ -52,7 +54,7 @@ from torchmetrics.regression import (  # noqa: F401 E402
     SpearmanCorrcoef,
     SymmetricMeanAbsolutePercentageError,
 )
-from torchmetrics.retrieval import (  # noqa: F401 E402
+from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
     RetrievalMAP,
     RetrievalMRR,
@@ -60,4 +62,64 @@ from torchmetrics.retrieval import (  # noqa: F401 E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.wrappers import BootStrapper  # noqa: F401 E402
+from torchmetrics.text import WER, BLEUScore, ROUGEScore  # noqa: E402
+from torchmetrics.wrappers import BootStrapper  # noqa: E402
+
+__all__ = [
+    "functional",
+    "Accuracy",
+    "AUC",
+    "AUROC",
+    "AverageMeter",
+    "AveragePrecision",
+    "BinnedAveragePrecision",
+    "BinnedPrecisionRecallCurve",
+    "BinnedRecallAtFixedPrecision",
+    "BLEUScore",
+    "BootStrapper",
+    "CalibrationError",
+    "CohenKappa",
+    "ConfusionMatrix",
+    "CosineSimilarity",
+    "ExplainedVariance",
+    "F1",
+    "FBeta",
+    "FID",
+    "HammingDistance",
+    "Hinge",
+    "IoU",
+    "IS",
+    "KID",
+    "KLDivergence",
+    "MatthewsCorrcoef",
+    "MeanAbsoluteError",
+    "MeanAbsolutePercentageError",
+    "MeanSquaredError",
+    "MeanSquaredLogError",
+    "Metric",
+    "MetricCollection",
+    "PearsonCorrcoef",
+    "PIT",
+    "Precision",
+    "PrecisionRecallCurve",
+    "PSNR",
+    "R2Score",
+    "Recall",
+    "RetrievalFallOut",
+    "RetrievalMAP",
+    "RetrievalMRR",
+    "RetrievalNormalizedDCG",
+    "RetrievalPrecision",
+    "RetrievalRecall",
+    "ROC",
+    "ROUGEScore",
+    "SI_SDR",
+    "SI_SNR",
+    "SNR",
+    "SpearmanCorrcoef",
+    "Specificity",
+    "SSIM",
+    "StatScores",
+    "SymmetricMeanAbsolutePercentageError",
+    "WER",
+]

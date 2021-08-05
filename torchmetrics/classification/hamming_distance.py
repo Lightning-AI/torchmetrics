@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 class HammingDistance(Metric):
     r"""
-    Computes the average `Hamming distance <https://en.wikipedia.org/wiki/Hamming_distance>`_ (also
+    Computes the average `Hamming distance`_ (also
     known as Hamming loss) between targets and predictions:
 
     .. math::
@@ -88,14 +88,12 @@ class HammingDistance(Metric):
         self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-        if not 0 < threshold < 1:
-            raise ValueError("The `threshold` should lie in the (0,1) interval.")
         self.threshold = threshold
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets. See :ref:`references/modules:input types` for more information
-        on input types.
+        """Update state with predictions and targets. See
+        :ref:`references/modules:input types` for more information on input
+        types.
 
         Args:
             preds: Predictions from model (probabilities, logits or labels)
@@ -107,9 +105,7 @@ class HammingDistance(Metric):
         self.total += total
 
     def compute(self) -> Tensor:
-        """
-        Computes hamming distance based on inputs passed in to ``update`` previously.
-        """
+        """Computes hamming distance based on inputs passed in to ``update`` previously."""
         return _hamming_distance_compute(self.correct, self.total)
 
     @property

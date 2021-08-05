@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. include:: ../links.rst
+
 ##################
 Functional metrics
 ##################
@@ -13,6 +15,12 @@ pesq [func]
 ~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.pesq
+
+
+pit [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pit
     :noindex:
 
 
@@ -69,6 +77,13 @@ average_precision [func]
     :noindex:
 
 
+calibration_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.calibration_error
+    :noindex:
+
+
 cohen_kappa [func]
 ~~~~~~~~~~~~~~~~~~
 
@@ -121,10 +136,10 @@ iou [func]
 .. autofunction:: torchmetrics.functional.iou
     :noindex:
 
-kldivergence [func]
-~~~~~~~~~~~~~~~~~~~
+kl_divergence [func]
+~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.kldivergence
+.. autofunction:: torchmetrics.functional.kl_divergence
     :noindex:
 
 matthews_corrcoef [func]
@@ -134,7 +149,7 @@ matthews_corrcoef [func]
     :noindex:
 
 roc [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.roc
     :noindex:
@@ -167,8 +182,9 @@ recall [func]
 .. autofunction:: torchmetrics.functional.recall
     :noindex:
 
+
 select_topk [func]
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:
@@ -277,10 +293,10 @@ pearson_corrcoef [func]
     :noindex:
 
 
-r2score [func]
-~~~~~~~~~~~~~~
+r2_score [func]
+~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.r2score
+.. autofunction:: torchmetrics.functional.r2_score
     :noindex:
 
 
@@ -295,17 +311,6 @@ symmetric_mean_absolute_percentage_error [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
-    :noindex:
-
-
-***
-NLP
-***
-
-bleu_score [func]
-~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
 
 ********
@@ -361,4 +366,25 @@ retrieval_normalized_dcg [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
+    :noindex:
+
+****
+Text
+****
+
+bleu_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bleu_score
+    :noindex:
+
+rouge_score [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.rouge_score
+
+wer [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.wer
     :noindex:

@@ -2,6 +2,8 @@
 Module metrics
 ##############
 
+.. include:: ../links.rst
+
 **********
 Base class
 **********
@@ -44,6 +46,11 @@ PESQ
 ~~~~~~
 
 .. autoclass:: torchmetrics.PESQ
+
+PIT
+~~~
+
+.. autoclass:: torchmetrics.PIT
     :noindex:
 
 SI_SDR
@@ -209,6 +216,12 @@ BinnedRecallAtFixedPrecision
 .. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
     :noindex:
 
+CalibrationError
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CalibrationError
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -301,7 +314,6 @@ StatScores
 
 .. autoclass:: torchmetrics.StatScores
     :noindex:
-
 
 *************
 Image Metrics
@@ -511,6 +523,29 @@ RetrievalNormalizedDCG
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
+    :noindex:
+
+****
+Text
+****
+
+BLEUScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.BLEUScore
+    :noindex:
+
+ROUGEScore
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ROUGEScore
+    :noindex:
+
+
+WER
+~~~
+
+.. autoclass:: torchmetrics.WER
     :noindex:
 
 

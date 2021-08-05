@@ -44,22 +44,25 @@ jobs:
     - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniconda-version: "4.7.12"
+        miniforge-variant: Mambaforge
+        # miniconda-version: "4.7.12"
         python-version: ${{ matrix.python-version }}
         channels: conda-forge,pytorch,pytorch-test,pytorch-nightly
         channel-priority: true
         auto-activate-base: true
         # environment-file: ./environment.yml
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+      # prevent hanging Conda creations
+      timeout-minutes: 10
 
     - name: Update Environment
       run: |
         sudo apt install libsndfile1
-        conda info
-        conda install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
-        conda install cpuonly $(python ./requirements/adjust-versions.py conda)
-        conda install -c conda-forge ffmpeg
-        conda list
+        mamba info
+        mamba install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
+        mamba install cpuonly $(python ./requirements/adjust-versions.py conda)
+        mamba install -c conda-forge ffmpeg
+        mamba list
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision

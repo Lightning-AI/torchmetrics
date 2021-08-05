@@ -28,7 +28,7 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _single_target_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
@@ -60,7 +60,7 @@ def _multi_target_sk_metric(preds, target, adjusted, multioutput):
 
 
 @pytest.mark.parametrize("adjusted", [0, 5, 10])
-@pytest.mark.parametrize("multioutput", ['raw_values', 'uniform_average', 'variance_weighted'])
+@pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_outputs",
     [
@@ -69,7 +69,6 @@ def _multi_target_sk_metric(preds, target, adjusted, multioutput):
     ],
 )
 class TestR2Score(MetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_r2(self, adjusted, multioutput, preds, target, sk_metric, num_outputs, ddp, dist_sync_on_step):
@@ -99,50 +98,57 @@ class TestR2Score(MetricTester):
             target=target,
             metric_module=partial(R2Score, num_outputs=num_outputs),
             metric_functional=r2_score,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput)
+            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_r2_half_cpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
         self.run_precision_test_cpu(
-            preds, target, partial(R2Score, num_outputs=num_outputs), r2_score, {
-                'adjusted': adjusted,
-                'multioutput': multioutput
-            }
+            preds,
+            target,
+            partial(R2Score, num_outputs=num_outputs),
+            r2_score,
+            {"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_r2_half_gpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
         self.run_precision_test_gpu(
-            preds, target, partial(R2Score, num_outputs=num_outputs), r2_score, {
-                'adjusted': adjusted,
-                'multioutput': multioutput
-            }
+            preds,
+            target,
+            partial(R2Score, num_outputs=num_outputs),
+            r2_score,
+            {"adjusted": adjusted, "multioutput": multioutput},
         )
 
 
 def test_error_on_different_shape(metric_class=R2Score):
     metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        metric(torch.randn(100), torch.randn(50))
 
 
 def test_error_on_multidim_tensors(metric_class=R2Score):
     metric = metric_class()
     with pytest.raises(
         ValueError,
-        match=r'Expected both prediction and target to be 1D or 2D tensors,'
-        r' but received tensors with dimension .'
+        match=r"Expected both prediction and target to be 1D or 2D tensors," r" but received tensors with dimension .",
     ):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))
 
 
 def test_error_on_too_few_samples(metric_class=R2Score):
     metric = metric_class()
-    with pytest.raises(ValueError, match='Needs at least two samples to calculate r2 score.'):
-        metric(torch.randn(1, ), torch.randn(1, ))
+    with pytest.raises(ValueError, match="Needs at least two samples to calculate r2 score."):
+        metric(torch.randn(1), torch.randn(1))
+    metric.reset()
+
+    # calling update twice should still work
+    metric.update(torch.randn(1), torch.randn(1))
+    metric.update(torch.randn(1), torch.randn(1))
+    assert metric.compute()
 
 
 def test_warning_on_too_large_adjusted(metric_class=R2Score):
@@ -150,10 +156,9 @@ def test_warning_on_too_large_adjusted(metric_class=R2Score):
 
     with pytest.warns(
         UserWarning,
-        match="More independent regressions than data points in"
-        " adjusted r2 score. Falls back to standard r2 score."
+        match="More independent regressions than data points in" " adjusted r2 score. Falls back to standard r2 score.",
     ):
-        metric(torch.randn(10, ), torch.randn(10, ))
+        metric(torch.randn(10), torch.randn(10))
 
     with pytest.warns(UserWarning, match="Division by zero in adjusted r2 score. Falls back to" " standard r2 score."):
-        metric(torch.randn(11, ), torch.randn(11, ))
+        metric(torch.randn(11), torch.randn(11))

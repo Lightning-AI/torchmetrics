@@ -22,10 +22,8 @@ from torchmetrics.utilities import rank_zero_warn
 
 
 class ROC(Metric):
-    """
-    Computes the Receiver Operating Characteristic (ROC). Works for both
-    binary, multiclass and multilabel problems. In the case of multiclass, the values will
-    be calculated based on a one-vs-the-rest approach.
+    """Computes the Receiver Operating Characteristic (ROC). Works for both binary, multiclass and multilabel
+    problems. In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Forward accepts
 
@@ -103,8 +101,8 @@ class ROC(Metric):
         [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
-
     """
+
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -131,13 +129,12 @@ class ROC(Metric):
         self.add_state("target", default=[], dist_reduce_fx=None)
 
         rank_zero_warn(
-            'Metric `ROC` will save all targets and predictions in buffer.'
-            ' For large datasets this may lead to large memory footprint.'
+            "Metric `ROC` will save all targets and predictions in buffer."
+            " For large datasets this may lead to large memory footprint."
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -150,8 +147,7 @@ class ROC(Metric):
         self.pos_label = pos_label
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """
-        Compute the receiver operating characteristic
+        """Compute the receiver operating characteristic.
 
         Returns:
             3-element tuple containing
@@ -168,7 +164,7 @@ class ROC(Metric):
         preds = torch.cat(self.preds, dim=0)
         target = torch.cat(self.target, dim=0)
         if not self.num_classes:
-            raise ValueError(f'`num_classes` bas to be positive number, but got {self.num_classes}')
+            raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
         return _roc_compute(preds, target, self.num_classes, self.pos_label)
 
     @property

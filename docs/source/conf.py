@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -25,7 +24,7 @@ _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))
 sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 
-FOLDER_GENERATED = 'generated'
+FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 
 # alternative https://stackoverflow.com/a/67692/4521646
@@ -33,7 +32,7 @@ spec = spec_from_file_location("torchmetrics/__about__.py", os.path.join(_PATH_R
 about = module_from_spec(spec)
 spec.loader.exec_module(about)
 
-html_favicon = '_static/images/icon.svg'
+html_favicon = "_static/images/icon.svg"
 
 # -- Project information -----------------------------------------------------
 
@@ -56,28 +55,28 @@ github_repo = "metrics"
 
 
 def _transform_changelog(path_in: str, path_out: str) -> None:
-    with open(path_in, 'r') as fp:
+    with open(path_in) as fp:
         chlog_lines = fp.readlines()
     # enrich short subsub-titles to be unique
-    chlog_ver = ''
+    chlog_ver = ""
     for i, ln in enumerate(chlog_lines):
-        if ln.startswith('## '):
-            chlog_ver = ln[2:].split('-')[0].strip()
-        elif ln.startswith('### '):
-            ln = ln.replace('###', f'### {chlog_ver} -')
+        if ln.startswith("## "):
+            chlog_ver = ln[2:].split("-")[0].strip()
+        elif ln.startswith("### "):
+            ln = ln.replace("###", f"### {chlog_ver} -")
             chlog_lines[i] = ln
-    with open(path_out, 'w') as fp:
+    with open(path_out, "w") as fp:
         fp.writelines(chlog_lines)
 
 
 os.makedirs(os.path.join(_PATH_HERE, FOLDER_GENERATED), exist_ok=True)
 # copy all documents from GH templates like contribution guide
-for md in glob.glob(os.path.join(_PATH_ROOT, '.github', '*.md')):
+for md in glob.glob(os.path.join(_PATH_ROOT, ".github", "*.md")):
     shutil.copy(md, os.path.join(_PATH_HERE, FOLDER_GENERATED, os.path.basename(md)))
 # copy also the changelog
 _transform_changelog(
-    os.path.join(_PATH_ROOT, 'CHANGELOG.md'),
-    os.path.join(_PATH_HERE, FOLDER_GENERATED, 'CHANGELOG.md'),
+    os.path.join(_PATH_ROOT, "CHANGELOG.md"),
+    os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
 # -- General configuration ---------------------------------------------------
@@ -162,14 +161,14 @@ html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
 # documentation.
 
 html_theme_options = {
-    'pytorch_project': 'https://pytorchlightning.ai',
-    'canonical_url': about.__docs_url__,
+    "pytorch_project": "https://pytorchlightning.ai",
+    "canonical_url": about.__docs_url__,
     "collapse_navigation": False,
     "display_version": True,
     "logo_only": False,
 }
 
-html_logo = '_static/images/logo.svg'
+html_logo = "_static/images/logo.svg"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -290,10 +289,10 @@ for path_ipynb in glob.glob(os.path.join(_PATH_ROOT, "notebooks", "*.ipynb")):
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule
 def package_list_from_file(file):
     mocked_packages = []
-    with open(file, "r") as fp:
+    with open(file) as fp:
         for ln in fp.readlines():
             found = [ln.index(ch) for ch in list(",=<>#") if ch in ln]
-            pkg = ln[:min(found)] if found else ln
+            pkg = ln[: min(found)] if found else ln
             if pkg.rstrip():
                 mocked_packages.append(pkg.rstrip())
     return mocked_packages
@@ -316,7 +315,6 @@ autodoc_mock_imports = MOCK_PACKAGES
 # Resolve function
 # This function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info):
-
     def find_source():
         # try to find the file and line number, based on code from numpy:
         # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L286
@@ -349,20 +347,20 @@ def linkcode_resolve(domain, info):
     # do mapping from latest tags to master
     branch = {"latest": "master", "stable": "master"}.get(branch, branch)
     filename = "/".join([branch] + filename.split("/")[1:])
-    return "https://github.com/%s/%s/blob/%s" % (github_user, github_repo, filename)
+    return f"https://github.com/{github_user}/{github_repo}/blob/{filename}"
 
 
 autosummary_generate = True
 
-autodoc_member_order = 'groupwise'
+autodoc_member_order = "groupwise"
 
-autoclass_content = 'both'
+autoclass_content = "both"
 
 autodoc_default_options = {
-    'members': True,
+    "members": True,
     # 'methods': True,
-    'special-members': '__call__',
-    'exclude-members': '_abc_impl',
+    "special-members": "__call__",
+    "exclude-members": "_abc_impl",
     # 'show-inheritance': True,
 }
 

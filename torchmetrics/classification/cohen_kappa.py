@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 
 class CohenKappa(Metric):
     r"""
-    Calculates `Cohen's kappa score <https://en.wikipedia.org/wiki/Cohen%27s_kappa>`_ that measures
+    Calculates `Cohen's kappa score`_ that measures
     inter-annotator agreement. It is defined as
 
     .. math::
@@ -42,7 +42,7 @@ class CohenKappa(Metric):
         - ``target`` (long tensor): ``(N, ...)``
 
     If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
+    to convert into integer labels. This is the case for binary and multi-label probabilities or logits.
 
     If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
 
@@ -55,7 +55,8 @@ class CohenKappa(Metric):
             - ``'quadratic'``: quadratic weighting
 
         threshold:
-            Threshold value for binary or multi-label probabilites. default: 0.5
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
 
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
@@ -74,6 +75,7 @@ class CohenKappa(Metric):
         >>> cohenkappa = CohenKappa(num_classes=2)
         >>> cohenkappa(preds, target)
         tensor(0.5000)
+
     """
     confmat: Tensor
 
@@ -95,15 +97,14 @@ class CohenKappa(Metric):
         self.weights = weights
         self.threshold = threshold
 
-        allowed_weights = ('linear', 'quadratic', 'none', None)
+        allowed_weights = ("linear", "quadratic", "none", None)
         if self.weights not in allowed_weights:
             raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -113,16 +114,11 @@ class CohenKappa(Metric):
         self.confmat += confmat
 
     def compute(self) -> Tensor:
-        """
-        Computes cohen kappa score
-        """
+        """Computes cohen kappa score."""
         return _cohen_kappa_compute(self.confmat, self.weights)
 
     @property
     def is_differentiable(self) -> bool:
-        """
-        cohen kappa is not differentiable since the implementation
-        is based on calculating the confusion matrix which in general
-        is not differentiable
-        """
+        """cohen kappa is not differentiable since the implementation is based on calculating the confusion matrix
+        which in general is not differentiable."""
         return False

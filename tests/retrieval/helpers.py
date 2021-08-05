@@ -38,9 +38,8 @@ seed_all(42)
 
 
 def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
-    """
-    Given an integer `torch.Tensor` or `np.ndarray` `indexes`, return a `torch.Tensor` or `np.ndarray` of indexes for
-    each different value in `indexes`.
+    """Given an integer `torch.Tensor` or `np.ndarray` `indexes`, return a `torch.Tensor` or `np.ndarray` of
+    indexes for each different value in `indexes`.
 
     Args:
         indexes: a `torch.Tensor` or `np.ndarray` of integers
@@ -73,9 +72,9 @@ def _compute_sklearn_metric(
     metric: Callable = None,
     empty_target_action: str = "skip",
     reverse: bool = False,
-    **kwargs
+    **kwargs,
 ) -> Tensor:
-    """ Compute metric with multiple iterations over every query predictions set. """
+    """Compute metric with multiple iterations over every query predictions set."""
 
     if indexes is None:
         indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
@@ -100,9 +99,9 @@ def _compute_sklearn_metric(
         trg, pds = target[group], preds[group]
 
         if ((1 - trg) if reverse else trg).sum() == 0:
-            if empty_target_action == 'skip':
+            if empty_target_action == "skip":
                 pass
-            elif empty_target_action == 'pos':
+            elif empty_target_action == "pos":
                 sk_results.append(1.0)
             else:
                 sk_results.append(0.0)
@@ -118,8 +117,8 @@ def _compute_sklearn_metric(
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
-    assert all(tests[0]['argnames'] == x['argnames'] for x in tests[1:]), "the header must be the same for all tests"
-    return dict(argnames=tests[0]['argnames'], argvalues=sum([x['argvalues'] for x in tests], []))
+    assert all(tests[0]["argnames"] == x["argnames"] for x in tests[1:]), "the header must be the same for all tests"
+    return dict(argnames=tests[0]["argnames"], argvalues=sum((x["argvalues"] for x in tests), []))
 
 
 _errors_test_functional_metric_parameters_default = dict(
@@ -134,7 +133,20 @@ _errors_test_functional_metric_parameters_default = dict(
         (_irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers", {}),
         # check targets are between 0 and 1
         (_irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values", {}),
-    ]
+    ],
+)
+
+_errors_test_functional_metric_parameters_with_nonbinary = dict(
+    argnames="preds,target,message,metric_args",
+    argvalues=[
+        # check input shapes are consistent (func)
+        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        # check input tensors are not empty
+        (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
+        # check on input dtypes
+        (_irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats", {}),
+        (_irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers", {}),
+    ],
 )
 
 _errors_test_functional_metric_parameters_k = dict(
@@ -142,7 +154,7 @@ _errors_test_functional_metric_parameters_k = dict(
     argvalues=[
         (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
         (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=4.0)),
-    ]
+    ],
 )
 
 _errors_test_class_metric_parameters_no_pos_target = dict(
@@ -150,10 +162,13 @@ _errors_test_class_metric_parameters_no_pos_target = dict(
     argvalues=[
         # check when error when there are no positive targets
         (
-            _irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target,
-            "`compute` method was provided with a query with no positive target.", dict(empty_target_action="error")
+            _irs_no_tgt.indexes,
+            _irs_no_tgt.preds,
+            _irs_no_tgt.target,
+            "`compute` method was provided with a query with no positive target.",
+            dict(empty_target_action="error"),
         ),
-    ]
+    ],
 )
 
 _errors_test_class_metric_parameters_no_neg_target = dict(
@@ -161,10 +176,66 @@ _errors_test_class_metric_parameters_no_neg_target = dict(
     argvalues=[
         # check when error when there are no negative targets
         (
-            _irs_all.indexes, _irs_all.preds, _irs_all.target,
-            "`compute` method was provided with a query with no negative target.", dict(empty_target_action="error")
+            _irs_all.indexes,
+            _irs_all.preds,
+            _irs_all.target,
+            "`compute` method was provided with a query with no negative target.",
+            dict(empty_target_action="error"),
         ),
-    ]
+    ],
+)
+
+_errors_test_class_metric_parameters_with_nonbinary = dict(
+    argnames="indexes,preds,target,message,metric_args",
+    argvalues=[
+        (None, _irs.preds, _irs.target, "`indexes` cannot be None", dict(empty_target_action="error")),
+        # check when input arguments are invalid
+        (
+            _irs.indexes,
+            _irs.preds,
+            _irs.target,
+            "`empty_target_action` received a wrong value `casual_argument`.",
+            dict(empty_target_action="casual_argument"),
+        ),
+        # check input shapes are consistent
+        (
+            _irs_mis_sz.indexes,
+            _irs_mis_sz.preds,
+            _irs_mis_sz.target,
+            "`indexes`, `preds` and `target` must be of the same shape",
+            dict(empty_target_action="skip"),
+        ),
+        # check input tensors are not empty
+        (
+            _irs_empty.indexes,
+            _irs_empty.preds,
+            _irs_empty.target,
+            "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
+            dict(empty_target_action="skip"),
+        ),
+        # check on input dtypes
+        (
+            _irs.indexes.bool(),
+            _irs.preds,
+            _irs.target,
+            "`indexes` must be a tensor of long integers",
+            dict(empty_target_action="skip"),
+        ),
+        (
+            _irs.indexes,
+            _irs.preds.bool(),
+            _irs.target,
+            "`preds` must be a tensor of floats",
+            dict(empty_target_action="skip"),
+        ),
+        (
+            _irs.indexes,
+            _irs.preds,
+            _irs.target.float(),
+            "`target` must be a tensor of booleans or integers",
+            dict(empty_target_action="skip"),
+        ),
+    ],
 )
 
 _errors_test_class_metric_parameters_default = dict(
@@ -173,46 +244,66 @@ _errors_test_class_metric_parameters_default = dict(
         (None, _irs.preds, _irs.target, "`indexes` cannot be None", dict(empty_target_action="error")),
         # check when input arguments are invalid
         (
-            _irs.indexes, _irs.preds, _irs.target, "`empty_target_action` received a wrong value `casual_argument`.",
-            dict(empty_target_action="casual_argument")
+            _irs.indexes,
+            _irs.preds,
+            _irs.target,
+            "`empty_target_action` received a wrong value `casual_argument`.",
+            dict(empty_target_action="casual_argument"),
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes, _irs_mis_sz.preds, _irs_mis_sz.target,
-            "`indexes`, `preds` and `target` must be of the same shape", dict(empty_target_action="skip")
+            _irs_mis_sz.indexes,
+            _irs_mis_sz.preds,
+            _irs_mis_sz.target,
+            "`indexes`, `preds` and `target` must be of the same shape",
+            dict(empty_target_action="skip"),
         ),
         # check input tensors are not empty
         (
-            _irs_empty.indexes, _irs_empty.preds,
-            _irs_empty.target, "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
-            dict(empty_target_action="skip")
+            _irs_empty.indexes,
+            _irs_empty.preds,
+            _irs_empty.target,
+            "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
+            dict(empty_target_action="skip"),
         ),
         # check on input dtypes
         (
-            _irs.indexes.bool(), _irs.preds, _irs.target, "`indexes` must be a tensor of long integers",
-            dict(empty_target_action="skip")
+            _irs.indexes.bool(),
+            _irs.preds,
+            _irs.target,
+            "`indexes` must be a tensor of long integers",
+            dict(empty_target_action="skip"),
         ),
         (
-            _irs.indexes, _irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats",
-            dict(empty_target_action="skip")
+            _irs.indexes,
+            _irs.preds.bool(),
+            _irs.target,
+            "`preds` must be a tensor of floats",
+            dict(empty_target_action="skip"),
         ),
         (
-            _irs.indexes, _irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers",
-            dict(empty_target_action="skip")
+            _irs.indexes,
+            _irs.preds,
+            _irs.target.float(),
+            "`target` must be a tensor of booleans or integers",
+            dict(empty_target_action="skip"),
         ),
         # check targets are between 0 and 1
         (
-            _irs_bad_tgt.indexes, _irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values",
-            dict(empty_target_action="skip")
+            _irs_bad_tgt.indexes,
+            _irs_bad_tgt.preds,
+            _irs_bad_tgt.target,
+            "`target` must contain `binary` values",
+            dict(empty_target_action="skip"),
         ),
-    ]
+    ],
 )
 
 _errors_test_class_metric_parameters_k = dict(
     argnames="indexes,preds,target,message,metric_args",
     argvalues=[
         (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
-    ]
+    ],
 )
 
 _default_metric_class_input_arguments = dict(
@@ -221,7 +312,7 @@ _default_metric_class_input_arguments = dict(
         (_irs.indexes, _irs.preds, _irs.target),
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
-    ]
+    ],
 )
 
 _default_metric_class_input_arguments_with_non_binary_target = dict(
@@ -231,7 +322,7 @@ _default_metric_class_input_arguments_with_non_binary_target = dict(
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
         (_irs_non_binary.indexes, _irs_non_binary.preds, _irs_non_binary.target),
-    ]
+    ],
 )
 
 _default_metric_functional_input_arguments = dict(
@@ -240,7 +331,7 @@ _default_metric_functional_input_arguments = dict(
         (_irs.preds, _irs.target),
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
-    ]
+    ],
 )
 
 _default_metric_functional_input_arguments_with_non_binary_target = dict(
@@ -250,7 +341,7 @@ _default_metric_functional_input_arguments_with_non_binary_target = dict(
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
         (_irs_non_binary.preds, _irs_non_binary.target),
-    ]
+    ],
 )
 
 
@@ -309,7 +400,6 @@ def _errors_test_functional_metric(
 
 
 class RetrievalMetricTester(MetricTester):
-
     def run_class_metric_test(
         self,
         ddp: bool,
@@ -366,7 +456,6 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
-
         def metric_functional_ignore_indexes(preds, target, indexes):
             return metric_functional(preds, target)
 
@@ -375,7 +464,7 @@ class RetrievalMetricTester(MetricTester):
             target=target,
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
-            metric_args={'empty_target_action': 'neg'},
+            metric_args={"empty_target_action": "neg"},
             indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
         )
 
@@ -398,7 +487,7 @@ class RetrievalMetricTester(MetricTester):
             target=target,
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
-            metric_args={'empty_target_action': 'neg'},
+            metric_args={"empty_target_action": "neg"},
             indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
         )
 

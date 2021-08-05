@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.precision_recall import _precision_c
 
 class Precision(StatScores):
     r"""
-    Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Computes `Precision`_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -156,8 +156,7 @@ class Precision(StatScores):
         self.average = average
 
     def compute(self) -> Tensor:
-        """
-        Computes the precision score based on inputs passed in to ``update`` previously.
+        """Computes the precision score based on inputs passed in to ``update`` previously.
 
         Return:
             The shape of the returned tensor depends on the ``average`` parameter
@@ -176,7 +175,7 @@ class Precision(StatScores):
 
 class Recall(StatScores):
     r"""
-    Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Computes `Recall`_:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -310,8 +309,7 @@ class Recall(StatScores):
         self.average = average
 
     def compute(self) -> Tensor:
-        """
-        Computes the recall score based on inputs passed in to ``update`` previously.
+        """Computes the recall score based on inputs passed in to ``update`` previously.
 
         Return:
             The shape of the returned tensor depends on the ``average`` parameter
