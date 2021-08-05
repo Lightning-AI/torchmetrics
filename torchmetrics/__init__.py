@@ -12,7 +12,7 @@ _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
-from torchmetrics.audio import PIT, SI_SDR, SI_SNR, SNR  # noqa: E402
+from torchmetrics.audio import PIT, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
 from torchmetrics.average import AverageMeter  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402
     AUC,
