@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
 if _BERTSCORE_AVAILABLE:
-    from bert_score import BERTScorer, lang2model, model2layers, get_hash
+    from bert_score import BERTScorer, get_hash, lang2model, model2layers
 
 
 def bert_score(
