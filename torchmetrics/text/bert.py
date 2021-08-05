@@ -111,8 +111,8 @@ class BERTScore(Metric):
             Dict with Bertscores.
         """
         return bert_score(
-            predictions=self.predictions[0],
-            references=self.references[0],
+            predictions=_flatten(self.predictions),
+            references=_flatten(self.references),
             model_type=self.model_type,
             num_layers=self.num_layers,
             verbose=self.verbose,
