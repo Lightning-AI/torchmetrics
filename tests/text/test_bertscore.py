@@ -7,7 +7,7 @@ from torchmetrics.functional import bert_score
 from torchmetrics.text import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
-# Examples and expected values taken from: 
+# Examples and expected values taken from:
 # https://github.com/Tiiiger/bert_score/blob/master/tests/test_scorer.py
 preds = [
     "28-year-old chef found dead in San Francisco mall",
