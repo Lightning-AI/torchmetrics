@@ -31,7 +31,7 @@ def _assert_list(preds: Any, refs: Any, threshold: float = 1e-8):
 
 
 preds_batched = [preds[0:2], preds[2:]]
-refs_batched = [target[0:2], target[2:]]
+refs_batched = [refs[0:2], refs[2:]]
 
 
 @pytest.mark.parametrize(
