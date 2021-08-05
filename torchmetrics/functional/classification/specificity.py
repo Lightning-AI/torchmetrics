@@ -28,6 +28,72 @@ def _specificity_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    """
+    Computes specificity from the stat scores: true positives, false positives, true negatives, false negatives.
+    
+    Args:
+        tp: True positives
+        fp: False positives
+        tn: True negatives
+        fn: False negatives
+        average:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
+            - ``'macro'``: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tn + fp``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
+            - ``'samples'``: Calculate the metric for each sample, and average the metrics
+              across samples (with equal weights for each sample).
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
+
+        mdmc_average:
+            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter). Should be one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class.
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then averaged over samples.
+              The computation for each sample is done by treating the flattened extra axes ``...``
+              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              and computing the metric for the sample based on that.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
+              (see :ref:`references/modules:input types`)
+              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update(
+        ...                         preds,
+        ...                         target,
+        ...                         reduce='macro',
+        ...                         num_classes=3,
+        ...                     )
+        >>> _specificity_compute(tp, fp, tn, fn, average='macro')
+        tensor(0.6111)
+        >>> tp, fp, tn, fn = _stat_scores_update(
+        ...                         preds,
+        ...                         target,
+        ...                         reduce='micro',
+        ...                     )
+        >>> _specificity_compute(tp, fp, tn, fn, average='micro')
+        tensor(0.6250)
+    """
+
     numerator = tn
     denominator = tn + fp
     if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:

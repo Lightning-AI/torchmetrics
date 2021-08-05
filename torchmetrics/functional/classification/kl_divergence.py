@@ -23,6 +23,16 @@ from torchmetrics.utilities.data import METRIC_EPS
 
 
 def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
+    """
+    Updates and returns KL divergence scores for each observation and the total number of observations.
+    Checks same shape and 2D nature of the input tensors else raises ValueError
+
+    Args:
+        p: data distribution with shape ``[N, d]``
+        q: prior or approximate distribution with shape ``[N, d]``
+        log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
+            will normalize to make sure the distributes sum to 1
+    """
     _check_same_shape(p, q)
     if p.ndim != 2 or q.ndim != 2:
         raise ValueError(f"Expected both p and q distribution to be 2D but got {p.ndim} and {q.ndim} respectively")
@@ -40,6 +50,27 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
 
 
 def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "mean") -> Tensor:
+    """
+    Computes the KL divergenece based on the type of reduction.
+
+    Args:
+        measures: Tensor of KL divergence scores for each observation
+        total: Number of observations
+        reduction:
+            Determines how to reduce over the ``N``/batch dimension:
+
+            - ``'mean'`` [default]: Averages score across samples
+            - ``'sum'``: Sum score across samples
+            - ``'none'`` or ``None``: Returns score per sample
+
+    Example:
+        >>> p = torch.tensor([[0.36, 0.48, 0.16]])
+        >>> q = torch.tensor([[1/3, 1/3, 1/3]])
+        >>> measures, total = _kld_update(p, q)
+        >>> _kld_compute(measures, total)
+        tensor(0.0853)
+    """
+    
     if reduction == "sum":
         return measures.sum()
     if reduction == "mean":

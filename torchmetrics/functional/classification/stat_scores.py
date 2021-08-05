@@ -84,6 +84,73 @@ def _stat_scores_update(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """
+    Updates and returns the the number of true positives, false positives, true negatives, false negatives.
+    Raises ValueError if:
+        - The `ignore_index` is not valid
+        - When `ignore_index` is used with binary data
+        - When inputs are multi-dimensional multi-class, and the `mdmc_reduce` parameter is not set
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        reduce:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'micro'`` [default]: Counts the statistics by summing over all [sample, class]
+              combinations (globally). Each statistic is represented by a single integer.
+            - ``'macro'``: Counts the statistics for each class separately (over all samples).
+              Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes``
+              to be set.
+            - ``'samples'``: Counts the statistics for each sample separately (over all classes).
+              Each statistic is represented by a ``(N, )`` 1d tensor.
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_reduce``.
+
+        mdmc_reduce:
+            Defines how the multi-dimensional multi-class inputs are handeled. Should be
+            one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class (see :ref:`references/modules:input types` for the definition of input types).
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then the outputs are concatenated together. In each
+              sample the extra axes ``...`` are flattened to become the sub-sample axis, and
+              statistics for each sample are computed by treating the sub-sample axis as the
+              ``N`` axis for that sample.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs are
+              flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
+
+        num_classes:
+            Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
+
+        top_k:
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
+
+            Should be left at default (``None``) for all other types of inputs.
+
+        threshold:
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+
+        multiclass:
+            Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be. See the parameter's
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            for a more detailed explanation and examples.
+
+        ignore_index:
+            Specify a class (label) to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and
+            ``reduce='macro'``, the class statistics for the ignored class will all be returned
+            as ``-1``.
+    """
 
     preds, target, _ = _input_format_classification(
         preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
@@ -122,6 +189,37 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
+    """
+    Computes the number of true positives, false positives, true negatives, false negatives.
+    Concatenates the input tensors along with the support into one output.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        tn: True negatives
+        fn: False negatives
+
+    Example:
+        >>> preds  = torch.tensor([1, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update(
+        ...                         preds,
+        ...                         target,
+        ...                         reduce='macro',
+        ...                         num_classes=3,
+        ...                     )
+        >>> _stat_scores_compute(tp, fp, tn, fn)
+        tensor([[0, 1, 2, 1, 1],
+                [1, 1, 1, 1, 2],
+                [1, 0, 3, 0, 1]])
+        >>> tp, fp, tn, fn = _stat_scores_update(
+        ...                         preds,
+        ...                         target,
+        ...                         reduce='micro',
+        ...                     )
+        >>> _stat_scores_compute(tp, fp, tn, fn)
+        tensor([2, 2, 6, 2, 4])
+    """
     stats = [
         tp.unsqueeze(-1),
         fp.unsqueeze(-1),

@@ -22,6 +22,7 @@ from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMet
 
 
 def _check_subset_validity(mode: DataType) -> bool:
+    """Checks input mode is valid"""
     return mode in (DataType.MULTILABEL, DataType.MULTIDIM_MULTICLASS)
 
 
@@ -33,6 +34,32 @@ def _mode(
     num_classes: Optional[int],
     multiclass: Optional[bool],
 ) -> DataType:
+    """
+    Finds the mode of the input tensors
+    
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        threshold:
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+        top_k:
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
+
+            Should be left at default (``None``) for all other types of inputs.
+
+        num_classes:
+            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
+
+        multiclass:
+            Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be. See the parameter's
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            for a more detailed explanation and examples.
+    """
+
     mode = _check_classification_inputs(
         preds, target, threshold=threshold, top_k=top_k, num_classes=num_classes, multiclass=multiclass
     )
@@ -51,6 +78,72 @@ def _accuracy_update(
     ignore_index: Optional[int],
     mode: DataType,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """
+    Updates and returns stat scores (true positives, false positives, true negatives, false negatives) 
+        required to compute accuracy
+    
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        reduce:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'micro'`` [default]: Counts the statistics by summing over all [sample, class]
+              combinations (globally). Each statistic is represented by a single integer.
+            - ``'macro'``: Counts the statistics for each class separately (over all samples).
+              Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes``
+              to be set.
+            - ``'samples'``: Counts the statistics for each sample separately (over all classes).
+              Each statistic is represented by a ``(N, )`` 1d tensor.
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_reduce``.
+
+        mdmc_reduce:
+            Defines how the multi-dimensional multi-class inputs are handeled. Should be
+            one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class (see :ref:`references/modules:input types` for the definition of input types).
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then the outputs are concatenated together. In each
+              sample the extra axes ``...`` are flattened to become the sub-sample axis, and
+              statistics for each sample are computed by treating the sub-sample axis as the
+              ``N`` axis for that sample.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs are
+              flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
+
+        threshold:
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+        
+        num_classes:
+            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
+
+        top_k:
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
+
+            Should be left at default (``None``) for all other types of inputs.
+
+        multiclass:
+            Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be. See the parameter's
+            :ref:`documentation section <references/modules:using the multiclass parameter>`
+            for a more detailed explanation and examples.
+
+        ignore_index:
+            Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
+            or ``'none'``, the score for the ignored class will be returned as ``nan``.
+
+        mode: Mode of the input tensors
+    """
+
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
 
@@ -78,6 +171,54 @@ def _accuracy_compute(
     mdmc_average: Optional[str],
     mode: DataType,
 ) -> Tensor:
+    """
+    Computes accuracy from stat scores: true positives, false positives, true negatives, false negatives.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        tn: True negatives
+        fn: False negatives
+        average:
+            Defines the reduction that is applied. Should be one of the following:
+
+            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
+            - ``'macro'``: Calculate the metric for each class separately, and average the
+              metrics across classes (with equal weights for each class).
+            - ``'weighted'``: Calculate the metric for each class separately, and average the
+              metrics across classes, weighting each class by its support (``tn + fp``).
+            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
+              the metric for every class.
+            - ``'samples'``: Calculate the metric for each sample, and average the metrics
+              across samples (with equal weights for each sample).
+
+            .. note:: What is considered a sample in the multi-dimensional multi-class case
+                depends on the value of ``mdmc_average``.
+
+            .. note:: If ``'none'`` and a given class doesn't occur in the `preds` or `target`,
+                the value for the class will be ``nan``.
+
+        mdmc_average:
+            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter). Should be one of the following:
+
+            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
+              multi-class.
+
+            - ``'samplewise'``: In this case, the statistics are computed separately for each
+              sample on the ``N`` axis, and then averaged over samples.
+              The computation for each sample is done by treating the flattened extra axes ``...``
+              (see :ref:`references/modules:input types`) as the ``N`` dimension within the sample,
+              and computing the metric for the sample based on that.
+
+            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
+              (see :ref:`references/modules:input types`)
+              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
+              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
+
+        mode: Mode of the input tensors
+    """
+    
     simple_average = [AverageMethod.MICRO, AverageMethod.SAMPLES]
     if (mode == DataType.BINARY and average in simple_average) or mode == DataType.MULTILABEL:
         numerator = tp + tn
@@ -112,6 +253,23 @@ def _subset_accuracy_update(
     threshold: float,
     top_k: Optional[int],
 ) -> Tuple[Tensor, Tensor]:
+    """
+    Updates and returns variables required to compute subset accuracy
+    
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+
+        threshold:
+            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+
+        top_k:
+            Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs. The
+            default value (``None``) will be interpreted as 1 for these inputs.
+            Should be left at default (``None``) for all other types of inputs.
+    """
 
     preds, target = _input_squeeze(preds, target)
     preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
@@ -136,6 +294,14 @@ def _subset_accuracy_update(
 
 
 def _subset_accuracy_compute(correct: Tensor, total: Tensor) -> Tensor:
+    """
+    Computes subset accuracy from number of correct observations and total number of observations
+
+    Args:
+        correct: Number of correct observations
+        total: Number of observations
+    """
+
     return correct.float() / total
 
 
