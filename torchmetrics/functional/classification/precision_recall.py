@@ -29,7 +29,7 @@ def _precision_compute(
 ) -> Tensor:
     """
     Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
-    
+
     Args:
         tp: True positives
         fp: False positives
@@ -90,9 +90,9 @@ def _precision_compute(
         ...                         reduce='micro',
         ...                     )
         >>> _precision_compute(tp, fp, tn, fn, average='micro')
-        tensor(0.2500)        
+        tensor(0.2500)
     """
-    
+
     numerator = tp
     denominator = tp + fp
 
@@ -271,7 +271,7 @@ def _recall_compute(
 ) -> Tensor:
     """
     Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
-    
+
     Args:
         tp: True positives
         fp: False positives
@@ -332,7 +332,7 @@ def _recall_compute(
         ...                         reduce='micro',
         ...                     )
         >>> _recall_compute(tp, fp, tn, fn, average='micro')
-        tensor(0.2500)        
+        tensor(0.2500)
     """
     numerator = tp
     denominator = tp + fn

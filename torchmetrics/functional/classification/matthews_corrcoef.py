@@ -33,7 +33,7 @@ def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
         >>> _matthews_corrcoef_compute(confmat)
         tensor(0.5774)
     """
-    
+
     tk = confmat.sum(dim=1).float()
     pk = confmat.sum(dim=0).float()
     c = torch.trace(confmat).float()

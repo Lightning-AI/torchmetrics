@@ -46,7 +46,7 @@ def _check_shape_and_type_consistency_hinge(
         preds: Predicted tensor
         target: Ground truth tensor
     """
-    
+
     if target.ndim > 1:
         raise ValueError(
             f"The `target` should be one dimensional, got `target` with shape={target.shape}.",
@@ -90,7 +90,7 @@ def _hinge_update(
             ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
             ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
     """
-    
+
     if preds.shape[0] == 1:
         preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
     else:
@@ -156,7 +156,7 @@ def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
         >>> _hinge_compute(measure, total)
         tensor([2.2333, 1.5000, 1.2333])
     """
-    
+
     return measure / total
 
 

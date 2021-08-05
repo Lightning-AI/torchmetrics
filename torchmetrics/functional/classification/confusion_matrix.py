@@ -25,13 +25,13 @@ def _confusion_matrix_update(
     preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
 ) -> Tensor:
     """
-    Updates and returns confusion matrix (without any normalization) based on the mode 
+    Updates and returns confusion matrix (without any normalization) based on the mode
     of the input.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the 
+        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the
             case of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
         multilabel: determines if data is multilabel or not.
     """

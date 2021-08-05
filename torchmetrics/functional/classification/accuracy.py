@@ -36,7 +36,7 @@ def _mode(
 ) -> DataType:
     """
     Finds the mode of the input tensors
-    
+
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
@@ -79,9 +79,9 @@ def _accuracy_update(
     mode: DataType,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """
-    Updates and returns stat scores (true positives, false positives, true negatives, false negatives) 
+    Updates and returns stat scores (true positives, false positives, true negatives, false negatives)
         required to compute accuracy
-    
+
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
@@ -119,7 +119,7 @@ def _accuracy_update(
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        
+
         num_classes:
             Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
 
@@ -218,7 +218,7 @@ def _accuracy_compute(
 
         mode: Mode of the input tensors
     """
-    
+
     simple_average = [AverageMethod.MICRO, AverageMethod.SAMPLES]
     if (mode == DataType.BINARY and average in simple_average) or mode == DataType.MULTILABEL:
         numerator = tp + tn
@@ -255,7 +255,7 @@ def _subset_accuracy_update(
 ) -> Tuple[Tensor, Tensor]:
     """
     Updates and returns variables required to compute subset accuracy
-    
+
     Args:
         preds: Predicted tensor
         target: Ground truth tensor

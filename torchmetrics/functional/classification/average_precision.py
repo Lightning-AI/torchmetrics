@@ -54,7 +54,7 @@ def _average_precision_compute(
 
     Example:
         >>> # binary case
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> preds = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=1)
         >>> _average_precision_compute(preds, target, num_classes, pos_label)
@@ -92,7 +92,7 @@ def _average_precision_compute_with_precision_recall(
 
     Example:
         >>> # binary case
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> preds = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=1)
         >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
@@ -100,7 +100,7 @@ def _average_precision_compute_with_precision_recall(
         tensor(1.)
 
         >>> # multiclass case
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
@@ -110,7 +110,7 @@ def _average_precision_compute_with_precision_recall(
         >>> _average_precision_compute_with_precision_recall(preds, target, num_classes)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
-    
+
     # Return the step function integral
     # The following works because the last entry of precision is
     # guaranteed to be 1, as returned by precision_recall_curve

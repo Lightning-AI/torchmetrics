@@ -80,7 +80,7 @@ def _precision_recall_curve_update(
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
     """
-    
+
     if len(preds.shape) == len(target.shape):
         if pos_label is None:
             rank_zero_warn("`pos_label` automatically set 1.")
@@ -141,7 +141,7 @@ def _precision_recall_curve_compute_single_class(
             range [0,num_classes-1]
         sample_weights: sample weights for each data point
     """
-    
+
     fps, tps, thresholds = _binary_clf_curve(
         preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
     )
@@ -232,7 +232,7 @@ def _precision_recall_curve_compute(
 
     Example:
         >>> # binary case
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> preds = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, pos_label=1)
         >>> precision, recall, thresholds = _precision_recall_curve_compute(preds, target, num_classes, pos_label)

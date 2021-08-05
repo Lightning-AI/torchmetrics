@@ -30,7 +30,7 @@ def _specificity_compute(
 ) -> Tensor:
     """
     Computes specificity from the stat scores: true positives, false positives, true negatives, false negatives.
-    
+
     Args:
         tp: True positives
         fp: False positives

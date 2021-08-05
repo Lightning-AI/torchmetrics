@@ -87,7 +87,7 @@ def _fbeta_compute(
               (see :ref:`references/modules:input types`)
               are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
               were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
-    
+
     Example:
         >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
@@ -99,7 +99,7 @@ def _fbeta_compute(
         ...                         reduce='micro',
         ...                         num_classes=3,
         ...                     )
-        >>> _fbeta_compute(tp, fp, tn, fn, beta=0.5, average='micro)
+        >>> _fbeta_compute(tp, fp, tn, fn, beta=0.5, average='micro')
         tensor(0.3333)
     """
 

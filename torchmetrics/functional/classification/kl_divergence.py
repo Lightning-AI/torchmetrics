@@ -70,7 +70,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "me
         >>> _kld_compute(measures, total)
         tensor(0.0853)
     """
-    
+
     if reduction == "sum":
         return measures.sum()
     if reduction == "mean":

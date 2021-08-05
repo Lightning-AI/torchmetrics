@@ -58,7 +58,7 @@ def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Ten
         >>> _hamming_distance_compute(correct, total)
         tensor(0.2500)
     """
-    
+
     return 1 - correct.float() / total
 
 

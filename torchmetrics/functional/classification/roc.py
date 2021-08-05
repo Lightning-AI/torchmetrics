@@ -151,7 +151,7 @@ def _roc_compute(
 
     Example:
         >>> # binary case
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> preds = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> preds, target, num_classes, pos_label = _roc_update(preds, target, pos_label=1)
         >>> fpr, tpr, thresholds = _roc_compute(preds, target, num_classes, pos_label)
