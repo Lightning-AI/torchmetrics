@@ -57,3 +57,19 @@ def test_score(preds, refs):
     _assert_list(Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
     _assert_list(Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
     _assert_list(Score["f1"], [0.9833561182022095, 0.9782299995422363, 0.916214644908905])
+    
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds_batched, refs_batched)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_accumulation(preds, refs):
+    """Tests for metric works with accumulation"""
+    Scorer = BERTScore(model_type="roberta-large", num_layers=17, idf=False, batch_size=3)
+    for p, r in zip(preds, refs):
+        Scorer.update(predictions=p, references=r)
+    Score = Scorer.compute()
+    _assert_list(Score["precision"], [0.9843302369117737, 0.9832239747047424, 0.9120386242866516])
+    _assert_list(Score["recall"], [0.9823839068412781, 0.9732863903045654, 0.920428991317749])
+    _assert_list(Score["f1"], [0.9833561182022095, 0.9782299995422363, 0.916214644908905])
