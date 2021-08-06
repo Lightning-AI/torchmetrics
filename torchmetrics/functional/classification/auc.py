@@ -18,7 +18,7 @@ from torch import Tensor
 
 
 def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute area under the curve. Checks if the 2 input tenseorhave
+    """Updates and returns variables required to compute area under the curve. Checks if the 2 input tenseor have
     the same number of elements and if they are 1d.
 
     Args:
