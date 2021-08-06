@@ -28,8 +28,7 @@ def _specificity_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
-    """
-    Computes specificity from the stat scores: true positives, false positives, true negatives, false negatives.
+    """Computes specificity from the stat scores: true positives, false positives, true negatives, false negatives.
 
     Args:
         tp: True positives

@@ -22,8 +22,7 @@ _cohen_kappa_update = _confusion_matrix_update
 
 
 def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tensor:
-    """
-    Computes Cohen's kappa based on the weighting type.
+    """Computes Cohen's kappa based on the weighting type.
 
     Args:
         confmat: Confusion matrix without normalization

@@ -38,8 +38,7 @@ def _average_precision_compute(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[List[Tensor], Tensor]:
-    """
-    Computes the average precision score.
+    """Computes the average precision score.
 
     Args:
         preds: predictions from model (logits or probabilities)
@@ -82,8 +81,7 @@ def _average_precision_compute_with_precision_recall(
     recall: Tensor,
     num_classes: int,
 ) -> Union[List[Tensor], Tensor]:
-    """
-    Computes the average precision score from precision and recall.
+    """Computes the average precision score from precision and recall.
 
     Args:
         precision: precision values

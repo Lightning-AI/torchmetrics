@@ -24,8 +24,7 @@ def _hamming_distance_update(
     target: Tensor,
     threshold: float = 0.5,
 ) -> Tuple[Tensor, int]:
-    """
-    Returns the number of positions where prediction equals target, and number of predictions.
+    """Returns the number of positions where prediction equals target, and number of predictions.
 
     Args:
         preds: Predicted tensor
@@ -43,8 +42,7 @@ def _hamming_distance_update(
 
 
 def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Tensor:
-    """
-    Computes the Hamming distance.
+    """Computes the Hamming distance.
 
     Args:
         correct: Number of positions where prediction equals target

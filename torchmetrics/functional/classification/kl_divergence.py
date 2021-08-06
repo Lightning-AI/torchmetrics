@@ -23,9 +23,8 @@ from torchmetrics.utilities.data import METRIC_EPS
 
 
 def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
-    """
-    Updates and returns KL divergence scores for each observation and the total number of observations.
-    Checks same shape and 2D nature of the input tensors else raises ValueError
+    """Updates and returns KL divergence scores for each observation and the total number of observations. Checks
+    same shape and 2D nature of the input tensors else raises ValueError.
 
     Args:
         p: data distribution with shape ``[N, d]``
@@ -50,8 +49,7 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
 
 
 def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "mean") -> Tensor:
-    """
-    Computes the KL divergenece based on the type of reduction.
+    """Computes the KL divergenece based on the type of reduction.
 
     Args:
         measures: Tensor of KL divergence scores for each observation

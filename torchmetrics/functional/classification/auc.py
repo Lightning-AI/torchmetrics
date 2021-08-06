@@ -18,9 +18,8 @@ from torch import Tensor
 
 
 def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
-    """
-    Updates and returns variables required to compute area under the curve.
-    Checks if the 2 input tenseorhave the same number of elements and if they are 1d.
+    """Updates and returns variables required to compute area under the curve. Checks if the 2 input tenseorhave
+    the same number of elements and if they are 1d.
 
     Args:
         x: x-coordinates
@@ -45,9 +44,7 @@ def _auc_update(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor:
-    """
-    Computes area under the curve using the trapezoidal rule.
-    Assumes increasing or decreasing order of `x`.
+    """Computes area under the curve using the trapezoidal rule. Assumes increasing or decreasing order of `x`.
 
     Args:
         x: x-coordinates, must be either increasing or decreasing
@@ -68,9 +65,7 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor
 
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
-    """
-    Computes area under the curve using the trapezoidal rule.
-    Checks for increasing or decreasing order of `x`.
+    """Computes area under the curve using the trapezoidal rule. Checks for increasing or decreasing order of `x`.
 
     Args:
         x: x-coordinates, must be either increasing or decreasing

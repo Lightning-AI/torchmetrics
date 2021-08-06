@@ -37,8 +37,7 @@ def _fbeta_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
-    """
-    Computes f_beta metric from stat socres: true positives, false positives, true negatives, false negatives.
+    """Computes f_beta metric from stat socres: true positives, false positives, true negatives, false negatives.
 
     Args:
         tp: True positives

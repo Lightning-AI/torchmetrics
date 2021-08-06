@@ -28,8 +28,7 @@ def _roc_update(
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
-    """
-    Updates and returns variables required to compute the Receiver Operating Characteristic.
+    """Updates and returns variables required to compute the Receiver Operating Characteristic.
 
     Args:
         preds: Predicted tensor
@@ -51,10 +50,9 @@ def _roc_compute_single_class(
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Computes Receiver Operating Characteristic for single class inputs.
-    Returns tensor with false positive rates, tensor with true positive rates,
-        tensor with thresholds used for computing false- and true postive rates.
+    """Computes Receiver Operating Characteristic for single class inputs. Returns tensor with false positive
+    rates, tensor with true positive rates, tensor with thresholds used for computing false- and true postive
+    rates.
 
     Args:
         preds: Predicted tensor
@@ -91,10 +89,8 @@ def _roc_compute_multi_class(
     num_classes: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
-    """
-    Computes Receiver Operating Characteristic for multi class inputs.
-    Returns tensor with false positive rates, tensor with true positive rates,
-        tensor with thresholds used for computing false- and true postive rates.
+    """Computes Receiver Operating Characteristic for multi class inputs. Returns tensor with false positive rates,
+    tensor with true positive rates, tensor with thresholds used for computing false- and true postive rates.
 
     Args:
         preds: Predicted tensor
@@ -135,8 +131,7 @@ def _roc_compute(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """
-    Computes Receiver Operating Characteristic based on the number of classes.
+    """Computes Receiver Operating Characteristic based on the number of classes.
 
     Args:
         preds: Predicted tensor

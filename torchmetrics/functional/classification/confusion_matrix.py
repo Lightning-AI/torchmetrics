@@ -55,8 +55,7 @@ def _confusion_matrix_update(
 
 
 def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) -> Tensor:
-    """
-    Computes confusion matrix based on the normalization mode.
+    """Computes confusion matrix based on the normalization mode.
 
     Args:
         confmat: Confusion matrix without normalization
@@ -94,7 +93,7 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
                 [[0, 1], [0, 1]]])
     """
 
-    allowed_normalize = ('true', 'pred', 'all', 'none', None)
+    allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
     if normalize is not None and normalize != "none":

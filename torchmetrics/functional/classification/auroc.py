@@ -25,8 +25,7 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
-    """
-    Updates and returns variables required to compute Area Under the Receiver Operating Characteristic Curve.
+    """Updates and returns variables required to compute Area Under the Receiver Operating Characteristic Curve.
     Validates the inputs and returns the mode of the inputs.
 
     Args:
@@ -59,8 +58,7 @@ def _auroc_compute(
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
-    """
-    Computes Area Under the Receiver Operating Characteristic Curve.
+    """Computes Area Under the Receiver Operating Characteristic Curve.
 
     Args:
         preds: predictions from model (logits or probabilities)

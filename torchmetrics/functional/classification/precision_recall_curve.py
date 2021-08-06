@@ -67,8 +67,7 @@ def _precision_recall_curve_update(
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
-    """
-    Updates and returns variables required to compute the precision-recall pairs for different thresholds.
+    """Updates and returns variables required to compute the precision-recall pairs for different thresholds.
 
     Args:
         preds: Predicted tensor
@@ -129,8 +128,7 @@ def _precision_recall_curve_compute_single_class(
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Computes precision-recall pairs for single class inputs.
+    """Computes precision-recall pairs for single class inputs.
 
     Args:
         preds: Predicted tensor
@@ -166,8 +164,7 @@ def _precision_recall_curve_compute_multi_class(
     num_classes: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
-    """
-    Computes precision-recall pairs for multi class inputs.
+    """Computes precision-recall pairs for multi class inputs.
 
     Args:
         preds: Predicted tensor
@@ -211,8 +208,7 @@ def _precision_recall_curve_compute(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    """
-    Computes precision-recall pairs based on the number of classes.
+    """Computes precision-recall pairs based on the number of classes.
 
     Args:
         preds: Predicted tensor

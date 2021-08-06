@@ -28,8 +28,7 @@ def _iou_from_confmat(
     absent_score: float = 0.0,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """
-    Computes the intersection over union from confusion matrix
+    """Computes the intersection over union from confusion matrix.
 
     Args:
         confmat: Confusion matrix without normalization
