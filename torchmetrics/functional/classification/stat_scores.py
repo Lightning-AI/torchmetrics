@@ -158,21 +158,12 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
     Example:
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(
-        ...                         preds,
-        ...                         target,
-        ...                         reduce='macro',
-        ...                         num_classes=3,
-        ...                     )
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
         >>> _stat_scores_compute(tp, fp, tn, fn)
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
-        >>> tp, fp, tn, fn = _stat_scores_update(
-        ...                         preds,
-        ...                         target,
-        ...                         reduce='micro',
-        ...                     )
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
         >>> _stat_scores_compute(tp, fp, tn, fn)
         tensor([2, 2, 6, 2, 4])
     """
