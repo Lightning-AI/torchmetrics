@@ -60,7 +60,7 @@ def bert_score(
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "general kenobi"]
         >>> results = bert_score(predictions=predictions, references=references, lang="en")
-        """
+    """
 
     if not _BERTSCORE_AVAILABLE:
         raise ValueError(
