@@ -12,11 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added **Text-related (NLP) metrics**:
-  - Word error rate (WER) ([#52](https://github.com/PyTorchLightning/metrics/issues/52))
+  - Word Error Rate (WER) ([#52](https://github.com/PyTorchLightning/metrics/issues/52))
 
-  - Permutation Invariant Training (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
-
-  - Added ROUGE Metric ([#399](https://github.com/PyTorchLightning/metrics/issues/399))
+  - ROUGE ([#399](https://github.com/PyTorchLightning/metrics/issues/399))
 
 
 - Added `MetricTracker` wrapper metric for keeping track of the same metric over multiple epochs ([#238](https://github.com/PyTorchLightning/metrics/pull/238))
@@ -27,17 +25,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   - Calibration error ([#394](https://github.com/PyTorchLightning/metrics/issues/394))
 
+  - Permutation Invariant Training (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
+  
+  - LPIPS ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
+
 
 - Added support in `nDCG` metric for target with values larger than 1 ([#343](https://github.com/PyTorchLightning/metrics/issues/343))
+
+
+- Added support for negative targets in `nDCG` metric ([#378](https://github.com/PyTorchLightning/metrics/pull/378))
 
 
 - Added `None` as reduction option in `CosineSimilarity` metric ([#400](https://github.com/PyTorchLightning/metrics/pull/400))
 
 
 - Allowed passing labels in (n_samples, n_classes) to `AveragePrecision` ([#386](https://github.com/PyTorchLightning/metrics/issues/386))
-
-
-- Added support for negative targets in `nDCG` metric ([#378](https://github.com/PyTorchLightning/metrics/pull/378))
 
 
 ### Changed
@@ -51,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved `R2Score` from `regression.r2score` to `regression.r2` ([#371](https://github.com/PyTorchLightning/metrics/pull/371))
 
 
-- Pearson metrics now only store 6 statistics instead of all predictions and targets ([#380](https://github.com/PyTorchLightning/metrics/pull/380))
+- Pearson metric now only store 6 statistics instead of all predictions and targets ([#380](https://github.com/PyTorchLightning/metrics/pull/380))
 
 
 - Use `torch.argmax` instead of `torch.topk` when `k=1` for better performance ([#419](https://github.com/PyTorchLightning/metrics/pull/419))

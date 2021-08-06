@@ -24,6 +24,15 @@ def _hamming_distance_update(
     target: Tensor,
     threshold: float = 0.5,
 ) -> Tuple[Tensor, int]:
+    """Returns the number of positions where prediction equals target, and number of predictions.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
+    """
+
     preds, target, _ = _input_format_classification(preds, target, threshold=threshold)
 
     correct = (preds == target).sum()
@@ -33,6 +42,20 @@ def _hamming_distance_update(
 
 
 def _hamming_distance_compute(correct: Tensor, total: Union[int, Tensor]) -> Tensor:
+    """Computes the Hamming distance.
+
+    Args:
+        correct: Number of positions where prediction equals target
+        total: Total number of predictions
+
+    Example:
+        >>> target = torch.tensor([[0, 1], [1, 1]])
+        >>> preds = torch.tensor([[0, 1], [0, 1]])
+        >>> correct, total = _hamming_distance_update(preds, target)
+        >>> _hamming_distance_compute(correct, total)
+        tensor(0.2500)
+    """
+
     return 1 - correct.float() / total
 
 
