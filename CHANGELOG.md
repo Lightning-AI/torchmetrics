@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Calibration error ([#394](https://github.com/PyTorchLightning/metrics/issues/394))
 
   - Permutation Invariant Training (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
-  
+
   - LPIPS ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
 
 

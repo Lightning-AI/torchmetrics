@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from functools import partial
 
 import pytest
 import torch
-from torch import Tensor
 from lpips import LPIPS as reference_LPIPS
-from functools import partial
+from torch import Tensor
+
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.image.lpip_similarity import LPIPS
@@ -33,17 +34,17 @@ _inputs = Input(
 )
 
 
-def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = 'mean') -> Tensor:
+def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = "mean") -> Tensor:
     ref = reference_LPIPS(net=net_type)
     res = ref(img1, img2).detach().cpu().numpy()
-    if reduction == 'mean':
+    if reduction == "mean":
         return res.mean()
     else:
         return res.sum()
 
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
-@pytest.mark.parametrize("net_type", ['vgg', 'alex', 'squeeze'])
+@pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
 class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
@@ -54,13 +55,11 @@ class TestLPIPS(MetricTester):
             metric_class=LPIPS,
             sk_metric=partial(_compare_fn, net_type=net_type),
             dist_sync_on_step=False,
-            metric_args={'net_type': net_type}
+            metric_args={"net_type": net_type},
         )
 
     def test_lpips_differentiability(self, net_type):
-        self.run_differentiability_test(
-            preds=_inputs.img1, target=_inputs.img2, metric_module=LPIPS
-        )
+        self.run_differentiability_test(preds=_inputs.img1, target=_inputs.img2, metric_module=LPIPS)
 
     # LPIPS half + cpu does not work due to missing support in torch.min
     @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")
@@ -74,21 +73,24 @@ class TestLPIPS(MetricTester):
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 def test_error_on_wrong_init():
-    """ Test class raises the expected errors """
+    """Test class raises the expected errors."""
     with pytest.raises(ValueError, match="Argument `net_type` must be one .*"):
-        LPIPS(net_type='resnet')
+        LPIPS(net_type="resnet")
 
     with pytest.raises(ValueError, match="Argument `reduction` must be one .*"):
         LPIPS(reduction=None)
 
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
-@pytest.mark.parametrize("inp1, inp2", [
-    (torch.rand(1, 1, 28, 28), torch.rand(1, 3, 28, 28)),  # wrong number of channels
-    (torch.rand(1, 3, 28, 28), torch.rand(1, 1, 28, 28)),  # wrong number of channels
-    (torch.randn(1, 3, 28, 28), torch.rand(1, 3, 28, 28)),  # non-normalized input
-    (torch.rand(1, 3, 28, 28), torch.randn(1, 3, 28, 28)),  # non-normalized input
-])
+@pytest.mark.parametrize(
+    "inp1, inp2",
+    [
+        (torch.rand(1, 1, 28, 28), torch.rand(1, 3, 28, 28)),  # wrong number of channels
+        (torch.rand(1, 3, 28, 28), torch.rand(1, 1, 28, 28)),  # wrong number of channels
+        (torch.randn(1, 3, 28, 28), torch.rand(1, 3, 28, 28)),  # non-normalized input
+        (torch.rand(1, 3, 28, 28), torch.randn(1, 3, 28, 28)),  # non-normalized input
+    ],
+)
 def test_error_on_wrong_update(inp1, inp2):
     metric = LPIPS()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
