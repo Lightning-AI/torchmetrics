@@ -106,7 +106,7 @@ class BERTScore(Metric):
 
         Args:
             predictions: List of predicted sentences
-            references: List of refernces
+            references: List of references
         """
         self.predictions.append(predictions)
         self.references.append(references)
