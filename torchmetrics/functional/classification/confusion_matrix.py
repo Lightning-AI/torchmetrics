@@ -25,8 +25,7 @@ def _confusion_matrix_update(
     preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
 ) -> Tensor:
     """
-    Updates and returns confusion matrix (without any normalization) based on the mode
-    of the input.
+    Updates and returns confusion matrix (without any normalization) based on the mode of the input.
 
     Args:
         preds: Predicted tensor
@@ -62,7 +61,6 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
     Args:
         confmat: Confusion matrix without normalization
         normalize: Normalization mode for confusion matrix. Choose from
-
             - ``None`` or ``'none'``: no normalization (default)
             - ``'true'``: normalization over the targets (most commonly used)
             - ``'pred'``: normalization over the predictions
@@ -74,26 +72,26 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> confmat = _confusion_matrix_update(preds, target, num_classes=2)
         >>> _confusion_matrix_compute(confmat)
-        tensor([[2., 0.],
-                [1., 1.]])
+        tensor([[2, 0],
+                [1, 1]])
 
         >>> # multiclass case
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> confmat = _confusion_matrix_update(preds, target, num_classes=3)
         >>> _confusion_matrix_compute(confmat)
-        tensor([[1., 1., 0.],
-                [0., 1., 0.],
-                [0., 0., 1.]])
+        tensor([[1, 1, 0],
+                [0, 1, 0],
+                [0, 0, 1]])
 
         >>> # multilabel case
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> confmat = _confusion_matrix_update(preds, target, num_classes=3, multilabel=True)
-        >>> _confusion_matrix_compute(confmat)
-        tensor([[[1., 0.], [0., 1.]],
-                [[1., 0.], [1., 0.]],
-                [[0., 1.], [0., 1.]]])
+        >>> _confusion_matrix_compute(confmat)  # doctest: +NORMALIZE_WHITESPACE
+        tensor([[[1, 0], [0, 1]],
+                [[1, 0], [1, 0]],
+                [[0, 1], [0, 1]]])
     """
 
     allowed_normalize = ('true', 'pred', 'all', 'none', None)

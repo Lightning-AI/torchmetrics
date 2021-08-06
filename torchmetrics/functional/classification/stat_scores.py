@@ -94,59 +94,16 @@ def _stat_scores_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        reduce:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Counts the statistics by summing over all [sample, class]
-              combinations (globally). Each statistic is represented by a single integer.
-            - ``'macro'``: Counts the statistics for each class separately (over all samples).
-              Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes``
-              to be set.
-            - ``'samples'``: Counts the statistics for each sample separately (over all classes).
-              Each statistic is represented by a ``(N, )`` 1d tensor.
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_reduce``.
-
-        mdmc_reduce:
-            Defines how the multi-dimensional multi-class inputs are handeled. Should be
-            one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`references/modules:input types` for the definition of input types).
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then the outputs are concatenated together. In each
-              sample the extra axes ``...`` are flattened to become the sub-sample axis, and
-              statistics for each sample are computed by treating the sub-sample axis as the
-              ``N`` axis for that sample.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs are
-              flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
-
-        num_classes:
-            Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-
-        top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The
-            default value (``None``) will be interpreted as 1 for these inputs.
-
-            Should be left at default (``None``) for all other types of inputs.
-
-        threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <references/modules:using the multiclass parameter>`
-            for a more detailed explanation and examples.
-
-        ignore_index:
-            Specify a class (label) to ignore. If given, this class index does not contribute
+        reduce: Defines the reduction that is applied
+        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled
+        num_classes: Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
+        top_k: Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs
+        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities
+        multiclass: Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be
+        ignore_index: Specify a class (label) to ignore. If given, this class index does not contribute
             to the returned score, regardless of reduction method. If an index is ignored, and
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
@@ -252,18 +209,10 @@ def _reduce_stat_scores(
             will be returned as ``nan`` (if ``average=None``).
             If the denominator is zero, then ``zero_division`` score will be
             used for those elements.
-        weights:
-            A tensor of weights to be used if ``average='weighted'``.
-        average:
-            The method to average the scores. Should be one of ``'micro'``, ``'macro'``,
-            ``'weighted'``, ``'none'``, ``None`` or ``'samples'``. The behavior
-            corresponds to `sklearn averaging methods`_.
-        mdmc_average:
-            The method to average the scores if inputs were multi-dimensional multi-class (MDMC).
-            Should be either ``'global'`` or ``'samplewise'``. If inputs were not
-            multi-dimensional multi-class, it should be ``None`` (default).
-        zero_division:
-            The value to use for the score if denominator equals zero.
+        weights: A tensor of weights to be used if ``average='weighted'``.
+        average: The method to average the scores
+        mdmc_average: The method to average the scores if inputs were multi-dimensional multi-class (MDMC)
+        zero_division: The value to use for the score if denominator equals zero.
     """
     numerator, denominator = numerator.float(), denominator.float()
     zero_div_mask = denominator == 0

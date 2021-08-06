@@ -44,8 +44,7 @@ def _average_precision_compute(
     Args:
         preds: predictions from model (logits or probabilities)
         target: ground truth values
-        num_classes: integer with number of classes. Not nessesary to provide
-            for binary problems.
+        num_classes: integer with number of classes.
         pos_label: integer determining the positive class. Default is ``None``
             which for binary problem is translate to 1. For multiclass problems
             this argument should not be set as we iteratively change it in the
@@ -56,18 +55,20 @@ def _average_precision_compute(
         >>> # binary case
         >>> preds = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=1)
+        >>> pos_label = 1
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=pos_label)
         >>> _average_precision_compute(preds, target, num_classes, pos_label)
         tensor(1.)
 
         >>> # multiclass case
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes=5)
-        >>> _average_precision_compute(preds, target, num_classes, pos_label)
+        >>> num_classes = 5
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes)
+        >>> _average_precision_compute(preds, target, num_classes)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 
@@ -94,9 +95,10 @@ def _average_precision_compute_with_precision_recall(
         >>> # binary case
         >>> preds = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=1)
+        >>> pos_label = 1
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, pos_label=pos_label)
         >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
-        >>> _average_precision_compute_with_precision_recall(preds, target, num_classes)
+        >>> _average_precision_compute_with_precision_recall(precision, recall, num_classes)
         tensor(1.)
 
         >>> # multiclass case
@@ -105,9 +107,10 @@ def _average_precision_compute_with_precision_recall(
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes=5)
-        >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
-        >>> _average_precision_compute_with_precision_recall(preds, target, num_classes)
+        >>> num_classes = 5
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes)
+        >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes)
+        >>> _average_precision_compute_with_precision_recall(precision, recall, num_classes)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 

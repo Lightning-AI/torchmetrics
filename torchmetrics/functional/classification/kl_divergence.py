@@ -66,7 +66,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "me
     Example:
         >>> p = torch.tensor([[0.36, 0.48, 0.16]])
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
-        >>> measures, total = _kld_update(p, q)
+        >>> measures, total = _kld_update(p, q, log_prob=False)
         >>> _kld_compute(measures, total)
         tensor(0.0853)
     """
@@ -104,7 +104,6 @@ def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optio
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import kl_divergence
         >>> p = torch.tensor([[0.36, 0.48, 0.16]])
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)

@@ -30,8 +30,7 @@ def _hamming_distance_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
     """
 

@@ -34,22 +34,15 @@ def _iou_from_confmat(
     Args:
         confmat: Confusion matrix without normalization
         num_classes: Number of classes for a given prediction and target tensor
-        ignore_index: optional int specifying a target class to ignore. If given,
-            this class index does not contribute to the returned score, regardless
-            of reduction method. Has no effect if given an int that is not in the
-            range [0, num_classes-1], where num_classes is either given or derived
-            from pred and target. By default, no index is ignored, and all classes are used.
-        absent_score: score to use for an individual class, if no instances of
-            the class index were present in `pred` AND no instances of the class
-            index were present in `target`. For example, if we have 3 classes,
-            [0, 0] for `pred`, and [0, 2] for `target`, then class 1 would be
-            assigned the `absent_score`.
+        ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method.
+        absent_score: score to use for an individual class, if no instances of the class index were present in `pred`
+            AND no instances of the class index were present in `target`.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
-
     """
 
     # Remove the ignored class index from the scores.

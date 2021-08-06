@@ -37,14 +37,15 @@ def _check_shape_and_type_consistency_hinge(
 ) -> DataType:
     """
     Checks shape and type of `preds` and `target` and returns mode of the input tensors.
-    Raises `ValueError` if:
-        - `target` is not one dimensional
-        - `preds` and `target` do not have the same shape in the first dimension
-        - `pred` is neither one nor two dimensional
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
+    Raises:
+        `ValueError`: if `target` is not one dimensional
+        `ValueError`: if `preds` and `target` do not have the same shape in the first dimension
+        `ValueError`: if `pred` is neither one nor two dimensional
     """
 
     if target.ndim > 1:
@@ -83,8 +84,7 @@ def _hinge_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        squared:
-            If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss (default).
+        squared: If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss.
         multiclass_mode:
             Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default),
             ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.

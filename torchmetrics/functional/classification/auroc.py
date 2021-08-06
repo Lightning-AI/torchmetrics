@@ -68,18 +68,10 @@ def _auroc_compute(
         mode: 'multi class multi dim' or 'multi-label' or 'binary'
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems
-        pos_label: integer determining the positive class. Default is ``None``
-            which for binary problem is translate to 1. For multiclass problems
-            this argument should not be set as we iteratively change it in the
-            range [0,num_classes-1]
-        average:
-            - ``'micro'`` computes metric globally. Only works for multilabel problems
-            - ``'macro'`` computes metric for each class and uniformly averages them
-            - ``'weighted'`` computes metric for each class and does a weighted-average,
-              where each class is weighted by their support (accounts for class imbalance)
-            - ``None`` computes and returns the metric per class
-        max_fpr:
-            If not ``None``, calculates standardized partial AUC over the
+        pos_label: integer determining the positive class.
+            Should be set to ``None`` for binary problems
+        average: Defines the reduction that is applied to the output:
+        max_fpr: If not ``None``, calculates standardized partial AUC over the
             range [0, max_fpr]. Should be a float between 0 and 1.
         sample_weights: sample weights for each data point
 

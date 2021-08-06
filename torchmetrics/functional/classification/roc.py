@@ -153,7 +153,8 @@ def _roc_compute(
         >>> # binary case
         >>> preds = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> preds, target, num_classes, pos_label = _roc_update(preds, target, pos_label=1)
+        >>> pos_label = 1
+        >>> preds, target, num_classes, pos_label = _roc_update(preds, target, pos_label=pos_label)
         >>> fpr, tpr, thresholds = _roc_compute(preds, target, num_classes, pos_label)
         >>> fpr
         tensor([0., 0., 0., 0., 1.])
@@ -163,13 +164,14 @@ def _roc_compute(
         tensor([4, 3, 2, 1, 0])
 
         >>> # multiclass case
-        >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05],
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05],
         ...                      [0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.75, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes=5)
-        >>> fpr, tpr, thresholds = _roc_compute(preds, target, num_classes, pos_label)
+        >>> num_classes = 4
+        >>> preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes)
+        >>> fpr, tpr, thresholds = _roc_compute(preds, target, num_classes)
         >>> fpr
         [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]
         >>> tpr

@@ -50,7 +50,7 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor
     Assumes increasing or decreasing order of `x`.
 
     Args:
-        x: x-coordinates, must be either increasing or decreasing, else a ValueError is raised
+        x: x-coordinates, must be either increasing or decreasing
         y: y-coordinates
         direction: 1 if increaing, -1 if decreasing
 
@@ -58,7 +58,7 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float) -> Tensor
         >>> x = torch.tensor([0, 1, 2, 3])
         >>> y = torch.tensor([0, 1, 2, 2])
         >>> x, y = _auc_update(x, y)
-        >>> _auc_compute_without_check(x, y)
+        >>> _auc_compute_without_check(x, y, direction=1.0)
         tensor(4.)
     """
 
@@ -73,7 +73,7 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     Checks for increasing or decreasing order of `x`.
 
     Args:
-        x: x-coordinates, must be either increasing or decreasing, else a ValueError is raised
+        x: x-coordinates, must be either increasing or decreasing
         y: y-coordinates
         reorder: if True, will reorder the arrays to make it either increasing or decreasing
 
@@ -110,7 +110,7 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     """Computes Area Under the Curve (AUC) using the trapezoidal rule.
 
     Args:
-        x: x-coordinates, must be either increasing or decreasing, else a ValueError is raised
+        x: x-coordinates, must be either increasing or decreasing
         y: y-coordinates
         reorder: if True, will reorder the arrays to make it either increasing or decreasing
 
