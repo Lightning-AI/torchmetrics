@@ -20,7 +20,7 @@ from lpips import LPIPS as reference_LPIPS
 from functools import partial
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.image.lpips import LPIPS
+from torchmetrics.image.lpip_similarity import LPIPS
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 seed_all(42)
@@ -35,7 +35,11 @@ _inputs = Input(
 
 def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = 'mean') -> Tensor:
     ref = reference_LPIPS(net=net_type)
-    return ref(img1, img2)
+    res = ref(img1, img2).detach().cpu().numpy()
+    if reduction == 'mean':
+        return res.mean()
+    else:
+        return res.sum()
 
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
@@ -77,7 +81,7 @@ def test_error_on_wrong_init():
     with pytest.raises(ValueError, match="Argument `reduction` must be one .*"):
         LPIPS(reduction=None)
 
-    
+
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize("inp1, inp2", [
     (torch.rand(1, 1, 28, 28), torch.rand(1, 3, 28, 28)),  # wrong number of channels

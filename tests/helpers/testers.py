@@ -61,7 +61,7 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, Sequence):
         for pl_res, sk_res in zip(pl_result, sk_result):

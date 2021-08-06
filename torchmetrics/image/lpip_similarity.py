@@ -15,54 +15,21 @@ from typing import Any, Callable, List, Optional
 
 import torch
 from torch import Tensor
-from torch._C import Value
-
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 if _LPIPS_AVAILABLE:
-    from lpips import LPIPS as Lpips_net
-    from lpips import normalize_tensor, upsample, spatial_average
+    from lpips import LPIPS as Lpips_backbone
 else:
-    class Lpips_net(torch.nn.Module):  # type: ignore
+    class Lpips_backbone(torch.nn.Module):  # type: ignore
         pass
 
 
-class NoTrainLpips(Lpips_net):
+class NoTrainLpips(Lpips_backbone):
     def train(self, mode: bool) -> "NoTrainLpips":
         """the network should not be able to be switched away from evaluation mode."""
         return super().train(False)
-
-    def forward(self, in0: Tensor, in1: Tensor):
-        """ 
-        Adjusted from: https://github.com/richzhang/PerceptualSimilarity/blob/master/lpips/lpips.py
-        Overwritten to make sure the module is scriptable
-        """
-        in0_input, in1_input = (self.scaling_layer(in0), self.scaling_layer(in1)) if self.version == '0.1' else (in0, in1)
-        outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
-        feats0, feats1, diffs = {}, {}, {}
-
-        for kk in range(self.L):
-            feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
-            diffs[kk] = (feats0[kk]-feats1[kk])**2
-
-        if(self.lpips):
-            if(self.spatial):
-                res = [upsample(self.lins[kk](diffs[kk]), out_HW=in0.shape[2:]) for kk in range(self.L)]
-            else:
-                res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
-        else:
-            if(self.spatial):
-                res = [upsample(diffs[kk].sum(dim=1,keepdim=True), out_HW=in0.shape[2:]) for kk in range(self.L)]
-            else:
-                res = [spatial_average(diffs[kk].sum(dim=1,keepdim=True), keepdim=True) for kk in range(self.L)]
-
-        val = res[0]
-        for layer in range(1, self.L):
-            val += res[layer]
-
-        return val
 
 
 def _valid_img(img: Tensor) -> bool:
@@ -72,10 +39,53 @@ def _valid_img(img: Tensor) -> bool:
 
 class LPIPS(Metric):
     r"""
-   
+    The LPIPS metric introduced in [1] is used to judge the perceptual similarity between two
+    images. LPIPS essentially computes the similarity between the activations of two image patches
+    for some pre-defined network. This measure have been shown to match human perseption well.
+    A low LPIPS score means that image patches are perceptual similar.
+
+    Both input image patches are expected to have shape `[N, 3, H, W]` and be normalized to the [-1,1]
+    range. The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
+
+    .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
+        as ``pip install torchmetrics[image]`` or ``pip install lpips``
+
+    Args:
+        net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
+        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
+        compute_on_step:
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step
+        process_group:
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
+
+   References:
+        [1] The Unreasonable Effectiveness of Deep Features as a Perceptual Metric
+        Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, Oliver Wang. In CVPR, 2018.
+        https://arxiv.org/abs/1801.03924
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> from torchmetrics import LPIPS
+        >>> lpips = LPIPS(net_type='vgg')
+        >>> img1 = torch.rand(10, 3, 100, 100)
+        >>> img2 = torch.rand(10, 3, 100, 100)
+        >>> lpips(img1, img2)
+        tensor([0.3566], grad_fn=<DivBackward0>)
+
     """
     real_features: List[Tensor]
     fake_features: List[Tensor]
+
+    # due to the use of named tuple in the backbone the net variable cannot be scriptet
+    __jit_ignored_attributes__ = ["net"]
 
     def __init__(
         self,
@@ -102,7 +112,7 @@ class LPIPS(Metric):
         valid_net_type = ('vgg', 'alex', 'squeeze')
         if net_type not in valid_net_type:
             raise ValueError(f"Argument `net_type` must be one of {valid_net_type}, but got {net_type}.")
-        self.net = NoTrainLpips(net=net_type)
+        self.net = NoTrainLpips(net=net_type, verbose=False)
 
         valid_reduction = ('mean', 'sum')
         if reduction not in valid_reduction:
@@ -113,11 +123,12 @@ class LPIPS(Metric):
         self.add_state("total", torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
-        """Update the state with extracted features.
+        """Update internal states with lpips score
 
         Args:
-            imgs: tensor with images feed to the feature extractor
-            real: bool indicating if imgs belong to the real or the fake distribution
+            img1: tensor with images of shape [N, 3, H, W]
+            img2: tensor with images of shape [N, 3, H, W]
+
         """
         if not (_valid_img(img1) and _valid_img(img2)):
             raise ValueError("Expected both input arguments to be normalized tensors (all values in range [-1,1])"
@@ -134,7 +145,6 @@ class LPIPS(Metric):
             return self.sum_scores / self.total
         elif self.reduction == 'sum':
             return self.sum_scores
-
 
     @property
     def is_differentiable(self) -> bool:
