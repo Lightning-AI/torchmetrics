@@ -64,7 +64,7 @@ def bert_score(
         'recall': [1.0000005960464478, 1.000000238418579],
         'f1': [1.0000005960464478, 1.000000238418579],
         'hashcode': 'roberta-large_L17_no-idf_version=0.3.10(hug_trans=4.9.1)_fast-tokenizer'}
-        """
+    """
     if not _BERTSCORE_AVAILABLE:
         raise ValueError(
             "bert_score metric requires that bert-score package is installed."
