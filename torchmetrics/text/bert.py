@@ -23,7 +23,8 @@ def _flatten(x: List[List[str]]) -> List[str]:
 
 
 class BERTScore(Metric):
-    """BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
+    """
+    BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and
     reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level
     and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be
     useful for evaluating different language generation tasks.
@@ -59,9 +60,13 @@ class BERTScore(Metric):
     Example:
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "general kenobi"]
-        >>> results = bert_score(predictions=predictions, references=references, lang="en")
-        >>> print([round(v, 2) for v in results["f1"]])
-        [1.0, 1.0]
+        >>> bertscore = BERTScore()
+        >>> BERTScore.update(predictions=predictions,references=references)
+        >>> results = bertscore.compute()
+        {'f1': [1.0000004768371582, 1.0000003576278687],
+        'hashcode': 'roberta-large_L17_no-idf_version=0.3.9(hug_trans=4.9.1)',
+        'precision': [1.0000004768371582, 1.0000003576278687],
+        'recall': [1.0000004768371582, 1.0000003576278687]}
     """
 
     def __init__(
