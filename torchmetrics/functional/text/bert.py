@@ -54,7 +54,8 @@ def bert_score(
         baseline_path: customized baseline file
 
     Returns:
-        (Dict): containing: Precision, Recall, F1 score, Hashcode of the library
+        Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with 
+        corresponding values
 
     Example:
         >>> predictions = ["hello there", "general kenobi"]
