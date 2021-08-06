@@ -62,7 +62,10 @@ class BERTScore(Metric):
         >>> bertscore = BERTScore()
         >>> bertscore.update(predictions=predictions,references=references)
         >>> bertscore.compute()
-         {'precision': [1.0000005960464478, 1.000000238418579], 'recall': [1.0000005960464478, 1.000000238418579], 'f1': [1.0000005960464478, 1.000000238418579], 'hashcode': 'roberta-large_L17_no-idf_version=0.3.10(hug_trans=4.9.1)_fast-tokenizer'}
+        {'precision': [1.0000005960464478, 1.000000238418579],
+        'recall': [1.0000005960464478, 1.000000238418579],
+        'f1': [1.0000005960464478, 1.000000238418579],
+        'hashcode': 'roberta-large_L17_no-idf_version=0.3.10(hug_trans=4.9.1)_fast-tokenizer'}
     """
 
     def __init__(
