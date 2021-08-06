@@ -35,8 +35,7 @@ def _check_shape_and_type_consistency_hinge(
     preds: Tensor,
     target: Tensor,
 ) -> DataType:
-    """
-    Checks shape and type of `preds` and `target` and returns mode of the input tensors.
+    """Checks shape and type of `preds` and `target` and returns mode of the input tensors.
 
     Args:
         preds: Predicted tensor

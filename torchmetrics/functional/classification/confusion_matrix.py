@@ -24,8 +24,7 @@ from torchmetrics.utilities.enums import DataType
 def _confusion_matrix_update(
     preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
 ) -> Tensor:
-    """
-    Updates and returns confusion matrix (without any normalization) based on the mode of the input.
+    """Updates and returns confusion matrix (without any normalization) based on the mode of the input.
 
     Args:
         preds: Predicted tensor
