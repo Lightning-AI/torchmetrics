@@ -132,6 +132,47 @@ def _accuracy_compute(
         mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter).
         mode: Mode of the input tensors
+
+    Example:
+        >>> preds = torch.tensor([0, 2, 1, 3])
+        >>> target = torch.tensor([0, 1, 2, 3])
+        >>> threshold = 0.5
+        >>> reduce = average = 'micro'
+        >>> mdmc_average = 'global'
+        >>> mode = _mode(preds, target, threshold, top_k=None, num_classes=None, multiclass=None)
+        >>> tp, fp, tn, fn = _accuracy_update(
+        ...                     preds,
+        ...                     target,
+        ...                     reduce,
+        ...                     mdmc_average,
+        ...                     threshold=0.5,
+        ...                     num_classes=None,
+        ...                     top_k=None,
+        ...                     multiclass=None,
+        ...                     ignore_index=None,
+        ...                     mode=mode)
+        >>> _accuracy_compute(tp, fp, tn, fn, average, mdmc_average, mode)
+        tensor(0.5000)
+
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
+        >>> top_k, threshold = 2, 0.5
+        >>> reduce = average = 'micro'
+        >>> mdmc_average = 'global'
+        >>> mode = _mode(preds, target, threshold, top_k, num_classes=None, multiclass=None)
+        >>> tp, fp, tn, fn = _accuracy_update(
+        ...                     preds,
+        ...                     target,
+        ...                     reduce,
+        ...                     mdmc_average,
+        ...                     threshold,
+        ...                     num_classes=None,
+        ...                     top_k=top_k,
+        ...                     multiclass=None,
+        ...                     ignore_index=None,
+        ...                     mode=mode)
+        >>> _accuracy_compute(tp, fp, tn, fn, average, mdmc_average, mode)
+        tensor(0.6667)
     """
 
     simple_average = [AverageMethod.MICRO, AverageMethod.SAMPLES]
