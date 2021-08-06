@@ -61,11 +61,7 @@ class BERTScore(Metric):
         >>> references = ["hello there", "general kenobi"]
         >>> bertscore = BERTScore()
         >>> bertscore.update(predictions=predictions,references=references)
-        >>> bertscore.compute()
-        {'precision': [1.0000005960464478, 1.000000238418579],
-        'recall': [1.0000005960464478, 1.000000238418579],
-        'f1': [1.0000005960464478, 1.000000238418579],
-        'hashcode': 'roberta-large_L17_no-idf_version=0.3.10(hug_trans=4.9.1)_fast-tokenizer'}
+        >>> results = bertscore.compute()
     """
 
     def __init__(
