@@ -61,7 +61,7 @@ class BERTScore(Metric):
         >>> references = ["hello there", "general kenobi"]
         >>> bertscore = BERTScore()
         >>> bertscore.update(predictions=predictions,references=references)
-        >>> results = bertscore.compute()
+        >>> bertscore.compute()
         {'f1': [1.0000004768371582, 1.0000003576278687],
         'hashcode': 'roberta-large_L17_no-idf_version=0.3.9(hug_trans=4.9.1)',
         'precision': [1.0000004768371582, 1.0000003576278687],
