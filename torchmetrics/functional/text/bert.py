@@ -61,10 +61,7 @@ def bert_score(
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "general kenobi"]
         >>> bert_score(predictions=predictions, references=references, lang="en")
-        {'f1': [1.0000004768371582, 1.0000003576278687],
-        'hashcode': 'roberta-large_L17_no-idf_version=0.3.9(hug_trans=4.9.1)',
-        'precision': [1.0000004768371582, 1.0000003576278687],
-        'recall': [1.0000004768371582, 1.0000003576278687]}
+         {'precision': [1.0000005960464478, 1.000000238418579], 'recall': [1.0000005960464478, 1.000000238418579], 'f1': [1.0000005960464478, 1.000000238418579], 'hashcode': 'roberta-large_L17_no-idf_version=0.3.10(hug_trans=4.9.1)_fast-tokenizer'}
     """
     if not _BERTSCORE_AVAILABLE:
         raise ValueError(
