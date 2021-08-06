@@ -53,7 +53,7 @@ class BERTScore(Metric):
             will be used to perform the allgather
 
     Returns:
-        Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with 
+        Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with
         corresponding values
 
     Example:
