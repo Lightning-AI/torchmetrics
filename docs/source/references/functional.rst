@@ -366,6 +366,11 @@ retrieval_normalized_dcg [func]
 Text
 ****
 
+bert_score [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bert_score
+
 bleu_score [func]
 ~~~~~~~~~~~~~~~~~
 

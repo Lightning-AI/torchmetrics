@@ -524,6 +524,12 @@ RetrievalNormalizedDCG
 Text
 ****
 
+BERTScore
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BERTScore
+    :noindex:
+
 BLEUScore
 ~~~~~~~~~
 
@@ -542,7 +548,6 @@ WER
 
 .. autoclass:: torchmetrics.WER
     :noindex:
-
 
 ********
 Wrappers

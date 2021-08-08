@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   - ROUGE ([#399](https://github.com/PyTorchLightning/metrics/issues/399))
 
+  - BERT score ([#365](https://github.com/PyTorchLightning/metrics/issues/365))
+
 
 - Added `MetricTracker` wrapper metric for keeping track of the same metric over multiple epochs ([#238](https://github.com/PyTorchLightning/metrics/pull/238))
 
