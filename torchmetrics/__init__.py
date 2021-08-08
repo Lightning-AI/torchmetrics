@@ -62,7 +62,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import WER, BLEUScore, ROUGEScore  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: E402
 
 __all__ = [
@@ -75,6 +75,7 @@ __all__ = [
     "BinnedAveragePrecision",
     "BinnedPrecisionRecallCurve",
     "BinnedRecallAtFixedPrecision",
+    "BERTScore",
     "BLEUScore",
     "BootStrapper",
     "CalibrationError",
