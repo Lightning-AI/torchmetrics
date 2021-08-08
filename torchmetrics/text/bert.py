@@ -55,17 +55,14 @@ class BERTScore(Metric):
             will be used to perform the allgather
 
     Returns:
-        Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with
-        corresponding values
+        Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with corresponding values
 
     Example:
-        >>> from pprint import pprint
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
         >>> bertscore.update(predictions=predictions,references=references)
-        >>> score = bertscore.compute()
-        >>> pprint(score)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        >>> bertscore.compute()  # doctest: +SKIP
         {'f1': [0.99..., 0.99...],
          'hashcode': '...',
          'precision': [0.99..., 0.99...],

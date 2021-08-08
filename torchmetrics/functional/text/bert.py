@@ -57,11 +57,9 @@ def bert_score(
         Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with corresponding values
 
     Example:
-        >>> from pprint import pprint
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "master kenobi"]
-        >>> score = bert_score(predictions=predictions, references=references, lang="en")
-        >>> pprint(score)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        >>> bert_score(predictions=predictions, references=references, lang="en")  # doctest: +SKIP
         {'f1': [0.99..., 0.99...],
          'hashcode': '...',
          'precision': [0.99..., 0.99...],
