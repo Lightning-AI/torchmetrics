@@ -39,12 +39,11 @@ def _valid_img(img: Tensor) -> bool:
 
 
 class LPIPS(Metric):
-    """
-    The Learned Perceptual Image Patch Similarity (LPIPS) metric introduced in
-    this `paper <https://arxiv.org/abs/1801.03924>`_ is used to judge the perceptual similarity 
-    between two images. LPIPS essentially computes the similarity between the activations of two 
-    image patches for some pre-defined network. This measure have been shown to match human 
-    perseption well. A low LPIPS score means that image patches are perceptual similar.
+    """The Learned Perceptual Image Patch Similarity (LPIPS) metric introduced in this `paper
+    <https://arxiv.org/abs/1801.03924>`_ is used to judge the perceptual similarity between two images. LPIPS
+    essentially computes the similarity between the activations of two image patches for some pre-defined network.
+    This measure have been shown to match human perseption well. A low LPIPS score means that image patches are
+    perceptual similar.
 
     Both input image patches are expected to have shape `[N, 3, H, W]` and be normalized to the [-1,1]
     range. The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
@@ -84,8 +83,8 @@ class LPIPS(Metric):
         >>> img2 = torch.rand(10, 3, 100, 100)
         >>> lpips(img1, img2)
         tensor([0.3566], grad_fn=<DivBackward0>)
-
     """
+
     real_features: List[Tensor]
     fake_features: List[Tensor]
 
