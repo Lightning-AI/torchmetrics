@@ -39,8 +39,7 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = "mea
     res = ref(img1, img2).detach().cpu().numpy()
     if reduction == "mean":
         return res.mean()
-    else:
-        return res.sum()
+    return res.sum()
 
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
