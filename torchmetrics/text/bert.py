@@ -28,8 +28,6 @@ class BERTScore(Metric):
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
     recall, and F1 measure, which can be useful for evaluating different language generation tasks.
 
-    <https://arxiv.org/abs/1904.09675>
-
     Args:
         predictions: candidate sentences
         references: reference sentences
