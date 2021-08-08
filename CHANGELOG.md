@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   - Permutation Invariant Training (PIT) ([#294](https://github.com/PyTorchLightning/metrics/issues/294))
 
-  - LPIPS ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
+  - Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
 
 
 - Added support in `nDCG` metric for target with values larger than 1 ([#343](https://github.com/PyTorchLightning/metrics/issues/343))

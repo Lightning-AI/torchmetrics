@@ -39,47 +39,51 @@ def _valid_img(img: Tensor) -> bool:
 
 
 class LPIPS(Metric):
-    r"""
-     The LPIPS metric introduced in [1] is used to judge the perceptual similarity between two
-     images. LPIPS essentially computes the similarity between the activations of two image patches
-     for some pre-defined network. This measure have been shown to match human perseption well.
-     A low LPIPS score means that image patches are perceptual similar.
+    """
+    The Learned Perceptual Image Patch Similarity (LPIPS) metric introduced in
+    this `paper <https://arxiv.org/abs/1801.03924>`_ is used to judge the perceptual similarity 
+    between two images. LPIPS essentially computes the similarity between the activations of two 
+    image patches for some pre-defined network. This measure have been shown to match human 
+    perseption well. A low LPIPS score means that image patches are perceptual similar.
 
-     Both input image patches are expected to have shape `[N, 3, H, W]` and be normalized to the [-1,1]
-     range. The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
+    Both input image patches are expected to have shape `[N, 3, H, W]` and be normalized to the [-1,1]
+    range. The minimum size of `H, W` depends on the chosen backbone (see `net_type` arg).
 
-     .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
-         as ``pip install torchmetrics[image]`` or ``pip install lpips``
+    .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
+        as ``pip install torchmetrics[image]`` or ``pip install lpips``
 
-     Args:
-         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
-         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
-         compute_on_step:
-             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-         dist_sync_on_step:
-             Synchronize metric state across processes at each ``forward()``
-             before returning the value at the step
-         process_group:
-             Specify the process group on which synchronization is called.
-             default: ``None`` (which selects the entire world)
-         dist_sync_fn:
-             Callback that performs the allgather operation on the metric state. When ``None``, DDP
-             will be used to perform the allgather
+    Args:
+        net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
+        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
+        compute_on_step:
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step
+        process_group:
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
 
-    References:
-         [1] The Unreasonable Effectiveness of Deep Features as a Perceptual Metric
-         Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, Oliver Wang. In CVPR, 2018.
-         https://arxiv.org/abs/1801.03924
+    Raises:
+        ValueError:
+            If ``lpips`` package is not installed
+        ValueError:
+            If ``net_type`` is not one of ``"vgg"``, ``"alex"`` or ``"squeeze"``
+        ValueError:
+            If ``reduction`` is not one of ``"mean"`` or ``"sum"``
 
-     Example:
-         >>> import torch
-         >>> _ = torch.manual_seed(123)
-         >>> from torchmetrics import LPIPS
-         >>> lpips = LPIPS(net_type='vgg')
-         >>> img1 = torch.rand(10, 3, 100, 100)
-         >>> img2 = torch.rand(10, 3, 100, 100)
-         >>> lpips(img1, img2)
-         tensor([0.3566], grad_fn=<DivBackward0>)
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> from torchmetrics import LPIPS
+        >>> lpips = LPIPS(net_type='vgg')
+        >>> img1 = torch.rand(10, 3, 100, 100)
+        >>> img2 = torch.rand(10, 3, 100, 100)
+        >>> lpips(img1, img2)
+        tensor([0.3566], grad_fn=<DivBackward0>)
 
     """
     real_features: List[Tensor]
