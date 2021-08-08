@@ -59,11 +59,17 @@ class BERTScore(Metric):
         corresponding values
 
     Example:
+        >>> from pprint import pprint
         >>> predictions = ["hello there", "general kenobi"]
-        >>> references = ["hello there", "general kenobi"]
+        >>> references = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
         >>> bertscore.update(predictions=predictions,references=references)
-        >>> results = bertscore.compute()
+        >>> score = bertscore.compute()
+        >>> pprint(score)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        {'f1': [0.99..., 0.99...],
+         'hashcode': '...',
+         'precision': [0.99..., 0.99...],
+         'recall': [0.99..., 0.99...]}
     """
 
     def __init__(

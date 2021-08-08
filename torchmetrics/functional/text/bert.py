@@ -57,9 +57,15 @@ def bert_score(
         Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with corresponding values
 
     Example:
+        >>> from pprint import pprint
         >>> predictions = ["hello there", "general kenobi"]
-        >>> references = ["hello there", "general kenobi"]
-        >>> results = bert_score(predictions=predictions, references=references, lang="en")
+        >>> references = ["hello there", "master kenobi"]
+        >>> score = bert_score(predictions=predictions, references=references, lang="en")
+        >>> pprint(score)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        {'f1': [0.99..., 0.99...],
+         'hashcode': '...',
+         'precision': [0.99..., 0.99...],
+         'recall': [0.99..., 0.99...]}
     """
 
     if not _BERTSCORE_AVAILABLE:
@@ -96,16 +102,16 @@ def bert_score(
         baseline_path=baseline_path,
     )
 
-    P, R, F = cached_bertscorer.score(
+    prec, recall, f1 = cached_bertscorer.score(
         cands=predictions,
         refs=references,
         verbose=verbose,
         batch_size=batch_size,
     )
     output_dict = {
-        "precision": P.tolist(),
-        "recall": R.tolist(),
-        "f1": F.tolist(),
+        "precision": prec.tolist(),
+        "recall": recall.tolist(),
+        "f1": f1.tolist(),
         "hashcode": hashcode,
     }
     return output_dict
