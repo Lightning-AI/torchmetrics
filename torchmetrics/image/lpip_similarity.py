@@ -39,7 +39,8 @@ def _valid_img(img: Tensor) -> bool:
 
 
 class LPIPS(Metric):
-    """The Learned Perceptual Image Patch Similarity (LPIPS) metric introduced in this `paper
+    """The Learned Perceptual Image Patch Similarity (LPIPS) metric introduced in this `paper.
+
     <https://arxiv.org/abs/1801.03924>`_ is used to judge the perceptual similarity between two images. LPIPS
     essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure have been shown to match human perseption well. A low LPIPS score means that image patches are
@@ -146,7 +147,7 @@ class LPIPS(Metric):
         self.total += img1.shape[0]
 
     def compute(self) -> Tensor:
-        """ Compute final perceptual similarity metric """
+        """Compute final perceptual similarity metric."""
         if self.reduction == "mean":
             return self.sum_scores / self.total
         elif self.reduction == "sum":

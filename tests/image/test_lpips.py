@@ -35,7 +35,7 @@ _inputs = Input(
 
 
 def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = "mean") -> Tensor:
-    """ comparison function for tm implementation """
+    """comparison function for tm implementation."""
     ref = reference_LPIPS(net=net_type)
     res = ref(img1, img2).detach().cpu().numpy()
     if reduction == "mean":
@@ -48,7 +48,7 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = "mea
 class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
-        """ test modular implementation for correctness """
+        """test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
@@ -60,18 +60,18 @@ class TestLPIPS(MetricTester):
         )
 
     def test_lpips_differentiability(self, net_type):
-        """ test for differentiability of LPIPS metric"""
+        """test for differentiability of LPIPS metric."""
         self.run_differentiability_test(preds=_inputs.img1, target=_inputs.img2, metric_module=LPIPS)
 
     # LPIPS half + cpu does not work due to missing support in torch.min
     @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")
     def test_lpips_half_cpu(self, net_type):
-        """ test for half + cpu support """
+        """test for half + cpu support."""
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LPIPS)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_lpips_half_gpu(self, net_type):
-        """ test for half + gpu support """
+        """test for half + gpu support."""
         self.run_precision_test_gpu(_inputs.img1, _inputs.img2, LPIPS)
 
 
@@ -96,7 +96,7 @@ def test_error_on_wrong_init():
     ],
 )
 def test_error_on_wrong_update(inp1, inp2):
-    """ test error is raised on wrong input to update method """
+    """test error is raised on wrong input to update method."""
     metric = LPIPS()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
         metric(inp1, inp2)
