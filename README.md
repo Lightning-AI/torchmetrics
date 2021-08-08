@@ -72,6 +72,7 @@ Extra dependencies for specialized metrics:
 ```bash
 pip install torchmetrics[image]
 pip install torchmetrics[text]
+pip install torchmetrics[all]  # install all of the above
 ```
 
 </details>
@@ -116,11 +117,15 @@ import torchmetrics
 # initialize metric
 metric = torchmetrics.Accuracy()
 
+# move the metric to device you want computations to take place
+device = "cuda" if torch.cuda.is_available() else "cpu"
+metric.to(device)
+
 n_batches = 10
 for i in range(n_batches):
     # simulate a classification problem
-    preds = torch.randn(10, 5).softmax(dim=-1)
-    target = torch.randint(5, (10,))
+    preds = torch.randn(10, 5).softmax(dim=-1).to(device)
+    target = torch.randint(5, (10,)).to(device)
 
     # metric on current batch
     acc = metric(preds, target)
@@ -262,6 +267,7 @@ We currently have implemented metrics within the following domains:
   [SI_SDR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-sdr),
   [SI_SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-snr),
   [SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#snr)
+  and [1 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
   )
 - Classification (
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
@@ -291,6 +297,7 @@ We currently have implemented metrics within the following domains:
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
   [WER](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#wer)
+  and [1 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
 In total torchmetrics contains 50+ metrics!
@@ -308,11 +315,23 @@ to get help becoming a contributor!
 
 For help or questions, join our huge community on [Slack](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-pw5v393p-qRaDgEk24~EjiZNBpSQFgQ)!
 
-## Citations
+## Citation
 
-We’re excited to continue the strong legacy of open source software and have been inspired over the years by
-Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai. When/if a paper is written about this,
-we’ll be happy to cite these frameworks and the corresponding authors.
+We’re excited to continue the strong legacy of open source software and have been inspired 
+over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
+
+If you want to cite this framework feel free to use this (but only if you loved it 😊):
+
+```
+@misc{torchmetrics,
+  author = {???},
+  title = {Torchmetrics: Machine learning metrics for distributed, scalable PyTorch applications},
+  year = {2020},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/PyTorchLightning/metrics}},
+}
+```
 
 ## License
 
