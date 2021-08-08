@@ -324,7 +324,7 @@ If you want to cite this framework feel free to use this (but only if you loved 
 
 ```
 @misc{torchmetrics,
-  author = {???},
+  author = {PyTorchLightning Team},
   title = {Torchmetrics: Machine learning metrics for distributed, scalable PyTorch applications},
   year = {2020},
   publisher = {GitHub},
