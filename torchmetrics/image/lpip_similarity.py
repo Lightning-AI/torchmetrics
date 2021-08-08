@@ -146,6 +146,7 @@ class LPIPS(Metric):
         self.total += img1.shape[0]
 
     def compute(self) -> Tensor:
+        """ Compute final perceptual similarity metric """
         if self.reduction == "mean":
             return self.sum_scores / self.total
         elif self.reduction == "sum":
