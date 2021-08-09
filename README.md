@@ -317,7 +317,7 @@ For help or questions, join our huge community on [Slack](https://join.slack.com
 
 ## Citation
 
-We’re excited to continue the strong legacy of open source software and have been inspired 
+We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
 If you want to cite this framework feel free to use this (but only if you loved it 😊):

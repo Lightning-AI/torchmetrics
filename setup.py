@@ -30,7 +30,7 @@ def _prepare_extras():
         "text": setup_tools._load_requirements(path_dir=_PATH_REQUIRE, file_name="text.txt"),
     }
     # create an 'all' keyword that install all possible denpendencies
-    extras['all'] = [package for extra in extras.values() for package in extra]
+    extras["all"] = [package for extra in extras.values() for package in extra]
 
     return extras
 
