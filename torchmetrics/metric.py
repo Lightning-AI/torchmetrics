@@ -67,7 +67,8 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ["is_differentiable", "device", "dtype"]
+    __jit_ignored_attributes__ = ["device", "dtype"]
+    __jit_unused_properties__ = ["is_differentiable"]
 
     def __init__(
         self,
