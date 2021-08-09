@@ -571,7 +571,6 @@ def _check_retrieval_target_and_prediction_types(
         ValueError:
             If ``preds`` and ``target`` don't have the same shape, if they are empty
             or not of the correct ``dtypes``.
-
     """
     if target.dtype not in (torch.bool, torch.long, torch.int) and not torch.is_floating_point(target):
         raise ValueError("`target` must be a tensor of booleans, integers or floats")

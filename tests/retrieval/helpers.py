@@ -26,8 +26,8 @@ from tests.retrieval.inputs import _input_retrieval_scores as _irs
 from tests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_all
 from tests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
 from tests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
-from tests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
 from tests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
+from tests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
 from tests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
