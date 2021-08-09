@@ -26,10 +26,11 @@ from tests.retrieval.inputs import _input_retrieval_scores as _irs
 from tests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_all
 from tests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
 from tests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
+from tests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
+from tests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
 from tests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
-from tests.retrieval.inputs import _input_retrieval_scores_non_binary_target as _irs_non_binary
 from tests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 
 seed_all(42)
@@ -321,7 +322,8 @@ _default_metric_class_input_arguments_with_non_binary_target = dict(
         (_irs.indexes, _irs.preds, _irs.target),
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
-        (_irs_non_binary.indexes, _irs_non_binary.preds, _irs_non_binary.target),
+        (_irs_int_tgt.indexes, _irs_int_tgt.preds, _irs_int_tgt.target),
+        (_irs_float_tgt.indexes, _irs_float_tgt.preds, _irs_float_tgt.target),
     ],
 )
 
@@ -340,7 +342,8 @@ _default_metric_functional_input_arguments_with_non_binary_target = dict(
         (_irs.preds, _irs.target),
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
-        (_irs_non_binary.preds, _irs_non_binary.target),
+        (_irs_int_tgt.preds, _irs_int_tgt.target),
+        (_irs_float_tgt.preds, _irs_float_tgt.target),
     ],
 )
 
