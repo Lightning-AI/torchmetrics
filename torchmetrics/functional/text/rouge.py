@@ -90,7 +90,7 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
 
 
 def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str:
-    """Rouge score should be calculated only over lowercased words and digits. Optionally, Pprter stemmer can be used 
+    """Rouge score should be calculated only over lowercased words and digits. Optionally, Pprter stemmer can be used
     to strip word suffixes to improve matching.
     The text normalization follows the implemantion from
     https://github.com/google-research/google-research/blob/master/rouge/tokenize.py.
@@ -100,7 +100,7 @@ def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str
                 An input sentence
             use_stemmer:
                 Use Porter stemmer to strip word suffixes to improve matching.
-            
+
     """
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
     if stemmer:
@@ -197,7 +197,7 @@ def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[_RougeScor
 
     Args:
         sentence_results:
-            Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence. 
+            Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
     """
     results = {}
     for rouge_key, scores in sentence_results.items():
@@ -290,7 +290,7 @@ def rouge_score(
 
 def _tokenize(text: str, n_gram: int) -> List[str]:
     """Retun the list of N-grams from the input text.
-    
+
     Args:
         text:
             An input sentence.
