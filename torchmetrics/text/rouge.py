@@ -28,6 +28,7 @@ class ROUGEScore(Metric):
     Args:
         newline_sep:
             New line separate the inputs.
+            This argument has not been in used any more. It is deprecated in v0.6 and will be removed in v0.7.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
@@ -73,7 +74,6 @@ class ROUGEScore(Metric):
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
     """
-
     def __init__(
         self,
         newline_sep: bool = False,
@@ -90,6 +90,7 @@ class ROUGEScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        # TODO: Add deprecated warning for newline_sep argument.
 
         if not _NLTK_AVAILABLE:
             raise ValueError(
@@ -106,7 +107,6 @@ class ROUGEScore(Metric):
 
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
-        self.newline_sep = newline_sep
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
@@ -123,9 +123,7 @@ class ROUGEScore(Metric):
         if isinstance(targets, str):
             targets = [targets]
 
-        self.sentence_results = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, self.stemmer, self.newline_sep
-        )
+        self.sentence_results = _rouge_score_update(preds, targets, self.rouge_keys_values, self.stemmer)
 
     def compute(self) -> Dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score.

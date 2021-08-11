@@ -105,7 +105,7 @@ def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
     if stemmer:
         text = " ".join(stemmer.stem(x) if len(x) > 3 else x for x in text.split())
-    return text
+    return text.strip()  # to ensure there are no whitespaces as the end of sentence
 
 
 def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
@@ -129,6 +129,7 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
         pred_counter[w] += 1
     for w in target_tokenized:
         target_counter[w] += 1
+    # It is sufficient to take a set(pred_tokenized) for hits count as we consider intersenction of pred & target
     hits = sum(min(pred_counter[w], target_counter[w]) for w in set(pred_tokenized))
     return _compute_metrics(hits, pred_len, target_len)
 
@@ -156,7 +157,6 @@ def _rouge_score_update(
     targets: List[str],
     rouge_keys_values: Tuple[Union[int, str], ...],
     stemmer: bool = False,
-    newline_sep: bool = False,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -169,8 +169,6 @@ def _rouge_score_update(
             List of N-grams/'L'/'Lsum' arguments.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
-        newline_sep:
-            New line separate the inputs.
 
     Example:
         >>> targets = "Is your name John".split()
@@ -178,16 +176,19 @@ def _rouge_score_update(
         >>> _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
     """
     results: Dict[Union[int, str], List[_RougeScore]] = {rouge_key: [] for rouge_key in rouge_keys_values}
-    for pred, target in zip(preds, targets):
+    for pred_raw, target_raw in zip(preds, targets):
+        pred, target = _normalize_text(pred_raw, stemmer), _normalize_text(target_raw, stemmer)
         # rougeLsum expects "\n" separated sentences within a summary
-        if newline_sep:
-            pred = _add_newline_to_end_of_each_sentence(pred)
-            target = _add_newline_to_end_of_each_sentence(target)
-        pred, target = _normalize_text(pred, stemmer), _normalize_text(target, stemmer)
+        if "Lsum" in rouge_keys_values:
+            pred_sum = _normalize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
+            target_sum = _normalize_text(_add_newline_to_end_of_each_sentence(target_raw), stemmer)
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(
-                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int) else _rouge_l_score(pred, target)
+                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int)
+                else _rouge_l_score(
+                    pred if rouge_key != "Lsum" else pred_sum, target if rouge_key != "Lsum" else target_sum
+                )
             )
     return results
 
@@ -214,7 +215,6 @@ def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[_RougeScor
 def rouge_score(
     preds: Union[str, List[str]],
     targets: Union[str, List[str]],
-    newline_sep: bool = False,
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
@@ -225,8 +225,6 @@ def rouge_score(
             An iterable of predicted sentences.
         targets:
             An iterable of target sentences.
-        newline_sep:
-            New line separate the inputs.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
@@ -284,7 +282,7 @@ def rouge_score(
     if isinstance(targets, str):
         targets = [targets]
 
-    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, stemmer, newline_sep)
+    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, stemmer)
     return _rouge_score_compute(sentence_results)
 
 

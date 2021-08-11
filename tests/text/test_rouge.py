@@ -61,11 +61,6 @@ PREDS_SPLIT_RESULTS = {
     "rougeLsum_fmeasure": torch.tensor(0.25),
 }
 
-BATCHES_RS_PREDS = [SINGLE_SENTENCE_EXAMPLE_PREDS]
-BATCHES_RS_PREDS.extend(PREDS)
-BATCHES_RS_TARGETS = [SINGLE_SENTENCE_EXAMPLE_TARGET]
-BATCHES_RS_TARGETS.extend(TARGETS)
-
 BATCHES = [
     dict(preds=[SINGLE_SENTENCE_EXAMPLE_PREDS], targets=[SINGLE_SENTENCE_EXAMPLE_TARGET]),
     dict(preds=PREDS, targets=TARGETS),
@@ -76,77 +71,72 @@ BATCHES_RESULTS = [SINGLE_SENTENCE_EXAMPLE_RESULTS, PREDS_SPLIT_RESULTS]
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer"],
     [
-        pytest.param("rouge1_precision", True, True),
-        pytest.param("rouge1_recall", True, False),
-        pytest.param("rouge1_fmeasure", False, True),
-        pytest.param("rouge2_precision", False, False),
-        pytest.param("rouge2_recall", True, True),
-        pytest.param("rouge2_fmeasure", True, False),
-        pytest.param("rougeL_precision", False, True),
-        pytest.param("rougeL_recall", False, False),
-        pytest.param("rougeL_fmeasure", True, True),
-        pytest.param("rougeLsum_precision", True, False),
-        pytest.param("rougeLsum_recall", False, True),
-        pytest.param("rougeLsum_fmeasure", False, False),
+        pytest.param("rouge1_precision", True),
+        pytest.param("rouge1_recall", True),
+        pytest.param("rouge1_fmeasure", False),
+        pytest.param("rouge2_precision", False),
+        pytest.param("rouge2_recall", True),
+        pytest.param("rouge2_fmeasure", True),
+        pytest.param("rougeL_precision", False),
+        pytest.param("rougeL_recall", False),
+        pytest.param("rougeL_fmeasure", True),
+        pytest.param("rougeLsum_precision", True),
+        pytest.param("rougeLsum_recall", False),
+        pytest.param("rougeLsum_fmeasure", False),
     ],
 )
-def test_rouge_metric_functional_single_sentence(pl_rouge_metric_key, use_stemmer, newline_sep):
-    pl_output = rouge_score(
-        [SINGLE_SENTENCE_EXAMPLE_PREDS],
-        [SINGLE_SENTENCE_EXAMPLE_TARGET],
-        newline_sep=newline_sep,
-        use_stemmer=use_stemmer,
-    )
+def test_rouge_metric_functional_single_sentence(pl_rouge_metric_key, use_stemmer):
+    pl_output = rouge_score([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET], use_stemmer=use_stemmer)
 
     assert torch.allclose(pl_output[pl_rouge_metric_key], SINGLE_SENTENCE_EXAMPLE_RESULTS[pl_rouge_metric_key])
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer"],
     [
-        pytest.param("rouge1_precision", True, True),
-        pytest.param("rouge1_recall", True, False),
-        pytest.param("rouge1_fmeasure", False, True),
-        pytest.param("rouge2_precision", False, False),
-        pytest.param("rouge2_recall", True, True),
-        pytest.param("rouge2_fmeasure", True, False),
-        pytest.param("rougeL_precision", False, True),
-        pytest.param("rougeL_recall", False, False),
-        pytest.param("rougeL_fmeasure", True, True),
-        pytest.param("rougeLsum_precision", True, False),
-        pytest.param("rougeLsum_recall", False, True),
-        pytest.param("rougeLsum_fmeasure", False, False),
+        pytest.param("rouge1_precision", True),
+        pytest.param("rouge1_recall", True),
+        pytest.param("rouge1_fmeasure", False),
+        pytest.param("rouge2_precision", False),
+        pytest.param("rouge2_recall", True),
+        pytest.param("rouge2_fmeasure", True),
+        pytest.param("rougeL_precision", False),
+        pytest.param("rougeL_recall", False),
+        pytest.param("rougeL_fmeasure", True),
+        pytest.param("rougeLsum_precision", True),
+        pytest.param("rougeLsum_recall", False),
+        pytest.param("rougeLsum_fmeasure", False),
     ],
 )
-def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer, newline_sep):
-    pl_output = rouge_score(PREDS, TARGETS, newline_sep=newline_sep, use_stemmer=use_stemmer)
+def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer):
+    pl_output = rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
 
     assert torch.allclose(pl_output[pl_rouge_metric_key], PREDS_SPLIT_RESULTS[pl_rouge_metric_key])
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer"],
     [
-        pytest.param("rouge1_precision", True, True),
-        pytest.param("rouge1_recall", True, False),
-        pytest.param("rouge1_fmeasure", False, True),
-        pytest.param("rouge2_precision", False, False),
-        pytest.param("rouge2_recall", True, True),
-        pytest.param("rouge2_fmeasure", True, False),
-        pytest.param("rougeL_precision", False, True),
-        pytest.param("rougeL_recall", False, False),
-        pytest.param("rougeL_fmeasure", True, True),
-        pytest.param("rougeLsum_precision", True, False),
-        pytest.param("rougeLsum_recall", False, True),
-        pytest.param("rougeLsum_fmeasure", False, False),
+        pytest.param("rouge1_precision", True),
+        pytest.param("rouge1_recall", True),
+        pytest.param("rouge1_fmeasure", False),
+        pytest.param("rouge2_precision", False),
+        pytest.param("rouge2_recall", True),
+        pytest.param("rouge2_fmeasure", True),
+        pytest.param("rougeL_precision", False),
+        pytest.param("rougeL_recall", False),
+        pytest.param("rougeL_fmeasure", True),
+        pytest.param("rougeLsum_precision", True),
+        pytest.param("rougeLsum_recall", False),
+        pytest.param("rougeLsum_fmeasure", False),
     ],
 )
-def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer, newline_sep):
-    rouge = ROUGEScore(newline_sep=newline_sep, use_stemmer=use_stemmer)
+def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer):
+    rouge = ROUGEScore(use_stemmer=use_stemmer)
     pl_output = rouge([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET])
 
     assert torch.allclose(pl_output[pl_rouge_metric_key], SINGLE_SENTENCE_EXAMPLE_RESULTS[pl_rouge_metric_key])
@@ -154,24 +144,24 @@ def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer, newline_sep):
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer"],
     [
-        pytest.param("rouge1_precision", True, True),
-        pytest.param("rouge1_recall", True, False),
-        pytest.param("rouge1_fmeasure", False, True),
-        pytest.param("rouge2_precision", False, False),
-        pytest.param("rouge2_recall", True, True),
-        pytest.param("rouge2_fmeasure", True, False),
-        pytest.param("rougeL_precision", False, True),
-        pytest.param("rougeL_recall", False, False),
-        pytest.param("rougeL_fmeasure", True, True),
-        pytest.param("rougeLsum_precision", True, False),
-        pytest.param("rougeLsum_recall", False, True),
-        pytest.param("rougeLsum_fmeasure", False, False),
+        pytest.param("rouge1_precision", True),
+        pytest.param("rouge1_recall", True),
+        pytest.param("rouge1_fmeasure", False),
+        pytest.param("rouge2_precision", False),
+        pytest.param("rouge2_recall", True),
+        pytest.param("rouge2_fmeasure", True),
+        pytest.param("rougeL_precision", False),
+        pytest.param("rougeL_recall", False),
+        pytest.param("rougeL_fmeasure", True),
+        pytest.param("rougeLsum_precision", True),
+        pytest.param("rougeLsum_recall", False),
+        pytest.param("rougeLsum_fmeasure", False),
     ],
 )
-def test_rouge_metric_class_batches(pl_rouge_metric_key, use_stemmer, newline_sep):
-    rouge = ROUGEScore(newline_sep=newline_sep, use_stemmer=use_stemmer)
+def test_rouge_metric_class_batches(pl_rouge_metric_key, use_stemmer):
+    rouge = ROUGEScore(use_stemmer=use_stemmer)
     for batch, results in zip(BATCHES, BATCHES_RESULTS):
         rouge.update(batch["preds"], batch["targets"])
     pl_output = rouge.compute()
