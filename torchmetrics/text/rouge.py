@@ -34,6 +34,9 @@ class ROUGEScore(Metric):
         rouge_keys:
             A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
+        decimal_places:
+            The number of digits to round the computed the values to.
+            This argument has not been in used any more. It is deprecated in v0.6 and will be removed in v0.7.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -79,6 +82,7 @@ class ROUGEScore(Metric):
         newline_sep: bool = False,
         use_stemmer: bool = False,
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
+        decimal_places: int = 4,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -91,6 +95,7 @@ class ROUGEScore(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         # TODO: Add deprecated warning for newline_sep argument.
+        # TODO: Add deprecated warning for decimal_places argument as no other metric uses this kind of argument.
 
         if not _NLTK_AVAILABLE:
             raise ValueError(
