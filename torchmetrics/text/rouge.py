@@ -17,13 +17,7 @@ from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.rouge import ALLOWED_ROUGE_KEYS, _rouge_score_compute, _rouge_score_update
-from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
-
-if _ROUGE_SCORE_AVAILABLE:
-    from rouge_score.rouge_scorer import RougeScorer
-    from rouge_score.scoring import BootstrapAggregator
-else:
-    RougeScorer, BootstrapAggregator = object, object
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
 class ROUGEScore(Metric):
@@ -37,8 +31,6 @@ class ROUGEScore(Metric):
         rouge_keys:
             A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
-        decimal_places:
-            The number of digits to round the computed the values to.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -72,7 +64,7 @@ class ROUGEScore(Metric):
 
     Raises:
         ValueError:
-            If the python packages ``nltk`` or ``rouge-score`` are not installed.
+            If the python packages ``nltk`` is not installed.
         ValueError:
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
 
@@ -85,7 +77,6 @@ class ROUGEScore(Metric):
         newline_sep: bool = False,
         use_stemmer: bool = False,
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
-        decimal_places: int = 4,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -98,10 +89,10 @@ class ROUGEScore(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
+        if not _NLTK_AVAILABLE:
             raise ValueError(
-                "ROUGE metric requires that both nltk and rouge-score is installed."
-                " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
+                "ROUGE metric requires that nltk is installed."
+                " Either as `pip install torchmetrics[text]` or `pip install nltk`"
             )
 
         if not isinstance(rouge_keys, tuple):
@@ -111,11 +102,9 @@ class ROUGEScore(Metric):
                 raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")
 
         self.rouge_keys = rouge_keys
+        self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.newline_sep = newline_sep
         self.use_stemmer = use_stemmer
-        self.aggregator = BootstrapAggregator()
-        self.scorer = RougeScorer(rouge_keys, use_stemmer=self.use_stemmer)
-        self.decimal_places = decimal_places
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
         """Compute rouge scores.
@@ -131,8 +120,8 @@ class ROUGEScore(Metric):
         if isinstance(targets, str):
             targets = [targets]
 
-        _rouge_score_update(
-            preds, targets, scorer=self.scorer, aggregator=self.aggregator, newline_sep=self.newline_sep
+        self.sentence_results = _rouge_score_update(
+            preds, targets, self.rouge_keys_values, newline_sep=self.newline_sep
         )
 
     def compute(self) -> Dict[str, Tensor]:
@@ -141,7 +130,7 @@ class ROUGEScore(Metric):
         Return:
             Python dictionary of rouge scores for each input rouge key.
         """
-        return _rouge_score_compute(aggregator=self.aggregator, decimal_places=self.decimal_places)
+        return _rouge_score_compute(self.sentence_results)
 
     def __hash__(self) -> int:
         # override to hash list objects.

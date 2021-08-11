@@ -63,7 +63,7 @@ def _normalize_text(text: str) -> str:
 
 def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     pred_tokenized, target_tokenized = _tokenize(pred, n_gram), _tokenize(target, n_gram)
-    pred_len, target_len = len(pred), len(target)
+    pred_len, target_len = len(pred_tokenized), len(target_tokenized)
     if pred_len == 0 or target_len == 0:
         return _RougeScore()
 
@@ -72,7 +72,7 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
         pred_counter[w] += 1
     for w in target_tokenized:
         target_counter[w] += 1
-    hits = [min(pred_counter[word], target_counter[word]) for word in set(pred_tokenized)]
+    hits = sum(min(pred_counter[w], target_counter[w]) for w in set(pred_tokenized))
     precision = hits / pred_len
     recall = hits / target_len
 
@@ -92,7 +92,7 @@ def _rouge_score_update(
     targets: List[str],
     rouge_keys_values: Tuple[Union[int, str], ...],
     newline_sep: bool = False,
-) -> Dict[Union[int, str]: List[_RougeScore]]:
+) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
@@ -110,7 +110,7 @@ def _rouge_score_update(
         >>> preds = "My name is John".split()
         >>> _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
     """
-    results: Dict[Union[int, str]: List[_RougeScore]] = {rouge_key: [] for rouge_key in rouge_keys_values}
+    results: Dict[Union[int, str], List[_RougeScore]] = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred, target in zip(preds, targets):
         pred, target = _normalize_text(pred), _normalize_text(target)
         # rougeLsum expects "\n" separated sentences within a summary
@@ -121,13 +121,12 @@ def _rouge_score_update(
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(
-                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int)
-                else _rouge_l_score() for rouge_key in rouge_keys_values
+                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int) else _rouge_l_score()
             )
     return results
 
 
-def _rouge_score_compute(sentence_results: List[Dict[Union[int, str], _RougeScore]]) -> Dict[str, Tensor]:
+def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[_RougeScore]]) -> Dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
