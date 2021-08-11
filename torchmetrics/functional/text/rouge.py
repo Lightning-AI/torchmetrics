@@ -46,7 +46,7 @@ class _RougeScore:
     fmeasure: float = 0.0
 
 
-def add_newline_to_end_of_each_sentence(x: str) -> str:
+def _add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if _NLTK_AVAILABLE:
         nltk.download("punkt", quiet=True, force=False)
@@ -92,6 +92,8 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
 def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Pprter stemmer can be used 
     to strip word suffixes to improve matching.
+    The text normalization follows the implemantion from
+    https://github.com/google-research/google-research/blob/master/rouge/tokenize.py.
 
         Args:
             text:
@@ -102,7 +104,6 @@ def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str
     """
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
     if stemmer:
-        # Only stem words more than 3 characters long.
         text = " ".join(stemmer.stem(x) if len(x) > 3 else x for x in text.split())
     return text
 
@@ -132,7 +133,7 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     return _compute_metrics(hits, pred_len, target_len)
 
 
-def _rouge_l_score(pred: str, target: str, summary_level: bool = False) -> _RougeScore:
+def _rouge_l_score(pred: str, target: str) -> _RougeScore:
     """This computes precision, recall and F1 score for the Rouge-L or Rouge-LSum metric.
 
     Args:
@@ -140,11 +141,7 @@ def _rouge_l_score(pred: str, target: str, summary_level: bool = False) -> _Roug
             A predicted sentence.
         target:
             A target sentence.
-        summary_level:
-            Calculate summary-level metric.
     """
-    if summary_level:
-        pass
     pred_tokenized, target_tokenized = _tokenize(pred, 1), _tokenize(target, 1)
     pred_len, target_len = len(pred_tokenized), len(target_tokenized)
     if pred_len == 0 or target_len == 0:
@@ -184,14 +181,13 @@ def _rouge_score_update(
     for pred, target in zip(preds, targets):
         # rougeLsum expects "\n" separated sentences within a summary
         if newline_sep:
-            pred = add_newline_to_end_of_each_sentence(pred)
-            target = add_newline_to_end_of_each_sentence(target)
+            pred = _add_newline_to_end_of_each_sentence(pred)
+            target = _add_newline_to_end_of_each_sentence(target)
         pred, target = _normalize_text(pred, stemmer), _normalize_text(target, stemmer)
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(
-                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int)
-                else _rouge_l_score(pred, target, summary_level=True if "Lsum" else False)
+                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int) else _rouge_l_score(pred, target)
             )
     return results
 
@@ -301,6 +297,6 @@ def _tokenize(text: str, n_gram: int) -> List[str]:
         n_gram
             N-gram size to return.
     """
-    tokens = text.split()
+    tokens = re.split(r"\s+", text)
     n_grams_list = [' '.join(tokens[i:i + n_gram]) for i in range(len(tokens) - n_gram + 1)]
     return n_grams_list
