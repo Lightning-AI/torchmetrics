@@ -12,32 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
+from collections import defaultdict
+from dataclasses import dataclass
 from typing import Dict, List, Tuple, Union
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
-from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-if _ROUGE_SCORE_AVAILABLE:
-    from rouge_score.rouge_scorer import RougeScorer
-    from rouge_score.scoring import AggregateScore, BootstrapAggregator
-else:
-    RougeScorer, AggregateScore, BootstrapAggregator = object, object, object
+ALLOWED_ROUGE_KEYS = {
+    "rouge1": 1,
+    "rouge2": 2,
+    "rouge3": 3,
+    "rouge4": 4,
+    "rouge5": 5,
+    "rouge6": 6,
+    "rouge7": 7,
+    "rouge8": 8,
+    "rouge9": 9,
+    "rougeL": "L",
+    "rougeLsum": "Lsum",
+}
 
-ALLOWED_ROUGE_KEYS = (
-    "rouge1",
-    "rouge2",
-    "rouge3",
-    "rouge4",
-    "rouge5",
-    "rouge6",
-    "rouge7",
-    "rouge8",
-    "rouge9",
-    "rougeL",
-    "rougeLsum",
-)
+
+@dataclass
+class _RougeScore:
+    precision: float = 0.0
+    recall: float = 0.0
+    fmeasure: float = 0.0
 
 
 def add_newline_to_end_of_each_sentence(x: str) -> str:
@@ -52,24 +55,44 @@ def add_newline_to_end_of_each_sentence(x: str) -> str:
     return "\n".join(nltk.sent_tokenize(x))
 
 
-def format_rouge_results(result: Dict[str, AggregateScore], decimal_places: int = 4) -> Dict[str, Tensor]:
-    """Formats the computed (aggregated) rouge score to a dictionary of tensors format."""
-    flattened_result = {}
-    for rouge_key, rouge_aggregate_score in result.items():
-        for stat in ["precision", "recall", "fmeasure"]:
-            mid = rouge_aggregate_score.mid
-            score = round(getattr(mid, stat), decimal_places)
-            flattened_result[f"{rouge_key}_{stat}"] = tensor(score, dtype=torch.float)
-    return flattened_result
+def _normalize_text(text: str) -> str:
+    """Rouge score should be calculated only over lowercased words and digits."""
+    text = re.sub(r"[^a-z0-9]+", " ", text.lower())
+    return text
+
+
+def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
+    pred_tokenized, target_tokenized = _tokenize(pred, n_gram), _tokenize(target, n_gram)
+    pred_len, target_len = len(pred), len(target)
+    if pred_len == 0 or target_len == 0:
+        return _RougeScore()
+
+    pred_counter, target_counter = defaultdict(int), defaultdict(int)
+    for w in pred_tokenized:
+        pred_counter[w] += 1
+    for w in target_tokenized:
+        target_counter[w] += 1
+    hits = [min(pred_counter[word], target_counter[word]) for word in set(pred_tokenized)]
+    precision = hits / pred_len
+    recall = hits / target_len
+
+    if precision == recall == 0.0:
+        return _RougeScore()
+
+    fmeasure = 2 * precision * recall / (precision + recall)
+    return _RougeScore(precision, recall, fmeasure)
+
+
+def _rouge_l_score() -> _RougeScore:
+    return _RougeScore()
 
 
 def _rouge_score_update(
     preds: List[str],
     targets: List[str],
-    scorer: RougeScorer,
-    aggregator: BootstrapAggregator,
+    rouge_keys_values: Tuple[Union[int, str], ...],
     newline_sep: bool = False,
-) -> None:
+) -> Dict[Union[int, str]: List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
@@ -77,40 +100,52 @@ def _rouge_score_update(
             An iterable of predicted sentences.
         targets:
             An iterable of target sentences.
-        scorer:
-            An instance of the ``RougeScorer`` class from the ``rouge_score`` package.
-        aggregator:
-            An instance of the ``BootstrapAggregator`` from the from the ``rouge_score`` package.
+        rouge_keys_values:
+            # TODO
         newline_sep:
             New line separate the inputs.
 
     Example:
         >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
-        >>> aggregator = BootstrapAggregator()
-        >>> scorer = RougeScorer(rouge_types=("rouge1", "rouge2", "rougeL", "rougeLsum"), use_stemmer=False)
-        >>> _rouge_score_update(preds, targets, scorer=scorer, aggregator=aggregator, newline_sep=False)
+        >>> _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
     """
+    results: Dict[Union[int, str]: List[_RougeScore]] = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred, target in zip(preds, targets):
+        pred, target = _normalize_text(pred), _normalize_text(target)
         # rougeLsum expects "\n" separated sentences within a summary
         if newline_sep:
-            pred = add_newline_to_end_of_each_sentence(pred)
-            target = add_newline_to_end_of_each_sentence(target)
-        results = scorer.score(pred, target)
-        aggregator.add_scores(results)
+            pass
+        #    pred = add_newline_to_end_of_each_sentence(pred)
+        #    target = add_newline_to_end_of_each_sentence(target)
+
+        for rouge_key in rouge_keys_values:
+            results[rouge_key].append(
+                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int)
+                else _rouge_l_score() for rouge_key in rouge_keys_values
+            )
+    return results
 
 
-def _rouge_score_compute(aggregator: BootstrapAggregator, decimal_places: int = 4) -> Dict[str, Tensor]:
+def _rouge_score_compute(sentence_results: List[Dict[Union[int, str], _RougeScore]]) -> Dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
-        aggregator:
-            An instance of the ``BootstrapAggregator`` from the from the ``rouge_score`` package.
+        sentence_results:
+            # TODO:
         decimal_places:
             The number of digits to round the computed the values to.
     """
-    result = aggregator.aggregate()
-    return format_rouge_results(result, decimal_places)
+    results = {}
+    for rouge_key, scores in sentence_results.items():
+        res = torch.tensor(
+            [(score.precision, score.recall, score.fmeasure) for score in scores]
+        ).mean(0)
+        results[f"rouge{rouge_key}_precision"] = res[0]
+        results[f"rouge{rouge_key}_recall"] = res[1]
+        results[f"rouge{rouge_key}_fmeasure"] = res[2]
+
+    return results
 
 
 def rouge_score(
@@ -119,7 +154,6 @@ def rouge_score(
     newline_sep: bool = False,
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
-    decimal_places: int = 4,
 ) -> Dict[str, Tensor]:
     """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
 
@@ -135,8 +169,6 @@ def rouge_score(
         rouge_keys:
             A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
-        decimal_places:
-            The number of digits to round the computed the values to.
 
     Return:
         Python dictionary of rouge scores for each input rouge key.
@@ -161,7 +193,7 @@ def rouge_score(
 
     Raises:
         ValueError:
-            If the python packages ``nltk`` or ``rouge-score`` are not installed.
+            If the python package ``nltk`` is not installed.
         ValueError:
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
 
@@ -169,7 +201,7 @@ def rouge_score(
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
     """
 
-    if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
+    if not (_NLTK_AVAILABLE):
         raise ValueError(
             "ROUGE metric requires that both nltk and rouge-score is installed."
             " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
@@ -180,6 +212,7 @@ def rouge_score(
     for key in rouge_keys:
         if key not in ALLOWED_ROUGE_KEYS:
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")
+    rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
     if isinstance(preds, str):
         preds = [preds]
@@ -187,8 +220,11 @@ def rouge_score(
     if isinstance(targets, str):
         targets = [targets]
 
-    aggregator = BootstrapAggregator()
-    scorer = RougeScorer(rouge_keys, use_stemmer=use_stemmer)
+    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, newline_sep=newline_sep)
+    return _rouge_score_compute(sentence_results)
 
-    _rouge_score_update(preds, targets, scorer=scorer, aggregator=aggregator, newline_sep=newline_sep)
-    return _rouge_score_compute(aggregator=aggregator, decimal_places=decimal_places)
+
+def _tokenize(text: str, n_gram: int) -> List[str]:
+    tokens = text.split()
+    n_grams_list = [' '.join(tokens[i:i + n_gram]) for i in range(len(tokens) - n_gram + 1)]
+    return n_grams_list
