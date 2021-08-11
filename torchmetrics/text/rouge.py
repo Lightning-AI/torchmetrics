@@ -22,6 +22,8 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 class ROUGEScore(Metric):
     """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
+    This implementation should imitathe the behaviour of the `rouge-score` package
+    <https://pypi.org/project/rouge-score/>.
 
     Args:
         newline_sep:
@@ -94,6 +96,7 @@ class ROUGEScore(Metric):
                 "ROUGE metric requires that nltk is installed."
                 " Either as `pip install torchmetrics[text]` or `pip install nltk`"
             )
+        import nltk
 
         if not isinstance(rouge_keys, tuple):
             rouge_keys = tuple([rouge_keys])
@@ -104,7 +107,7 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.newline_sep = newline_sep
-        self.use_stemmer = use_stemmer
+        self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
         """Compute rouge scores.
@@ -121,7 +124,7 @@ class ROUGEScore(Metric):
             targets = [targets]
 
         self.sentence_results = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, newline_sep=self.newline_sep
+            preds, targets, self.rouge_keys_values, self.stemmer, self.newline_sep
         )
 
     def compute(self) -> Dict[str, Tensor]:

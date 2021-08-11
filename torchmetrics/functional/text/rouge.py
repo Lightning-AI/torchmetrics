@@ -182,12 +182,11 @@ def _rouge_score_update(
     """
     results: Dict[Union[int, str], List[_RougeScore]] = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred, target in zip(preds, targets):
-        pred, target = _normalize_text(pred, stemmer), _normalize_text(target, stemmer)
         # rougeLsum expects "\n" separated sentences within a summary
         if newline_sep:
-            pass
-        #    pred = add_newline_to_end_of_each_sentence(pred)
-        #    target = add_newline_to_end_of_each_sentence(target)
+            pred = add_newline_to_end_of_each_sentence(pred)
+            target = add_newline_to_end_of_each_sentence(target)
+        pred, target = _normalize_text(pred, stemmer), _normalize_text(target, stemmer)
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(
