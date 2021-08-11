@@ -55,6 +55,17 @@ def add_newline_to_end_of_each_sentence(x: str) -> str:
     return "\n".join(nltk.sent_tokenize(x))
 
 
+def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
+    """#TODO"""
+    LCS = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
+    for i in range(1, len(target_tokens) + 1):
+        for j in range(1, len(pred_tokens) + 1):
+            if target_tokens[i - 1] == pred_tokens[j - 1]:
+                LCS[i][j] = LCS[i - 1][j - 1] + 1
+            else:
+                LCS[i][j] = max(LCS[i - 1][j], LCS[i][j - 1])
+    return LCS[-1][-1]
+
 def _normalize_text(text: str) -> str:
     """Rouge score should be calculated only over lowercased words and digits."""
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
@@ -83,8 +94,23 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     return _RougeScore(precision, recall, fmeasure)
 
 
-def _rouge_l_score() -> _RougeScore:
-    return _RougeScore()
+def _rouge_l_score(pred: str, target: str, summary_level: bool = False) -> _RougeScore:
+    if summary_level:
+        pass
+    pred_tokenized, target_tokenized = _tokenize(pred, 1), _tokenize(target, 1)
+    pred_len, target_len = len(pred_tokenized), len(target_tokenized)
+    if pred_len == 0 or target_len == 0:
+        return _RougeScore()
+
+    lcs = _lcs(pred_tokenized, target_tokenized)
+
+    precision = lcs / pred_len
+    recall = lcs / target_len
+    if precision == recall == 0.0:
+        return _RougeScore()
+    
+    fmeasure = 2 * precision * recall / (precision + recall)
+    return _RougeScore(precision, recall, fmeasure)
 
 
 def _rouge_score_update(
@@ -121,7 +147,8 @@ def _rouge_score_update(
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(
-                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int) else _rouge_l_score()
+                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int)
+                else _rouge_l_score(pred, target, summary_level=True if "Lsum" else False)
             )
     return results
 
