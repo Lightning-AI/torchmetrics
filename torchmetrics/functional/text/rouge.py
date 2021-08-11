@@ -21,6 +21,9 @@ from torch import Tensor
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
+if _NLTK_AVAILABLE:
+    import nltk
+
 ALLOWED_ROUGE_KEYS = {
     "rouge1": 1,
     "rouge2": 2,
@@ -46,8 +49,6 @@ class _RougeScore:
 def add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if _NLTK_AVAILABLE:
-        import nltk
-
         nltk.download("punkt", quiet=True, force=False)
 
     re.sub("<n>", "", x)  # remove pegasus newline char
@@ -55,8 +56,29 @@ def add_newline_to_end_of_each_sentence(x: str) -> str:
     return "\n".join(nltk.sent_tokenize(x))
 
 
+def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _RougeScore:
+    """This computes precision, recall and F1 score based on hits/lcs, and the length lists of predicted and target
+    sentences.
+
+    Args:
+        hits_or_lcs:
+            A number of matches or a length of the longest common subsequence
+        pred_len:
+            A length of a tokenized predicted sentence.
+        target_len:
+            A length of a tokenized target sentence.
+    """
+    precision = hits_or_lcs / pred_len
+    recall = hits_or_lcs / target_len
+    if precision == recall == 0.0:
+        return _RougeScore()
+
+    fmeasure = 2 * precision * recall / (precision + recall)
+    return _RougeScore(precision, recall, fmeasure)
+
+
 def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
-    """#TODO"""
+    """General DP algorithm to compute the length of the longest common subsequence."""
     LCS = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
         for j in range(1, len(pred_tokens) + 1):
@@ -66,13 +88,36 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
                 LCS[i][j] = max(LCS[i - 1][j], LCS[i][j - 1])
     return LCS[-1][-1]
 
-def _normalize_text(text: str) -> str:
-    """Rouge score should be calculated only over lowercased words and digits."""
+
+def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str:
+    """Rouge score should be calculated only over lowercased words and digits. Optionally, Pprter stemmer can be used 
+    to strip word suffixes to improve matching.
+
+        Args:
+            text:
+                An input sentence
+            use_stemmer:
+                Use Porter stemmer to strip word suffixes to improve matching.
+            
+    """
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
+    if stemmer:
+        # Only stem words more than 3 characters long.
+        text = " ".join(stemmer.stem(x) if len(x) > 3 else x for x in text.split())
     return text
 
 
 def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
+    """This computes precision, recall and F1 score for the Rouge-N metric.
+
+    Args:
+        pred:
+            A predicted sentence.
+        target:
+            A target sentence.
+        n_gram:
+            N-gram overlap.
+    """
     pred_tokenized, target_tokenized = _tokenize(pred, n_gram), _tokenize(target, n_gram)
     pred_len, target_len = len(pred_tokenized), len(target_tokenized)
     if pred_len == 0 or target_len == 0:
@@ -84,17 +129,20 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     for w in target_tokenized:
         target_counter[w] += 1
     hits = sum(min(pred_counter[w], target_counter[w]) for w in set(pred_tokenized))
-    precision = hits / pred_len
-    recall = hits / target_len
-
-    if precision == recall == 0.0:
-        return _RougeScore()
-
-    fmeasure = 2 * precision * recall / (precision + recall)
-    return _RougeScore(precision, recall, fmeasure)
+    return _compute_metrics(hits, pred_len, target_len)
 
 
 def _rouge_l_score(pred: str, target: str, summary_level: bool = False) -> _RougeScore:
+    """This computes precision, recall and F1 score for the Rouge-L or Rouge-LSum metric.
+
+    Args:
+        pred:
+            A predicted sentence.
+        target:
+            A target sentence.
+        summary_level:
+            Calculate summary-level metric.
+    """
     if summary_level:
         pass
     pred_tokenized, target_tokenized = _tokenize(pred, 1), _tokenize(target, 1)
@@ -103,20 +151,14 @@ def _rouge_l_score(pred: str, target: str, summary_level: bool = False) -> _Roug
         return _RougeScore()
 
     lcs = _lcs(pred_tokenized, target_tokenized)
-
-    precision = lcs / pred_len
-    recall = lcs / target_len
-    if precision == recall == 0.0:
-        return _RougeScore()
-    
-    fmeasure = 2 * precision * recall / (precision + recall)
-    return _RougeScore(precision, recall, fmeasure)
+    return _compute_metrics(lcs, pred_len, target_len)
 
 
 def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: Tuple[Union[int, str], ...],
+    stemmer: bool = False,
     newline_sep: bool = False,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
@@ -127,7 +169,9 @@ def _rouge_score_update(
         targets:
             An iterable of target sentences.
         rouge_keys_values:
-            # TODO
+            List of N-grams/'L'/'Lsum' arguments.
+        use_stemmer:
+            Use Porter stemmer to strip word suffixes to improve matching.
         newline_sep:
             New line separate the inputs.
 
@@ -138,7 +182,7 @@ def _rouge_score_update(
     """
     results: Dict[Union[int, str], List[_RougeScore]] = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred, target in zip(preds, targets):
-        pred, target = _normalize_text(pred), _normalize_text(target)
+        pred, target = _normalize_text(pred, stemmer), _normalize_text(target, stemmer)
         # rougeLsum expects "\n" separated sentences within a summary
         if newline_sep:
             pass
@@ -158,9 +202,7 @@ def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[_RougeScor
 
     Args:
         sentence_results:
-            # TODO:
-        decimal_places:
-            The number of digits to round the computed the values to.
+            Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence. 
     """
     results = {}
     for rouge_key, scores in sentence_results.items():
@@ -229,15 +271,16 @@ def rouge_score(
 
     if not (_NLTK_AVAILABLE):
         raise ValueError(
-            "ROUGE metric requires that both nltk and rouge-score is installed."
+            "ROUGE metric requires that nltk is installed."
             " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
         )
+    stemmer = nltk.stem.porter.PorterStemmer() if _NLTK_AVAILABLE and use_stemmer else None
 
     if not isinstance(rouge_keys, tuple):
         rouge_keys = tuple([rouge_keys])
     for key in rouge_keys:
-        if key not in ALLOWED_ROUGE_KEYS:
-            raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")
+        if key not in ALLOWED_ROUGE_KEYS.keys():
+            raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
     if isinstance(preds, str):
@@ -246,11 +289,19 @@ def rouge_score(
     if isinstance(targets, str):
         targets = [targets]
 
-    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, newline_sep=newline_sep)
+    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, stemmer, newline_sep)
     return _rouge_score_compute(sentence_results)
 
 
 def _tokenize(text: str, n_gram: int) -> List[str]:
+    """Retun the list of N-grams from the input text.
+    
+    Args:
+        text:
+            An input sentence.
+        n_gram
+            N-gram size to return.
+    """
     tokens = text.split()
     n_grams_list = [' '.join(tokens[i:i + n_gram]) for i in range(len(tokens) - n_gram + 1)]
     return n_grams_list
