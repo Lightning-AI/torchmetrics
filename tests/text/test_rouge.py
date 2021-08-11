@@ -31,7 +31,7 @@ SINGLE_SENTENCE_EXAMPLE_TARGET = "The quick brown dog jumps on the log."
 SINGLE_SENTENCE_EXAMPLE_RESULTS = {
     "rouge1_precision": torch.tensor(0.6666666666666666),
     "rouge1_recall": torch.tensor(0.75),
-    "rouge2_fmeasure": torch.tensor(0.7058823529411765),
+    "rouge1_fmeasure": torch.tensor(0.7058823529411765),
     "rouge2_precision": torch.tensor(0.25),
     "rouge2_recall": torch.tensor(0.2857142857142857),
     "rouge2_fmeasure": torch.tensor(0.26666666666666666),
@@ -49,7 +49,7 @@ TARGETS = "Is your name John".split()
 PREDS_SPLIT_RESULTS = {
     "rouge1_precision": torch.tensor(0.25),
     "rouge1_recall": torch.tensor(0.25),
-    "rouge2_fmeasure": torch.tensor(0.25),
+    "rouge1_fmeasure": torch.tensor(0.25),
     "rouge2_precision": torch.tensor(0.0),
     "rouge2_recall": torch.tensor(0.0),
     "rouge2_fmeasure": torch.tensor(0.0),
