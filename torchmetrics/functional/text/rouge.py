@@ -62,7 +62,7 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _Rouge
 
     Args:
         hits_or_lcs:
-            A number of matches or a length of the longest common subsequence
+            A number of matches or a length of the longest common subsequence.
         pred_len:
             A length of a tokenized predicted sentence.
         target_len:
@@ -97,7 +97,7 @@ def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str
 
         Args:
             text:
-                An input sentence
+                An input sentence.
             use_stemmer:
                 Use Porter stemmer to strip word suffixes to improve matching.
 

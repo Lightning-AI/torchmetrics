@@ -20,30 +20,66 @@ from torch import tensor
 
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
-from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-if _ROUGE_SCORE_AVAILABLE:
-    from rouge_score.rouge_scorer import RougeScorer
-    from rouge_score.scoring import BootstrapAggregator
-else:
-    RougeScorer, BootstrapAggregator = object, object
 
 ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
-
-PRECISION = 0
-RECALL = 1
-F_MEASURE = 2
 
 SINGLE_SENTENCE_EXAMPLE_PREDS = "The quick brown fox jumps over the lazy dog"
 SINGLE_SENTENCE_EXAMPLE_TARGET = "The quick brown dog jumps on the log."
 
+SINGLE_SENTENCE_EXAMPLE_RESULTS = {
+    "rouge1_precision": torch.tensor(0.6666666666666666),
+    "rouge1_recall": torch.tensor(0.75),
+    "rouge2_fmeasure": torch.tensor(0.7058823529411765),
+    "rouge2_precision": torch.tensor(0.25),
+    "rouge2_recall": torch.tensor(0.2857142857142857),
+    "rouge2_fmeasure": torch.tensor(0.26666666666666666),
+    "rougeL_precision": torch.tensor(0.5555555555555556),
+    "rougeL_recall": torch.tensor(0.625),
+    "rougeL_fmeasure": torch.tensor(0.5882352941176471),
+    "rougeLsum_precision": torch.tensor(0.5555555555555556),
+    "rougeLsum_recall": torch.tensor(0.625),
+    "rougeLsum_fmeasure": torch.tensor(0.5882352941176471),
+}
+
 PREDS = "My name is John".split()
 TARGETS = "Is your name John".split()
+
+PREDS_SPLIT_RESULTS = {
+    "rouge1_precision": torch.tensor(0.25),
+    "rouge1_recall": torch.tensor(0.25),
+    "rouge2_fmeasure": torch.tensor(0.25),
+    "rouge2_precision": torch.tensor(0.0),
+    "rouge2_recall": torch.tensor(0.0),
+    "rouge2_fmeasure": torch.tensor(0.0),
+    "rougeL_precision": torch.tensor(0.25),
+    "rougeL_recall": torch.tensor(0.25),
+    "rougeL_fmeasure": torch.tensor(0.25),
+    "rougeLsum_precision": torch.tensor(0.25),
+    "rougeLsum_recall": torch.tensor(0.25),
+    "rougeLsum_fmeasure": torch.tensor(0.25),
+}
 
 BATCHES_RS_PREDS = [SINGLE_SENTENCE_EXAMPLE_PREDS]
 BATCHES_RS_PREDS.extend(PREDS)
 BATCHES_RS_TARGETS = [SINGLE_SENTENCE_EXAMPLE_TARGET]
 BATCHES_RS_TARGETS.extend(TARGETS)
+
+BATCHES_RS_RESULTS = {
+    "rouge1_precision": torch.tensor(0.3333333333333333),
+    "rouge1_recall": torch.tensor(0.35),
+    "rouge2_fmeasure": torch.tensor(0.3411764705882353),
+    "rouge2_precision": torch.tensor(0.05),
+    "rouge2_recall": torch.tensor(0.05714285714285714),
+    "rouge2_fmeasure": torch.tensor(0.05333333333333333), 
+    "rougeL_precision": torch.tensor(0.3111111111111111),
+    "rougeL_recall": torch.tensor(0.325),
+    "rougeL_fmeasure": torch.tensor(0.31764705882352945),
+    "rougeLsum_precision": torch.tensor(0.3111111111111111),
+    "rougeLsum_recall": torch.tensor(0.325),
+    "rougeLsum_fmeasure": torch.tensor(0.31764705882352945),
+}
 
 BATCHES = [
     dict(preds=[SINGLE_SENTENCE_EXAMPLE_PREDS], targets=[SINGLE_SENTENCE_EXAMPLE_TARGET]),
@@ -51,149 +87,118 @@ BATCHES = [
 ]
 
 
-def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool):
-    scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
-    aggregator = BootstrapAggregator()
-    for pred, target in zip(preds, targets):
-        aggregator.add_scores(scorer.score(pred, target))
-    return aggregator.aggregate()
-
-
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
+@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
     [
-        pytest.param("rouge1_precision", "rouge1", PRECISION, 1, True, True),
-        pytest.param("rouge1_recall", "rouge1", RECALL, 2, True, False),
-        pytest.param("rouge1_fmeasure", "rouge1", F_MEASURE, 3, False, True),
-        pytest.param("rouge2_precision", "rouge2", PRECISION, 4, False, False),
-        pytest.param("rouge2_recall", "rouge2", RECALL, 5, True, True),
-        pytest.param("rouge2_fmeasure", "rouge2", F_MEASURE, 6, True, False),
-        pytest.param("rougeL_precision", "rougeL", PRECISION, 6, False, True),
-        pytest.param("rougeL_recall", "rougeL", RECALL, 5, False, False),
-        pytest.param("rougeL_fmeasure", "rougeL", F_MEASURE, 3, True, True),
-        pytest.param("rougeLsum_precision", "rougeLsum", PRECISION, 2, True, False),
-        pytest.param("rougeLsum_recall", "rougeLsum", RECALL, 1, False, True),
-        pytest.param("rougeLsum_fmeasure", "rougeLsum", F_MEASURE, 8, False, False),
+        pytest.param("rouge1_precision", True, True),
+        pytest.param("rouge1_recall", True, False),
+        pytest.param("rouge1_fmeasure", False, True),
+        pytest.param("rouge2_precision", False, False),
+        pytest.param("rouge2_recall", True, True),
+        pytest.param("rouge2_fmeasure", True, False),
+        pytest.param("rougeL_precision", False, True),
+        pytest.param("rougeL_recall", False, False),
+        pytest.param("rougeL_fmeasure", True, True),
+        pytest.param("rougeLsum_precision", True, False),
+        pytest.param("rougeLsum_recall", False, True),
+        pytest.param("rougeLsum_fmeasure", False, False),
     ],
 )
-def test_rouge_metric_functional_single_sentence(
-    pl_rouge_metric_key, rouge_score_key, metric, decimal_places, use_stemmer, newline_sep
-):
-    scorer = RougeScorer(ROUGE_KEYS)
-    rs_scores = scorer.score(SINGLE_SENTENCE_EXAMPLE_PREDS, SINGLE_SENTENCE_EXAMPLE_TARGET)
-    rs_output = round(rs_scores[rouge_score_key][metric], decimal_places)
-
+def test_rouge_metric_functional_single_sentence(pl_rouge_metric_key, use_stemmer, newline_sep):
     pl_output = rouge_score(
         [SINGLE_SENTENCE_EXAMPLE_PREDS],
         [SINGLE_SENTENCE_EXAMPLE_TARGET],
         newline_sep=newline_sep,
         use_stemmer=use_stemmer,
-        decimal_places=decimal_places,
     )
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
+    assert torch.allclose(pl_output[pl_rouge_metric_key], SINGLE_SENTENCE_EXAMPLE_RESULTS[pl_rouge_metric_key])
 
 
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
+@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
     [
-        pytest.param("rouge1_precision", "rouge1", PRECISION, 1, True, True),
-        pytest.param("rouge1_recall", "rouge1", RECALL, 2, True, False),
-        pytest.param("rouge1_fmeasure", "rouge1", F_MEASURE, 3, False, True),
-        pytest.param("rouge2_precision", "rouge2", PRECISION, 4, False, False),
-        pytest.param("rouge2_recall", "rouge2", RECALL, 5, True, True),
-        pytest.param("rouge2_fmeasure", "rouge2", F_MEASURE, 6, True, False),
-        pytest.param("rougeL_precision", "rougeL", PRECISION, 6, False, True),
-        pytest.param("rougeL_recall", "rougeL", RECALL, 5, False, False),
-        pytest.param("rougeL_fmeasure", "rougeL", F_MEASURE, 3, True, True),
-        pytest.param("rougeLsum_precision", "rougeLsum", PRECISION, 2, True, False),
-        pytest.param("rougeLsum_recall", "rougeLsum", RECALL, 1, False, True),
-        pytest.param("rougeLsum_fmeasure", "rougeLsum", F_MEASURE, 8, False, False),
+        pytest.param("rouge1_precision", True, True),
+        pytest.param("rouge1_recall", True, False),
+        pytest.param("rouge1_fmeasure", False, True),
+        pytest.param("rouge2_precision", False, False),
+        pytest.param("rouge2_recall", True, True),
+        pytest.param("rouge2_fmeasure", True, False),
+        pytest.param("rougeL_precision", False, True),
+        pytest.param("rougeL_recall", False, False),
+        pytest.param("rougeL_fmeasure", True, True),
+        pytest.param("rougeLsum_precision", True, False),
+        pytest.param("rougeLsum_recall", False, True),
+        pytest.param("rougeLsum_fmeasure", False, False),
     ],
 )
-def test_rouge_metric_functional(
-    pl_rouge_metric_key, rouge_score_key, metric, decimal_places, use_stemmer, newline_sep
-):
-    rs_scores = _compute_rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
-    rs_output = round(rs_scores[rouge_score_key].mid[metric], decimal_places)
+def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer, newline_sep):
+    pl_output = rouge_score(PREDS, TARGETS, newline_sep=newline_sep, use_stemmer=use_stemmer)
 
-    pl_output = rouge_score(
-        PREDS, TARGETS, newline_sep=newline_sep, use_stemmer=use_stemmer, decimal_places=decimal_places
-    )
-
-    assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
+    assert torch.allclose(pl_output[pl_rouge_metric_key], PREDS_SPLIT_RESULTS[pl_rouge_metric_key])
 
 
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
+@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
     [
-        pytest.param("rouge1_precision", "rouge1", PRECISION, 1, True, True),
-        pytest.param("rouge1_recall", "rouge1", RECALL, 2, True, False),
-        pytest.param("rouge1_fmeasure", "rouge1", F_MEASURE, 3, False, True),
-        pytest.param("rouge2_precision", "rouge2", PRECISION, 4, False, False),
-        pytest.param("rouge2_recall", "rouge2", RECALL, 5, True, True),
-        pytest.param("rouge2_fmeasure", "rouge2", F_MEASURE, 6, True, False),
-        pytest.param("rougeL_precision", "rougeL", PRECISION, 6, False, True),
-        pytest.param("rougeL_recall", "rougeL", RECALL, 5, False, False),
-        pytest.param("rougeL_fmeasure", "rougeL", F_MEASURE, 3, True, True),
-        pytest.param("rougeLsum_precision", "rougeLsum", PRECISION, 2, True, False),
-        pytest.param("rougeLsum_recall", "rougeLsum", RECALL, 1, False, True),
-        pytest.param("rougeLsum_fmeasure", "rougeLsum", F_MEASURE, 8, False, False),
+        pytest.param("rouge1_precision", True, True),
+        pytest.param("rouge1_recall", True, False),
+        pytest.param("rouge1_fmeasure", False, True),
+        pytest.param("rouge2_precision", False, False),
+        pytest.param("rouge2_recall", True, True),
+        pytest.param("rouge2_fmeasure", True, False),
+        pytest.param("rougeL_precision", False, True),
+        pytest.param("rougeL_recall", False, False),
+        pytest.param("rougeL_fmeasure", True, True),
+        pytest.param("rougeLsum_precision", True, False),
+        pytest.param("rougeLsum_recall", False, True),
+        pytest.param("rougeLsum_fmeasure", False, False),
     ],
 )
-def test_rouge_metric_class(pl_rouge_metric_key, rouge_score_key, metric, decimal_places, use_stemmer, newline_sep):
-    scorer = RougeScorer(ROUGE_KEYS)
-    rs_scores = scorer.score(SINGLE_SENTENCE_EXAMPLE_PREDS, SINGLE_SENTENCE_EXAMPLE_TARGET)
-    rs_output = round(rs_scores[rouge_score_key][metric], decimal_places)
-
-    rouge = ROUGEScore(newline_sep=newline_sep, use_stemmer=use_stemmer, decimal_places=decimal_places)
+def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer, newline_sep):
+    rouge = ROUGEScore(newline_sep=newline_sep, use_stemmer=use_stemmer)
     pl_output = rouge([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET])
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
+    assert torch.allclose(pl_output[pl_rouge_metric_key], SINGLE_SENTENCE_EXAMPLE_RESULTS[pl_rouge_metric_key])
 
 
-@pytest.mark.skipif(not (_NLTK_AVAILABLE or _ROUGE_SCORE_AVAILABLE), reason="test requires nltk and rouge-score")
+@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "rouge_score_key", "metric", "decimal_places", "use_stemmer", "newline_sep"],
+    ["pl_rouge_metric_key", "use_stemmer", "newline_sep"],
     [
-        pytest.param("rouge1_precision", "rouge1", PRECISION, 1, True, True),
-        pytest.param("rouge1_recall", "rouge1", RECALL, 2, True, False),
-        pytest.param("rouge1_fmeasure", "rouge1", F_MEASURE, 3, False, True),
-        pytest.param("rouge2_precision", "rouge2", PRECISION, 4, False, False),
-        pytest.param("rouge2_recall", "rouge2", RECALL, 5, True, True),
-        pytest.param("rouge2_fmeasure", "rouge2", F_MEASURE, 6, True, False),
-        pytest.param("rougeL_precision", "rougeL", PRECISION, 6, False, True),
-        pytest.param("rougeL_recall", "rougeL", RECALL, 5, False, False),
-        pytest.param("rougeL_fmeasure", "rougeL", F_MEASURE, 3, True, True),
-        pytest.param("rougeLsum_precision", "rougeLsum", PRECISION, 2, True, False),
-        pytest.param("rougeLsum_recall", "rougeLsum", RECALL, 1, False, True),
-        pytest.param("rougeLsum_fmeasure", "rougeLsum", F_MEASURE, 8, False, False),
+        pytest.param("rouge1_precision", True, True),
+        pytest.param("rouge1_recall", True, False),
+        pytest.param("rouge1_fmeasure", False, True),
+        pytest.param("rouge2_precision", False, False),
+        pytest.param("rouge2_recall", True, True),
+        pytest.param("rouge2_fmeasure", True, False),
+        pytest.param("rougeL_precision", False, True),
+        pytest.param("rougeL_recall", False, False),
+        pytest.param("rougeL_fmeasure", True, True),
+        pytest.param("rougeLsum_precision", True, False),
+        pytest.param("rougeLsum_recall", False, True),
+        pytest.param("rougeLsum_fmeasure", False, False),
     ],
 )
-def test_rouge_metric_class_batches(
-    pl_rouge_metric_key, rouge_score_key, metric, decimal_places, use_stemmer, newline_sep
-):
-    rs_scores = _compute_rouge_score(BATCHES_RS_PREDS, BATCHES_RS_TARGETS, use_stemmer=use_stemmer)
-    rs_output = round(rs_scores[rouge_score_key].mid[metric], decimal_places)
-
-    rouge = ROUGEScore(newline_sep=newline_sep, use_stemmer=use_stemmer, decimal_places=decimal_places)
+def test_rouge_metric_class_batches(pl_rouge_metric_key, use_stemmer, newline_sep):
+    rouge = ROUGEScore(newline_sep=newline_sep, use_stemmer=use_stemmer)
     for batch in BATCHES:
         rouge.update(batch["preds"], batch["targets"])
     pl_output = rouge.compute()
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], tensor(rs_output, dtype=torch.float32))
+    assert torch.allclose(pl_output[pl_rouge_metric_key], BATCHES_RS_RESULTS[pl_rouge_metric_key])
 
 
 def test_rouge_metric_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
-    if not (_NLTK_AVAILABLE and _ROUGE_SCORE_AVAILABLE):
+    if not _NLTK_AVAILABLE:
         with pytest.raises(
             ValueError,
-            match="ROUGE metric requires that both nltk and rouge-score is installed."
-            "Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`",
+            match="ROUGE metric requires that nltk is installed."
+            "Either as `pip install torchmetrics[text]` or `pip install nltk`",
         ):
             ROUGEScore()
 
