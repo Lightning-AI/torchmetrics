@@ -74,11 +74,11 @@ def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool
     ],
 )
 def test_rouge_metric_functional_single_sentence(pl_rouge_metric_key, use_stemmer):
+    rouge_level, metric = pl_rouge_metric_key.split("_")
+
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
     rs_scores = scorer.score(SINGLE_SENTENCE_EXAMPLE_TARGET, SINGLE_SENTENCE_EXAMPLE_PREDS)
-    rs_result = torch.tensor(
-        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]], pl_rouge_metric_key.split("_")[1]), dtype=torch.float32
-    )
+    rs_result = torch.tensor(getattr(rs_scores[rouge_level], metric), dtype=torch.float32)
 
     pl_output = rouge_score([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET], use_stemmer=use_stemmer)
 
@@ -104,11 +104,10 @@ def test_rouge_metric_functional_single_sentence(pl_rouge_metric_key, use_stemme
     ],
 )
 def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer):
+    rouge_level, metric = pl_rouge_metric_key.split("_")
+
     rs_scores = _compute_rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
-    rs_result = torch.tensor(
-        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]].mid, pl_rouge_metric_key.split("_")[1]),
-        dtype=torch.float32,
-    )
+    rs_result = torch.tensor(getattr(rs_scores[rouge_level].mid, metric), dtype=torch.float32,)
 
     pl_output = rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
 
@@ -134,11 +133,11 @@ def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer):
     ],
 )
 def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer):
+    rouge_level, metric = pl_rouge_metric_key.split("_")
+
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
     rs_scores = scorer.score(SINGLE_SENTENCE_EXAMPLE_TARGET, SINGLE_SENTENCE_EXAMPLE_PREDS)
-    rs_result = torch.tensor(
-        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]], pl_rouge_metric_key.split("_")[1]), dtype=torch.float32
-    )
+    rs_result = torch.tensor(getattr(rs_scores[rouge_level], metric), dtype=torch.float32)
 
     rouge = ROUGEScore(use_stemmer=use_stemmer)
     pl_output = rouge([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET])
@@ -165,11 +164,10 @@ def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer):
     ],
 )
 def test_rouge_metric_class_batches(pl_rouge_metric_key, use_stemmer):
+    rouge_level, metric = pl_rouge_metric_key.split("_")
+
     rs_scores = _compute_rouge_score(BATCHES_RS_PREDS, BATCHES_RS_TARGETS, use_stemmer=use_stemmer)
-    rs_result = torch.tensor(
-        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]].mid, pl_rouge_metric_key.split("_")[1]),
-        dtype=torch.float32,
-    )
+    rs_result = torch.tensor(getattr(rs_scores[rouge_level].mid, metric), dtype=torch.float32)
 
     rouge = ROUGEScore(use_stemmer=use_stemmer)
     for batch in BATCHES:
