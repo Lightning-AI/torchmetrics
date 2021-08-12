@@ -42,6 +42,7 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 @dataclass
 class _RougeScore:
     """Generic RougeScore dataclass containing precision, recall and fmeasure values."""
+
     precision: float = 0.0
     recall: float = 0.0
     fmeasure: float = 0.0
