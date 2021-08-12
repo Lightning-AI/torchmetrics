@@ -57,8 +57,8 @@ def _add_newline_to_end_of_each_sentence(x: str) -> str:
 
 
 def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _RougeScore:
-    """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer predicted
-    and target sentences.
+    """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer
+    predicted and target sentences.
 
     Args:
         hits_or_lcs:
@@ -79,7 +79,7 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _Rouge
 
 def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
     """Common DP algorithm to compute the length of the longest common subsequence.
-    
+
     Args:
         pred_tokens:
             A tokenized predicted sentence.
@@ -96,18 +96,16 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
     return LCS[-1][-1]
 
 
-def _normalize_text(text: str, stemmer: Optional['nltk.stem.porter.PorterStemmer'] = None) -> str:
-    """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be used
-    to strip word suffixes to improve matching.
-    The text normalization follows the implemantion from
+def _normalize_text(text: str, stemmer: Optional["nltk.stem.porter.PorterStemmer"] = None) -> str:
+    """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
+    used to strip word suffixes to improve matching. The text normalization follows the implemantion from
     https://github.com/google-research/google-research/blob/master/rouge/tokenize.py.
 
-        Args:
-            text:
-                An input sentence.
-            stemmer:
-                Porter stemmer instance to strip word suffixes to improve matching.
-
+    Args:
+        text:
+            An input sentence.
+        stemmer:
+            Porter stemmer instance to strip word suffixes to improve matching.
     """
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
     if stemmer:
@@ -163,7 +161,7 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: Tuple[Union[int, str], ...],
-    stemmer: Optional['nltk.stem.porter.PorterStemmer'] = None,
+    stemmer: Optional["nltk.stem.porter.PorterStemmer"] = None,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -192,7 +190,8 @@ def _rouge_score_update(
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(
-                _rouge_n_score(pred, target, rouge_key) if isinstance(rouge_key, int)
+                _rouge_n_score(pred, target, rouge_key)
+                if isinstance(rouge_key, int)
                 else _rouge_l_score(
                     pred if rouge_key != "Lsum" else pred_sum, target if rouge_key != "Lsum" else target_sum
                 )
@@ -210,9 +209,7 @@ def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[_RougeScor
     results = {}
     # Obtain mean scores for individual rouge metrics
     for rouge_key, scores in sentence_results.items():
-        res = torch.tensor(
-            [(score.precision, score.recall, score.fmeasure) for score in scores]
-        ).mean(0)
+        res = torch.tensor([(score.precision, score.recall, score.fmeasure) for score in scores]).mean(0)
         results[f"rouge{rouge_key}_precision"] = res[0]
         results[f"rouge{rouge_key}_recall"] = res[1]
         results[f"rouge{rouge_key}_fmeasure"] = res[2]
@@ -304,5 +301,5 @@ def _tokenize(text: str, n_gram: int) -> List[str]:
             N-gram size to return.
     """
     tokens = re.split(r"\s+", text)
-    n_grams_list = [' '.join(tokens[i:i + n_gram]) for i in range(len(tokens) - n_gram + 1)]
+    n_grams_list = [" ".join(tokens[i : i + n_gram]) for i in range(len(tokens) - n_gram + 1)]
     return n_grams_list

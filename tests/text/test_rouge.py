@@ -22,7 +22,6 @@ from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-
 ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
 SINGLE_SENTENCE_EXAMPLE_PREDS = "The quick brown fox jumps over the lazy dog"
