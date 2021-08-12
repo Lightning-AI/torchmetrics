@@ -14,7 +14,7 @@
 import re
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -41,6 +41,7 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 
 @dataclass
 class _RougeScore:
+    """Generic RougeScore dataclass containing precision, recall and fmeasure values."""
     precision: float = 0.0
     recall: float = 0.0
     fmeasure: float = 0.0
@@ -96,7 +97,7 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
     return LCS[-1][-1]
 
 
-def _normalize_text(text: str, stemmer: Optional["nltk.stem.porter.PorterStemmer"] = None) -> str:
+def _normalize_text(text: str, stemmer: Optional[Any] = None) -> str:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from
     https://github.com/google-research/google-research/blob/master/rouge/tokenize.py.
@@ -126,7 +127,7 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     """
     pred_tokenized, target_tokenized = _tokenize(pred, n_gram), _tokenize(target, n_gram)
     pred_len, target_len = len(pred_tokenized), len(target_tokenized)
-    if pred_len == 0 or target_len == 0:
+    if 0 in (pred_len, target_len):
         return _RougeScore()
 
     pred_counter: Dict[str, int] = defaultdict(int)
@@ -161,8 +162,8 @@ def _rouge_l_score(pred: str, target: str) -> _RougeScore:
 def _rouge_score_update(
     preds: List[str],
     targets: List[str],
-    rouge_keys_values: List[Union[int, str], ...],
-    stemmer: Optional["nltk.stem.porter.PorterStemmer"] = None,
+    rouge_keys_values: List[Union[int, str]],
+    stemmer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -268,7 +269,7 @@ def rouge_score(
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
     """
 
-    if not (_NLTK_AVAILABLE):
+    if not _NLTK_AVAILABLE:
         raise ValueError(
             "ROUGE metric requires that nltk is installed."
             " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"

@@ -159,9 +159,9 @@ def test_rouge_metric_class_batches(pl_rouge_metric_key, use_stemmer):
     rouge = ROUGEScore(use_stemmer=use_stemmer)
     for batch, results in zip(BATCHES, BATCHES_RESULTS):
         rouge.update(batch["preds"], batch["targets"])
-    pl_output = rouge.compute()
+        pl_output = rouge.compute()
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], results[pl_rouge_metric_key])
+        assert torch.allclose(pl_output[pl_rouge_metric_key], results[pl_rouge_metric_key])
 
 
 def test_rouge_metric_raises_errors_and_warnings():

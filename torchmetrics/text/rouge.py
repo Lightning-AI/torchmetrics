@@ -16,7 +16,12 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.rouge import ALLOWED_ROUGE_KEYS, _rouge_score_compute, _rouge_score_update
+from torchmetrics.functional.text.rouge import (
+    ALLOWED_ROUGE_KEYS,
+    _rouge_score_compute,
+    _rouge_score_update,
+    _RougeScore,
+)
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
@@ -114,6 +119,7 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
+        self.sentence_results: Dict[Union[int, str], List[_RougeScore]]
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
         """Compute rouge scores.
