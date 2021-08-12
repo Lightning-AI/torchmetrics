@@ -275,7 +275,6 @@ def rouge_score(
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
     """
 
-    # Conditional import
     if use_stemmer:
         if not _NLTK_AVAILABLE:
             raise ValueError(

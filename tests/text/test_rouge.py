@@ -11,70 +11,48 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from typing import List
+
 import pytest
 import torch
 
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
-from torchmetrics.utilities.imports import _NLTK_AVAILABLE
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
+
+if _ROUGE_SCORE_AVAILABLE:
+    from rouge_score.rouge_scorer import RougeScorer
+    from rouge_score.scoring import BootstrapAggregator
+else:
+    RougeScorer, BootstrapAggregator = object, object
 
 ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
 SINGLE_SENTENCE_EXAMPLE_PREDS = "The quick brown fox jumps over the lazy dog"
 SINGLE_SENTENCE_EXAMPLE_TARGET = "The quick brown dog jumps on the log."
 
-SINGLE_SENTENCE_EXAMPLE_RESULTS = {
-    "rouge1_precision": torch.tensor(0.6666666666666666),
-    "rouge1_recall": torch.tensor(0.75),
-    "rouge1_fmeasure": torch.tensor(0.7058823529411765),
-    "rouge2_precision": torch.tensor(0.25),
-    "rouge2_recall": torch.tensor(0.2857142857142857),
-    "rouge2_fmeasure": torch.tensor(0.26666666666666666),
-    "rougeL_precision": torch.tensor(0.5555555555555556),
-    "rougeL_recall": torch.tensor(0.625),
-    "rougeL_fmeasure": torch.tensor(0.5882352941176471),
-    "rougeLsum_precision": torch.tensor(0.5555555555555556),
-    "rougeLsum_recall": torch.tensor(0.625),
-    "rougeLsum_fmeasure": torch.tensor(0.5882352941176471),
-}
-
 PREDS = "My name is John".split()
 TARGETS = "Is your name John".split()
 
-PREDS_SPLIT_RESULTS = {
-    "rouge1_precision": torch.tensor(0.25),
-    "rouge1_recall": torch.tensor(0.25),
-    "rouge1_fmeasure": torch.tensor(0.25),
-    "rouge2_precision": torch.tensor(0.0),
-    "rouge2_recall": torch.tensor(0.0),
-    "rouge2_fmeasure": torch.tensor(0.0),
-    "rougeL_precision": torch.tensor(0.25),
-    "rougeL_recall": torch.tensor(0.25),
-    "rougeL_fmeasure": torch.tensor(0.25),
-    "rougeLsum_precision": torch.tensor(0.25),
-    "rougeLsum_recall": torch.tensor(0.25),
-    "rougeLsum_fmeasure": torch.tensor(0.25),
-}
+
+BATCHES_RS_PREDS = [SINGLE_SENTENCE_EXAMPLE_PREDS]
+BATCHES_RS_PREDS.extend(PREDS)
+BATCHES_RS_TARGETS = [SINGLE_SENTENCE_EXAMPLE_TARGET]
+BATCHES_RS_TARGETS.extend(TARGETS)
 
 BATCHES = [
     dict(preds=[SINGLE_SENTENCE_EXAMPLE_PREDS], targets=[SINGLE_SENTENCE_EXAMPLE_TARGET]),
     dict(preds=PREDS, targets=TARGETS),
 ]
 
-BATCHES_RESULTS = {
-    "rouge1_precision": torch.tensor(0.3333333333333333),
-    "rouge1_recall": torch.tensor(0.35),
-    "rouge1_fmeasure": torch.tensor(0.3411764705882353),
-    "rouge2_precision": torch.tensor(0.05),
-    "rouge2_recall": torch.tensor(0.05714285714285714),
-    "rouge2_fmeasure": torch.tensor(0.05333333333333333),
-    "rougeL_precision": torch.tensor(0.3111111111111111),
-    "rougeL_recall": torch.tensor(0.325),
-    "rougeL_fmeasure": torch.tensor(0.31764705882352945),
-    "rougeLsum_precision": torch.tensor(0.3111111111111111),
-    "rougeLsum_recall": torch.tensor(0.325),
-    "rougeLsum_fmeasure": torch.tensor(0.31764705882352945),
-}
+
+def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool):
+    scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
+    aggregator = BootstrapAggregator()
+    for pred, target in zip(preds, targets):
+        aggregator.add_scores(scorer.score(target, pred))
+    return aggregator.aggregate()
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
@@ -96,9 +74,15 @@ BATCHES_RESULTS = {
     ],
 )
 def test_rouge_metric_functional_single_sentence(pl_rouge_metric_key, use_stemmer):
+    scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
+    rs_scores = scorer.score(SINGLE_SENTENCE_EXAMPLE_TARGET, SINGLE_SENTENCE_EXAMPLE_PREDS)
+    rs_result = torch.tensor(
+        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]], pl_rouge_metric_key.split("_")[1]), dtype=torch.float32
+    )
+
     pl_output = rouge_score([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET], use_stemmer=use_stemmer)
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], SINGLE_SENTENCE_EXAMPLE_RESULTS[pl_rouge_metric_key])
+    assert torch.allclose(pl_output[pl_rouge_metric_key], rs_result)
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
@@ -120,9 +104,15 @@ def test_rouge_metric_functional_single_sentence(pl_rouge_metric_key, use_stemme
     ],
 )
 def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer):
+    rs_scores = _compute_rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
+    rs_result = torch.tensor(
+        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]].mid, pl_rouge_metric_key.split("_")[1]),
+        dtype=torch.float32,
+    )
+
     pl_output = rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], PREDS_SPLIT_RESULTS[pl_rouge_metric_key])
+    assert torch.allclose(pl_output[pl_rouge_metric_key], rs_result)
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
@@ -144,10 +134,16 @@ def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer):
     ],
 )
 def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer):
+    scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
+    rs_scores = scorer.score(SINGLE_SENTENCE_EXAMPLE_TARGET, SINGLE_SENTENCE_EXAMPLE_PREDS)
+    rs_result = torch.tensor(
+        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]], pl_rouge_metric_key.split("_")[1]), dtype=torch.float32
+    )
+
     rouge = ROUGEScore(use_stemmer=use_stemmer)
     pl_output = rouge([SINGLE_SENTENCE_EXAMPLE_PREDS], [SINGLE_SENTENCE_EXAMPLE_TARGET])
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], SINGLE_SENTENCE_EXAMPLE_RESULTS[pl_rouge_metric_key])
+    assert torch.allclose(pl_output[pl_rouge_metric_key], rs_result)
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
@@ -169,12 +165,18 @@ def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer):
     ],
 )
 def test_rouge_metric_class_batches(pl_rouge_metric_key, use_stemmer):
+    rs_scores = _compute_rouge_score(BATCHES_RS_PREDS, BATCHES_RS_TARGETS, use_stemmer=use_stemmer)
+    rs_result = torch.tensor(
+        getattr(rs_scores[pl_rouge_metric_key.split("_")[0]].mid, pl_rouge_metric_key.split("_")[1]),
+        dtype=torch.float32,
+    )
+
     rouge = ROUGEScore(use_stemmer=use_stemmer)
     for batch in BATCHES:
         rouge.update(batch["preds"], batch["targets"])
     pl_output = rouge.compute()
 
-    assert torch.allclose(pl_output[pl_rouge_metric_key], BATCHES_RESULTS[pl_rouge_metric_key])
+    assert torch.allclose(pl_output[pl_rouge_metric_key], rs_result)
 
 
 def test_rouge_metric_raises_errors_and_warnings():
