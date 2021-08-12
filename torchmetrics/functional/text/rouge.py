@@ -39,8 +39,7 @@ def _add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if not _NLTK_AVAILABLE:
         raise ValueError(
-            "ROUGE-Lsum calculation requires that nltk is installed."
-            " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
+            "ROUGE-Lsum calculation requires that nltk is installed. Use `pip install nltk`."
         )
     import nltk
 
@@ -277,8 +276,7 @@ def rouge_score(
     if use_stemmer:
         if not _NLTK_AVAILABLE:
             raise ValueError(
-                "Stemmer requires that nltk is installed."
-                " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
+                "Stemmer requires that nltk is installed. Use `pip install nltk`."
             )
         import nltk
 
