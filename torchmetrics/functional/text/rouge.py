@@ -13,7 +13,6 @@
 # limitations under the License.
 import re
 from collections import defaultdict
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -39,15 +38,6 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 }
 
 
-@dataclass
-class _RougeScore:
-    """Generic RougeScore dataclass containing precision, recall and fmeasure values."""
-
-    precision: float = 0.0
-    recall: float = 0.0
-    fmeasure: float = 0.0
-
-
 def _add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if _NLTK_AVAILABLE:
@@ -58,7 +48,7 @@ def _add_newline_to_end_of_each_sentence(x: str) -> str:
     return "\n".join(nltk.sent_tokenize(x))
 
 
-def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _RougeScore:
+def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[str, float]:
     """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer
     predicted and target sentences.
 
@@ -73,10 +63,10 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _Rouge
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
     if precision == recall == 0.0:
-        return _RougeScore()
+        return dict(precision=0.0, recall=0.0, fmeasure=0.0)
 
     fmeasure = 2 * precision * recall / (precision + recall)
-    return _RougeScore(precision, recall, fmeasure)
+    return dict(precision=precision, recall=recall, fmeasure=fmeasure)
 
 
 def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
@@ -115,7 +105,7 @@ def _normalize_text(text: str, stemmer: Optional[Any] = None) -> str:
     return text.strip()  # to ensure there are no whitespaces as the end of sentence
 
 
-def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
+def _rouge_n_score(pred: str, target: str, n_gram: int) -> Dict[str, float]:
     """This computes precision, recall and F1 score for the Rouge-N metric.
 
     Args:
@@ -129,7 +119,7 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     pred_tokenized, target_tokenized = _tokenize(pred, n_gram), _tokenize(target, n_gram)
     pred_len, target_len = len(pred_tokenized), len(target_tokenized)
     if 0 in (pred_len, target_len):
-        return _RougeScore()
+        return dict(precision=0.0, recall=0.0, fmeasure=0.0)
 
     pred_counter: Dict[str, int] = defaultdict(int)
     target_counter: Dict[str, int] = defaultdict(int)
@@ -142,7 +132,7 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     return _compute_metrics(hits, pred_len, target_len)
 
 
-def _rouge_l_score(pred: str, target: str) -> _RougeScore:
+def _rouge_l_score(pred: str, target: str) -> Dict[str, float]:
     """This computes precision, recall and F1 score for the Rouge-L or Rouge-LSum metric.
 
     Args:
@@ -154,7 +144,7 @@ def _rouge_l_score(pred: str, target: str) -> _RougeScore:
     pred_tokenized, target_tokenized = _tokenize(pred, 1), _tokenize(target, 1)
     pred_len, target_len = len(pred_tokenized), len(target_tokenized)
     if 0 in (pred_len, target_len):
-        return _RougeScore()
+        return dict(precision=0.0, recall=0.0, fmeasure=0.0)
 
     lcs = _lcs(pred_tokenized, target_tokenized)
     return _compute_metrics(lcs, pred_len, target_len)
@@ -164,9 +154,9 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: List[Union[int, str]],
-    results: Optional[Dict[Union[int, str], List[_RougeScore]]] = None,
+    results: Optional[Dict[Union[int, str], List[Dict[str, float]]]] = None,
     stemmer: Optional[Any] = None,
-) -> Dict[Union[int, str], List[_RougeScore]]:
+) -> Dict[Union[int, str], List[Dict[str, float]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
@@ -186,10 +176,10 @@ def _rouge_score_update(
         >>> pprint(
         ...     _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
         ... )  # doctest: +NORMALIZE_WHITESPACE +SKIP
-        {'1': _RougeScore(precision=0.25, recall=0.25, fmeasure=0.25),
-         '2': _RougeScore(precision=0.0, recall=0.0, fmeasure=0.0),
-         '3': _RougeScore(precision=0.0, recall=0.0, fmeasure=0.0),
-         'L': _RougeScore(precision=0.25, recall=0.25, fmeasure=0.25)}
+        {'1': {'precision': 0.25, 'recall': 0.25, 'fmeasure': 0.25},
+         '2': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
+         '3': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
+         'L': {'precision': 0.25, 'recall': 0.25, 'fmeasure': 0.25}}
     """
     results = results if results is not None else {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred_raw, target_raw in zip(preds, targets):
@@ -210,7 +200,9 @@ def _rouge_score_update(
     return results
 
 
-def _rouge_score_compute(sentence_results: Optional[Dict[Union[int, str], List[_RougeScore]]]) -> Dict[str, Tensor]:
+def _rouge_score_compute(
+    sentence_results: Optional[Dict[Union[int, str], List[Dict[str, float]]]]
+) -> Dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
@@ -222,7 +214,7 @@ def _rouge_score_compute(sentence_results: Optional[Dict[Union[int, str], List[_
     if sentence_results is None:
         return results
     for rouge_key, scores in sentence_results.items():
-        res = torch.tensor([(score.precision, score.recall, score.fmeasure) for score in scores]).mean(0)
+        res = torch.tensor([(score["precision"], score["recall"], score["fmeasure"]) for score in scores]).mean(0)
         results[f"rouge{rouge_key}_precision"] = res[0]
         results[f"rouge{rouge_key}_recall"] = res[1]
         results[f"rouge{rouge_key}_fmeasure"] = res[2]
