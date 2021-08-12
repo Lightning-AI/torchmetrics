@@ -164,7 +164,7 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: List[Union[int, str]],
-    results: Dict[Union[int, str], List[_RougeScore]] = dict(),
+    results: Optional[Dict[Union[int, str], List[_RougeScore]]] = None,
     stemmer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
@@ -191,7 +191,7 @@ def _rouge_score_update(
          '3': _RougeScore(precision=0.0, recall=0.0, fmeasure=0.0),
          'L': _RougeScore(precision=0.25, recall=0.25, fmeasure=0.25)}
     """
-    results = results if bool(results) else {rouge_key: [] for rouge_key in rouge_keys_values}
+    results = results if results is not None else {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred_raw, target_raw in zip(preds, targets):
         pred, target = _normalize_text(pred_raw, stemmer), _normalize_text(target_raw, stemmer)
         # rougeLsum expects "\n" separated sentences within a summary
@@ -210,15 +210,17 @@ def _rouge_score_update(
     return results
 
 
-def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[_RougeScore]]) -> Dict[str, Tensor]:
+def _rouge_score_compute(sentence_results: Optional[Dict[Union[int, str], List[_RougeScore]]]) -> Dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
         sentence_results:
             Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
     """
-    results = {}
+    results: Dict[str, Tensor] = {}
     # Obtain mean scores for individual rouge metrics
+    if sentence_results is None:
+        return results
     for rouge_key, scores in sentence_results.items():
         res = torch.tensor([(score.precision, score.recall, score.fmeasure) for score in scores]).mean(0)
         results[f"rouge{rouge_key}_precision"] = res[0]

@@ -119,7 +119,7 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
-        self.sentence_results: Dict[Union[int, str], List[_RougeScore]] = dict()
+        self.sentence_results: Optional[Dict[Union[int, str], List[_RougeScore]]] = None
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
         """Compute rouge scores.
