@@ -153,7 +153,7 @@ def _rouge_l_score(pred: str, target: str) -> _RougeScore:
     """
     pred_tokenized, target_tokenized = _tokenize(pred, 1), _tokenize(target, 1)
     pred_len, target_len = len(pred_tokenized), len(target_tokenized)
-    if pred_len == 0 or target_len == 0:
+    if 0 in (pred_len, target_len):
         return _RougeScore()
 
     lcs = _lcs(pred_tokenized, target_tokenized)
