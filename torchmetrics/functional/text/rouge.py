@@ -14,7 +14,7 @@
 import re
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -57,8 +57,8 @@ def _add_newline_to_end_of_each_sentence(x: str) -> str:
 
 
 def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _RougeScore:
-    """This computes precision, recall and F1 score based on hits/lcs, and the length lists of predicted and target
-    sentences.
+    """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer predicted
+    and target sentences.
 
     Args:
         hits_or_lcs:
@@ -78,7 +78,14 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> _Rouge
 
 
 def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
-    """General DP algorithm to compute the length of the longest common subsequence."""
+    """Common DP algorithm to compute the length of the longest common subsequence.
+    
+    Args:
+        pred_tokens:
+            A tokenized predicted sentence.
+        target_toknes:
+            A tokenized target sentence.
+    """
     LCS = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
         for j in range(1, len(pred_tokens) + 1):
@@ -89,8 +96,8 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
     return LCS[-1][-1]
 
 
-def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str:
-    """Rouge score should be calculated only over lowercased words and digits. Optionally, Pprter stemmer can be used
+def _normalize_text(text: str, stemmer: Optional['nltk.stem.porter.PorterStemmer'] = None) -> str:
+    """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be used
     to strip word suffixes to improve matching.
     The text normalization follows the implemantion from
     https://github.com/google-research/google-research/blob/master/rouge/tokenize.py.
@@ -98,8 +105,8 @@ def _normalize_text(text: str, stemmer: 'nltk.stem.porter.PorterStemmer') -> str
         Args:
             text:
                 An input sentence.
-            use_stemmer:
-                Use Porter stemmer to strip word suffixes to improve matching.
+            stemmer:
+                Porter stemmer instance to strip word suffixes to improve matching.
 
     """
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
@@ -156,7 +163,7 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: Tuple[Union[int, str], ...],
-    stemmer: bool = False,
+    stemmer: Optional['nltk.stem.porter.PorterStemmer'] = None,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -167,8 +174,8 @@ def _rouge_score_update(
             An iterable of target sentences.
         rouge_keys_values:
             List of N-grams/'L'/'Lsum' arguments.
-        use_stemmer:
-            Use Porter stemmer to strip word suffixes to improve matching.
+        stemmer:
+            Porter stemmer instance to strip word suffixes to improve matching.
 
     Example:
         >>> targets = "Is your name John".split()
@@ -201,6 +208,7 @@ def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[_RougeScor
             Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
     """
     results = {}
+    # Obtain mean scores for individual rouge metrics
     for rouge_key, scores in sentence_results.items():
         res = torch.tensor(
             [(score.precision, score.recall, score.fmeasure) for score in scores]
@@ -287,7 +295,7 @@ def rouge_score(
 
 
 def _tokenize(text: str, n_gram: int) -> List[str]:
-    """Retun the list of N-grams from the input text.
+    """Retun the list of a tokenized input text, where tokens are represented by N-grams.
 
     Args:
         text:

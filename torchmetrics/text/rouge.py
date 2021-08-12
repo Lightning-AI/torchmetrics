@@ -28,7 +28,7 @@ class ROUGEScore(Metric):
     Args:
         newline_sep:
             New line separate the inputs.
-            This argument has not been in used any more. It is deprecated in v0.6 and will be removed in v0.7.
+            This argument has not been in use any more. It is deprecated in v0.6 and will be removed in v0.7.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
@@ -36,7 +36,7 @@ class ROUGEScore(Metric):
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
         decimal_places:
             The number of digits to round the computed the values to.
-            This argument has not been in used any more. It is deprecated in v0.6 and will be removed in v0.7.
+            This argument has not been in usd any more. It is deprecated in v0.6 and will be removed in v0.7.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
