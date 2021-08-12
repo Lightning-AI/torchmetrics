@@ -107,7 +107,10 @@ def test_rouge_metric_functional(pl_rouge_metric_key, use_stemmer):
     rouge_level, metric = pl_rouge_metric_key.split("_")
 
     rs_scores = _compute_rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
-    rs_result = torch.tensor(getattr(rs_scores[rouge_level].mid, metric), dtype=torch.float32,)
+    rs_result = torch.tensor(
+        getattr(rs_scores[rouge_level].mid, metric),
+        dtype=torch.float32,
+    )
 
     pl_output = rouge_score(PREDS, TARGETS, use_stemmer=use_stemmer)
 
