@@ -24,7 +24,7 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 if _NLTK_AVAILABLE:
     import nltk
 
-ALLOWED_ROUGE_KEYS = {
+ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
     "rouge1": 1,
     "rouge2": 2,
     "rouge3": 3,
@@ -129,7 +129,8 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> _RougeScore:
     if pred_len == 0 or target_len == 0:
         return _RougeScore()
 
-    pred_counter, target_counter = defaultdict(int), defaultdict(int)
+    pred_counter: Dict[str, int] = defaultdict(int)
+    target_counter: Dict[str, int] = defaultdict(int)
     for w in pred_tokenized:
         pred_counter[w] += 1
     for w in target_tokenized:
@@ -160,7 +161,7 @@ def _rouge_l_score(pred: str, target: str) -> _RougeScore:
 def _rouge_score_update(
     preds: List[str],
     targets: List[str],
-    rouge_keys_values: Tuple[Union[int, str], ...],
+    rouge_keys_values: List[Union[int, str], ...],
     stemmer: Optional["nltk.stem.porter.PorterStemmer"] = None,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
