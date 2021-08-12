@@ -20,7 +20,6 @@ from torch import Tensor
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-
 ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
     "rouge1": 1,
     "rouge2": 2,
