@@ -183,10 +183,7 @@ def _rouge_score_update(
         >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
         >>> from pprint import pprint
-        >>> pprint(rouge_score(preds, targets))
-        >>> pprint(
-        >>>    _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L']
-        >>> )  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> pprint(_rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'1': _RougeScore(precision=0.25, recall=0.25, fmeasure=0.25),
          '2': _RougeScore(precision=0.0, recall=0.0, fmeasure=0.0),
          '3': _RougeScore(precision=0.0, recall=0.0, fmeasure=0.0),
