@@ -20,8 +20,6 @@ from torch import Tensor
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-if _NLTK_AVAILABLE:
-    import nltk
 
 ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
     "rouge1": 1,
@@ -40,11 +38,16 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
 
 def _add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
-    if _NLTK_AVAILABLE:
-        nltk.download("punkt", quiet=True, force=False)
+    if not _NLTK_AVAILABLE:
+        raise ValueError(
+            "ROUGE-Lsum calculation requires that nltk is installed."
+            " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
+        )
+    import nltk
+
+    nltk.download("punkt", quiet=True, force=False)
 
     re.sub("<n>", "", x)  # remove pegasus newline char
-    assert nltk, "nltk must be installed to separate newlines between sentences. (pip install nltk)"
     return "\n".join(nltk.sent_tokenize(x))
 
 
@@ -272,12 +275,16 @@ def rouge_score(
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
     """
 
-    if not _NLTK_AVAILABLE:
-        raise ValueError(
-            "ROUGE metric requires that nltk is installed."
-            " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
-        )
-    stemmer = nltk.stem.porter.PorterStemmer() if _NLTK_AVAILABLE and use_stemmer else None
+    # Conditional import
+    if use_stemmer:
+        if not _NLTK_AVAILABLE:
+            raise ValueError(
+                "Stemmer requires that nltk is installed."
+                " Either as `pip install torchmetrics[text]` or `pip install nltk rouge-score`"
+            )
+        import nltk
+
+    stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
 
     if not isinstance(rouge_keys, tuple):
         rouge_keys = tuple([rouge_keys])
