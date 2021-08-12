@@ -61,7 +61,20 @@ BATCHES = [
     dict(preds=PREDS, targets=TARGETS),
 ]
 
-BATCHES_RESULTS = [SINGLE_SENTENCE_EXAMPLE_RESULTS, PREDS_SPLIT_RESULTS]
+BATCHES_RESULTS = {
+    "rouge1_precision": torch.tensor(0.3333333333333333),
+    "rouge1_recall": torch.tensor(0.35),
+    "rouge1_fmeasure": torch.tensor(0.3411764705882353),
+    "rouge2_precision": torch.tensor(0.05),
+    "rouge2_recall": torch.tensor(0.05714285714285714),
+    "rouge2_fmeasure": torch.tensor(0.05333333333333333),
+    "rougeL_precision": torch.tensor(0.3111111111111111),
+    "rougeL_recall": torch.tensor(0.325),
+    "rougeL_fmeasure": torch.tensor(0.31764705882352945),
+    "rougeLsum_precision": torch.tensor(0.3111111111111111),
+    "rougeLsum_recall": torch.tensor(0.325),
+    "rougeLsum_fmeasure": torch.tensor(0.31764705882352945),
+}
 
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
@@ -157,11 +170,11 @@ def test_rouge_metric_class(pl_rouge_metric_key, use_stemmer):
 )
 def test_rouge_metric_class_batches(pl_rouge_metric_key, use_stemmer):
     rouge = ROUGEScore(use_stemmer=use_stemmer)
-    for batch, results in zip(BATCHES, BATCHES_RESULTS):
+    for batch in BATCHES:
         rouge.update(batch["preds"], batch["targets"])
-        pl_output = rouge.compute()
+    pl_output = rouge.compute()
 
-        assert torch.allclose(pl_output[pl_rouge_metric_key], results[pl_rouge_metric_key])
+    assert torch.allclose(pl_output[pl_rouge_metric_key], BATCHES_RESULTS[pl_rouge_metric_key])
 
 
 def test_rouge_metric_raises_errors_and_warnings():

@@ -164,6 +164,7 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: List[Union[int, str]],
+    results: Dict[Union[int, str], List[_RougeScore]] = dict(),
     stemmer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[_RougeScore]]:
     """Update the rouge score with the current set of predicted and target sentences.
@@ -181,9 +182,17 @@ def _rouge_score_update(
     Example:
         >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
-        >>> _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
+        >>> from pprint import pprint
+        >>> pprint(rouge_score(preds, targets))  
+        >>> pprint(
+        >>>    _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L']
+        >>> )  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        {'1': _RougeScore(precision=0.25, recall=0.25, fmeasure=0.25),
+         '2': _RougeScore(precision=0.0, recall=0.0, fmeasure=0.0),
+         '3': _RougeScore(precision=0.0, recall=0.0, fmeasure=0.0),
+         'L': _RougeScore(precision=0.25, recall=0.25, fmeasure=0.25)}
     """
-    results: Dict[Union[int, str], List[_RougeScore]] = {rouge_key: [] for rouge_key in rouge_keys_values}
+    results = results if bool(results) else {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred_raw, target_raw in zip(preds, targets):
         pred, target = _normalize_text(pred_raw, stemmer), _normalize_text(target_raw, stemmer)
         # rougeLsum expects "\n" separated sentences within a summary
@@ -290,7 +299,7 @@ def rouge_score(
     if isinstance(targets, str):
         targets = [targets]
 
-    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, stemmer)
+    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, stemmer=stemmer)
     return _rouge_score_compute(sentence_results)
 
 
