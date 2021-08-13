@@ -98,12 +98,10 @@ class ROUGEScore(Metric):
         # TODO: Add deprecated warning for newline_sep argument.
         # TODO: Add deprecated warning for decimal_places argument as no other metric uses this kind of argument.
 
-        if not _NLTK_AVAILABLE:
-            raise ValueError(
-                "ROUGE metric requires that nltk is installed."
-                " Either as `pip install torchmetrics[text]` or `pip install nltk`"
-            )
-        import nltk
+        if use_stemmer or "rougeLsum" in rouge_keys:
+            if not _NLTK_AVAILABLE:
+                raise ValueError("Stemmer and/or `rougeLsum` requires that nltk is installed. Use `pip install nltk`.")
+            import nltk
 
         if not isinstance(rouge_keys, tuple):
             rouge_keys = tuple([rouge_keys])
