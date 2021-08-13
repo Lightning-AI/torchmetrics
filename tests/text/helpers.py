@@ -36,12 +36,14 @@ try:
 except RuntimeError:
     pass
 
+TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]]]
+
 
 def _class_test(
     rank: int,
     worldsize: int,
-    preds: Union[Sequence[str], Sequence[Sequence[str]]],
-    target: Union[Sequence[str], Sequence[Sequence[str]]],
+    preds: TEXT_METRIC_INPUT,
+    targets: TEXT_METRIC_INPUT,
     metric_class: Metric,
     sk_metric: Callable,
     dist_sync_on_step: bool,
@@ -59,8 +61,8 @@ def _class_test(
     Args:
         rank: rank of current process
         worldsize: number of processes
-        preds: Sequence of predictions tokens or predicted sentences
-        target: Sequence of target tokens or target sentences
+        preds: Sequence of predicted tokens or predicted sentences
+        targets: Sequence of target tokens or target sentences
         metric_class: lightning metric class that should be tested
         sk_metric: callable function that is used for comparison
         dist_sync_on_step: bool, if true will synchronize metric state across
@@ -71,9 +73,9 @@ def _class_test(
         check_batch: bool, if true will check if the metric is also correctly
             calculated across devices for each batch (and not just at the end)
         device: determine which device to run on, either 'cuda' or 'cpu'
-        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
-            target when running update on the metric.
+            targets when running update on the metric.
     """
     if not metric_args:
         metric_args = {}
@@ -98,11 +100,11 @@ def _class_test(
     for i in range(rank, NUM_BATCHES, worldsize):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
-        batch_result = metric(preds[i], target[i], **batch_kwargs_update)
+        batch_result = metric(preds[i], targets[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             ddp_preds = [preds[i + r] for r in range(worldsize)]
-            ddp_target = [target[i + r] for r in range(worldsize)]
+            ddp_target = [targets[i + r] for r in range(worldsize)]
             ddp_kwargs_upd = {
                 k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
@@ -116,7 +118,7 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
+            sk_batch_result = sk_metric(preds[i], targets[i], **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check on all batches on all ranks
@@ -124,7 +126,7 @@ def _class_test(
     _assert_tensor(result)
 
     total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)]).cpu()
-    total_target = torch.cat([target[i] for i in range(NUM_BATCHES)]).cpu()
+    total_target = torch.cat([targets[i] for i in range(NUM_BATCHES)]).cpu()
     total_kwargs_update = {
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
@@ -136,8 +138,8 @@ def _class_test(
 
 
 def _functional_test(
-    preds: Union[Sequence[str], Sequence[Sequence[str]]],
-    target: Union[Sequence[str], Sequence[Sequence[str]]],
+    preds: TEXT_METRIC_INPUT,
+    targets: TEXT_METRIC_INPUT,
     metric_functional: Callable,
     sk_metric: Callable,
     metric_args: dict = None,
@@ -150,14 +152,14 @@ def _functional_test(
 
     Args:
         preds: torch tensor with predictions
-        target: torch tensor with targets
+        targets: torch tensor with targets
         metric_functional: lightning metric functional that should be tested
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
         device: determine which device to run on, either 'cuda' or 'cpu'
-        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
-            target when running update on the metric.
+            targets when running update on the metric.
     """
     if not metric_args:
         metric_args = {}
@@ -169,12 +171,12 @@ def _functional_test(
 
     for i in range(NUM_BATCHES):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
-        lightning_result = metric(preds[i], target[i], **extra_kwargs)
+        lightning_result = metric(preds[i], targets[i], **extra_kwargs)
         extra_kwargs = {
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        sk_result = sk_metric(preds[i], target[i], **extra_kwargs)
+        sk_result = sk_metric(preds[i], targets[i], **extra_kwargs)
 
         # assert its the same
         _assert_allclose(lightning_result, sk_result, atol=atol)
@@ -183,8 +185,8 @@ def _functional_test(
 def _assert_half_support(
     metric_module: Metric,
     metric_functional: Callable,
-    preds: Union[Sequence[str], Sequence[Sequence[str]]],
-    target: Union[Sequence[str], Sequence[Sequence[str]]],
+    preds: TEXT_METRIC_INPUT,
+    targets: TEXT_METRIC_INPUT,
     device: str = "cpu",
     **kwargs_update,
 ):
@@ -194,13 +196,13 @@ def _assert_half_support(
         metric_module: the metric module to test
         metric_functional: the metric functional to test
         preds: torch tensor with predictions
-        target: torch tensor with targets
+        targets: torch tensor with targets
         device: determine device, either "cpu" or "cuda"
         kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+                targets when running update on the metric.
     """
     y_hat = preds[0]
-    y = target[0]
+    y = targets[0]
     kwargs_update = {
         k: (v[0].half() if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
@@ -237,8 +239,8 @@ class TextTester:
 
     def run_functional_metric_test(
         self,
-        preds: Union[Sequence[str], Sequence[Sequence[str]]],
-        target: Union[Sequence[str], Sequence[Sequence[str]]],
+        preds: TEXT_METRIC_INPUT,
+        targets: TEXT_METRIC_INPUT,
         metric_functional: Callable,
         sk_metric: Callable,
         metric_args: dict = None,
@@ -249,19 +251,19 @@ class TextTester:
 
         Args:
             preds: torch tensor with predictions
-            target: torch tensor with targets
+            targets: torch tensor with targets
             metric_functional: lightning metric class that should be tested
             sk_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
-            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+                targets when running update on the metric.
         """
         device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
         _functional_test(
             preds=preds,
-            target=target,
+            targets=targets,
             metric_functional=metric_functional,
             sk_metric=sk_metric,
             metric_args=metric_args,
@@ -274,8 +276,8 @@ class TextTester:
     def run_class_metric_test(
         self,
         ddp: bool,
-        preds: Union[Sequence[str], Sequence[Sequence[str]]],
-        target: Union[Sequence[str], Sequence[Sequence[str]]],
+        preds: TEXT_METRIC_INPUT,
+        targets: TEXT_METRIC_INPUT,
         metric_class: Metric,
         sk_metric: Callable,
         dist_sync_on_step: bool,
@@ -291,7 +293,7 @@ class TextTester:
         Args:
             ddp: bool, if running in ddp mode or not
             preds: torch tensor with predictions
-            target: torch tensor with targets
+            targets: torch tensor with targets
             metric_class: lightning metric class that should be tested
             sk_metric: callable function that is used for comparison
             dist_sync_on_step: bool, if true will synchronize metric state across
@@ -301,9 +303,9 @@ class TextTester:
                 calculated per batch per device (and not just at the end)
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
-            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+                targets when running update on the metric.
         """
         if not metric_args:
             metric_args = {}
@@ -315,7 +317,7 @@ class TextTester:
                 partial(
                     _class_test,
                     preds=preds,
-                    target=target,
+                    targets=targets,
                     metric_class=metric_class,
                     sk_metric=sk_metric,
                     dist_sync_on_step=dist_sync_on_step,
@@ -336,7 +338,7 @@ class TextTester:
                 rank=0,
                 worldsize=1,
                 preds=preds,
-                target=target,
+                targets=targets,
                 metric_class=metric_class,
                 sk_metric=sk_metric,
                 dist_sync_on_step=dist_sync_on_step,
@@ -352,8 +354,8 @@ class TextTester:
 
     @staticmethod
     def run_precision_test_cpu(
-        preds: Union[Sequence[str], Sequence[Sequence[str]]],
-        target: Union[Sequence[str], Sequence[Sequence[str]]],
+        preds: TEXT_METRIC_INPUT,
+        targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = None,
@@ -362,22 +364,22 @@ class TextTester:
         """Test if a metric can be used with half precision tensors on cpu
         Args:
             preds: torch tensor with predictions
-            target: torch tensor with targets
+            targets: torch tensor with targets
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+                targets when running update on the metric.
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, target, device="cpu", **kwargs_update
+            metric_module(**metric_args), metric_functional, preds, targets, device="cpu", **kwargs_update
         )
 
     @staticmethod
     def run_precision_test_gpu(
-        preds: Union[Sequence[str], Sequence[Sequence[str]]],
-        target: Union[Sequence[str], Sequence[Sequence[str]]],
+        preds: TEXT_METRIC_INPUT,
+        targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = None,
@@ -386,22 +388,22 @@ class TextTester:
         """Test if a metric can be used with half precision tensors on gpu
         Args:
             preds: torch tensor with predictions
-            target: torch tensor with targets
+            targets: torch tensor with targets
             metric_module: the metric module to test
             metric_functional: the metric functional to test
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+                targets when running update on the metric.
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, target, device="cuda", **kwargs_update
+            metric_module(**metric_args), metric_functional, preds, targets, device="cuda", **kwargs_update
         )
 
     @staticmethod
     def run_differentiability_test(
-        preds: Union[Sequence[str], Sequence[Sequence[str]]],
-        target: Union[Sequence[str], Sequence[Sequence[str]]],
+        preds: TEXT_METRIC_INPUT,
+        targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = None,
@@ -410,18 +412,18 @@ class TextTester:
 
         Args:
             preds: torch tensor with predictions
-            target: torch tensor with targets
+            targets: torch tensor with targets
             metric_module: the metric module to test
             metric_args: dict with additional arguments used for class initialization
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
         metric = metric_module(**metric_args)
-        out = metric(preds[0], target[0])
+        out = metric(preds[0], targets[0])
 
         # Check if requires_grad matches is_differentiable attribute
         _assert_requires_grad(metric, out)
 
         if metric.is_differentiable:
             # check for numerical correctness
-            assert torch.autograd.gradcheck(partial(metric_functional, **metric_args), (preds[0], target[0]))
+            assert torch.autograd.gradcheck(partial(metric_functional, **metric_args), (preds[0], targets[0]))
