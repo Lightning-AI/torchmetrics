@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Any, Callable, List, Optional, Union
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -42,6 +43,7 @@ class WER(Metric):
 
     Args:
         concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
+            This argument is deprecated in v0.6 and it will be removed in v0.7.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -81,7 +83,8 @@ class WER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        # TODO: Add deprecation warning for concatenate_texts.
+        if concatenate_texts:
+            warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 

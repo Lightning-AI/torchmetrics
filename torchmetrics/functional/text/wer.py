@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import List, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -96,6 +97,7 @@ def wer(
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
         concatenate_texts: Whether to concatenate all input texts or compute WER iteratively
+            This argument is deprecated in v0.6 and it will be removed in v0.7.
 
     Returns:
         (Tensor) Word error rate
@@ -106,6 +108,7 @@ def wer(
         >>> wer(predictions=predictions, references=references)
         tensor(0.5000)
     """
-    # TODO: Add deprecation warning for concatenate_texts.
+    if concatenate_texts:
+        warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
     errors, total = _wer_update(predictions, references)
     return _wer_compute(errors, total)
