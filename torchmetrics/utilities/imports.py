@@ -73,7 +73,6 @@ _TORCH_GREATER_EQUAL_1_6: Optional[bool] = _compare_version("torch", operator.ge
 _TORCH_GREATER_EQUAL_1_7: Optional[bool] = _compare_version("torch", operator.ge, "1.7.0")
 
 _LIGHTNING_AVAILABLE: bool = _module_available("pytorch_lightning")
-_JIWER_AVAILABLE: bool = _module_available("jiwer")
 _NLTK_AVAILABLE: bool = _module_available("nltk")
 _ROUGE_SCORE_AVAILABLE: bool = _module_available("rouge_score")
 _BERTSCORE_AVAILABLE: bool = _module_available("bert_score")

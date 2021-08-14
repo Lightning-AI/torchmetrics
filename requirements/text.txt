@@ -1,4 +1,3 @@
-jiwer>=2.2.0
 nltk>=3.6
 rouge-score>=0.0.4
 bert-score==0.3.10

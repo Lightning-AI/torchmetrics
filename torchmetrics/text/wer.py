@@ -14,14 +14,16 @@
 
 from typing import Any, Callable, List, Optional, Union
 
-from torchmetrics.functional import wer
+import torch
+from torch import Tensor, tensor
+
+from torchmetrics.functional.text.wer import _wer_compute, _wer_update
 from torchmetrics.metric import Metric
 
 
 class WER(Metric):
     r"""
-    Word error rate (WER_) is a common metric of
-    the performance of an automatic speech recognition system.
+    Word error rate (WER) is a common metric of the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
     Word error rate can then be computed as:
@@ -30,7 +32,6 @@ class WER(Metric):
         WER = \frac{S + D + I}{N} = \frac{S + D + I}{S + D + C}
 
     where:
-
         - S is the number of substitutions,
         - D is the number of deletions,
         - I is the number of insertions,
@@ -53,16 +54,18 @@ class WER(Metric):
             will be used to perform the allgather
 
     Returns:
-        (float): the word error rate
+        (Tensor) Word error rate
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
         >>> metric = WER()
         >>> metric(predictions, references)
-        0.5
-
+        tensor(0.5000)
     """
+
+    error: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -78,24 +81,25 @@ class WER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        self.concatenate_texts = concatenate_texts
-        self.add_state("predictions", [], dist_reduce_fx="cat")
-        self.add_state("references", [], dist_reduce_fx="cat")
+        # TODO: Add deprecation warning for concatenate_texts.
+        self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
     def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
-        """Store predictions/references for computing Word Error Rate scores.
+        """Store references/predictions for computing Word Error Rate scores.
 
         Args:
-            predictions: List of transcriptions to score.
-            references: List of references for each speech input.
+            predictions: Transcription(s) to score as a string or list of strings
+            references: Reference(s) for each speech input as a string or list of strings
         """
-        self.predictions.append(predictions)
-        self.references.append(references)
+        errors, total = _wer_update(predictions, references)
+        self.errors += errors
+        self.total += total
 
-    def compute(self) -> float:
-        """Calculate Word Error Rate scores.
+    def compute(self) -> Tensor:
+        """Calculate the word error rate.
 
-        Return:
-            Float with WER Score.
+        Returns:
+            (Tensor) Word error rate
         """
-        return wer(self.references, self.predictions, concatenate_texts=self.concatenate_texts)
+        return _wer_compute(self.errors, self.total)
