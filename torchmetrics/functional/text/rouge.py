@@ -172,9 +172,8 @@ def _rouge_score_update(
         >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
         >>> from pprint import pprint
-        >>> pprint(
-        ...     _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
-        ... )  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
+        >>> pprint(score)  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'1': {'precision': 0.25, 'recall': 0.25, 'fmeasure': 0.25},
          '2': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
          '3': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
@@ -189,13 +188,14 @@ def _rouge_score_update(
             target_sum = _normalize_text(_add_newline_to_end_of_each_sentence(target_raw), stemmer)
 
         for rouge_key in rouge_keys_values:
-            results[rouge_key].append(
-                _rouge_n_score(pred, target, rouge_key)
-                if isinstance(rouge_key, int)
-                else _rouge_l_score(
-                    pred if rouge_key != "Lsum" else pred_sum, target if rouge_key != "Lsum" else target_sum
+            if isinstance(rouge_key, int):
+                score = _rouge_n_score(pred, target, rouge_key)
+            else:
+                score = _rouge_l_score(
+                    pred if rouge_key != "Lsum" else pred_sum,
+                    target if rouge_key != "Lsum" else target_sum,
                 )
-            )
+            results[rouge_key].append(score)
     return results
 
 
