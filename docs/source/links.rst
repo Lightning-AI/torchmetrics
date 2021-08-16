@@ -38,3 +38,4 @@
 .. _MAPE implementation returns: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
 .. _mean squared logarithmic error: https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error
 .. _Mean Reciprocal Rank: https://en.wikipedia.org/wiki/Mean_reciprocal_rank
+.. _LPIPS: https://arxiv.org/abs/1801.03924
