@@ -549,7 +549,8 @@ def _check_retrieval_inputs(
         raise ValueError("`indexes` must be a tensor of long integers")
 
     preds, target = _check_retrieval_target_and_prediction_types(
-        preds, target, allow_non_binary_target=allow_non_binary_target)
+        preds, target, allow_non_binary_target=allow_non_binary_target
+    )
 
     return indexes.long().flatten(), preds, target
 
