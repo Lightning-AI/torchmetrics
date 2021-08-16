@@ -131,7 +131,6 @@ _errors_test_functional_metric_parameters_default = dict(
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
         (_irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats", {}),
-        (_irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers", {}),
         # check targets are between 0 and 1
         (_irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values", {}),
     ],
@@ -146,7 +145,6 @@ _errors_test_functional_metric_parameters_with_nonbinary = dict(
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
         (_irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats", {}),
-        (_irs.preds, _irs.target.float(), "`target` must be a tensor of booleans or integers", {}),
     ],
 )
 
@@ -229,13 +227,6 @@ _errors_test_class_metric_parameters_with_nonbinary = dict(
             "`preds` must be a tensor of floats",
             dict(empty_target_action="skip"),
         ),
-        (
-            _irs.indexes,
-            _irs.preds,
-            _irs.target.float(),
-            "`target` must be a tensor of booleans or integers",
-            dict(empty_target_action="skip"),
-        ),
     ],
 )
 
@@ -280,21 +271,6 @@ _errors_test_class_metric_parameters_default = dict(
             _irs.preds.bool(),
             _irs.target,
             "`preds` must be a tensor of floats",
-            dict(empty_target_action="skip"),
-        ),
-        (
-            _irs.indexes,
-            _irs.preds,
-            _irs.target.float(),
-            "`target` must be a tensor of booleans or integers",
-            dict(empty_target_action="skip"),
-        ),
-        # check targets are between 0 and 1
-        (
-            _irs_bad_tgt.indexes,
-            _irs_bad_tgt.preds,
-            _irs_bad_tgt.target,
-            "`target` must contain `binary` values",
             dict(empty_target_action="skip"),
         ),
     ],
