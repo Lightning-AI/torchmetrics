@@ -22,7 +22,7 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 class ROUGEScore(Metric):
     """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
-    This implementation should imitathe the behaviour of the `rouge-score` package https://pypi.org/project/rouge-
+    This implementation should imitate the behaviour of the `rouge-score` package https://pypi.org/project/rouge-
     score/.
 
     Args:
@@ -95,7 +95,8 @@ class ROUGEScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        # TODO: Add deprecated warning for newline_sep argument.
+        if newline_sep is not None:
+            warn.warning("Argument `newline_sep` is deprecated in v0.6 and will be removed in v0.7")
         # TODO: Add deprecated warning for decimal_places argument as no other metric uses this kind of argument.
 
         if use_stemmer or "rougeLsum" in rouge_keys:
