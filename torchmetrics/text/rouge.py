@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import warnings
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from torch import Tensor
@@ -96,7 +97,7 @@ class ROUGEScore(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         if newline_sep is not None:
-            warn.warning("Argument `newline_sep` is deprecated in v0.6 and will be removed in v0.7")
+            warnings.warn("Argument `newline_sep` is deprecated in v0.6 and will be removed in v0.7")
         # TODO: Add deprecated warning for decimal_places argument as no other metric uses this kind of argument.
 
         if use_stemmer or "rougeLsum" in rouge_keys:
