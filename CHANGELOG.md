@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed bug in the ranking of samples in `SpearmanCorrCoef` metric ([]())
+
 
 ## [0.5.0] - 2021-08-09
 

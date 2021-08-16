@@ -36,12 +36,17 @@ _single_target_inputs2 = Input(
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
 
+_specific_input = Input(
+    preds=torch.stack([torch.tensor([1., 0., 4., 1., 0., 3. ,0.]) for _ in range(NUM_BATCHES)]),
+    target=torch.stack([torch.tensor([4., 0., 3., 3., 3., 1., 1.]) for _ in range(NUM_BATCHES)])
+)
 
 @pytest.mark.parametrize(
     "preds, target",
     [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
+        (_specific_input.preds, _specific_input.target)
     ],
 )
 def test_ranking(preds, target):
@@ -64,6 +69,7 @@ def _sk_metric(preds, target):
     [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
+        (_specific_input.preds, _specific_input.target)
     ],
 )
 class TestSpearmanCorrcoef(MetricTester):
