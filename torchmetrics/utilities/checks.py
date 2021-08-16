@@ -503,7 +503,7 @@ def _check_retrieval_functional_inputs(
 
     Returns:
         preds: as torch.float32
-        target: as torch.long
+        target: as torch.long if not floating point else torch.float32
     """
     if preds.shape != target.shape:
         raise ValueError("`preds` and `target` must be of the same shape")
@@ -511,9 +511,7 @@ def _check_retrieval_functional_inputs(
     if not preds.numel() or not preds.size():
         raise ValueError("`preds` and `target` must be non-empty and non-scalar tensors")
 
-    _check_retrieval_target_and_prediction_types(preds, target, allow_non_binary_target=allow_non_binary_target)
-
-    return preds.float().flatten(), target.long().flatten()
+    return _check_retrieval_target_and_prediction_types(preds, target, allow_non_binary_target=allow_non_binary_target)
 
 
 def _check_retrieval_inputs(
@@ -550,9 +548,10 @@ def _check_retrieval_inputs(
     if indexes.dtype is not torch.long:
         raise ValueError("`indexes` must be a tensor of long integers")
 
-    _check_retrieval_target_and_prediction_types(preds, target, allow_non_binary_target=allow_non_binary_target)
+    preds, target = _check_retrieval_target_and_prediction_types(
+        preds, target, allow_non_binary_target=allow_non_binary_target)
 
-    return indexes.long().flatten(), preds.float().flatten(), target.long().flatten()
+    return indexes.long().flatten(), preds, target
 
 
 def _check_retrieval_target_and_prediction_types(
@@ -580,3 +579,6 @@ def _check_retrieval_target_and_prediction_types(
 
     if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
         raise ValueError("`target` must contain `binary` values")
+
+    target = target.float().flatten() if target.is_floating_point() else target.long().flatten()
+    return preds.float().flatten(), target
