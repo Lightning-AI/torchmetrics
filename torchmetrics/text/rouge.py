@@ -81,10 +81,10 @@ class ROUGEScore(Metric):
 
     def __init__(
         self,
-        newline_sep: bool = False,
+        newline_sep: Optional[bool] = None,  # remove in v0.7
         use_stemmer: bool = False,
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
-        decimal_places: int = 4,
+        decimal_places: Optional[bool] = None,  # remove in v0.7
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -98,7 +98,8 @@ class ROUGEScore(Metric):
         )
         if newline_sep is not None:
             warnings.warn("Argument `newline_sep` is deprecated in v0.6 and will be removed in v0.7")
-        # TODO: Add deprecated warning for decimal_places argument as no other metric uses this kind of argument.
+        if decimal_places is not None:
+            warnings.warn("Argument `decimal_places` is deprecated in v0.6 and will be removed in v0.7")
 
         if use_stemmer or "rougeLsum" in rouge_keys:
             if not _NLTK_AVAILABLE:
