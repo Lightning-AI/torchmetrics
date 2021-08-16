@@ -559,7 +559,7 @@ def _check_retrieval_target_and_prediction_types(
     preds: Tensor,
     target: Tensor,
     allow_non_binary_target: bool = False,
-) -> None:
+) -> Tuple[Tensor, Tensor]:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
     Args:
