@@ -82,6 +82,7 @@ def _test_ddp_gather_uneven_tensors_multidim(rank, worldsize):
 
 
 def _test_ddp_compositional_tensor(rank, worldsize):
+    setup_ddp(rank, worldsize)
     dummy = DummyMetricSum()
     dummy._reductions = {"x": torch.sum}
     dummy = dummy.clone() + dummy.clone()
