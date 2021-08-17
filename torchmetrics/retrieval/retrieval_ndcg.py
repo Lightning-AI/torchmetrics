@@ -27,7 +27,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
     Forward accepts:
 
     - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
+    - ``target`` (long, int, bool or float tensor): ``(N, ...)``
     - ``indexes`` (long tensor): ``(N, ...)``
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.

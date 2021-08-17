@@ -28,3 +28,4 @@ speechmetrics @ https://github.com/aliutkus/speechmetrics/archive/refs/heads/mas
 
 # text
 jiwer>=2.2.0
+rouge-score>=0.0.4
