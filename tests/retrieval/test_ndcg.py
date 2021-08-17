@@ -117,6 +117,9 @@ class TestNDCG(RetrievalMetricTester):
     def test_arguments_class_metric(
         self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
     ):
+        if target.is_floating_point():
+            pytest.skip("NDCG metric works with float target input")
+
         self.run_metric_class_arguments_test(
             indexes=indexes,
             preds=preds,
@@ -135,6 +138,9 @@ class TestNDCG(RetrievalMetricTester):
         )
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
+        if target.is_floating_point():
+            pytest.skip("NDCG metric works with float target input")
+
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,
