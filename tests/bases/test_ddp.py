@@ -20,7 +20,7 @@ import torch
 from torch import tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import DummyMetric, setup_ddp, DummyMetricSum
+from tests.helpers.testers import DummyMetric, DummyMetricSum, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
