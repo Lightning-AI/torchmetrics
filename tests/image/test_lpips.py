@@ -22,7 +22,7 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.image.lpip_similarity import LPIPS
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
@@ -49,6 +49,9 @@ class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
         """test modular implementation for correctness."""
+        if not _TORCH_GREATER_EQUAL_1_6:
+            pytest.skip("LPIPS scripting does not work for v1.5 or lower of pytorch")
+
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
