@@ -21,7 +21,7 @@ from copy import deepcopy
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
@@ -29,13 +29,14 @@ from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, d
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
+from torchmetrics.utilities.device_dtype_mixin import DeviceDtypeModuleMixin
 
 
 def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(nn.Module, ABC):
+class Metric(DeviceDtypeModuleMixin, ABC):
     """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
