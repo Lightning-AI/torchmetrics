@@ -19,11 +19,11 @@ import torch
 from sklearn.metrics import precision_score, recall_score
 from torch import Tensor
 
+from tests.helpers import seed_all
 from torchmetrics.classification import Precision, Recall
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
-from tests.helpers import seed_all
 
 seed_all(42)
 
