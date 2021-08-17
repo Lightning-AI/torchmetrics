@@ -20,7 +20,7 @@ import torch
 from torch import tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import DummyMetric, setup_ddp
+from tests.helpers.testers import DummyMetric, setup_ddp, DummyMetricSum
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
@@ -81,6 +81,15 @@ def _test_ddp_gather_uneven_tensors_multidim(rank, worldsize):
         assert (val == torch.ones_like(val)).all()
 
 
+def _test_ddp_compositional_tensor(rank, worldsize):
+    dummy = DummyMetricSum()
+    dummy._reductions = {"x": torch.sum}
+    dummy = dummy.clone() + dummy.clone()
+    dummy.update(tensor(1))
+    val = dummy.compute()
+    assert val == 2 * worldsize
+
+
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize(
     "process",
@@ -90,6 +99,7 @@ def _test_ddp_gather_uneven_tensors_multidim(rank, worldsize):
         _test_ddp_sum_cat,
         _test_ddp_gather_uneven_tensors,
         _test_ddp_gather_uneven_tensors_multidim,
+        _test_ddp_compositional_tensor,
     ],
 )
 def test_ddp(process):
