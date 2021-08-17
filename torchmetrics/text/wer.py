@@ -24,7 +24,7 @@ from torchmetrics.metric import Metric
 
 class WER(Metric):
     r"""
-    Word error rate (WER) is a common metric of the performance of an automatic speech recognition system.
+    Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
     Word error rate can then be computed as:
@@ -71,7 +71,7 @@ class WER(Metric):
 
     def __init__(
         self,
-        concatenate_texts: bool = False,
+        concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -83,7 +83,7 @@ class WER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        if concatenate_texts:
+        if concatenate_texts is not None:
             warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
