@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed ranking of samples in `SpearmanCorrCoef` metric ([#448](https://github.com/PyTorchLightning/metrics/pull/448))
 
 
+- Fixed bug where compositional metrics where unable to sync because of type mismatch ([#454](https://github.com/PyTorchLightning/metrics/pull/454))
+
 ## [0.5.0] - 2021-08-09
 
 ### Added

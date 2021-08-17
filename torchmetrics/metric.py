@@ -663,7 +663,7 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, *_: Any) -> None:
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 
