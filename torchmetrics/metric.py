@@ -36,7 +36,7 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(DeviceDtypeModuleMixin, ABC):
+class Metric(ABC, DeviceDtypeModuleMixin, Module):
     """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
