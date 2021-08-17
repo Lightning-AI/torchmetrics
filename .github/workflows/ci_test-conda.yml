@@ -46,6 +46,7 @@ jobs:
       with:
         miniforge-variant: Mambaforge
         miniforge-version: latest
+        use-mamba: true
         # miniconda-version: "4.7.12"
         python-version: ${{ matrix.python-version }}
         channels: conda-forge,pytorch,pytorch-test,pytorch-nightly
@@ -59,11 +60,11 @@ jobs:
     - name: Update Environment
       run: |
         sudo apt install libsndfile1
-        mamba info
-        mamba install cpuonly mkl pytorch=${{ matrix.pytorch-version }}
-        mamba install cpuonly $(python ./requirements/adjust-versions.py conda)
-        mamba install ffmpeg
-        mamba list
+        conda info
+        conda install cpuonly mkl pytorch=${{ matrix.pytorch-version }}
+        conda install cpuonly $(python ./requirements/adjust-versions.py conda)
+        conda install ffmpeg
+        conda list
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision
@@ -71,11 +72,6 @@ jobs:
         pip install --requirement requirements/test.txt --quiet
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
-      shell: bash -l {0}
-
-    - name: Listing
-      run: |
-        ls -l /home/runner
       shell: bash -l {0}
 
     - name: Testing
