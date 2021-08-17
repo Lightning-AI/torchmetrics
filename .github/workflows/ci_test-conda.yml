@@ -45,11 +45,12 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         miniforge-variant: Mambaforge
+        miniforge-version: latest
         # miniconda-version: "4.7.12"
         python-version: ${{ matrix.python-version }}
         channels: conda-forge,pytorch,pytorch-test,pytorch-nightly
         channel-priority: true
-        auto-activate-base: true
+        # auto-activate-base: true
         # environment-file: ./environment.yml
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
       # prevent hanging Conda creations
@@ -70,6 +71,11 @@ jobs:
         pip install --requirement requirements/test.txt --quiet
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
+      shell: bash -l {0}
+
+    - name: Listing
+      run: |
+        ls -l
       shell: bash -l {0}
 
     - name: Testing
