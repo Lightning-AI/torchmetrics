@@ -49,7 +49,7 @@ jobs:
         use-mamba: true
         # miniconda-version: "4.7.12"
         python-version: ${{ matrix.python-version }}
-        channels: conda-forge,pytorch,pytorch-test,pytorch-nightly
+        channels: pytorch,pytorch-test,pytorch-nightly,conda-forge
         channel-priority: true
         # auto-activate-base: true
         # environment-file: ./environment.yml
