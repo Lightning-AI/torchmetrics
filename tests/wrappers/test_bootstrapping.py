@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import operator
+from functools import partial
 
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import precision_score, recall_score, mean_squared_error
+from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
-from functools import partial
 
-from torchmetrics import Precision, Recall, MeanSquaredError
+from tests.helpers import seed_all
+from torchmetrics import MeanSquaredError, Precision, Recall
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
+
+seed_all(42)
 
 _preds = torch.randint(10, (10, 32))
 _target = torch.randint(10, (10, 32))
@@ -56,10 +59,10 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
     """make sure that the bootstrap sampler works as intended."""
-    old_samples = torch.randn(10, 2)
+    old_samples = torch.randn(20, 2)
 
     # make sure that the new samples are only made up of old samples
-    idx = _bootstrap_sampler(10, sampling_strategy=sampling_strategy)
+    idx = _bootstrap_sampler(20, sampling_strategy=sampling_strategy)
     new_samples = old_samples[idx]
     for ns in new_samples:
         assert ns in old_samples
@@ -73,14 +76,17 @@ def test_bootstrap_sampler(sampling_strategy):
 
 @pytest.mark.parametrize("device", ["cpu", "cuda"])
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
-@pytest.mark.parametrize("metric, sk_metric", [
-    [Precision(average="micro"), partial(precision_score, average="micro")], 
-    [Recall(average="micro"), partial(recall_score, average="micro")],
-    [MeanSquaredError(), mean_squared_error],
-])
+@pytest.mark.parametrize(
+    "metric, sk_metric",
+    [
+        [Precision(average="micro"), partial(precision_score, average="micro")],
+        [Recall(average="micro"), partial(recall_score, average="micro")],
+        [MeanSquaredError(), mean_squared_error],
+    ],
+)
 def test_bootstrap(device, sampling_strategy, metric, sk_metric):
     """Test that the different bootstraps gets updated as we expected and that the compute method works."""
-    if device == 'cuda' and not torch.cuda.is_available():
+    if device == "cuda" and not torch.cuda.is_available():
         pytest.skip("Test with device='cuda' requires gpu")
 
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}

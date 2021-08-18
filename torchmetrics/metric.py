@@ -427,17 +427,16 @@ class Metric(Module, ABC):
         return self._device
 
     def to(self, *args: Any, **kwargs: Any) -> "Metric":
-        """Moves and/or casts the parameters and buffers. """
+        """Moves and/or casts the parameters and buffers."""
         # there is diff nb vars in PT 1.5
         out = torch._C._nn._parse_to(*args, **kwargs)
         self._update_properties(device=out[0], dtype=out[1])
         return super().to(*args, **kwargs)
 
     def cuda(self, device: Optional[Union[torch.device, int]] = None) -> "Metric":
-        """Moves all model parameters and buffers to the GPU.
-        This also makes associated parameters and buffers different objects. So
-        it should be called before constructing optimizer if the module will
-        live on GPU while being optimized.
+        """Moves all model parameters and buffers to the GPU. This also makes associated parameters and buffers
+        different objects. So it should be called before constructing optimizer if the module will live on GPU
+        while being optimized.
 
         Arguments:
             device: if specified, all parameters will be
@@ -502,7 +501,7 @@ class Metric(Module, ABC):
     def _update_properties(
         self, device: Optional[torch.device] = None, dtype: Optional[Union[str, torch.dtype]] = None
     ) -> None:
-        """ Updates the internal device and or dtype attributes of the metric """
+        """Updates the internal device and or dtype attributes of the metric."""
         if device is not None:
             self._device = device
         if dtype is not None:

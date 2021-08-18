@@ -275,6 +275,7 @@ def test_device_and_dtype_transfer(tmpdir):
     assert metric.x.dtype == torch.float16
     assert metric.dtype == torch.float16
 
+
 def test_warning_on_compute_before_update():
     """test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
