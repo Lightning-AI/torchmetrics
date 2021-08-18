@@ -29,14 +29,13 @@ from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, d
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
-from torchmetrics.utilities.device_dtype_mixin import DeviceDtypeModuleMixin
 
 
 def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(ABC, DeviceDtypeModuleMixin, Module):
+class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
@@ -85,6 +84,8 @@ class Metric(ABC, DeviceDtypeModuleMixin, Module):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
+        self._dtype: Union[str, torch.dtype] = torch.get_default_dtype()
+        self._device = torch.device("cpu")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
@@ -411,6 +412,101 @@ class Metric(ABC, DeviceDtypeModuleMixin, Module):
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
+
+    @property
+    def dtype(self):
+        return self._dtype
+
+    @dtype.setter
+    def dtype(self, new_dtype) -> None:
+        # necessary to avoid infinite recursion
+        raise RuntimeError("Cannot set the dtype explicitly. Please use module.to(new_dtype).")
+
+    @property
+    def device(self):
+        return self._device
+
+    def to(self, *args: Any, **kwargs: Any) -> "Metric":
+        """Moves and/or casts the parameters and buffers. """
+        # there is diff nb vars in PT 1.5
+        out = torch._C._nn._parse_to(*args, **kwargs)
+        self._update_properties(device=out[0], dtype=out[1])
+        return super().to(*args, **kwargs)
+
+    def cuda(self, device: Optional[Union[torch.device, int]] = None) -> "Metric":
+        """Moves all model parameters and buffers to the GPU.
+        This also makes associated parameters and buffers different objects. So
+        it should be called before constructing optimizer if the module will
+        live on GPU while being optimized.
+
+        Arguments:
+            device: if specified, all parameters will be
+                copied to that device
+
+        Returns:
+            Module: self
+        """
+        if device is None or isinstance(device, int):
+            device = torch.device("cuda", index=device)
+        self._update_properties(device=device)
+        return super().cuda(device=device)
+
+    def cpu(self) -> "Metric":
+        """Moves all model parameters and buffers to the CPU.
+
+        Returns:
+            Module: self
+        """
+        self._update_properties(device=torch.device("cpu"))
+        return super().cpu()
+
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+        """Casts all parameters and buffers to :attr:`dst_type`.
+
+        Arguments:
+            dst_type (type or string): the desired type
+
+        Returns:
+            Module: self
+        """
+        self._update_properties(dtype=dst_type)
+        return super().type(dst_type=dst_type)
+
+    def float(self) -> "Metric":
+        """Casts all floating point parameters and buffers to ``float`` datatype.
+
+        Returns:
+            Module: self
+        """
+        self._update_properties(dtype=torch.float)
+        return super().float()
+
+    def double(self) -> "Metric":
+        """Casts all floating point parameters and buffers to ``double`` datatype.
+
+        Returns:
+            Module: self
+        """
+        self._update_properties(dtype=torch.double)
+        return super().double()
+
+    def half(self) -> "Metric":
+        """Casts all floating point parameters and buffers to ``half`` datatype.
+
+        Returns:
+            Module: self
+        """
+        self._update_properties(dtype=torch.half)
+        return super().half()
+
+    def _update_properties(
+        self, device: Optional[torch.device] = None, dtype: Optional[Union[str, torch.dtype]] = None
+    ) -> None:
+        """ Updates the internal device and or dtype attributes of the metric """
+        if device is not None:
+            self._device = device
+        if dtype is not None:
+            self._dtype = dtype
 
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,
