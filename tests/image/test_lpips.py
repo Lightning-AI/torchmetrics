@@ -49,9 +49,6 @@ class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
         """test modular implementation for correctness."""
-        if not _TORCH_GREATER_EQUAL_1_6:
-            pytest.skip("LPIPS scripting does not work for v1.5 or lower of pytorch")
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
@@ -59,6 +56,7 @@ class TestLPIPS(MetricTester):
             metric_class=LPIPS,
             sk_metric=partial(_compare_fn, net_type=net_type),
             dist_sync_on_step=False,
+            check_scriptable=False,
             metric_args={"net_type": net_type},
         )
 

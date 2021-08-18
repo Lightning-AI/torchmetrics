@@ -50,6 +50,9 @@ class LPIPS(Metric):
     .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
         as ``pip install torchmetrics[image]`` or ``pip install lpips``
 
+    .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
+        if this is a issue.
+
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
