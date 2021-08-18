@@ -47,7 +47,7 @@ def _rank_data(data: Tensor) -> Tensor:
 
     repeats = _find_repeats(data)
     for r in repeats:
-        condition = rank == r
+        condition = data == r
         rank[condition] = rank[condition].mean()
     return rank
 

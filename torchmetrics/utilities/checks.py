@@ -503,7 +503,7 @@ def _check_retrieval_functional_inputs(
 
     Returns:
         preds: as torch.float32
-        target: as torch.long
+        target: as torch.long if not floating point else torch.float32
     """
     if preds.shape != target.shape:
         raise ValueError("`preds` and `target` must be of the same shape")
@@ -511,16 +511,7 @@ def _check_retrieval_functional_inputs(
     if not preds.numel() or not preds.size():
         raise ValueError("`preds` and `target` must be non-empty and non-scalar tensors")
 
-    if target.dtype not in (torch.bool, torch.long, torch.int):
-        raise ValueError("`target` must be a tensor of booleans or integers")
-
-    if not preds.is_floating_point():
-        raise ValueError("`preds` must be a tensor of floats")
-
-    if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
-        raise ValueError("`target` must contain `binary` values")
-
-    return preds.float().flatten(), target.long().flatten()
+    return _check_retrieval_target_and_prediction_types(preds, target, allow_non_binary_target=allow_non_binary_target)
 
 
 def _check_retrieval_inputs(
@@ -557,13 +548,38 @@ def _check_retrieval_inputs(
     if indexes.dtype is not torch.long:
         raise ValueError("`indexes` must be a tensor of long integers")
 
+    preds, target = _check_retrieval_target_and_prediction_types(
+        preds, target, allow_non_binary_target=allow_non_binary_target
+    )
+
+    return indexes.long().flatten(), preds, target
+
+
+def _check_retrieval_target_and_prediction_types(
+    preds: Tensor,
+    target: Tensor,
+    allow_non_binary_target: bool = False,
+) -> Tuple[Tensor, Tensor]:
+    """Check ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
+
+    Args:
+        preds: either tensor with scores/logits
+        target: tensor with ground true labels
+        allow_non_binary_target: whether to allow target to contain non-binary values
+
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` don't have the same shape, if they are empty
+            or not of the correct ``dtypes``.
+    """
+    if target.dtype not in (torch.bool, torch.long, torch.int) and not torch.is_floating_point(target):
+        raise ValueError("`target` must be a tensor of booleans, integers or floats")
+
     if not preds.is_floating_point():
         raise ValueError("`preds` must be a tensor of floats")
-
-    if target.dtype not in (torch.bool, torch.long, torch.int):
-        raise ValueError("`target` must be a tensor of booleans or integers")
 
     if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
         raise ValueError("`target` must contain `binary` values")
 
-    return indexes.long().flatten(), preds.float().flatten(), target.long().flatten()
+    target = target.float().flatten() if target.is_floating_point() else target.long().flatten()
+    return preds.float().flatten(), target
