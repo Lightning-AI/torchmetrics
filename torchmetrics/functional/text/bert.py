@@ -39,12 +39,28 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
     """
     return tokenizer(
         text,
-        add_special_tokens=False,  # we don't want to add [CLS], [SEP] either other special tokens
         padding=True,
         max_length=max_length,
         truncation=True,
         return_tensors="pt",
     )
+
+
+def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> torch.Tensor:
+    """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a calculation.
+
+    Args:
+        attention_mask: An attention mask to be returned, for example, by a `transformers` tokenizer.
+
+    Return:
+        A processd attention mask.
+    """
+    # Make attention_mask zero for [CLS] token
+    attention_mask[:, 0] = 0
+    # Make attention_mask zero for [SEP] token
+    sep_token_position = (attention_mask - 0.1).cumsum(-1).argmax(-1)
+    attention_mask[torch.arange(attention_mask.size(0)).long(), sep_token_position] = 0
+    return attention_mask
 
 
 class TextDataset(Dataset):
@@ -84,8 +100,7 @@ class TextDataset(Dataset):
             A python dictionary containing inverse document frequences for token ids.
         """
         unique_ids, ids_occurrence = self.text["input_ids"].unique(return_counts=True)
-
-        tokens_idf: Dict[int, float] = defaultdict(lambda: math.log((self.num_sentences + 1) / 1))
+        tokens_idf: Dict[int, float] = defaultdict(self._get_tokens_idf_default_value)
         tokens_idf.update(
             {
                 idx: math.log((self.num_sentences + 1) / (occurrence + 1))
@@ -93,6 +108,10 @@ class TextDataset(Dataset):
             }
         )
         return tokens_idf
+
+    def _get_tokens_idf_default_value(self) -> float:
+        """Helper function ensuring `defaultdict` to be pickled."""
+        return math.log((self.num_sentences + 1) / 1)
 
 
 def _get_embeddings_and_idf_scale(
@@ -104,10 +123,10 @@ def _get_embeddings_and_idf_scale(
     """Calculate sentence embeddings and the inverse-document-frequence scaling factor.
     TODO:
     Args:
-        dataloader:
-        model:
-        device:
-        idf:
+        dataloader: `torch.utils.data.DataLoader` instance.
+        model: BERT model.
+        device: Device to be used for calculation.
+        idf: Indication whether normalization using inverse document frequencies should be used.
 
     Return:
     """
@@ -118,7 +137,8 @@ def _get_embeddings_and_idf_scale(
             out = model(batch["input_ids"].to(device), batch["attention_mask"].to(device))[0]
         out /= out.norm(dim=-1).unsqueeze(-1)  # normalize embeddings
         # Multiply embeddings with attention_mask (b=batch_size, s=seq_len, d=emb_dim)
-        out = torch.einsum("bsd, bs -> bsd", out, batch["attention_mask"])
+        processed_attention_mask = _process_attention_mask_for_special_tokens(batch["attention_mask"])
+        out = torch.einsum("bsd, bs -> bsd", out, processed_attention_mask)
         EMBEDDINGS_LIST.append(out.cpu())
 
         # Calculate idf scaling factor if desired. Otherwise take a vector of ones
@@ -149,9 +169,9 @@ def _get_precision_recall_f1(
         Tensors containing precision, recall and F1 score, respectively.
     """
     cos_sim = torch.bmm(pred_embeddings, ref_embeddings.transpose(1, 2))
-    precision = cos_sim.max(dim=2).values.mean(-1) / pred_idf_scale
-    recall = cos_sim.max(dim=1).values.mean(-1) / ref_idf_scale
-    f1_score = 2 * precision * recall / (precision * recall)
+    precision = (cos_sim.max(dim=2).values.sum(-1) / cos_sim.max(dim=2).values.not_equal(0.0).sum(-1)) / pred_idf_scale
+    recall = (cos_sim.max(dim=1).values.sum(-1) / cos_sim.max(dim=1).values.not_equal(0.0).sum(-1)) / ref_idf_scale
+    f1_score = 2 * precision * recall / (precision + recall)
     f1_score = f1_score.masked_fill(torch.isnan(f1_score), 0.0)
 
     return precision, recall, f1_score
@@ -162,19 +182,21 @@ def new_bert_score(
     references: List[str],
     lang: str = "en",
     model_type: Optional[str] = None,
-    model_path: Optional[str] = None,
     own_model: Optional[torch.nn.Module] = None,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
     max_length: int = 512,
     batch_size: int = 64,
     num_threads: int = 4,
+    all_layers: bool = False,
+    rescale_with_baseline: bool = False,
+    baseline_path: Optional[str] = None,
 ) -> Dict[str, List[float]]:
     if not own_model:
         if not _TRANSFORMERS_AVAILABLE:
             raise ValueError("#TODO: Transformers must be installed.")
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
-        model = AutoModel.from_pretrained(model_path)
+        tokenizer = AutoTokenizer.from_pretrained(model_type)
+        model = AutoModel.from_pretrained(model_type)
         model.eval()
         model.to(device)
 
