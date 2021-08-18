@@ -22,7 +22,7 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.image.lpip_similarity import LPIPS
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_6
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 seed_all(42)
 
