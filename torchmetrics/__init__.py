@@ -15,26 +15,8 @@ from torchmetrics.average import AverageMeter  # noqa: E402
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 
-from torchmetrics import (
-    audio,
-    classification,
-    functional,
-    image,
-    regression,
-    retrieval,
-    text,
-    wrappers
-)  # noqa: E402
 
 __all__ = [
-    "audio",
-    "classification",
-    "functional",
-    "image",
-    "regression",
-    "retrieval",
-    "text",
-    "wrappers",
     "AverageMeter",
     "Metric",
     "MetricCollection",
