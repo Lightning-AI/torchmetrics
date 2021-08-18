@@ -414,16 +414,16 @@ class Metric(Module, ABC):
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
     @property
-    def dtype(self):
+    def dtype(self) -> "torch.dtype":
         return self._dtype
 
     @dtype.setter
-    def dtype(self, new_dtype) -> None:
+    def dtype(self, new_dtype: "torch.dtype") -> None:
         # necessary to avoid infinite recursion
         raise RuntimeError("Cannot set the dtype explicitly. Please use module.to(new_dtype).")
 
     @property
-    def device(self):
+    def device(self) -> "torch.device":
         return self._device
 
     def to(self, *args: Any, **kwargs: Any) -> "Metric":
