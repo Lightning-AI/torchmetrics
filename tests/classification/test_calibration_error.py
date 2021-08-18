@@ -13,7 +13,7 @@ from tests.helpers import seed_all
 # TODO: replace this with official sklearn implementation after next sklearn release
 from tests.helpers.non_sklearn_metrics import calibration_error as sk_calib
 from tests.helpers.testers import THRESHOLD, MetricTester
-from torchmetrics import CalibrationError
+from torchmetrics.classification import CalibrationError
 from torchmetrics.functional import calibration_error
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType

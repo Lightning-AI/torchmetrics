@@ -17,7 +17,8 @@ import pytest
 import torch
 
 from tests.helpers import seed_all
-from torchmetrics import Accuracy, MeanAbsoluteError, MeanSquaredError, Precision, Recall
+from torchmetrics.classification import Accuracy, Precision, Recall
+from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers import MetricTracker
 
 seed_all(42)
