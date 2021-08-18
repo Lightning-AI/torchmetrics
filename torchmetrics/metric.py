@@ -415,6 +415,7 @@ class Metric(Module, ABC):
 
     @property
     def dtype(self) -> "torch.dtype":
+        """ Return the dtype of the metric """
         return self._dtype
 
     @dtype.setter
@@ -424,26 +425,25 @@ class Metric(Module, ABC):
 
     @property
     def device(self) -> "torch.device":
+        """ Return the device of the metric """
         return self._device
 
     def to(self, *args: Any, **kwargs: Any) -> "Metric":
-        """Moves and/or casts the parameters and buffers."""
+        """ Moves and/or casts the parameters and buffers. 
+            Works similar to nn.Module.to but also updates the metrics
+            device and dtype properties
+        """
         # there is diff nb vars in PT 1.5
         out = torch._C._nn._parse_to(*args, **kwargs)
         self._update_properties(device=out[0], dtype=out[1])
         return super().to(*args, **kwargs)
 
     def cuda(self, device: Optional[Union[torch.device, int]] = None) -> "Metric":
-        """Moves all model parameters and buffers to the GPU. This also makes associated parameters and buffers
-        different objects. So it should be called before constructing optimizer if the module will live on GPU
-        while being optimized.
-
+        """ Moves all model parameters and buffers to the GPU. 
+        
         Arguments:
-            device: if specified, all parameters will be
-                copied to that device
+            device: if specified, all parameters will be copied to that device
 
-        Returns:
-            Module: self
         """
         if device is None or isinstance(device, int):
             device = torch.device("cuda", index=device)
@@ -451,11 +451,7 @@ class Metric(Module, ABC):
         return super().cuda(device=device)
 
     def cpu(self) -> "Metric":
-        """Moves all model parameters and buffers to the CPU.
-
-        Returns:
-            Module: self
-        """
+        """Moves all model parameters and buffers to the CPU. """
         self._update_properties(device=torch.device("cpu"))
         return super().cpu()
 
@@ -465,43 +461,29 @@ class Metric(Module, ABC):
         Arguments:
             dst_type (type or string): the desired type
 
-        Returns:
-            Module: self
         """
         self._update_properties(dtype=dst_type)
         return super().type(dst_type=dst_type)
 
     def float(self) -> "Metric":
-        """Casts all floating point parameters and buffers to ``float`` datatype.
-
-        Returns:
-            Module: self
-        """
+        """Casts all floating point parameters and buffers to ``float`` datatype. """
         self._update_properties(dtype=torch.float)
         return super().float()
 
     def double(self) -> "Metric":
-        """Casts all floating point parameters and buffers to ``double`` datatype.
-
-        Returns:
-            Module: self
-        """
+        """Casts all floating point parameters and buffers to ``double`` datatype. """
         self._update_properties(dtype=torch.double)
         return super().double()
 
     def half(self) -> "Metric":
-        """Casts all floating point parameters and buffers to ``half`` datatype.
-
-        Returns:
-            Module: self
-        """
+        """Casts all floating point parameters and buffers to ``half`` datatype. """
         self._update_properties(dtype=torch.half)
         return super().half()
 
     def _update_properties(
         self, device: Optional[torch.device] = None, dtype: Optional[Union[str, torch.dtype]] = None
     ) -> None:
-        """Updates the internal device and or dtype attributes of the metric."""
+        """ Updates the internal device and or dtype attributes of the metric. """
         if device is not None:
             self._device = device
         if dtype is not None:
