@@ -12,7 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
 
+
 - Added support for float targets in `nDCG` metric ([#437](https://github.com/PyTorchLightning/metrics/pull/437))
+
+
+- Added `device` and `dtype` properties ([462](https://github.com/PyTorchLightning/metrics/pull/462))
 
 
 ### Changed
@@ -35,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed bug where compositional metrics where unable to sync because of type mismatch ([#454](https://github.com/PyTorchLightning/metrics/pull/454))
+
+
+- Fixed `BootStrapper` metrics not working on GPU ([462](https://github.com/PyTorchLightning/metrics/pull/462))
+
 
 ## [0.5.0] - 2021-08-09
 
