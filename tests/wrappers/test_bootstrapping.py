@@ -20,10 +20,13 @@ from sklearn.metrics import precision_score, recall_score, mean_squared_error
 from torch import Tensor
 from functools import partial
 
+from tests.helpers import seed_all
 from torchmetrics import Precision, Recall, MeanSquaredError
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
+
+seed_all(42)
 
 _preds = torch.randint(10, (10, 32))
 _target = torch.randint(10, (10, 32))
@@ -56,10 +59,10 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
     """make sure that the bootstrap sampler works as intended."""
-    old_samples = torch.randn(10, 2)
+    old_samples = torch.randn(20, 2)
 
     # make sure that the new samples are only made up of old samples
-    idx = _bootstrap_sampler(10, sampling_strategy=sampling_strategy)
+    idx = _bootstrap_sampler(20, sampling_strategy=sampling_strategy)
     new_samples = old_samples[idx]
     for ns in new_samples:
         assert ns in old_samples
