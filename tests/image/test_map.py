@@ -28,8 +28,14 @@ class TestMapMetric(unittest.TestCase):
         box5 = [4.0, 4.0, 5.0, 5.0, 0.6]  # FP (detection - but no GT for class_0)
         box6 = [5.0, 5.0, 6.0, 6.0, 1.0]  # TP_class_2 --> to check if we get precision one for class_2
 
-        targets = [torch.tensor([[box1[0:4], box2[0:4], box3[0:4], box4[0:4], box6[0:4]]] * batch_size), torch.tensor([[0, 0, 1, 0, 2]] * batch_size)]
-        predictions = [torch.tensor([[box1, box2, box3, box5, box6]] * batch_size), torch.tensor([[0, 0, 0, 0, 2]] * batch_size)]
+        targets = [
+            torch.tensor([[box1[0:4], box2[0:4], box3[0:4], box4[0:4], box6[0:4]]] * batch_size),
+            torch.tensor([[0, 0, 1, 0, 2]] * batch_size),
+        ]
+        predictions = [
+            torch.tensor([[box1, box2, box3, box5, box6]] * batch_size),
+            torch.tensor([[0, 0, 0, 0, 2]] * batch_size),
+        ]
         # How to calculate expected_values:
         # sorted by score both classes:
         # box 2 TP
@@ -51,12 +57,12 @@ class TestMapMetric(unittest.TestCase):
         return predictions, targets
 
     def test_mAP_average(self):
-        numerical_correction = (201 / 202)  # (1-100/101)/2 --> 101 coming from interpolation)
-        expected_value = (1 / 3 * 1 + 1 / 3 * 0 + 1 / 3 * 2 / 3 * numerical_correction)
+        numerical_correction = 201 / 202  # (1-100/101)/2 --> 101 coming from interpolation)
+        expected_value = 1 / 3 * 1 + 1 / 3 * 0 + 1 / 3 * 2 / 3 * numerical_correction
 
         expected_value_class0 = (2 / 3) * numerical_correction
-        expected_value_class1 = (0 / 1)
-        expected_value_class2 = (1 / 1)
+        expected_value_class1 = 0 / 1
+        expected_value_class2 = 1 / 1
 
         for batch_size in [2, 10]:
             predictions, targets = self.generate_predictions_targets(batch_size=batch_size)
