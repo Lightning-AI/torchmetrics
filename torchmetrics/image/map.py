@@ -63,10 +63,11 @@ class MAP(Metric):
     Boxes and targets have to be in COCO format with the box score at the end
     (x-top left, y-top left, width, height, score)
 
-    Note:
-        This metric is a wrapper for the pycocotools, which is a standard implementation for the mAP metric
-        for object detection.
-        https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
+    .. note::
+        This metric is a wrapper for the `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_, which is a standard implementation for the mAP metric for object detection. Using this metric
+        therefore requires you to have `pycocotools` installed. Please install with `pip install pycocotools` or
+        `pip install torchmetrics[image]`
+
 
     Note:
         As the pycocotools library cannot deal with tensors directly, all results have to be transfered
