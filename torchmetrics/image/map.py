@@ -177,7 +177,7 @@ class MAP(Metric):
         )
         return metrics
 
-    def get_coco_format(self, input: list, is_pred: bool = False):
+    def get_coco_format(self, input: List, is_pred: bool = False) -> Dict:
         images = []
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
