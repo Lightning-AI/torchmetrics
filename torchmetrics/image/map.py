@@ -14,26 +14,35 @@
 import os
 import sys
 from dataclasses import dataclass
-
 from typing import Any, Optional, List
 
 import torch
-from torch import Tensor
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+from torch import Tensor
 
 from torchmetrics.metric import Metric
+
+COCO_STATS_MAP_VALUE_INDEX = 0
+COCO_STATS_MAR_VALUE_INDEX = 8
 
 
 @dataclass
 class MAPMetricResults():
+    """
+        Dataclass to wrap the final mAP results
+    """
     map_value: Tensor
     mar_value: Tensor
     map_per_class_value: List[Tensor]
     mar_per_class_value: List[Tensor]
 
 
-class hide_prints:
+class _hide_prints:
+    """
+        Internal helper context to suppress the default output of the pycocotools package
+    """
+
     def __enter__(self):
         self._original_stdout = sys.stdout
         sys.stdout = open(os.devnull, 'w')
@@ -44,6 +53,29 @@ class hide_prints:
 
 
 class MAP(Metric):
+    """
+        Computes the Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) for object detection predictions.
+        Optionally, the mAP and mAR values can be calculated per class.
+
+        https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision
+
+        Boxes and targets have to be in COCO format with the box score at the end
+        (x-top left, y-top left, width, height, score)
+
+        Note:
+            This metric is a wrapper for the pycocotools, which is a standard implementation for the mAP metric
+            for object detection.
+            https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
+
+        Note:
+            As the pycocotools library cannot deal with tensors directly, all results have to be transfered
+            to the CPU, this might have an performance impact on your training
+
+        Args:
+            num_classes:
+                Number of classes, required for mAP values per class. default: 0 (deactivate)
+        """
+
     def __init__(
             self,
             num_classes: int = 0,
@@ -68,14 +100,15 @@ class MAP(Metric):
             self.add_state(f'ar_{class_id}', default=torch.tensor(data=[], dtype=torch.float),
                            dist_reduce_fx='mean')
 
-    def update(self, preds, target, class_names):
-        coco_target = COCO()
-        coco_target.dataset = get_coco_target(target=target, class_names=class_names)
+    def update(self, preds: list, target: list):
+        assert (len(preds[0]) == len(target[0]), 'preds and targets need to be of the same length')
 
-        coco_preds = COCO()
-        coco_preds.dataset = get_coco_preds(preds=preds, coco_target=coco_target)
+        coco_target, coco_preds = COCO(), COCO()
 
-        with hide_prints():
+        coco_target.dataset = self.get_coco_format(input=target)
+        coco_preds.dataset = self.get_coco_format(input=preds, is_pred=True)
+
+        with _hide_prints():
             coco_target.createIndex()
             coco_preds.createIndex()
             coco_eval = COCOeval(coco_target, coco_preds, 'bbox')
@@ -86,14 +119,17 @@ class MAP(Metric):
 
         self.average_precision = torch.cat(
             (self.average_precision,
-             torch.tensor([stats[0]], dtype=torch.float, device=self.average_precision.device)))
+             torch.tensor([stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float,
+                          device=self.average_precision.device)))
 
         self.average_recall = torch.cat(
-            (self.average_recall, torch.tensor([stats[8]], dtype=torch.float, device=self.average_recall.device)))
+            (self.average_recall,
+             torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device)))
 
+        # if class mode is enabled, evaluate metrics per class
         for class_id in range(self.num_classes):
             coco_eval.params.catIds = [class_id]
-            with hide_prints():
+            with _hide_prints():
                 coco_eval.evaluate()
                 coco_eval.accumulate()
                 coco_eval.summarize()
@@ -101,12 +137,14 @@ class MAP(Metric):
 
             current_value = getattr(self, f'ap_{class_id}')
             class_map_value = torch.cat(
-                (current_value, torch.tensor([stats[0]], dtype=torch.float, device=current_value.device)))
+                (current_value,
+                 torch.tensor([stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=current_value.device)))
             setattr(self, f'ap_{class_id}', class_map_value)
 
             current_value = getattr(self, f'ar_{class_id}')
             class_map_value = torch.cat(
-                (current_value, torch.tensor([stats[8]], dtype=torch.float, device=current_value.device)))
+                (current_value,
+                 torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=current_value.device)))
             setattr(self, f'ar_{class_id}', class_map_value)
 
     def compute(self):
@@ -120,51 +158,30 @@ class MAP(Metric):
                                    mar_per_class_value=mar_per_class_value)
         return metrics
 
+    def get_coco_format(self, input: list, is_pred: bool = False):
+        images = []
+        annotations = []
+        annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-def get_coco_target(target, class_names):
-    image_list = []
-    annotation_list = []
-    annotation_id = 1
+        for i, (boxes, labels) in enumerate(zip(input[0], input[1])):  # TODO, what is the default bounding box / label format
+            boxes = boxes.cpu().tolist()
+            labels = labels.cpu().tolist()
+            images.append({'id': i})
+            for box, label in zip(boxes, labels):
+                annotation = {
+                    'id': annotation_id,
+                    'image_id': i,
+                    'category_id': label,
+                    'area': box[2] * box[3],
+                    'iscrowd': 0
+                }
+                if is_pred:
+                    annotation['bbox'] = box[:4]
+                    annotation['score'] = box[-1]
+                else:
+                    annotation['bbox'] = box
+                annotations.append(annotation)
+                annotation_id += 1
 
-    for i, (boxes, labels) in enumerate(zip(target['boxes'], target['labels'])):
-        boxes = boxes.cpu().tolist()
-        labels = labels.cpu().tolist()
-        image_list.append({'id': i})
-        for box, label in zip(boxes, labels):
-            box = box
-            annotation_list.append({
-                'id': annotation_id,
-                'image_id': i,
-                'bbox': box,
-                'category_id': label,
-                'area': box[2] * box[3],
-                'iscrowd': 0
-            })
-            annotation_id += 1
-    classes_list = [{'id': i, 'name': val} for i, val in enumerate(class_names)]
-    return {'images': image_list, 'annotations': annotation_list, 'categories': classes_list}
-
-
-def get_coco_preds(preds, coco_target):
-    image_list = [img for img in coco_target.dataset['images']]
-    annotation_list = []
-    annotation_id = 1
-    for i, (boxes, labels) in enumerate(preds):
-        boxes_scores = boxes.cpu().tolist()
-        boxes = [box[:4] for box in boxes_scores]
-        scores = [box[-1] for box in boxes_scores]
-        labels = labels.cpu().tolist()
-        for box, label, score in zip(boxes, labels, scores):
-            box = box
-            annotation_list.append({
-                'id': annotation_id,
-                'image_id': i,
-                'category_id': label,
-                'bbox': box,
-                'score': score,
-                'area': box[2] * box[3],
-                'iscrowd': 0
-            })
-            annotation_id += 1
-
-    return {'images': image_list, 'annotations': annotation_list, 'categories': coco_target.dataset['categories']}
+        classes = [{'id': i, 'name': str(i)} for i in range(self.num_classes)]
+        return {'images': images, 'annotations': annotations, 'categories': classes}
