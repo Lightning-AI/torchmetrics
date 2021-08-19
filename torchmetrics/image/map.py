@@ -17,11 +17,16 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import torch
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
+
 from torch import Tensor
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
+if _PYCOCOTOOLS_AVAILABLE:
+    from pycocotools.coco import COCO
+    from pycocotools.cocoeval import COCOeval
+else:
+    COCO, COCOeval = None, None
 
 COCO_STATS_MAP_VALUE_INDEX = 0
 COCO_STATS_MAR_VALUE_INDEX = 8
