@@ -27,8 +27,36 @@ def _precision_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        fn: False negatives
+        average: Defines the reduction that is applied
+        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter)
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update( preds, target, reduce='macro', num_classes=3)
+        >>> _precision_compute(tp, fp, fn, average='macro', mdmc_average=None)
+        tensor(0.1667)
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> _precision_compute(tp, fp, fn, average='micro', mdmc_average=None)
+        tensor(0.2500)
+    """
+
     numerator = tp
     denominator = tp + fp
+
+    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        cond = tp + fp + fn == 0
+        numerator = numerator[~cond]
+        denominator = denominator[~cond]
+
     if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         # a class is not present if there exists no TPs, no FPs, and no FNs
         meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
@@ -197,13 +225,41 @@ def _recall_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        fn: False negatives
+        average: Defines the reduction that is applied
+        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter)
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
+        >>> _recall_compute(tp, fp, fn, average='macro', mdmc_average=None)
+        tensor(0.3333)
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> _recall_compute(tp, fp, fn, average='micro', mdmc_average=None)
+        tensor(0.2500)
+    """
     numerator = tp
     denominator = tp + fn
+
+    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        cond = tp + fp + fn == 0
+        numerator = numerator[~cond]
+        denominator = denominator[~cond]
+
     if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         # a class is not present if there exists no TPs, no FPs, and no FNs
         meaningless_indeces = ((tp | fn | fp) == 0).nonzero().cpu()
         numerator[meaningless_indeces, ...] = -1
         denominator[meaningless_indeces, ...] = -1
+
     return _reduce_stat_scores(
         numerator=numerator,
         denominator=denominator,

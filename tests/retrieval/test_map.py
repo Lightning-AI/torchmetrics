@@ -32,10 +32,9 @@ seed_all(42)
 
 
 class TestMAP(RetrievalMetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    @pytest.mark.parametrize("empty_target_action", ['skip', 'neg', 'pos'])
+    @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
@@ -46,7 +45,7 @@ class TestMAP(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
     ):
-        metric_args = {'empty_target_action': empty_target_action}
+        metric_args = {"empty_target_action": empty_target_action}
 
         self.run_class_metric_test(
             ddp=ddp,

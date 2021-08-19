@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.iou import _iou_from_confmat
 
 class IoU(ConfusionMatrix):
     r"""
-    Computes `Intersection over union, or Jaccard index calculation <https://en.wikipedia.org/wiki/Jaccard_index>`_:
+    Computes Intersection over union, or `Jaccard index`_:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -84,7 +84,7 @@ class IoU(ConfusionMatrix):
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
-        reduction: str = 'elementwise_mean',
+        reduction: str = "elementwise_mean",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -102,9 +102,7 @@ class IoU(ConfusionMatrix):
         self.absent_score = absent_score
 
     def compute(self) -> Tensor:
-        """
-        Computes intersection over union (IoU)
-        """
+        """Computes intersection over union (IoU)"""
         return _iou_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
 
     @property

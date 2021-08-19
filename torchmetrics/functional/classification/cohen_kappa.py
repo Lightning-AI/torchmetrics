@@ -22,6 +22,23 @@ _cohen_kappa_update = _confusion_matrix_update
 
 
 def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tensor:
+    """Computes Cohen's kappa based on the weighting type.
+
+    Args:
+        confmat: Confusion matrix without normalization
+        weights: Weighting type to calculate the score. Choose from
+            - ``None`` or ``'none'``: no weighting
+            - ``'linear'``: linear weighting
+            - ``'quadratic'``: quadratic weighting
+
+    Example:
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> confmat = _cohen_kappa_update(preds, target, num_classes=2)
+        >>> _cohen_kappa_compute(confmat)
+        tensor(0.5000)
+    """
+
     confmat = _confusion_matrix_compute(confmat)
     confmat = confmat.float() if not confmat.is_floating_point() else confmat
     n_classes = confmat.shape[0]
@@ -31,7 +48,7 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
 
     if weights is None:
         w_mat = torch.ones_like(confmat).flatten()
-        w_mat[::n_classes + 1] = 0
+        w_mat[:: n_classes + 1] = 0
         w_mat = w_mat.reshape(n_classes, n_classes)
     elif weights in ("linear", "quadratic"):
         w_mat = torch.zeros_like(confmat)
@@ -42,8 +59,7 @@ def _cohen_kappa_compute(confmat: Tensor, weights: Optional[str] = None) -> Tens
             w_mat = torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
-            f"Received {weights} for argument ``weights`` but should be either"
-            " None, 'linear' or 'quadratic'"
+            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
         )
 
     k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)

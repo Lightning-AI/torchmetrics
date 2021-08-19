@@ -1,0 +1,2 @@
+nltk>=3.6
+bert-score==0.3.10

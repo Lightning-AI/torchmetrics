@@ -5,26 +5,26 @@
 # the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
-* @borda @SkafteNicki @justusschock @ananyahjha93 @tchaton
+* @borda @SkafteNicki @justusschock @ananyahjha93 @tchaton @ethanwharris @SeanNaren
 
 # owners
 /.github/CODEOWNERS   @williamFalcon
 # main
 /README.md            @borda @SkafteNicki @edenlightning
 # installation
-/setup.py             @borda @SkafteNicki @tchaton
+/setup.py             @borda @SkafteNicki @ethanwharris
 
 # Base API
 /torchmetrics/metric.py        @SkafteNicki @justusschock @borda @tchaton
 /torchmetrics/collections.py   @SkafteNicki @justusschock @borda
 
 # CI/CD
-/.github/workflows/   @borda @tchaton
+/.github/workflows/   @borda @ethanwharris
 # configs in root
-/*.yml                @borda @tchaton
+/*.yml                @borda @ethanwharris
 
 # Docs
 /docs/                          @edenlightning @SkafteNicki @borda
 /.github/*.md                   @edenlightning @SkafteNicki @borda
 /.github/ISSUE_TEMPLATE/*.md    @edenlightning @borda @SkafteNicki
-/docs/source/conf.py            @borda @awaelchli
+/docs/source/conf.py            @borda @awaelchli @ethanwharris

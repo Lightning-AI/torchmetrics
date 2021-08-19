@@ -24,7 +24,7 @@ from torchmetrics.regression.spearman import SpearmanCorrcoef
 
 seed_all(42)
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _single_target_inputs1 = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
@@ -36,15 +36,22 @@ _single_target_inputs2 = Input(
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
 
+_specific_input = Input(
+    preds=torch.stack([torch.tensor([1.0, 0.0, 4.0, 1.0, 0.0, 3.0, 0.0]) for _ in range(NUM_BATCHES)]),
+    target=torch.stack([torch.tensor([4.0, 0.0, 3.0, 3.0, 3.0, 1.0, 1.0]) for _ in range(NUM_BATCHES)]),
+)
+
 
 @pytest.mark.parametrize(
-    "preds, target", [
+    "preds, target",
+    [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
-    ]
+        (_specific_input.preds, _specific_input.target),
+    ],
 )
 def test_ranking(preds, target):
-    """ test that ranking function works as expected """
+    """test that ranking function works as expected."""
     for p, t in zip(preds, target):
         scipy_ranking = [rankdata(p.numpy()), rankdata(t.numpy())]
         tm_ranking = [_rank_data(p), _rank_data(t)]
@@ -59,10 +66,12 @@ def _sk_metric(preds, target):
 
 
 @pytest.mark.parametrize(
-    "preds, target", [
+    "preds, target",
+    [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
-    ]
+        (_specific_input.preds, _specific_input.target),
+    ],
 )
 class TestSpearmanCorrcoef(MetricTester):
     atol = 1e-2
@@ -92,15 +101,15 @@ class TestSpearmanCorrcoef(MetricTester):
     def test_spearman_corrcoef_half_cpu(self, preds, target):
         self.run_precision_test_cpu(preds, target, SpearmanCorrcoef, spearman_corrcoef)
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_spearman_corrcoef_half_gpu(self, preds, target):
         self.run_precision_test_gpu(preds, target, SpearmanCorrcoef, spearman_corrcoef)
 
 
 def test_error_on_different_shape():
     metric = SpearmanCorrcoef()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        metric(torch.randn(100), torch.randn(50))
 
-    with pytest.raises(ValueError, match='Expected both predictions and target to be 1 dimensional tensors.'):
+    with pytest.raises(ValueError, match="Expected both predictions and target to be 1 dimensional tensors."):
         metric(torch.randn(100, 2), torch.randn(100, 2))

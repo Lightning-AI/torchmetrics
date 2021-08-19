@@ -20,6 +20,14 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor, Tensor, Tensor]:
+    """Updates and returns variables required to compute Explained Variance. Checks for same shape of input
+    tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     _check_same_shape(preds, target)
 
     n_obs = preds.size(0)
@@ -41,6 +49,29 @@ def _explained_variance_compute(
     sum_squared_target: Tensor,
     multioutput: str = "uniform_average",
 ) -> Tensor:
+    """Computes Explained Variance.
+
+    Args:
+        n_obs: Number of predictions or observations
+        sum_error: Sum of errors over all observations
+        sum_squared_error: Sum of square of errors over all observations
+        sum_target: Sum of target values
+        sum_squared_target: Sum of squares of target values
+        multioutput: Defines aggregation in the case of multiple output scores. Can be one
+            of the following strings (default is `'uniform_average'`.):
+
+            * `'raw_values'` returns full set of scores
+            * `'uniform_average'` scores are uniformly averaged
+            * `'variance_weighted'` scores are weighted by their individual variances
+
+    Example:
+        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
+        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
+        >>> n_obs, sum_error, ss_error, sum_target, ss_target = _explained_variance_update(preds, target)
+        >>> _explained_variance_compute(n_obs, sum_error, ss_error, sum_target, ss_target, multioutput='raw_values')
+        tensor([0.9677, 1.0000])
+    """
+
     diff_avg = sum_error / n_obs
     numerator = sum_squared_error / n_obs - (diff_avg * diff_avg)
 
@@ -71,8 +102,7 @@ def explained_variance(
     target: Tensor,
     multioutput: str = "uniform_average",
 ) -> Union[Tensor, Sequence[Tensor]]:
-    """
-    Computes explained variance.
+    """Computes explained variance.
 
     Args:
         preds: estimated labels

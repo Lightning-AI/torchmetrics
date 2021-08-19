@@ -41,15 +41,12 @@ class MeanAbsolutePercentageError(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Note:
-        The epsilon value is taken from `scikit-learn's implementation
-        <https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197>`_.
+        The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
 
     Note:
         MAPE output is a non-negative floating point. Best result is 0.0 . But it is important to note that,
         bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
-        This implementation returns a very large number instead of ``inf``.
-        For more information,  `read here
-        <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html>`_.
+        This `MAPE implementation returns`_ a very large number instead of ``inf``.
 
     Example:
         >>> from torchmetrics import MeanAbsolutePercentageError
@@ -58,6 +55,7 @@ class MeanAbsolutePercentageError(Metric):
         >>> mean_abs_percentage_error = MeanAbsolutePercentageError()
         >>> mean_abs_percentage_error(preds, target)
         tensor(0.2667)
+
     """
     sum_abs_per_error: Tensor
     total: Tensor
@@ -80,8 +78,7 @@ class MeanAbsolutePercentageError(Metric):
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -93,9 +90,7 @@ class MeanAbsolutePercentageError(Metric):
         self.total += num_obs
 
     def compute(self) -> Tensor:
-        """
-        Computes mean absolute percentage error over state.
-        """
+        """Computes mean absolute percentage error over state."""
         return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
 
     @property

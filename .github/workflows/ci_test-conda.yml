@@ -28,37 +28,42 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/conda_pkgs_dir
-        key: conda-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('environment.yml') }}
-        restore-keys: conda-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
+        key: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}
+        restore-keys: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}
 
     # Add another cache for Pip as not all packages lives in Conda env
     - name: Cache pip
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: pip-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-${{ hashFiles('requirements/base.txt') }}
-        restore-keys: pip-td${{ steps.times.outputs.period }}-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-
+        key: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}-${{ hashFiles('requirements/base.txt') }}
+        restore-keys: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}-
 
     # https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf
     # https://gist.github.com/mwouts/9842452d020c08faf9e84a3bba38a66f
     - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniconda-version: "4.7.12"
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
+        use-mamba: true
+        # miniconda-version: "4.7.12"
         python-version: ${{ matrix.python-version }}
-        channels: conda-forge,pytorch,pytorch-test,pytorch-nightly
+        channels: pytorch,pytorch-test,pytorch-nightly,conda-forge
         channel-priority: true
-        auto-activate-base: true
+        # auto-activate-base: true
         # environment-file: ./environment.yml
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+      # prevent hanging Conda creations
+      timeout-minutes: 10
 
     - name: Update Environment
       run: |
         sudo apt install libsndfile1
         conda info
-        conda install mkl pytorch=${{ matrix.pytorch-version }} cpuonly
+        conda install cpuonly mkl pytorch=${{ matrix.pytorch-version }}
         conda install cpuonly $(python ./requirements/adjust-versions.py conda)
-        conda install -c conda-forge ffmpeg
+        conda install ffmpeg
         conda list
         pip --version
         python ./requirements/adjust-versions.py requirements.txt

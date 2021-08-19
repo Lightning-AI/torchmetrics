@@ -25,8 +25,7 @@ from torchmetrics.utilities.data import get_group_indexes
 
 
 class RetrievalMetric(Metric, ABC):
-    """
-    Works with binary target data. Accepts float predictions from a model output.
+    """Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts
 
@@ -64,27 +63,28 @@ class RetrievalMetric(Metric, ABC):
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
     """
+
     indexes: List[Tensor]
     preds: List[Tensor]
     target: List[Tensor]
 
     def __init__(
         self,
-        empty_target_action: str = 'neg',
+        empty_target_action: str = "neg",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
-            dist_sync_fn=dist_sync_fn
+            dist_sync_fn=dist_sync_fn,
         )
         self.allow_non_binary_target = False
 
-        empty_target_action_options = ('error', 'skip', 'neg', 'pos')
+        empty_target_action_options = ("error", "skip", "neg", "pos")
         if empty_target_action not in empty_target_action_options:
             raise ValueError(f"Argument `empty_target_action` received a wrong value `{empty_target_action}`.")
 
@@ -95,7 +95,7 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
-        """ Check shape, check and convert dtypes, flatten and add to accumulators. """
+        """Check shape, check and convert dtypes, flatten and add to accumulators."""
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
 
@@ -108,11 +108,11 @@ class RetrievalMetric(Metric, ABC):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """
-        First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
-        After that, compute list of groups that will help in keeping together predictions about the same query.
-        Finally, for each group compute the ``_metric`` if the number of positive targets is at least
-        1, otherwise behave as specified by ``self.empty_target_action``.
+        """First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
+
+        After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
+        for each group compute the ``_metric`` if the number of positive targets is at least 1, otherwise behave as
+        specified by ``self.empty_target_action``.
         """
         indexes = torch.cat(self.indexes, dim=0)
         preds = torch.cat(self.preds, dim=0)
@@ -126,11 +126,11 @@ class RetrievalMetric(Metric, ABC):
             mini_target = target[group]
 
             if not mini_target.sum():
-                if self.empty_target_action == 'error':
+                if self.empty_target_action == "error":
                     raise ValueError("`compute` method was provided with a query with no positive target.")
-                if self.empty_target_action == 'pos':
+                if self.empty_target_action == "pos":
                     res.append(tensor(1.0))
-                elif self.empty_target_action == 'neg':
+                elif self.empty_target_action == "neg":
                     res.append(tensor(0.0))
             else:
                 # ensure list contains only float tensors
@@ -140,7 +140,7 @@ class RetrievalMetric(Metric, ABC):
 
     @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        """
-        Compute a metric over a predictions and target of a single group.
+        """Compute a metric over a predictions and target of a single group.
+
         This method should be overridden by subclasses.
         """

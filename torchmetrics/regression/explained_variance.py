@@ -25,8 +25,7 @@ from torchmetrics.metric import Metric
 
 class ExplainedVariance(Metric):
     r"""
-    Computes `explained variance
-    <https://en.wikipedia.org/wiki/Explained_variation>`_:
+    Computes `explained variance`_:
 
     .. math:: \text{ExplainedVariance} = 1 - \frac{\text{Var}(y - \hat{y})}{\text{Var}(y)}
 
@@ -76,6 +75,7 @@ class ExplainedVariance(Metric):
         >>> explained_variance = ExplainedVariance(multioutput='raw_values')
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
+
     """
     n_obs: Tensor
     sum_error: Tensor
@@ -110,8 +110,7 @@ class ExplainedVariance(Metric):
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -125,9 +124,7 @@ class ExplainedVariance(Metric):
         self.sum_squared_target = self.sum_squared_target + sum_squared_target
 
     def compute(self) -> Union[Tensor, Sequence[Tensor]]:
-        """
-        Computes explained variance over state.
-        """
+        """Computes explained variance over state."""
         return _explained_variance_compute(
             self.n_obs,
             self.sum_error,
