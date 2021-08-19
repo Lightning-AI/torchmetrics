@@ -335,13 +335,17 @@ KID
 .. autoclass:: torchmetrics.KID
     :noindex:
 
+LPIPS
+~~~~~
+
+.. autoclass:: torchmetrics.LPIPS
+    :noindex:
 
 PSNR
 ~~~~
 
 .. autoclass:: torchmetrics.PSNR
     :noindex:
-
 
 SSIM
 ~~~~
