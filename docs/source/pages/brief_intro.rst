@@ -25,7 +25,7 @@ Module metrics
     import torchmetrics
 
     # initialize metric
-    metric = torchmetrics.Accuracy()
+    metric = torchmetrics.classification.Accuracy()
 
     n_batches = 10
     for i in range(n_batches):

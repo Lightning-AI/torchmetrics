@@ -93,7 +93,8 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import Accuracy
 
     class MyModule(torch.nn.Module):
         def __init__(self):
@@ -236,7 +237,8 @@ Example:
 
 .. testcode::
 
-    from torchmetrics import MetricCollection, Accuracy, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import Accuracy, Precision, Recall
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
     metric_collection = MetricCollection([
@@ -258,7 +260,8 @@ inside your LightningModule
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import Accuracy, Precision, Recall
 
     class MyModule(LightningModule):
         def __init__(self):

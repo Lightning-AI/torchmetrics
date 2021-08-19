@@ -25,7 +25,7 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
         def __init__(self):
             ...
-            self.accuracy = torchmetrics.Accuracy()
+            self.accuracy = torchmetrics.classification.Accuracy()
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -64,8 +64,8 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
 
         def __init__(self):
             ...
-            self.train_acc = torchmetrics.Accuracy()
-            self.valid_acc = torchmetrics.Accuracy()
+            self.train_acc = torchmetrics.classification.Accuracy()
+            self.valid_acc = torchmetrics.classification.Accuracy()
 
         def training_step(self, batch, batch_idx):
             x, y = batch
