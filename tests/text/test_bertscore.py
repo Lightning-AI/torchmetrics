@@ -37,10 +37,10 @@ preds_batched = [preds[0:2], preds[2:]]
 refs_batched = [refs[0:2], refs[2:]]
 
 
-@pytest.mark.parametrize(
-    "preds,refs",
-    [(preds, refs)],
-)
+# @pytest.mark.parametrize(
+#     "preds,refs",
+#    [(preds, refs)],
+# )
 # @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 # def test_score_fn(preds, refs):
 #     """Tests for functional."""
@@ -82,11 +82,48 @@ refs_batched = [refs[0:2], refs[2:]]
 
 
 # Add some temporary testing between original BERTScore and torchmetrics' own implementation
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_fn(preds, refs):
     """Tests for functional."""
     Score = bert_score(preds, refs, model_type="bert-base-uncased", num_layers=12, idf=False, batch_size=3)
     new_Score = new_bert_score(preds, refs, model_type="bert-base-uncased", idf=False, batch_size=3)
+    print(Score)
+    print(new_Score)
+    _assert_list(Score["precision"], new_Score["precision"])
+    _assert_list(Score["recall"], new_Score["recall"])
+    _assert_list(Score["f1"], new_Score["f1"])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_fn_nonlast_layer(preds, refs):
+    """Tests for functional."""
+    Score = bert_score(preds, refs, model_type="bert-base-uncased", num_layers=8, idf=False, batch_size=3)
+    new_Score = new_bert_score(preds, refs, model_type="bert-base-uncased", num_layers=8, idf=False, batch_size=3)
+    print(Score)
+    print(new_Score)
+    _assert_list(Score["precision"], new_Score["precision"])
+    _assert_list(Score["recall"], new_Score["recall"])
+    _assert_list(Score["f1"], new_Score["f1"])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_all_layers(preds, refs):
+    """Tests for functional."""
+    Score = bert_score(preds, refs, model_type="bert-base-uncased", all_layers=True, idf=False, batch_size=3)
+    new_Score = new_bert_score(preds, refs, model_type="bert-base-uncased", all_layers=True, idf=False, batch_size=3)
     print(Score)
     print(new_Score)
     _assert_list(Score["precision"], new_Score["precision"])

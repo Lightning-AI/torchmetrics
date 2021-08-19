@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
+import warnings
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -118,14 +119,16 @@ def _get_embeddings_and_idf_scale(
     dataloader: DataLoader,
     model: torch.nn.Module,
     device: Optional[Union[str, torch.device]] = None,
+    num_layers: Optional[int] = None,
+    all_layers: bool = False,
     idf: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequence scaling factor.
-    TODO:
     Args:
         dataloader: `torch.utils.data.DataLoader` instance.
         model: BERT model.
         device: Device to be used for calculation.
+        num_layers: The layer of representation to use.
         idf: Indication whether normalization using inverse document frequencies should be used.
 
     Return:
@@ -134,11 +137,22 @@ def _get_embeddings_and_idf_scale(
     IDF_SCALE_LIST: List[torch.Tensor] = []
     for batch in dataloader:
         with torch.no_grad():
-            out = model(batch["input_ids"].to(device), batch["attention_mask"].to(device))[0]
+            if not all_layers:
+                # Output shape: batch_size x 1 x sequence_length x bert_dim
+                out = model(
+                    batch["input_ids"].to(device), batch["attention_mask"].to(device), output_hidden_states=True,
+                ).hidden_states[num_layers if num_layers is not None else -1].unsqueeze(1)
+            else:
+                # Output shape: batch_size x num_layers x sequence_length x bert_dim
+                out = model(
+                    batch["input_ids"].to(device), batch["attention_mask"].to(device), output_hidden_states=True,
+                ).hidden_states
+                out = torch.cat([o.unsqueeze(1) for o in out], dim=1)
+
         out /= out.norm(dim=-1).unsqueeze(-1)  # normalize embeddings
-        # Multiply embeddings with attention_mask (b=batch_size, s=seq_len, d=emb_dim)
         processed_attention_mask = _process_attention_mask_for_special_tokens(batch["attention_mask"])
-        out = torch.einsum("bsd, bs -> bsd", out, processed_attention_mask)
+        # Multiply embeddings with attention_mask (b=batch_size, l=num_layers, s=seq_len, d=emb_dim)
+        out = torch.einsum("blsd, bs -> blsd", out, processed_attention_mask)
         EMBEDDINGS_LIST.append(out.cpu())
 
         # Calculate idf scaling factor if desired. Otherwise take a vector of ones
@@ -149,6 +163,17 @@ def _get_embeddings_and_idf_scale(
     IDF_SCALE = torch.cat(IDF_SCALE_LIST)
 
     return EMBEDDINGS, IDF_SCALE
+
+
+def _get_scaled_precision_or_recall(cos_sim: torch.Tensor, metric: str, idf_scale: torch.Tensor) -> torch.Tensor:
+    """Helper function to calculate precision or recall, transpose it and scale it with idf_scale factor."""
+    dim = 3 if metric == "precision" else 2
+    res = cos_sim.max(dim=dim).values.sum(-1) / cos_sim.max(dim=dim).values.not_equal(0.0).sum(-1)
+    # Divide measure by idf scaling factor (transpose required)
+    res = res.transpose(0, 1) / idf_scale
+    # Squeeze over num_layers if possible. We retain transposition to match the shape of bert_score results.
+    res = res.squeeze(0)
+    return res
 
 
 def _get_precision_recall_f1(
@@ -168,9 +193,12 @@ def _get_precision_recall_f1(
     Return:
         Tensors containing precision, recall and F1 score, respectively.
     """
-    cos_sim = torch.bmm(pred_embeddings, ref_embeddings.transpose(1, 2))
-    precision = (cos_sim.max(dim=2).values.sum(-1) / cos_sim.max(dim=2).values.not_equal(0.0).sum(-1)) / pred_idf_scale
-    recall = (cos_sim.max(dim=1).values.sum(-1) / cos_sim.max(dim=1).values.not_equal(0.0).sum(-1)) / ref_idf_scale
+    # Dimensions: b = batch_size, l = num_layers, p = predictions_seq_len, r = references_seq_len, d = bert_dim
+    cos_sim = torch.einsum("blpd, blrd -> blpr", pred_embeddings, ref_embeddings)
+    # Final metrics shape = (batch_size * num_layers | batch_size)
+    precision = _get_scaled_precision_or_recall(cos_sim, "precision", pred_idf_scale)
+    recall = _get_scaled_precision_or_recall(cos_sim, "recall", ref_idf_scale)
+
     f1_score = 2 * precision * recall / (precision + recall)
     f1_score = f1_score.masked_fill(torch.isnan(f1_score), 0.0)
 
@@ -182,6 +210,7 @@ def new_bert_score(
     references: List[str],
     lang: str = "en",
     model_type: Optional[str] = None,
+    num_layers: Optional[int] = None,
     own_model: Optional[torch.nn.Module] = None,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
@@ -192,30 +221,53 @@ def new_bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
 ) -> Dict[str, List[float]]:
+    """`BERTScore <https://arxiv.org/abs/1904.09675>`_ leverages the pre-trained contextual embeddings from BERT
+    and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
+    with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
+    recall, and F1 measure, which can be useful for evaluating different language generation tasks.
+    assert len(predictions) == len(references), "Number of predicted and reference sententes must be the same!"
+    """
+
     if not own_model:
         if not _TRANSFORMERS_AVAILABLE:
-            raise ValueError("#TODO: Transformers must be installed.")
+            raise ValueError(
+                "`bert_score` metric with default models requires `transformers` package be installed. "
+                "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
+            )
         tokenizer = AutoTokenizer.from_pretrained(model_type)
         model = AutoModel.from_pretrained(model_type)
         model.eval()
         model.to(device)
+
+    try:
+        if num_layers:
+            assert num_layers <= model.config.num_hidden_layers, (
+                f"num_layers={num_layers} is forbidden for {model_type}. "
+                f"Please use num_layers <= {model.config.num_hidden_layers}"
+            )
+    except AttributeError:
+        warnings.warn("It was not possible to retrieve the parametery `num_layers` from the model specification.")
 
     ref_dataset = TextDataset(references, tokenizer, max_length)
     pred_dataset = TextDataset(predictions, tokenizer, max_length, tokens_idf=ref_dataset.tokens_idf)
     ref_loader = DataLoader(ref_dataset, batch_size=batch_size, num_workers=num_threads)
     pred_loader = DataLoader(pred_dataset, batch_size=batch_size, num_workers=num_threads)
 
-    ref_embeddings, ref_idf_scale = _get_embeddings_and_idf_scale(ref_loader, model, device, idf)
-    pred_embeddings, pred_idf_scale = _get_embeddings_and_idf_scale(pred_loader, model, device, idf)
+    ref_embeddings, ref_idf_scale = _get_embeddings_and_idf_scale(
+        ref_loader, model, device, num_layers, all_layers, idf
+    )
+    pred_embeddings, pred_idf_scale = _get_embeddings_and_idf_scale(
+        pred_loader, model, device, num_layers, all_layers, idf
+    )
 
     precision, recall, f1_score = _get_precision_recall_f1(
         pred_embeddings, ref_embeddings, pred_idf_scale, ref_idf_scale
     )
 
     output_dict = {
-        "f1": f1_score.tolist(),
         "precision": precision.tolist(),
         "recall": recall.tolist(),
+        "f1": f1_score.tolist(),
     }
     return output_dict
 
