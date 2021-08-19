@@ -17,11 +17,11 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import torch
-
 from torch import Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
+
 if _PYCOCOTOOLS_AVAILABLE:
     from pycocotools.coco import COCO
     from pycocotools.cocoeval import COCOeval
