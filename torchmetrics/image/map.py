@@ -69,7 +69,7 @@ class MAP(Metric):
         `pip install torchmetrics[image]`
 
 
-    Note:
+    .. note::
         As the pycocotools library cannot deal with tensors directly, all results have to be transfered
         to the CPU, this might have an performance impact on your training
 
