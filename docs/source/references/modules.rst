@@ -341,6 +341,12 @@ LPIPS
 .. autoclass:: torchmetrics.LPIPS
     :noindex:
 
+MAP
+~~~
+
+.. autoclass:: torchmetrics.MAP
+    :noindex:
+
 PSNR
 ~~~~
 
