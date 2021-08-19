@@ -113,6 +113,8 @@ class MAP(Metric):
             )
         self.add_state("average_precision", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
         self.add_state("average_recall", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
+        if not isinstance(num_classes, int) and num_classes < 0:
+            raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
         self.num_classes = num_classes
 
         for class_id in range(num_classes):
