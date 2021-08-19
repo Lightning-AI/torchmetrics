@@ -16,7 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Sequence
+from typing import Any, Callable, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -55,8 +55,22 @@ class BLEUScore(Metric):
     numerator: Tensor
     denominator: Tensor
 
-    def __init__(self, n_gram: int = 4, smooth: bool = False):
-        super().__init__()
+    def __init__(
+        self,
+        n_gram: int = 4,
+        smooth: bool = False,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable] = None,
+    ):
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
+
         self.n_gram = n_gram
         self.smooth = smooth
 
@@ -93,3 +107,7 @@ class BLEUScore(Metric):
         return _bleu_score_compute(
             self.trans_len, self.ref_len, self.numerator, self.denominator, self.n_gram, self.smooth
         )
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False
