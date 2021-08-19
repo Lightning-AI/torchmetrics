@@ -121,7 +121,8 @@ class MAP(Metric):
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
     def update(self, preds: list, target: list):
-        assert (len(preds[0]) == len(target[0]), "preds and targets need to be of the same length")
+        if len(preds[0]) != len(target[0]):
+            raise ValueError("preds and targets need to be of the same length")
 
         coco_target, coco_preds = COCO(), COCO()
 
