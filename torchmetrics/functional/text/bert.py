@@ -47,7 +47,9 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
     )
 
 
-def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> torch.Tensor:
+def _process_attention_mask_for_special_tokens(
+    attention_mask: torch.Tensor, device: Union[str, torch.device]
+) -> torch.Tensor:
     """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a calculation.
 
     Args:
@@ -61,7 +63,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> 
     # Make attention_mask zero for [SEP] token
     sep_token_position = (attention_mask - 0.1).cumsum(-1).argmax(-1)
     attention_mask[torch.arange(attention_mask.size(0)).long(), sep_token_position] = 0
-    return attention_mask
+    return attention_mask.to(device)
 
 
 class TextDataset(Dataset):
@@ -150,7 +152,7 @@ def _get_embeddings_and_idf_scale(
                 out = torch.cat([o.unsqueeze(1) for o in out], dim=1)
 
         out /= out.norm(dim=-1).unsqueeze(-1)  # normalize embeddings
-        processed_attention_mask = _process_attention_mask_for_special_tokens(batch["attention_mask"])
+        processed_attention_mask = _process_attention_mask_for_special_tokens(batch["attention_mask"], device)
         # Multiply embeddings with attention_mask (b=batch_size, l=num_layers, s=seq_len, d=emb_dim)
         out = torch.einsum("blsd, bs -> blsd", out, processed_attention_mask)
         EMBEDDINGS_LIST.append(out.cpu())
