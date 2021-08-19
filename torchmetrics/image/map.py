@@ -83,13 +83,12 @@ class MAP(Metric):
             before returning the value at the step. default: False
         process_group:
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
-            
+
     Raises:
         RuntimeError:
             If ``pycocotools`` is not installed
         ValueError:
             If ``num_classes`` is not an integer larger or equal to 0
-        
     """
 
     def __init__(
