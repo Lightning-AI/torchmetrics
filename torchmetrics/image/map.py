@@ -14,7 +14,7 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 
 import torch
 from torch import Tensor
