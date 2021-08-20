@@ -14,8 +14,9 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict, Union, Tuple
 
+import numpy as np
 import torch
 from torch import Tensor
 
@@ -30,6 +31,17 @@ else:
 
 COCO_STATS_MAP_VALUE_INDEX = 0
 COCO_STATS_MAR_VALUE_INDEX = 8
+
+
+class GroundtruthDict(TypedDict):
+    groundtruth_boxes: Union[torch.FloatTensor, np.ndarray, List[float]]
+    groundtruth_classes: Union[torch.IntTensor, np.ndarray, List[int]]
+
+
+class DetectionsDict(TypedDict):
+    detection_boxes: Union[torch.FloatTensor, np.ndarray, List[float]]
+    detection_scores: Union[torch.FloatTensor, np.ndarray, List[float]]
+    detection_classes: Union[torch.IntTensor, np.ndarray, List[int]]
 
 
 @dataclass
@@ -92,11 +104,11 @@ class MAP(Metric):
     """
 
     def __init__(
-        self,
-        num_classes: int = 0,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+            self,
+            num_classes: int = 0,
+            compute_on_step: bool = True,
+            dist_sync_on_step: bool = False,
+            process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -121,9 +133,43 @@ class MAP(Metric):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
-    def update(self, preds: list, target: list):
-        if len(preds[0]) != len(target[0]):
-            raise ValueError("preds and targets need to be of the same length")
+    def update(self, preds: List[DetectionsDict], target: List[GroundtruthDict]):
+        """Updates mAP and mAR values with metric values from given predictions and groundtruth
+
+        Args:
+            groundtruth_dict: A dictionary containing -
+                GroundtruthDict.groundtruth_boxes: torch.FloatTensor or float32 numpy array of shape
+                    [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
+                    [ymin, xmin, ymax, xmax] in absolute image coordinates.
+                GroundtruthDict.groundtruth_classes: integer numpy array of shape
+                    [num_boxes] containing 1-indexed groundtruth classes for the boxes.
+            detections_dict: A dictionary containing -
+                DetectionsDict.detection_boxes: torch.FloatTensor or float32 numpy array of shape
+                    [num_boxes, 4] containing `num_boxes` detection boxes of the format
+                    [ymin, xmin, ymax, xmax] in absolute image coordinates.
+                DetectionsDict.detection_scores: torch.FloatTensor or float32 numpy array of shape
+                    [num_boxes] containing detection scores for the boxes.
+                DetectionsDict.detection_classes: torch.IntTensor or integer numpy array of shape
+                    [num_boxes] containing 0-indexed detection classes for the boxes.
+
+        Raises:
+            ValueError:
+                If ``preds`` is not of type DetectionsDict
+                If ``target`` is not of type GroundtruthDict
+                If `preds` and `target` are not of the same length
+                If any of `preds.detection_boxes`, `preds.detection_scores` and `preds.detection_classes` are not of the same length
+                If any of `target.groundtruth_boxes` and `target.groundtruth_classes` are not of the same length
+                If any box is not of length 4
+                If any class is not of length 1
+                If any score is not of length 1
+        """
+        if not isinstance(preds, DetectionsDict):
+            raise ValueError("Expected argument `preds` to be of type DetectionsDict")
+        if not isinstance(target, GroundtruthDict):
+            raise ValueError("Expected argument `target` to be of type GroundtruthDict")
+        if len(preds) != len(target):
+            raise ValueError(
+                "Expected argument `preds` and `target` to have the same length")
 
         coco_target, coco_preds = COCO(), COCO()
 
@@ -193,32 +239,80 @@ class MAP(Metric):
         )
         return metrics
 
-    def get_coco_format(self, input: List, is_pred: bool = False) -> Dict:
+    def get_coco_format(self, inputs: List[Union[GroundtruthDict, DetectionsDict]], is_pred: bool = False) -> Dict:
         images = []
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        for i, (boxes, labels) in enumerate(
-            zip(input[0], input[1])
-        ):  # TODO, what is the default bounding box / label format
-            boxes = boxes.cpu().tolist()
-            labels = labels.cpu().tolist()
+        for i, input in enumerate(inputs):
             images.append({"id": i})
-            for box, label in zip(boxes, labels):
+            boxes, classes, scores = self.get_values_for_sample(input, is_pred)
+
+            if len(boxes) != len(classes):
+                raise ValueError(
+                    f"Input boxes and classes of sample {i} have a different length (expected {len(boxes)} classes, got {len(classes)}")
+
+            if is_pred and len(boxes) != len(scores):
+                raise ValueError(
+                    f"Input boxes and scores of sample {i} have a different length (expected {len(boxes)} scores, got {len(scores)}")
+
+            for k, (box, label) in enumerate(zip(boxes, classes)):
+                if len(box) != 4:
+                    raise ValueError(
+                        f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)}")
+                if len(label) != 1 or type(label) != int:
+                    raise ValueError(
+                        f"Invalid input class of sample {i}, element {k} (expected 1 value of type integer, got {len(label)} of type {type(label)}")
                 annotation = {
                     "id": annotation_id,
                     "image_id": i,
+                    "bbox": box,
                     "category_id": label,
                     "area": box[2] * box[3],
                     "iscrowd": 0,
                 }
                 if is_pred:
-                    annotation["bbox"] = box[:4]
-                    annotation["score"] = box[-1]
-                else:
-                    annotation["bbox"] = box
+                    score = scores[k]
+                    if len(score) != 1 or type(score) != float:
+                        raise ValueError(
+                            f"Invalid input score of sample {i}, element {k} (expected 1 value of type float, got {len(score)} of type {type(score)}")
+                    annotation["score"] = score
                 annotations.append(annotation)
                 annotation_id += 1
 
         classes = [{"id": i, "name": str(i)} for i in range(self.num_classes)]
         return {"images": images, "annotations": annotations, "categories": classes}
+
+    def get_values_for_sample(self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool) -> Tuple[
+        List, List, Optional[List]]:
+        boxes = input['detection_boxes'] if is_pred else input['groundtruth_boxes']
+        classes = input['detection_classes'] if is_pred else input['groundtruth_classes']
+
+        boxes_list: List
+        classes_list: List
+        scores_list: Optional[List] = None
+
+        if type(boxes) is torch.Tensor:
+            boxes_list = boxes.cpu().tolist()
+        elif type(boxes) is np.ndarray:
+            boxes_list = boxes.tolist()
+        else:
+            boxes_list = boxes
+
+        if type(boxes) is torch.Tensor:
+            classes_list = classes.cpu().tolist()
+        elif type(boxes) is np.ndarray:
+            classes_list = classes.tolist()
+        else:
+            classes_list = classes
+
+        if is_pred:
+            scores = input['detection_scores']
+            if type(scores) is torch.Tensor:
+                scores_list = classes.cpu().tolist()
+            elif type(scores) is np.ndarray:
+                scores_list = classes.tolist()
+            else:
+                scores_list = classes
+
+        return boxes_list, classes_list, scores_list
