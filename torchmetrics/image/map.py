@@ -104,11 +104,11 @@ class MAP(Metric):
     """
 
     def __init__(
-            self,
-            num_classes: int = 0,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
+        self,
+        num_classes: int = 0,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -286,7 +286,7 @@ class MAP(Metric):
         return {"images": images, "annotations": annotations, "categories": classes}
 
     def get_values_for_sample(
-            self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool
+        self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool
     ) -> Tuple[List, List, Optional[List]]:
         boxes = input["detection_boxes"] if is_pred else input["groundtruth_boxes"]
         classes = input["detection_classes"] if is_pred else input["groundtruth_classes"]
