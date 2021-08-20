@@ -169,8 +169,6 @@ def _class_test(
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
-            print(ddp_preds)
-            print(ddp_targets)
             if input_order == INPUT_ORDER.PREDS_FIRST:
                 sk_batch_result = sk_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
             elif input_order == INPUT_ORDER.TARGETS_FIRST:
@@ -203,8 +201,6 @@ def _class_test(
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    print(total_preds)
-    print(total_targets)
     if input_order == INPUT_ORDER.PREDS_FIRST:
         sk_result = sk_metric(total_preds, total_targets, **total_kwargs_update)
     elif input_order == INPUT_ORDER.TARGETS_FIRST:
