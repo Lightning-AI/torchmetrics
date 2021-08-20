@@ -38,13 +38,9 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
     Return:
         A dictionary of tokenized sentences including input_ids and attention_mask.
     """
-    return tokenizer(
-        text,
-        padding=True,
-        max_length=max_length,
-        truncation=True,
-        return_tensors="pt",
-    )
+    tokenized_data = tokenizer(text, padding=True, max_length=max_length, truncation=True, return_tensors="pt")
+    input_ids, attention_mask = _sort_data_according_length(tokenized_data.input_ids, tokenized_data.attention_mask)
+    return {"input_ids": input_ids, "attention_mask": attention_mask}
 
 
 def _process_attention_mask_for_special_tokens(
@@ -66,6 +62,29 @@ def _process_attention_mask_for_special_tokens(
     return attention_mask.to(device)
 
 
+def _sort_data_according_length(
+    input_ids: torch.Tensor, attention_mask: torch.Tensor
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    sorted_indices = attention_mask.sum(1).argsort()
+    input_ids = input_ids[sorted_indices]
+    attention_mask = attention_mask[sorted_indices]
+    return input_ids, attention_mask
+
+
+def _input_data_collator(batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    max_len = int(batch["attention_mask"].sum(1).max().item())
+    input_ids = batch["input_ids"][:, :max_len]
+    attention_mask = batch["attention_mask"][:, :max_len]
+    return {"input_ids": input_ids, "attention_mask": attention_mask}
+
+
+def _output_data_collator(model_output: torch.Tensor, target_len: int) -> torch.Tensor:
+    zeros_shape = list(model_output.shape)
+    zeros_shape[2] = target_len - zeros_shape[2]
+    model_output = torch.cat([model_output, torch.zeros(zeros_shape)])
+    return model_output
+
+
 class TextDataset(Dataset):
 
     def __init__(
@@ -85,6 +104,7 @@ class TextDataset(Dataset):
             tokens_idf: Inverse document frequences (these should be calculated on reference sentences).
         """
         self.text = preprocess_text_fn(text, tokenizer, max_length)
+        self.max_length = self.text["input_ids"].shape[1]
         self.num_sentences = len(text)
         self.idf = idf
         if idf:
@@ -127,6 +147,7 @@ class TextDataset(Dataset):
 
 def _get_embeddings_and_idf_scale(
     dataloader: DataLoader,
+    target_len: int,
     model: torch.nn.Module,
     device: Optional[Union[str, torch.device]] = None,
     num_layers: Optional[int] = None,
@@ -139,6 +160,7 @@ def _get_embeddings_and_idf_scale(
         model: BERT model.
         device: Device to be used for calculation.
         num_layers: The layer of representation to use.
+        all_layers:
         idf: Indication whether normalization using inverse document frequencies should be used.
 
     Return:
@@ -147,6 +169,7 @@ def _get_embeddings_and_idf_scale(
     IDF_SCALE_LIST: List[torch.Tensor] = []
     for batch in dataloader:
         with torch.no_grad():
+            batch = _input_data_collator(batch)
             if not all_layers:
                 # Output shape: batch_size x 1 x sequence_length x bert_dim
                 out = model(
@@ -160,6 +183,7 @@ def _get_embeddings_and_idf_scale(
                 out = torch.cat([o.unsqueeze(1) for o in out], dim=1)
 
         out /= out.norm(dim=-1).unsqueeze(-1)  # normalize embeddings
+        out = _output_data_collator(out, target_len)
         processed_attention_mask = _process_attention_mask_for_special_tokens(batch["attention_mask"], device)
         # Multiply embeddings with attention_mask (b=batch_size, l=num_layers, s=seq_len, d=emb_dim)
         out = torch.einsum("blsd, bs -> blsd", out, processed_attention_mask)
@@ -264,10 +288,10 @@ def new_bert_score(
     pred_loader = DataLoader(pred_dataset, batch_size=batch_size, num_workers=num_threads)
 
     ref_embeddings, ref_idf_scale = _get_embeddings_and_idf_scale(
-        ref_loader, model, device, num_layers, all_layers, idf
+        ref_loader, ref_dataset.max_length, model, device, num_layers, all_layers, idf
     )
     pred_embeddings, pred_idf_scale = _get_embeddings_and_idf_scale(
-        pred_loader, model, device, num_layers, all_layers, idf
+        pred_loader, pred_dataset.max_length, model, device, num_layers, all_layers, idf
     )
 
     precision, recall, f1_score = _get_precision_recall_f1(
