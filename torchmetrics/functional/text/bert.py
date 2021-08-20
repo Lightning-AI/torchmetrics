@@ -43,9 +43,7 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
     return {"input_ids": input_ids, "attention_mask": attention_mask}
 
 
-def _process_attention_mask_for_special_tokens(
-    attention_mask: torch.Tensor, device: Optional[Union[str, torch.device]] = None
-) -> torch.Tensor:
+def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> torch.Tensor:
     """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a calculation.
 
     Args:
@@ -59,7 +57,7 @@ def _process_attention_mask_for_special_tokens(
     # Make attention_mask zero for [SEP] token
     sep_token_position = (attention_mask - 0.1).cumsum(-1).argmax(-1)
     attention_mask[torch.arange(attention_mask.size(0)).long(), sep_token_position] = 0
-    return attention_mask.to(device)
+    return attention_mask
 
 
 def _sort_data_according_length(
@@ -71,18 +69,28 @@ def _sort_data_according_length(
     return input_ids, attention_mask
 
 
-def _input_data_collator(batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+def _input_data_collator(
+    batch: Dict[str, torch.Tensor], device: Optional[Union[str, torch.device]]
+) -> Dict[str, torch.Tensor]:
+    """Helper function that trims model inputs to the longest sequence within the batch and put the input on
+    the proper device."""
     max_len = int(batch["attention_mask"].sum(1).max().item())
-    input_ids = batch["input_ids"][:, :max_len]
-    attention_mask = batch["attention_mask"][:, :max_len]
+    input_ids = batch["input_ids"][:, :max_len].to(device)
+    attention_mask = batch["attention_mask"][:, :max_len].to(device)
     return {"input_ids": input_ids, "attention_mask": attention_mask}
 
 
-def _output_data_collator(model_output: torch.Tensor, target_len: int) -> torch.Tensor:
+def _output_data_collator(
+    model_output: torch.Tensor, attention_mask: torch.Tensor, target_len: int
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Helper function that pads the model output and attention mask to the target length."""
     zeros_shape = list(model_output.shape)
     zeros_shape[2] = target_len - zeros_shape[2]
-    model_output = torch.cat([model_output, torch.zeros(zeros_shape)])
-    return model_output
+    model_output = torch.cat([model_output, torch.zeros(zeros_shape).to(model_output.device)], dim=2)
+    attention_mask = torch.cat(
+        [attention_mask, torch.zeros(zeros_shape[0], zeros_shape[2]).to(attention_mask.device)], dim=1
+    )
+    return model_output, attention_mask
 
 
 class TextDataset(Dataset):
@@ -141,7 +149,7 @@ class TextDataset(Dataset):
         return tokens_idf
 
     def _get_tokens_idf_default_value(self) -> float:
-        """Helper function ensuring `defaultdict` to be pickled."""
+        """Helper function that ensures `defaultdict` to be pickled."""
         return math.log((self.num_sentences + 1) / 1)
 
 
@@ -157,11 +165,12 @@ def _get_embeddings_and_idf_scale(
     """Calculate sentence embeddings and the inverse-document-frequence scaling factor.
     Args:
         dataloader: `torch.utils.data.DataLoader` instance.
+        target_len: A length of the longest sequence in the data. Used for padding the model output.
         model: BERT model.
         device: Device to be used for calculation.
         num_layers: The layer of representation to use.
-        all_layers:
-        idf: Indication whether normalization using inverse document frequencies should be used.
+        all_layers: An indication whether representation from all model layers should be used for BERTScore.
+        idf: An Indication whether normalization using inverse document frequencies should be used.
 
     Return:
     """
@@ -169,22 +178,20 @@ def _get_embeddings_and_idf_scale(
     IDF_SCALE_LIST: List[torch.Tensor] = []
     for batch in dataloader:
         with torch.no_grad():
-            batch = _input_data_collator(batch)
+            batch = _input_data_collator(batch, device)
             if not all_layers:
                 # Output shape: batch_size x 1 x sequence_length x bert_dim
                 out = model(
-                    batch["input_ids"].to(device), batch["attention_mask"].to(device), output_hidden_states=True,
+                    batch["input_ids"], batch["attention_mask"], output_hidden_states=True,
                 ).hidden_states[num_layers if num_layers is not None else -1].unsqueeze(1)
             else:
                 # Output shape: batch_size x num_layers x sequence_length x bert_dim
-                out = model(
-                    batch["input_ids"].to(device), batch["attention_mask"].to(device), output_hidden_states=True,
-                ).hidden_states
+                out = model(batch["input_ids"], batch["attention_mask"], output_hidden_states=True).hidden_states
                 out = torch.cat([o.unsqueeze(1) for o in out], dim=1)
 
         out /= out.norm(dim=-1).unsqueeze(-1)  # normalize embeddings
-        out = _output_data_collator(out, target_len)
-        processed_attention_mask = _process_attention_mask_for_special_tokens(batch["attention_mask"], device)
+        out, attention_mask = _output_data_collator(out, batch["attention_mask"], target_len)
+        processed_attention_mask = _process_attention_mask_for_special_tokens(attention_mask)
         # Multiply embeddings with attention_mask (b=batch_size, l=num_layers, s=seq_len, d=emb_dim)
         out = torch.einsum("blsd, bs -> blsd", out, processed_attention_mask)
         EMBEDDINGS_LIST.append(out.cpu())
@@ -200,7 +207,7 @@ def _get_embeddings_and_idf_scale(
 
 
 def _get_scaled_precision_or_recall(cos_sim: torch.Tensor, metric: str, idf_scale: torch.Tensor) -> torch.Tensor:
-    """Helper function to calculate precision or recall, transpose it and scale it with idf_scale factor."""
+    """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values.sum(-1) / cos_sim.max(dim=dim).values.not_equal(0.0).sum(-1)
     # Divide measure by idf scaling factor (transpose required)
