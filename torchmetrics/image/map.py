@@ -14,7 +14,7 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, TypedDict, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
 
 import numpy as np
 import torch
@@ -104,11 +104,11 @@ class MAP(Metric):
     """
 
     def __init__(
-            self,
-            num_classes: int = 0,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
+        self,
+        num_classes: int = 0,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -134,7 +134,7 @@ class MAP(Metric):
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
     def update(self, preds: List[DetectionsDict], target: List[GroundtruthDict]):
-        """Updates mAP and mAR values with metric values from given predictions and groundtruth
+        """Updates mAP and mAR values with metric values from given predictions and groundtruth.
 
         Args:
             groundtruth_dict: A dictionary containing -
@@ -168,8 +168,7 @@ class MAP(Metric):
         if not isinstance(target, GroundtruthDict):
             raise ValueError("Expected argument `target` to be of type GroundtruthDict")
         if len(preds) != len(target):
-            raise ValueError(
-                "Expected argument `preds` and `target` to have the same length")
+            raise ValueError("Expected argument `preds` and `target` to have the same length")
 
         coco_target, coco_preds = COCO(), COCO()
 
@@ -250,19 +249,21 @@ class MAP(Metric):
 
             if len(boxes) != len(classes):
                 raise ValueError(
-                    f"Input boxes and classes of sample {i} have a different length (expected {len(boxes)} classes, got {len(classes)}")
+                    f"Input boxes and classes of sample {i} have a different length (expected {len(boxes)} classes, got {len(classes)}"
+                )
 
             if is_pred and len(boxes) != len(scores):
                 raise ValueError(
-                    f"Input boxes and scores of sample {i} have a different length (expected {len(boxes)} scores, got {len(scores)}")
+                    f"Input boxes and scores of sample {i} have a different length (expected {len(boxes)} scores, got {len(scores)}"
+                )
 
             for k, (box, label) in enumerate(zip(boxes, classes)):
                 if len(box) != 4:
-                    raise ValueError(
-                        f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)}")
+                    raise ValueError(f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)}")
                 if len(label) != 1 or type(label) != int:
                     raise ValueError(
-                        f"Invalid input class of sample {i}, element {k} (expected 1 value of type integer, got {len(label)} of type {type(label)}")
+                        f"Invalid input class of sample {i}, element {k} (expected 1 value of type integer, got {len(label)} of type {type(label)}"
+                    )
                 annotation = {
                     "id": annotation_id,
                     "image_id": i,
@@ -275,7 +276,8 @@ class MAP(Metric):
                     score = scores[k]
                     if len(score) != 1 or type(score) != float:
                         raise ValueError(
-                            f"Invalid input score of sample {i}, element {k} (expected 1 value of type float, got {len(score)} of type {type(score)}")
+                            f"Invalid input score of sample {i}, element {k} (expected 1 value of type float, got {len(score)} of type {type(score)}"
+                        )
                     annotation["score"] = score
                 annotations.append(annotation)
                 annotation_id += 1
@@ -283,10 +285,11 @@ class MAP(Metric):
         classes = [{"id": i, "name": str(i)} for i in range(self.num_classes)]
         return {"images": images, "annotations": annotations, "categories": classes}
 
-    def get_values_for_sample(self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool) -> Tuple[
-        List, List, Optional[List]]:
-        boxes = input['detection_boxes'] if is_pred else input['groundtruth_boxes']
-        classes = input['detection_classes'] if is_pred else input['groundtruth_classes']
+    def get_values_for_sample(
+        self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool
+    ) -> Tuple[List, List, Optional[List]]:
+        boxes = input["detection_boxes"] if is_pred else input["groundtruth_boxes"]
+        classes = input["detection_classes"] if is_pred else input["groundtruth_classes"]
 
         boxes_list: List
         classes_list: List
@@ -307,7 +310,7 @@ class MAP(Metric):
             classes_list = classes
 
         if is_pred:
-            scores = input['detection_scores']
+            scores = input["detection_scores"]
             if type(scores) is torch.Tensor:
                 scores_list = classes.cpu().tolist()
             elif type(scores) is np.ndarray:
