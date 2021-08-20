@@ -58,7 +58,6 @@ from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.functional.self_supervised import embedding_similarity
 from torchmetrics.functional.text.bert import bert_score
-from torchmetrics.functional.text.bert import new_bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.wer import wer
@@ -90,7 +89,6 @@ __all__ = [
     "mean_absolute_percentage_error",
     "mean_squared_error",
     "mean_squared_log_error",
-    "new_bert_score",
     "pearson_corrcoef",
     "pit",
     "pit_permutate",

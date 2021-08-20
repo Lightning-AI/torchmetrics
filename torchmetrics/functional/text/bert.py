@@ -18,10 +18,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_AVAILABLE
-
-if _BERTSCORE_AVAILABLE:
-    from bert_score import BERTScorer, get_hash, lang2model, model2layers
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoTokenizer, AutoModel
@@ -31,9 +28,12 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
     """Default text pre-processing function using `transformers` `AutoTokenizer` instance.
 
     Args:
-        text: An iterable of sentences.
-        tokenizer: `AutoTokenizer` instance from `transformers` package.
-        max_length: A maximum sequence length.
+        text:
+            An iterable of sentences.
+        tokenizer:
+            `AutoTokenizer` instance from `transformers` package.
+        max_length:
+            A maximum sequence length.
 
     Return:
         A dictionary of tokenized sentences including input_ids and attention_mask.
@@ -47,7 +47,8 @@ def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> 
     """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a calculation.
 
     Args:
-        attention_mask: An attention mask to be returned, for example, by a `transformers` tokenizer.
+        attention_mask:
+            An attention mask to be returned, for example, by a `transformers` tokenizer.
 
     Return:
         A processd attention mask.
@@ -106,10 +107,16 @@ class TextDataset(Dataset):
     ) -> None:
         """
         Args:
-            text: An iterable of sentences.
-            tokenizer: `AutoTokenizer` instance from `transformers` package.
-            max_length: A maximum sequence length.
-            tokens_idf: Inverse document frequences (these should be calculated on reference sentences).
+            text:
+                An iterable of sentences.
+            tokenizer:
+                `AutoTokenizer` instance from `transformers` package.
+            max_length:
+                A maximum sequence length.
+            preprocess_text_fn:
+            idf:
+            tokens_idf:
+                Inverse document frequences (these should be calculated on reference sentences).
         """
         self.text = preprocess_text_fn(text, tokenizer, max_length)
         self.max_length = self.text["input_ids"].shape[1]
@@ -164,13 +171,20 @@ def _get_embeddings_and_idf_scale(
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequence scaling factor.
     Args:
-        dataloader: `torch.utils.data.DataLoader` instance.
-        target_len: A length of the longest sequence in the data. Used for padding the model output.
-        model: BERT model.
-        device: Device to be used for calculation.
-        num_layers: The layer of representation to use.
-        all_layers: An indication whether representation from all model layers should be used for BERTScore.
-        idf: An Indication whether normalization using inverse document frequencies should be used.
+        dataloader:
+            `torch.utils.data.DataLoader` instance.
+        target_len:
+            A length of the longest sequence in the data. Used for padding the model output.
+        model:
+            BERT model.
+        device:
+            A device to be used for calculation.
+        num_layers:
+            The layer of representation to use.
+        all_layers:
+            An indication whether representation from all model layers should be used for BERTScore.
+        idf:
+            An Indication whether normalization using inverse document frequencies should be used.
 
     Return:
     """
@@ -226,10 +240,14 @@ def _get_precision_recall_f1(
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
-        pred_embeddings: Embeddings of candidate sentenecs.
-        ref_embeddings: Embeddings of reference sentences.
-        pred_idf_scale: An IDF scale factor for candidate sentences.
-        ref_idf_scale: An IDF scale factor for reference sentences.
+        pred_embeddings:
+            Embeddings of candidate sentenecs.
+        ref_embeddings:
+            Embeddings of reference sentences.
+        pred_idf_scale:
+            An IDF scale factor for candidate sentences.
+        ref_idf_scale:
+            An IDF scale factor for reference sentences.
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
@@ -246,19 +264,20 @@ def _get_precision_recall_f1(
     return precision, recall, f1_score
 
 
-def new_bert_score(
+def bert_score(
     predictions: List[str],
     references: List[str],
     lang: str = "en",
-    model_type: Optional[str] = None,
+    model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
-    own_model: Optional[torch.nn.Module] = None,
+    all_layers: bool = False,
+    model: Optional[torch.nn.Module] = None,
+    verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
     max_length: int = 512,
     batch_size: int = 64,
     num_threads: int = 4,
-    all_layers: bool = False,
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
 ) -> Dict[str, List[float]]:
@@ -267,23 +286,63 @@ def new_bert_score(
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
     recall, and F1 measure, which can be useful for evaluating different language generation tasks.
     assert len(predictions) == len(references), "Number of predicted and reference sententes must be the same!"
+
+    Args:
+        predictions:
+            An iterable of predicted sentences.
+        references:
+            An iterable of predicted sentences.
+        lang:
+        model_type:
+            A name or a model path used to load `transformers` pretrained model.
+        num_layers:
+            A layer of representation to use.
+        all_layers:
+        model:
+            A user's own model. Must be of `torch.nn.Module` instance.
+        verbose:
+        idf:
+            An indication whether normalization using inverse document frequencies should be used.
+        device:
+            A device to be used for calculation.
+        max_length:
+        batch_size:
+            A batch size used for model processing.
+        num_threads:
+            A number of threads to use for a dataloader.
+        ------------
+        # TODO:
+        rescale_with_baseline:
+            An indication whetehe bertscore should be rescaled with pre-computed baseline
+        baseline_path:
+
+    Returns:
+        Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
+
+    Example:
+        >>> predictions = ["hello there", "general kenobi"]
+        >>> references = ["hello there", "master kenobi"]
+        >>> bert_score(predictions=predictions, references=references, lang="en")  # doctest: +SKIP
+        {'precision': [0.99..., 0.99...],
+         'recall': [0.99..., 0.99...],
+         'f1': [0.99..., 0.99...]}
     """
 
-    if not own_model:
+    if model is None:
         if not _TRANSFORMERS_AVAILABLE:
             raise ValueError(
                 "`bert_score` metric with default models requires `transformers` package be installed. "
                 "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
             )
-        tokenizer = AutoTokenizer.from_pretrained(model_type)
-        model = AutoModel.from_pretrained(model_type)
-        model.eval()
-        model.to(device)
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+        model = AutoModel.from_pretrained(model_name_or_path)
+    model.eval()
+    model.to(device)
 
     try:
         if num_layers:
             assert num_layers <= model.config.num_hidden_layers, (
-                f"num_layers={num_layers} is forbidden for {model_type}. "
+                f"num_layers={num_layers} is forbidden for {model_name_or_path}. "
                 f"Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
@@ -309,101 +368,5 @@ def new_bert_score(
         "precision": precision.tolist(),
         "recall": recall.tolist(),
         "f1": f1_score.tolist(),
-    }
-    return output_dict
-
-
-def bert_score(
-    predictions: List[str],
-    references: List[str],
-    lang: str = "en",
-    model_type: Optional[str] = None,
-    num_layers: int = None,
-    verbose: bool = False,
-    idf: bool = False,
-    device: Optional[str] = None,
-    batch_size: int = 64,
-    num_threads: int = 4,
-    all_layers: bool = False,
-    rescale_with_baseline: bool = False,
-    baseline_path: Optional[str] = None,
-) -> Dict:
-    """`BERTScore <https://arxiv.org/abs/1904.09675>`_ leverages the pre-trained contextual embeddings from BERT
-    and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
-    with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
-    recall, and F1 measure, which can be useful for evaluating different language generation tasks.
-
-    Args:
-        predictions: candidate sentences
-        references: reference sentences
-        model_type: bert specification
-        num_layers: the layer of representation to use.
-        verbose: turn on intermediate status update
-        idf: use idf weighting, can also be a precomputed idf_dict
-        device: on which the contextual embedding model will be allocated on.
-        num_threads: number of threads
-        batch_size: bert score processing batch size
-        lang: language of the sentences
-        rescale_with_baseline: rescale bertscore with pre-computed baseline
-        baseline_path: customized baseline file
-
-    Returns:
-        Dict containing the keys `precision`, `recall`, `f1` and `hashcode` with corresponding values
-
-    Example:
-        >>> predictions = ["hello there", "general kenobi"]
-        >>> references = ["hello there", "master kenobi"]
-        >>> bert_score(predictions=predictions, references=references, lang="en")  # doctest: +SKIP
-        {'f1': [0.99..., 0.99...],
-         'hashcode': '...',
-         'precision': [0.99..., 0.99...],
-         'recall': [0.99..., 0.99...]}
-    """
-
-    if not _BERTSCORE_AVAILABLE:
-        raise ValueError(
-            "bert_score metric requires that bert-score package is installed."
-            " Either install with `pip install bert-score` or `pip install torchmetrics[text]`"
-        )
-
-    if model_type is None:
-        model_type = lang2model[lang.lower()]
-
-    if num_layers is None:
-        num_layers = model2layers[model_type]
-
-    hashcode = get_hash(
-        model=model_type,
-        num_layers=num_layers,
-        idf=idf,
-        rescale_with_baseline=rescale_with_baseline,
-        use_custom_baseline=baseline_path is not None,
-        use_fast_tokenizer=True,
-    )
-
-    cached_bertscorer = BERTScorer(
-        model_type=model_type,
-        num_layers=num_layers,
-        batch_size=batch_size,
-        nthreads=num_threads,
-        all_layers=all_layers,
-        idf=idf,
-        device=device,
-        lang=lang,
-        rescale_with_baseline=rescale_with_baseline,
-        baseline_path=baseline_path,
-    )
-
-    prec, recall, f1 = cached_bertscorer.score(
-        cands=predictions,
-        refs=references,
-        verbose=verbose,
-        batch_size=batch_size,
-    )
-    output_dict = {
-        "precision": prec.tolist(),
-        "recall": recall.tolist(),
-        "f1": f1.tolist(),
-        "hashcode": hashcode,
     }
     return output_dict
