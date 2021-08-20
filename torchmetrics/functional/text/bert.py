@@ -48,7 +48,7 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
 
 
 def _process_attention_mask_for_special_tokens(
-    attention_mask: torch.Tensor, device: Union[str, torch.device]
+    attention_mask: torch.Tensor, device: Optional[Union[str, torch.device]] = None
 ) -> torch.Tensor:
     """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a calculation.
 
@@ -74,6 +74,7 @@ class TextDataset(Dataset):
         tokenizer: Any,
         max_length: int = 512,
         preprocess_text_fn: Callable[[List[str], Any, int], Dict[str, torch.Tensor]] = _preprocess_text,
+        idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
     ) -> None:
         """
@@ -85,13 +86,20 @@ class TextDataset(Dataset):
         """
         self.text = preprocess_text_fn(text, tokenizer, max_length)
         self.num_sentences = len(text)
-        self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
+        self.idf = idf
+        if idf:
+            self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
+        else:
+            self.tokens_idf = {}
 
     def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         input_ids = self.text["input_ids"][idx, :]
         attention_mask = self.text["attention_mask"][idx, :]
-        input_ids_idf = torch.tensor([self.tokens_idf[input_idx] for input_idx in input_ids.tolist()])
-        return {"input_ids": input_ids, "attention_mask": attention_mask, "input_ids_idf": input_ids_idf}
+        inputs_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
+        if self.idf:
+            input_ids_idf = torch.tensor([self.tokens_idf[input_idx] for input_idx in input_ids.tolist()])
+            inputs_dict["input_ids_idf"] = input_ids_idf
+        return inputs_dict
 
     def __len__(self) -> int:
         return self.num_sentences
@@ -250,8 +258,8 @@ def new_bert_score(
     except AttributeError:
         warnings.warn("It was not possible to retrieve the parametery `num_layers` from the model specification.")
 
-    ref_dataset = TextDataset(references, tokenizer, max_length)
-    pred_dataset = TextDataset(predictions, tokenizer, max_length, tokens_idf=ref_dataset.tokens_idf)
+    ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)
+    pred_dataset = TextDataset(predictions, tokenizer, max_length, idf=idf, tokens_idf=ref_dataset.tokens_idf)
     ref_loader = DataLoader(ref_dataset, batch_size=batch_size, num_workers=num_threads)
     pred_loader = DataLoader(pred_dataset, batch_size=batch_size, num_workers=num_threads)
 
