@@ -14,6 +14,7 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
+
 from torchmetrics.functional import bert_score
 from torchmetrics.metric import Metric
 

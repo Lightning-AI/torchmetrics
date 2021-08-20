@@ -50,7 +50,7 @@ refs_batched = [refs[0:2], refs[2:]]
 
 
 @pytest.mark.parametrize(
-     "preds,refs",
+    "preds,refs",
     [(preds, refs)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -70,7 +70,7 @@ def test_score_fn(preds, refs):
 
 
 @pytest.mark.parametrize(
-     "preds,refs",
+    "preds,refs",
     [(preds, refs)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
@@ -104,7 +104,7 @@ def test_score(preds, refs):
     Scorer = BERTScore(model_name_or_path="bert-base-uncased", num_layers=8, idf=False, batch_size=3)
     Scorer.update(predictions=preds, references=refs)
     metrics_score = Scorer.compute()
-    
+
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
 
@@ -124,7 +124,7 @@ def test_score_all_layers(preds, refs):
     Scorer = BERTScore(model_name_or_path="bert-base-uncased", all_layers=True, idf=False, batch_size=3)
     Scorer.update(predictions=preds, references=refs)
     metrics_score = Scorer.compute()
-    
+
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
 
@@ -145,6 +145,6 @@ def test_accumulation(preds, refs):
     for p, r in zip(preds, refs):
         Scorer.update(predictions=p, references=r)
     metrics_score = Scorer.compute()
-    
+
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])

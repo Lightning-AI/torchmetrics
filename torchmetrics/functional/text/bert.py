@@ -17,11 +17,12 @@ from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
+
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoTokenizer, AutoModel
+    from transformers import AutoModel, AutoTokenizer
 
 
 def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> Dict[str, torch.Tensor]:
@@ -44,7 +45,8 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
 
 
 def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> torch.Tensor:
-    """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a calculation.
+    """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a
+    calculation.
 
     Args:
         attention_mask:
@@ -73,8 +75,8 @@ def _sort_data_according_length(
 def _input_data_collator(
     batch: Dict[str, torch.Tensor], device: Optional[Union[str, torch.device]]
 ) -> Dict[str, torch.Tensor]:
-    """Helper function that trims model inputs to the longest sequence within the batch and put the input on
-    the proper device."""
+    """Helper function that trims model inputs to the longest sequence within the batch and put the input on the
+    proper device."""
     max_len = int(batch["attention_mask"].sum(1).max().item())
     input_ids = batch["input_ids"][:, :max_len].to(device)
     attention_mask = batch["attention_mask"][:, :max_len].to(device)
@@ -95,7 +97,6 @@ def _output_data_collator(
 
 
 class TextDataset(Dataset):
-
     def __init__(
         self,
         text: List[str],
@@ -195,9 +196,15 @@ def _get_embeddings_and_idf_scale(
             batch = _input_data_collator(batch, device)
             if not all_layers:
                 # Output shape: batch_size x 1 x sequence_length x bert_dim
-                out = model(
-                    batch["input_ids"], batch["attention_mask"], output_hidden_states=True,
-                ).hidden_states[num_layers if num_layers is not None else -1].unsqueeze(1)
+                out = (
+                    model(
+                        batch["input_ids"],
+                        batch["attention_mask"],
+                        output_hidden_states=True,
+                    )
+                    .hidden_states[num_layers if num_layers is not None else -1]
+                    .unsqueeze(1)
+                )
             else:
                 # Output shape: batch_size x num_layers x sequence_length x bert_dim
                 out = model(batch["input_ids"], batch["attention_mask"], output_hidden_states=True).hidden_states
@@ -284,8 +291,8 @@ def bert_score(
     """`BERTScore <https://arxiv.org/abs/1904.09675>`_ leverages the pre-trained contextual embeddings from BERT
     and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
-    recall, and F1 measure, which can be useful for evaluating different language generation tasks.
-    assert len(predictions) == len(references), "Number of predicted and reference sententes must be the same!"
+    recall, and F1 measure, which can be useful for evaluating different language generation tasks. assert
+    len(predictions) == len(references), "Number of predicted and reference sententes must be the same!".
 
     Args:
         predictions:
