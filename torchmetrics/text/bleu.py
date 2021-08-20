@@ -34,6 +34,16 @@ class BLEUScore(Metric):
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
             Whether or not to apply smoothing – see [2]
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False. default: True
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When `None`, DDP
+            will be used to perform the allgather.
 
     Example:
         >>> translate_corpus = ['the cat is on the mat'.split()]

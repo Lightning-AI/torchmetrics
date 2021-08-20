@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Dict, Optional, Sequence
 
 import numpy as np
 import pytest
@@ -57,7 +57,7 @@ def setup_ddp(rank, world_size):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
+def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: str = None):
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(pl_result, Tensor):
@@ -66,25 +66,37 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
     elif isinstance(pl_result, Sequence):
         for pl_res, sk_res in zip(pl_result, sk_result):
             _assert_allclose(pl_res, sk_res, atol=atol)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     else:
         raise ValueError("Unknown format for comparison")
 
 
-def _assert_tensor(pl_result: Any):
+def _assert_tensor(pl_result: Any, key: str = None):
     """Utility function for recursively checking that some input only consists of torch tensors."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_tensor(plr)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert isinstance(pl_result[key], Tensor)
     else:
         assert isinstance(pl_result, Tensor)
 
 
-def _assert_requires_grad(metric: Metric, pl_result: Any):
+def _assert_requires_grad(metric: Metric, pl_result: Any, key: str = None):
     """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
     attribute."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
-            _assert_requires_grad(metric, plr)
+            _assert_requires_grad(metric, plr, key=key)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert metric.is_differentiable == pl_result[key].requires_grad
     else:
         assert metric.is_differentiable == pl_result.requires_grad
 

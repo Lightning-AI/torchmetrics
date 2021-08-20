@@ -15,15 +15,14 @@ import pickle
 import sys
 from enum import Enum, unique
 from functools import partial
-from typing import Any, Callable, Dict, Sequence, Union
+from typing import Any, Callable, Sequence, Union
 
-import numpy as np
 import pytest
 import torch
 from torch import Tensor
-from torch.multiprocessing import Pool, set_start_method
+from torch.multiprocessing import set_start_method
 
-from tests.helpers.testers import NUM_PROCESSES, setup_ddp
+from tests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 from torchmetrics import Metric
 
 try:
@@ -40,50 +39,6 @@ class INPUT_ORDER(Enum):
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
-
-
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: str = None):
-    """Utility function for recursively asserting that two results are within a certain tolerance."""
-    # single output compare
-    if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
-    # multi output compare
-    elif isinstance(pl_result, Sequence):
-        for pl_res, sk_res in zip(pl_result, sk_result):
-            _assert_allclose(pl_res, sk_res, atol=atol)
-    elif isinstance(pl_result, Dict):
-        if key is None:
-            raise KeyError("Provide Key for Dict based metric results.")
-        assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
-    else:
-        raise ValueError("Unknown format for comparison")
-
-
-def _assert_tensor(pl_result: Any, key: str = None):
-    """Utility function for recursively checking that some input only consists of torch tensors."""
-    if isinstance(pl_result, Sequence):
-        for plr in pl_result:
-            _assert_tensor(plr)
-    elif isinstance(pl_result, Dict):
-        if key is None:
-            raise KeyError("Provide Key for Dict based metric results.")
-        assert isinstance(pl_result[key], Tensor)
-    else:
-        assert isinstance(pl_result, Tensor)
-
-
-def _assert_requires_grad(metric: Metric, pl_result: Any, key: str = None):
-    """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
-    attribute."""
-    if isinstance(pl_result, Sequence):
-        for plr in pl_result:
-            _assert_requires_grad(metric, plr, key=key)
-    elif isinstance(pl_result, Dict):
-        if key is None:
-            raise KeyError("Provide Key for Dict based metric results.")
-        assert metric.is_differentiable == pl_result[key].requires_grad
-    else:
-        assert metric.is_differentiable == pl_result.requires_grad
 
 
 def _class_test(
@@ -297,30 +252,13 @@ def _assert_half_support(
     _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
-class TextTester:
+class TextTester(MetricTester):
     """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
     once and that pool of processes are used for all tests.
 
     All tests for text metrics should subclass from this and implement a new method called `test_metric_name` where the
     method `self.run_metric_test` is called inside.
     """
-
-    atol = 1e-8
-
-    def setup_class(self):
-        """Setup the metric class.
-
-        This will spawn the pool of workers that are used for metric testing and setup_ddp
-        """
-
-        self.poolSize = NUM_PROCESSES
-        self.pool = Pool(processes=self.poolSize)
-        self.pool.starmap(setup_ddp, [(rank, self.poolSize) for rank in range(self.poolSize)])
-
-    def teardown_class(self):
-        """Close pool of workers."""
-        self.pool.close()
-        self.pool.join()
 
     def run_functional_metric_test(
         self,

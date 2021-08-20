@@ -13,13 +13,18 @@ else:
 from torchmetrics.functional.text.wer import wer
 from torchmetrics.text.wer import WER
 
-PREDICTION1 = "hello world"
-REFERENCE1 = "hello world"
+BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
 
-PREDICTION2 = "what a day"
-REFERENCE2 = "what a wonderful day"
-
-BATCHES = {"preds": [[PREDICTION1], [PREDICTION2]], "targets": [[REFERENCE1], [REFERENCE2]]}
+BATCHES_2 = {
+    "preds": [
+        ["i like python", "what you mean or swallow"],
+        ["hello duck", "i like python"],
+    ],
+    "targets": [
+        ["i like monthy python", "what do you mean, african or european swallow"],
+        ["hello world", "i like monthy python"],
+    ],
+}
 
 
 def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
@@ -27,15 +32,16 @@ def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Unio
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
+@pytest.mark.parametrize(
+    ["preds", "targets"],
+    [
+        pytest.param(BATCHES_1["preds"], BATCHES_1["targets"]),
+        pytest.param(BATCHES_2["preds"], BATCHES_2["targets"]),
+    ],
+)
 class TestWER(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    @pytest.mark.parametrize(
-        ["preds", "targets"],
-        [
-            pytest.param(BATCHES["preds"], BATCHES["targets"]),
-        ],
-    )
     def test_wer_class(self, ddp, dist_sync_on_step, preds, targets):
 
         self.run_class_metric_test(
@@ -48,12 +54,6 @@ class TestWER(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    @pytest.mark.parametrize(
-        ["preds", "targets"],
-        [
-            pytest.param(BATCHES["preds"], BATCHES["targets"]),
-        ],
-    )
     def test_wer_functional(self, preds, targets):
 
         self.run_functional_metric_test(
@@ -64,11 +64,11 @@ class TestWER(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    def test_wer_differentiability(self):
+    def test_wer_differentiability(self, preds, targets):
 
         self.run_differentiability_test(
-            preds=BATCHES["preds"],
-            targets=BATCHES["targets"],
+            preds=preds,
+            targets=targets,
             metric_module=WER,
             metric_functional=wer,
             input_order=INPUT_ORDER.PREDS_FIRST,

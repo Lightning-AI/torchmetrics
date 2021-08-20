@@ -64,15 +64,15 @@ smooth_func = SmoothingFunction().method2
         pytest.param([0.25, 0.25, 0.25, 0.25], 4, smooth_func, True),
     ],
 )
+@pytest.mark.parametrize(
+    ["preds", "targets"],
+    [
+        pytest.param(BATCHES["preds"], BATCHES["targets"]),
+    ],
+)
 class TestBLEUScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    @pytest.mark.parametrize(
-        ["preds", "targets"],
-        [
-            pytest.param(BATCHES["preds"], BATCHES["targets"]),
-        ],
-    )
     def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
 
@@ -89,12 +89,6 @@ class TestBLEUScore(TextTester):
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    @pytest.mark.parametrize(
-        ["preds", "targets"],
-        [
-            pytest.param(BATCHES["preds"], BATCHES["targets"]),
-        ],
-    )
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         nltk_metric = partial(corpus_bleu, weights=weights, smoothing_function=smooth_func)
@@ -108,12 +102,12 @@ class TestBLEUScore(TextTester):
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    def test_bleu_score_differentiability(self, weights, n_gram, smooth_func, smooth):
+    def test_bleu_score_differentiability(self, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
 
         self.run_differentiability_test(
-            preds=((REFERENCE_1A, REFERENCE_2A, REFERENCE_3A), tuple([REFERENCE_1B])),
-            targets=(HYPOTHESIS_A, HYPOTHESIS_B),
+            preds=preds,
+            targets=targets,
             metric_module=BLEUScore,
             metric_functional=bleu_score,
             metric_args=metric_args,
