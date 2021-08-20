@@ -15,14 +15,15 @@ import pickle
 import sys
 from enum import Enum, unique
 from functools import partial
-from typing import Any, Callable, Sequence, Union
+from typing import Any, Callable, Dict, Sequence, Union
 
+import numpy as np
 import pytest
 import torch
 from torch import Tensor
 from torch.multiprocessing import Pool, set_start_method
 
-from tests.helpers.testers import NUM_PROCESSES, _assert_allclose, _assert_requires_grad, _assert_tensor, setup_ddp
+from tests.helpers.testers import NUM_PROCESSES, setup_ddp
 from torchmetrics import Metric
 
 try:
@@ -41,6 +42,50 @@ TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Seque
 NUM_BATCHES = 2
 
 
+def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: str = None):
+    """Utility function for recursively asserting that two results are within a certain tolerance."""
+    # single output compare
+    if isinstance(pl_result, Tensor):
+        assert np.allclose(pl_result.detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+    # multi output compare
+    elif isinstance(pl_result, Sequence):
+        for pl_res, sk_res in zip(pl_result, sk_result):
+            _assert_allclose(pl_res, sk_res, atol=atol)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+    else:
+        raise ValueError("Unknown format for comparison")
+
+
+def _assert_tensor(pl_result: Any, key: str = None):
+    """Utility function for recursively checking that some input only consists of torch tensors."""
+    if isinstance(pl_result, Sequence):
+        for plr in pl_result:
+            _assert_tensor(plr)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert isinstance(pl_result[key], Tensor)
+    else:
+        assert isinstance(pl_result, Tensor)
+
+
+def _assert_requires_grad(metric: Metric, pl_result: Any, key: str = None):
+    """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
+    attribute."""
+    if isinstance(pl_result, Sequence):
+        for plr in pl_result:
+            _assert_requires_grad(metric, plr, key=key)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert metric.is_differentiable == pl_result[key].requires_grad
+    else:
+        assert metric.is_differentiable == pl_result.requires_grad
+
+
 def _class_test(
     rank: int,
     worldsize: int,
@@ -57,6 +102,7 @@ def _class_test(
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
     input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
+    key: str = None,
     **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric and reference metric.
@@ -78,6 +124,8 @@ def _class_test(
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         input_order: Define the ordering for the preds and targets positional arguments.
+        key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
+            the sk_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
     """
@@ -112,11 +160,9 @@ def _class_test(
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             # Concatenation of Sequence of strings
             ddp_preds = type(preds)()
-            for r in range(worldsize):
-                ddp_preds = ddp_preds + preds[i + r]
-
             ddp_targets = type(targets)()
             for r in range(worldsize):
+                ddp_preds = ddp_preds + preds[i + r]
                 ddp_targets = ddp_targets + targets[i + r]
             ddp_kwargs_upd = {
                 k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
@@ -129,7 +175,7 @@ def _class_test(
                 sk_batch_result = sk_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
             elif input_order == INPUT_ORDER.TARGETS_FIRST:
                 sk_batch_result = sk_metric(ddp_targets, ddp_preds, **ddp_kwargs_upd)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
@@ -141,21 +187,18 @@ def _class_test(
             elif input_order == INPUT_ORDER.TARGETS_FIRST:
                 sk_batch_result = sk_metric(targets[i], preds[i], **batch_kwargs_update)
 
-            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
     # check on all batches on all ranks
     result = metric.compute()
-    _assert_tensor(result)
+    _assert_tensor(result, key=key)
 
     # Concatenation of Sequence of strings
     total_preds = type(preds)()
-    for i in range(NUM_BATCHES):
-        total_preds = total_preds + preds[i]
-
     total_targets = type(targets)()
     for i in range(NUM_BATCHES):
+        total_preds = total_preds + preds[i]
         total_targets = total_targets + targets[i]
-
     total_kwargs_update = {
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
@@ -168,7 +211,7 @@ def _class_test(
         sk_result = sk_metric(total_targets, total_preds, **total_kwargs_update)
 
     # assert after aggregation
-    _assert_allclose(result, sk_result, atol=atol)
+    _assert_allclose(result, sk_result, atol=atol, key=key)
 
 
 def _functional_test(
@@ -181,6 +224,7 @@ def _functional_test(
     device: str = "cpu",
     fragment_kwargs: bool = False,
     input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
+    key: str = None,
     **kwargs_update,
 ):
     """Utility function doing the actual comparison between lightning functional metric and reference metric.
@@ -194,6 +238,8 @@ def _functional_test(
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
         input_order: Define the ordering for the preds and targets positional arguments.
+        key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
+            the sk_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
     """
@@ -222,7 +268,7 @@ def _functional_test(
             sk_result = sk_metric(targets[i], preds[i], **extra_kwargs)
 
         # assert its the same
-        _assert_allclose(lightning_result, sk_result, atol=atol)
+        _assert_allclose(lightning_result, sk_result, atol=atol, key=key)
 
 
 def _assert_half_support(
@@ -289,6 +335,7 @@ class TextTester:
         metric_args: dict = None,
         fragment_kwargs: bool = False,
         input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
+        key: str = None,
         **kwargs_update,
     ):
         """Main method that should be used for testing functions. Call this inside testing method.
@@ -301,6 +348,8 @@ class TextTester:
             metric_args: dict with additional arguments used for class initialization
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
             input_order: Define the ordering for the preds and targets positional arguments.
+            key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
+                against the sk_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
         """
@@ -316,6 +365,7 @@ class TextTester:
             device=device,
             fragment_kwargs=fragment_kwargs,
             input_order=input_order,
+            key=key,
             **kwargs_update,
         )
 
@@ -333,6 +383,7 @@ class TextTester:
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
         input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
+        key: str = None,
         **kwargs_update,
     ):
         """Main method that should be used for testing class. Call this inside testing methods.
@@ -352,6 +403,8 @@ class TextTester:
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
             input_order: Define the ordering for the preds and targets positional arguments.
+            key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
+                against the sk_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
         """
@@ -376,6 +429,7 @@ class TextTester:
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     input_order=input_order,
+                    key=key,
                     **kwargs_update,
                 ),
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
@@ -399,6 +453,7 @@ class TextTester:
                 fragment_kwargs=fragment_kwargs,
                 check_scriptable=check_scriptable,
                 input_order=input_order,
+                key=key,
                 **kwargs_update,
             )
 
@@ -458,6 +513,7 @@ class TextTester:
         metric_functional: Callable,
         metric_args: dict = None,
         input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
+        key: str = None,
     ):
         """Test if a metric is differentiable or not.
 
@@ -467,6 +523,8 @@ class TextTester:
             metric_module: the metric module to test
             metric_args: dict with additional arguments used for class initialization
             input_order: Define the ordering for the preds and targets positional arguments.
+            key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
+                against the sk_metric.
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -477,7 +535,7 @@ class TextTester:
             out = metric(targets[0], preds[0])
 
         # Check if requires_grad matches is_differentiable attribute
-        _assert_requires_grad(metric, out)
+        _assert_requires_grad(metric, out, key=key)
 
         if metric.is_differentiable:
             # check for numerical correctness
