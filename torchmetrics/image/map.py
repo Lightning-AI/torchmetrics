@@ -104,11 +104,11 @@ class MAP(Metric):
     """
 
     def __init__(
-        self,
-        num_classes: int = 0,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+            self,
+            num_classes: int = 0,
+            compute_on_step: bool = True,
+            dist_sync_on_step: bool = False,
+            process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -154,26 +154,27 @@ class MAP(Metric):
 
         Raises:
             ValueError:
-                If ``preds`` is not of type DetectionsDict
-                If ``target`` is not of type GroundtruthDict
+                If ``preds`` is not of type List[DetectionsDict]
+                If ``target`` is not of type List[GroundtruthDict]
                 If `preds` and `target` are not of the same length
                 If any of `preds.detection_boxes`, `preds.detection_scores` and `preds.detection_classes` are not of the same length
                 If any of `target.groundtruth_boxes` and `target.groundtruth_classes` are not of the same length
-                If any box is not of length 4
-                If any class is not of length 1
-                If any score is not of length 1
+                If any box is not type float and of length 4
+                If any class is not type int and of length 1
+                If any score is not type float and of length 1
         """
-        if not isinstance(preds, DetectionsDict):
-            raise ValueError("Expected argument `preds` to be of type DetectionsDict")
-        if not isinstance(target, GroundtruthDict):
-            raise ValueError("Expected argument `target` to be of type GroundtruthDict")
+        if not isinstance(preds, list):
+            raise ValueError("Expected argument `preds` to be of type List")
+        if not isinstance(target, list):
+            raise ValueError("Expected argument `target` to be of type List")
         if len(preds) != len(target):
             raise ValueError("Expected argument `preds` and `target` to have the same length")
+        # TODO, validate GroundtruthDict and DetectionsDict types
 
         coco_target, coco_preds = COCO(), COCO()
 
-        coco_target.dataset = self.get_coco_format(input=target)
-        coco_preds.dataset = self.get_coco_format(input=preds, is_pred=True)
+        coco_target.dataset = self.get_coco_format(inputs=target)
+        coco_preds.dataset = self.get_coco_format(inputs=preds, is_pred=True)
 
         with _hide_prints():
             coco_target.createIndex()
@@ -251,7 +252,6 @@ class MAP(Metric):
                 raise ValueError(
                     f"Input boxes and classes of sample {i} have a different length (expected {len(boxes)} classes, got {len(classes)}"
                 )
-
             if is_pred and len(boxes) != len(scores):
                 raise ValueError(
                     f"Input boxes and scores of sample {i} have a different length (expected {len(boxes)} scores, got {len(scores)}"
@@ -260,9 +260,9 @@ class MAP(Metric):
             for k, (box, label) in enumerate(zip(boxes, classes)):
                 if len(box) != 4:
                     raise ValueError(f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)}")
-                if len(label) != 1 or type(label) != int:
+                if type(label) != int:
                     raise ValueError(
-                        f"Invalid input class of sample {i}, element {k} (expected 1 value of type integer, got {len(label)} of type {type(label)}"
+                        f"Invalid input class of sample {i}, element {k} (expected value of type integer, got type {type(label)})"
                     )
                 annotation = {
                     "id": annotation_id,
@@ -274,9 +274,9 @@ class MAP(Metric):
                 }
                 if is_pred:
                     score = scores[k]
-                    if len(score) != 1 or type(score) != float:
+                    if type(score) != float:
                         raise ValueError(
-                            f"Invalid input score of sample {i}, element {k} (expected 1 value of type float, got {len(score)} of type {type(score)}"
+                            f"Invalid input score of sample {i}, element {k} (expected value of type float, got type {type(score)})"
                         )
                     annotation["score"] = score
                 annotations.append(annotation)
@@ -286,7 +286,7 @@ class MAP(Metric):
         return {"images": images, "annotations": annotations, "categories": classes}
 
     def get_values_for_sample(
-        self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool
+            self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool
     ) -> Tuple[List, List, Optional[List]]:
         boxes = input["detection_boxes"] if is_pred else input["groundtruth_boxes"]
         classes = input["detection_classes"] if is_pred else input["groundtruth_classes"]
@@ -312,10 +312,10 @@ class MAP(Metric):
         if is_pred:
             scores = input["detection_scores"]
             if type(scores) is torch.Tensor:
-                scores_list = classes.cpu().tolist()
+                scores_list = scores.cpu().tolist()
             elif type(scores) is np.ndarray:
-                scores_list = classes.tolist()
+                scores_list = scores.tolist()
             else:
-                scores_list = classes
+                scores_list = scores
 
         return boxes_list, classes_list, scores_list

@@ -27,19 +27,19 @@ class TestMapMetric(unittest.TestCase):
         box4 = [3.0, 3.0, 4.0, 4.0]  # FN (missing box for class_0)
         box5 = [4.0, 4.0, 5.0, 5.0]  # FP (detection - but no GT for class_0)
         box6 = [5.0, 5.0, 6.0, 6.0]  # TP_class_2 --> to check if we get precision one for class_2
-        scores = [0.8, 0.9, 0.7, 1.0, 0.6, 1.0]
+        scores = [0.8, 0.9, 0.7, 0.6, 1.0]
 
         targets = [
             {
-                "groundtruth_boxes": torch.tensor([[box1[0:4], box2[0:4], box3[0:4], box4[0:4], box6[0:4]]]),
-                "groundtruth_classes": torch.tensor([[0, 0, 1, 0, 2]]),
+                "groundtruth_boxes": torch.tensor([box1, box2, box3, box4, box6]),
+                "groundtruth_classes": torch.tensor([0, 0, 1, 0, 2]),
             }
         ] * batch_size
         predictions = [
             {
-                "detection_boxes": torch.tensor([[box1, box2, box3, box5, box6]]),
-                "detection_classes": torch.tensor([[0, 0, 0, 0, 2]]),
-                "detection_scores": torch.tensor([[scores]]),
+                "detection_boxes": torch.tensor([box1, box2, box3, box5, box6]),
+                "detection_classes": torch.tensor([0, 0, 0, 0, 2]),
+                "detection_scores": torch.tensor(scores),
             }
         ] * batch_size
         # How to calculate expected_values:
