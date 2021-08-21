@@ -66,6 +66,8 @@ class BERTScore(Metric):
             A batch size used for model processing.
         num_threads:
             A number of threads to use for a dataloader.
+        return_hash:
+            An indication of whether the correspodning `hash_code` should be returned.
         lang:
             A language of input sentences.
         rescale_with_baseline:
@@ -93,7 +95,8 @@ class BERTScore(Metric):
         >>> bertscore.compute()  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
-         'f1': [0.99..., 0.99...]}
+         'f1': [0.99..., 0.99...],
+         'hashcode': '...'}
     """
 
     def __init__(
@@ -109,6 +112,7 @@ class BERTScore(Metric):
         max_length: int = 512,
         batch_size: int = 64,
         num_threads: int = 4,
+        return_hash: bool = True,
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         compute_on_step: bool = True,
@@ -133,12 +137,21 @@ class BERTScore(Metric):
         self.max_length = max_length
         self.batch_size = batch_size
         self.num_threads = num_threads
+        self.return_hash = return_hash
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
         self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+        if model_name_or_path:
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+        else:
+            # TODO: Add a support for the custom tokenizer
+            raise ValueError(
+                "For now, the argument `model_name_or_path` must be provided to initialize `transformers` tokenizer, "
+                "which is required for storing of the tokenized input sentences. This is required to ensure the "
+                "module will work with the DDP mode."
+            )
 
     def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
@@ -181,6 +194,7 @@ class BERTScore(Metric):
             max_length=self.max_length,
             batch_size=self.batch_size,
             num_threads=self.num_threads,
+            return_hash=self.return_hash,
             rescale_with_baseline=self.rescale_with_baseline,
             baseline_path=self.baseline_path,
         )

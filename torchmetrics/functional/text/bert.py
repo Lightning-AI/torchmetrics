@@ -359,6 +359,12 @@ def _get_precision_recall_f1(
     return precision, recall, f1_score
 
 
+def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
+    """Copy from https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py and adjusted."""
+    msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
+    return msg
+
+
 def bert_score(
     predictions: Union[List[str], Dict[str, torch.Tensor]],
     references: Union[List[str], Dict[str, torch.Tensor]],
@@ -372,6 +378,7 @@ def bert_score(
     max_length: int = 512,
     batch_size: int = 64,
     num_threads: int = 4,
+    return_hash: bool = True,
     lang: str = "en",
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
@@ -412,6 +419,8 @@ def bert_score(
             A batch size used for model processing.
         num_threads:
             A number of threads to use for a dataloader.
+        return_hash:
+            An indication of whether the correspodning `hash_code` should be returned.
         lang:
             A language of input sentences.
         rescale_with_baseline:
@@ -474,11 +483,15 @@ def bert_score(
     )
     if _are_empty_lists:
         warnings.warn("Predictions and references are empty.")
-        return {
+        output_dict = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],
+            "hash": _get_hash(model_name_or_path, num_layers, idf),
         }
+        if return_hash:
+            output_dict.update({"hash": _get_hash(model_name_or_path, num_layers, idf)})
+        return output_dict
 
     if _are_valid_lists:
         ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)
@@ -508,4 +521,6 @@ def bert_score(
         "recall": recall.tolist(),
         "f1": f1_score.tolist(),
     }
+    if return_hash:
+        output_dict.update({"hash": _get_hash(model_name_or_path, num_layers, idf)})
     return output_dict
