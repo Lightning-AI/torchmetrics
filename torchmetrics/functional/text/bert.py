@@ -557,7 +557,7 @@ def bert_score(
             max_length,
             idf=idf,
             tokens_idf=ref_dataset.tokens_idf,
-            own_tokenizer=True if user_tokenizer else False
+            own_tokenizer=True if user_tokenizer else False,
         )
     elif _are_valid_tensors:
         ref_dataset = TokenizedDataset(**references, idf=idf)  # type: ignore

@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-An example of how to use BERTScore with a user's defined/own model and tokenizer.
+"""An example of how to use BERTScore with a user's defined/own model and tokenizer.
 
-To run:
-python bert_score-own_model.py
+To run: python bert_score-own_model.py
 """
 
 from pprint import pprint
@@ -23,8 +21,8 @@ from typing import Dict, List, Union
 
 import torch
 import torch.nn as nn
-from torchmetrics import BERTScore
 
+from torchmetrics import BERTScore
 
 _NUM_LAYERS = 2
 _MODEL_DIM = 4
@@ -32,8 +30,7 @@ _NHEAD = 2
 _MAX_LEN = 6
 
 
-class UserTokenizer(object):
-
+class UserTokenizer:
     def __init__(self):
         self.cls_token = "<cls>"
         self.sep_token = "<sep>"
