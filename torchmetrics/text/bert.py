@@ -16,12 +16,23 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import torch
 
 from torchmetrics.functional import bert_score
+from torchmetrics.functional.text.bert import _preprocess_text
 from torchmetrics.metric import Metric
+
+
+from transformers import AutoTokenizer
 
 
 def _flatten(x: List[List[str]]) -> List[str]:
     """converts list of list to single list of strings."""
     return [e for y in x for e in y]
+
+
+def _concatenate(d: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
+    output_dict: Dict[str, torch.Tensor] = {}
+    for k, v in d.items():
+        output_dict[k] = torch.cat(v)
+    return output_dict
 
 
 class BERTScore(Metric):
@@ -126,11 +137,14 @@ class BERTScore(Metric):
         self.num_threads = num_threads
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
-        self.add_state("predictions", [], dist_reduce_fx="cat")
-        self.add_state("references", [], dist_reduce_fx="cat")
+        self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
     def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
-        """Store predictions/references for computing BERT scores.
+        """Store predictions/references for computing BERT scores. It is necessary to store sentences in a tokenized
+        form to ensure the DDP mode working.
 
         Args:
             predictions:
@@ -138,19 +152,26 @@ class BERTScore(Metric):
             references:
                 An iterable of predicted sentences.
         """
-        self.predictions.append(predictions)
-        self.references.append(references)
+        predictions_dict = _preprocess_text(
+            predictions, self.tokenizer, self.max_length, truncation=False, sort_according_length=False
+        )
+        references_dict = _preprocess_text(
+            references, self.tokenizer, self.max_length, truncation=False, sort_according_length=False
+        )
+        self.predictions['input_ids'].append(predictions_dict["input_ids"])
+        self.predictions['attention_mask'].append(predictions_dict["attention_mask"])
+        self.references['input_ids'].append(references_dict["input_ids"])
+        self.references['attention_mask'].append(references_dict["attention_mask"])
 
     def compute(self) -> Dict[str, List[float]]:
-        """Calculate Bertscores.
+        """Calculate BERT scores.
 
         Return:
             Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
         """
-
         return bert_score(
-            predictions=_flatten(self.predictions),
-            references=_flatten(self.references),
+            predictions=_concatenate(self.predictions),
+            references=_concatenate(self.references),
             lang=self.lang,
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,

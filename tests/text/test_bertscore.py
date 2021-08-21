@@ -4,6 +4,8 @@ from typing import Any, Dict, List
 import numpy as np
 import pytest
 import torch
+import torch.distributed as dist
+import torch.multiprocessing as mp
 
 from torchmetrics.functional import bert_score as metrics_bert_score
 from torchmetrics.text import BERTScore
@@ -228,3 +230,34 @@ def test_accumulation(preds, refs):
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
+
+
+def _bert_score_ddp(rank, world_size, preds, refs, original_score):
+    os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = "12355"
+    dist.init_process_group("gloo", rank=rank, world_size=world_size)
+    Scorer = BERTScore(model_name_or_path="bert-base-uncased", num_layers=8, idf=False, batch_size=3)
+    Scorer.update(preds, refs)
+    metrics_score = Scorer.compute()
+    for metric in _METRICS:
+        _assert_list(metrics_score[metric], original_score[metric])
+    dist.destroy_process_group()
+
+
+def _test_score_ddp_fn(rank, world_size, preds, refs):
+    original_score = original_bert_score(
+        preds, refs, model_type="bert-base-uncased", num_layers=8, idf=False, batch_size=3
+    )
+    original_score = _parse_original_bert_score(original_score)
+    _bert_score_ddp(rank, world_size, preds, refs, original_score)
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_ddp(preds, refs):
+    """Tests for metric using DDP."""
+    world_size = 2
+    mp.spawn(_test_score_ddp_fn, args=(world_size, preds, refs), nprocs=world_size, join=True)

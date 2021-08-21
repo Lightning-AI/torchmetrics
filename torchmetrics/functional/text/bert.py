@@ -19,13 +19,21 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE, _TQDM_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
 
+if _TQDM_AVAILABLE:
+    import tqdm
 
-def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> Dict[str, torch.Tensor]:
+def _preprocess_text(
+    text: List[str],
+    tokenizer: Any,
+    max_length: int = 512,
+    truncation: bool = True,
+    sort_according_length: bool = True,
+) -> Dict[str, torch.Tensor]:
     """Default text pre-processing function using `transformers` `AutoTokenizer` instance.
 
     Args:
@@ -35,18 +43,28 @@ def _preprocess_text(text: List[str], tokenizer: Any, max_length: int = 512) -> 
             `AutoTokenizer` instance from `transformers` package.
         max_length:
             A maximum sequence length.
+        trunction:
+            An indication of whether tokenized sequences should be padded only to the length of the longest sequence.
+        sort_according_to_length:
+            An indication of whether tokenized sequences should be sorted from shortest to longest. This is appropriate
+            to do for leveraging dynamic padding during embedding calculation and thereby to hasten inference.
 
     Return:
         A dictionary of tokenized sentences including input_ids and attention_mask.
     """
-    tokenized_data = tokenizer(text, padding=True, max_length=max_length, truncation=True, return_tensors="pt")
-    input_ids, attention_mask = _sort_data_according_length(tokenized_data.input_ids, tokenized_data.attention_mask)
+    tokenized_data = tokenizer(
+        text, padding="max_length", max_length=max_length, truncation=truncation, return_tensors="pt"
+    )
+    input_ids, attention_mask = (
+        _sort_data_according_length(tokenized_data.input_ids, tokenized_data.attention_mask) if sort_according_length
+        else (tokenized_data.input_ids, tokenized_data.attention_mask)
+    )
     return {"input_ids": input_ids, "attention_mask": attention_mask}
 
 
 def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> torch.Tensor:
     """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a
-    calculation.
+    calculation for BERT score.
 
     Args:
         attention_mask:
@@ -73,7 +91,7 @@ def _sort_data_according_length(
 
 
 def _input_data_collator(
-    batch: Dict[str, torch.Tensor], device: Optional[Union[str, torch.device]]
+    batch: Dict[str, torch.Tensor], device: Optional[Union[str, torch.device]] = None,
 ) -> Dict[str, torch.Tensor]:
     """Helper function that trims model inputs to the longest sequence within the batch and put the input on the
     proper device."""
@@ -104,6 +122,7 @@ def _output_data_collator(
 
 
 class TextDataset(Dataset):
+    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score calculation."""
     def __init__(
         self,
         text: List[str],
@@ -122,9 +141,11 @@ class TextDataset(Dataset):
             max_length:
                 A maximum sequence length.
             preprocess_text_fn:
+                A function used for processing the input sentences.
             idf:
+                An indication of whether calculate token inverse document frequencies to weight the model embeddings.
             tokens_idf:
-                Inverse document frequences (these should be calculated on reference sentences).
+                Inverse document frequencies (these should be calculated on reference sentences).
         """
         self.text = preprocess_text_fn(text, tokenizer, max_length)
         self.max_length = self.text["input_ids"].shape[1]
@@ -172,6 +193,50 @@ class TextDataset(Dataset):
         return set(input_ids.tolist())
 
 
+class TokenizedDataset(TextDataset):
+    """The children of TextDataset class to """
+    def __init__(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        idf: bool = False,
+        tokens_idf: Optional[Dict[int, float]] = None,
+    ) -> None:
+        """
+        Args:
+            input_ids:
+                Input ids (`torch.Tensor`).
+            attention_mask:
+                Attention mask (`torch.Tensor`).
+            idf:
+                An indication of whether calculate token inverse document frequencies to weight the model embeddings.
+            tokens_idf:
+                Inverse document frequencies (these should be calculated on reference sentences).
+        """
+        self.text = {
+            k: v for k, v in zip(
+                ["input_ids", "attention_mask"], _sort_data_according_length(input_ids, attention_mask)
+            )
+        }
+        self.text = _input_data_collator(self.text)
+        self.num_sentences = len(self.text["input_ids"])
+        self.max_length = self.text["input_ids"].shape[1]
+        self.idf = idf
+        if idf:
+            self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
+        else:
+            self.tokens_idf = {}
+
+
+def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, tqdm.auto.tqdm]:
+    """Helper function returning either the dataloader itself when `verbose = False`, or it wraps the dataloader with
+     `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
+    if verbose:
+        return tqdm.auto.tqdm(dataloader)
+    else:
+        return dataloader
+
+
 def _get_embeddings_and_idf_scale(
     dataloader: DataLoader,
     target_len: int,
@@ -180,6 +245,7 @@ def _get_embeddings_and_idf_scale(
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     idf: bool = False,
+    verbose: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequence scaling factor.
     Args:
@@ -197,12 +263,16 @@ def _get_embeddings_and_idf_scale(
             An indication whether representation from all model layers should be used for BERTScore.
         idf:
             An Indication whether normalization using inverse document frequencies should be used.
+            verbose:
+            An indication of whether a progress bar to be displayed during the embeddings calculation.
 
     Return:
+        A tuple of torch.Tensors containing the model's embeddings and matrix of tokens IDF. When `idf = False`,
+        each vector in model's embeddings is weighted by a factor of `1/sequence_length`.
     """
     EMBEDDINGS_LIST: List[torch.Tensor] = []
     IDF_SCALE_LIST: List[torch.Tensor] = []
-    for batch in dataloader:
+    for batch in _get_progress_bar(dataloader, verbose):
         with torch.no_grad():
             batch = _input_data_collator(batch, device)
             if not all_layers:
@@ -285,8 +355,8 @@ def _get_precision_recall_f1(
 
 
 def bert_score(
-    predictions: List[str],
-    references: List[str],
+    predictions: Union[List[str], Dict[str, torch.Tensor]],
+    references: Union[List[str], Dict[str, torch.Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -311,9 +381,11 @@ def bert_score(
 
     Args:
         predictions:
-            An iterable of predicted sentences.
+            Either an iterable of predicted sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
+            `attention_mask` `torch.Tensor`.
         references:
-            An iterable of target sentences.
+            Either an iterable of target sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
+            `attention_mask` `torch.Tensor`.
         model_type:
             A name or a model path used to load `transformers` pretrained model.
         num_layers:
@@ -324,8 +396,9 @@ def bert_score(
         model:
             A user's own model. Must be of `torch.nn.Module` instance.
         verbose:
+            An indication of whether a progress bar to be displayed during the embeddings calculation.
         idf:
-            An indication whether normalization using inverse document frequencies should be used.
+            An indication of whether normalization using inverse document frequencies should be used.
         device:
             A device to be used for calculation.
         max_length:
@@ -343,6 +416,14 @@ def bert_score(
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
 
+    Raises:
+        ValueError:
+            If `tqdm` package is required and not installed.
+        ValueError:
+            If `transformers` package is required and not installed.
+        ValueError:
+            If invalid input is provided.
+
     Example:
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "master kenobi"]
@@ -352,6 +433,12 @@ def bert_score(
          'f1': [0.99..., 0.99...]}
     """
     assert len(predictions) == len(references), "Number of predicted and reference sententes must be the same!"
+
+    if verbose:
+        if not _TQDM_AVAILABLE:
+            raise ValueError(
+                "A `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`."
+            )
 
     if model is None:
         if not _TRANSFORMERS_AVAILABLE:
@@ -371,18 +458,40 @@ def bert_score(
                 f"Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
-        warnings.warn("It was not possible to retrieve the parametery `num_layers` from the model specification.")
+        warnings.warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
-    ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)
-    pred_dataset = TextDataset(predictions, tokenizer, max_length, idf=idf, tokens_idf=ref_dataset.tokens_idf)
+    _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (predictions, references))
+    _are_valid_lists = all(
+        isinstance(text, list) and len(text) > 0 and isinstance(text[0], str) for text in (predictions, references)
+    )
+    _are_valid_tensors = all(
+        isinstance(text, dict) and isinstance(text["input_ids"], torch.Tensor) for text in (predictions, references)
+    )
+    if _are_empty_lists:
+        warnings.warn("Predictions and references are empty.")
+        return {
+            "precision": [0.0],
+            "recall": [0.0],
+            "f1": [0.0],
+        }
+
+    if _are_valid_lists:
+        ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)
+        pred_dataset = TextDataset(predictions, tokenizer, max_length, idf=idf, tokens_idf=ref_dataset.tokens_idf)
+    elif _are_valid_tensors:
+        ref_dataset = TokenizedDataset(**references, idf=idf)
+        pred_dataset = TokenizedDataset(**predictions, idf=idf, tokens_idf=ref_dataset.tokens_idf)
+    else:
+        raise ValueError("Invalid input provided.")
+
     ref_loader = DataLoader(ref_dataset, batch_size=batch_size, num_workers=num_threads)
     pred_loader = DataLoader(pred_dataset, batch_size=batch_size, num_workers=num_threads)
 
     ref_embeddings, ref_idf_scale = _get_embeddings_and_idf_scale(
-        ref_loader, ref_dataset.max_length, model, device, num_layers, all_layers, idf
+        ref_loader, ref_dataset.max_length, model, device, num_layers, all_layers, idf, verbose
     )
     pred_embeddings, pred_idf_scale = _get_embeddings_and_idf_scale(
-        pred_loader, pred_dataset.max_length, model, device, num_layers, all_layers, idf
+        pred_loader, pred_dataset.max_length, model, device, num_layers, all_layers, idf, verbose
     )
 
     precision, recall, f1_score = _get_precision_recall_f1(
