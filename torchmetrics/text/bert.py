@@ -14,7 +14,6 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
-from transformers import AutoTokenizer
 
 from torchmetrics.functional import bert_score
 from torchmetrics.functional.text.bert import _preprocess_text
@@ -106,7 +105,7 @@ class BERTScore(Metric):
     def __init__(
         self,
         lang: str = "en",
-        model_name_or_path: Optional[str] = None,
+        model_name_or_path: str = "roberta-large",
         num_layers: Optional[int] = None,
         all_layers: bool = False,
         model: Optional[torch.nn.Module] = None,
@@ -147,15 +146,12 @@ class BERTScore(Metric):
         self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
         self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
 
-        if model_name_or_path and _TRANSFORMERS_AVAILABLE:
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-        else:
-            # TODO: Add a support for the custom tokenizer
+        if not _TRANSFORMERS_AVAILABLE:
             raise ValueError(
-                "For now, the argument `model_name_or_path` must be provided to initialize `transformers` tokenizer, "
-                "which is required for storing of the tokenized input sentences. This is required to ensure the "
-                "module will work with the DDP mode."
+                "For now, `BERTScore` metric requires `transformers` package be installed. "
+                "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
             )
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
     def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
@@ -178,7 +174,7 @@ class BERTScore(Metric):
         self.references["input_ids"].append(references_dict["input_ids"])
         self.references["attention_mask"].append(references_dict["attention_mask"])
 
-    def compute(self) -> Dict[str, List[float]]:
+    def compute(self) -> Dict[str, Union[List[float], str]]:
         """Calculate BERT scores.
 
         Return:

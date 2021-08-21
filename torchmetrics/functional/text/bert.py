@@ -382,7 +382,7 @@ def bert_score(
     lang: str = "en",
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
-) -> Dict[str, List[float]]:
+) -> Dict[str, Union[List[float], str]]:
     """`BERTScore <https://arxiv.org/abs/1904.09675>`_ leverages the pre-trained contextual embeddings from BERT
     and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
@@ -451,7 +451,7 @@ def bert_score(
     if verbose:
         if not _TQDM_AVAILABLE:
             raise ValueError(
-                "A `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`."
+                "An argument `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`."
             )
 
     if model is None:
@@ -467,9 +467,9 @@ def bert_score(
 
     try:
         if num_layers:
-            assert num_layers <= model.config.num_hidden_layers, (
-                f"num_layers={num_layers} is forbidden for {model_name_or_path}. "
-                f"Please use num_layers <= {model.config.num_hidden_layers}"
+            assert num_layers <= model.config.num_hidden_layers, (  # type: ignore
+                f"num_layers={num_layers} is forbidden for {model_name_or_path}. "  # type: ignore
+                f"Please use num_layers <= {model.config.num_hidden_layers}"  # type: ignore
             )
     except AttributeError:
         warnings.warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
@@ -483,22 +483,24 @@ def bert_score(
     )
     if _are_empty_lists:
         warnings.warn("Predictions and references are empty.")
-        output_dict = {
+        output_dict: Dict[str, Union[List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],
-            "hash": _get_hash(model_name_or_path, num_layers, idf),
         }
         if return_hash:
             output_dict.update({"hash": _get_hash(model_name_or_path, num_layers, idf)})
         return output_dict
 
+    # We ignore mypy typing below as the proper typing is ensured by conditions above, only mypy cannot infer that.
     if _are_valid_lists:
-        ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)
-        pred_dataset = TextDataset(predictions, tokenizer, max_length, idf=idf, tokens_idf=ref_dataset.tokens_idf)
+        ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)  # type: ignore
+        pred_dataset = TextDataset(
+            predictions, tokenizer, max_length, idf=idf, tokens_idf=ref_dataset.tokens_idf  # type: ignore
+        )
     elif _are_valid_tensors:
-        ref_dataset = TokenizedDataset(**references, idf=idf)
-        pred_dataset = TokenizedDataset(**predictions, idf=idf, tokens_idf=ref_dataset.tokens_idf)
+        ref_dataset = TokenizedDataset(**references, idf=idf)  # type: ignore
+        pred_dataset = TokenizedDataset(**predictions, idf=idf, tokens_idf=ref_dataset.tokens_idf)  # type: ignore
     else:
         raise ValueError("Invalid input provided.")
 
