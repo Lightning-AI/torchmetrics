@@ -115,7 +115,7 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
-        self.sentence_results: Optional[Dict[Union[int, str], List[Dict[str, float]]]] = None
+        self.add_state("sentence_results", [], dist_reduce_fx=None)
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
         """Compute rouge scores.
@@ -131,9 +131,7 @@ class ROUGEScore(Metric):
         if isinstance(targets, str):
             targets = [targets]
 
-        self.sentence_results = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, self.sentence_results, self.stemmer
-        )
+        self.sentence_results.append(_rouge_score_update(preds, targets, self.rouge_keys_values, stemmer=self.stemmer))
 
     def compute(self) -> Dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score.

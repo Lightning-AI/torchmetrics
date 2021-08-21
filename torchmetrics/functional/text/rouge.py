@@ -153,7 +153,6 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: List[Union[int, str]],
-    results: Optional[Dict[Union[int, str], List[Dict[str, float]]]] = None,
     stemmer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[Dict[str, float]]]:
     """Update the rouge score with the current set of predicted and target sentences.
@@ -179,7 +178,7 @@ def _rouge_score_update(
          '3': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
          'L': {'precision': 0.25, 'recall': 0.25, 'fmeasure': 0.25}}
     """
-    results = results if results is not None else {rouge_key: [] for rouge_key in rouge_keys_values}
+    results = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred_raw, target_raw in zip(preds, targets):
         pred, target = _normalize_text(pred_raw, stemmer), _normalize_text(target_raw, stemmer)
         # rougeLsum expects "\n" separated sentences within a summary
@@ -200,7 +199,7 @@ def _rouge_score_update(
 
 
 def _rouge_score_compute(
-    sentence_results: Optional[Dict[Union[int, str], List[Dict[str, float]]]]
+    sentence_results: List[Optional[Dict[Union[int, str], List[Dict[str, float]]]]]
 ) -> Dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
@@ -210,9 +209,15 @@ def _rouge_score_compute(
     """
     results: Dict[str, Tensor] = {}
     # Obtain mean scores for individual rouge metrics
-    if sentence_results is None:
+    if sentence_results == [] or sentence_results == [None]:
         return results
-    for rouge_key, scores in sentence_results.items():
+
+    _results: Dict[Union[int, str], List] = {rouge_key: [] for rouge_key in sentence_results[0].keys()}
+    for result in sentence_results:
+        for rouge_key, scores in result.items():
+            _results[rouge_key].extend(scores)
+
+    for rouge_key, scores in _results.items():
         res = torch.tensor([(score["precision"], score["recall"], score["fmeasure"]) for score in scores]).mean(0)
         results[f"rouge{rouge_key}_precision"] = res[0]
         results[f"rouge{rouge_key}_recall"] = res[1]
@@ -292,7 +297,7 @@ def rouge_score(
         targets = [targets]
 
     sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, stemmer=stemmer)
-    return _rouge_score_compute(sentence_results)
+    return _rouge_score_compute([sentence_results])
 
 
 def _tokenize(text: str, n_gram: int) -> List[str]:

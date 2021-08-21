@@ -13,10 +13,9 @@
 # limitations under the License.
 
 from functools import partial
-from typing import List, Union
+from typing import List
 
 import pytest
-import torch
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 from torchmetrics.functional.text.rouge import rouge_score
@@ -44,15 +43,13 @@ BATCHES = {
 }
 
 
-def _compute_rouge_score(
-    preds: Union[str, List[str]], targets: Union[str, List[str]], use_stemmer: bool, rouge_level: str, metric: str
-):
+def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool, rouge_level: str, metric: str):
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
     aggregator = BootstrapAggregator()
     for pred, target in zip(preds, targets):
         aggregator.add_scores(scorer.score(target, pred))
     rs_scores = aggregator.aggregate()
-    rs_result = torch.tensor(getattr(rs_scores[rouge_level].mid, metric), dtype=torch.float32)
+    rs_result = getattr(rs_scores[rouge_level].mid, metric)
     return rs_result
 
 
@@ -74,15 +71,15 @@ def _compute_rouge_score(
         pytest.param("rougeLsum_fmeasure", False),
     ],
 )
+@pytest.mark.parametrize(
+    ["preds", "targets"],
+    [
+        pytest.param(BATCHES["preds"], BATCHES["targets"]),
+    ],
+)
 class TestBLEUScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    @pytest.mark.parametrize(
-        ["preds", "targets"],
-        [
-            pytest.param(BATCHES["preds"], BATCHES["targets"]),
-        ],
-    )
     def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer):
         metric_args = {"use_stemmer": use_stemmer}
 
@@ -101,12 +98,6 @@ class TestBLEUScore(TextTester):
             key=pl_rouge_metric_key,
         )
 
-    @pytest.mark.parametrize(
-        ["preds", "targets"],
-        [
-            pytest.param(BATCHES["preds"], BATCHES["targets"]),
-        ],
-    )
     def test_bleu_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer):
         metric_args = {"use_stemmer": use_stemmer}
 
