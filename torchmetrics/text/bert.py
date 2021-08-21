@@ -24,6 +24,7 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoTokenizer
 
+
 def _flatten(x: List[List[str]]) -> List[str]:
     """converts list of list to single list of strings."""
     return [e for y in x for e in y]
