@@ -63,6 +63,8 @@ class BERTScore(Metric):
             This method must take an iterable of sentences (`List[str]`) and must return a python dictionary
             containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`. It is up to the user's model
             of whether `"input_ids"` is a `torch.Tensor` of input ids or embedding vectors.
+            This tokenizer must prepend an equivalent of `[CLS]` token and append an equivalent of `[SEP]` token
+            as `transformers` tokenizer does.
         user_forward_fn:
             A user's own forward function used in a combination with `user_model`. This function must take `user_model`
             and a python dictionary of containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`
@@ -113,7 +115,7 @@ class BERTScore(Metric):
 
     def __init__(
         self,
-        model_name_or_path: Optional[str] = None,
+        model_name_or_path: Optional[str] = "roberta-large",
         num_layers: Optional[int] = None,
         all_layers: bool = False,
         model: Optional[torch.nn.Module] = None,
