@@ -19,7 +19,10 @@ from transformers import AutoTokenizer
 from torchmetrics.functional import bert_score
 from torchmetrics.functional.text.bert import _preprocess_text
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
+if _TRANSFORMERS_AVAILABLE:
+    from transformers import AutoTokenizer
 
 def _flatten(x: List[List[str]]) -> List[str]:
     """converts list of list to single list of strings."""
@@ -143,7 +146,7 @@ class BERTScore(Metric):
         self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
         self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
 
-        if model_name_or_path:
+        if model_name_or_path and _TRANSFORMERS_AVAILABLE:
             self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         else:
             # TODO: Add a support for the custom tokenizer
