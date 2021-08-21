@@ -58,7 +58,17 @@ class BERTScore(Metric):
             If `all_layers = True`, the argument `num_layers` is ignored.
         model:
             A user's own model. Must be of `torch.nn.Module` instance.
+        user_tokenizer:
+            A user's own tokenizer used with the own model. This must be an instance with the `__call__` method.
+            This method must take an iterable of sentences (`List[str]`) and must return a python dictionary
+            containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`. It is up to the user's model
+            of whether `"input_ids"` is a `torch.Tensor` of input ids or embedding vectors.
+        user_forward_fn:
+            A user's own forward function used in a combination with `user_model`. This function must take `user_model`
+            and a python dictionary of containing `"input_ids"` and `"attention_mask"` represented by `torch.Tensor`
+            as an input and return the model's output represented by the single `torch.Tensor`.
         verbose:
+            An indication of whether a progress bar to be displayed during the embeddings calculation.
         idf:
             An indication whether normalization using inverse document frequencies should be used.
         device:
@@ -98,24 +108,25 @@ class BERTScore(Metric):
         >>> bertscore.compute()  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
-         'f1': [0.99..., 0.99...],
-         'hashcode': '...'}
+         'f1': [0.99..., 0.99...]}
     """
 
     def __init__(
         self,
-        lang: str = "en",
-        model_name_or_path: str = "roberta-large",
+        model_name_or_path: Optional[str] = None,
         num_layers: Optional[int] = None,
         all_layers: bool = False,
         model: Optional[torch.nn.Module] = None,
+        user_tokenizer: Optional[Any] = None,
+        user_forward_fn: Callable[[torch.nn.Module, Dict[str, torch.Tensor]], torch.Tensor] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,
         max_length: int = 512,
         batch_size: int = 64,
         num_threads: int = 4,
-        return_hash: bool = True,
+        return_hash: bool = False,
+        lang: str = "en",
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         compute_on_step: bool = True,
@@ -129,11 +140,11 @@ class BERTScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        self.lang = lang
         self.model_name_or_path = model_name_or_path
         self.num_layers = num_layers
         self.all_layers = all_layers
         self.model = model
+        self.user_forward_fn = user_forward_fn
         self.verbose = verbose
         self.idf = idf
         self.device = device
@@ -141,17 +152,23 @@ class BERTScore(Metric):
         self.batch_size = batch_size
         self.num_threads = num_threads
         self.return_hash = return_hash
+        self.lang = lang
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
         self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
 
-        if not _TRANSFORMERS_AVAILABLE:
-            raise ValueError(
-                "For now, `BERTScore` metric requires `transformers` package be installed. "
-                "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
-            )
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+        if user_tokenizer:
+            self.tokenizer = user_tokenizer
+            self.user_tokenizer = True
+        else:
+            if not _TRANSFORMERS_AVAILABLE:
+                raise ValueError(
+                    "`BERTScore` metric with default tokenizers requires `transformers` package be installed. "
+                    "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
+                )
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+            self.user_tokenizer = False
 
     def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
@@ -164,10 +181,20 @@ class BERTScore(Metric):
                 An iterable of predicted sentences.
         """
         predictions_dict = _preprocess_text(
-            predictions, self.tokenizer, self.max_length, truncation=False, sort_according_length=False
+            predictions,
+            self.tokenizer,
+            self.max_length,
+            truncation=False,
+            sort_according_length=False,
+            own_tokenizer=self.user_tokenizer,
         )
         references_dict = _preprocess_text(
-            references, self.tokenizer, self.max_length, truncation=False, sort_according_length=False
+            references,
+            self.tokenizer,
+            self.max_length,
+            truncation=False,
+            sort_according_length=False,
+            own_tokenizer=self.user_tokenizer,
         )
         self.predictions["input_ids"].append(predictions_dict["input_ids"])
         self.predictions["attention_mask"].append(predictions_dict["attention_mask"])
@@ -183,11 +210,12 @@ class BERTScore(Metric):
         return bert_score(
             predictions=_concatenate(self.predictions),
             references=_concatenate(self.references),
-            lang=self.lang,
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,
             model=self.model,
+            user_tokenizer=self.tokenizer if self.user_tokenizer else None,
+            user_forward_fn=self.user_forward_fn,
             verbose=self.verbose,
             idf=self.idf,
             device=self.device,
@@ -195,6 +223,7 @@ class BERTScore(Metric):
             batch_size=self.batch_size,
             num_threads=self.num_threads,
             return_hash=self.return_hash,
+            lang=self.lang,
             rescale_with_baseline=self.rescale_with_baseline,
             baseline_path=self.baseline_path,
         )
