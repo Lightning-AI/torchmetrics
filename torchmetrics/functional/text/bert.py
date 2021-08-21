@@ -19,13 +19,14 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE, _TQDM_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
 
 if _TQDM_AVAILABLE:
     import tqdm
+
 
 def _preprocess_text(
     text: List[str],
@@ -56,7 +57,8 @@ def _preprocess_text(
         text, padding="max_length", max_length=max_length, truncation=truncation, return_tensors="pt"
     )
     input_ids, attention_mask = (
-        _sort_data_according_length(tokenized_data.input_ids, tokenized_data.attention_mask) if sort_according_length
+        _sort_data_according_length(tokenized_data.input_ids, tokenized_data.attention_mask)
+        if sort_according_length
         else (tokenized_data.input_ids, tokenized_data.attention_mask)
     )
     return {"input_ids": input_ids, "attention_mask": attention_mask}
@@ -91,7 +93,8 @@ def _sort_data_according_length(
 
 
 def _input_data_collator(
-    batch: Dict[str, torch.Tensor], device: Optional[Union[str, torch.device]] = None,
+    batch: Dict[str, torch.Tensor],
+    device: Optional[Union[str, torch.device]] = None,
 ) -> Dict[str, torch.Tensor]:
     """Helper function that trims model inputs to the longest sequence within the batch and put the input on the
     proper device."""
@@ -122,7 +125,9 @@ def _output_data_collator(
 
 
 class TextDataset(Dataset):
-    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score calculation."""
+    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score
+    calculation."""
+
     def __init__(
         self,
         text: List[str],
@@ -194,7 +199,8 @@ class TextDataset(Dataset):
 
 
 class TokenizedDataset(TextDataset):
-    """The children of TextDataset class to """
+    """The children of TextDataset class to."""
+
     def __init__(
         self,
         input_ids: torch.Tensor,
@@ -214,9 +220,8 @@ class TokenizedDataset(TextDataset):
                 Inverse document frequencies (these should be calculated on reference sentences).
         """
         self.text = {
-            k: v for k, v in zip(
-                ["input_ids", "attention_mask"], _sort_data_according_length(input_ids, attention_mask)
-            )
+            k: v
+            for k, v in zip(["input_ids", "attention_mask"], _sort_data_according_length(input_ids, attention_mask))
         }
         self.text = _input_data_collator(self.text)
         self.num_sentences = len(self.text["input_ids"])
@@ -230,7 +235,7 @@ class TokenizedDataset(TextDataset):
 
 def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, tqdm.auto.tqdm]:
     """Helper function returning either the dataloader itself when `verbose = False`, or it wraps the dataloader with
-     `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
+    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
     if verbose:
         return tqdm.auto.tqdm(dataloader)
     else:

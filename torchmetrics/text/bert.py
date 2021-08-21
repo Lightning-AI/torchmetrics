@@ -14,13 +14,11 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
+from transformers import AutoTokenizer
 
 from torchmetrics.functional import bert_score
 from torchmetrics.functional.text.bert import _preprocess_text
 from torchmetrics.metric import Metric
-
-
-from transformers import AutoTokenizer
 
 
 def _flatten(x: List[List[str]]) -> List[str]:
@@ -143,8 +141,8 @@ class BERTScore(Metric):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
     def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
-        """Store predictions/references for computing BERT scores. It is necessary to store sentences in a tokenized
-        form to ensure the DDP mode working.
+        """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
+        tokenized form to ensure the DDP mode working.
 
         Args:
             predictions:
@@ -158,10 +156,10 @@ class BERTScore(Metric):
         references_dict = _preprocess_text(
             references, self.tokenizer, self.max_length, truncation=False, sort_according_length=False
         )
-        self.predictions['input_ids'].append(predictions_dict["input_ids"])
-        self.predictions['attention_mask'].append(predictions_dict["attention_mask"])
-        self.references['input_ids'].append(references_dict["input_ids"])
-        self.references['attention_mask'].append(references_dict["attention_mask"])
+        self.predictions["input_ids"].append(predictions_dict["input_ids"])
+        self.predictions["attention_mask"].append(predictions_dict["attention_mask"])
+        self.references["input_ids"].append(references_dict["input_ids"])
+        self.references["attention_mask"].append(references_dict["attention_mask"])
 
     def compute(self) -> Dict[str, List[float]]:
         """Calculate BERT scores.
