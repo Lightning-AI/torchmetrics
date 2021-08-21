@@ -96,8 +96,9 @@ def _output_data_collator(
     attention_mask = torch.cat(
         [
             attention_mask,
-            torch.zeros(zeros_shape[0], zeros_shape[2], dtype=attention_mask.dtype).to(attention_mask.device)
-        ], dim=1
+            torch.zeros(zeros_shape[0], zeros_shape[2], dtype=attention_mask.dtype).to(attention_mask.device),
+        ],
+        dim=1,
     )
     return model_output, attention_mask
 
@@ -158,9 +159,7 @@ class TextDataset(Dataset):
 
         tokens_idf: Dict[int, float] = defaultdict(self._get_tokens_idf_default_value)
         tokens_idf.update(
-            {
-                idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()
-            }
+            {idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()}
         )
         return tokens_idf
 
