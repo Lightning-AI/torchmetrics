@@ -74,6 +74,26 @@ def test_score_fn(preds, refs):
     [(preds, refs)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_fn_with_idf(preds, refs):
+    """Tests for functional with IDF rescaling."""
+    original_score = original_bert_score(
+        preds, refs, model_type="bert-base-uncased", num_layers=12, idf=True, batch_size=3
+    )
+    original_score = _parse_original_bert_score(original_score)
+
+    metrics_score = metrics_bert_score(
+        preds, refs, model_name_or_path="bert-base-uncased", num_layers=12, idf=True, batch_size=3
+    )
+
+    for metric in _METRICS:
+        _assert_list(metrics_score[metric], original_score[metric])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_fn_all_layers(preds, refs):
     """Tests for functional and all layers."""
     original_score = original_bert_score(
@@ -83,6 +103,26 @@ def test_score_fn_all_layers(preds, refs):
 
     metrics_score = metrics_bert_score(
         preds, refs, model_name_or_path="bert-base-uncased", all_layers=True, idf=False, batch_size=3
+    )
+
+    for metric in _METRICS:
+        _assert_list(metrics_score[metric], original_score[metric])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_fn_all_layers_with_idf(preds, refs):
+    """Tests for functional and all layers with IDF rescaling."""
+    original_score = original_bert_score(
+        preds, refs, model_type="bert-base-uncased", all_layers=True, idf=True, batch_size=3
+    )
+    original_score = _parse_original_bert_score(original_score)
+
+    metrics_score = metrics_bert_score(
+        preds, refs, model_name_or_path="bert-base-uncased", all_layers=True, idf=True, batch_size=3
     )
 
     for metric in _METRICS:
@@ -114,6 +154,26 @@ def test_score(preds, refs):
     [(preds, refs)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_with_idf(preds, refs):
+    """Tests for metric with IDF rescaling."""
+    original_score = original_bert_score(
+        preds, refs, model_type="bert-base-uncased", num_layers=8, idf=True, batch_size=3
+    )
+    original_score = _parse_original_bert_score(original_score)
+
+    Scorer = BERTScore(model_name_or_path="bert-base-uncased", num_layers=8, idf=True, batch_size=3)
+    Scorer.update(predictions=preds, references=refs)
+    metrics_score = Scorer.compute()
+
+    for metric in _METRICS:
+        _assert_list(metrics_score[metric], original_score[metric])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_all_layers(preds, refs):
     """Tests for metric and all layers."""
     original_score = original_bert_score(
@@ -122,6 +182,26 @@ def test_score_all_layers(preds, refs):
     original_score = _parse_original_bert_score(original_score)
 
     Scorer = BERTScore(model_name_or_path="bert-base-uncased", all_layers=True, idf=False, batch_size=3)
+    Scorer.update(predictions=preds, references=refs)
+    metrics_score = Scorer.compute()
+
+    for metric in _METRICS:
+        _assert_list(metrics_score[metric], original_score[metric])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_all_layers_with_idf(preds, refs):
+    """Tests for metric and all layers with IDF rescaling."""
+    original_score = original_bert_score(
+        preds, refs, model_type="bert-base-uncased", all_layers=True, idf=True, batch_size=3
+    )
+    original_score = _parse_original_bert_score(original_score)
+
+    Scorer = BERTScore(model_name_or_path="bert-base-uncased", all_layers=True, idf=True, batch_size=3)
     Scorer.update(predictions=preds, references=refs)
     metrics_score = Scorer.compute()
 

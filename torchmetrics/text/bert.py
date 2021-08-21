@@ -30,13 +30,20 @@ class BERTScore(Metric):
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
     recall, and F1 measure, which can be useful for evaluating different language generation tasks.
 
+    This implemenation follows the original implementation from https://github.com/Tiiiger/bert_score.
+
     Args:
-        lang:
+        predictions:
+            An iterable of predicted sentences.
+        references:
+            An iterable of target sentences.
         model_type:
             A name or a model path used to load `transformers` pretrained model.
         num_layers:
             A layer of representation to use.
         all_layers:
+            An indication of whether the representation from all model's layers should be used.
+            If `all_layers = True`, the argument `num_layers` is ignored.
         model:
             A user's own model. Must be of `torch.nn.Module` instance.
         verbose:
@@ -45,14 +52,15 @@ class BERTScore(Metric):
         device:
             A device to be used for calculation.
         max_length:
+            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         batch_size:
             A batch size used for model processing.
         num_threads:
             A number of threads to use for a dataloader.
-        ------------
-        # TODO:
+        lang:
+            A language of input sentences.
         rescale_with_baseline:
-            An indication whetehe bertscore should be rescaled with pre-computed baseline
+            An indication of whether bertscore should be rescaled with pre-computed baseline
         baseline_path:
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True

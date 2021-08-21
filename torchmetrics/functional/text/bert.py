@@ -13,8 +13,8 @@
 # limitations under the License.
 import math
 import warnings
-from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from collections import Counter, defaultdict
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -80,7 +80,8 @@ def _input_data_collator(
     max_len = int(batch["attention_mask"].sum(1).max().item())
     input_ids = batch["input_ids"][:, :max_len].to(device)
     attention_mask = batch["attention_mask"][:, :max_len].to(device)
-    return {"input_ids": input_ids, "attention_mask": attention_mask}
+    batch.update({"input_ids": input_ids, "attention_mask": attention_mask})
+    return batch
 
 
 def _output_data_collator(
@@ -89,9 +90,14 @@ def _output_data_collator(
     """Helper function that pads the model output and attention mask to the target length."""
     zeros_shape = list(model_output.shape)
     zeros_shape[2] = target_len - zeros_shape[2]
-    model_output = torch.cat([model_output, torch.zeros(zeros_shape).to(model_output.device)], dim=2)
+    model_output = torch.cat(
+        [model_output, torch.zeros(zeros_shape, dtype=model_output.dtype).to(model_output.device)], dim=2
+    )
     attention_mask = torch.cat(
-        [attention_mask, torch.zeros(zeros_shape[0], zeros_shape[2]).to(attention_mask.device)], dim=1
+        [
+            attention_mask,
+            torch.zeros(zeros_shape[0], zeros_shape[2], dtype=attention_mask.dtype).to(attention_mask.device)
+        ], dim=1
     )
     return model_output, attention_mask
 
@@ -146,12 +152,14 @@ class TextDataset(Dataset):
         Return:
             A python dictionary containing inverse document frequences for token ids.
         """
-        unique_ids, ids_occurrence = self.text["input_ids"].unique(return_counts=True)
+        token_counter: Counter = Counter()
+        for tokens in map(self._set_of_tokens, self.text["input_ids"]):
+            token_counter.update(tokens)
+
         tokens_idf: Dict[int, float] = defaultdict(self._get_tokens_idf_default_value)
         tokens_idf.update(
             {
-                idx: math.log((self.num_sentences + 1) / (occurrence + 1))
-                for idx, occurrence in zip(unique_ids.tolist(), ids_occurrence.tolist())
+                idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()
             }
         )
         return tokens_idf
@@ -159,6 +167,10 @@ class TextDataset(Dataset):
     def _get_tokens_idf_default_value(self) -> float:
         """Helper function that ensures `defaultdict` to be pickled."""
         return math.log((self.num_sentences + 1) / 1)
+
+    @staticmethod
+    def _set_of_tokens(input_ids: torch.Tensor) -> Set:
+        return set(input_ids.tolist())
 
 
 def _get_embeddings_and_idf_scale(
@@ -217,9 +229,12 @@ def _get_embeddings_and_idf_scale(
         out = torch.einsum("blsd, bs -> blsd", out, processed_attention_mask)
         EMBEDDINGS_LIST.append(out.cpu())
 
-        # Calculate idf scaling factor if desired. Otherwise take a vector of ones
-        idf_scale = (batch["input_ids_idf"] * batch["attention_mask"]).sum(-1) if idf else torch.ones(out.shape[0])
-        IDF_SCALE_LIST.append(idf_scale)
+        # Calculate weighted (w.r.t. sentence length) input_ids IDF matrix
+        input_ids_idf = (
+            batch["input_ids_idf"] * processed_attention_mask if idf else processed_attention_mask.type(out.dtype)
+        )
+        input_ids_idf /= input_ids_idf.sum(-1, keepdim=True)
+        IDF_SCALE_LIST.append(input_ids_idf)
 
     EMBEDDINGS = torch.cat(EMBEDDINGS_LIST)
     IDF_SCALE = torch.cat(IDF_SCALE_LIST)
@@ -230,11 +245,10 @@ def _get_embeddings_and_idf_scale(
 def _get_scaled_precision_or_recall(cos_sim: torch.Tensor, metric: str, idf_scale: torch.Tensor) -> torch.Tensor:
     """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
-    res = cos_sim.max(dim=dim).values.sum(-1) / cos_sim.max(dim=dim).values.not_equal(0.0).sum(-1)
-    # Divide measure by idf scaling factor (transpose required)
-    res = res.transpose(0, 1) / idf_scale
-    # Squeeze over num_layers if possible. We retain transposition to match the shape of bert_score results.
-    res = res.squeeze(0)
+    res = cos_sim.max(dim=dim).values
+    res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
+    # We transpose the results and squeeze if possible to match the format of the original BERTScore implementation
+    res = res.transpose(0, 1).squeeze()
     return res
 
 
@@ -274,7 +288,6 @@ def _get_precision_recall_f1(
 def bert_score(
     predictions: List[str],
     references: List[str],
-    lang: str = "en",
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -285,6 +298,7 @@ def bert_score(
     max_length: int = 512,
     batch_size: int = 64,
     num_threads: int = 4,
+    lang: str = "en",
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
 ) -> Dict[str, List[float]]:
@@ -294,17 +308,20 @@ def bert_score(
     recall, and F1 measure, which can be useful for evaluating different language generation tasks. assert
     len(predictions) == len(references), "Number of predicted and reference sententes must be the same!".
 
+    This implemenation follows the original implementation from https://github.com/Tiiiger/bert_score.
+
     Args:
         predictions:
             An iterable of predicted sentences.
         references:
-            An iterable of predicted sentences.
-        lang:
+            An iterable of target sentences.
         model_type:
             A name or a model path used to load `transformers` pretrained model.
         num_layers:
             A layer of representation to use.
         all_layers:
+            An indication of whether the representation from all model's layers should be used.
+            If `all_layers = True`, the argument `num_layers` is ignored.
         model:
             A user's own model. Must be of `torch.nn.Module` instance.
         verbose:
@@ -313,14 +330,15 @@ def bert_score(
         device:
             A device to be used for calculation.
         max_length:
+            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         batch_size:
             A batch size used for model processing.
         num_threads:
             A number of threads to use for a dataloader.
-        ------------
-        # TODO:
+        lang:
+            A language of input sentences.
         rescale_with_baseline:
-            An indication whetehe bertscore should be rescaled with pre-computed baseline
+            An indication of whether bertscore should be rescaled with pre-computed baseline
         baseline_path:
 
     Returns:
@@ -334,6 +352,7 @@ def bert_score(
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
     """
+    assert len(predictions) == len(references), "Number of predicted and reference sententes must be the same!"
 
     if model is None:
         if not _TRANSFORMERS_AVAILABLE:
