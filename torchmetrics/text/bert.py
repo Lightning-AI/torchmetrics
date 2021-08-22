@@ -249,5 +249,5 @@ class BERTScore(Metric):
             lang=self.lang,
             rescale_with_baseline=self.rescale_with_baseline,
             baseline_path=self.baseline_path,
-            baseline_url=self.baseline_url
+            baseline_url=self.baseline_url,
         )

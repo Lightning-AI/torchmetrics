@@ -421,8 +421,9 @@ def _read_csv_from_url(baseline_url: str) -> torch.Tensor:
     dependency."""
     with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
-            [float(item) for item in row.strip().decode("utf-8").split(',')]
-            for idx, row in enumerate(http_request) if idx > 0
+            [float(item) for item in row.strip().decode("utf-8").split(",")]
+            for idx, row in enumerate(http_request)
+            if idx > 0
         ]
         baseline = torch.tensor(baseline_list)[:, 1:]
     return baseline
@@ -456,7 +457,7 @@ def _rescale_metrics_with_baseline(
     f1_score: torch.Tensor,
     baseline: torch.Tensor,
     num_layers: Optional[int] = None,
-    all_layers: bool = False
+    all_layers: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Rescale the computed metrics with the pre-computed baseline."""
     if num_layers is None and all_layers is False:
