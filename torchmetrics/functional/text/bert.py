@@ -423,7 +423,7 @@ def _read_csv_from_url(baseline_url: str) -> torch.Tensor:
 
     This method is implemented to avoid `pandas` dependency.
     """
-    with urllib.request.urlopen(baseline_url) as http_request:
+    with urllib.request.urlopen(baseline_url) as http_request:  # type: ignore
         baseline_list = [
             [float(item) for item in row.strip().decode("utf-8").split(",")]
             for idx, row in enumerate(http_request)
