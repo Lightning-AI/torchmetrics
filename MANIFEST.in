@@ -13,6 +13,9 @@ include LICENSE
 # Include marker file for PEP 561
 include torchmetrics/py.typed
 
+# Include examples
+recursive-include metrics_examples *.py
+
 exclude *.sh
 exclude *.toml
 exclude *.svg
