@@ -407,8 +407,10 @@ def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int
 
 
 def _read_csv_from_local_file(baseline_path: str) -> torch.Tensor:
-    """Helper function which reads baseline the csv file from the local file. This method implemented to avoid `pandas`
-    dependency."""
+    """Helper function which reads baseline the csv file from the local file.
+
+    This method implemented to avoid `pandas` dependency.
+    """
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
         baseline_list = [[float(item) for item in row] for idx, row in enumerate(csv_file) if idx > 0]
@@ -417,8 +419,10 @@ def _read_csv_from_local_file(baseline_path: str) -> torch.Tensor:
 
 
 def _read_csv_from_url(baseline_url: str) -> torch.Tensor:
-    """Helper function which reads the baseline csv file from URL. This method is implemented to avoid `pandas`
-    dependency."""
+    """Helper function which reads the baseline csv file from URL.
+
+    This method is implemented to avoid `pandas` dependency.
+    """
     with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
             [float(item) for item in row.strip().decode("utf-8").split(",")]
