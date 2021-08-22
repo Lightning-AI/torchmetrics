@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Dict, List, Optional, Union
+import warnings
 
 import torch
 
@@ -22,6 +23,10 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoTokenizer
+
+
+# Default model recommended in the original implementation.
+_DEFAULT_MODEL = "roberta-large"
 
 
 def _flatten(x: List[List[str]]) -> List[str]:
@@ -86,8 +91,15 @@ class BERTScore(Metric):
         lang:
             A language of input sentences.
         rescale_with_baseline:
-            An indication of whether bertscore should be rescaled with pre-computed baseline
+            An indication of whether bertscore should be rescaled with a pre-computed baseline.
+            When a pretrained model from `transformers` model is used, the corresponding baseline is downloaded
+            from the original `bert-score` package from https://github.com/Tiiiger/bert_score if available.
+            In other cases, please specify a path to the baseline csv/tsv file, which must follow the formatting
+            of the files from https://github.com/Tiiiger/bert_score.
         baseline_path:
+            A path to the user's own local csv/tsv file with the baseline scale.
+        baseline_url:
+            A url path to the user's own  csv/tsv file with the baseline scale.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -115,7 +127,7 @@ class BERTScore(Metric):
 
     def __init__(
         self,
-        model_name_or_path: Optional[str] = "roberta-large",
+        model_name_or_path: Optional[str] = None,
         num_layers: Optional[int] = None,
         all_layers: bool = False,
         model: Optional[torch.nn.Module] = None,
@@ -131,6 +143,7 @@ class BERTScore(Metric):
         lang: str = "en",
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
+        baseline_url: Optional[str] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -157,6 +170,7 @@ class BERTScore(Metric):
         self.lang = lang
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
+        self.baseline_url = baseline_url
         self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
         self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
 
@@ -168,6 +182,13 @@ class BERTScore(Metric):
                 raise ValueError(
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed. "
                     "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
+                )
+            if not model_name_or_path:
+                model_name_or_path = _DEFAULT_MODEL
+                warnings.warn(
+                    "The argument `model_name_or_path` was not specified while it is required when default "
+                    " `transformers` model are used."
+                    f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
                 )
             self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
             self.user_tokenizer = False
@@ -228,4 +249,5 @@ class BERTScore(Metric):
             lang=self.lang,
             rescale_with_baseline=self.rescale_with_baseline,
             baseline_path=self.baseline_path,
+            baseline_url=self.baseline_url
         )

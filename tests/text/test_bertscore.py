@@ -136,6 +136,74 @@ def test_score_fn_all_layers_with_idf(preds, refs):
     [(preds, refs)],
 )
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_fn_all_layers_rescale_with_baseline(preds, refs):
+    """Tests for functional with baseline rescaling."""
+    original_score = original_bert_score(
+        preds,
+        refs,
+        model_type="bert-base-uncased",
+        lang="en",
+        num_layers=8,
+        idf=False,
+        batch_size=3,
+        rescale_with_baseline=True,
+    )
+    original_score = _parse_original_bert_score(original_score)
+
+    metrics_score = metrics_bert_score(
+        preds,
+        refs,
+        model_name_or_path="bert-base-uncased",
+        lang="en",
+        num_layers=8,
+        idf=False,
+        batch_size=3,
+        rescale_with_baseline=True,
+    )
+
+    for metric in _METRICS:
+        _assert_list(metrics_score[metric], original_score[metric])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
+def test_score_fn_rescale_with_baseline(preds, refs):
+    """Tests for functional with baseline rescaling with all layers."""
+    original_score = original_bert_score(
+        preds,
+        refs,
+        model_type="bert-base-uncased",
+        lang="en",
+        all_layers=True,
+        idf=False,
+        batch_size=3,
+        rescale_with_baseline=True,
+    )
+    original_score = _parse_original_bert_score(original_score)
+
+    metrics_score = metrics_bert_score(
+        preds,
+        refs,
+        model_name_or_path="bert-base-uncased",
+        lang="en",
+        all_layers=True,
+        idf=False,
+        batch_size=3,
+        rescale_with_baseline=True,
+    )
+
+    for metric in _METRICS:
+        _assert_list(metrics_score[metric], original_score[metric])
+
+
+@pytest.mark.parametrize(
+    "preds,refs",
+    [(preds, refs)],
+)
+@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score(preds, refs):
     """Tests for metric."""
     original_score = original_bert_score(

@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import csv
 import math
+import urllib
 import warnings
 from collections import Counter, defaultdict
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
@@ -404,6 +406,68 @@ def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int
     return msg
 
 
+def _read_csv_from_local_file(baseline_path: str) -> torch.Tensor:
+    """Helper function which reads baseline the csv file from the local file. This method implemented to avoid `pandas`
+    dependency."""
+    with open(baseline_path) as fname:
+        csv_file = csv.reader(fname)
+        baseline_list = [[float(item) for item in row] for idx, row in enumerate(csv_file) if idx > 0]
+    baseline = torch.tensor(baseline_list)[:, 1:]
+    return baseline
+
+
+def _read_csv_from_url(baseline_url: str) -> torch.Tensor:
+    """Helper function which reads the baseline csv file from URL. This method is implemented to avoid `pandas`
+    dependency."""
+    with urllib.request.urlopen(baseline_url) as http_request:
+        baseline_list = [
+            [float(item) for item in row.strip().decode("utf-8").split(',')]
+            for idx, row in enumerate(http_request) if idx > 0
+        ]
+        baseline = torch.tensor(baseline_list)[:, 1:]
+    return baseline
+
+
+def _load_baseline(
+    lang: str = "en",
+    model_name_or_path: Optional[str] = None,
+    baseline_path: Optional[str] = None,
+    baseline_url: Optional[str] = None,
+) -> Optional[torch.Tensor]:
+    if baseline_path:
+        baseline: Optional[torch.Tensor] = _read_csv_from_local_file(baseline_path)
+    elif baseline_url:
+        baseline = _read_csv_from_url(baseline_url)
+    # Read default baseline from the original `bert-score` package https://github.com/Tiiiger/bert_score
+    elif lang and model_name_or_path:
+        _URL_BASE = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
+        baseline_url = f"{_URL_BASE}/{lang}/{model_name_or_path}.tsv"
+        baseline = _read_csv_from_url(baseline_url)
+    else:
+        baseline = None
+        warnings.warn("Baseline was not successfully loaded. No baseline is going to be used.")
+
+    return baseline
+
+
+def _rescale_metrics_with_baseline(
+    precision: torch.Tensor,
+    recall: torch.Tensor,
+    f1_score: torch.Tensor,
+    baseline: torch.Tensor,
+    num_layers: Optional[int] = None,
+    all_layers: bool = False
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Rescale the computed metrics with the pre-computed baseline."""
+    if num_layers is None and all_layers is False:
+        num_layers = -1
+    all_metrics = torch.stack([precision, recall, f1_score], dim=-1)
+    baseline_scale = baseline.unsqueeze(1) if all_layers else baseline[num_layers]
+    all_metrics = (all_metrics - baseline_scale) / (1 - baseline_scale)
+
+    return all_metrics[..., 0], all_metrics[..., 1], all_metrics[..., 2]
+
+
 def bert_score(
     predictions: Union[List[str], Dict[str, torch.Tensor]],
     references: Union[List[str], Dict[str, torch.Tensor]],
@@ -423,6 +487,7 @@ def bert_score(
     lang: str = "en",
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
+    baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
     """`BERTScore <https://arxiv.org/abs/1904.09675>`_ leverages the pre-trained contextual embeddings from BERT
     and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
@@ -474,10 +539,17 @@ def bert_score(
         return_hash:
             An indication of whether the correspodning `hash_code` should be returned.
         lang:
-            A language of input sentences.
+            A language of input sentences. It is used when the scores are rescaled with a baseline.
         rescale_with_baseline:
-            An indication of whether bertscore should be rescaled with pre-computed baseline
+            An indication of whether bertscore should be rescaled with a pre-computed baseline.
+            When a pretrained model from `transformers` model is used, the corresponding baseline is downloaded
+            from the original `bert-score` package from https://github.com/Tiiiger/bert_score if available.
+            In other cases, please specify a path to the baseline csv/tsv file, which must follow the formatting
+            of the files from https://github.com/Tiiiger/bert_score.
         baseline_path:
+            A path to the user's own local csv/tsv file with the baseline scale.
+        baseline_url:
+            A url path to the user's own  csv/tsv file with the baseline scale.
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
@@ -546,6 +618,12 @@ def bert_score(
             output_dict.update({"hash": _get_hash(model_name_or_path, num_layers, idf)})
         return output_dict
 
+    # Load baselines if needed
+    if rescale_with_baseline:
+        baseline = _load_baseline(lang, model_name_or_path, baseline_path, baseline_url)
+    else:
+        baseline = None
+
     # We ignore mypy typing below as the proper typing is ensured by conditions above, only mypy cannot infer that.
     if _are_valid_lists:
         ref_dataset = TextDataset(
@@ -578,6 +656,11 @@ def bert_score(
     precision, recall, f1_score = _get_precision_recall_f1(
         pred_embeddings, ref_embeddings, pred_idf_scale, ref_idf_scale
     )
+
+    if baseline is not None:
+        precision, recall, f1_score = _rescale_metrics_with_baseline(
+            precision, recall, f1_score, baseline, num_layers, all_layers
+        )
 
     output_dict = {
         "precision": precision.tolist(),
