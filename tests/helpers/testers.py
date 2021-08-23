@@ -57,7 +57,7 @@ def setup_ddp(rank, world_size):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: str = None):
+def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None):
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(pl_result, Tensor):
@@ -74,7 +74,7 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: st
         raise ValueError("Unknown format for comparison")
 
 
-def _assert_tensor(pl_result: Any, key: str = None):
+def _assert_tensor(pl_result: Any, key: Optional[str] = None):
     """Utility function for recursively checking that some input only consists of torch tensors."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
@@ -87,7 +87,7 @@ def _assert_tensor(pl_result: Any, key: str = None):
         assert isinstance(pl_result, Tensor)
 
 
-def _assert_requires_grad(metric: Metric, pl_result: Any, key: str = None):
+def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None):
     """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
     attribute."""
     if isinstance(pl_result, Sequence):
