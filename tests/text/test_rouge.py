@@ -77,10 +77,10 @@ def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool
         pytest.param(BATCHES["preds"], BATCHES["targets"]),
     ],
 )
-class TestBLEUScore(TextTester):
+class TestROUGEScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer):
+    def test_rouge_score_class(self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer):
         metric_args = {"use_stemmer": use_stemmer}
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
@@ -98,7 +98,7 @@ class TestBLEUScore(TextTester):
             key=pl_rouge_metric_key,
         )
 
-    def test_bleu_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer):
+    def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer):
         metric_args = {"use_stemmer": use_stemmer}
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
