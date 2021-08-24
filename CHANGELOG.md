@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `AveragePrecision` will now as default output the `macro` average for multilabel and multiclass problems 
+- `AveragePrecision` will now as default output the `macro` average for multilabel and multiclass problems
 
 
 ### Deprecated

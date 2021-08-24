@@ -45,7 +45,7 @@ class AveragePrecision(Metric):
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
         average:
-            defines the reduction that is applied in the case of multiclass and multilabel input. 
+            defines the reduction that is applied in the case of multiclass and multilabel input.
             Should be one of the following:
 
             - ``'macro'`` [default]: Calculate the metric for each class separately, and average the
@@ -93,7 +93,7 @@ class AveragePrecision(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        average: Optional[str] = 'macro',
+        average: Optional[str] = "macro",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -106,10 +106,9 @@ class AveragePrecision(Metric):
 
         self.num_classes = num_classes
         self.pos_label = pos_label
-        allowed_average = ('micro', 'macro', 'weighted', None)
+        allowed_average = ("micro", "macro", "weighted", None)
         if average not in allowed_average:
-            raise ValueError(f'Expected argument `average` to be one of {allowed_average}'
-                             f' but got {average}')
+            raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
         self.average = average
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
