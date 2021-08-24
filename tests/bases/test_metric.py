@@ -23,6 +23,7 @@ from torch import nn, tensor
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
+from torchmetrics import Metric
 
 seed_all(42)
 
@@ -111,15 +112,15 @@ def test_update():
         def update(self, x):
             self.x += x
 
-    a = A()
-    assert a.x == 0
-    assert a._computed is None
-    a.update(1)
-    assert a._computed is None
-    assert a.x == 1
-    a.update(2)
-    assert a.x == 3
-    assert a._computed is None
+    metric = A()
+    assert metric.x == 0
+    assert metric._computed is None
+    metric.update(1)
+    assert metric._computed is None
+    assert metric.x == 1
+    metric.update(2)
+    assert metric.x == 3
+    assert metric._computed is None
 
 
 def test_compute():
@@ -324,3 +325,44 @@ def test_forward_and_compute_to_device(metric_class):
     assert metric._computed is not None
     is_cuda = metric._computed[0].is_cuda if isinstance(metric._computed, list) else metric._computed.is_cuda
     assert is_cuda, "computed result was not moved to the correct device"
+
+
+def verify_internal_states():
+
+    class DummyCatMetric(Metric):
+        def __init__(self):
+            super().__init__()
+            self.add_state("x", torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("c", torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("size", [], dist_reduce_fx="cat")
+
+        def update(self, x):
+            self.x += x
+            self.c += 1
+            self.size.append(x)
+
+        def compute(self):
+            return self.x // self.c
+
+        def __repr__(self):
+            return f"DummyCatMetric(x={self.x}, c={self.c})"
+
+    metric = DummyCatMetric()
+
+    steps = 5
+    for i in range(steps):
+        metric.update(i)
+        assert metric.x == sum(range(i + 1))
+
+    assert metric._batch_states == {'x': tensor(4), 'c': tensor(1), 'size': [4]}
+    assert metric._accumulated_states['x'] == tensor(10)
+    assert metric._accumulated_states['c'] == tensor(5)
+    assert torch.equal(metric._accumulated_states['size'][0], tensor([0, 1, 2, 3, 4]))
+
+
+    metric = DummyCatMetric()
+
+    steps = 5
+    for i in range(steps):
+        metric(i)
+

@@ -106,6 +106,12 @@ class Metric(nn.Module, ABC):
 
         # state management
         self._is_synced = False
+        self._is_batch_synced = False
+        self._is_accumulated_synced = False
+
+        self._batch_states: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+        self._accumulated_states: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+
         self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
     def add_state(
@@ -194,19 +200,13 @@ class Metric(nn.Module, ABC):
             # skip restore cache operation from compute as cache is stored below.
             self._should_unsync = False
 
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults}
+            self._reset_batch_states()
 
-            # call reset, update, compute, on single batch
-            self.reset()
-            self.update(*args, **kwargs)
             self._forward_cache = self.compute()
 
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._is_synced = False
+            self._reset_accumulated_states()
 
+            self._is_synced = False
             self._should_unsync = True
             self._to_sync = True
             self._computed = None
@@ -240,14 +240,58 @@ class Metric(nn.Module, ABC):
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
+    def _store_states_on_update(self) -> None:
+        # store the current batch state
+        self._batch_states = {attr: getattr(self, attr) for attr in self._defaults}
+
+        if self._accumulated_states is None:
+            self._accumulated_states = self._batch_states
+            return
+
+        for attr, reduction_fn in self._reductions.items():
+
+            # pre-concatenate metric states that are lists to reduce number of all_gather operations
+            is_list = isinstance(self._accumulated_states[attr], list) and len(self._accumulated_states[attr]) > 0
+
+            if is_list:
+                acc_state = self._accumulated_states[attr][0]
+                acc_state = acc_state if torch.is_tensor(acc_state) else torch.tensor(acc_state)
+                batch_state = torch.tensor(self._batch_states[attr][0])
+                self._accumulated_states[attr] = [dim_zero_cat([acc_state, batch_state])]
+
+            # pre-processing ops (stack or flatten for inputs)
+            if isinstance(self._accumulated_states[attr], Tensor):
+                    self._accumulated_states[attr] = torch.stack([self._accumulated_states[attr], self._batch_states[attr]]).sum()
+
+            if not (callable(reduction_fn) or reduction_fn is None):
+                raise TypeError("reduction_fn must be callable or None")
+
+            self._accumulated_states[attr] = reduction_fn(self._accumulated_states[attr]) if reduction_fn is not None else self._accumulated_states[attr]
+
+            if is_list:
+                self._accumulated_states[attr] = [self._accumulated_states[attr]]
+
     def _wrap_update(self, update: Callable) -> Callable:
         @functools.wraps(update)
         def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
             self._computed = None
             self._update_called = True
-            return update(*args, **kwargs)
+            # FIXME: Optimize this code and reset function.
+            self.reset()
+            output = update(*args, **kwargs)
+            self._store_states_on_update()
+            self._reset_accumulated_states()
+            return output
 
         return wrapped_func
+
+    def _reset_accumulated_states(self):
+        for attr_name, attr in self._accumulated_states.items():
+            setattr(self, attr_name, attr)
+
+    def _reset_batch_states(self):
+        for attr_name, attr in self._batch_states.items():
+            setattr(self, attr_name, attr)
 
     def sync(
         self,
