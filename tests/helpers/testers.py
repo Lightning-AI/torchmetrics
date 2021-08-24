@@ -511,8 +511,6 @@ class DummyMetric(Metric):
         pass
 
 
-
-
 class DummyListMetric(Metric):
     name = "DummyList"
 

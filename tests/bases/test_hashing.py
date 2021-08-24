@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers.testers import DummyMetric, DummyListMetric
+from tests.helpers.testers import DummyListMetric, DummyMetric
 
 pytest.mark.parametrize(
     "metric_cls",
