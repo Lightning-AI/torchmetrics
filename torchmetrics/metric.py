@@ -343,15 +343,11 @@ class Metric(nn.Module, ABC):
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
         """
-        if not _States.DEFAULT:
+        if accumulated and self._state != _States.ACCUMULATED and self._accumulated_states:
+            self._reset_accumulated_states()
 
-            if accumulated and self._state != _States.ACCUMULATED:
-                self._reset_accumulated_states()
-
-            elif not accumulated and self._state != _States.BATCH:
-                self._reset_batch_states()
-
-            self._state = _States.ACCUMULATED if accumulated else _States.BATCH
+        elif not accumulated and self._state != _States.BATCH and self._batch_states:
+            self._reset_batch_states()
 
         if self._is_synced and should_sync:
             raise TorchMetricsUserError("The Metric has already been synced.")
@@ -398,6 +394,7 @@ class Metric(nn.Module, ABC):
         should_sync: bool = True,
         should_unsync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
+        accumulated: bool = True,
     ) -> Generator:
         """Context manager to synchronize the states between processes when running in a distributed setting and
         restore the local cache states after yielding.
@@ -418,6 +415,7 @@ class Metric(nn.Module, ABC):
             process_group=process_group,
             should_sync=should_sync,
             distributed_available=distributed_available,
+            accumulated=accumulated
         )
 
         yield
@@ -426,7 +424,7 @@ class Metric(nn.Module, ABC):
 
     def _wrap_compute(self, compute: Callable) -> Callable:
         @functools.wraps(compute)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
+        def wrapped_func(*args: Any, accumulated: bool = True, **kwargs: Any) -> Any:
             if not self._update_called:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
@@ -435,19 +433,15 @@ class Metric(nn.Module, ABC):
                     UserWarning,
                 )
 
-            # return cached value
-            if self._computed is not None:
-                return self._computed
-
             # compute relies on the sync context manager to gather the states across processes and apply reduction
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
+                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync, accumulated=accumulated
             ):
-                self._computed = compute(*args, **kwargs)
+                computed = compute(*args, **kwargs)
 
-            return self._computed
+            return computed
 
         return wrapped_func
 
