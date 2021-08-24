@@ -1,12 +1,12 @@
 import pytest
 
-from tests.helpers.testers import DummyMetric, DummyNonTensorMetric
+from tests.helpers.testers import DummyMetric, DummyListMetric
 
 pytest.mark.parametrize(
     "metric_cls",
     [
         (DummyMetric,),
-        (DummyNonTensorMetric,),
+        (DummyListMetric,),
     ],
 )
 
