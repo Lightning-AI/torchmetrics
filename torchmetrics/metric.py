@@ -502,7 +502,12 @@ class Metric(nn.Module, ABC):
         return filtered_kwargs
 
     def __hash__(self) -> int:
-        hash_vals = [self.__class__.__name__]
+        # we need to add the id here, since PyTorch requires the hash of an module to be unique.
+        # they rely on that for children discovery 
+        # (see https://github.com/pytorch/pytorch/blob/v1.9.0/torch/nn/modules/module.py#L1544)
+        # For metrics that include tensors it is not a problem, 
+        # since their hash is unique based on the memory location but we cannot rely on that for every metric.
+        hash_vals = [self.__class__.__name__, id(self)]
 
         for key in self._defaults:
             val = getattr(self, key)

@@ -510,6 +510,18 @@ class DummyMetric(Metric):
     def compute(self):
         pass
 
+class DummyNonTensorMetric(Metric):
+    name = 'DummyNonTensor'
+    def __init__(self):
+        super().__init__()
+        self.add_state('x', [], dist_reduce_fx=None)
+
+    def update(self):
+        pass
+
+    def compute(self):
+        pass
+
 
 class DummyListMetric(Metric):
     name = "DummyList"
