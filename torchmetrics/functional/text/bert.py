@@ -138,7 +138,8 @@ def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_l
 
 
 class TextDataset(Dataset):
-    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score calculation."""
+    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score
+    calculation."""
 
     def __init__(
         self,
