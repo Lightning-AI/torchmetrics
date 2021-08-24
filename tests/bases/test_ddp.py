@@ -242,7 +242,6 @@ def test_state_dict_is_synced(tmpdir):
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
 
 
-
 def _test_state_dict_is_synced_new_api(rank, worldsize, tmpdir):
     setup_ddp(rank, worldsize)
 
@@ -296,7 +295,7 @@ def _test_state_dict_is_synced_new_api(rank, worldsize, tmpdir):
         assert metric._is_accumulated_synced
         assert not metric._is_batch_synced
         assert metric._state == _States.ACCUMULATED
-        
+
         metric.sync(accumulated=False)
         assert metric._state == _States.BATCH
         assert metric._is_synced
