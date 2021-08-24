@@ -19,6 +19,7 @@ from collections import Counter, defaultdict
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import torch
+from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
@@ -37,7 +38,7 @@ def _preprocess_text(
     truncation: bool = True,
     sort_according_length: bool = True,
     own_tokenizer: bool = False,
-) -> Dict[str, torch.Tensor]:
+) -> Dict[str, Tensor]:
     """Default text pre-processing function using `transformers` `AutoTokenizer` instance.
 
     Args:
@@ -80,7 +81,7 @@ def _preprocess_text(
     return {"input_ids": input_ids, "attention_mask": attention_mask}
 
 
-def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> torch.Tensor:
+def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor:
     """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a
     calculation for BERT score.
 
@@ -99,9 +100,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: torch.Tensor) -> 
     return attention_mask
 
 
-def _sort_data_according_length(
-    input_ids: torch.Tensor, attention_mask: torch.Tensor
-) -> Tuple[torch.Tensor, torch.Tensor]:
+def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tuple[Tensor, Tensor]:
     sorted_indices = attention_mask.sum(1).argsort()
     input_ids = input_ids[sorted_indices]
     attention_mask = attention_mask[sorted_indices]
@@ -109,9 +108,8 @@ def _sort_data_according_length(
 
 
 def _input_data_collator(
-    batch: Dict[str, torch.Tensor],
-    device: Optional[Union[str, torch.device]] = None,
-) -> Dict[str, torch.Tensor]:
+    batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
+) -> Dict[str, Tensor]:
     """Helper function that trims model inputs to the longest sequence within the batch and put the input on the
     proper device."""
     max_len = int(batch["attention_mask"].sum(1).max().item())
@@ -121,9 +119,7 @@ def _input_data_collator(
     return batch
 
 
-def _output_data_collator(
-    model_output: torch.Tensor, attention_mask: torch.Tensor, target_len: int
-) -> Tuple[torch.Tensor, torch.Tensor]:
+def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_len: int) -> Tuple[Tensor, Tensor]:
     """Helper function that pads the model output and attention mask to the target length."""
     zeros_shape = list(model_output.shape)
     zeros_shape[2] = target_len - zeros_shape[2]
@@ -149,7 +145,7 @@ class TextDataset(Dataset):
         text: List[str],
         tokenizer: Any,
         max_length: int = 512,
-        preprocess_text_fn: Callable[[List[str], Any, int], Dict[str, torch.Tensor]] = _preprocess_text,
+        preprocess_text_fn: Callable[[List[str], Any, int], Dict[str, Tensor]] = _preprocess_text,
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
         own_tokenizer: bool = False,
@@ -180,7 +176,7 @@ class TextDataset(Dataset):
         else:
             self.tokens_idf = {}
 
-    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, idx: int) -> Dict[str, Tensor]:
         input_ids = self.text["input_ids"][idx, :]
         attention_mask = self.text["attention_mask"][idx, :]
         inputs_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
@@ -213,7 +209,7 @@ class TextDataset(Dataset):
         return math.log((self.num_sentences + 1) / 1)
 
     @staticmethod
-    def _set_of_tokens(input_ids: torch.Tensor) -> Set:
+    def _set_of_tokens(input_ids: Tensor) -> Set:
         return set(input_ids.tolist())
 
 
@@ -222,8 +218,8 @@ class TokenizedDataset(TextDataset):
 
     def __init__(
         self,
-        input_ids: torch.Tensor,
-        attention_mask: torch.Tensor,
+        input_ids: Tensor,
+        attention_mask: Tensor,
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
     ) -> None:
@@ -270,8 +266,8 @@ def _get_embeddings_and_idf_scale(
     all_layers: bool = False,
     idf: bool = False,
     verbose: bool = False,
-    user_forward_fn: Callable[[torch.nn.Module, Dict[str, torch.Tensor]], torch.Tensor] = None,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    user_forward_fn: Callable[[torch.nn.Module, Dict[str, Tensor]], Tensor] = None,
+) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequence scaling factor.
     Args:
         dataloader:
@@ -302,8 +298,8 @@ def _get_embeddings_and_idf_scale(
     Raises:
         ValueError:
     """
-    EMBEDDINGS_LIST: List[torch.Tensor] = []
-    IDF_SCALE_LIST: List[torch.Tensor] = []
+    embeddings_list: List[Tensor] = []
+    idf_scale_list: List[Tensor] = []
     for batch in _get_progress_bar(dataloader, verbose):
         with torch.no_grad():
             batch = _input_data_collator(batch, device)
@@ -342,22 +338,22 @@ def _get_embeddings_and_idf_scale(
         processed_attention_mask = _process_attention_mask_for_special_tokens(attention_mask)
         # Multiply embeddings with attention_mask (b=batch_size, l=num_layers, s=seq_len, d=emb_dim)
         out = torch.einsum("blsd, bs -> blsd", out, processed_attention_mask)
-        EMBEDDINGS_LIST.append(out.cpu())
+        embeddings_list.append(out.cpu())
 
         # Calculate weighted (w.r.t. sentence length) input_ids IDF matrix
         input_ids_idf = (
             batch["input_ids_idf"] * processed_attention_mask if idf else processed_attention_mask.type(out.dtype)
         )
         input_ids_idf /= input_ids_idf.sum(-1, keepdim=True)
-        IDF_SCALE_LIST.append(input_ids_idf)
+        idf_scale_list.append(input_ids_idf)
 
-    EMBEDDINGS = torch.cat(EMBEDDINGS_LIST)
-    IDF_SCALE = torch.cat(IDF_SCALE_LIST)
+    embeddings = torch.cat(embeddings_list)
+    idf_scale = torch.cat(idf_scale_list)
 
-    return EMBEDDINGS, IDF_SCALE
+    return embeddings, idf_scale
 
 
-def _get_scaled_precision_or_recall(cos_sim: torch.Tensor, metric: str, idf_scale: torch.Tensor) -> torch.Tensor:
+def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Tensor) -> Tensor:
     """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values
@@ -368,11 +364,8 @@ def _get_scaled_precision_or_recall(cos_sim: torch.Tensor, metric: str, idf_scal
 
 
 def _get_precision_recall_f1(
-    pred_embeddings: torch.Tensor,
-    ref_embeddings: torch.Tensor,
-    pred_idf_scale: torch.Tensor,
-    ref_idf_scale: torch.Tensor,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    pred_embeddings: Tensor, ref_embeddings: Tensor, pred_idf_scale: Tensor, ref_idf_scale: Tensor
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
@@ -406,7 +399,7 @@ def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int
     return msg
 
 
-def _read_csv_from_local_file(baseline_path: str) -> torch.Tensor:
+def _read_csv_from_local_file(baseline_path: str) -> Tensor:
     """Helper function which reads baseline the csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
@@ -418,7 +411,7 @@ def _read_csv_from_local_file(baseline_path: str) -> torch.Tensor:
     return baseline
 
 
-def _read_csv_from_url(baseline_url: str) -> torch.Tensor:
+def _read_csv_from_url(baseline_url: str) -> Tensor:
     """Helper function which reads the baseline csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
@@ -438,9 +431,9 @@ def _load_baseline(
     model_name_or_path: Optional[str] = None,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
-) -> Optional[torch.Tensor]:
+) -> Optional[Tensor]:
     if baseline_path:
-        baseline: Optional[torch.Tensor] = _read_csv_from_local_file(baseline_path)
+        baseline: Optional[Tensor] = _read_csv_from_local_file(baseline_path)
     elif baseline_url:
         baseline = _read_csv_from_url(baseline_url)
     # Read default baseline from the original `bert-score` package https://github.com/Tiiiger/bert_score
@@ -456,13 +449,13 @@ def _load_baseline(
 
 
 def _rescale_metrics_with_baseline(
-    precision: torch.Tensor,
-    recall: torch.Tensor,
-    f1_score: torch.Tensor,
-    baseline: torch.Tensor,
+    precision: Tensor,
+    recall: Tensor,
+    f1_score: Tensor,
+    baseline: Tensor,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Rescale the computed metrics with the pre-computed baseline."""
     if num_layers is None and all_layers is False:
         num_layers = -1
@@ -474,14 +467,14 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    predictions: Union[List[str], Dict[str, torch.Tensor]],
-    references: Union[List[str], Dict[str, torch.Tensor]],
+    predictions: Union[List[str], Dict[str, Tensor]],
+    references: Union[List[str], Dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     model: Optional[torch.nn.Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Callable[[torch.nn.Module, Dict[str, torch.Tensor]], torch.Tensor] = None,
+    user_forward_fn: Callable[[torch.nn.Module, Dict[str, Tensor]], Tensor] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
@@ -610,7 +603,7 @@ def bert_score(
         isinstance(text, list) and len(text) > 0 and isinstance(text[0], str) for text in (predictions, references)
     )
     _are_valid_tensors = all(
-        isinstance(text, dict) and isinstance(text["input_ids"], torch.Tensor) for text in (predictions, references)
+        isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (predictions, references)
     )
     if _are_empty_lists:
         warnings.warn("Predictions and references are empty.")

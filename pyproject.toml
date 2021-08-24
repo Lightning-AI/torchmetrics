@@ -14,7 +14,7 @@ known_first_party = [
     "torchmetrics",
     "tests",
     "integrations",
-    "metrics_examples",
+    "tm_examples",
 ]
 skip_glob = []
 profile = "black"

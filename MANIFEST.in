@@ -14,7 +14,7 @@ include LICENSE
 include torchmetrics/py.typed
 
 # Include examples
-recursive-include metrics_examples *.py
+recursive-include tm_examples *.py
 
 exclude *.sh
 exclude *.toml
