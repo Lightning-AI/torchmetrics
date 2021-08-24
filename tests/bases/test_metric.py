@@ -160,7 +160,7 @@ def test_hash():
 
     b1 = B()
     b2 = B()
-    assert hash(b1) == hash(b2)
+    assert hash(b1) != hash(b2)  # different ids
     assert isinstance(b1.x, list) and len(b1.x) == 0
     b1.x.append(tensor(5))
     assert isinstance(hash(b1), int)  # <- check that nothing crashes
