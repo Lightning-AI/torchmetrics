@@ -62,8 +62,6 @@ class Metric(nn.Module, ABC):
         automatically calls ``update()`` and also returns the metric value at the current step.
 
     Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -79,7 +77,6 @@ class Metric(nn.Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -93,7 +90,6 @@ class Metric(nn.Module, ABC):
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
 
         self.dist_sync_on_step = dist_sync_on_step
-        self.compute_on_step = compute_on_step
         self.process_group = process_group
         self.dist_sync_fn = dist_sync_fn
         self._to_sync = True
@@ -211,7 +207,7 @@ class Metric(nn.Module, ABC):
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Automatically calls ``update()``.
 
-        Returns the metric value over inputs if ``compute_on_step`` is True.
+        Returns the metric value over inputs.
         """
         # add current step
         if self._is_synced:
@@ -289,8 +285,6 @@ class Metric(nn.Module, ABC):
                 stack = [self._accumulated_states[attr], self._batch_states[attr]]
                 self._accumulated_states[attr] = torch.stack(stack).sum()
 
-            self._batch_states.pop(attr)
-
             if not (callable(reduction_fn) or reduction_fn is None):
                 raise TypeError("reduction_fn must be callable or None")
 
@@ -302,8 +296,6 @@ class Metric(nn.Module, ABC):
 
             if is_list:
                 self._accumulated_states[attr] = [self._accumulated_states[attr]]
-
-        self._batch_states = None
 
     def _wrap_update(self, update: Callable) -> Callable:
         @functools.wraps(update)

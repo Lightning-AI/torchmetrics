@@ -360,7 +360,7 @@ def test_verify_internal_states():
         metric.update(i)
         assert metric.x == sum(range(i + 1))
 
-    assert metric._batch_states is None
+    assert metric._batch_states == {'c': tensor(1), 'size': [1], 'x': tensor(4)}
     assert metric._accumulated_states["x"] == tensor(10)
     assert metric._accumulated_states["c"] == tensor(5)
     assert torch.equal(metric._accumulated_states["size"][0], tensor([1, 1, 1, 1, 1]))
