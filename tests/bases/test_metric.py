@@ -334,7 +334,6 @@ def test_forward_and_compute_to_device(metric_class):
 
 
 def test_verify_internal_states():
-
     class DummyCatMetric(Metric):
         def __init__(self):
             super().__init__()

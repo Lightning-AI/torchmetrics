@@ -18,12 +18,13 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
+from enum import Enum
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
 from torch import Tensor, nn
 from torch.nn import Module
-from enum import Enum
+
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
@@ -34,7 +35,7 @@ from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_versio
 class _States(Enum):
     ACCUMULATED = "accumulated"
     BATCH = "batch"
-    DEFAULT = 'default'
+    DEFAULT = "default"
 
 
 def jit_distributed_available() -> bool:
@@ -198,7 +199,7 @@ class Metric(nn.Module, ABC):
 
     @torch.jit.unused
     @_is_synced.setter
-    def _is_synced(self, is_synced : bool) -> None:
+    def _is_synced(self, is_synced: bool) -> None:
         if self._state == _States.DEFAULT:
             raise Exception
         elif self._state == _States.ACCUMULATED:
@@ -337,7 +338,7 @@ class Metric(nn.Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
-        accumulated: bool = True
+        accumulated: bool = True,
     ) -> None:
         """Sync function for manually controlling when metrics states should be synced across processes.
 
