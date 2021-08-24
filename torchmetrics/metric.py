@@ -415,7 +415,7 @@ class Metric(nn.Module, ABC):
             process_group=process_group,
             should_sync=should_sync,
             distributed_available=distributed_available,
-            accumulated=accumulated
+            accumulated=accumulated,
         )
 
         yield
@@ -437,7 +437,10 @@ class Metric(nn.Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync, accumulated=accumulated
+                dist_sync_fn=self.dist_sync_fn,
+                should_sync=self._to_sync,
+                should_unsync=self._should_unsync,
+                accumulated=accumulated,
             ):
                 self._computed = compute(*args, **kwargs)
 
