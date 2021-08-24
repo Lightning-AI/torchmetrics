@@ -13,7 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
 
 
+- Added support for float targets in `nDCG` metric ([#437](https://github.com/PyTorchLightning/metrics/pull/437))
+
+
+- Added `average` argument to `AveragePrecision` metric for reducing multilabel and multiclass problems
+
+
 ### Changed
+
+- `AveragePrecision` will now as default output the `macro` average for multilabel and multiclass problems 
 
 
 ### Deprecated
@@ -25,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed bug in `F1` with `average='macro'` and `ignore_index!=None` ([#495](https://github.com/PyTorchLightning/metrics/pull/495))
+
 
 ## [0.5.1] - 2021-08-30
 
