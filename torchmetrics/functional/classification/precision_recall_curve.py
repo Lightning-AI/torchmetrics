@@ -153,7 +153,7 @@ def _precision_recall_curve_compute_single_class(
 
     recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
 
-    thresholds = reversed(thresholds[sl]).detach().clone()
+    thresholds = reversed(thresholds[sl]).detach().clone()  # type: ignore
 
     return precision, recall, thresholds
 
