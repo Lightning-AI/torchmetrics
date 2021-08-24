@@ -2,15 +2,13 @@ import pytest
 
 from tests.helpers.testers import DummyListMetric, DummyMetric
 
-pytest.mark.parametrize(
+@pytest.mark.parametrize(
     "metric_cls",
     [
         (DummyMetric,),
         (DummyListMetric,),
     ],
 )
-
-
 def test_metric_hashing(metric_cls):
     """Tests that hases are different.
 
