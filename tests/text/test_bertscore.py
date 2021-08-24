@@ -43,6 +43,7 @@ def _assert_list(preds: Any, refs: Any, threshold: float = 1e-8):
 
 
 def _parse_original_bert_score(score: torch.Tensor) -> Dict[str, List[float]]:
+    """Parse the BERT score returned by the original `bert-score` package."""
     score_dict = {metric: value.tolist() for metric, value in zip(_METRICS, score)}
     return score_dict
 
@@ -301,6 +302,7 @@ def test_accumulation(preds, refs):
 
 
 def _bert_score_ddp(rank, world_size, preds, refs, original_score):
+    """Define a DDP process for BERTScore."""
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "12355"
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
@@ -313,6 +315,7 @@ def _bert_score_ddp(rank, world_size, preds, refs, original_score):
 
 
 def _test_score_ddp_fn(rank, world_size, preds, refs):
+    """Core functionality for the `test_score_ddp` test."""
     original_score = original_bert_score(
         preds, refs, model_type="bert-base-uncased", num_layers=8, idf=False, batch_size=3
     )

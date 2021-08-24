@@ -101,6 +101,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
 
 
 def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tuple[Tensor, Tensor]:
+    """Sort tokenized sentence from the shortest to the longest one."""
     sorted_indices = attention_mask.sum(1).argsort()
     input_ids = input_ids[sorted_indices]
     attention_mask = attention_mask[sorted_indices]
@@ -148,7 +149,6 @@ class TextDataset(Dataset):
         preprocess_text_fn: Callable[[List[str], Any, int], Dict[str, Tensor]] = _preprocess_text,
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
-        own_tokenizer: bool = False,
     ) -> None:
         """
         Args:
@@ -432,6 +432,7 @@ def _load_baseline(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
 ) -> Optional[Tensor]:
+    """Load a CSV file with the baseline values used for rescaling."""
     if baseline_path:
         baseline: Optional[Tensor] = _read_csv_from_local_file(baseline_path)
     elif baseline_url:
@@ -624,16 +625,13 @@ def bert_score(
 
     # We ignore mypy typing below as the proper typing is ensured by conditions above, only mypy cannot infer that.
     if _are_valid_lists:
-        ref_dataset = TextDataset(
-            references, tokenizer, max_length, idf=idf, own_tokenizer=True if user_tokenizer else False  # type: ignore
-        )
+        ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)  # type: ignore
         pred_dataset = TextDataset(
             predictions,  # type: ignore
             tokenizer,
             max_length,
             idf=idf,
             tokens_idf=ref_dataset.tokens_idf,
-            own_tokenizer=True if user_tokenizer else False,
         )
     elif _are_valid_tensors:
         ref_dataset = TokenizedDataset(**references, idf=idf)  # type: ignore
