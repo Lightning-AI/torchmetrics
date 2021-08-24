@@ -22,8 +22,8 @@ from torch import nn, tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 from torchmetrics import Metric
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 
 seed_all(42)
 
@@ -328,7 +328,6 @@ def test_forward_and_compute_to_device(metric_class):
 
 
 def verify_internal_states():
-
     class DummyCatMetric(Metric):
         def __init__(self):
             super().__init__()
@@ -354,15 +353,13 @@ def verify_internal_states():
         metric.update(i)
         assert metric.x == sum(range(i + 1))
 
-    assert metric._batch_states == {'x': tensor(4), 'c': tensor(1), 'size': [4]}
-    assert metric._accumulated_states['x'] == tensor(10)
-    assert metric._accumulated_states['c'] == tensor(5)
-    assert torch.equal(metric._accumulated_states['size'][0], tensor([0, 1, 2, 3, 4]))
-
+    assert metric._batch_states == {"x": tensor(4), "c": tensor(1), "size": [4]}
+    assert metric._accumulated_states["x"] == tensor(10)
+    assert metric._accumulated_states["c"] == tensor(5)
+    assert torch.equal(metric._accumulated_states["size"][0], tensor([0, 1, 2, 3, 4]))
 
     metric = DummyCatMetric()
 
     steps = 5
     for i in range(steps):
         metric(i)
-

@@ -241,7 +241,7 @@ class Metric(nn.Module, ABC):
             setattr(self, attr, reduced)
 
     def _store_states_on_update(self) -> None:
-        # store the current batch state
+        # store the current batch state
         self._batch_states = {attr: getattr(self, attr) for attr in self._defaults}
 
         if self._accumulated_states is None:
@@ -261,12 +261,18 @@ class Metric(nn.Module, ABC):
 
             # pre-processing ops (stack or flatten for inputs)
             if isinstance(self._accumulated_states[attr], Tensor):
-                    self._accumulated_states[attr] = torch.stack([self._accumulated_states[attr], self._batch_states[attr]]).sum()
+                self._accumulated_states[attr] = torch.stack(
+                    [self._accumulated_states[attr], self._batch_states[attr]]
+                ).sum()
 
             if not (callable(reduction_fn) or reduction_fn is None):
                 raise TypeError("reduction_fn must be callable or None")
 
-            self._accumulated_states[attr] = reduction_fn(self._accumulated_states[attr]) if reduction_fn is not None else self._accumulated_states[attr]
+            self._accumulated_states[attr] = (
+                reduction_fn(self._accumulated_states[attr])
+                if reduction_fn is not None
+                else self._accumulated_states[attr]
+            )
 
             if is_list:
                 self._accumulated_states[attr] = [self._accumulated_states[attr]]
@@ -276,7 +282,7 @@ class Metric(nn.Module, ABC):
         def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
             self._computed = None
             self._update_called = True
-            # FIXME: Optimize this code and reset function.
+            # FIXME: Optimize this code and reset function.
             self.reset()
             output = update(*args, **kwargs)
             self._store_states_on_update()
