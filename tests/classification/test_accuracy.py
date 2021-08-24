@@ -458,10 +458,7 @@ def test_negative_ignore_index_multi_dim_multi_class():
 def test_negative_ignore_index_multi_dim_multi_class_with_logits():
     """This tests that if a negative value for the ignore index is set, it should work with the checks for the
     target value."""
-    preds = torch.tensor([
-        [[0.8, 0.7], [0.2, 0.4]],
-        [[0.1, 0.2], [0.9, 0.8]],
-        [[0.7, 0.9], [0.2, 0.4]]])
+    preds = torch.tensor([[[0.8, 0.7], [0.2, 0.4]], [[0.1, 0.2], [0.9, 0.8]], [[0.7, 0.9], [0.2, 0.4]]])
     target = torch.tensor([[0, 0], [-1, 1], [1, -1]])
     num_classes = 2
     exp_result = 0.75

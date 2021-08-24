@@ -26,7 +26,9 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int]) -> None:
+def _basic_input_validation(
+    preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int]
+) -> None:
     """Perform basic validation of inputs that does not require deducing any information of the type of inputs."""
 
     if target.is_floating_point():
@@ -39,7 +41,6 @@ def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, mul
         if ignore_index >= 0:
             if target.min() < 0:
                 raise ValueError("The `target` has to be a non-negative tensor.")
-
 
     preds_float = preds.is_floating_point()
     if not preds_float and preds.min() < 0:

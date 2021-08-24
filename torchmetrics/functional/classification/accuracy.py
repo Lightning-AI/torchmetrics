@@ -57,7 +57,13 @@ def _mode(
     """
 
     mode = _check_classification_inputs(
-        preds, target, threshold=threshold, top_k=top_k, num_classes=num_classes, multiclass=multiclass, ignore_index=ignore_index
+        preds,
+        target,
+        threshold=threshold,
+        top_k=top_k,
+        num_classes=num_classes,
+        multiclass=multiclass,
+        ignore_index=ignore_index,
     )
     return mode
 
@@ -223,7 +229,9 @@ def _subset_accuracy_update(
     """
 
     preds, target = _input_squeeze(preds, target)
-    preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k, ignore_index=ignore_index)
+    preds, target, mode = _input_format_classification(
+        preds, target, threshold=threshold, top_k=top_k, ignore_index=ignore_index
+    )
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")

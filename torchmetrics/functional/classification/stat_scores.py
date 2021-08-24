@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod, DataType
+from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
 
 def _del_column(data: Tensor, idx: int) -> Tensor:
@@ -127,7 +127,13 @@ def _stat_scores_update(
             target = target[target != ignore_index]
 
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k, ignore_index=ignore_index
+        preds,
+        target,
+        threshold=threshold,
+        num_classes=num_classes,
+        multiclass=multiclass,
+        top_k=top_k,
+        ignore_index=ignore_index,
     )
 
     if ignore_index is not None and not ignore_index < preds.shape[1]:

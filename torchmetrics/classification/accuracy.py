@@ -235,7 +235,9 @@ class Accuracy(StatScores):
             self.subset_accuracy = False
 
         if self.subset_accuracy:
-            correct, total = _subset_accuracy_update(preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index)
+            correct, total = _subset_accuracy_update(
+                preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index
+            )
             self.correct += correct
             self.total += total
         else:
