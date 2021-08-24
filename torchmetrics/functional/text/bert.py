@@ -138,8 +138,7 @@ def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_l
 
 
 class TextDataset(Dataset):
-    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score
-    calculation."""
+    """PyTorch dataset class for storing tokenized sentences and other properties used for BERT score calculation."""
 
     def __init__(
         self,
@@ -210,11 +209,12 @@ class TextDataset(Dataset):
 
     @staticmethod
     def _set_of_tokens(input_ids: Tensor) -> Set:
+        """Return set of tokens from the `input_ids` `torch.Tensor`."""
         return set(input_ids.tolist())
 
 
 class TokenizedDataset(TextDataset):
-    """The children of TextDataset class to."""
+    """The child class of `TextDataset` class used with already tokenized data."""
 
     def __init__(
         self,
@@ -255,6 +255,17 @@ def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[Da
         return tqdm.auto.tqdm(dataloader)
     else:
         return dataloader
+
+
+def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
+    """Check if the shape of the user's own model output."""
+    bs, seq_len = input_ids.shape[:2]
+    invalid_out_shape = len(output.shape) != 3 or output.shape[0] != bs or output.shape[1] != seq_len
+    if invalid_out_shape:
+        raise ValueError(
+            "The model output must be `torch.Tensor` of a shape `[batch_size, seq_len, model_dim]` "
+            f"i.e. [{bs}, {seq_len}. , `model_dim`], but got {output.shape}."
+        )
 
 
 def _get_embeddings_and_idf_scale(
@@ -303,35 +314,22 @@ def _get_embeddings_and_idf_scale(
     for batch in _get_progress_bar(dataloader, verbose):
         with torch.no_grad():
             batch = _input_data_collator(batch, device)
+            # Output shape: batch_size x num_layers OR 1 x sequence_length x bert_dim
             if not all_layers:
-                # Output shape: batch_size x 1 x sequence_length x bert_dim
                 if not user_forward_fn:
-                    out = (
-                        model(
-                            batch["input_ids"],
-                            batch["attention_mask"],
-                            output_hidden_states=True,
-                        )
-                        .hidden_states[num_layers if num_layers is not None else -1]
-                        .unsqueeze(1)
-                    )
+                    out = model(batch["input_ids"], batch["attention_mask"], output_hidden_states=True)
+                    out = out.hidden_states[num_layers if num_layers is not None else -1]
                 else:
                     out = user_forward_fn(model, batch)
-                    bs, seq_len = batch["input_ids"].shape[:2]
-                    invalid_out_shape = len(out.shape) != 3 or out.shape[0] != bs or out.shape[1] != seq_len
-                    if invalid_out_shape:
-                        raise ValueError(
-                            "The model output must be `torch.Tensor` of a shape `[batch_size, seq_len, model_dim]` "
-                            f"i.e. [{batch['input_ids'].shape[0]}, {batch['input_ids'].shape[0]}. , `model_dim`], "
-                            f"but got {out.shape}."
-                        )
-                    out = out.unsqueeze(1)
+                    _check_shape_of_model_output(out, batch["input_ids"])
+                out = out.unsqueeze(1)
             else:
                 if user_forward_fn:
-                    raise ValueError("")
-                # Output shape: batch_size x num_layers x sequence_length x bert_dim
-                out = model(batch["input_ids"], batch["attention_mask"], output_hidden_states=True).hidden_states
-                out = torch.cat([o.unsqueeze(1) for o in out], dim=1)
+                    raise ValueError(
+                        "The option `all_layers=True` can be used only with default `transformers` models."
+                    )
+                out = model(batch["input_ids"], batch["attention_mask"], output_hidden_states=True)
+                out = torch.cat([o.unsqueeze(1) for o in out.hidden_states], dim=1)
 
         out /= out.norm(dim=-1).unsqueeze(-1)  # normalize embeddings
         out, attention_mask = _output_data_collator(out, batch["attention_mask"], target_len)
@@ -394,7 +392,7 @@ def _get_precision_recall_f1(
 
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
-    """Copy from https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py and adjusted."""
+    """Copied from https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py and adjusted."""
     msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
     return msg
 
@@ -555,9 +553,13 @@ def bert_score(
 
     Raises:
         ValueError:
+            If `len(predictions) != len(references)`.
+        ValueError:
             If `tqdm` package is required and not installed.
         ValueError:
             If `transformers` package is required and not installed.
+        ValueError:
+            If `num_layer` is larger than the number of the model layers.
         ValueError:
             If invalid input is provided.
 
@@ -569,7 +571,8 @@ def bert_score(
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
     """
-    assert len(predictions) == len(references), "Number of predicted and reference sententes must be the same!"
+    if len(predictions) != len(references):
+        raise ValueError("Number of predicted and reference sententes must be the same!")
 
     if verbose:
         if not _TQDM_AVAILABLE:
@@ -591,8 +594,8 @@ def bert_score(
     model.to(device)
 
     try:
-        if num_layers:
-            assert num_layers <= model.config.num_hidden_layers, (  # type: ignore
+        if num_layers and num_layers > model.config.num_hidden_layers:  # type: ignore
+            raise ValueError(
                 f"num_layers={num_layers} is forbidden for {model_name_or_path}. "  # type: ignore
                 f"Please use num_layers <= {model.config.num_hidden_layers}"  # type: ignore
             )
@@ -618,10 +621,7 @@ def bert_score(
         return output_dict
 
     # Load baselines if needed
-    if rescale_with_baseline:
-        baseline = _load_baseline(lang, model_name_or_path, baseline_path, baseline_url)
-    else:
-        baseline = None
+    baseline = _load_baseline(lang, model_name_or_path, baseline_path, baseline_url) if rescale_with_baseline else None
 
     # We ignore mypy typing below as the proper typing is ensured by conditions above, only mypy cannot infer that.
     if _are_valid_lists:

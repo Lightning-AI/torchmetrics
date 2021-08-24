@@ -29,12 +29,8 @@ if _TRANSFORMERS_AVAILABLE:
 _DEFAULT_MODEL = "roberta-large"
 
 
-def _flatten(x: List[List[str]]) -> List[str]:
-    """converts list of list to single list of strings."""
-    return [e for y in x for e in y]
-
-
 def _concatenate(d: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
+    """Concatenate list of tensors within a given dictionary."""
     output_dict: Dict[str, torch.Tensor] = {}
     for k, v in d.items():
         output_dict[k] = torch.cat(v)
