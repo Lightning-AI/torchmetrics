@@ -144,10 +144,6 @@ def test_compute():
     assert a.compute() == 3
     assert a._computed == 3
 
-    # called without update, should return cached value
-    a._computed = 5
-    assert a.compute() == 5
-
 
 def test_hash():
     class A(DummyMetric):

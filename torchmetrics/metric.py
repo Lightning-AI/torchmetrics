@@ -304,7 +304,7 @@ class Metric(nn.Module, ABC):
             self._update_called = True
             self._state = _States.BATCH
 
-            self.reset()
+            self.reset(reset_states=False)
             update(*args, **kwargs)
             self._batch_states = {attr: getattr(self, attr) for attr in self._defaults}
 
@@ -439,9 +439,9 @@ class Metric(nn.Module, ABC):
             with self.sync_context(
                 dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync, accumulated=accumulated
             ):
-                computed = compute(*args, **kwargs)
+                self._computed = compute(*args, **kwargs)
 
-            return computed
+            return self._computed
 
         return wrapped_func
 
@@ -454,7 +454,7 @@ class Metric(nn.Module, ABC):
         """Override this method to compute the final metric value from state variables synchronized across the
         distributed backend."""
 
-    def reset(self) -> None:
+    def reset(self, reset_states: bool = True) -> None:
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
@@ -469,6 +469,9 @@ class Metric(nn.Module, ABC):
             else:
                 setattr(self, attr, [])
 
+        if reset_states:
+            self._accumulated_states = None
+            self._batch_states = None
         self._state = _States.DEFAULT
 
     def clone(self) -> "Metric":
