@@ -370,7 +370,6 @@ def test_verify_internal_states():
     metric.reset()
     assert metric._state == _States.DEFAULT
 
-
     metric = DummyCatMetric()
 
     for i in range(5):
