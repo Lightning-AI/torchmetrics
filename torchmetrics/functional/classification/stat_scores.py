@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod, DataType
 
 
 def _del_column(data: Tensor, idx: int) -> Tensor:
@@ -83,6 +83,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Updates and returns the the number of true positives, false positives, true negatives, false negatives.
     Raises ValueError if:
@@ -108,12 +109,28 @@ def _stat_scores_update(
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
     """
+    # Here we reshape the input and target so that we can remove the ignored indices
+    if ignore_index is not None:
+        if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
+            # In case or multi-dimensional multi-class with logits
+            n_dims = len(preds.shape)
+            num_classes = preds.shape[1]
+            # move class dim to last so that we can flatten the addtional dimensions into N: [N, C, ...] -> [N, ..., C]
+            preds = preds.transpose(1, n_dims - 1)
+
+            # flatten: [N, ..., C] -> [N', C]
+            preds = preds.reshape(-1, num_classes)
+            target = target.reshape(-1)
+
+        if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
+            preds = preds[target != ignore_index]
+            target = target[target != ignore_index]
 
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
+        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k, ignore_index=ignore_index
     )
 
-    if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
+    if ignore_index is not None and not ignore_index < preds.shape[1]:
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[0]} classes")
 
     if ignore_index is not None and preds.shape[1] == 1:
@@ -128,19 +145,19 @@ def _stat_scores_update(
             preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
             target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
-    # Delete what is in ignore_index, if applicable (and classes don't matter):
-    if ignore_index is not None and reduce != "macro":
-        preds = _del_column(preds, ignore_index)
-        target = _del_column(target, ignore_index)
+    # # Delete what is in ignore_index, if applicable (and classes don't matter):
+    # if ignore_index is not None and reduce != "macro":
+    #     preds = _del_column(preds, ignore_index)
+    #     target = _del_column(target, ignore_index)
 
     tp, fp, tn, fn = _stat_scores(preds, target, reduce=reduce)
 
-    # Take care of ignore_index
-    if ignore_index is not None and reduce == "macro":
-        tp[..., ignore_index] = -1
-        fp[..., ignore_index] = -1
-        tn[..., ignore_index] = -1
-        fn[..., ignore_index] = -1
+    # # Take care of ignore_index
+    # if ignore_index is not None and reduce == "macro":
+    #     tp[..., ignore_index] = -1
+    #     fp[..., ignore_index] = -1
+    #     tn[..., ignore_index] = -1
+    #     fn[..., ignore_index] = -1
 
     return tp, fp, tn, fn
 

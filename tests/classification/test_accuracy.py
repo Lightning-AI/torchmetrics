@@ -391,3 +391,99 @@ def test_negative_ignore_index():
     # Test functional
     with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
         acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+
+
+def test_negative_ignore_index_multi_class_with_logits():
+    """This tests that if a negative value for the ignore index is set, it should work with the checks for the
+    target value."""
+    preds = torch.tensor([[0.8, 0.1], [0.2, 0.7], [0.5, 0.5]])
+    target = torch.tensor([0, 1, -1])
+    num_classes = 2
+    exp_result = 1.0
+
+    # If the ignore index is set properly
+    ignore_index = -1
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    acc(preds, target)
+    assert (acc.compute() == tensor(exp_result)).all()
+
+    # Test functional
+    acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+    assert (acc_score == tensor(exp_result)).all()
+
+    # If the ignore index is not set properly, we expect to see an error
+    ignore_index = None
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc(preds, target)
+
+    # Test functional
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+
+
+def test_negative_ignore_index_multi_dim_multi_class():
+    """This tests that if a negative value for the ignore index is set, it should work with the checks for the
+    target value."""
+    preds = torch.tensor([[0, 0], [1, 1], [0, 0]])
+    target = torch.tensor([[0, 0], [-1, 1], [1, -1]])
+    num_classes = 2
+    exp_result = 0.75
+
+    # If the ignore index is set properly
+    ignore_index = -1
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    acc(preds, target)
+    assert (acc.compute() == tensor(exp_result)).all()
+
+    # Test functional
+    acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+    assert (acc_score == tensor(exp_result)).all()
+
+    # If the ignore index is not set properly, we expect to see an error
+    ignore_index = None
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc(preds, target)
+
+    # Test functional
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+
+
+def test_negative_ignore_index_multi_dim_multi_class_with_logits():
+    """This tests that if a negative value for the ignore index is set, it should work with the checks for the
+    target value."""
+    preds = torch.tensor([
+        [[0.8, 0.7], [0.2, 0.4]],
+        [[0.1, 0.2], [0.9, 0.8]],
+        [[0.7, 0.9], [0.2, 0.4]]])
+    target = torch.tensor([[0, 0], [-1, 1], [1, -1]])
+    num_classes = 2
+    exp_result = 0.75
+
+    # If the ignore index is set properly
+    ignore_index = -1
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    acc(preds, target)
+    assert (acc.compute() == tensor(exp_result)).all()
+
+    # Test functional
+    acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+    assert (acc_score == tensor(exp_result)).all()
+
+    # If the ignore index is not set properly, we expect to see an error
+    ignore_index = None
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc(preds, target)
+
+    # Test functional
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)

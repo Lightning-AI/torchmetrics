@@ -172,7 +172,7 @@ class StatScores(Metric):
         if reduce == "macro" and (not num_classes or num_classes < 1):
             raise ValueError("When you set `reduce` as 'macro', you have to provide the number of classes.")
 
-        if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
+        if num_classes and ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
         default: Callable = lambda: []

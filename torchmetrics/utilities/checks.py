@@ -26,13 +26,20 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool]) -> None:
+def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int]) -> None:
     """Perform basic validation of inputs that does not require deducing any information of the type of inputs."""
 
     if target.is_floating_point():
         raise ValueError("The `target` has to be an integer tensor.")
-    if target.min() < 0:
-        raise ValueError("The `target` has to be a non-negative tensor.")
+
+    if ignore_index is None:
+        if target.min() < 0:
+            raise ValueError("The `target` has to be a non-negative tensor.")
+    else:
+        if ignore_index >= 0:
+            if target.min() < 0:
+                raise ValueError("The `target` has to be a non-negative tensor.")
+
 
     preds_float = preds.is_floating_point()
     if not preds_float and preds.min() < 0:
@@ -194,6 +201,7 @@ def _check_classification_inputs(
     num_classes: Optional[int],
     multiclass: Optional[bool],
     top_k: Optional[int],
+    ignore_index: Optional[int] = None,
 ) -> DataType:
     """Performs error checking on inputs for classification.
 
@@ -248,7 +256,7 @@ def _check_classification_inputs(
     """
 
     # Basic validation (that does not need case/type information)
-    _basic_input_validation(preds, target, threshold, multiclass)
+    _basic_input_validation(preds, target, threshold, multiclass, ignore_index)
 
     # Check that shape/types fall into one of the cases
     case, implied_classes = _check_shape_and_type_consistency(preds, target)
@@ -300,6 +308,7 @@ def _input_format_classification(
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, DataType]:
     """Convert preds and target tensors into common format.
 
@@ -399,6 +408,7 @@ def _input_format_classification(
         num_classes=num_classes,
         multiclass=multiclass,
         top_k=top_k,
+        ignore_index=ignore_index,
     )
 
     if case in (DataType.BINARY, DataType.MULTILABEL) and not top_k:
