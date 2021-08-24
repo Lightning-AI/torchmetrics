@@ -366,6 +366,10 @@ def test_verify_internal_states():
     assert metric.compute() == 2
     assert metric._state == _States.ACCUMULATED
     assert metric.compute(accumulated=False) == 4
+    assert metric._state == _States.BATCH
+    metric.reset()
+    assert metric._state == _States.DEFAULT
+
 
     metric = DummyCatMetric()
 
