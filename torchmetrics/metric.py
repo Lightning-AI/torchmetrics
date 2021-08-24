@@ -224,16 +224,12 @@ class Metric(nn.Module, ABC):
 
         self._to_sync = self.dist_sync_on_step
         forward_cache = self.compute()
-
         self.reset()
-
         self._forward_cache = forward_cache
-
         self._batch_states = None
         self._to_sync = True
         self._computed = None
-
-        return forward_cache
+        return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
