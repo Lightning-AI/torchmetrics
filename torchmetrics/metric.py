@@ -119,9 +119,6 @@ class Metric(nn.Module, ABC):
         self._batch_states: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
         self._accumulated_states: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
-        self._batch_states_synced: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
-        self._accumulated_states_synced: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
-
     def add_state(
         self,
         name: str,
@@ -215,8 +212,6 @@ class Metric(nn.Module, ABC):
 
         Returns the metric value over inputs if ``compute_on_step`` is True.
         """
-        self.reset()
-
         # add current step
         if self._is_synced:
             raise TorchMetricsUserError(
@@ -228,11 +223,17 @@ class Metric(nn.Module, ABC):
             self.update(*args, should_accumulate=False, **kwargs)
 
         self._to_sync = self.dist_sync_on_step
-        self._forward_cache = self.compute()
+        forward_cache = self.compute()
+
+        self.reset()
+
+        self._forward_cache = forward_cache
+
+        self._batch_states = None
         self._to_sync = True
         self._computed = None
 
-        return self._forward_cache
+        return forward_cache
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
@@ -288,15 +289,24 @@ class Metric(nn.Module, ABC):
 
             # pre-processing ops (stack or flatten for inputs)
             if isinstance(self._accumulated_states[attr], Tensor):
-                    self._accumulated_states[attr] = torch.stack([self._accumulated_states[attr], self._batch_states[attr]]).sum()
+                stack = [self._accumulated_states[attr], self._batch_states[attr]]
+                self._accumulated_states[attr] = torch.stack(stack).sum()
+
+            self._batch_states.pop(attr)
 
             if not (callable(reduction_fn) or reduction_fn is None):
                 raise TypeError("reduction_fn must be callable or None")
 
-            self._accumulated_states[attr] = reduction_fn(self._accumulated_states[attr]) if reduction_fn is not None else self._accumulated_states[attr]
+            self._accumulated_states[attr] = (
+                reduction_fn(self._accumulated_states[attr])
+                if reduction_fn is not None
+                else self._accumulated_states[attr]
+            )
 
             if is_list:
                 self._accumulated_states[attr] = [self._accumulated_states[attr]]
+
+        self._batch_states = None
 
     def _wrap_update(self, update: Callable) -> Callable:
         @functools.wraps(update)

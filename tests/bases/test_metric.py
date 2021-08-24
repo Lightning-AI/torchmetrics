@@ -22,8 +22,8 @@ from torch import nn, tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 from torchmetrics import Metric
+from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 
 seed_all(42)
 
@@ -188,6 +188,12 @@ def test_forward():
     assert a(8) == 8
     assert a._forward_cache == 8
 
+    assert a.compute() == 0
+
+    a.update(5)
+    assert a.compute() == 5
+
+    a.update(3)
     assert a.compute() == 8
 
 
@@ -351,22 +357,22 @@ def test_verify_internal_states():
 
     metric = DummyCatMetric()
 
-    steps = 5
-    for i in range(steps):
+    for i in range(5):
         metric.update(i)
         assert metric.x == sum(range(i + 1))
 
-    assert metric._batch_states == {'x': tensor(4), 'c': tensor(1), 'size': [1]}
-    assert metric._accumulated_states['x'] == tensor(10)
-    assert metric._accumulated_states['c'] == tensor(5)
-    assert torch.equal(metric._accumulated_states['size'][0], tensor([1, 1, 1, 1, 1]))
-
+    assert metric._batch_states is None
+    assert metric._accumulated_states["x"] == tensor(10)
+    assert metric._accumulated_states["c"] == tensor(5)
+    assert torch.equal(metric._accumulated_states["size"][0], tensor([1, 1, 1, 1, 1]))
 
     metric = DummyCatMetric()
 
-    steps = 5
-    for i in range(steps):
+    for i in range(5):
         assert metric(i) == i
 
-    assert metric._batch_states == {'x': tensor(4), 'c': tensor(1), 'size': [1]}
+    assert metric.x == 0
+    assert metric.c == 0
+    assert metric.size == []
+    assert metric._batch_states is None
     assert metric._accumulated_states is None
