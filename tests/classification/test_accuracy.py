@@ -365,8 +365,8 @@ def test_same_input(average):
 def test_negative_ignore_index():
     """This tests that if a negative value for the ignore index is set, it should work with the checks for the
     target value."""
-    preds = torch.tensor([1, 2, 1])
-    target = torch.tensor([1, 2, -1])
+    preds = torch.tensor([0, 1, 0])
+    target = torch.tensor([0, 1, -1])
     num_classes = 2
     exp_result = 1.0
 
