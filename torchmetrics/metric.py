@@ -23,12 +23,18 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Union
 import torch
 from torch import Tensor, nn
 from torch.nn import Module
-
+from enum import Enum
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
+
+
+class _States(Enum):
+    ACCUMULATED = "accumulated"
+    BATCH = "batch"
+    DEFAULT = 'default'
 
 
 def jit_distributed_available() -> bool:
@@ -104,15 +110,17 @@ class Metric(nn.Module, ABC):
         self._persistent: Dict[str, bool] = {}
         self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
 
+        self._state = _States.DEFAULT
+
         # state management
-        self._is_synced = False
         self._is_batch_synced = False
         self._is_accumulated_synced = False
 
         self._batch_states: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
         self._accumulated_states: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
-        self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+        self._batch_states_synced: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+        self._accumulated_states_synced: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
 
     def add_state(
         self,
@@ -180,11 +188,35 @@ class Metric(nn.Module, ABC):
         self._reductions[name] = dist_reduce_fx
 
     @torch.jit.unused
+    @property
+    def _is_synced(self) -> bool:
+        if self._state == _States.DEFAULT:
+            return False
+        elif self._state == _States.ACCUMULATED:
+            return self._is_accumulated_synced
+        elif self._state == _States.BATCH:
+            return self._is_batch_synced
+        else:
+            raise NotImplementedError
+
+    @torch.jit.unused
+    @_is_synced.setter
+    def _is_synced(self, is_synced : bool) -> None:
+        if self._state == _States.DEFAULT:
+            raise Exception
+        elif self._state == _States.ACCUMULATED:
+            self._is_accumulated_synced = is_synced
+        elif self._state == _States.BATCH:
+            self._is_batch_synced = is_synced
+
+    @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Automatically calls ``update()``.
 
         Returns the metric value over inputs if ``compute_on_step`` is True.
         """
+        self.reset()
+
         # add current step
         if self._is_synced:
             raise TorchMetricsUserError(
@@ -193,33 +225,27 @@ class Metric(nn.Module, ABC):
             )
 
         with torch.no_grad():
-            self.update(*args, **kwargs)
+            self.update(*args, should_accumulate=False, **kwargs)
 
-        if self.compute_on_step:
-            self._to_sync = self.dist_sync_on_step
-            # skip restore cache operation from compute as cache is stored below.
-            self._should_unsync = False
+        self._to_sync = self.dist_sync_on_step
+        self._forward_cache = self.compute()
+        self._to_sync = True
+        self._computed = None
 
-            self._reset_batch_states()
-
-            self._forward_cache = self.compute()
-
-            self._reset_accumulated_states()
-
-            self._is_synced = False
-            self._should_unsync = True
-            self._to_sync = True
-            self._computed = None
-
-            return self._forward_cache
+        return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 
         for attr, reduction_fn in self._reductions.items():
+
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
-            if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
-                input_dict[attr] = [dim_zero_cat(input_dict[attr])]
+            is_list = isinstance(input_dict[attr], list) and len(input_dict[attr]) > 0
+
+            if is_list:
+                state = input_dict[attr][0]
+                state = state if torch.is_tensor(state) else torch.tensor(state)
+                input_dict[attr] = [dim_zero_cat(state)]
 
         output_dict = apply_to_collection(
             input_dict,
@@ -229,27 +255,28 @@ class Metric(nn.Module, ABC):
         )
 
         for attr, reduction_fn in self._reductions.items():
+
+            print(output_dict[attr], reduction_fn)
+
             # pre-processing ops (stack or flatten for inputs)
             if isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])
+
             elif isinstance(output_dict[attr][0], list):
                 output_dict[attr] = _flatten(output_dict[attr])
 
             if not (callable(reduction_fn) or reduction_fn is None):
                 raise TypeError("reduction_fn must be callable or None")
+
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
     def _store_states_on_update(self) -> None:
-        # store the current batch state
-        self._batch_states = {attr: getattr(self, attr) for attr in self._defaults}
-
         if self._accumulated_states is None:
             self._accumulated_states = self._batch_states
             return
 
         for attr, reduction_fn in self._reductions.items():
-
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
             is_list = isinstance(self._accumulated_states[attr], list) and len(self._accumulated_states[attr]) > 0
 
@@ -273,25 +300,30 @@ class Metric(nn.Module, ABC):
 
     def _wrap_update(self, update: Callable) -> Callable:
         @functools.wraps(update)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
+        def wrapped_func(*args: Any, should_accumulate: bool = True, **kwargs: Any) -> Optional[Any]:
             self._computed = None
             self._update_called = True
-            # FIXME: Optimize this code and reset function.
+            self._state = _States.BATCH
+
             self.reset()
-            output = update(*args, **kwargs)
-            self._store_states_on_update()
-            self._reset_accumulated_states()
-            return output
+            update(*args, **kwargs)
+            self._batch_states = {attr: getattr(self, attr) for attr in self._defaults}
+
+            if should_accumulate:
+                self._store_states_on_update()
+                self._reset_accumulated_states()
 
         return wrapped_func
 
     def _reset_accumulated_states(self):
         for attr_name, attr in self._accumulated_states.items():
             setattr(self, attr_name, attr)
+        self._state = _States.ACCUMULATED
 
     def _reset_batch_states(self):
         for attr_name, attr in self._batch_states.items():
             setattr(self, attr_name, attr)
+        self._state = _States.BATCH
 
     def sync(
         self,
@@ -299,6 +331,7 @@ class Metric(nn.Module, ABC):
         process_group: Optional[Any] = None,
         should_sync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
+        accumulated: bool = True
     ) -> None:
         """Sync function for manually controlling when metrics states should be synced across processes.
 
@@ -311,6 +344,16 @@ class Metric(nn.Module, ABC):
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
         """
+        if not _States.DEFAULT:
+
+            if accumulated and self._state != _States.ACCUMULATED:
+                self._reset_accumulated_states()
+
+            elif not accumulated and self._state != _States.BATCH:
+                self._reset_batch_states()
+
+            self._state = _States.ACCUMULATED if accumulated else _States.BATCH
+
         if self._is_synced and should_sync:
             raise TorchMetricsUserError("The Metric has already been synced.")
 
@@ -321,9 +364,6 @@ class Metric(nn.Module, ABC):
 
         if dist_sync_fn is None:
             dist_sync_fn = gather_all_tensors
-
-        # cache prior to syncing
-        self._cache = {attr: getattr(self, attr) for attr in self._defaults}
 
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
@@ -436,9 +476,7 @@ class Metric(nn.Module, ABC):
             else:
                 setattr(self, attr, [])
 
-        # reset internal states
-        self._cache = None
-        self._is_synced = False
+        self._state = _States.DEFAULT
 
     def clone(self) -> "Metric":
         """Make a copy of the metric."""

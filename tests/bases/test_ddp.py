@@ -22,6 +22,7 @@ from torch import tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetric, DummyMetricSum, setup_ddp
 from torchmetrics import Metric
+from torchmetrics.metric import _States
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
@@ -239,3 +240,124 @@ def test_state_dict_is_synced(tmpdir):
     """This test asserts that metrics are synced while creating the state dict but restored after to continue
     accumulation."""
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
+
+
+
+def _test_state_dict_is_synced_new_api(rank, worldsize, tmpdir):
+    setup_ddp(rank, worldsize)
+
+    class DummyCatMetric(Metric):
+        def __init__(self):
+            super().__init__()
+            self.add_state("x", torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("c", torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("size", [], dist_reduce_fx="cat")
+
+        def update(self, x):
+            self.x += x
+            self.c += 1
+            self.size.append(1)
+
+        def compute(self):
+            total = sum(self.size)
+            total = total.sum() if torch.is_tensor(total) else total
+            return self.x // total
+
+        def __repr__(self):
+            return f"DummyCatMetric(x={self.x}, c={self.c})"
+
+    metric = DummyCatMetric()
+    metric.persistent(True)
+
+    def verify_metric(metric, i, world_size):
+        state_dict = metric.state_dict()
+        exp_sum = i * (i + 1) / 2
+        assert state_dict["x"] == exp_sum * world_size
+        assert metric.x == exp_sum * world_size
+        assert metric.c == (i + 1) * world_size
+        assert state_dict["c"] == metric.c
+
+    steps = 5
+    for i in range(steps):
+
+        if metric._is_synced:
+
+            with pytest.raises(TorchMetricsUserError, match="The Metric shouldn't be synced when performing"):
+                metric(i)
+
+            metric.unsync()
+
+        assert i == metric(i)
+
+        verify_metric(metric, i, 1)
+
+        metric.sync()
+        assert metric._is_synced
+        assert metric._is_accumulated_synced
+        assert not metric._is_batch_synced
+        assert metric._state == _States.ACCUMULATED
+        
+        metric.sync(accumulated=False)
+        assert metric._state == _States.BATCH
+        assert metric._is_synced
+
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been synced."):
+            metric.sync()
+
+        verify_metric(metric, i, 2)
+
+        metric.unsync()
+        assert not metric._is_synced
+
+        with pytest.raises(TorchMetricsUserError, match="The Metric has already been un-synced."):
+            metric.unsync()
+
+        with metric.sync_context():
+            assert metric._is_synced
+            verify_metric(metric, i, 2)
+
+        with metric.sync_context(should_unsync=False):
+            assert metric._is_synced
+            verify_metric(metric, i, 2)
+
+        assert metric._is_synced
+
+        metric.unsync()
+        assert not metric._is_synced
+
+        metric.sync()
+        cache = metric._cache
+        metric._cache = None
+
+        with pytest.raises(TorchMetricsUserError, match="The internal cache should exist to unsync the Metric."):
+            metric.unsync()
+
+        metric._cache = cache
+
+    def reload_state_dict(state_dict, expected_x, expected_c):
+        metric = DummyCatMetric()
+        metric.load_state_dict(state_dict)
+        assert metric.x == expected_x
+        assert metric.c == expected_c
+
+    reload_state_dict(deepcopy(metric.state_dict()), 20, 10)
+
+    metric.unsync()
+    reload_state_dict(deepcopy(metric.state_dict()), 10, 5)
+
+    metric.sync()
+
+    filepath = os.path.join(tmpdir, f"weights-{rank}.pt")
+
+    torch.save(metric.state_dict(), filepath)
+
+    metric.unsync()
+    with metric.sync_context():
+        torch.save(metric.state_dict(), filepath)
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+def test_state_dict_is_synced_new_api(tmpdir):
+    """This test asserts that metrics are synced while creating the state dict but restored after to continue
+    accumulation."""
+    torch.multiprocessing.spawn(_test_state_dict_is_synced_new_api, args=(2, tmpdir), nprocs=2)

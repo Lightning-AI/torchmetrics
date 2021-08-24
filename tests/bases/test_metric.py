@@ -188,7 +188,7 @@ def test_forward():
     assert a(8) == 8
     assert a._forward_cache == 8
 
-    assert a.compute() == 13
+    assert a.compute() == 8
 
 
 def test_pickle(tmpdir):
@@ -327,7 +327,7 @@ def test_forward_and_compute_to_device(metric_class):
     assert is_cuda, "computed result was not moved to the correct device"
 
 
-def verify_internal_states():
+def test_verify_internal_states():
 
     class DummyCatMetric(Metric):
         def __init__(self):
@@ -339,10 +339,12 @@ def verify_internal_states():
         def update(self, x):
             self.x += x
             self.c += 1
-            self.size.append(x)
+            self.size.append(1)
 
         def compute(self):
-            return self.x // self.c
+            total = sum(self.size)
+            total = total.sum() if torch.is_tensor(total) else total
+            return self.x // total
 
         def __repr__(self):
             return f"DummyCatMetric(x={self.x}, c={self.c})"
@@ -354,15 +356,17 @@ def verify_internal_states():
         metric.update(i)
         assert metric.x == sum(range(i + 1))
 
-    assert metric._batch_states == {'x': tensor(4), 'c': tensor(1), 'size': [4]}
+    assert metric._batch_states == {'x': tensor(4), 'c': tensor(1), 'size': [1]}
     assert metric._accumulated_states['x'] == tensor(10)
     assert metric._accumulated_states['c'] == tensor(5)
-    assert torch.equal(metric._accumulated_states['size'][0], tensor([0, 1, 2, 3, 4]))
+    assert torch.equal(metric._accumulated_states['size'][0], tensor([1, 1, 1, 1, 1]))
 
 
     metric = DummyCatMetric()
 
     steps = 5
     for i in range(steps):
-        metric(i)
+        assert metric(i) == i
 
+    assert metric._batch_states == {'x': tensor(4), 'c': tensor(1), 'size': [1]}
+    assert metric._accumulated_states is None
