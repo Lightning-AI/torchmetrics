@@ -1,5 +1,6 @@
-from tests.helpers.testers import DummyMetric, DummyNonTensorMetric
 import pytest
+
+from tests.helpers.testers import DummyMetric, DummyNonTensorMetric
 
 pytest.mark.parametrize(
     "metric_cls",
@@ -8,9 +9,11 @@ pytest.mark.parametrize(
         (DummyNonTensorMetric,),
     ],
 )
+
+
 def test_metric_hashing(metric_cls):
-    """
-    Tests that hases are different. 
+    """Tests that hases are different.
+
     See the Metric's hash function for details on why this is required.
     """
     instance_1 = metric_cls()
