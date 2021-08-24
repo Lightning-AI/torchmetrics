@@ -6,8 +6,8 @@ from tests.helpers.testers import DummyListMetric, DummyMetric
 @pytest.mark.parametrize(
     "metric_cls",
     [
-        (DummyMetric,),
-        (DummyListMetric,),
+        DummyMetric,
+        DummyListMetric,
     ],
 )
 def test_metric_hashing(metric_cls):
