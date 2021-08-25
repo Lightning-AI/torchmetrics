@@ -70,7 +70,7 @@ class MAP(Metric):
     """Computes the Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
-    https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision
+    https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
 
     Boxes and targets have to be in COCO format with the box score at the end
     (x-top left, y-top left, width, height, score)
