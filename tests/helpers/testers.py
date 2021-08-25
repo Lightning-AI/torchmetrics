@@ -87,7 +87,7 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None):
         assert isinstance(pl_result, Tensor)
 
 
-def _assert_requires_grad(metric: Metric, pl_result: Any, Optional[key]: str = None):
+def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None):
     """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
     attribute."""
     if isinstance(pl_result, Sequence):
