@@ -171,10 +171,9 @@ class TextDataset(Dataset):
         self.max_length = self.text["input_ids"].shape[1]
         self.num_sentences = len(text)
         self.idf = idf
+        self.tokens_idf = {}
         if idf:
             self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
-        else:
-            self.tokens_idf = {}
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
         input_ids = self.text["input_ids"][idx, :]
@@ -235,27 +234,20 @@ class TokenizedDataset(TextDataset):
             tokens_idf:
                 Inverse document frequencies (these should be calculated on reference sentences).
         """
-        self.text = {
-            k: v
-            for k, v in zip(["input_ids", "attention_mask"], _sort_data_according_length(input_ids, attention_mask))
-        }
+        self.text = dict(zip(["input_ids", "attention_mask"], _sort_data_according_length(input_ids, attention_mask)))
         self.text = _input_data_collator(self.text)
         self.num_sentences = len(self.text["input_ids"])
         self.max_length = self.text["input_ids"].shape[1]
         self.idf = idf
+        self.tokens_idf = {}
         if idf:
             self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
-        else:
-            self.tokens_idf = {}
 
 
 def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, tqdm.auto.tqdm]:
     """Helper function returning either the dataloader itself when `verbose = False`, or it wraps the dataloader with
     `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
-    if verbose:
-        return tqdm.auto.tqdm(dataloader)
-    else:
-        return dataloader
+    return tqdm.auto.tqdm(dataloader) if verbose else dataloader
 
 
 def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
