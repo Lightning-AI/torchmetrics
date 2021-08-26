@@ -47,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `BootStrapper` metrics not working on GPU ([#462](https://github.com/PyTorchLightning/metrics/pull/462))
 
 
+- Fixed the semantic ordering of kernel height and width in `SSIM` metric ([#474](https://github.com/PyTorchLightning/metrics/pull/474))
+
+
 ## [0.5.0] - 2021-08-09
 
 ### Added
