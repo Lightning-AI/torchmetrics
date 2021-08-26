@@ -66,6 +66,25 @@ class _hide_prints:
         sys.stdout = self._original_stdout
 
 
+def _input_validator(preds: List[DetectionsDict], target: List[GroundtruthDict]) -> None:
+    if not isinstance(preds, list):
+        raise ValueError("Expected argument `preds` to be of type List")
+    if not isinstance(target, list):
+        raise ValueError("Expected argument `target` to be of type List")
+    if len(preds) != len(target):
+        raise ValueError("Expected argument `preds` and `target` to have the same length")
+
+    for k in ['detection_boxes', 'detection_scores', 'detection_classes']:
+        if any(k not in p for p in preds):
+            raise ValueError(f"Expected all dicts in `preds` to contain the `{k}` key")
+
+    for k in ['groundtruth_boxes', 'groundtruth_classes']:
+        if any(k not in p for p in target):
+            raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
+
+    # TODO: add more checking
+
+
 class MAP(Metric):
     r"""
     Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
@@ -167,7 +186,7 @@ class MAP(Metric):
                 If ``target`` is not of type List[GroundtruthDict]
             ValueError:
                 If `preds` and `target` are not of the same length
-            ValueError: 
+            ValueError:
                 If any of `preds.detection_boxes`, `preds.detection_scores`
                 and `preds.detection_classes` are not of the same length
             ValueError:
@@ -179,13 +198,7 @@ class MAP(Metric):
             ValueError:
                 If any score is not type float and of length 1
         """
-        if not isinstance(preds, list):
-            raise ValueError("Expected argument `preds` to be of type List")
-        if not isinstance(target, list):
-            raise ValueError("Expected argument `target` to be of type List")
-        if len(preds) != len(target):
-            raise ValueError("Expected argument `preds` and `target` to have the same length")
-        # TODO, validate GroundtruthDict and DetectionsDict types
+        _input_validator(preds, target)
 
         coco_target, coco_preds = COCO(), COCO()
 
