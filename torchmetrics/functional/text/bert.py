@@ -569,11 +569,10 @@ def bert_score(
     if len(predictions) != len(references):
         raise ValueError("Number of predicted and reference sententes must be the same!")
 
-    if verbose:
-        if not _TQDM_AVAILABLE:
-            raise ValueError(
-                "An argument `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`."
-            )
+    if verbose and (not _TQDM_AVAILABLE):
+        raise ValueError(
+            "An argument `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`."
+        )
 
     if model is None:
         if not _TRANSFORMERS_AVAILABLE:
