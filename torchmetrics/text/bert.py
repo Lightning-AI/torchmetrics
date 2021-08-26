@@ -158,7 +158,7 @@ class BERTScore(Metric):
         self.user_forward_fn = user_forward_fn
         self.verbose = verbose
         self.idf = idf
-        self.device = device
+        self.embedding_device = device
         self.max_length = max_length
         self.batch_size = batch_size
         self.num_threads = num_threads
@@ -237,7 +237,7 @@ class BERTScore(Metric):
             user_forward_fn=self.user_forward_fn,
             verbose=self.verbose,
             idf=self.idf,
-            device=self.device,
+            device=self.embedding_device,
             max_length=self.max_length,
             batch_size=self.batch_size,
             num_threads=self.num_threads,
