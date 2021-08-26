@@ -112,7 +112,7 @@ def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> Li
     return tokens
 
 
-def _rouge_n_score(pred: str, target: str, n_gram: int) -> Dict[str, Tensor]:
+def _rouge_n_score(pred: List[str], target: List[str], n_gram: int) -> Dict[str, Tensor]:
     """This computes precision, recall and F1 score for the Rouge-N metric.
 
     Args:
@@ -124,7 +124,7 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> Dict[str, Tensor]:
             N-gram overlap.
     """
 
-    def _create_ngrams(tokens, n) -> Counter:
+    def _create_ngrams(tokens: List[str], n: int) -> Counter:
         ngrams: Counter = Counter()
         for ngram in (tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1)):
             ngrams[ngram] += 1
@@ -151,7 +151,7 @@ def _rouge_l_score(pred: List[str], target: List[str]) -> Dict[str, Tensor]:
     """
     pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
-        return dict(precision=0.0, recall=0.0, fmeasure=0.0)
+        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
 
     lcs = _lcs(pred, target)
     return _compute_metrics(lcs, pred_len, target_len)
@@ -198,7 +198,7 @@ def _rouge_score_update(
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}]}
     """
-    results = {rouge_key: [] for rouge_key in rouge_keys_values}
+    results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred_raw, target_raw in zip(preds, targets):
         pred = _normalize_and_tokenize_text(pred_raw, stemmer)
         target = _normalize_and_tokenize_text(target_raw, stemmer)
@@ -220,7 +220,7 @@ def _rouge_score_update(
     return results
 
 
-def _rouge_score_compute(sentence_results: Dict[Union[int, str], List[Tensor]]) -> Dict[str, Tensor]:
+def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
@@ -308,7 +308,7 @@ def rouge_score(
     if isinstance(targets, str):
         targets = [targets]
 
-    sentence_results: Dict[Union[int, str], List[Dict[str, float]]] = _rouge_score_update(
+    sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
         preds, targets, rouge_keys_values, stemmer=stemmer
     )
 

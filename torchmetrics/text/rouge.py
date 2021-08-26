@@ -135,7 +135,7 @@ class ROUGEScore(Metric):
         if isinstance(targets, str):
             targets = [targets]
 
-        output: Dict[Union[int, str], List[Dict[str, float]]] = _rouge_score_update(
+        output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
             preds, targets, self.rouge_keys_values, stemmer=self.stemmer
         )
         for rouge_key, metrics in output.items():
