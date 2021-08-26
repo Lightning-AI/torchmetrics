@@ -296,8 +296,10 @@ def _get_embeddings_and_idf_scale(
             as an input and return the model's output represented by the single `torch.Tensor`.
 
     Return:
-        A tuple of torch.Tensors containing the model's embeddings and matrix of tokens IDF. When `idf = False`,
-        each vector in model's embeddings is weighted by a factor of `1/sequence_length`.
+        A tuple of torch.Tensors containing the model's embeddings and the normalized tokens IDF.
+        When `idf = False`, tokens IDF is not calculated, and a matrix of mean weights is returned instead.
+        For a single sentence, `mean_weight = 1/seq_len`, where `seq_len` is a sum over the corresponding
+        `attention_mask`.
 
     Raises:
         ValueError:

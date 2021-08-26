@@ -14,7 +14,7 @@ from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 if _BERTSCORE_AVAILABLE:
     from bert_score import score as original_bert_score
 
-os.environ["TOKENIZERS_PARALLELISM"] = "true"
+os.environ["TOKENIZERS_PARALLELISM"] = "1"
 
 # Examples and expected values taken from:
 # https://github.com/Tiiiger/bert_score/blob/master/tests/test_scorer.py
