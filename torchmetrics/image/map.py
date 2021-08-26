@@ -74,11 +74,11 @@ def _input_validator(preds: List[DetectionsDict], target: List[GroundtruthDict])
     if len(preds) != len(target):
         raise ValueError("Expected argument `preds` and `target` to have the same length")
 
-    for k in ['detection_boxes', 'detection_scores', 'detection_classes']:
+    for k in ["detection_boxes", "detection_scores", "detection_classes"]:
         if any(k not in p for p in preds):
             raise ValueError(f"Expected all dicts in `preds` to contain the `{k}` key")
 
-    for k in ['groundtruth_boxes', 'groundtruth_classes']:
+    for k in ["groundtruth_boxes", "groundtruth_classes"]:
         if any(k not in p for p in target):
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
@@ -158,7 +158,7 @@ class MAP(Metric):
 
         Args:
             preds:
-                A list consisting of dictionaries each containing the key-values 
+                A list consisting of dictionaries each containing the key-values
                 (each dictionary corresponds to a single image):
 
                 - ``detection_boxes``: torch.FloatTensor or float32 numpy array of shape
@@ -168,7 +168,7 @@ class MAP(Metric):
                     [num_boxes] containing detection scores for the boxes.
                 - ``detection_classes``: torch.IntTensor or integer numpy array of shape
                     [num_boxes] containing 0-indexed detection classes for the boxes.
-            
+
             target:
                 A list consisting of dictionaries each containing the key-values
                 (each dictionary corresponds to a single image):
