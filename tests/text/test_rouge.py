@@ -37,13 +37,23 @@ PREDS = "My name is John"
 TARGETS = "Is your name John"
 
 
-BATCHES = {
-    "preds": [["The quick brown fox jumps over the lazy dog"], "My name is John".split()],
-    "targets": [["The quick brown dog jumps on the log."], "Is your name John".split()],
+BATCHES_1 = {
+    "preds": [["the cat was under the bed"], ["the cat was found under the bed"]],
+    "targets": [["the cat was found under the bed"], ["the tiny little cat was found under the big funny bed "]],
+}
+
+
+BATCHES_2 = {
+    "preds": [["The quick brown fox jumps over the lazy dog"], ["My name is John"]],
+    "targets": [["The quick brown dog jumps on the log."], ["Is your name John"]],
 }
 
 
 def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool, rouge_level: str, metric: str):
+    if isinstance(preds, str):
+        preds = [preds]
+    if isinstance(targets, str):
+        targets = [targets]
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
     aggregator = BootstrapAggregator()
     for pred, target in zip(preds, targets):
@@ -74,7 +84,8 @@ def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        pytest.param(BATCHES["preds"], BATCHES["targets"]),
+        pytest.param(BATCHES_1["preds"], BATCHES_1["targets"]),
+        pytest.param(BATCHES_2["preds"], BATCHES_2["targets"]),
     ],
 )
 class TestROUGEScore(TextTester):

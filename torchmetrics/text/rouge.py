@@ -115,7 +115,11 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
-        self.add_state("sentence_results", [], dist_reduce_fx=None)
+
+        # Adding stated dynamically to prevent IndexError during sync function as some lists can be empty.
+        for rouge_key in self.rouge_keys:
+            for score in ["fmeasure", "precision", "recall"]:
+                self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
         """Compute rouge scores.
@@ -131,7 +135,13 @@ class ROUGEScore(Metric):
         if isinstance(targets, str):
             targets = [targets]
 
-        self.sentence_results.append(_rouge_score_update(preds, targets, self.rouge_keys_values, stemmer=self.stemmer))
+        output: Dict[Union[int, str], List[Dict[str, float]]] = _rouge_score_update(
+            preds, targets, self.rouge_keys_values, stemmer=self.stemmer
+        )
+        for rouge_key, metrics in output.items():
+            for metric in metrics:
+                for type, value in metric.items():
+                    getattr(self, f"rouge{rouge_key}_{type}").append(value)
 
     def compute(self) -> Dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score.
@@ -139,7 +149,12 @@ class ROUGEScore(Metric):
         Return:
             Python dictionary of rouge scores for each input rouge key.
         """
-        return _rouge_score_compute(self.sentence_results)
+        update_output = {}
+        for rouge_key in self.rouge_keys_values:
+            for type in ["fmeasure", "precision", "recall"]:
+                update_output[f"rouge{rouge_key}_{type}"] = getattr(self, f"rouge{rouge_key}_{type}")
+
+        return _rouge_score_compute(update_output)
 
     def __hash__(self) -> int:
         # override to hash list objects.
