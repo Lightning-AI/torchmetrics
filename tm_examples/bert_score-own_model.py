@@ -31,10 +31,10 @@ _MAX_LEN = 6
 
 
 class UserTokenizer:
-    """
-    The `UserTokenizer` class is required to be defined when a non-default model (i.e. not one from `transformers`)
-    is used. The user's defined tokenizer is expected to return either token IDs or token embeddings that are fed
-    into the model.
+    """The `UserTokenizer` class is required to be defined when a non-default model (i.e. not one from
+    `transformers`) is used.
+
+    The user's defined tokenizer is expected to return either token IDs or token embeddings that are fed into the model.
     The tokenizer vocabulary should contain some special tokens, such as a `<pad>` token so that a tokenization will run
     successfully in batches.
     """
@@ -53,9 +53,8 @@ class UserTokenizer:
         }
 
     def __call__(self, sentences: Union[str, List[str]], max_len: int = _MAX_LEN) -> Dict[str, torch.Tensor]:
-        """
-        The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method should
-        obey the input/output arguments structure described below.
+        """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
+        should obey the input/output arguments structure described below.
 
         Args:
             sentences:
