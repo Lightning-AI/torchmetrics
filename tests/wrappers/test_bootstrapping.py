@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import operator
+from functools import partial
 
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
 
 from tests.helpers import seed_all
-from torchmetrics.classification import Precision, Recall
+from torchmetrics import MeanSquaredError, Precision, Recall
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
@@ -39,7 +40,7 @@ class TestBootStrapper(BootStrapper):
         self.out = []
         for idx in range(self.num_bootstraps):
             size = len(args[0])
-            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy)
+            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
             new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args)
             self.out.append(new_args)
@@ -73,21 +74,32 @@ def test_bootstrap_sampler(sampling_strategy):
     assert found_zero, "resampling did not work because all samples were atleast sampled once"
 
 
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 @pytest.mark.parametrize(
-    "metric, sk_metric", [[Precision(average="micro"), precision_score], [Recall(average="micro"), recall_score]]
+    "metric, sk_metric",
+    [
+        [Precision(average="micro"), partial(precision_score, average="micro")],
+        [Recall(average="micro"), partial(recall_score, average="micro")],
+        [MeanSquaredError(), mean_squared_error],
+    ],
 )
-def test_bootstrap(sampling_strategy, metric, sk_metric):
+def test_bootstrap(device, sampling_strategy, metric, sk_metric):
     """Test that the different bootstraps gets updated as we expected and that the compute method works."""
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("Test with device='cuda' requires gpu")
+
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
     if _TORCH_GREATER_EQUAL_1_7:
-        _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95])))
+        _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95], device=device)))
 
     bootstrapper = TestBootStrapper(**_kwargs)
+    bootstrapper.to(device)
 
     collected_preds = [[] for _ in range(10)]
     collected_target = [[] for _ in range(10)]
     for p, t in zip(_preds, _target):
+        p, t = p.to(device), t.to(device)
         bootstrapper.update(p, t)
 
         for i, o in enumerate(bootstrapper.out):
@@ -95,17 +107,17 @@ def test_bootstrap(sampling_strategy, metric, sk_metric):
             collected_preds[i].append(o[0])
             collected_target[i].append(o[1])
 
-    collected_preds = [torch.cat(cp) for cp in collected_preds]
-    collected_target = [torch.cat(ct) for ct in collected_target]
+    collected_preds = [torch.cat(cp).cpu() for cp in collected_preds]
+    collected_target = [torch.cat(ct).cpu() for ct in collected_target]
 
-    sk_scores = [sk_metric(ct, cp, average="micro") for ct, cp in zip(collected_target, collected_preds)]
+    sk_scores = [sk_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
 
     output = bootstrapper.compute()
     # quantile only avaible for pytorch v1.7 and forward
     if _TORCH_GREATER_EQUAL_1_7:
-        assert np.allclose(output["quantile"][0], np.quantile(sk_scores, 0.05))
-        assert np.allclose(output["quantile"][1], np.quantile(sk_scores, 0.95))
+        assert np.allclose(output["quantile"][0].cpu(), np.quantile(sk_scores, 0.05))
+        assert np.allclose(output["quantile"][1].cpu(), np.quantile(sk_scores, 0.95))
 
-    assert np.allclose(output["mean"], np.mean(sk_scores))
-    assert np.allclose(output["std"], np.std(sk_scores, ddof=1))
-    assert np.allclose(output["raw"], sk_scores)
+    assert np.allclose(output["mean"].cpu(), np.mean(sk_scores))
+    assert np.allclose(output["std"].cpu(), np.std(sk_scores, ddof=1))
+    assert np.allclose(output["raw"].cpu(), sk_scores)
