@@ -141,7 +141,7 @@ class ROUGEScore(Metric):
         for rouge_key, metrics in output.items():
             for metric in metrics:
                 for type, value in metric.items():
-                    getattr(self, f"rouge{rouge_key}_{type}").append(value)
+                    getattr(self, f"rouge{rouge_key}_{type}").append(value.to(self.device))
 
     def compute(self) -> Dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score.
