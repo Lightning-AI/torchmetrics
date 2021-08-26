@@ -149,7 +149,7 @@ class BootStrapper(Metric):
                 size = kwargs_sizes[0]
             else:
                 raise ValueError("None of the input contained tensors, so could not determine the sampling size")
-            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy)
+            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
             new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
