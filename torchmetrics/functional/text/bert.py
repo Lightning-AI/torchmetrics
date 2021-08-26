@@ -303,7 +303,7 @@ def _get_embeddings_and_idf_scale(
 
     Raises:
         ValueError:
-            If `all_layers = True` and a non-default model from `transformers` package is used.
+            If `all_layers = True` and a model, which is not from the `transformers` package, is used.
     """
     embeddings_list: List[Tensor] = []
     idf_scale_list: List[Tensor] = []
