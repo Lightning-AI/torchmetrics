@@ -382,10 +382,7 @@ def _input_format_classification(
             ``'multi-dim multi-class'``
     """
     # Remove excess dimensions
-    if preds.shape[0] == 1:
-        preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
-    else:
-        preds, target = preds.squeeze(), target.squeeze()
+    preds, target = _input_squeeze(preds, target)
 
     # Convert half precision tensors to full precision, as not all ops are supported
     # for example, min() is not supported
