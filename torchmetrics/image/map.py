@@ -67,19 +67,20 @@ class _hide_prints:
 
 
 class MAP(Metric):
-    """Computes the Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) for object detection predictions.
+    r"""
+    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
-    https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
-
-    Boxes and targets have to be in COCO format with the box score at the end
-    (x-top left, y-top left, width, height, score)
+    Predicted boxes and targets have to be in COCO format with the box score at the end
+    (x-top left, y-top left, width, height, score). See the `update` function for more information
+    about the input format to this metric.
 
     .. note::
-        This metric is a wrapper for the `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_, which is a standard implementation for the mAP metric for object detection. Using this metric
+        This metric is a wrapper for the
+        `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
+        which is a standard implementation for the mAP metric for object detection. Using this metric
         therefore requires you to have `pycocotools` installed. Please install with `pip install pycocotools` or
         `pip install torchmetrics[image]`
-
 
     .. note::
         As the pycocotools library cannot deal with tensors directly, all results have to be transfered
@@ -137,30 +138,45 @@ class MAP(Metric):
         """Updates mAP and mAR values with metric values from given predictions and groundtruth.
 
         Args:
-            groundtruth_dict: A dictionary containing -
-                GroundtruthDict.groundtruth_boxes: torch.FloatTensor or float32 numpy array of shape
-                    [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
-                    [ymin, xmin, ymax, xmax] in absolute image coordinates.
-                GroundtruthDict.groundtruth_classes: integer numpy array of shape
-                    [num_boxes] containing 1-indexed groundtruth classes for the boxes.
-            detections_dict: A dictionary containing -
-                DetectionsDict.detection_boxes: torch.FloatTensor or float32 numpy array of shape
+            preds:
+                A list consisting of dictionaries each containing the key-values 
+                (each dictionary corresponds to a single image):
+
+                - ``detection_boxes``: torch.FloatTensor or float32 numpy array of shape
                     [num_boxes, 4] containing `num_boxes` detection boxes of the format
                     [ymin, xmin, ymax, xmax] in absolute image coordinates.
-                DetectionsDict.detection_scores: torch.FloatTensor or float32 numpy array of shape
+                - ``detection_scores``: torch.FloatTensor or float32 numpy array of shape
                     [num_boxes] containing detection scores for the boxes.
-                DetectionsDict.detection_classes: torch.IntTensor or integer numpy array of shape
+                - ``detection_classes``: torch.IntTensor or integer numpy array of shape
                     [num_boxes] containing 0-indexed detection classes for the boxes.
+            
+            target:
+                A list consisting of dictionaries each containing the key-values
+                (each dictionary corresponds to a single image):
+
+                - ``groundtruth_boxes``: torch.FloatTensor or float32 numpy array of shape
+                    [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
+                    [ymin, xmin, ymax, xmax] in absolute image coordinates.
+                - ``groundtruth_classes``: integer numpy array of shape
+                    [num_boxes] containing 1-indexed groundtruth classes for the boxes.
 
         Raises:
             ValueError:
                 If ``preds`` is not of type List[DetectionsDict]
+            ValueError:
                 If ``target`` is not of type List[GroundtruthDict]
+            ValueError:
                 If `preds` and `target` are not of the same length
-                If any of `preds.detection_boxes`, `preds.detection_scores` and `preds.detection_classes` are not of the same length
+            ValueError: 
+                If any of `preds.detection_boxes`, `preds.detection_scores`
+                and `preds.detection_classes` are not of the same length
+            ValueError:
                 If any of `target.groundtruth_boxes` and `target.groundtruth_classes` are not of the same length
+            ValueError:
                 If any box is not type float and of length 4
+            ValueError:
                 If any class is not type int and of length 1
+            ValueError:
                 If any score is not type float and of length 1
         """
         if not isinstance(preds, list):
@@ -250,11 +266,13 @@ class MAP(Metric):
 
             if len(boxes) != len(classes):
                 raise ValueError(
-                    f"Input boxes and classes of sample {i} have a different length (expected {len(boxes)} classes, got {len(classes)}"
+                    f"Input boxes and classes of sample {i} have a"
+                    f" different length (expected {len(boxes)} classes, got {len(classes)}"
                 )
             if is_pred and len(boxes) != len(scores):
                 raise ValueError(
-                    f"Input boxes and scores of sample {i} have a different length (expected {len(boxes)} scores, got {len(scores)}"
+                    f"Input boxes and scores of sample {i} have a different"
+                    f" length (expected {len(boxes)} scores, got {len(scores)}"
                 )
 
             for k, (box, label) in enumerate(zip(boxes, classes)):
@@ -262,7 +280,8 @@ class MAP(Metric):
                     raise ValueError(f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)}")
                 if type(label) != int:
                     raise ValueError(
-                        f"Invalid input class of sample {i}, element {k} (expected value of type integer, got type {type(label)})"
+                        f"Invalid input class of sample {i}, element {k}"
+                        f" (expected value of type integer, got type {type(label)})"
                     )
                 annotation = {
                     "id": annotation_id,
@@ -276,7 +295,8 @@ class MAP(Metric):
                     score = scores[k]
                     if type(score) != float:
                         raise ValueError(
-                            f"Invalid input score of sample {i}, element {k} (expected value of type float, got type {type(score)})"
+                            f"Invalid input score of sample {i}, element {k}"
+                            f" (expected value of type float, got type {type(score)})"
                         )
                     annotation["score"] = score
                 annotations.append(annotation)

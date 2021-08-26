@@ -39,3 +39,4 @@
 .. _mean squared logarithmic error: https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error
 .. _Mean Reciprocal Rank: https://en.wikipedia.org/wiki/Mean_reciprocal_rank
 .. _LPIPS: https://arxiv.org/abs/1801.03924
+.. _Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR): https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
