@@ -61,7 +61,7 @@ class _hide_prints:
         self._original_stdout = sys.stdout
         sys.stdout = open(os.devnull, "w")
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
         sys.stdout.close()
         sys.stdout = self._original_stdout
 
@@ -214,7 +214,7 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        self.average_precision = torch.cat(
+        self.average_precision: Tensor = torch.cat(
             (
                 self.average_precision,
                 torch.tensor(
@@ -223,7 +223,7 @@ class MAP(Metric):
             )
         )
 
-        self.average_recall = torch.cat(
+        self.average_recall: Tensor = torch.cat(
             (
                 self.average_recall,
                 torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
@@ -282,7 +282,7 @@ class MAP(Metric):
                     f"Input boxes and classes of sample {i} have a"
                     f" different length (expected {len(boxes)} classes, got {len(classes)}"
                 )
-            if is_pred and len(boxes) != len(scores):
+            if is_pred and scores is not None and len(boxes) != len(scores):
                 raise ValueError(
                     f"Input boxes and scores of sample {i} have a different"
                     f" length (expected {len(boxes)} scores, got {len(scores)}"
@@ -304,7 +304,7 @@ class MAP(Metric):
                     "area": box[2] * box[3],
                     "iscrowd": 0,
                 }
-                if is_pred:
+                if is_pred and scores is not None:
                     score = scores[k]
                     if type(score) != float:
                         raise ValueError(
@@ -324,10 +324,10 @@ class MAP(Metric):
         boxes = input["detection_boxes"] if is_pred else input["groundtruth_boxes"]
         classes = input["detection_classes"] if is_pred else input["groundtruth_classes"]
 
-        boxes_list: List
-        classes_list: List
+        boxes_list: List = []
+        classes_list: List = []
         scores_list: Optional[List] = None
-
+        
         if type(boxes) is torch.Tensor:
             boxes_list = boxes.cpu().tolist()
         elif type(boxes) is np.ndarray:
