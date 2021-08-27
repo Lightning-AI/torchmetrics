@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `device` and `dtype` properties ([#462](https://github.com/PyTorchLightning/metrics/pull/462))
 
 
+- Added `TextTester` class for robustly testing text metrics ([#450](https://github.com/PyTorchLightning/metrics/pull/450))
+
+
 ### Changed
 
 

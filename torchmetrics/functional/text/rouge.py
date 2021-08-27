@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from collections import defaultdict
+from collections import Counter
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
@@ -47,7 +47,7 @@ def _add_newline_to_end_of_each_sentence(x: str) -> str:
     return "\n".join(nltk.sent_tokenize(x))
 
 
-def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[str, float]:
+def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[str, Tensor]:
     """This computes precision, recall and F1 score based on hits/lcs, and the length of lists of tokenizer
     predicted and target sentences.
 
@@ -62,10 +62,10 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
     if precision == recall == 0.0:
-        return dict(precision=0.0, recall=0.0, fmeasure=0.0)
+        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
 
     fmeasure = 2 * precision * recall / (precision + recall)
-    return dict(precision=precision, recall=recall, fmeasure=fmeasure)
+    return dict(precision=tensor(precision), recall=tensor(recall), fmeasure=tensor(fmeasure))
 
 
 def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
@@ -87,7 +87,7 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
     return LCS[-1][-1]
 
 
-def _normalize_text(text: str, stemmer: Optional[Any] = None) -> str:
+def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> List[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from
     https://github.com/google-research/google-research/blob/master/rouge/tokenize.py.
@@ -98,13 +98,21 @@ def _normalize_text(text: str, stemmer: Optional[Any] = None) -> str:
         stemmer:
             Porter stemmer instance to strip word suffixes to improve matching.
     """
+    # Replace any non-alpha-numeric characters with spaces.
     text = re.sub(r"[^a-z0-9]+", " ", text.lower())
+
+    tokens = re.split(r"\s+", text)
     if stemmer:
-        text = " ".join(stemmer.stem(x) if len(x) > 3 else x for x in text.split())
-    return text.strip()  # to ensure there are no whitespaces as the end of sentence
+        # Only stem words more than 3 characters long.
+        tokens = [stemmer.stem(x) if len(x) > 3 else x for x in tokens]
+
+    # One final check to drop any empty or invalid tokens.
+    tokens = [x for x in tokens if (isinstance(x, str) and re.match(r"^[a-z0-9]+$", x))]
+
+    return tokens
 
 
-def _rouge_n_score(pred: str, target: str, n_gram: int) -> Dict[str, float]:
+def _rouge_n_score(pred: List[str], target: List[str], n_gram: int) -> Dict[str, Tensor]:
     """This computes precision, recall and F1 score for the Rouge-N metric.
 
     Args:
@@ -115,23 +123,24 @@ def _rouge_n_score(pred: str, target: str, n_gram: int) -> Dict[str, float]:
         n_gram:
             N-gram overlap.
     """
-    pred_tokenized, target_tokenized = _tokenize(pred, n_gram), _tokenize(target, n_gram)
-    pred_len, target_len = len(pred_tokenized), len(target_tokenized)
+
+    def _create_ngrams(tokens: List[str], n: int) -> Counter:
+        ngrams: Counter = Counter()
+        for ngram in (tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1)):
+            ngrams[ngram] += 1
+        return ngrams
+
+    pred_ngrams, target_ngrams = _create_ngrams(pred, n_gram), _create_ngrams(target, n_gram)
+    pred_len, target_len = sum(pred_ngrams.values()), sum(target_ngrams.values())
     if 0 in (pred_len, target_len):
-        return dict(precision=0.0, recall=0.0, fmeasure=0.0)
+        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
 
-    pred_counter: Dict[str, int] = defaultdict(int)
-    target_counter: Dict[str, int] = defaultdict(int)
-    for w in pred_tokenized:
-        pred_counter[w] += 1
-    for w in target_tokenized:
-        target_counter[w] += 1
     # It is sufficient to take a set(pred_tokenized) for hits count as we consider intersenction of pred & target
-    hits = sum(min(pred_counter[w], target_counter[w]) for w in set(pred_tokenized))
-    return _compute_metrics(hits, pred_len, target_len)
+    hits = sum(min(pred_ngrams[w], target_ngrams[w]) for w in set(pred_ngrams))
+    return _compute_metrics(hits, max(pred_len, 1), max(target_len, 1))
 
 
-def _rouge_l_score(pred: str, target: str) -> Dict[str, float]:
+def _rouge_l_score(pred: List[str], target: List[str]) -> Dict[str, Tensor]:
     """This computes precision, recall and F1 score for the Rouge-L or Rouge-LSum metric.
 
     Args:
@@ -140,12 +149,11 @@ def _rouge_l_score(pred: str, target: str) -> Dict[str, float]:
         target:
             A target sentence.
     """
-    pred_tokenized, target_tokenized = _tokenize(pred, 1), _tokenize(target, 1)
-    pred_len, target_len = len(pred_tokenized), len(target_tokenized)
+    pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
-        return dict(precision=0.0, recall=0.0, fmeasure=0.0)
+        return dict(precision=tensor(0.0), recall=tensor(0.0), fmeasure=tensor(0.0))
 
-    lcs = _lcs(pred_tokenized, target_tokenized)
+    lcs = _lcs(pred, target)
     return _compute_metrics(lcs, pred_len, target_len)
 
 
@@ -153,9 +161,8 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[str],
     rouge_keys_values: List[Union[int, str]],
-    results: Optional[Dict[Union[int, str], List[Dict[str, float]]]] = None,
     stemmer: Optional[Any] = None,
-) -> Dict[Union[int, str], List[Dict[str, float]]]:
+) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
@@ -174,34 +181,46 @@ def _rouge_score_update(
         >>> from pprint import pprint
         >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
         >>> pprint(score)  # doctest: +NORMALIZE_WHITESPACE +SKIP
-        {'1': {'precision': 0.25, 'recall': 0.25, 'fmeasure': 0.25},
-         '2': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
-         '3': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
-         'L': {'precision': 0.25, 'recall': 0.25, 'fmeasure': 0.25}}
+        {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}],
+        2: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
+        3: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
+        'L': [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+            {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}]}
     """
-    results = results if results is not None else {rouge_key: [] for rouge_key in rouge_keys_values}
+    results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred_raw, target_raw in zip(preds, targets):
-        pred, target = _normalize_text(pred_raw, stemmer), _normalize_text(target_raw, stemmer)
-        # rougeLsum expects "\n" separated sentences within a summary
+        pred = _normalize_and_tokenize_text(pred_raw, stemmer)
+        target = _normalize_and_tokenize_text(target_raw, stemmer)
+
         if "Lsum" in rouge_keys_values:
-            pred_sum = _normalize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
-            target_sum = _normalize_text(_add_newline_to_end_of_each_sentence(target_raw), stemmer)
+            # rougeLsum expects "\n" separated sentences within a summary
+            pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
+            target_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(target_raw), stemmer)
 
         for rouge_key in rouge_keys_values:
             if isinstance(rouge_key, int):
                 score = _rouge_n_score(pred, target, rouge_key)
             else:
                 score = _rouge_l_score(
-                    pred if rouge_key != "Lsum" else pred_sum,
-                    target if rouge_key != "Lsum" else target_sum,
+                    pred if rouge_key != "Lsum" else pred_Lsum,
+                    target if rouge_key != "Lsum" else target_Lsum,
                 )
             results[rouge_key].append(score)
     return results
 
 
-def _rouge_score_compute(
-    sentence_results: Optional[Dict[Union[int, str], List[Dict[str, float]]]]
-) -> Dict[str, Tensor]:
+def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
@@ -210,13 +229,11 @@ def _rouge_score_compute(
     """
     results: Dict[str, Tensor] = {}
     # Obtain mean scores for individual rouge metrics
-    if sentence_results is None:
+    if sentence_results == {}:
         return results
+
     for rouge_key, scores in sentence_results.items():
-        res = torch.tensor([(score["precision"], score["recall"], score["fmeasure"]) for score in scores]).mean(0)
-        results[f"rouge{rouge_key}_precision"] = res[0]
-        results[f"rouge{rouge_key}_recall"] = res[1]
-        results[f"rouge{rouge_key}_fmeasure"] = res[2]
+        results[rouge_key] = torch.tensor(scores).mean()
 
     return results
 
@@ -291,19 +308,18 @@ def rouge_score(
     if isinstance(targets, str):
         targets = [targets]
 
-    sentence_results = _rouge_score_update(preds, targets, rouge_keys_values, stemmer=stemmer)
-    return _rouge_score_compute(sentence_results)
+    sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
+        preds, targets, rouge_keys_values, stemmer=stemmer
+    )
 
+    output: Dict[str, List[Tensor]] = {}
+    for rouge_key in rouge_keys_values:
+        for type in ["fmeasure", "precision", "recall"]:
+            output[f"rouge{rouge_key}_{type}"] = []
 
-def _tokenize(text: str, n_gram: int) -> List[str]:
-    """Retun the list of a tokenized input text, where tokens are represented by N-grams.
+    for rouge_key, metrics in sentence_results.items():
+        for metric in metrics:
+            for type, value in metric.items():
+                output[f"rouge{rouge_key}_{type}"].append(value)
 
-    Args:
-        text:
-            An input sentence.
-        n_gram
-            N-gram size to return.
-    """
-    tokens = re.split(r"\s+", text)
-    n_grams_list = [" ".join(tokens[i : i + n_gram]) for i in range(len(tokens) - n_gram + 1)]
-    return n_grams_list
+    return _rouge_score_compute(output)
