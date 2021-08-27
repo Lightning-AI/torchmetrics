@@ -327,9 +327,7 @@ def _test_score_ddp_fn(rank, world_size, preds, refs):
     "preds,refs",
     [(preds, refs)],
 )
-@pytest.mark.skipif(
-    (not _BERTSCORE_AVAILABLE) or (not torch.distributed.is_available()), reason="test requires bert_score"
-)
+@pytest.mark.skipif(not (_BERTSCORE_AVAILABLE and dist.is_available()), reason="test requires bert_score")
 def test_score_ddp(preds, refs):
     """Tests for metric using DDP."""
     world_size = 2
