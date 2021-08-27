@@ -202,8 +202,8 @@ class MAP(Metric):
 
         coco_target, coco_preds = COCO(), COCO()
 
-        coco_target.dataset = self.get_coco_format(inputs=target)
-        coco_preds.dataset = self.get_coco_format(inputs=preds, is_pred=True)
+        coco_target.dataset = self._get_coco_format(inputs=target)
+        coco_preds.dataset = self._get_coco_format(inputs=preds, is_pred=True)
 
         with _hide_prints():
             coco_target.createIndex()
@@ -268,14 +268,14 @@ class MAP(Metric):
         )
         return metrics
 
-    def get_coco_format(self, inputs: List[Union[GroundtruthDict, DetectionsDict]], is_pred: bool = False) -> Dict:
+    def _get_coco_format(self, inputs: List[Union[GroundtruthDict, DetectionsDict]], is_pred: bool = False) -> Dict:
         images = []
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
         for i, input in enumerate(inputs):
             images.append({"id": i})
-            boxes, classes, scores = self.get_values_for_sample(input, is_pred)
+            boxes, classes, scores = self._get_values_for_sample(input, is_pred)
 
             if len(boxes) != len(classes):
                 raise ValueError(
@@ -318,7 +318,7 @@ class MAP(Metric):
         classes = [{"id": i, "name": str(i)} for i in range(self.num_classes)]
         return {"images": images, "annotations": annotations, "categories": classes}
 
-    def get_values_for_sample(
+    def _get_values_for_sample(
         self, input: Union[GroundtruthDict, DetectionsDict], is_pred: bool
     ) -> Tuple[List, List, Optional[List]]:
         boxes = input["detection_boxes"] if is_pred else input["groundtruth_boxes"]
