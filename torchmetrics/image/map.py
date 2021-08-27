@@ -329,7 +329,7 @@ class MAP(Metric):
         boxes_list: List = []
         classes_list: List = []
         scores_list: Optional[List] = None
-        
+
         if type(boxes) is torch.Tensor:
             boxes_list = boxes.cpu().tolist()
         elif type(boxes) is np.ndarray:
