@@ -14,7 +14,7 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -33,12 +33,12 @@ COCO_STATS_MAP_VALUE_INDEX = 0
 COCO_STATS_MAR_VALUE_INDEX = 8
 
 
-class GroundtruthDict(TypedDict):
+class GroundtruthDict(Dict):
     groundtruth_boxes: Union[torch.FloatTensor, np.ndarray, List[float]]
     groundtruth_classes: Union[torch.IntTensor, np.ndarray, List[int]]
 
 
-class DetectionsDict(TypedDict):
+class DetectionsDict(Dict):
     detection_boxes: Union[torch.FloatTensor, np.ndarray, List[float]]
     detection_scores: Union[torch.FloatTensor, np.ndarray, List[float]]
     detection_classes: Union[torch.IntTensor, np.ndarray, List[int]]
