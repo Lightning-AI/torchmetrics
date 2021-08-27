@@ -268,7 +268,9 @@ class MAP(Metric):
         )
         return metrics
 
-    def _get_coco_format(self, inputs: Union[List[GroundtruthDict], List[DetectionsDict]], is_pred: bool = False) -> Dict:
+    def _get_coco_format(
+        self, inputs: Union[List[GroundtruthDict], List[DetectionsDict]], is_pred: bool = False
+    ) -> Dict:
         images = []
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
