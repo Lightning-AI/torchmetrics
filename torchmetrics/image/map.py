@@ -57,11 +57,11 @@ class MAPMetricResults:
 class _hide_prints:
     """Internal helper context to suppress the default output of the pycocotools package."""
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         self._original_stdout = sys.stdout
         sys.stdout = open(os.devnull, "w")
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         sys.stdout.close()
         sys.stdout = self._original_stdout
 
@@ -153,7 +153,7 @@ class MAP(Metric):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
-    def update(self, preds: List[DetectionsDict], target: List[GroundtruthDict]):
+    def update(self, preds: List[DetectionsDict], target: List[GroundtruthDict]) -> None:  # type: ignore
         """Updates mAP and mAR values with metric values from given predictions and groundtruth.
 
         Args:
@@ -257,7 +257,7 @@ class MAP(Metric):
             )
             setattr(self, f"ar_{class_id}", class_map_value)
 
-    def compute(self):
+    def compute(self) -> MAPMetricResults:
         map_per_class_value = [torch.mean(getattr(self, f"ap_{class_id}")) for class_id in range(self.num_classes)]
         mar_per_class_value = [torch.mean(getattr(self, f"ar_{class_id}")) for class_id in range(self.num_classes)]
         metrics = MAPMetricResults(
@@ -268,7 +268,7 @@ class MAP(Metric):
         )
         return metrics
 
-    def _get_coco_format(self, inputs: List[Union[GroundtruthDict, DetectionsDict]], is_pred: bool = False) -> Dict:
+    def _get_coco_format(self, inputs: Union[List[GroundtruthDict], List[DetectionsDict]], is_pred: bool = False) -> Dict:
         images = []
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
