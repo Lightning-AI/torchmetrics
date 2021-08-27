@@ -16,7 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Sequence
+from typing import Any, Callable, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -34,6 +34,16 @@ class BLEUScore(Metric):
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
             Whether or not to apply smoothing – see [2]
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False. default: True
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When `None`, DDP
+            will be used to perform the allgather.
 
     Example:
         >>> translate_corpus = ['the cat is on the mat'.split()]
@@ -55,8 +65,22 @@ class BLEUScore(Metric):
     numerator: Tensor
     denominator: Tensor
 
-    def __init__(self, n_gram: int = 4, smooth: bool = False):
-        super().__init__()
+    def __init__(
+        self,
+        n_gram: int = 4,
+        smooth: bool = False,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable] = None,
+    ):
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
+
         self.n_gram = n_gram
         self.smooth = smooth
 
@@ -93,3 +117,7 @@ class BLEUScore(Metric):
         return _bleu_score_compute(
             self.trans_len, self.ref_len, self.numerator, self.denominator, self.n_gram, self.smooth
         )
+
+    @property
+    def is_differentiable(self) -> bool:
+        return False
