@@ -62,7 +62,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import BLEUScore, WER  # noqa: E402
+from torchmetrics.text import WER, BLEUScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: E402
 
 __all__ = [
