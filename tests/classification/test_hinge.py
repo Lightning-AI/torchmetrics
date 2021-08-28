@@ -21,7 +21,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 from tests.classification.inputs import Input
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
-from torchmetrics.classification import Hinge
+from torchmetrics import Hinge
 from torchmetrics.functional import hinge
 from torchmetrics.functional.classification.hinge import MulticlassMode
 

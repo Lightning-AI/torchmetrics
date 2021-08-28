@@ -93,8 +93,7 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
 .. testcode::
 
-    from torchmetrics import MetricCollection
-    from torchmetrics.classification import Accuracy
+    from torchmetrics import Accuracy, MetricCollection
 
     class MyModule(torch.nn.Module):
         def __init__(self):
@@ -113,8 +112,6 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             val2 = self.metric2[0](preds, target)
             val3 = self.metric3['accuracy'](preds, target)
             val4 = self.metric4(preds, target)
-
-You can always check which device the metric is located on using the `.device` property.
 
 Metrics in Dataparallel (DP) mode
 =================================
@@ -171,8 +168,6 @@ the following limitations:
   - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
   - :ref:`references/modules:SSIM` and :ref:`references/functional:ssim [func]`
   - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kl_divergence [func]`
-
-You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
 ******************
 Metric Arithmetics
@@ -241,8 +236,7 @@ Example:
 
 .. testcode::
 
-    from torchmetrics import MetricCollection
-    from torchmetrics.classification import Accuracy, Precision, Recall
+    from torchmetrics import MetricCollection, Accuracy, Precision, Recall
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
     metric_collection = MetricCollection([
@@ -264,8 +258,7 @@ inside your LightningModule
 
 .. testcode::
 
-    from torchmetrics import MetricCollection
-    from torchmetrics.classification import Accuracy, Precision, Recall
+    from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 
     class MyModule(LightningModule):
         def __init__(self):
