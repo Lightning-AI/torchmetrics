@@ -13,11 +13,39 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics.average import AverageMeter  # noqa: E402
 from torchmetrics.collections import MetricCollection  # noqa: E402
+from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 
 
 __all__ = [
     "AverageMeter",
+    "AveragePrecision",
+    "BinnedAveragePrecision",
+    "BinnedPrecisionRecallCurve",
+    "BinnedRecallAtFixedPrecision",
+    "BERTScore",
+    "BLEUScore",
+    "BootStrapper",
+    "CalibrationError",
+    "CohenKappa",
+    "ConfusionMatrix",
+    "CosineSimilarity",
+    "ExplainedVariance",
+    "F1",
+    "FBeta",
+    "FID",
+    "HammingDistance",
+    "Hinge",
+    "IoU",
+    "IS",
+    "KID",
+    "KLDivergence",
+    "LPIPS",
+    "MatthewsCorrcoef",
+    "MeanAbsoluteError",
+    "MeanAbsolutePercentageError",
+    "MeanSquaredError",
+    "MeanSquaredLogError",
     "Metric",
     "MetricCollection",
 ]

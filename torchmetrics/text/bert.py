@@ -97,7 +97,7 @@ class BERTScore(Metric):
         self.all_layers = all_layers
         self.num_threads = num_threads
         self.batch_size = batch_size
-        self.device = device
+        self.embedding_device = device
         self.idf = idf
         self.verbose = verbose
         self.num_layers = num_layers
@@ -128,7 +128,7 @@ class BERTScore(Metric):
             num_layers=self.num_layers,
             verbose=self.verbose,
             idf=self.idf,
-            device=self.device,
+            device=self.embedding_device,
             baseline_path=self.baseline_path,
             batch_size=self.batch_size,
             lang=self.lang,
