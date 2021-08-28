@@ -4,6 +4,29 @@ Module metrics
 
 .. include:: ../links.rst
 
+All modular metrics are by default availble to import as
+
+```python
+from torchmetrics import Accuracy, MeanSquaredError, SSIM  # ect
+```
+
+However, metrics that requires some additionaly dependencies (other than pytorch) 
+such as some of the image and text metrics need to be imported from their respective submodule
+
+``python
+from torchmetrics.image import FID, KID
+from torchmetrics.text import RougeScore
+```
+
+Metrics have this clearly stated in their docstring and additionaly dependencies can always
+be installed as
+
+```bash
+pip install torchmetrics[image]
+pip install torchmetrics[text]
+pip install torchmetrics[all]  # install all of the above
+```
+
 **********
 Base class
 **********
