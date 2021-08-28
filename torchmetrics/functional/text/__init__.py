@@ -12,5 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
 from torchmetrics.functional.text.wer import wer  # noqa: F401
+from torchmetrics.functional.text.rouge import wer  # noqa: F401
