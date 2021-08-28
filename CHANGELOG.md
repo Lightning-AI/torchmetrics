@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Change import structure from root to submodule level ([#459](https://github.com/PyTorchLightning/metrics/issues/459))
+- Change import structure from root to submodule level for metrics having additional requirements ([#459](https://github.com/PyTorchLightning/metrics/issues/459))
 
 
 ### Deprecated
