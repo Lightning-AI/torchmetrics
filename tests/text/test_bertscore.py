@@ -315,4 +315,4 @@ def _test_score_ddp_fn(rank, world_size, preds, refs):
 def test_score_ddp(preds, refs):
     """Tests for metric using DDP."""
     world_size = 2
-    mp.spawn(_test_score_ddp_fn, args=(world_size, preds, refs), nprocs=world_size, join=True)
+    mp.spawn(_test_score_ddp_fn, args=(world_size, preds, refs), nprocs=world_size, join=False)
