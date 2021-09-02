@@ -67,7 +67,7 @@ class Metric(Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ["device", "dtype"]
+    __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
 
     def __init__(
@@ -411,16 +411,6 @@ class Metric(Module, ABC):
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
-
-    @property
-    def dtype(self) -> "torch.dtype":
-        """Return the dtype of the metric."""
-        return self._dtype
-
-    @dtype.setter
-    def dtype(self, new_dtype: "torch.dtype") -> None:
-        # necessary to avoid infinite recursion
-        raise RuntimeError("Cannot set the dtype explicitly. Please use module.to(new_dtype).")
 
     @property
     def device(self) -> "torch.device":
