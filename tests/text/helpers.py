@@ -96,9 +96,6 @@ def _class_test(
     if check_scriptable:
         torch.jit.script(metric)
 
-    # check that metrics are hashable
-    assert hash(metric)
-
     # move to device
     metric = metric.to(device)
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
@@ -144,6 +141,9 @@ def _class_test(
                 sk_batch_result = sk_metric(targets[i], preds[i], **batch_kwargs_update)
 
             _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+
+    # check that metrics are hashable
+    assert hash(metric)
 
     # check on all batches on all ranks
     result = metric.compute()
