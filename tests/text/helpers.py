@@ -96,6 +96,9 @@ def _class_test(
     if check_scriptable:
         torch.jit.script(metric)
 
+    # check that metrics are hashable
+    assert hash(metric)
+
     # move to device
     metric = metric.to(device)
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}

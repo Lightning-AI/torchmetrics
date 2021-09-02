@@ -154,6 +154,9 @@ def _class_test(
     if check_scriptable:
         torch.jit.script(metric)
 
+    # check that metrics are hashable
+    assert hash(metric)
+
     # move to device
     metric = metric.to(device)
     preds = preds.to(device)
