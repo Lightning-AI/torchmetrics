@@ -445,23 +445,35 @@ class Metric(Module, ABC):
         return super().cpu()
 
     def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
         return self
 
     def float(self) -> "Metric":
-        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
         return self
 
     def double(self) -> "Metric":
-        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
         return self
 
     def half(self) -> "Metric":
-        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
         return self
 
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
-        """ Special version of `type` for transferring all metric states to specific dtype 
+        """Special version of `type` for transferring all metric states to specific dtype
         Arguments:
             dst_type (type or string): the desired type
         """
