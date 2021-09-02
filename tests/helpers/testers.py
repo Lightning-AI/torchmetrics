@@ -16,6 +16,7 @@ import pickle
 import sys
 from functools import partial
 from typing import Any, Callable, Dict, Optional, Sequence
+import yaml
 
 import numpy as np
 import pytest
@@ -153,6 +154,9 @@ def _class_test(
     # check that the metric is scriptable
     if check_scriptable:
         torch.jit.script(metric)
+
+    # check that metrics can be parsed with yaml
+    yaml.dump(metric)
 
     # move to device
     metric = metric.to(device)
