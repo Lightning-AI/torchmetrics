@@ -16,11 +16,11 @@ import pickle
 import sys
 from functools import partial
 from typing import Any, Callable, Dict, Optional, Sequence
-import yaml
 
 import numpy as np
 import pytest
 import torch
+import yaml
 from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
