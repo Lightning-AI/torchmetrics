@@ -84,7 +84,6 @@ class Metric(Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
-        self._dtype: Union[str, torch.dtype] = torch.get_default_dtype()
         self._device = torch.device("cpu")
 
         self.dist_sync_on_step = dist_sync_on_step
@@ -435,7 +434,8 @@ class Metric(Module, ABC):
         """
         # there is diff nb vars in PT 1.5
         out = torch._C._nn._parse_to(*args, **kwargs)
-        self._update_properties(device=out[0], dtype=out[1])
+        self._device = out[0]
+        out[1] = None  # prevent dtype casting
         return super().to(*args, **kwargs)
 
     def cuda(self, device: Optional[Union[torch.device, int]] = None) -> "Metric":
@@ -446,46 +446,36 @@ class Metric(Module, ABC):
         """
         if device is None or isinstance(device, int):
             device = torch.device("cuda", index=device)
-        self._update_properties(device=device)
+        self._device = device
         return super().cuda(device=device)
 
     def cpu(self) -> "Metric":
         """Moves all model parameters and buffers to the CPU."""
-        self._update_properties(device=torch.device("cpu"))
+        self._device = torch.device("cpu")
         return super().cpu()
 
     def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Casts all parameters and buffers to :attr:`dst_type`.
+        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        return self
 
+    def float(self) -> "Metric":
+        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        return self
+
+    def double(self) -> "Metric":
+        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        return self
+
+    def half(self) -> "Metric":
+        """ Method override default and prevent dtype casting. Please use `metric.set_dtype(dtype)` instead. """
+        return self
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+        """ Special version of `type` for transferring all metric states to specific dtype 
         Arguments:
             dst_type (type or string): the desired type
         """
-        self._update_properties(dtype=dst_type)
-        return super().type(dst_type=dst_type)
-
-    def float(self) -> "Metric":
-        """Casts all floating point parameters and buffers to ``float`` datatype."""
-        self._update_properties(dtype=torch.float)
-        return super().float()
-
-    def double(self) -> "Metric":
-        """Casts all floating point parameters and buffers to ``double`` datatype."""
-        self._update_properties(dtype=torch.double)
-        return super().double()
-
-    def half(self) -> "Metric":
-        """Casts all floating point parameters and buffers to ``half`` datatype."""
-        self._update_properties(dtype=torch.half)
-        return super().half()
-
-    def _update_properties(
-        self, device: Optional[torch.device] = None, dtype: Optional[Union[str, torch.dtype]] = None
-    ) -> None:
-        """Updates the internal device and or dtype attributes of the metric."""
-        if device is not None:
-            self._device = device
-        if dtype is not None:
-            self._dtype = dtype
+        return super().type(dst_type)
 
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,
