@@ -48,9 +48,9 @@ def _preprocess_text(
             Either `AutoTokenizer` instance from `transformers` package, or a user's own tokenizer.
         max_length:
             A maximum sequence length.
-        trunction:
+        truncation:
             An indication of whether tokenized sequences should be padded only to the length of the longest sequence.
-        sort_according_to_length:
+        sort_according_length:
             An indication of whether tokenized sequences should be sorted from shortest to longest. This is appropriate
             to do for leveraging dynamic padding during embedding calculation and thereby to hasten inference.
         own_tokenizer:
@@ -86,11 +86,10 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
     calculation for BERT score.
 
     Args:
-        attention_mask:
-            An attention mask to be returned, for example, by a `transformers` tokenizer.
+        attention_mask: An attention mask to be returned, for example, by a `transformers` tokenizer.
 
     Return:
-        A processd attention mask.
+        A processed attention mask.
     """
     # Make attention_mask zero for [CLS] token
     attention_mask[:, 0] = 0
@@ -127,13 +126,8 @@ def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_l
     model_output = torch.cat(
         [model_output, torch.zeros(zeros_shape, dtype=model_output.dtype).to(model_output.device)], dim=2
     )
-    attention_mask = torch.cat(
-        [
-            attention_mask,
-            torch.zeros(zeros_shape[0], zeros_shape[2], dtype=attention_mask.dtype).to(attention_mask.device),
-        ],
-        dim=1,
-    )
+    zeros = torch.zeros(zeros_shape[0], zeros_shape[2], dtype=attention_mask.dtype).to(attention_mask.device)
+    attention_mask = torch.cat([attention_mask, zeros], dim=1)
     return model_output, attention_mask
 
 
@@ -164,8 +158,6 @@ class TextDataset(Dataset):
                 An indication of whether calculate token inverse document frequencies to weight the model embeddings.
             tokens_idf:
                 Inverse document frequencies (these should be calculated on reference sentences).
-            own_tokenizer:
-                An indication of whether a non-default user's own tokenizer is used.
         """
         self.text = preprocess_text_fn(text, tokenizer, max_length)
         self.max_length = self.text["input_ids"].shape[1]
@@ -244,7 +236,7 @@ class TokenizedDataset(TextDataset):
             self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
 
 
-def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, tqdm.auto.tqdm]:
+def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, "tqdm.auto.tqdm"]:
     """Helper function returning either the dataloader itself when `verbose = False`, or it wraps the dataloader with
     `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
     return tqdm.auto.tqdm(dataloader) if verbose else dataloader
@@ -363,14 +355,10 @@ def _get_precision_recall_f1(
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
-        pred_embeddings:
-            Embeddings of candidate sentenecs.
-        ref_embeddings:
-            Embeddings of reference sentences.
-        pred_idf_scale:
-            An IDF scale factor for candidate sentences.
-        ref_idf_scale:
-            An IDF scale factor for reference sentences.
+        pred_embeddings: Embeddings of candidate sentenecs.
+        ref_embeddings: Embeddings of reference sentences.
+        pred_idf_scale: An IDF scale factor for candidate sentences.
+        ref_idf_scale: An IDF scale factor for reference sentences.
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
@@ -497,7 +485,7 @@ def bert_score(
         references:
             Either an iterable of target sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
             `attention_mask` `torch.Tensor`.
-        model_type:
+        model_name_or_path:
             A name or a model path used to load `transformers` pretrained model.
         num_layers:
             A layer of representation to use.
