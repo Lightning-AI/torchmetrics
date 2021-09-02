@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
+
 
 ### Changed
 
@@ -32,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
 - Added `device` and `dtype` properties ([#462](https://github.com/PyTorchLightning/metrics/pull/462))
 - Added `TextTester` class for robustly testing text metrics ([#450](https://github.com/PyTorchLightning/metrics/pull/450))
 
