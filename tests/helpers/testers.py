@@ -192,6 +192,9 @@ def _class_test(
             sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
+    # check that metrics are hashable
+    assert hash(metric)
+
     # check on all batches on all ranks
     result = metric.compute()
     _assert_tensor(result)
