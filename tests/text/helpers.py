@@ -142,6 +142,9 @@ def _class_test(
 
             _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
+    # check that metrics are hashable
+    assert hash(metric)
+
     # check on all batches on all ranks
     result = metric.compute()
     _assert_tensor(result, key=key)
