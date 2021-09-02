@@ -418,15 +418,25 @@ class Metric(Module, ABC):
         return self._device
 
     def to(self, *args: Any, **kwargs: Any) -> "Metric":
-        """Moves and/or casts the parameters and buffers.
-
-        Works similar to nn.Module.to but also updates the metrics device and dtype properties
+        """Moves the parameters and buffers. Normal dtype casting is not supported by this method
+        instead use the `set_dtype` method instead.
         """
-        # there is diff nb vars in PT 1.5
         out = torch._C._nn._parse_to(*args, **kwargs)
-        self._device = out[0]
-        out[1] = None  # prevent dtype casting
-        return super().to(*args, **kwargs)
+        if len(out)==4:  # pytorch 1.5 and higher
+            device, dtype, non_blocking, convert_to_format = out
+        else:  # pytorch 1.4 and lower
+            device, dtype, non_blocking = out
+            convert_to_format = None
+        dtype = None  # prevent dtype being casted
+
+        def convert(t):
+            if convert_to_format is not None and t.dim() in (4, 5):
+                return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None,
+                            non_blocking, memory_format=convert_to_format)
+            return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
+
+        self._device = device
+        return self._apply(convert)
 
     def cuda(self, device: Optional[Union[torch.device, int]] = None) -> "Metric":
         """Moves all model parameters and buffers to the GPU.
