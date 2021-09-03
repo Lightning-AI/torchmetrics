@@ -48,8 +48,7 @@ def _average_precision_update(
             preds = preds.flatten()
             target = target.flatten()
             num_classes = 1
-        else:
-            raise ValueError("Cannot use `micro` average with multi-class input")
+        raise ValueError("Cannot use `micro` average with multi-class input")
 
     return preds, target, num_classes, pos_label
 
@@ -164,19 +163,17 @@ def _average_precision_compute_with_precision_recall(
         res = torch.stack(res)
         if torch.isnan(res).any():
             warnings.warn(
-                "Average precision score for one or more classes was `nan`." " Ignoring these classes in average",
-                UserWarning,
+                "Average precision score for one or more classes was `nan`. Ignoring these classes in average",
+                UserWarning
             )
         if average == "macro":
             return res[~torch.isnan(res)].mean()
-        else:
-            weights = torch.ones_like(res) if weights is None else weights
-            return (res * weights)[~torch.isnan(res)].sum()
+        weights = torch.ones_like(res) if weights is None else weights
+        return (res * weights)[~torch.isnan(res)].sum()
     elif average is None:
         return res
-    else:
-        allowed_average = ("micro", "macro", "weighted", None)
-        raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
+    allowed_average = ("micro", "macro", "weighted", None)
+    raise ValueError(f"Expected argument `average` to be one of {allowed_average}" f" but got {average}")
 
 
 def average_precision(
