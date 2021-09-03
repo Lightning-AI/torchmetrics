@@ -102,7 +102,7 @@ def _average_precision_compute(
             weights = target.sum(dim=0).float()
         else:
             weights = torch.bincount(target, minlength=num_classes).float()
-        weights = weights / sum(weights)
+        weights = weights / torch.sum(weights)
     else:
         weights = None
     return _average_precision_compute_with_precision_recall(precision, recall, num_classes, average, weights)
