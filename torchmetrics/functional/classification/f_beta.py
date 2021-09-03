@@ -64,7 +64,6 @@ def _fbeta_compute(
         >>> _fbeta_compute(tp, fp, tn, fn, beta=0.5, ignore_index=None, average='micro', mdmc_average=None)
         tensor(0.3333)
     """
-
     if average == AvgMethod.MICRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         mask = tp >= 0
         precision = _safe_divide(tp[mask].sum().float(), (tp[mask] + fp[mask]).sum())
@@ -72,11 +71,6 @@ def _fbeta_compute(
     else:
         precision = _safe_divide(tp.float(), tp + fp)
         recall = _safe_divide(tp.float(), tp + fn)
-
-    if average == AvgMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        cond = tp + fp + fn == 0
-        precision = precision[~cond]
-        recall = recall[~cond]
 
     num = (1 + beta ** 2) * precision * recall
     denom = beta ** 2 * precision + recall
@@ -99,6 +93,11 @@ def _fbeta_compute(
         elif average not in (AvgMethod.MICRO, AvgMethod.SAMPLES):
             num[ignore_index, ...] = -1
             denom[ignore_index, ...] = -1
+
+    if average == AvgMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        cond = (tp + fp + fn == 0) | (tp + fp + fn == -3)
+        num = num[~cond]
+        denom = denom[~cond]
 
     return _reduce_stat_scores(
         numerator=num,
