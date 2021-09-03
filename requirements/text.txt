@@ -1,2 +1,2 @@
 nltk>=3.6
-bert-score==0.3.10
+tqdm>=4.41.0
