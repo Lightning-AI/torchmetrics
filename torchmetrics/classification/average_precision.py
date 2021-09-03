@@ -56,8 +56,6 @@ class AveragePrecision(Metric):
               metrics across classes, weighting each class by its support.
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
 
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True

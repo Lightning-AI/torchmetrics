@@ -210,8 +210,6 @@ def average_precision(
               metrics across classes, weighting each class by its support.
             - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
               the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
 
         sample_weights: sample weights for each data point
 
