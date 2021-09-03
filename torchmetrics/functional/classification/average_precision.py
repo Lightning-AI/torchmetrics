@@ -100,9 +100,9 @@ def _average_precision_compute(
     precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
     if average == "weighted":
         if preds.ndim == target.ndim and target.ndim > 1:
-            weights = target.sum(dim=0)
+            weights = target.sum(dim=0).float()
         else:
-            weights = torch.bincount(target, minlength=num_classes)
+            weights = torch.bincount(target, minlength=num_classes).float()
         weights = weights / sum(weights)
     else:
         weights = None
