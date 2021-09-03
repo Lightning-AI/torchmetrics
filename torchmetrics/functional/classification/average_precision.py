@@ -30,7 +30,7 @@ def _average_precision_update(
     pos_label: Optional[int] = None,
     average: Optional[str] = "macro",
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
-    """Format the predictions and target based on the num_classes, pos_label and average parameter
+    """Format the predictions and target based on the ``num_classes``, ``pos_label`` and ``average`` parameter
     Args:
         preds: predictions from model (logits or probabilities)
         target: ground truth values
