@@ -164,7 +164,7 @@ def _average_precision_compute_with_precision_recall(
         if torch.isnan(res).any():
             warnings.warn(
                 "Average precision score for one or more classes was `nan`. Ignoring these classes in average",
-                UserWarning
+                UserWarning,
             )
         if average == "macro":
             return res[~torch.isnan(res)].mean()
