@@ -245,6 +245,13 @@ cosine_similarity [func]
     :noindex:
 
 
+deviance_score [func]
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.deviance_score
+    :noindex:
+
+
 explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

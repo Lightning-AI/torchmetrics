@@ -364,6 +364,13 @@ CosineSimilarity
     :noindex:
 
 
+DevianceScore
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.DevianceScore
+    :noindex:
+
+
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~
 

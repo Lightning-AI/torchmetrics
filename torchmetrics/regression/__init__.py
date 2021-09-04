@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.regression.cosine_similarity import CosineSimilarity  # noqa: F401
+from torchmetrics.regression.deviance_scores import DevianceScore  # noqa: F401
 from torchmetrics.regression.explained_variance import ExplainedVariance  # noqa: F401
 from torchmetrics.regression.mean_absolute_error import MeanAbsoluteError  # noqa: F401
 from torchmetrics.regression.mean_absolute_percentage_error import MeanAbsolutePercentageError  # noqa: F401

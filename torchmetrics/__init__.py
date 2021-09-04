@@ -44,6 +44,7 @@ from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
+    DevianceScore,
     ExplainedVariance,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,
@@ -82,6 +83,7 @@ __all__ = [
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "DevianceScore",
     "ExplainedVariance",
     "F1",
     "FBeta",
