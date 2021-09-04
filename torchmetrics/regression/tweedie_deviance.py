@@ -16,12 +16,12 @@ from typing import Any, Callable, List, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.deviance import _deviance_score_compute, _deviance_score_update
+from torchmetrics.functional.regression.tweedie_deviance import _tweedie_deviance_score_compute, _tweedie_deviance_score_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class DevianceScore(Metric):
+class TweedieDevianceScore(Metric):
     r"""
     Computes the `Deviance Score <https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance>`_ between
     targets and predictions:
@@ -61,10 +61,10 @@ class DevianceScore(Metric):
             will be used to perform the all gather.
 
     Example:
-        >>> from torchmetrics import DevianceScore
+        >>> from torchmetrics import TweedieDevianceScore
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> deviance_score = DevianceScore(power=0)
+        >>> deviance_score = TweedieDevianceScore(power=0)
         >>> deviance_score(preds, targets)
         tensor(5.)
 
@@ -101,7 +101,7 @@ class DevianceScore(Metric):
             preds: Predicted tensor with shape ``(N,d)``
             targets: Ground truth tensor with shape ``(N,d)``
         """
-        preds, targets = _deviance_score_update(preds, targets)
+        preds, targets = _tweedie_deviance_score_update(preds, targets)
 
         self.preds.append(preds)
         self.targets.append(targets)
@@ -109,7 +109,7 @@ class DevianceScore(Metric):
     def compute(self) -> Tensor:
         preds = dim_zero_cat(self.preds)
         targets = dim_zero_cat(self.targets)
-        return _deviance_score_compute(preds, targets, self.power)
+        return _tweedie_deviance_score_compute(preds, targets, self.power)
 
     @property
     def is_differentiable(self) -> bool:

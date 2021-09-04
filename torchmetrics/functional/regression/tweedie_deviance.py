@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _deviance_score_update(
+def _tweedie_deviance_score_update(
     preds: Tensor,
     targets: Tensor,
 ) -> Tuple[Tensor, Tensor]:
@@ -34,7 +34,7 @@ def _deviance_score_update(
     return preds, targets
 
 
-def _deviance_score_compute(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
+def _tweedie_deviance_score_compute(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
     """Computes Cosine Similarity.
 
     Args:
@@ -49,8 +49,8 @@ def _deviance_score_compute(preds: Tensor, targets: Tensor, power: int = 0) -> T
     Example:
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> preds, targets = _deviance_score_update(preds, targets)
-        >>> _deviance_score_compute(preds, targets, power=0)
+        >>> preds, targets = _tweedie_deviance_score_update(preds, targets)
+        >>> _tweedie_deviance_score_compute(preds, targets, power=0)
         tensor(5.)
     """
 
@@ -80,7 +80,7 @@ def _deviance_score_compute(preds: Tensor, targets: Tensor, power: int = 0) -> T
     return torch.mean(deviance_score)
 
 
-def deviance_score(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
+def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
     r"""
     Computes the `Deviance Score <https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance>`_ between
     targets and predictions:
@@ -106,12 +106,12 @@ def deviance_score(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
             - power = 2 : Gamma distribution. (Requires: y_true > 0 and y_pred > 0.)
 
     Example:
-        >>> from torchmetrics.functional.regression import deviance_score
+        >>> from torchmetrics.functional.regression import tweedie_deviance_score
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> deviance_score(preds, targets, power=0)
+        >>> tweedie_deviance_score(preds, targets, power=0)
         tensor(5.)
 
     """
-    preds, targets = _deviance_score_update(preds, targets)
-    return _deviance_score_compute(preds, targets, power=power)
+    preds, targets = _tweedie_deviance_score_update(preds, targets)
+    return _tweedie_deviance_score_compute(preds, targets, power=power)

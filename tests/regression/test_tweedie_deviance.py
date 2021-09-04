@@ -21,8 +21,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional.regression.deviance import deviance_score
-from torchmetrics.regression.deviance import DevianceScore
+from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
+from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
 
 seed_all(42)
 
@@ -61,7 +61,7 @@ class TestDevianceScore(MetricTester):
             ddp,
             preds,
             targets,
-            DevianceScore,
+            TweedieDevianceScore,
             partial(sk_metric, power=power),
             dist_sync_on_step,
             metric_args=dict(power=power),
@@ -71,19 +71,19 @@ class TestDevianceScore(MetricTester):
         self.run_functional_metric_test(
             preds,
             targets,
-            deviance_score,
+            tweedie_deviance_score,
             partial(sk_metric, power=power),
             metric_args=dict(power=power),
         )
 
 
-def test_error_on_different_shape(metric_class=DevianceScore):
+def test_error_on_different_shape(metric_class=TweedieDevianceScore):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
-def test_error_on_invalid_inputs(metric_class=DevianceScore):
+def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
     metric = metric_class(power=1)
     with pytest.raises(
         ValueError, match="For power=1, 'preds' has to be strictly positive and targets cannot be negative."

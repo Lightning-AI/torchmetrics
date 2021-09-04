@@ -38,7 +38,7 @@ from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import psnr
 from torchmetrics.functional.image.ssim import ssim
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
-from torchmetrics.functional.regression.deviance import deviance_score
+from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error
 from torchmetrics.functional.regression.mean_absolute_percentage_error import mean_absolute_percentage_error
@@ -74,7 +74,7 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
-    "deviance_score",
+    "tweedie_deviance_score",
     "dice_score",
     "embedding_similarity",
     "explained_variance",
