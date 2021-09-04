@@ -14,7 +14,7 @@
 from torchmetrics.functional.image.psnr import psnr  # noqa: F401
 from torchmetrics.functional.image.ssim import ssim  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
-from torchmetrics.functional.regression.deviance_scores import deviance_score  # noqa: F401
+from torchmetrics.functional.regression.deviance import deviance_score  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_percentage_error import (  # noqa: F401

@@ -21,8 +21,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional.regression.deviance_scores import deviance_score
-from torchmetrics.regression.deviance_scores import DevianceScore
+from torchmetrics.functional.regression.deviance import deviance_score
+from torchmetrics.regression.deviance import DevianceScore
 
 seed_all(42)
 

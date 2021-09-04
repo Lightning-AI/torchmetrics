@@ -16,7 +16,7 @@ from typing import Any, Callable, List, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.deviance_scores import _deviance_score_compute, _deviance_score_update
+from torchmetrics.functional.regression.deviance import _deviance_score_compute, _deviance_score_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
