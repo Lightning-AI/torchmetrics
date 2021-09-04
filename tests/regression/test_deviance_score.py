@@ -17,7 +17,7 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import mean_tweedie_deviance
-from torch.functional import Tensor
+from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester

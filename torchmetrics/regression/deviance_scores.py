@@ -74,7 +74,7 @@ class DevianceScore(Metric):
 
     def __init__(
         self,
-        power: Optional[int] = 0,
+        power: int = 0,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,

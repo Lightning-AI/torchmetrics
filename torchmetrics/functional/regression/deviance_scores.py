@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -34,7 +34,7 @@ def _deviance_score_update(
     return preds, targets
 
 
-def _deviance_score_compute(preds: Tensor, targets: Tensor, power: Optional[int] = 0) -> Tensor:
+def _deviance_score_compute(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
     """Computes Cosine Similarity.
 
     Args:
@@ -80,7 +80,7 @@ def _deviance_score_compute(preds: Tensor, targets: Tensor, power: Optional[int]
     return torch.mean(deviance_score)
 
 
-def deviance_score(preds: Tensor, targets: Tensor, power: Optional[int] = 0) -> Tensor:
+def deviance_score(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
     r"""
     Computes the `Deviance Score <https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance>`_ between
     targets and predictions:
