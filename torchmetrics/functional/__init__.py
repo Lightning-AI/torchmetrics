@@ -38,7 +38,6 @@ from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import psnr
 from torchmetrics.functional.image.ssim import ssim
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
-from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error
 from torchmetrics.functional.regression.mean_absolute_percentage_error import mean_absolute_percentage_error
@@ -51,6 +50,7 @@ from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
     symmetric_mean_absolute_percentage_error,
 )
+from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
