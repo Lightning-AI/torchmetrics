@@ -245,10 +245,10 @@ cosine_similarity [func]
     :noindex:
 
 
-deviance_score [func]
-~~~~~~~~~~~~~~~~~~~~~
+tweedie_deviance_score [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.deviance_score
+.. autofunction:: torchmetrics.functional.tweedie_deviance_score
     :noindex:
 
 

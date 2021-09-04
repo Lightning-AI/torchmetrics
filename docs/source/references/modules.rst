@@ -364,10 +364,10 @@ CosineSimilarity
     :noindex:
 
 
-DevianceScore
-~~~~~~~~~~~~~
+TweedieDevianceScore
+~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.DevianceScore
+.. autoclass:: torchmetrics.TweedieDevianceScore
     :noindex:
 
 
