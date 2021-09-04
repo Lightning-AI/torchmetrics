@@ -293,10 +293,10 @@ class MAP(Metric):
             for k, (box, label) in enumerate(zip(boxes, classes)):
                 if len(box) != 4:
                     raise ValueError(f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)}")
-                if type(label) != int:
+                if type(label) != int and type(label) != torch.Tensor:
                     raise ValueError(
                         f"Invalid input class of sample {i}, element {k}"
-                        f" (expected value of type integer, got type {type(label)})"
+                        f" (expected value of type integer or torch.Tensor, got type {type(label)})"
                     )
                 annotation = {
                     "id": annotation_id,
@@ -326,10 +326,7 @@ class MAP(Metric):
         boxes = input["detection_boxes"] if is_pred else input["groundtruth_boxes"]
         classes = input["detection_classes"] if is_pred else input["groundtruth_classes"]
 
-        boxes_list: List = []
-        classes_list: List = []
         scores_list: Optional[List] = None
-
         if type(boxes) is torch.Tensor:
             boxes_list = boxes.cpu().tolist()
         elif type(boxes) is np.ndarray:
