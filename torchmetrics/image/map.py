@@ -333,8 +333,10 @@ class MAP(Metric):
             boxes_list = boxes.tolist()
         else:
             boxes_list = boxes
-        boxes_list = [box.cpu().tolist() if type(box) == torch.Tensor else box.tolist() if type(
-            box) is np.ndarray else box for box in boxes_list]
+        boxes_list = [
+            box.cpu().tolist() if type(box) == torch.Tensor else box.tolist() if type(box) is np.ndarray else box
+            for box in boxes_list
+        ]
 
         if type(boxes) is torch.Tensor:
             classes_list = classes.cpu().tolist()
@@ -342,8 +344,14 @@ class MAP(Metric):
             classes_list = classes.tolist()
         else:
             classes_list = classes
-        classes_list = [label.cpu().tolist() if type(label) == torch.Tensor else label.tolist() if type(
-            label) is np.ndarray else label for label in classes_list]
+        classes_list = [
+            label.cpu().tolist()
+            if type(label) == torch.Tensor
+            else label.tolist()
+            if type(label) is np.ndarray
+            else label
+            for label in classes_list
+        ]
 
         if is_pred:
             scores = input["detection_scores"]
@@ -353,7 +361,13 @@ class MAP(Metric):
                 scores_list = scores.tolist()
             else:
                 scores_list = scores
-            scores_list = [score.cpu().tolist() if type(score) == torch.Tensor else score.tolist() if type(
-                score) is np.ndarray else score for score in scores_list]
+            scores_list = [
+                score.cpu().tolist()
+                if type(score) == torch.Tensor
+                else score.tolist()
+                if type(score) is np.ndarray
+                else score
+                for score in scores_list
+            ]
 
         return boxes_list, classes_list, scores_list
