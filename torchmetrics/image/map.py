@@ -71,15 +71,15 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
     if any(type(pred["detection_boxes"]) is not torch.Tensor for pred in preds):
-        raise ValueError(f"Expected all detection_boxes in `preds` to be of type torch.Tensor")
+        raise ValueError("Expected all detection_boxes in `preds` to be of type torch.Tensor")
     if any(type(pred["detection_scores"]) is not torch.Tensor for pred in preds):
-        raise ValueError(f"Expected all detection_scores in `preds` to be of type torch.Tensor")
+        raise ValueError("Expected all detection_scores in `preds` to be of type torch.Tensor")
     if any(type(pred["detection_classes"]) is not torch.Tensor for pred in preds):
-        raise ValueError(f"Expected all detection_classes in `preds` to be of type torch.Tensor")
+        raise ValueError("Expected all detection_classes in `preds` to be of type torch.Tensor")
     if any(type(target["groundtruth_boxes"]) is not torch.Tensor for target in targets):
-        raise ValueError(f"Expected all groundtruth_boxes in `target` to be of type torch.Tensor")
+        raise ValueError("Expected all groundtruth_boxes in `target` to be of type torch.Tensor")
     if any(type(target["groundtruth_classes"]) is not torch.Tensor for target in targets):
-        raise ValueError(f"Expected all groundtruth_classes in `target` to be of type torch.Tensor")
+        raise ValueError("Expected all groundtruth_classes in `target` to be of type torch.Tensor")
 
 
 class MAP(Metric):
@@ -151,7 +151,7 @@ class MAP(Metric):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
-    def update(self, preds: List[Dict[str, torch.Tensor]], target: List[Dict[str, torch.Tensor]]) -> None:  # type: ignore
+    def update(self, preds: List[Dict[str, torch.Tensor]], target: List[Dict[str, torch.Tensor]]) -> None:
         """Updates mAP and mAR values with metric values from given predictions and groundtruth.
 
         Args:
