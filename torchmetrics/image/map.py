@@ -151,7 +151,7 @@ class MAP(Metric):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
-    def update(self, preds: List[Dict[str, torch.Tensor]], target: List[Dict[str, torch.Tensor]]) -> None:
+    def update(self, preds: Any, target: Any) -> None:
         """Updates mAP and mAR values with metric values from given predictions and groundtruth.
 
         Args:
@@ -221,7 +221,7 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        self.average_precision = torch.cat(
+        self.average_precision: torch.Tensor = torch.cat(
             (
                 self.average_precision,
                 torch.tensor(
@@ -230,7 +230,7 @@ class MAP(Metric):
             )
         )
 
-        self.average_recall = torch.cat(
+        self.average_recall: torch.Tensor = torch.cat(
             (
                 self.average_recall,
                 torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
