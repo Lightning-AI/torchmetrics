@@ -149,6 +149,9 @@ class MAP(Metric):
             raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
         self.num_classes = num_classes
 
+        self.preds = []
+        self.targets = []
+
         for class_id in range(num_classes):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
@@ -200,10 +203,14 @@ class MAP(Metric):
         """
         _input_validator(preds, target)
 
+        self.preds.extend(preds)
+        self.targets.extend(target)
+
+    def compute(self) -> MAPMetricResults:
         coco_target, coco_preds = COCO(), COCO()
 
-        coco_target.dataset = self._get_coco_format(inputs=target)
-        coco_preds.dataset = self._get_coco_format(inputs=preds, is_pred=True)
+        coco_target.dataset = self._get_coco_format(inputs=self.targets)
+        coco_preds.dataset = self._get_coco_format(inputs=self.preds, is_pred=True)
 
         with _hide_prints():
             coco_target.createIndex()
@@ -257,7 +264,6 @@ class MAP(Metric):
             )
             setattr(self, f"ar_{class_id}", class_map_value)
 
-    def compute(self) -> MAPMetricResults:
         map_per_class_value = [torch.mean(getattr(self, f"ap_{class_id}")) for class_id in range(self.num_classes)]
         mar_per_class_value = [torch.mean(getattr(self, f"ar_{class_id}")) for class_id in range(self.num_classes)]
         metrics = MAPMetricResults(
@@ -267,6 +273,11 @@ class MAP(Metric):
             mar_per_class_value=mar_per_class_value,
         )
         return metrics
+
+    def reset(self) -> None:
+        super().reset()
+        self.targets = []
+        self.preds = []
 
     def _get_coco_format(
         self, inputs: Union[List[GroundtruthDict], List[DetectionsDict]], is_pred: bool = False
