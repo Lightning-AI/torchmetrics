@@ -18,6 +18,7 @@ import torch
 
 from torchmetrics.image.map import MAP
 
+
 def generate_predictions_targets(batch_size):
     box1 = [0.0, 0.0, 1.0, 1.0]  # TP_class0
     box2 = [1.0, 1.0, 2.0, 2.0]  # TP_class0
@@ -62,7 +63,6 @@ def generate_predictions_targets(batch_size):
 
 
 class TestMapMetric(unittest.TestCase):
-
     def test_mAP_average(self):
         numerical_correction = 201 / 202  # (1-100/101)/2 --> 101 coming from interpolation)
         expected_value = 1 / 3 * 1 + 1 / 3 * 0 + 1 / 3 * 2 / 3 * numerical_correction
