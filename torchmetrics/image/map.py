@@ -198,14 +198,14 @@ class MAP(Metric):
         """
         _input_validator(preds, target)
 
-        for pred in preds:
-            self.detection_boxes.append(pred["detection_boxes"])
-            self.detection_scores.append(pred["detection_scores"])
-            self.detection_classes.append(pred["detection_classes"])
+        for item in preds:
+            self.detection_boxes.append(item["detection_boxes"])
+            self.detection_scores.append(item["detection_scores"])
+            self.detection_classes.append(item["detection_classes"])
 
-        for target in target:
-            self.groundtruth_boxes.append(target["groundtruth_boxes"])
-            self.groundtruth_classes.append(target["groundtruth_classes"])
+        for item in target:
+            self.groundtruth_boxes.append(item["groundtruth_boxes"])
+            self.groundtruth_classes.append(item["groundtruth_classes"])
 
     def compute(self) -> MAPMetricResults:
         coco_target, coco_preds = COCO(), COCO()
@@ -221,7 +221,7 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        self.average_precision: Tensor = torch.cat(
+        self.average_precision = torch.cat(
             (
                 self.average_precision,
                 torch.tensor(
@@ -230,7 +230,7 @@ class MAP(Metric):
             )
         )
 
-        self.average_recall: Tensor = torch.cat(
+        self.average_recall = torch.cat(
             (
                 self.average_recall,
                 torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
@@ -279,7 +279,7 @@ class MAP(Metric):
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        for i in range(len(self.groundtruth_boxes)):
+        for i, _ in enumerate(self.groundtruth_boxes):
             images.append({"id": i})
 
             if is_pred:

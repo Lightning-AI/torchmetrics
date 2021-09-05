@@ -18,49 +18,50 @@ import torch
 
 from torchmetrics.image.map import MAP
 
+def generate_predictions_targets(batch_size):
+    box1 = [0.0, 0.0, 1.0, 1.0]  # TP_class0
+    box2 = [1.0, 1.0, 2.0, 2.0]  # TP_class0
+    box3 = [2.0, 2.0, 3.0, 3.0]  # false class (FN for class_0, FP for class_1?)
+    box4 = [3.0, 3.0, 4.0, 4.0]  # FN (missing box for class_0)
+    box5 = [4.0, 4.0, 5.0, 5.0]  # FP (detection - but no GT for class_0)
+    box6 = [5.0, 5.0, 6.0, 6.0]  # TP_class_2 --> to check if we get precision one for class_2
+    scores = [0.8, 0.9, 0.7, 0.6, 1.0]
+
+    targets = [
+        {
+            "groundtruth_boxes": torch.tensor([box1, box2, box3, box4, box6]),
+            "groundtruth_classes": torch.tensor([0, 0, 1, 0, 2]),
+        }
+    ] * batch_size
+    predictions = [
+        {
+            "detection_boxes": torch.tensor([box1, box2, box3, box5, box6]),
+            "detection_classes": torch.tensor([0, 0, 0, 0, 2]),
+            "detection_scores": torch.tensor(scores),
+        }
+    ] * batch_size
+    # How to calculate expected_values:
+    # sorted by score both classes:
+    # box 2 TP
+    # box 1 TP
+    # box 3 FN
+    # box 5 FN
+
+    # sorted by score class_0:
+    # box 2 TP
+    # box 1 TP
+    # box 5 FN
+
+    # sorted by score class_1:
+    # box 3  missing
+
+    # sorted by score class_2:
+    # box 6 ok --> 1 gt/1 prediction --> 100%
+
+    return predictions, targets
+
 
 class TestMapMetric(unittest.TestCase):
-    def generate_predictions_targets(self, batch_size):
-        box1 = [0.0, 0.0, 1.0, 1.0]  # TP_class0
-        box2 = [1.0, 1.0, 2.0, 2.0]  # TP_class0
-        box3 = [2.0, 2.0, 3.0, 3.0]  # false class (FN for class_0, FP for class_1?)
-        box4 = [3.0, 3.0, 4.0, 4.0]  # FN (missing box for class_0)
-        box5 = [4.0, 4.0, 5.0, 5.0]  # FP (detection - but no GT for class_0)
-        box6 = [5.0, 5.0, 6.0, 6.0]  # TP_class_2 --> to check if we get precision one for class_2
-        scores = [0.8, 0.9, 0.7, 0.6, 1.0]
-
-        targets = [
-            {
-                "groundtruth_boxes": torch.tensor([box1, box2, box3, box4, box6]),
-                "groundtruth_classes": torch.tensor([0, 0, 1, 0, 2]),
-            }
-        ] * batch_size
-        predictions = [
-            {
-                "detection_boxes": torch.tensor([box1, box2, box3, box5, box6]),
-                "detection_classes": torch.tensor([0, 0, 0, 0, 2]),
-                "detection_scores": torch.tensor(scores),
-            }
-        ] * batch_size
-        # How to calculate expected_values:
-        # sorted by score both classes:
-        # box 2 TP
-        # box 1 TP
-        # box 3 FN
-        # box 5 FN
-
-        # sorted by score class_0:
-        # box 2 TP
-        # box 1 TP
-        # box 5 FN
-
-        # sorted by score class_1:
-        # box 3  missing
-
-        # sorted by score class_2:
-        # box 6 ok --> 1 gt/1 prediction --> 100%
-
-        return predictions, targets
 
     def test_mAP_average(self):
         numerical_correction = 201 / 202  # (1-100/101)/2 --> 101 coming from interpolation)
@@ -71,7 +72,7 @@ class TestMapMetric(unittest.TestCase):
         expected_value_class2 = 1 / 1
 
         for batch_size in [2, 10]:
-            predictions, targets = self.generate_predictions_targets(batch_size=batch_size)
+            predictions, targets = generate_predictions_targets(batch_size=batch_size)
 
             mAP = MAP(num_classes=3)
             mAP.update(predictions, targets)
