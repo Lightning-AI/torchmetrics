@@ -44,7 +44,6 @@ from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
-    TweedieDevianceScore,
     ExplainedVariance,
     MeanAbsoluteError,
     MeanAbsolutePercentageError,
@@ -54,6 +53,7 @@ from torchmetrics.regression import (  # noqa: E402
     R2Score,
     SpearmanCorrcoef,
     SymmetricMeanAbsolutePercentageError,
+    TweedieDevianceScore,
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,

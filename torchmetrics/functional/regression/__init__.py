@@ -14,7 +14,6 @@
 from torchmetrics.functional.image.psnr import psnr  # noqa: F401
 from torchmetrics.functional.image.ssim import ssim  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
-from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_percentage_error import (  # noqa: F401
@@ -26,3 +25,4 @@ from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa:
 from torchmetrics.functional.regression.r2 import r2_score  # noqa: F401
 from torchmetrics.functional.regression.r2score import r2score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401
+from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score  # noqa: F401

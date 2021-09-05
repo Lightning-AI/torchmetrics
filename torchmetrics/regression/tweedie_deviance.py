@@ -16,7 +16,10 @@ from typing import Any, Callable, List, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.tweedie_deviance import _tweedie_deviance_score_compute, _tweedie_deviance_score_update
+from torchmetrics.functional.regression.tweedie_deviance import (
+    _tweedie_deviance_score_compute,
+    _tweedie_deviance_score_update,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
