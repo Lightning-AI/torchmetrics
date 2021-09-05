@@ -289,7 +289,7 @@ class MAP(Metric):
                 if len(boxes) != len(scores):
                     raise ValueError(
                         f"Input boxes and scores of sample {i} have a different"
-                        f" length (expected {len(boxes)} scores, got {len(scores)}"
+                        f" length (expected {len(boxes)} scores, got {len(scores)})"
                     )
             else:
                 boxes = self.groundtruth_boxes[i]
@@ -299,7 +299,7 @@ class MAP(Metric):
             if len(boxes) != len(classes):
                 raise ValueError(
                     f"Input boxes and classes of sample {i} have a"
-                    f" different length (expected {len(boxes)} classes, got {len(classes)}"
+                    f" different length (expected {len(boxes)} classes, got {len(classes)})"
                 )
 
             boxes = boxes.cpu().tolist()
@@ -309,7 +309,7 @@ class MAP(Metric):
 
             for k, (box, label) in enumerate(zip(boxes, classes)):
                 if len(box) != 4:
-                    raise ValueError(f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)}")
+                    raise ValueError(f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)})")
                 if type(label) != int:
                     raise ValueError(
                         f"Invalid input class of sample {i}, element {k}"
