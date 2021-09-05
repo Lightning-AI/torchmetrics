@@ -70,15 +70,15 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
         if any(k not in p for p in targets):
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
-    if any(type(pred['detection_boxes']) is not torch.Tensor for pred in preds):
+    if any(type(pred["detection_boxes"]) is not torch.Tensor for pred in preds):
         raise ValueError(f"Expected all detection_boxes in `preds` to be of type torch.Tensor")
-    if any(type(pred['detection_scores']) is not torch.Tensor for pred in preds):
+    if any(type(pred["detection_scores"]) is not torch.Tensor for pred in preds):
         raise ValueError(f"Expected all detection_scores in `preds` to be of type torch.Tensor")
-    if any(type(pred['detection_classes']) is not torch.Tensor for pred in preds):
+    if any(type(pred["detection_classes"]) is not torch.Tensor for pred in preds):
         raise ValueError(f"Expected all detection_classes in `preds` to be of type torch.Tensor")
-    if any(type(target['groundtruth_boxes']) is not torch.Tensor for target in targets):
+    if any(type(target["groundtruth_boxes"]) is not torch.Tensor for target in targets):
         raise ValueError(f"Expected all groundtruth_boxes in `target` to be of type torch.Tensor")
-    if any(type(target['groundtruth_classes']) is not torch.Tensor for target in targets):
+    if any(type(target["groundtruth_classes"]) is not torch.Tensor for target in targets):
         raise ValueError(f"Expected all groundtruth_classes in `target` to be of type torch.Tensor")
 
 
@@ -121,11 +121,11 @@ class MAP(Metric):
     """
 
     def __init__(
-            self,
-            num_classes: int = 0,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
+        self,
+        num_classes: int = 0,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -199,13 +199,13 @@ class MAP(Metric):
         _input_validator(preds, target)
 
         for pred in preds:
-            self.detection_boxes.append(pred['detection_boxes'])
-            self.detection_scores.append(pred['detection_scores'])
-            self.detection_classes.append(pred['detection_classes'])
+            self.detection_boxes.append(pred["detection_boxes"])
+            self.detection_scores.append(pred["detection_scores"])
+            self.detection_classes.append(pred["detection_classes"])
 
         for target in target:
-            self.groundtruth_boxes.append(target['groundtruth_boxes'])
-            self.groundtruth_classes.append(target['groundtruth_classes'])
+            self.groundtruth_boxes.append(target["groundtruth_boxes"])
+            self.groundtruth_classes.append(target["groundtruth_classes"])
 
     def compute(self) -> MAPMetricResults:
         coco_target, coco_preds = COCO(), COCO()
