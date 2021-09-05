@@ -309,7 +309,9 @@ class MAP(Metric):
 
             for k, (box, label) in enumerate(zip(boxes, classes)):
                 if len(box) != 4:
-                    raise ValueError(f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)})")
+                    raise ValueError(
+                        f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)})"
+                    )
                 if type(label) != int:
                     raise ValueError(
                         f"Invalid input class of sample {i}, element {k}"
