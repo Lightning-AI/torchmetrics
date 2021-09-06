@@ -53,6 +53,7 @@ from torchmetrics.regression import (  # noqa: E402
     R2Score,
     SpearmanCorrcoef,
     SymmetricMeanAbsolutePercentageError,
+    TweedieDevianceScore,
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
@@ -81,6 +82,7 @@ __all__ = [
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "TweedieDevianceScore",
     "ExplainedVariance",
     "F1",
     "FBeta",
