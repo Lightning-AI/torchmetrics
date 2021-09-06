@@ -50,6 +50,7 @@ from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
     symmetric_mean_absolute_percentage_error,
 )
+from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
@@ -73,6 +74,7 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
+    "tweedie_deviance_score",
     "dice_score",
     "embedding_similarity",
     "explained_variance",
