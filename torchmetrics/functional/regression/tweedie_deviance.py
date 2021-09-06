@@ -19,42 +19,33 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _tweedie_deviance_score_update(
-    preds: Tensor,
-    targets: Tensor,
-) -> Tuple[Tensor, Tensor]:
+def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Deviance Score for the given power. Checks for same shape
     of input tensors.
 
     Args:
         preds: Predicted tensor
         targets: Ground truth tensor
-    """
-    _check_same_shape(preds, targets)
-    return preds, targets
-
-
-def _tweedie_deviance_score_compute(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
-    """Computes Cosine Similarity.
-
-    Args:
-        preds: Predicted tensor
-        targets: Ground truth tensor
         power:
-            - power = 0 : Normal distribution, output corresponds to mean_squared_error. y_true and y_pred can be any
-            real numbers.
-            - power = 1 : Poisson distribution. Requires: y_true >= 0 and y_pred > 0.
-            - power = 2 : Gamma distribution. Requires: y_true > 0 and y_pred > 0.
+            - power < 0 : Extreme stable distribution. (Requires: preds > 0.)
+            - power = 0 : Normal distribution. (Requires: targets and preds can be any real numbers.)
+            - power = 1 : Poisson distribution. (Requires: targets >= 0 and y_pred > 0.)
+            - 1 < p < 2 : Compound Poisson distribution. (Requires: targets >= 0 and preds > 0.)
+            - power = 2 : Gamma distribution. (Requires: targets > 0 and preds > 0.)
+            - power = 3 : Inverse Gaussian distribution. (Requires: targets > 0 and preds > 0.)
+            - otherwise : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
 
     Example:
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> preds, targets = _tweedie_deviance_score_update(preds, targets)
-        >>> _tweedie_deviance_score_compute(preds, targets, power=0)
-        tensor(5.)
+        >>> _tweedie_deviance_score_update(preds, targets, power=0)
+        (tensor(20.), tensor(4))
     """
+    _check_same_shape(preds, targets)
 
-    if power < 1 and power > 0:
+    zero_tensor = torch.zeros(preds.shape, device=preds.device)
+
+    if 0 < power < 1:
         raise ValueError(f"Deviance Score is not defined for power={power}.")
 
     if power == 0:
@@ -62,7 +53,9 @@ def _tweedie_deviance_score_compute(preds: Tensor, targets: Tensor, power: int =
     elif power == 1:
         # Poisson distribution
         if torch.any(preds <= 0) or torch.any(targets < 0):
-            raise ValueError(f"For power={power}, 'preds' has to be strictly positive and targets cannot be negative.")
+            raise ValueError(
+                f"For power={power}, 'preds' has to be strictly positive and 'targets' cannot be negative."
+            )
 
         deviance_score = 2 * (targets * torch.log(targets / preds) + preds - targets)
     elif power == 2:
@@ -72,15 +65,48 @@ def _tweedie_deviance_score_compute(preds: Tensor, targets: Tensor, power: int =
 
         deviance_score = 2 * (torch.log(preds / targets) + (targets / preds) - 1)
     else:
-        term_1 = torch.pow(torch.max(targets, torch.zeros(targets.shape)), 2 - power) / ((1 - power) * (2 - power))
+        if power < 0:
+            if torch.any(preds <= 0):
+                raise ValueError(f"For power={power}, 'preds' has to be strictly positive.")
+        elif 1 < power < 2:
+            if torch.any(preds <= 0) or torch.any(targets < 0):
+                raise ValueError(
+                    f"For power={power}, 'targets' has to be strictly positive and 'preds' cannot be negative."
+                )
+        else:
+            if torch.any(preds <= 0) or torch.any(targets <= 0):
+                raise ValueError(f"For power={power}, both 'preds' and 'targets' have to be strictly positive.")
+
+        term_1 = torch.pow(torch.max(targets, zero_tensor), 2 - power) / ((1 - power) * (2 - power))
         term_2 = targets * torch.pow(preds, 1 - power) / (1 - power)
         term_3 = torch.pow(preds, 2 - power) / (2 - power)
         deviance_score = 2 * (term_1 - term_2 + term_3)
 
-    return torch.mean(deviance_score)
+    sum_deviance_score = torch.sum(deviance_score)
+    num_observations = torch.tensor(torch.numel(deviance_score))
+
+    return sum_deviance_score, num_observations
 
 
-def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: int = 0) -> Tensor:
+def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations: Tensor) -> Tensor:
+    """Computes Deviance Score.
+
+    Args:
+        sum_deviance_score: Sum of deviance scores accumalated until now.
+        num_observations: Number of observations encountered until now.
+
+    Example:
+        >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
+        >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
+        >>> sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=0)
+        >>> _tweedie_deviance_score_compute(sum_deviance_score, num_observations)
+        tensor(5.)
+    """
+
+    return sum_deviance_score / num_observations
+
+
+def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tensor:
     r"""
     Computes the `Deviance Score <https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance>`_ between
     targets and predictions:
@@ -101,9 +127,13 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: int = 0) -> Te
         preds: Predicted tensor with shape ``(N,d)``
         targets: Ground truth tensor with shape ``(N,d)``
         power:
-            - power = 0 : Normal distribution. (Requires: y_true and y_pred can be any real numbers.)
-            - power = 1 : Poisson distribution. (Requires: y_true >= 0 and y_pred > 0.)
-            - power = 2 : Gamma distribution. (Requires: y_true > 0 and y_pred > 0.)
+            - power < 0 : Extreme stable distribution. (Requires: preds > 0.)
+            - power = 0 : Normal distribution. (Requires: targets and preds can be any real numbers.)
+            - power = 1 : Poisson distribution. (Requires: targets >= 0 and y_pred > 0.)
+            - 1 < p < 2 : Compound Poisson distribution. (Requires: targets >= 0 and preds > 0.)
+            - power = 2 : Gamma distribution. (Requires: targets > 0 and preds > 0.)
+            - power = 3 : Inverse Gaussian distribution. (Requires: targets > 0 and preds > 0.)
+            - otherwise : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
 
     Example:
         >>> from torchmetrics.functional.regression import tweedie_deviance_score
@@ -113,5 +143,5 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: int = 0) -> Te
         tensor(5.)
 
     """
-    preds, targets = _tweedie_deviance_score_update(preds, targets)
-    return _tweedie_deviance_score_compute(preds, targets, power=power)
+    sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=power)
+    return _tweedie_deviance_score_compute(sum_deviance_score, num_observations)

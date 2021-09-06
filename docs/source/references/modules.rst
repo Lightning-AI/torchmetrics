@@ -364,13 +364,6 @@ CosineSimilarity
     :noindex:
 
 
-TweedieDevianceScore
-~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.TweedieDevianceScore
-    :noindex:
-
-
 ExplainedVariance
 ~~~~~~~~~~~~~~~~~
 
@@ -430,6 +423,13 @@ SymmetricMeanAbsolutePercentageError
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.SymmetricMeanAbsolutePercentageError
+    :noindex:
+
+
+TweedieDevianceScore
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.TweedieDevianceScore
     :noindex:
 
 

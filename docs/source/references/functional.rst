@@ -245,13 +245,6 @@ cosine_similarity [func]
     :noindex:
 
 
-tweedie_deviance_score [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.tweedie_deviance_score
-    :noindex:
-
-
 explained_variance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -313,6 +306,14 @@ symmetric_mean_absolute_percentage_error [func]
 
 .. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
     :noindex:
+
+
+tweedie_deviance_score [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.tweedie_deviance_score
+    :noindex:
+
 
 ********
 Pairwise

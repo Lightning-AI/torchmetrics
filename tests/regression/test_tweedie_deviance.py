@@ -45,7 +45,7 @@ def _sk_deviance(preds: Tensor, targets: Tensor, power: int):
     return mean_tweedie_deviance(sk_target, sk_preds, power=power)
 
 
-@pytest.mark.parametrize("power", [0, 1, 2])
+@pytest.mark.parametrize("power", [-0.5, 0, 1, 1.5, 2, 3])
 @pytest.mark.parametrize(
     "preds, targets, sk_metric",
     [
@@ -84,14 +84,17 @@ def test_error_on_different_shape(metric_class=TweedieDevianceScore):
 
 
 def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
+    with pytest.raises(ValueError, match="Deviance Score is not defined for power=0.5."):
+        metric_class(power=0.5)
+
     metric = metric_class(power=1)
     with pytest.raises(
-        ValueError, match="For power=1, 'preds' has to be strictly positive and targets cannot be negative."
+        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative."
     ):
         metric(torch.tensor([-1.0, 2.0, 3.0]), torch.rand(3))
 
     with pytest.raises(
-        ValueError, match="For power=1, 'preds' has to be strictly positive and targets cannot be negative."
+        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative."
     ):
         metric(torch.rand(3), torch.tensor([-1.0, 2.0, 3.0]))
 
