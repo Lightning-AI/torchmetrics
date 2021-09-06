@@ -38,8 +38,13 @@ _single_target_inputs2 = Input(
     targets=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
+_multi_target_inputs = Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 5),
+    targets=torch.rand(NUM_BATCHES, BATCH_SIZE, 5),
+)
 
-def _sk_deviance(preds: Tensor, targets: Tensor, power: int):
+
+def _sk_deviance(preds: Tensor, targets: Tensor, power: float):
     sk_preds = preds.view(-1).numpy()
     sk_target = targets.view(-1).numpy()
     return mean_tweedie_deviance(sk_target, sk_preds, power=power)
@@ -47,33 +52,62 @@ def _sk_deviance(preds: Tensor, targets: Tensor, power: int):
 
 @pytest.mark.parametrize("power", [-0.5, 0, 1, 1.5, 2, 3])
 @pytest.mark.parametrize(
-    "preds, targets, sk_metric",
+    "preds, targets",
     [
-        (_single_target_inputs1.preds, _single_target_inputs1.targets, _sk_deviance),
-        (_single_target_inputs2.preds, _single_target_inputs2.targets, _sk_deviance),
+        (_single_target_inputs1.preds, _single_target_inputs1.targets),
+        (_single_target_inputs2.preds, _single_target_inputs2.targets),
+        (_multi_target_inputs.preds, _multi_target_inputs.targets),
     ],
 )
 class TestDevianceScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_deviance_scores_class(self, ddp, dist_sync_on_step, preds, targets, power, sk_metric):
+    def test_deviance_scores_class(self, ddp, dist_sync_on_step, preds, targets, power):
         self.run_class_metric_test(
             ddp,
             preds,
             targets,
             TweedieDevianceScore,
-            partial(sk_metric, power=power),
+            partial(_sk_deviance, power=power),
             dist_sync_on_step,
             metric_args=dict(power=power),
         )
 
-    def test_deviance_scores_functional(self, preds, targets, power, sk_metric):
+    def test_deviance_scores_functional(self, preds, targets, power):
         self.run_functional_metric_test(
             preds,
             targets,
             tweedie_deviance_score,
-            partial(sk_metric, power=power),
+            partial(_sk_deviance, power=power),
             metric_args=dict(power=power),
+        )
+
+    def test_pearson_corrcoef_differentiability(self, preds, targets, power):
+        self.run_differentiability_test(
+            preds, targets, metric_module=TweedieDevianceScore, metric_functional=tweedie_deviance_score
+        )
+
+    # Tweedie Deviance Score half + cpu does not work due to missing support in torch.log
+    @pytest.mark.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision")
+    def test_pearson_corrcoef_half_cpu(self, preds, targets, power):
+        metric_args = {"power": power}
+        self.run_precision_test_cpu(
+            preds,
+            targets,
+            metric_module=TweedieDevianceScore,
+            metric_functional=tweedie_deviance_score,
+            metric_args=metric_args,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    def test_pearson_corrcoef_half_gpu(self, preds, targets, power):
+        metric_args = {"power": power}
+        self.run_precision_test_gpu(
+            preds,
+            targets,
+            metric_module=TweedieDevianceScore,
+            metric_functional=tweedie_deviance_score,
+            metric_args=metric_args,
         )
 
 

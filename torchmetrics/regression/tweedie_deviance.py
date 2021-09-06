@@ -42,8 +42,8 @@ class TweedieDevianceScore(Metric):
 
     Forward accepts
 
-    - ``preds`` (float tensor): ``(N,)``
-    - ``targets`` (float tensor): ``(N,)``
+    - ``preds`` (float tensor): ``(N,...)``
+    - ``targets`` (float tensor): ``(N,...)``
 
     Args:
         power:
@@ -70,9 +70,9 @@ class TweedieDevianceScore(Metric):
         >>> from torchmetrics import TweedieDevianceScore
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> deviance_score = TweedieDevianceScore(power=0)
+        >>> deviance_score = TweedieDevianceScore(power=2)
         >>> deviance_score(preds, targets)
-        tensor(5.)
+        tensor(1.2083)
 
     """
     sum_deviance_score: Tensor

@@ -38,8 +38,8 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
     Example:
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> _tweedie_deviance_score_update(preds, targets, power=0)
-        (tensor(20.), tensor(4))
+        >>> _tweedie_deviance_score_update(preds, targets, power=2)
+        (tensor(4.8333), tensor(4))
     """
     _check_same_shape(preds, targets)
 
@@ -83,7 +83,7 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
         deviance_score = 2 * (term_1 - term_2 + term_3)
 
     sum_deviance_score = torch.sum(deviance_score)
-    num_observations = torch.tensor(torch.numel(deviance_score))
+    num_observations = torch.tensor(torch.numel(deviance_score), device=preds.device)
 
     return sum_deviance_score, num_observations
 
@@ -98,9 +98,9 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
     Example:
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=0)
+        >>> sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=2)
         >>> _tweedie_deviance_score_compute(sum_deviance_score, num_observations)
-        tensor(5.)
+        tensor(1.2083)
     """
 
     return sum_deviance_score / num_observations
@@ -124,8 +124,8 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -
     where :math:`y` is a tensor of targets values, and :math:`\hat{y}` is a tensor of predictions.
 
     Args:
-        preds: Predicted tensor with shape ``(N,d)``
-        targets: Ground truth tensor with shape ``(N,d)``
+        preds: Predicted tensor with shape ``(N,...)``
+        targets: Ground truth tensor with shape ``(N,...)``
         power:
             - power < 0 : Extreme stable distribution. (Requires: preds > 0.)
             - power = 0 : Normal distribution. (Requires: targets and preds can be any real numbers.)
@@ -136,11 +136,11 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -
             - otherwise : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
 
     Example:
-        >>> from torchmetrics.functional.regression import tweedie_deviance_score
+        >>> from torchmetrics.functional import tweedie_deviance_score
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
-        >>> tweedie_deviance_score(preds, targets, power=0)
-        tensor(5.)
+        >>> tweedie_deviance_score(preds, targets, power=2)
+        tensor(1.2083)
 
     """
     sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=power)
