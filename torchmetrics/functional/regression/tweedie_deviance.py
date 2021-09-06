@@ -26,14 +26,7 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
     Args:
         preds: Predicted tensor
         targets: Ground truth tensor
-        power:
-            - power < 0 : Extreme stable distribution. (Requires: preds > 0.)
-            - power = 0 : Normal distribution. (Requires: targets and preds can be any real numbers.)
-            - power = 1 : Poisson distribution. (Requires: targets >= 0 and y_pred > 0.)
-            - 1 < p < 2 : Compound Poisson distribution. (Requires: targets >= 0 and preds > 0.)
-            - power = 2 : Gamma distribution. (Requires: targets > 0 and preds > 0.)
-            - power = 3 : Inverse Gaussian distribution. (Requires: targets > 0 and preds > 0.)
-            - otherwise : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
+        power: see :func:`tweedie_deviance_score`
 
     Example:
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
@@ -108,8 +101,7 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
 
 def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tensor:
     r"""
-    Computes the `Deviance Score <https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance>`_ between
-    targets and predictions:
+    Computes the `Tweedie Deviance Score`_ between targets and predictions:
 
     .. math::
         deviance\_score(\hat{y},y) =
