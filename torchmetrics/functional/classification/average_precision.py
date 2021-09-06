@@ -48,7 +48,8 @@ def _average_precision_update(
             preds = preds.flatten()
             target = target.flatten()
             num_classes = 1
-        raise ValueError("Cannot use `micro` average with multi-class input")
+        else:
+            raise ValueError("Cannot use `micro` average with multi-class input")
 
     return preds, target, num_classes, pos_label
 
