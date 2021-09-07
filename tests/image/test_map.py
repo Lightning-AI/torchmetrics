@@ -14,7 +14,7 @@
 
 from collections import namedtuple
 
-import pytest as pytest
+import pytest
 import torch
 
 from tests.helpers.testers import NUM_BATCHES, MetricTester
@@ -141,6 +141,7 @@ class TestMAP(MetricTester):
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
 
+    @staticmethod
     @pytest.mark.parametrize("num_batches", [1, NUM_BATCHES])
     def test_map(self, num_batches):
         """Test modular implementation for correctness.
