@@ -45,7 +45,7 @@ class MAPMetricResults:
 class _hide_prints:
     """Internal helper context to suppress the default output of the pycocotools package."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._original_stdout = None
 
     def __enter__(self) -> None:
