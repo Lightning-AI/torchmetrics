@@ -55,6 +55,8 @@ class _hide_prints:
 
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
+    """Ensure the correct input format of `preds` and `targets` """
+
     if not isinstance(preds, list):
         raise ValueError("Expected argument `preds` to be of type List")
     if not isinstance(targets, list):
@@ -121,11 +123,11 @@ class MAP(Metric):
     """
 
     def __init__(
-        self,
-        num_classes: int = 0,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+            self,
+            num_classes: int = 0,
+            compute_on_step: bool = True,
+            dist_sync_on_step: bool = False,
+            process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -149,7 +151,7 @@ class MAP(Metric):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
-    def update(self, preds: Any, target: Any) -> None:
+    def update(self, preds: Any, target: Any) -> None:  # type: ignore
         """Updates mAP and mAR values with metric values from given predictions and groundtruth.
 
         Args:
@@ -206,6 +208,21 @@ class MAP(Metric):
             self.groundtruth_classes.append(item["groundtruth_classes"])
 
     def compute(self) -> MAPMetricResults:
+        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
+        All detections added in the `update()` method are included.
+
+        .. note::
+            Scores are calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
+
+        Returns:
+            Dict with multiple scores in the following format:
+            ``{
+                map_value: Tensor
+                mar_value: Tensor
+                map_per_class_value: List[Tensor]
+                mar_per_class_value: List[Tensor]
+            }``
+        """
         coco_target, coco_preds = COCO(), COCO()
         coco_target.dataset = self._get_coco_format()
         coco_preds.dataset = self._get_coco_format(is_pred=True)
@@ -219,21 +236,21 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        self.average_precision: torch.Tensor = torch.cat(
+        self.average_precision = torch.cat(
             (
                 self.average_precision,
                 torch.tensor(
                     [stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=self.average_precision.device
                 ),
             )
-        )
+        )  # type: ignore
 
-        self.average_recall: torch.Tensor = torch.cat(
+        self.average_recall = torch.cat(
             (
                 self.average_recall,
                 torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
             )
-        )
+        )  # type: ignore
 
         # if class mode is enabled, evaluate metrics per class
         for class_id in range(self.num_classes):
@@ -273,6 +290,10 @@ class MAP(Metric):
         return metrics
 
     def _get_coco_format(self, is_pred: bool = False) -> Dict:
+        """Transforms and returns all cached targets or predictions in COCO format.
+        Format is defined at https://cocodataset.org/#format-data
+        """
+
         images = []
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
