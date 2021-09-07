@@ -143,7 +143,7 @@ class TestMAP(MetricTester):
 
     @staticmethod
     @pytest.mark.parametrize("num_batches", [1, NUM_BATCHES])
-    def test_map(self, num_batches):
+    def test_map(num_batches):
         """Test modular implementation for correctness.
 
         Skipping the MetricTester method as it currently does not work for object detection inputs

@@ -215,13 +215,12 @@ class MAP(Metric):
             Scores are calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
 
         Returns:
-            Dict with multiple scores in the following format:
-            ``{
-                map_value: Tensor
-                mar_value: Tensor
-                map_per_class_value: List[Tensor]
-                mar_per_class_value: List[Tensor]
-            }``
+            dict containing
+
+            - map_value: ``torch.Tensor``
+            - mar_value: ``torch.Tensor``
+            - map_per_class_value: ``List[torch.Tensor]``
+            - mar_per_class_value: ``List[torch.Tensor]``
         """
         coco_target, coco_preds = COCO(), COCO()
         coco_target.dataset = self._get_coco_format()
@@ -236,21 +235,21 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        self.average_precision = torch.cat(
+        self.average_precision = torch.cat(  # type: ignore
             (
                 self.average_precision,
                 torch.tensor(
                     [stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=self.average_precision.device
                 ),
             )
-        )  # type: ignore
+        )
 
-        self.average_recall = torch.cat(
+        self.average_recall = torch.cat(  # type: ignore
             (
                 self.average_recall,
                 torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
             )
-        )  # type: ignore
+        )
 
         # if class mode is enabled, evaluate metrics per class
         for class_id in range(self.num_classes):
