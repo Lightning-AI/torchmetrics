@@ -237,17 +237,17 @@ class MAP(Metric):
 
         self.average_precision = torch.cat(  # type: ignore
             (
-                self.average_precision,
+                self.average_precision,  # type: ignore
                 torch.tensor(
-                    [stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=self.average_precision.device
+                    [stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=self.average_precision.device  # type: ignore
                 ),
             )
         )
 
         self.average_recall = torch.cat(  # type: ignore
             (
-                self.average_recall,
-                torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
+                self.average_recall,  # type: ignore
+                torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),  # type: ignore
             )
         )
 
