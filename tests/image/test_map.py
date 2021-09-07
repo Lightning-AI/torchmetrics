@@ -12,78 +12,160 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
+from collections import namedtuple
 
+import pytest as pytest
 import torch
 
-from torchmetrics.image.map import MAP
+from tests.helpers.testers import MetricTester, NUM_BATCHES
+from torchmetrics.image.map import MAP, MAPMetricResults
+from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
 
+Input = namedtuple("Input", ["preds", "target", "num_classes"])
 
-def generate_predictions_targets(batch_size):
-    box1 = [0.0, 0.0, 1.0, 1.0]  # TP_class0
-    box2 = [1.0, 1.0, 2.0, 2.0]  # TP_class0
-    box3 = [2.0, 2.0, 3.0, 3.0]  # false class (FN for class_0, FP for class_1?)
-    box4 = [3.0, 3.0, 4.0, 4.0]  # FN (missing box for class_0)
-    box5 = [4.0, 4.0, 5.0, 5.0]  # FP (detection - but no GT for class_0)
-    box6 = [5.0, 5.0, 6.0, 6.0]  # TP_class_2 --> to check if we get precision one for class_2
-    scores = [0.8, 0.9, 0.7, 0.6, 1.0]
-
-    targets = [
+_inputs = Input(
+    preds=[
         {
-            "groundtruth_boxes": torch.tensor([box1, box2, box3, box4, box6]),
-            "groundtruth_classes": torch.tensor([0, 0, 1, 0, 2]),
-        }
-    ] * batch_size
-    predictions = [
+            'detection_boxes': torch.Tensor([
+                [258.15, 41.29, 348.26, 243.78]
+            ]),
+            'detection_scores': torch.Tensor([0.236]),
+            'detection_classes': torch.IntTensor([4])
+        },  # coco image id 42
         {
-            "detection_boxes": torch.tensor([box1, box2, box3, box5, box6]),
-            "detection_classes": torch.tensor([0, 0, 0, 0, 2]),
-            "detection_scores": torch.tensor(scores),
-        }
-    ] * batch_size
-    # How to calculate expected_values:
-    # sorted by score both classes:
-    # box 2 TP
-    # box 1 TP
-    # box 3 FN
-    # box 5 FN
+            'detection_boxes': torch.Tensor([
+                [61, 22.75, 504, 609.67],
+                [12.66, 3.32, 268.6, 271.91]
+            ]),
+            'detection_scores': torch.Tensor([0.318, 0.726]),
+            'detection_classes': torch.IntTensor([3, 2])
+        },  # coco image id 73
+        {
+            'detection_boxes': torch.Tensor([
+                [87.87, 276.25, 296.42, 103.18],
+                [0, 3.66, 142.15, 312.4],
+                [296.55, 93.96, 18.42, 58.83],
+                [328.94, 97.05, 13.55, 25.93],
+                [356.62, 95.47, 15.71, 52.08],
+                [464.08, 105.09, 31.66, 41.9],
+                [276.11, 103.84, 15.33, 46.88],
+            ]),
+            'detection_scores': torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
+            'detection_classes': torch.IntTensor([4, 1, 0, 0, 0, 0, 0])
+        },  # coco image id 74
+    ],
+    target=[
+        {
+            'groundtruth_boxes': torch.Tensor([
+                [214.15, 41.29, 348.26, 243.78]
+            ]),
+            'groundtruth_classes': torch.IntTensor([4])
+        },  # coco image id 42
+        {
+            'groundtruth_boxes': torch.Tensor([
+                [13.0, 22.75, 535.98, 609.67],
+                [1.66, 3.32, 268.6, 271.91],
+            ]),
+            'groundtruth_classes': torch.IntTensor([2, 2])
+        },  # coco image id 73
+        {
+            'groundtruth_boxes': torch.Tensor([
+                [61.87, 276.25, 296.42, 103.18],
+                [2.75, 3.66, 159.4, 312.4],
+                [295.55, 93.96, 18.42, 58.83],
+                [326.94, 97.05, 13.55, 25.93],
+                [356.62, 95.47, 15.71, 52.08],
+                [462.08, 105.09, 31.66, 41.9],
+                [277.11, 103.84, 15.33, 46.88]
+            ]),
+            'groundtruth_classes': torch.IntTensor([4, 1, 0, 0, 0, 0, 0])
+        },  # coco image id 74
+    ],
+    num_classes=5
+)
 
-    # sorted by score class_0:
-    # box 2 TP
-    # box 1 TP
-    # box 5 FN
 
-    # sorted by score class_1:
-    # box 3  missing
+def _compare_fn() -> MAPMetricResults:
+    """Comparison function for map implementation.
 
-    # sorted by score class_2:
-    # box 6 ok --> 1 gt/1 prediction --> 100%
+    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
+        All classes
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.658
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.670
 
-    return predictions, targets
+        Class 0
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.725
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.780
+
+        Class 1
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.800
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.800
+
+        Class 2
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.454
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.450
+
+        Class 3
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
+
+        Class 4
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
+    """
+    return MAPMetricResults(
+        map_value=torch.Tensor([0.658]),
+        mar_value=torch.Tensor([0.670]),
+        map_per_class_value=[torch.Tensor([0.725]), torch.Tensor([0.800]), torch.Tensor([0.454]),
+                             torch.Tensor([-1.000]), torch.Tensor([0.650])],
+        mar_per_class_value=[torch.Tensor([0.780]), torch.Tensor([0.800]), torch.Tensor([0.450]),
+                             torch.Tensor([-1.000]), torch.Tensor([0.650])])
 
 
-class TestMapMetric(unittest.TestCase):
-    def test_mAP_average(self):
-        numerical_correction = 201 / 202  # (1-100/101)/2 --> 101 coming from interpolation)
-        expected_value = 1 / 3 * 1 + 1 / 3 * 0 + 1 / 3 * 2 / 3 * numerical_correction
+@pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
+class TestMAP(MetricTester):
 
-        expected_value_class0 = (2 / 3) * numerical_correction
-        expected_value_class1 = 0 / 1
-        expected_value_class2 = 1 / 1
+    @pytest.mark.parametrize("num_batches", [1, NUM_BATCHES])
+    def test_map(self, num_batches):
+        """Test modular implementation for correctness.
+        Skipping the MetricTester method as it currently does not work for object detection inputs"""
 
-        for batch_size in [2, 10]:
-            predictions, targets = generate_predictions_targets(batch_size=batch_size)
+        map_metric = MAP(num_classes=_inputs.num_classes)
 
-            mAP = MAP(num_classes=3)
-            mAP.update(predictions, targets)
-            mAP.update(predictions, targets)
-            mAP.update(predictions, targets)  # dist_reduce_fx='mean' -> should stay the same value
-            metrics = mAP.compute()
-            map_value = metrics.map_value
-            map_values_class = metrics.map_per_class_value
+        for _ in range(num_batches):
+            map_metric.update(preds=_inputs.preds, target=_inputs.target)
+        pl_result = map_metric.compute()
 
-            # test if reduction in the Metric is set to mean
-            self.assertAlmostEqual(map_value.item(), expected_value, delta=1e-05)
-            self.assertAlmostEqual(map_values_class[0].item(), expected_value_class0, delta=1e-05)
-            self.assertAlmostEqual(map_values_class[1].item(), expected_value_class1, delta=1e-05)
-            self.assertAlmostEqual(map_values_class[2].item(), expected_value_class2, delta=1e-05)
+        pycoco_result = _compare_fn()
+        assert pl_result.map_value.item() == pytest.approx(pycoco_result.map_value, 0.01)
+        assert pl_result.mar_value.item() == pytest.approx(pycoco_result.mar_value, 0.01)
+        for i in range(_inputs.num_classes):
+            assert pl_result.map_per_class_value[i].item() == pytest.approx(pycoco_result.map_per_class_value[i], 0.01)
+            assert pl_result.mar_per_class_value[i].item() == pytest.approx(pycoco_result.mar_per_class_value[i], 0.01)
+
+    # TODO adjust testers.py to enable testing with object detection inputs
+    # @pytest.mark.parametrize("ddp", [True, False])
+    # @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    # def test_map(self, ddp, dist_sync_on_step):
+    #     """Test modular implementation for correctness."""
+
+    #     self.run_class_metric_test(
+    #         ddp=ddp,
+    #         preds=_inputs.preds,
+    #         target=_inputs.target,
+    #         metric_class=MAP,
+    #         sk_metric=_compare_fn,
+    #         dist_sync_on_step=dist_sync_on_step,
+    #         metric_args={"num_classes": 3},
+    #     )
+
+
+# noinspection PyTypeChecker
+@pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
+def test_error_on_wrong_init():
+    """Test class raises the expected errors."""
+    with pytest.raises(ValueError, match="Expected argument `num_classes` to be a integer larger or equal to 0"):
+        MAP(num_classes=-1)
+
+    with pytest.raises(ValueError, match="Expected argument `num_classes` to be a integer larger or equal to 0"):
+        MAP(num_classes=None)

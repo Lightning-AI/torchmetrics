@@ -133,11 +133,9 @@ class MAP(Metric):
             process_group=process_group,
         )
 
-        super().__init__(dist_sync_on_step=dist_sync_on_step)
-
         self.add_state("average_precision", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
         self.add_state("average_recall", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
-        if not isinstance(num_classes, int) and num_classes < 0:
+        if not (isinstance(num_classes, int) and num_classes > 0):
             raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
         self.num_classes = num_classes
 
