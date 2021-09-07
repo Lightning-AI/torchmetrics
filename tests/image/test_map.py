@@ -183,8 +183,76 @@ class TestMAP(MetricTester):
 @pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
+
+    MAP()  # no error
+
     with pytest.raises(ValueError, match="Expected argument `num_classes` to be a integer larger or equal to 0"):
         MAP(num_classes=-1)
 
     with pytest.raises(ValueError, match="Expected argument `num_classes` to be a integer larger or equal to 0"):
         MAP(num_classes=None)
+
+
+@pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
+def test_error_on_wrong_input():
+    """Test class input validation."""
+
+    metric = MAP()
+
+    metric.update([], [])  # no error
+
+    with pytest.raises(ValueError, match="Expected argument `preds` to be of type List"):
+        metric.update(torch.Tensor(), [])
+
+    with pytest.raises(ValueError, match="Expected argument `target` to be of type List"):
+        metric.update([], torch.Tensor())
+
+    with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
+        metric.update([{}], [{}, {}])
+
+    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `detection_boxes` key"):
+        metric.update([{"detection_scores": torch.Tensor(), "detection_classes": torch.IntTensor}],
+                      [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `detection_scores` key"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_classes": torch.IntTensor}],
+                      [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `detection_classes` key"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_scores": torch.IntTensor}],
+                      [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `groundtruth_boxes` key"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_scores": torch.IntTensor,
+                        "detection_classes": torch.IntTensor}],
+                      [{"groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `groundtruth_classes` key"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_scores": torch.IntTensor,
+                        "detection_classes": torch.IntTensor}],
+                      [{"groundtruth_boxes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all detection_boxes in `preds` to be of type torch.Tensor"):
+        metric.update([{"detection_boxes": [], "detection_scores": torch.Tensor(),
+                        "detection_classes": torch.IntTensor()}],
+                      [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all detection_scores in `preds` to be of type torch.Tensor"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_scores": [],
+                        "detection_classes": torch.IntTensor()}],
+                      [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all detection_classes in `preds` to be of type torch.Tensor"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_scores": torch.Tensor(),
+                        "detection_classes": []}],
+                      [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all groundtruth_boxes in `target` to be of type torch.Tensor"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_scores": torch.Tensor(),
+                        "detection_classes": torch.IntTensor()}],
+                      [{"groundtruth_boxes": [], "groundtruth_classes": torch.IntTensor()}])
+
+    with pytest.raises(ValueError, match="Expected all groundtruth_classes in `target` to be of type torch.Tensor"):
+        metric.update([{"detection_boxes": torch.Tensor(), "detection_scores": torch.Tensor(),
+                        "detection_classes": torch.IntTensor()}],
+                      [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": []}])
