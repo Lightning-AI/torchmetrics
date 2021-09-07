@@ -123,11 +123,11 @@ class MAP(Metric):
     """
 
     def __init__(
-            self,
-            num_classes: int = 0,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
+        self,
+        num_classes: int = 0,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -240,7 +240,7 @@ class MAP(Metric):
                 self.average_precision,
                 torch.tensor(
                     [stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=self.average_precision.device
-                )
+                ),
             )
         )
         setattr(self, "average_precision", new_average_precision)
@@ -248,7 +248,7 @@ class MAP(Metric):
         new_average_recall = torch.cat(
             (
                 self.average_recall,
-                torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device)
+                torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
             )
         )
         setattr(self, "average_recall", new_average_recall)
