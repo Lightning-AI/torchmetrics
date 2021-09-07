@@ -23,3 +23,4 @@ from torchmetrics.regression.spearman import SpearmanCorrcoef  # noqa: F401
 from torchmetrics.regression.symmetric_mean_absolute_percentage_error import (  # noqa: F401
     SymmetricMeanAbsolutePercentageError,
 )
+from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore  # noqa: F401

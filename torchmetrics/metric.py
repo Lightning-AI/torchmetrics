@@ -22,7 +22,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
@@ -42,7 +42,7 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(nn.Module, ABC):
+class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
@@ -72,7 +72,7 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ["device", "dtype"]
+    __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
 
     def __init__(
@@ -88,6 +88,7 @@ class Metric(nn.Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
+        self._device = torch.device("cpu")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.process_group = process_group
@@ -491,6 +492,88 @@ class Metric(nn.Module, ABC):
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
+
+    @property
+    def device(self) -> "torch.device":
+        """Return the device of the metric."""
+        return self._device
+
+    def to(self, *args: Any, **kwargs: Any) -> "Metric":
+        """Moves the parameters and buffers.
+
+        Normal dtype casting is not supported by this method instead use the `set_dtype` method instead.
+        """
+        out = torch._C._nn._parse_to(*args, **kwargs)
+        if len(out) == 4:  # pytorch 1.5 and higher
+            device, dtype, non_blocking, convert_to_format = out
+        else:  # pytorch 1.4 and lower
+            device, dtype, non_blocking = out
+            convert_to_format = None
+        dtype = None  # prevent dtype being casted
+
+        def convert(t: Tensor) -> Tensor:
+            if convert_to_format is not None and t.dim() in (4, 5):
+                return t.to(
+                    device,
+                    dtype if t.is_floating_point() or t.is_complex() else None,
+                    non_blocking,
+                    memory_format=convert_to_format,
+                )
+            return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
+
+        self._device = device
+        return self._apply(convert)
+
+    def cuda(self, device: Optional[Union[torch.device, int]] = None) -> "Metric":
+        """Moves all model parameters and buffers to the GPU.
+
+        Arguments:
+            device: if specified, all parameters will be copied to that device
+        """
+        if device is None or isinstance(device, int):
+            device = torch.device("cuda", index=device)
+        self._device = device
+        return super().cuda(device=device)
+
+    def cpu(self) -> "Metric":
+        """Moves all model parameters and buffers to the CPU."""
+        self._device = torch.device("cpu")
+        return super().cpu()
+
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def float(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def double(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def half(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+        """Special version of `type` for transferring all metric states to specific dtype
+        Arguments:
+            dst_type (type or string): the desired type
+        """
+        return super().type(dst_type)
 
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,

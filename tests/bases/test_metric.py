@@ -257,17 +257,19 @@ def test_child_metric_state_dict():
 def test_device_and_dtype_transfer(tmpdir):
     metric = DummyMetricSum()
     assert metric.x.is_cuda is False
+    assert metric.device == torch.device("cpu")
     assert metric.x.dtype == torch.float32
 
     metric = metric.to(device="cuda")
     assert metric.x.is_cuda
+    assert metric.device == torch.device("cuda")
 
-    metric = metric.double()
+    metric.set_dtype(torch.double)
     assert metric.x.dtype == torch.float64
     metric.reset()
     assert metric.x.dtype == torch.float64
 
-    metric = metric.half()
+    metric.set_dtype(torch.half)
     assert metric.x.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16
