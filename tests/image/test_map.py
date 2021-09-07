@@ -134,8 +134,7 @@ def _compare_fn() -> MAPMetricResults:
 
 @pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
 class TestMAP(MetricTester):
-    """
-    Test the MAP metric for object detection predictions.
+    """Test the MAP metric for object detection predictions.
 
     Results are compared to original values from the pycocotools implementation.
     A subset of the first 10 fake predictions of the official repo is used:

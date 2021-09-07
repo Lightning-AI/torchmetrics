@@ -55,7 +55,7 @@ class _hide_prints:
 
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
-    """Ensure the correct input format of `preds` and `targets` """
+    """Ensure the correct input format of `preds` and `targets`"""
 
     if not isinstance(preds, list):
         raise ValueError("Expected argument `preds` to be of type List")
@@ -123,11 +123,11 @@ class MAP(Metric):
     """
 
     def __init__(
-            self,
-            num_classes: int = 0,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
+        self,
+        num_classes: int = 0,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -208,8 +208,8 @@ class MAP(Metric):
             self.groundtruth_classes.append(item["groundtruth_classes"])
 
     def compute(self) -> MAPMetricResults:
-        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
-        All detections added in the `update()` method are included.
+        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
+        the `update()` method are included.
 
         .. note::
             Scores are calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
@@ -291,6 +291,7 @@ class MAP(Metric):
 
     def _get_coco_format(self, is_pred: bool = False) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
+
         Format is defined at https://cocodataset.org/#format-data
         """
 
