@@ -45,6 +45,11 @@ class BaseAggregator(Metric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
     """
 
     value: Tensor
@@ -124,6 +129,19 @@ class MaxMetric(BaseAggregator):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
+    Example:
+        >>> from torchmetrics import MaxMetric
+        >>> metric = MaxMetric()
+        >>> metric.update(1)
+        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.compute()
+        tensor(3.)
+
     """
 
     def __init__(
@@ -178,6 +196,19 @@ class MinMetric(BaseAggregator):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
+    Example:
+        >>> from torchmetrics import MinMetric
+        >>> metric = MinMetric()
+        >>> metric.update(1)
+        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.compute()
+        tensor(1.)
+
     """
 
     def __init__(
@@ -232,6 +263,19 @@ class SumMetric(BaseAggregator):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
+    Example:
+        >>> from torchmetrics import SumMetric
+        >>> metric = SumMetric()
+        >>> metric.update(1)
+        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.compute()
+        tensor([6.])
+
     """
 
     def __init__(
@@ -279,6 +323,19 @@ class CatMetric(BaseAggregator):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
+    Example:
+        >>> from torchmetrics import CatMetric
+        >>> metric = CatMetric()
+        >>> metric.update(1)
+        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.compute()
+        tensor([1., 2., 3.])
+
     """
 
     def __init__(
@@ -329,6 +386,19 @@ class MeanMetric(BaseAggregator):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
+    Example:
+        >>> from torchmetrics import MeanMetric
+        >>> metric = MeanMetric()
+        >>> metric.update(1)
+        >>> metric.update(torch.tensor([2, 3]))
+        >>> metric.compute()
+        tensor([2.])
+
     """
 
     def __init__(
