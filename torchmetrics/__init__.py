@@ -2,7 +2,7 @@ r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *  # noqa: F401, F403
+from torchmetrics.__about__ import *  # noqa: F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -12,8 +12,8 @@ _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
+from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
 from torchmetrics.audio import PIT, SI_SDR, SI_SNR, SNR  # noqa: E402
-from torchmetrics.aggregation import CatMetric, MinMetric, MaxMetric, MeanMetric, SumMetric  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402
     AUC,
     AUROC,

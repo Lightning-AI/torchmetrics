@@ -1,10 +1,11 @@
 from multiprocessing import Value
+
 import numpy as np
 import pytest
 import torch
 
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.aggregation import MinMetric, MaxMetric, MeanMetric, SumMetric, CatMetric
+from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
 
 
 def compare_mean(values, weights):
@@ -65,7 +66,7 @@ class WrappedCatMetric(CatMetric):
         (WrappedSumMetric, compare_sum),
         (WrappedCatMetric, compare_cat),
         (MeanMetric, compare_mean),
-    ]
+    ],
 )
 class TestAggregation(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
@@ -96,46 +97,44 @@ class TestAggregation(MetricTester):
 _case1 = float("nan") * torch.ones(5)
 _case2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
 
+
 @pytest.mark.parametrize("value", [_case1, _case2])
-@pytest.mark.parametrize("nan_strategy", ['error', 'warn'])
+@pytest.mark.parametrize("nan_strategy", ["error", "warn"])
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_nan_error(value, nan_strategy, metric_class):
     metric = metric_class(nan_strategy=nan_strategy)
-    if nan_strategy == 'error':
-        with pytest.raises(RuntimeError, match='Encounted `nan` values in tensor'):
+    if nan_strategy == "error":
+        with pytest.raises(RuntimeError, match="Encounted `nan` values in tensor"):
             metric(value.clone())
-    elif nan_strategy == 'warn':
-        with pytest.warns(UserWarning, match='Encounted `nan` values in tensor'):
+    elif nan_strategy == "warn":
+        with pytest.warns(UserWarning, match="Encounted `nan` values in tensor"):
             metric(value.clone())
 
 
-@pytest.mark.parametrize("metric_class, nan_strategy, value, expected",
+@pytest.mark.parametrize(
+    "metric_class, nan_strategy, value, expected",
     [
-        (MinMetric, 'ignore', _case1, torch.tensor(float("inf"))),
+        (MinMetric, "ignore", _case1, torch.tensor(float("inf"))),
         (MinMetric, 2.0, _case1, 2.0),
-        (MinMetric, 'ignore', _case2, 1.0),
+        (MinMetric, "ignore", _case2, 1.0),
         (MinMetric, 2.0, _case2, 1.0),
-
-        (MaxMetric, 'ignore', _case1, -torch.tensor(float("inf"))),
+        (MaxMetric, "ignore", _case1, -torch.tensor(float("inf"))),
         (MaxMetric, 2.0, _case1, 2.0),
-        (MaxMetric, 'ignore', _case2, 5.0),
+        (MaxMetric, "ignore", _case2, 5.0),
         (MaxMetric, 2.0, _case2, 5.0),
-
-        (SumMetric, 'ignore', _case1, 0.0),
+        (SumMetric, "ignore", _case1, 0.0),
         (SumMetric, 2.0, _case1, 10.0),
-        (SumMetric, 'ignore', _case2, 12.0),
+        (SumMetric, "ignore", _case2, 12.0),
         (SumMetric, 2.0, _case2, 14.0),
-
-        (MeanMetric, 'ignore', _case1, torch.tensor([float("nan")])),
+        (MeanMetric, "ignore", _case1, torch.tensor([float("nan")])),
         (MeanMetric, 2.0, _case1, 2.0),
-        (MeanMetric, 'ignore', _case2, 3.0),
+        (MeanMetric, "ignore", _case2, 3.0),
         (MeanMetric, 2.0, _case2, 2.8),
-
-        (CatMetric, 'ignore', _case1, []),
+        (CatMetric, "ignore", _case1, []),
         (CatMetric, 2.0, _case1, torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0])),
-        (CatMetric, 'ignore', _case2, torch.tensor([1.0, 2.0, 4.0, 5.0])),
+        (CatMetric, "ignore", _case2, torch.tensor([1.0, 2.0, 4.0, 5.0])),
         (CatMetric, 2.0, _case2, torch.tensor([1.0, 2.0, 2.0, 4.0, 5.0])),
-    ]
+    ],
 )
 def test_nan_expected(metric_class, nan_strategy, value, expected):
     metric = metric_class(nan_strategy=nan_strategy)
@@ -146,7 +145,7 @@ def test_nan_expected(metric_class, nan_strategy, value, expected):
 
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_error_on_wrong_nan_strategy(metric_class):
-    with pytest.raises(ValueError, match='Arg `nan_strategy` should either .*'):
+    with pytest.raises(ValueError, match="Arg `nan_strategy` should either .*"):
         metric_class(nan_strategy=[])
 
 

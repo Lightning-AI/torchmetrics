@@ -25,7 +25,7 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum, dim_zero_max, dim_zero_min
+from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_max, dim_zero_mean, dim_zero_min, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version

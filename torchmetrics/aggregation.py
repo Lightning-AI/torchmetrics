@@ -11,16 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Union, List
+import warnings
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
-import warnings
+
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 
+
 class BaseAggregator(Metric):
-    """ Base class for aggregation metrics
+    """Base class for aggregation metrics.
 
     Args:
         fn: string specifying the reduction function
@@ -44,17 +46,18 @@ class BaseAggregator(Metric):
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
     """
+
     value: Tensor
 
     def __init__(
         self,
         fn: str,
         default_value: Union[Tensor, List],
-        nan_strategy: Union[str, float] = 'error',
+        nan_strategy: Union[str, float] = "error",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -62,10 +65,12 @@ class BaseAggregator(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        allowed_nan_strategy = ('error', 'warn', 'ignore')
+        allowed_nan_strategy = ("error", "warn", "ignore")
         if nan_strategy not in allowed_nan_strategy and not isinstance(nan_strategy, float):
-            raise ValueError(f'Arg `nan_strategy` should either be a float or one of {allowed_nan_strategy}'
-                             f' but got {nan_strategy}.')
+            raise ValueError(
+                f"Arg `nan_strategy` should either be a float or one of {allowed_nan_strategy}"
+                f" but got {nan_strategy}."
+            )
 
         self.nan_strategy = nan_strategy
         self.add_state("value", default=default_value, dist_reduce_fx=fn)
@@ -76,12 +81,12 @@ class BaseAggregator(Metric):
 
         nans = torch.isnan(x)
         if any(nans.flatten()):
-            if self.nan_strategy == 'error':
-                raise RuntimeError('Encounted `nan` values in tensor')
-            elif self.nan_strategy == 'warn':
-                warnings.warn('Encounted `nan` values in tensor. Will be removed.', UserWarning)
+            if self.nan_strategy == "error":
+                raise RuntimeError("Encounted `nan` values in tensor")
+            elif self.nan_strategy == "warn":
+                warnings.warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
                 x = x[~nans]
-            elif self.nan_strategy == 'ignore':
+            elif self.nan_strategy == "ignore":
                 x = x[~nans]
             else:
                 x[nans] = self.nan_strategy
@@ -97,7 +102,7 @@ class BaseAggregator(Metric):
 
 
 class MaxMetric(BaseAggregator):
-    """ Aggregate a stream of value into their maximum value
+    """Aggregate a stream of value into their maximum value.
 
     Args:
         nan_strategy:
@@ -119,31 +124,31 @@ class MaxMetric(BaseAggregator):
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
     """
+
     def __init__(
         self,
-        nan_strategy: Union[str, float] = 'warn',
+        nan_strategy: Union[str, float] = "warn",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            'max',
+            "max",
             -torch.tensor(float("inf")),
             nan_strategy,
             compute_on_step,
             dist_sync_on_step,
             process_group,
-            dist_sync_fn
+            dist_sync_fn,
         )
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
-        """ Update state with data.
+        """Update state with data.
 
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
-
         """
         value = self._cast_and_nan_check_input(value)
         if any(value.flatten()):  # make sure tensor not empty
@@ -151,7 +156,7 @@ class MaxMetric(BaseAggregator):
 
 
 class MinMetric(BaseAggregator):
-    """ Aggregate a stream of value into their minimum value
+    """Aggregate a stream of value into their minimum value.
 
     Args:
         nan_strategy:
@@ -173,31 +178,31 @@ class MinMetric(BaseAggregator):
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
     """
+
     def __init__(
         self,
-        nan_strategy: Union[str, float] = 'warn',
+        nan_strategy: Union[str, float] = "warn",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            'min',
+            "min",
             torch.tensor(float("inf")),
             nan_strategy,
             compute_on_step,
             dist_sync_on_step,
             process_group,
-            dist_sync_fn
+            dist_sync_fn,
         )
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
-        """ Update state with data.
+        """Update state with data.
 
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
-
         """
         value = self._cast_and_nan_check_input(value)
         if any(value.flatten()):  # make sure tensor not empty
@@ -205,7 +210,7 @@ class MinMetric(BaseAggregator):
 
 
 class SumMetric(BaseAggregator):
-    """ Aggregate a stream of value into their sum
+    """Aggregate a stream of value into their sum.
 
     Args:
         nan_strategy:
@@ -227,38 +232,32 @@ class SumMetric(BaseAggregator):
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
     """
+
     def __init__(
         self,
-        nan_strategy: Union[str, float] = 'warn',
+        nan_strategy: Union[str, float] = "warn",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            'sum',
-            torch.zeros(1),
-            nan_strategy,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn
+            "sum", torch.zeros(1), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
         )
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
-        """ Update state with data.
+        """Update state with data.
 
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
-
         """
         value = self._cast_and_nan_check_input(value)
         self.value += value.sum()
 
 
 class CatMetric(BaseAggregator):
-    """ Concatenate a stream of values
+    """Concatenate a stream of values.
 
     Args:
         nan_strategy:
@@ -280,23 +279,23 @@ class CatMetric(BaseAggregator):
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
     """
+
     def __init__(
         self,
-        nan_strategy: Union[str, float] = 'warn',
+        nan_strategy: Union[str, float] = "warn",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ):
-        super().__init__('cat', [], nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
+        super().__init__("cat", [], nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
-        """ Update state with data.
+        """Update state with data.
 
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
-
         """
         value = self._cast_and_nan_check_input(value)
         if any(value.flatten()):
@@ -307,7 +306,7 @@ class CatMetric(BaseAggregator):
 
 
 class MeanMetric(BaseAggregator):
-    """ Aggregate a stream of value into their mean value
+    """Aggregate a stream of value into their mean value.
 
     Args:
         nan_strategy:
@@ -329,27 +328,22 @@ class MeanMetric(BaseAggregator):
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
     """
+
     def __init__(
         self,
-        nan_strategy: Union[str, float] = 'warn',
+        nan_strategy: Union[str, float] = "warn",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            'sum',
-            torch.zeros(1),
-            nan_strategy,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn
+            "sum", torch.zeros(1), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
         )
         self.add_state("weight", default=torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:  # type: ignore
-        """ Update state with data.
+        """Update state with data.
 
         Args:
             value: Either a float or tensor containing data. Additional tensor
@@ -358,7 +352,6 @@ class MeanMetric(BaseAggregator):
                 the average. Shape of weight should be able to broadcast with
                 the shape of `value`. Default to `1.0` corresponding to simple
                 harmonic average.
-
         """
         value = self._cast_and_nan_check_input(value)
         weight = self._cast_and_nan_check_input(weight)
