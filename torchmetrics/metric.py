@@ -25,7 +25,7 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
+from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum, dim_zero_max, dim_zero_min
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
@@ -123,8 +123,8 @@ class Metric(Module, ABC):
             default: Default value of the state; can either be a ``torch.Tensor`` or an empty list. The state will be
                 reset to this value when ``self.reset()`` is called.
             dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
-                If value is ``"sum"``, ``"mean"``, or ``"cat"``, we will use ``torch.sum``, ``torch.mean``,
-                and ``torch.cat`` respectively, each with argument ``dim=0``. Note that the ``"cat"`` reduction
+                If value is ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"`` we will use ``torch.sum``, ``torch.mean``,
+                ``torch.cat``, ``torch.min`` and ``torch.max``` respectively, each with argument ``dim=0``. Note that the ``"cat"`` reduction
                 only makes sense if the state is a list, and not a tensor. The user can also pass a custom
                 function in this parameter.
             persistent (Optional): whether the state will be saved as part of the modules ``state_dict``.
@@ -160,6 +160,10 @@ class Metric(Module, ABC):
             dist_reduce_fx = dim_zero_sum
         elif dist_reduce_fx == "mean":
             dist_reduce_fx = dim_zero_mean
+        elif dist_reduce_fx == "max":
+            dist_reduce_fx = dim_zero_max
+        elif dist_reduce_fx == "min":
+            dist_reduce_fx = dim_zero_min
         elif dist_reduce_fx == "cat":
             dist_reduce_fx = dim_zero_cat
         elif dist_reduce_fx is not None and not callable(dist_reduce_fx):

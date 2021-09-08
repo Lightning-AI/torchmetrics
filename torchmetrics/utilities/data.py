@@ -37,6 +37,14 @@ def dim_zero_mean(x: Tensor) -> Tensor:
     return torch.mean(x, dim=0)
 
 
+def dim_zero_max(x: Tensor) -> Tensor:
+    return torch.max(x, dim=0)
+
+
+def dim_zero_min(x: Tensor) -> Tensor:
+    return torch.min(x, dim=0)
+
+
 def _flatten(x: Sequence) -> list:
     return [item for sublist in x for item in sublist]
 
