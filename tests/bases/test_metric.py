@@ -255,25 +255,20 @@ def test_device_and_dtype_transfer(tmpdir):
     assert metric.x.is_cuda is False
     assert metric.device == torch.device("cpu")
     assert metric.x.dtype == torch.float32
-    assert metric.dtype == torch.float32
 
     metric = metric.to(device="cuda")
     assert metric.x.is_cuda
     assert metric.device == torch.device("cuda")
 
-    metric = metric.double()
+    metric.set_dtype(torch.double)
     assert metric.x.dtype == torch.float64
-    assert metric.dtype == torch.float64
     metric.reset()
     assert metric.x.dtype == torch.float64
-    assert metric.dtype == torch.float64
 
-    metric = metric.half()
+    metric.set_dtype(torch.half)
     assert metric.x.dtype == torch.float16
-    assert metric.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16
-    assert metric.dtype == torch.float16
 
 
 def test_warning_on_compute_before_update():
