@@ -40,7 +40,8 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
-from torchmetrics.image import PSNR, SSIM  # noqa: E402
+from torchmetrics.image.psnr import PSNR  # noqa: E402
+from torchmetrics.image.ssim import SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
@@ -63,7 +64,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import WER, BLEUScore  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: E402
 
 __all__ = [
@@ -76,6 +77,7 @@ __all__ = [
     "BinnedAveragePrecision",
     "BinnedPrecisionRecallCurve",
     "BinnedRecallAtFixedPrecision",
+    "BERTScore",
     "BLEUScore",
     "BootStrapper",
     "CalibrationError",
@@ -112,6 +114,7 @@ __all__ = [
     "RetrievalPrecision",
     "RetrievalRecall",
     "ROC",
+    "ROUGEScore",
     "SI_SDR",
     "SI_SNR",
     "SNR",

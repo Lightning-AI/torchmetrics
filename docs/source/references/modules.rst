@@ -15,7 +15,6 @@ such as some of the image and text metrics need to be imported from their respec
 
 ``python
 from torchmetrics.image import FID, KID
-from torchmetrics.text import RougeScore
 ```
 
 Metrics have this clearly stated in their docstring and additionaly dependencies can always
