@@ -37,28 +37,27 @@ class MultioutputWrapper(Metric):
     `R2Score` is that this class supports removing NaN values (parameter `remove_nans`) on a per-output basis. When
     `remove_nans` is passed the wrapper will remove all rows
 
-    Parameters
-    ----------
-    base_metric: Metric,
-        Metric being wrapped.
-    num_outputs: int = 1,
-        Expected dimensionality of the output dimension. This parameter is
-        used to determine the number of distinct metrics we need to track.
-    output_dim: int = -1,
-        Dimension on which output is expected. Note that while this provides some flexibility, the output dimension
-        must be the same for all inputs to update. This applies even for metrics such as `Accuracy` where the labels
-        can have a different number of dimensions than the predictions. This can be worked around if the output dimension
-        can be set to -1 for both, even if -1 corresponds to different dimensions in different inputs.
-    remove_nans: bool = True,
-        Whether to remove the intersection of rows containing NaNs from the values passed through to each underlying
-        metric. Proper operation requires all tensors passed to update to have dimension `(N, ...)` where N represents
-        the length of the batch or dataset being passed in.
-    compute_on_step: bool = True,
-        Whether to recompute the metric value on each update step.
-    dist_sync_on_step: bool = False,
-        Required for distributed training support. See torchmetrics docs for additional details.
-    dist_sync_fn: Callable = None,
-        Required for distributed training support. See torchmetrics docs for additional details.
+    Args:
+        base_metric: Metric,
+            Metric being wrapped.
+        num_outputs: int = 1,
+            Expected dimensionality of the output dimension. This parameter is
+            used to determine the number of distinct metrics we need to track.
+        output_dim: int = -1,
+            Dimension on which output is expected. Note that while this provides some flexibility, the output dimension
+            must be the same for all inputs to update. This applies even for metrics such as `Accuracy` where the labels
+            can have a different number of dimensions than the predictions. This can be worked around if the output dimension
+            can be set to -1 for both, even if -1 corresponds to different dimensions in different inputs.
+        remove_nans: bool = True,
+            Whether to remove the intersection of rows containing NaNs from the values passed through to each underlying
+            metric. Proper operation requires all tensors passed to update to have dimension `(N, ...)` where N represents
+            the length of the batch or dataset being passed in.
+        compute_on_step: bool = True,
+            Whether to recompute the metric value on each update step.
+        dist_sync_on_step: bool = False,
+            Required for distributed training support. See torchmetrics docs for additional details.
+        dist_sync_fn: Callable = None,
+            Required for distributed training support. See torchmetrics docs for additional details.
     """
 
     def __init__(
