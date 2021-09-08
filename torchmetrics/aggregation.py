@@ -99,7 +99,7 @@ class BaseAggregator(Metric):
         return x
 
     def compute(self) -> Tensor:
-        """ Compute the aggregated value """
+        """Compute the aggregated value."""
         return self.value
 
     @property
@@ -360,7 +360,7 @@ class CatMetric(BaseAggregator):
             self.value.append(value)
 
     def compute(self) -> Tensor:
-        """ Compute the aggregated value """
+        """Compute the aggregated value."""
         return dim_zero_cat(self.value) if self.value else self.value
 
 
@@ -441,5 +441,5 @@ class MeanMetric(BaseAggregator):
         self.weight += weight.sum()
 
     def compute(self) -> Tensor:
-        """ Compute the aggregated value """
+        """Compute the aggregated value."""
         return self.value / self.weight
