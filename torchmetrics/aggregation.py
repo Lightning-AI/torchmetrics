@@ -49,7 +49,6 @@ class BaseAggregator(Metric):
     Raises:
         ValueError:
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
-
     """
 
     value: Tensor
@@ -141,7 +140,6 @@ class MaxMetric(BaseAggregator):
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
         tensor(3.)
-
     """
 
     def __init__(
@@ -208,7 +206,6 @@ class MinMetric(BaseAggregator):
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
         tensor(1.)
-
     """
 
     def __init__(
@@ -275,7 +272,6 @@ class SumMetric(BaseAggregator):
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
         tensor([6.])
-
     """
 
     def __init__(
@@ -335,7 +331,6 @@ class CatMetric(BaseAggregator):
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
         tensor([1., 2., 3.])
-
     """
 
     def __init__(
@@ -398,7 +393,6 @@ class MeanMetric(BaseAggregator):
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
         tensor([2.])
-
     """
 
     def __init__(
