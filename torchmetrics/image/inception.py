@@ -91,7 +91,7 @@ class IS(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics import IS
+        >>> from torchmetrics.image import IS
         >>> inception = IS()  # doctest: +SKIP
         >>> # generate some images
         >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP

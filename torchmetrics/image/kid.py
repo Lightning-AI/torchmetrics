@@ -150,7 +150,7 @@ class KID(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics import KID
+        >>> from torchmetrics.image import KID
         >>> kid = KID(subset_size=50)  # doctest: +SKIP
         >>> # generate two slightly overlapping image intensity distributions
         >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP

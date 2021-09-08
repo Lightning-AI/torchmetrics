@@ -192,7 +192,7 @@ class FID(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics import FID
+        >>> from torchmetrics.image import FID
         >>> fid = FID(feature=64)  # doctest: +SKIP
         >>> # generate two slightly overlapping image intensity distributions
         >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP

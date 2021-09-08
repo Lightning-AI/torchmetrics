@@ -79,7 +79,7 @@ class LPIPS(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics import LPIPS
+        >>> from torchmetrics.image import LPIPS
         >>> lpips = LPIPS(net_type='vgg')
         >>> img1 = torch.rand(10, 3, 100, 100)
         >>> img2 = torch.rand(10, 3, 100, 100)
