@@ -85,8 +85,6 @@ class MultioutputWrapper(Metric):
          >>> binned_avg_precision = MultioutputWrapper(BinnedAveragePrecision(3, thresholds=5), 2)
          >>> binned_avg_precision(preds, target)
          [[tensor(-0.), tensor(1.0000), tensor(1.0000)], [tensor(0.3333), tensor(-0.), tensor(0.6667)]]
-
-
     """
 
     def __init__(
