@@ -103,6 +103,7 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MultioutputWrapper",
     "PearsonCorrcoef",
     "PIT",
     "Precision",
