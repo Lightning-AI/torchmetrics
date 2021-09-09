@@ -9,14 +9,12 @@ from torchmetrics.utilities import apply_to_collection
 
 
 def _get_nan_indices(*tensors: torch.Tensor, aligned_dim: int = 0) -> torch.Tensor:
+    """Get indices of rows along `aligned_dim` which have NaN values."""
     if len(tensors) == 0:
         raise ValueError("Must pass at least one tensor as argument")
     sentinel = tensors[0]
     nan_idxs = torch.zeros(len(sentinel), dtype=torch.bool)
     for tensor in tensors:
-        assert (
-            tensor.shape[aligned_dim] == sentinel.shape[aligned_dim]
-        ), f"{tensor.shape} != {sentinel.shape} (dim: {aligned_dim})"
         permuted_tensor = tensor.movedim(aligned_dim, 0).flatten(start_dim=1)
         nan_idxs |= torch.any(permuted_tensor.isnan(), dim=1)
     return nan_idxs
@@ -86,7 +84,7 @@ class MultioutputWrapper(Metric):
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update each underlying metric with the corresponding output."""
-        for i in range(len(self.metrics)):
+        for i, metric in enumerate(self.metrics):
             selected_args = apply_to_collection(
                 args, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i)
             )
@@ -98,7 +96,7 @@ class MultioutputWrapper(Metric):
                 nan_idxs = _get_nan_indices(*args_kwargs)
                 selected_args = [arg[~nan_idxs] for arg in selected_args]
                 selected_kwargs = {k: v[~nan_idxs] for k, v in selected_kwargs.items()}
-            self.metrics[i].update(*selected_args, **selected_kwargs)
+            metric.update(*selected_args, **selected_kwargs)
 
     def compute(self) -> torch.Tensor:
         """Compute metrics."""
@@ -106,7 +104,7 @@ class MultioutputWrapper(Metric):
 
     @property
     def is_differentiable(self) -> bool:
-        False
+        return False
 
     def reset(self):
         """Reset all underlying metrics."""

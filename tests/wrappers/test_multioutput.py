@@ -6,6 +6,8 @@ from torchmetrics.wrappers.multioutput import MultioutputWrapper
 
 
 def test_multioutput_wrapper():
+    """Test that the multioutput wrapper properly slices and computes outputs along the output dimension for both
+    classification and regression metrics."""
     # Multiple outputs, same shapes
     preds1 = torch.tensor([[1, 2], [3, 4], [5, 6]], dtype=torch.float)
     target1 = torch.tensor([[1, 4], [3, 2], [5, 6]], dtype=torch.float)
