@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Callable, Optional
+from typing import Any, Callable, List, Optional
 
 import torch
 from torch import nn
@@ -51,7 +51,10 @@ class MultioutputWrapper(Metric):
             Whether to remove the intersection of rows containing NaNs from the values passed through to each underlying
             metric. Proper operation requires all tensors passed to update to have dimension `(N, ...)` where N
             represents the length of the batch or dataset being passed in.
-        compute_on_step: bool = True,
+        squeeze_outputs: bool = True
+            Whether to
+
+        compute_on_step: bool = True
             Whether to recompute the metric value on each update step.
         dist_sync_on_step: bool = False,
             Required for distributed training support. See torchmetrics docs for additional details.
@@ -59,14 +62,40 @@ class MultioutputWrapper(Metric):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
         dist_sync_fn: Callable = None,
             Required for distributed training support. See torchmetrics docs for additional details.
+
+    Example:
+
+         Mimic R2Score in `multioutput`, `raw_values` mode:
+         >>> import torch
+         >>> from torchmetrics import MultioutputWrapper, R2Score
+         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
+         >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
+         >>> r2score = MultioutputWrapper(R2Score(), 2)
+         >>> r2score(preds, target)
+         [tensor(0.9654), tensor(0.9082)]
+
+        Classification metric where prediction and label tensors have different shapes.
+         >>> from torchmetrics import BinnedAveragePrecision
+         >>> target = torch.tensor([[1, 2], [2, 0], [1, 2]])
+         >>> preds = torch.tensor([
+         ...     [[.1, .8], [.8, .05], [.1, .15]],
+         ...     [[.1, .1], [.2, .3], [.7, .6]],
+         ...     [[.002, .4], [.95, .45], [.048, .15]]
+         ... ])
+         >>> binned_avg_precision = MultioutputWrapper(BinnedAveragePrecision(3, thresholds=5), 2)
+         >>> binned_avg_precision(preds, target)
+         [[tensor(-0.), tensor(1.0000), tensor(1.0000)], [tensor(0.3333), tensor(-0.), tensor(0.6667)]]
+
+
     """
 
     def __init__(
         self,
         base_metric: Metric,
-        num_outputs: int = 1,
+        num_outputs: int,
         output_dim: int = -1,
         remove_nans: bool = True,
+        squeeze_outputs: bool = True,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -86,21 +115,25 @@ class MultioutputWrapper(Metric):
         """Update each underlying metric with the corresponding output."""
         for i, metric in enumerate(self.metrics):
             selected_args = apply_to_collection(
-                args, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i)
+                args, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
             )
             selected_kwargs = apply_to_collection(
-                kwargs, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i)
+                kwargs, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
             )
             if self.remove_nans:
                 args_kwargs = selected_args + tuple(selected_kwargs.values())
                 nan_idxs = _get_nan_indices(*args_kwargs)
                 selected_args = [arg[~nan_idxs] for arg in selected_args]
                 selected_kwargs = {k: v[~nan_idxs] for k, v in selected_kwargs.items()}
+
+            if self.squeeze_outputs:
+                selected_args = [arg.squeeze(self.output_dim) for arg in selected_args]
+                selected_kwargs = {k: v.squeeze(self.output_dim) for k, v in selected_kwargs.items()}
             metric.update(*selected_args, **selected_kwargs)
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> List[torch.Tensor]:
         """Compute metrics."""
-        return torch.stack([m.compute() for m in self.metrics], dim=0)
+        return [m.compute() for m in self.metrics]
 
     @property
     def is_differentiable(self) -> bool:
