@@ -1,3 +1,7 @@
+from functools import partial
+
+import pytest
+from sklearn.metrics import accuracy_score
 import torch
 
 from torchmetrics.classification import Accuracy
@@ -5,25 +9,41 @@ from torchmetrics.regression import R2Score
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
 
 
-def test_multioutput_wrapper():
+def _multioutput_sk_accuracy(preds, target, num_outputs):
+    accs = []
+    for i in range(num_outputs):
+        accs.append(accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]))
+    return accs
+
+
+
+@pytest.mark.parametrize(
+    "metric, compare_metric, pred_generator, target_generator, num_rounds",
+    [
+        (
+            MultioutputWrapper(R2Score(), num_outputs=2),
+            R2Score(num_outputs=2, multioutput="raw_values"),
+            partial(torch.randn, 10, 2),
+            partial(torch.randn, 10, 2),
+            2,
+        ),
+        (
+            MultioutputWrapper(Accuracy(num_classes=3), num_outputs=2),
+            partial(_multioutput_sk_accuracy, num_outputs=2),
+            partial(torch.rand, 10, 3, 2),
+            partial(torch.randint, 3, (10, 2)),
+            2,
+        )
+    ],
+)
+def test_multioutput_wrapper(metric, compare_metric, pred_generator, target_generator, num_rounds):
     """Test that the multioutput wrapper properly slices and computes outputs along the output dimension for both
     classification and regression metrics."""
-    # Multiple outputs, same shapes
-    preds1 = torch.tensor([[1, 2], [3, 4], [5, 6]], dtype=torch.float)
-    target1 = torch.tensor([[1, 4], [3, 2], [5, 6]], dtype=torch.float)
-    preds2 = torch.tensor([[7, 8], [9, 10], [11, 12]], dtype=torch.float)
-    target2 = torch.tensor([[7, 8], [9, 10], [11, 12]], dtype=torch.float)
-
-    r2 = MultioutputWrapper(R2Score(), num_outputs=2)
-    r2.update(preds1, target1)
-    r2.update(preds2, target2)
-
-    # R2 score computed using sklearn's r2_score
-    torch.testing.assert_allclose(r2.compute(), [1, 0.8857])
-
-    # Multiple outputs, different shapes
-    acc = MultioutputWrapper(Accuracy(num_classes=3), num_outputs=2)
-    preds = torch.tensor([[[0.1, 0.3], [0.8, 0.3], [0.1, 0.4]], [[0.8, 0.3], [0.1, 0.4], [0.1, 0.3]]])
-    target = torch.tensor([[1, 2], [1, 1]])
-    acc.update(preds, target)
-    torch.testing.assert_allclose(acc.compute(), [0.5, 1.0])
+    preds, targets = [], []
+    for _ in range(num_rounds):
+        preds.append(pred_generator())
+        targets.append(target_generator())
+        print(preds[-1].shape, targets[-1].shape)
+        metric.update(preds[-1], targets[-1])
+    expected_metric_val = compare_metric(torch.cat(preds), torch.cat(targets))
+    torch.testing.assert_allclose(metric.compute(), expected_metric_val)
