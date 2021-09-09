@@ -42,7 +42,7 @@
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
 .. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/document/7952154
 .. _Computes the Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf
-.. _Gradient Computation of Image:https://en.wikipedia.org/wiki/Image_gradient
+.. _Gradient Computation of Image: https://en.wikipedia.org/wiki/Image_gradient
 .. _R2 Score_Coefficient Determination: https://en.wikipedia.org/wiki/Coefficient_of_determination
 .. _Rank of element tensor: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
 .. _Spearman Correlation Coefficient: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
