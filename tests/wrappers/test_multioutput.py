@@ -1,8 +1,8 @@
 from functools import partial
 
 import pytest
-from sklearn.metrics import accuracy_score
 import torch
+from sklearn.metrics import accuracy_score
 
 from torchmetrics.classification import Accuracy
 from torchmetrics.regression import R2Score
@@ -14,7 +14,6 @@ def _multioutput_sk_accuracy(preds, target, num_outputs):
     for i in range(num_outputs):
         accs.append(accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]))
     return accs
-
 
 
 @pytest.mark.parametrize(
@@ -33,7 +32,7 @@ def _multioutput_sk_accuracy(preds, target, num_outputs):
             partial(torch.rand, 10, 3, 2),
             partial(torch.randint, 3, (10, 2)),
             2,
-        )
+        ),
     ],
 )
 def test_multioutput_wrapper(metric, compare_metric, pred_generator, target_generator, num_rounds):
