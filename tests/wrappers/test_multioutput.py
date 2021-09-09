@@ -1,8 +1,8 @@
 import torch
 
-from torchmetrics.wrappers.multioutput import MultioutputWrapper
 from torchmetrics.classification import Accuracy
 from torchmetrics.regression import R2Score
+from torchmetrics.wrappers.multioutput import MultioutputWrapper
 
 
 def test_multioutput_wrapper():

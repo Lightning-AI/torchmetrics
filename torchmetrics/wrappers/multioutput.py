@@ -3,6 +3,7 @@ from typing import Any, Callable, Optional
 
 import torch
 from torch import nn
+
 from torchmetrics import Metric
 from torchmetrics.utilities import apply_to_collection
 
@@ -22,8 +23,7 @@ def _get_nan_indices(*tensors: torch.Tensor, aligned_dim: int = 0) -> torch.Tens
 
 
 class MultioutputWrapper(Metric):
-    """
-    Wrap a base metric to enable it to support multiple outputs.
+    """Wrap a base metric to enable it to support multiple outputs.
 
     Several torchmetrics metrics, such as :class:`torchmetrics.regression.spearman.SpearmanCorrcoef` lack support for
     multioutput mode. This class wraps such metrics to support computing one metric per output.
