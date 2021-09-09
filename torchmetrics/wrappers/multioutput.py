@@ -139,7 +139,7 @@ class MultioutputWrapper(Metric):
     def is_differentiable(self) -> bool:
         return False
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all underlying metrics."""
         for metric in self.metrics:
             metric.reset()
