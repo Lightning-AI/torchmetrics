@@ -46,7 +46,6 @@
 .. _R2 Score_Coefficient Determination: https://en.wikipedia.org/wiki/Coefficient_of_determination
 .. _Rank of element tensor: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
 .. _Spearman Correlation Coefficient: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
-.. _Mean Reciprocal Rank: https://en.wikipedia.org/wiki/Mean_reciprocal_rank
 .. _BERT_score: https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
@@ -62,6 +61,6 @@
 .. _Improved Techniques for Training GANs: https://arxiv.org/abs/1606.03498
 .. _KID Score: https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
 .. _Demystifying MMD GANs: https://arxiv.org/abs/1801.01401
-.. _Computes`Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
-.. _Turn a Metric into a `Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
+.. _Computes Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
+.. _Turn a Metric into a Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
 .. _Metric Test for Reset: https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
