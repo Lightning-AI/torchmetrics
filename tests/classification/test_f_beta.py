@@ -435,8 +435,8 @@ def test_top_k(
 def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_index):
     preds = _input_miss_class.preds
     target = _input_miss_class.target
-    preds_flat = torch.cat([p for p in preds], dim=0)
-    target_flat = torch.cat([t for t in target], dim=0)
+    preds_flat = torch.cat(list(preds), dim=0)
+    target_flat = torch.cat(list(target), dim=0)
 
     mc = metric_class(num_classes=NUM_CLASSES, average=average, ignore_index=ignore_index)
     for i in range(NUM_BATCHES):
