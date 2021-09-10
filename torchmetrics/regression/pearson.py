@@ -28,10 +28,7 @@ def _final_aggregation(
     corrs_xy: Tensor,
     nbs: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Aggregate the statistics from multiple devices.
-
-    Formula taken from here:
-    https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
+    """Aggregate the statistics from multiple devices\_
     """
     # assert len(means_x) > 1 and len(means_y) > 1 and len(vars_x) > 1 and len(vars_y) > 1 and len(corrs_xy) > 1
     mx1, my1, vx1, vy1, cxy1, n1 = means_x[0], means_y[0], vars_x[0], vars_y[0], corrs_xy[0], nbs[0]
@@ -55,7 +52,7 @@ def _final_aggregation(
 
 class PearsonCorrcoef(Metric):
     r"""
-    Computes `pearson correlation coefficient <https://en.wikipedia.org/wiki/Pearson_correlation_coefficient>`_:
+    Pearson Correlation Coefficient\_:
 
     .. math::
         P_{corr}(x,y) = \frac{cov(x,y)}{\sigma_x \sigma_y}
