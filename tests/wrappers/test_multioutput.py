@@ -54,6 +54,7 @@ class _MultioutputMetric(Metric):
 
     @torch.jit.unused
     def forward(self, *args, **kwargs):
+        """Run forward on the underlying metric."""
         return self.metric(*args, **kwargs)
 
     def reset(self) -> None:
