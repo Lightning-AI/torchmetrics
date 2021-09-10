@@ -35,7 +35,7 @@ def _ce_compute(
         bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
         norm (str, optional): Norm function to use when computing calibration error. Defaults to "l1".
         debias (bool, optional): Apply debiasing to L2 norm computation as in
-            Verified Uncertainty Calibration (https://arxiv.org/abs/1909.10155). Defaults to False.
+            Verified Uncertainty Calibration\_. Defaults to False.
 
     Raises:
         ValueError: If an unsupported norm function is provided.
@@ -111,7 +111,7 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]
 
 def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str = "l1") -> Tensor:
     r"""
-    Computes the top-label calibration error as described in `this paper <https://arxiv.org/pdf/1909.10155.pdf>`_.
+    Computes the Top-label Calibration Error\_.
 
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
