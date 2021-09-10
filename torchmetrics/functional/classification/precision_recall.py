@@ -84,7 +84,7 @@ def precision(
     multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
-    Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Precision\_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
