@@ -144,11 +144,9 @@ class MultioutputWrapper(Metric):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        Call underlying forward methods and aggregate the results if they're non-null.
+        """Call underlying forward methods and aggregate the results if they're non-null.
 
-        We override this method to ensure that state variables get copied over on the
-        underlying metrics.
+        We override this method to ensure that state variables get copied over on the underlying metrics.
         """
         results = []
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
