@@ -42,10 +42,9 @@
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
 .. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/document/7952154
 .. _Computes the Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf
-.. _Gradient Computation of Image:https://en.wikipedia.org/wiki/Image_gradient
+.. _Gradient Computation of Image: https://en.wikipedia.org/wiki/Image_gradient
 .. _R2 Score_Coefficient Determination: https://en.wikipedia.org/wiki/Coefficient_of_determination
 .. _Rank of element tensor: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
-.. _Spearman Correlation Coefficient: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
 .. _Mean Reciprocal Rank: https://en.wikipedia.org/wiki/Mean_reciprocal_rank
 .. _BERT_score: https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
@@ -62,6 +61,13 @@
 .. _Improved Techniques for Training GANs: https://arxiv.org/abs/1606.03498
 .. _KID Score: https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
 .. _Demystifying MMD GANs: https://arxiv.org/abs/1801.01401
-.. _Computes`Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
-.. _Turn a Metric into a `Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
+.. _Computes Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
+.. _Turn a Metric into a Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
 .. _Metric Test for Reset: https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
+.. _Computes Mean Absolute Error: https://en.wikipedia.org/wiki/Mean_absolute_error
+.. _Mean Absolute Percentage Error: https://en.wikipedia.org/wiki/Mean_absolute_percentage_error
+.. _mean squared error: https://en.wikipedia.org/wiki/Mean_squared_error
+.. _Aggregate the statistics from multiple devices: https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
+.. _Pearson Correlation Coefficient: https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+.. _Python ROUGE Implementation: https://pypi.org/project/rouge-score/
+.. _Scikit_Learn-Ranking.py: https: //github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
