@@ -71,3 +71,4 @@
 .. _Pearson Correlation Coefficient: https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 .. _Python ROUGE Implementation: https://pypi.org/project/rouge-score/
 .. _Scikit_Learn-Ranking.py: https: //github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
+.. _Verified Uncertainty Calibration: https://arxiv.org/abs/1909.10155
