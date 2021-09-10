@@ -42,7 +42,7 @@ def _sk_average_precision_score(y_true, probas_pred, num_classes=1, average=None
 
     if average == "macro":
         return np.array(res).mean()
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.bincount(y_true) if y_true.max() > 1 else y_true.sum(axis=0)
         weights = weights / sum(weights)
         return (np.array(res) * weights).sum()
