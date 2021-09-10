@@ -25,7 +25,7 @@ from torchmetrics.metric import Metric
 
 class MeanAbsolutePercentageError(Metric):
     r"""
-    Computes `mean absolute percentage error <https://en.wikipedia.org/wiki/Mean_absolute_percentage_error>`_ (MAPE):
+    Mean Absolute Percentage Error\_:
 
     .. math:: \text{MAPE} = \frac{1}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, y_i)}
 
