@@ -12,7 +12,6 @@ from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics import Metric
 from torchmetrics.classification import Accuracy
 from torchmetrics.regression import R2Score
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
 
 seed_all(42)
