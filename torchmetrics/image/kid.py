@@ -25,7 +25,7 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
 def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
-    """Adapted from https://github.com/toshas/torch- fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py."""
+    """Scikit_Learn Ranking\_."""
     m = k_xx.shape[0]
 
     diag_x = torch.diag(k_xx)
@@ -45,7 +45,7 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
 
 
 def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] = None, coef: float = 1.0) -> Tensor:
-    """Adapted from https://github.com/toshas/torch- fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py."""
+    """Scikit_Learn Ranking\_."""
     if gamma is None:
         gamma = 1.0 / f1.shape[1]
     kernel = (f1 @ f2.T * gamma + coef) ** degree
@@ -55,7 +55,7 @@ def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] 
 def poly_mmd(
     f_real: Tensor, f_fake: Tensor, degree: int = 3, gamma: Optional[float] = None, coef: float = 1.0
 ) -> Tensor:
-    """Adapted from https://github.com/toshas/torch- fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py."""
+    """Scikit_Learn Ranking\_."""
     k_11 = poly_kernel(f_real, f_real, degree, gamma, coef)
     k_22 = poly_kernel(f_fake, f_fake, degree, gamma, coef)
     k_12 = poly_kernel(f_real, f_fake, degree, gamma, coef)
@@ -123,13 +123,9 @@ class KID(Metric):
             will be used to perform the allgather
 
     References:
-        [1] Demystifying MMD GANs
-        Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
-        https://arxiv.org/abs/1801.01401
+        [1] Demystifying MMD GANs\_
 
-        [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
-        Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
+        [2] GANs Trained by a Two Time-Scale\_
 
     Raises:
         ValueError:
@@ -252,7 +248,7 @@ class KID(Metric):
         """Calculate KID score based on accumulated extracted features from the two distributions. Returns a tuple
         of mean and standard deviation of KID scores calculated on subsets of extracted features.
 
-        Implementation inspired by https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
+        KID Score\_
         """
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
