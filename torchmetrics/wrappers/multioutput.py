@@ -111,9 +111,9 @@ class MultioutputWrapper(Metric):
         self.remove_nans = remove_nans
         self.squeeze_outputs = squeeze_outputs
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update each underlying metric with the corresponding output."""
-        for i, metric in enumerate(self.metrics):
+    def _get_args_kwargs_by_output(self, *args, **kwargs):
+        args_kwargs_by_output = []
+        for i in range(len(self.metrics)):
             selected_args = apply_to_collection(
                 args, torch.Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
             )
@@ -128,12 +128,28 @@ class MultioutputWrapper(Metric):
 
             if self.squeeze_outputs:
                 selected_args = [arg.squeeze(self.output_dim) for arg in selected_args]
-                selected_kwargs = {k: v.squeeze(self.output_dim) for k, v in selected_kwargs.items()}
-            metric.update(*selected_args, **selected_kwargs)
+            args_kwargs_by_output.append((selected_args, selected_kwargs))
+        return args_kwargs_by_output
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update each underlying metric with the corresponding output."""
+        reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
+        for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
+            metric.update(*args, **kwargs)
 
     def compute(self) -> List[torch.Tensor]:
         """Compute metrics."""
         return [m.compute() for m in self.metrics]
+
+    @torch.jit.unused
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        results = []
+        reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
+        for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
+            results.append(metric(*selected_args, **selected_kwargs))
+        if results[0] is not None:
+            return results
+
 
     @property
     def is_differentiable(self) -> bool:
