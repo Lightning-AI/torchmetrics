@@ -61,8 +61,8 @@
 .. _Improved Techniques for Training GANs: https://arxiv.org/abs/1606.03498
 .. _KID Score: https://github.com/toshas/torch-fidelity/blob/v0.3.0/torch_fidelity/metric_kid.py
 .. _Demystifying MMD GANs: https://arxiv.org/abs/1801.01401
-.. _Computes`Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
-.. _Turn a Metric into a `Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
+.. _Computes Peak Signal-to-Noise Ratio: https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
+.. _Turn a Metric into a Bootstrapped: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
 .. _Metric Test for Reset: https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
 .. _Computes Mean Absolute Error: https://en.wikipedia.org/wiki/Mean_absolute_error
 .. _Mean Absolute Percentage Error: https://en.wikipedia.org/wiki/Mean_absolute_percentage_error
