@@ -38,12 +38,12 @@ def _concatenate(d: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
 
 
 class BERTScore(Metric):
-    """`BERTScore <https://arxiv.org/abs/1904.09675>`_ leverages the pre-trained contextual embeddings from BERT
+    """`Bert_score Evaluating Text Generation\_. leverages the pre-trained contextual embeddings from BERT
     and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
     recall, and F1 measure, which can be useful for evaluating different language generation tasks.
 
-    This implemenation follows the original implementation from https://github.com/Tiiiger/bert_score.
+    BERT_score\_
 
     Args:
         predictions:
@@ -89,9 +89,9 @@ class BERTScore(Metric):
         rescale_with_baseline:
             An indication of whether bertscore should be rescaled with a pre-computed baseline.
             When a pretrained model from `transformers` model is used, the corresponding baseline is downloaded
-            from the original `bert-score` package from https://github.com/Tiiiger/bert_score if available.
+            from the original `bert-score` package from BERT_score\_ if available.
             In other cases, please specify a path to the baseline csv/tsv file, which must follow the formatting
-            of the files from https://github.com/Tiiiger/bert_score.
+            of the files from BERT_score\_.
         baseline_path:
             A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url:
