@@ -19,8 +19,7 @@ from torchmetrics.regression.r2 import R2Score as _R2Score
 
 class R2Score(_R2Score):
     r"""
-    Computes r2 score also known as `coefficient of determination
-    <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
+    R2 Score_Coefficient Determination\_:
 
     .. deprecated:: v0.5
         `r2score` was renamed as `r2_score` in v0.5 and it will be removed in v0.6
