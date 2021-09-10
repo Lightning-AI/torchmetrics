@@ -150,7 +150,6 @@ class MultioutputWrapper(Metric):
         if results[0] is not None:
             return results
 
-
     @property
     def is_differentiable(self) -> bool:
         return False
