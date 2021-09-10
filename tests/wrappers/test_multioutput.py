@@ -68,7 +68,8 @@ num_targets = 2
 Input = namedtuple("Input", ["preds", "target"])
 
 _multi_target_regression_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets), target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 _multi_target_classification_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_classes, num_targets),
@@ -117,6 +118,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 )
 class TestMultioutputWrapper(MetricTester):
     """Test the MultioutputWrapper class with regression and classification inner metrics."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_multioutput_wrapper(
