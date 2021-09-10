@@ -161,8 +161,8 @@ def hinge(
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tensor:
     r"""
-    Computes the mean `Hinge loss <https://en.wikipedia.org/wiki/Hinge_loss>`_, typically used for Support Vector
-    Machines (SVMs). In the binary case it is defined as:
+    Hinge loss\_, 
+    Typically used for Support Vector Machines (SVMs). In the binary case it is defined as:
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
