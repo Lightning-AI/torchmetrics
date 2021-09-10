@@ -25,7 +25,7 @@ from torchmetrics.metric import Metric
 
 class MeanAbsoluteError(Metric):
     r"""
-    Computes `mean absolute error <https://en.wikipedia.org/wiki/Mean_absolute_error>`_ (MAE):
+    Computes Mean Absolute Error\_
 
     .. math:: \text{MAE} = \frac{1}{N}\sum_i^N | y_i - \hat{y_i} |
 
