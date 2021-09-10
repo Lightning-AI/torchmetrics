@@ -86,8 +86,6 @@ def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"
     return r2_score
 
 
-<<<<<<< HEAD
-=======
 def _multi_target_sk_accuracy(preds, target, num_outputs):
     """Compute accuracy over multiple outputs."""
     accs = []
@@ -96,7 +94,6 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
     return accs
 
 
->>>>>>> Fix DeepSource flagged issues
 @pytest.mark.parametrize(
     "base_metric_class, compare_metric, preds, target, num_outputs, metric_kwargs",
     [
