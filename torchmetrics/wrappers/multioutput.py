@@ -112,6 +112,7 @@ class MultioutputWrapper(Metric):
         self.squeeze_outputs = squeeze_outputs
 
     def _get_args_kwargs_by_output(self, *args, **kwargs):
+        """Get args and kwargs reshaped to be output-specific and (maybe) having NaNs stripped out."""
         args_kwargs_by_output = []
         for i in range(len(self.metrics)):
             selected_args = apply_to_collection(
@@ -135,7 +136,7 @@ class MultioutputWrapper(Metric):
         """Update each underlying metric with the corresponding output."""
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
-            metric.update(*args, **kwargs)
+            metric.update(*selected_args, **selected_kwargs)
 
     def compute(self) -> List[torch.Tensor]:
         """Compute metrics."""
@@ -143,12 +144,20 @@ class MultioutputWrapper(Metric):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        Call underlying forward methods and aggregate the results if they're non-null.
+
+        We override this method to ensure that state variables get copied over on the
+        underlying metrics.
+        """
         results = []
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
             results.append(metric(*selected_args, **selected_kwargs))
         if results[0] is not None:
             return results
+        else:
+            return None
 
     @property
     def is_differentiable(self) -> bool:

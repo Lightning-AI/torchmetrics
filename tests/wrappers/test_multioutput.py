@@ -18,14 +18,6 @@ from torchmetrics.wrappers.multioutput import MultioutputWrapper
 seed_all(42)
 
 
-def _multioutput_sk_accuracy(preds, target, num_outputs):
-    accs = []
-    print("sk:", preds[:4], target[:4])
-    for i in range(num_outputs):
-        accs.append(accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]))
-    return accs
-
-
 class _MultioutputMetric(Metric):
     """Multi-output version of the R2 score class for testing."""
 
@@ -76,8 +68,7 @@ num_targets = 2
 Input = namedtuple("Input", ["preds", "target"])
 
 _multi_target_regression_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets), target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 _multi_target_classification_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_classes, num_targets),
@@ -86,6 +77,7 @@ _multi_target_classification_inputs = Input(
 
 
 def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"):
+    """Compute R2 score over multiple outputs."""
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
@@ -94,6 +86,17 @@ def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"
     return r2_score
 
 
+<<<<<<< HEAD
+=======
+def _multi_target_sk_accuracy(preds, target, num_outputs):
+    """Compute accuracy over multiple outputs."""
+    accs = []
+    for i in range(num_outputs):
+        accs.append(accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]))
+    return accs
+
+
+>>>>>>> Fix DeepSource flagged issues
 @pytest.mark.parametrize(
     "base_metric_class, compare_metric, preds, target, num_outputs, metric_kwargs",
     [
@@ -107,7 +110,7 @@ def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"
         ),
         (
             Accuracy,
-            partial(_multioutput_sk_accuracy, num_outputs=2),
+            partial(_multi_target_sk_accuracy, num_outputs=2),
             _multi_target_classification_inputs.preds,
             _multi_target_classification_inputs.target,
             num_targets,
@@ -116,6 +119,7 @@ def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"
     ],
 )
 class TestMultioutputWrapper(MetricTester):
+    """Test the MultioutputWrapper class with regression and classification inner metrics."""
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_multioutput_wrapper(
