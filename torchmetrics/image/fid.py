@@ -56,8 +56,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 
 
 class MatrixSquareRoot(Function):
-    """Square Root of a Positive Definite Matrix\_
-    """
+    r"""Square Root of a Positive Definite Matrix\_"""
 
     @staticmethod
     def forward(ctx: Any, input_data: Tensor) -> Tensor:
@@ -93,7 +92,7 @@ sqrtm = MatrixSquareRoot.apply
 def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: float = 1e-6) -> Tensor:
     r"""
     Fid Score\_
-    
+
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
     and X_y ~ N(mu_2, sigm_2) is d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
 

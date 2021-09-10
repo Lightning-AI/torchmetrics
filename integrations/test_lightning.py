@@ -84,9 +84,9 @@ def test_metric_lightning(tmpdir):
 
 @pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_1_3, reason="test requires lightning v1.3 or higher")
 def test_metrics_reset(tmpdir):
-    """Tests that metrics are reset correctly after the end of the train/val/test epoch.
+    r"""Tests that metrics are reset correctly after the end of the train/val/test epoch.
 
-       Metric Test for Reset\_
+    Metric Test for Reset\_
     """
 
     class TestModel(LightningModule):

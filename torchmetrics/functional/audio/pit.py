@@ -104,7 +104,7 @@ def _find_best_perm_by_exhuastive_method(
 def pit(
     preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
-    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
+    r"""Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 

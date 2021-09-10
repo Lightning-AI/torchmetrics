@@ -26,7 +26,7 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 
 
 class BLEUScore(Metric):
-    """BLEU score\_
+    r"""BLEU score\_
     Args:
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)

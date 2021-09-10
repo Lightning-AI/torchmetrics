@@ -127,7 +127,7 @@ def bleu_score(
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
-    """ BLEU score\_
+    r"""BLEU score\_
 
     Args:
         reference_corpus:
@@ -153,7 +153,7 @@ def bleu_score(
         [1] BLEU\_
 
         [2] Machine Translation Evolution\_
-        """
+    """
 
     if len(translate_corpus) != len(reference_corpus):
         raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")

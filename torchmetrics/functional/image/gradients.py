@@ -46,7 +46,7 @@ def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
-    """ Gradient Computation of Image\_ :
+    r"""Gradient Computation of Image\_ :
     Args:
         img: An ``(N, C, H, W)`` input tensor where C is the number of image channels
 

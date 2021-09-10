@@ -33,7 +33,7 @@ def _find_repeats(data: Tensor) -> Tensor:
 
 
 def _rank_data(data: Tensor) -> Tensor:
-    """Calculate the rank for each element of a tensor. The rank refers to the indices of an element in the
+    r"""Calculate the rank for each element of a tensor. The rank refers to the indices of an element in the
     corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of their
     rank.
 

@@ -22,7 +22,7 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
 class ROUGEScore(Metric):
-    """Calculate Rouge Score\_
+    r"""Calculate Rouge Score\_
        Python ROUGE Implementation\_
 
     Args:

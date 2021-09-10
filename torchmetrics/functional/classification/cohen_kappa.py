@@ -74,7 +74,7 @@ def cohen_kappa(
     threshold: float = 0.5,
 ) -> Tensor:
     r"""
-    Calculates Cohen's kappa score\_ 
+    Calculates Cohen's kappa score\_
     That measures inter-annotator agreement. It is defined as
 
     .. math::

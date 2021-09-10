@@ -265,7 +265,7 @@ def accuracy(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
-    r""" Accuracy\_:
+    r"""Accuracy\_:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

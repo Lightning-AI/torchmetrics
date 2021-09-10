@@ -27,7 +27,7 @@ def _ce_compute(
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
-    """Computes the calibration error given the provided bin boundaries and norm.
+    r"""Computes the calibration error given the provided bin boundaries and norm.
 
     Args:
         confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.

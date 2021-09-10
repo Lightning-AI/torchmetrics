@@ -376,7 +376,7 @@ def _get_precision_recall_f1(
 
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
-    """ BERT_score\_ """
+    r"""BERT_score\_"""
     msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
     return msg
 
@@ -470,7 +470,7 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
-    """ Bert_score Evaluating Text Generation\_. leverages the pre-trained contextual embeddings from BERT
+    r"""Bert_score Evaluating Text Generation\_. leverages the pre-trained contextual embeddings from BERT
     and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
     recall, and F1 measure, which can be useful for evaluating different language generation tasks. assert
