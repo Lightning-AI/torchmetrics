@@ -79,7 +79,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "me
 
 
 def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = "mean") -> Tensor:
-    r"""Computes the `KL divergence <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_:
+    r"""KL divergence\_:
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
