@@ -59,7 +59,7 @@ class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
 
     All credit to:
-        https://github.com/steveli/pytorch-sqrtm/blob/master/sqrtm.py
+        `Square Root of a Positive Definite Matrix`_
     """
 
     @staticmethod
@@ -95,7 +95,7 @@ sqrtm = MatrixSquareRoot.apply
 
 def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: float = 1e-6) -> Tensor:
     r"""
-    Adjusted version of https://github.com/photosynthesis-team/piq/blob/master/piq/fid.py
+    Adjusted version of `Fid Score`_
 
     The Frechet Inception Distance between two multivariate Gaussians X_x ~ N(mu_1, sigm_1)
     and X_y ~ N(mu_2, sigm_2) is d^2 = ||mu_1 - mu_2||^2 + Tr(sigm_1 + sigm_2 - 2*sqrt(sigm_1*sigm_2)).
@@ -175,11 +175,11 @@ class FID(Metric):
     References:
         [1] Rethinking the Inception Architecture for Computer Vision
         Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
-        https://arxiv.org/abs/1512.00567
+        `Rethinking the Inception Architecture for ComputerVision`_
 
         [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
         Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        https://arxiv.org/abs/1706.08500
+        `GANs Trained by a Two Time-Scale`_
 
     Raises:
         ValueError:
