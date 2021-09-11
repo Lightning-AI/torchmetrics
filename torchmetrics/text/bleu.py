@@ -26,7 +26,7 @@ from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_u
 
 
 class BLEUScore(Metric):
-    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more
+    """Calculate `BLEU score`_ of machine translated text with one or more
     references.
 
     Args:
@@ -54,10 +54,10 @@ class BLEUScore(Metric):
 
     References:
         [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu http://www.aclweb.org/anthology/P02-1040.pdf
+        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
 
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
+        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
     trans_len: Tensor
