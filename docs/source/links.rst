@@ -26,7 +26,6 @@
 .. _confusion matrix: https://en.wikipedia.org/wiki/Confusion_matrix#Table_of_confusion
 .. _sklearn averaging methods: https://scikit-learn.org/stable/modules/model_evaluation.html#multiclass-and-multilabel-classification
 .. _Cosine Similarity: https://en.wikipedia.org/wiki/Cosine_similarity
-.. _coefficient of determination: https://en.wikipedia.org/wiki/Coefficient_of_determination
 .. _spearmans rank correlation coefficient: https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
 .. _WER: https://en.wikipedia.org/wiki/Word_error_rate
 .. _FID: https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance
@@ -37,7 +36,6 @@
 .. _IR Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
 .. _MAPE implementation returns: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
 .. _mean squared logarithmic error: https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error
-.. _Mean Reciprocal Rank: https://en.wikipedia.org/wiki/Mean_reciprocal_rank
 .. _LPIPS: https://arxiv.org/abs/1801.03924
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
 .. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/document/7952154
