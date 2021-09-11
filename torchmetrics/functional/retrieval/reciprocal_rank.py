@@ -38,7 +38,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
         >>> retrieval_reciprocal_rank(preds, target)
         tensor(0.5000)
 
-    .. explained: https://en.wikipedia.org/wiki/Mean_reciprocal_rank
+    `Mean Reciprocal Rank`_
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
