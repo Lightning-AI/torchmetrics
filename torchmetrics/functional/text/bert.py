@@ -376,7 +376,7 @@ def _get_precision_recall_f1(
 
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
-    """Copied from https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py and adjusted."""
+    """`BERT_score`_"""
     msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
     return msg
 
@@ -470,13 +470,13 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
-    """`BERTScore <https://arxiv.org/abs/1904.09675>`_ leverages the pre-trained contextual embeddings from BERT
+    """``Bert_score Evaluating Text Generation`_ .leverages the pre-trained contextual embeddings from BERT
     and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate
     with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision,
     recall, and F1 measure, which can be useful for evaluating different language generation tasks. assert
     len(predictions) == len(references), "Number of predicted and reference sententes must be the same!".
 
-    This implemenation follows the original implementation from https://github.com/Tiiiger/bert_score.
+    This implemenation follows the original implementation from `BERT_score`_
 
     Args:
         predictions:
@@ -524,9 +524,9 @@ def bert_score(
         rescale_with_baseline:
             An indication of whether bertscore should be rescaled with a pre-computed baseline.
             When a pretrained model from `transformers` model is used, the corresponding baseline is downloaded
-            from the original `bert-score` package from https://github.com/Tiiiger/bert_score if available.
+            from the original `bert-score` package from `BERT_score`_ if available.
             In other cases, please specify a path to the baseline csv/tsv file, which must follow the formatting
-            of the files from https://github.com/Tiiiger/bert_score.
+            of the files from `BERT_score`_
         baseline_path:
             A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url:
