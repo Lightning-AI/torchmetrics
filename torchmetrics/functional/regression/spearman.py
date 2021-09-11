@@ -38,7 +38,7 @@ def _rank_data(data: Tensor) -> Tensor:
     rank.
 
     Adopted from:
-        https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
+        `Rank of element tensor`_
     """
     n = data.numel()
     rank = torch.empty_like(data)
