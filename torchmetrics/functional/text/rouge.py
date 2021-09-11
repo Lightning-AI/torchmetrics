@@ -90,7 +90,7 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
 def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> List[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from
-    https://github.com/google-research/google-research/blob/master/rouge/tokenize.py.
+    `Rouge score_Text Normailzition`_
 
     Args:
         text:
@@ -244,7 +244,7 @@ def rouge_score(
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
-    """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
+    """Calculate `ROUGE score `Calculate Rouge Score`_ , used for automatic summarization.
 
     Args:
         preds:
@@ -285,7 +285,7 @@ def rouge_score(
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
 
     References:
-        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
+        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. `Rouge Detail`_
     """
 
     if use_stemmer:
