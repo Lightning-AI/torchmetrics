@@ -161,8 +161,8 @@ def hinge(
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tensor:
     r"""
-    `Hinge loss`_ 
-   
+    `Hinge loss`_
+
      In the binary case it is defined as:
 
     .. math::

@@ -22,8 +22,8 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
 class ROUGEScore(Metric):
-    """`Calculate Rouge Score`_, used for automatic summarization.
-    This implementation should imitate the behaviour of the `rouge-score` package `Python ROUGE Implementation`
+    """`Calculate Rouge Score`_, used for automatic summarization. This implementation should imitate the behaviour
+    of the `rouge-score` package `Python ROUGE Implementation`
 
     Args:
         newline_sep:

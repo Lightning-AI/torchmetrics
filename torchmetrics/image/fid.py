@@ -58,8 +58,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
 class MatrixSquareRoot(Function):
     """Square root of a positive definite matrix.
 
-    All credit to:
-        `Square Root of a Positive Definite Matrix`_
+    All credit to:     `Square Root of a Positive Definite Matrix`_
     """
 
     @staticmethod
