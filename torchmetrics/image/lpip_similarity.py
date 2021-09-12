@@ -151,7 +151,7 @@ class LPIPS(Metric):
         """Compute final perceptual similarity metric."""
         if self.reduction == "mean":
             return self.sum_scores / self.total
-        elif self.reduction == "sum":
+        if self.reduction == "sum":
             return self.sum_scores
 
     @property
