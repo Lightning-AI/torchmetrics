@@ -26,17 +26,17 @@ Input = namedtuple("Input", ["preds", "target", "num_classes"])
 _inputs = Input(
     preds=[
         {
-            "detection_boxes": torch.Tensor([[258.15, 41.29, 348.26, 243.78]]),
-            "detection_scores": torch.Tensor([0.236]),
-            "detection_classes": torch.IntTensor([4]),
+            "boxes": torch.Tensor([[258.15, 41.29, 348.26, 243.78]]),
+            "scores": torch.Tensor([0.236]),
+            "labels": torch.IntTensor([4]),
         },  # coco image id 42
         {
-            "detection_boxes": torch.Tensor([[61, 22.75, 504, 609.67], [12.66, 3.32, 268.6, 271.91]]),
-            "detection_scores": torch.Tensor([0.318, 0.726]),
-            "detection_classes": torch.IntTensor([3, 2]),
+            "boxes": torch.Tensor([[61, 22.75, 504, 609.67], [12.66, 3.32, 268.6, 271.91]]),
+            "scores": torch.Tensor([0.318, 0.726]),
+            "labels": torch.IntTensor([3, 2]),
         },  # coco image id 73
         {
-            "detection_boxes": torch.Tensor(
+            "boxes": torch.Tensor(
                 [
                     [87.87, 276.25, 296.42, 103.18],
                     [0, 3.66, 142.15, 312.4],
@@ -47,26 +47,26 @@ _inputs = Input(
                     [276.11, 103.84, 15.33, 46.88],
                 ]
             ),
-            "detection_scores": torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
-            "detection_classes": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
+            "scores": torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
+            "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
         },  # coco image id 74
     ],
     target=[
         {
-            "groundtruth_boxes": torch.Tensor([[214.15, 41.29, 348.26, 243.78]]),
-            "groundtruth_classes": torch.IntTensor([4]),
+            "boxes": torch.Tensor([[214.15, 41.29, 348.26, 243.78]]),
+            "labels": torch.IntTensor([4]),
         },  # coco image id 42
         {
-            "groundtruth_boxes": torch.Tensor(
+            "boxes": torch.Tensor(
                 [
                     [13.0, 22.75, 535.98, 609.67],
                     [1.66, 3.32, 268.6, 271.91],
                 ]
             ),
-            "groundtruth_classes": torch.IntTensor([2, 2]),
+            "labels": torch.IntTensor([2, 2]),
         },  # coco image id 73
         {
-            "groundtruth_boxes": torch.Tensor(
+            "boxes": torch.Tensor(
                 [
                     [61.87, 276.25, 296.42, 103.18],
                     [2.75, 3.66, 159.4, 312.4],
@@ -77,7 +77,7 @@ _inputs = Input(
                     [277.11, 103.84, 15.33, 46.88],
                 ]
             ),
-            "groundtruth_classes": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
+            "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
         },  # coco image id 74
     ],
     num_classes=5,
@@ -210,86 +210,86 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
         metric.update([{}], [{}, {}])
 
-    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `detection_boxes` key"):
+    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `boxes` key"):
         metric.update(
-            [{"detection_scores": torch.Tensor(), "detection_classes": torch.IntTensor}],
-            [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}],
+            [{"scores": torch.Tensor(), "labels": torch.IntTensor}],
+            [{"boxes": torch.Tensor(), "labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `detection_scores` key"):
+    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `scores` key"):
         metric.update(
-            [{"detection_boxes": torch.Tensor(), "detection_classes": torch.IntTensor}],
-            [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}],
+            [{"boxes": torch.Tensor(), "labels": torch.IntTensor}],
+            [{"boxes": torch.Tensor(), "labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `detection_classes` key"):
+    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `labels` key"):
         metric.update(
-            [{"detection_boxes": torch.Tensor(), "detection_scores": torch.IntTensor}],
-            [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}],
+            [{"boxes": torch.Tensor(), "scores": torch.IntTensor}],
+            [{"boxes": torch.Tensor(), "labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `groundtruth_boxes` key"):
+    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `boxes` key"):
         metric.update(
             [
                 {
-                    "detection_boxes": torch.Tensor(),
-                    "detection_scores": torch.IntTensor,
-                    "detection_classes": torch.IntTensor,
+                    "boxes": torch.Tensor(),
+                    "scores": torch.IntTensor,
+                    "labels": torch.IntTensor,
                 }
             ],
-            [{"groundtruth_classes": torch.IntTensor()}],
+            [{"labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `groundtruth_classes` key"):
+    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `labels` key"):
         metric.update(
             [
                 {
-                    "detection_boxes": torch.Tensor(),
-                    "detection_scores": torch.IntTensor,
-                    "detection_classes": torch.IntTensor,
+                    "boxes": torch.Tensor(),
+                    "scores": torch.IntTensor,
+                    "labels": torch.IntTensor,
                 }
             ],
-            [{"groundtruth_boxes": torch.IntTensor()}],
+            [{"boxes": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all detection_boxes in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type torch.Tensor"):
         metric.update(
-            [{"detection_boxes": [], "detection_scores": torch.Tensor(), "detection_classes": torch.IntTensor()}],
-            [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}],
+            [{"boxes": [], "scores": torch.Tensor(), "labels": torch.IntTensor()}],
+            [{"boxes": torch.Tensor(), "labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all detection_scores in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type torch.Tensor"):
         metric.update(
-            [{"detection_boxes": torch.Tensor(), "detection_scores": [], "detection_classes": torch.IntTensor()}],
-            [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}],
+            [{"boxes": torch.Tensor(), "scores": [], "labels": torch.IntTensor()}],
+            [{"boxes": torch.Tensor(), "labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all detection_classes in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type torch.Tensor"):
         metric.update(
-            [{"detection_boxes": torch.Tensor(), "detection_scores": torch.Tensor(), "detection_classes": []}],
-            [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": torch.IntTensor()}],
+            [{"boxes": torch.Tensor(), "scores": torch.Tensor(), "labels": []}],
+            [{"boxes": torch.Tensor(), "labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all groundtruth_boxes in `target` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type torch.Tensor"):
         metric.update(
             [
                 {
-                    "detection_boxes": torch.Tensor(),
-                    "detection_scores": torch.Tensor(),
-                    "detection_classes": torch.IntTensor(),
+                    "boxes": torch.Tensor(),
+                    "scores": torch.Tensor(),
+                    "labels": torch.IntTensor(),
                 }
             ],
-            [{"groundtruth_boxes": [], "groundtruth_classes": torch.IntTensor()}],
+            [{"boxes": [], "labels": torch.IntTensor()}],
         )
 
-    with pytest.raises(ValueError, match="Expected all groundtruth_classes in `target` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all labels in `target` to be of type torch.Tensor"):
         metric.update(
             [
                 {
-                    "detection_boxes": torch.Tensor(),
-                    "detection_scores": torch.Tensor(),
-                    "detection_classes": torch.IntTensor(),
+                    "boxes": torch.Tensor(),
+                    "scores": torch.Tensor(),
+                    "labels": torch.IntTensor(),
                 }
             ],
-            [{"groundtruth_boxes": torch.Tensor(), "groundtruth_classes": []}],
+            [{"boxes": torch.Tensor(), "labels": []}],
         )

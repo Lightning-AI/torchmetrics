@@ -67,24 +67,24 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
     if len(preds) != len(targets):
         raise ValueError("Expected argument `preds` and `target` to have the same length")
 
-    for k in ["detection_boxes", "detection_scores", "detection_classes"]:
+    for k in ["boxes", "scores", "labels"]:
         if any(k not in p for p in preds):
             raise ValueError(f"Expected all dicts in `preds` to contain the `{k}` key")
 
-    for k in ["groundtruth_boxes", "groundtruth_classes"]:
+    for k in ["boxes", "labels"]:
         if any(k not in p for p in targets):
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
-    if any(type(pred["detection_boxes"]) is not torch.Tensor for pred in preds):
-        raise ValueError("Expected all detection_boxes in `preds` to be of type torch.Tensor")
-    if any(type(pred["detection_scores"]) is not torch.Tensor for pred in preds):
-        raise ValueError("Expected all detection_scores in `preds` to be of type torch.Tensor")
-    if any(type(pred["detection_classes"]) is not torch.Tensor for pred in preds):
-        raise ValueError("Expected all detection_classes in `preds` to be of type torch.Tensor")
-    if any(type(target["groundtruth_boxes"]) is not torch.Tensor for target in targets):
-        raise ValueError("Expected all groundtruth_boxes in `target` to be of type torch.Tensor")
-    if any(type(target["groundtruth_classes"]) is not torch.Tensor for target in targets):
-        raise ValueError("Expected all groundtruth_classes in `target` to be of type torch.Tensor")
+    if any(type(pred["boxes"]) is not torch.Tensor for pred in preds):
+        raise ValueError("Expected all boxes in `preds` to be of type torch.Tensor")
+    if any(type(pred["scores"]) is not torch.Tensor for pred in preds):
+        raise ValueError("Expected all scores in `preds` to be of type torch.Tensor")
+    if any(type(pred["labels"]) is not torch.Tensor for pred in preds):
+        raise ValueError("Expected all labels in `preds` to be of type torch.Tensor")
+    if any(type(target["boxes"]) is not torch.Tensor for target in targets):
+        raise ValueError("Expected all boxes in `target` to be of type torch.Tensor")
+    if any(type(target["labels"]) is not torch.Tensor for target in targets):
+        raise ValueError("Expected all labels in `target` to be of type torch.Tensor")
 
 
 class MAP(Metric):
@@ -144,11 +144,11 @@ class MAP(Metric):
             raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
         self.num_classes = num_classes
 
-        self.add_state("detection_boxes", default=[], dist_reduce_fx="cat")
-        self.add_state("detection_scores", default=[], dist_reduce_fx="cat")
-        self.add_state("detection_classes", default=[], dist_reduce_fx="cat")
-        self.add_state("groundtruth_boxes", default=[], dist_reduce_fx="cat")
-        self.add_state("groundtruth_classes", default=[], dist_reduce_fx="cat")
+        self.add_state("boxes", default=[], dist_reduce_fx="cat")
+        self.add_state("scores", default=[], dist_reduce_fx="cat")
+        self.add_state("labels", default=[], dist_reduce_fx="cat")
+        self.add_state("boxes", default=[], dist_reduce_fx="cat")
+        self.add_state("labels", default=[], dist_reduce_fx="cat")
 
         for class_id in range(num_classes):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
@@ -162,22 +162,22 @@ class MAP(Metric):
                 A list consisting of dictionaries each containing the key-values
                 (each dictionary corresponds to a single image):
 
-                - ``detection_boxes``: torch.FloatTensor of shape
+                - ``boxes``: torch.FloatTensor of shape
                     [num_boxes, 4] containing `num_boxes` detection boxes of the format
-                    [ymin, xmin, ymax, xmax] in absolute image coordinates.
-                - ``detection_scores``: torch.FloatTensor of shape
+                    [xmin, ymin, xmax, ymax] in absolute image coordinates.
+                - ``scores``: torch.FloatTensor of shape
                     [num_boxes] containing detection scores for the boxes.
-                - ``detection_classes``: torch.IntTensor of shape
+                - ``labels``: torch.IntTensor of shape
                     [num_boxes] containing 0-indexed detection classes for the boxes.
 
             target:
                 A list consisting of dictionaries each containing the key-values
                 (each dictionary corresponds to a single image):
 
-                - ``groundtruth_boxes``: torch.FloatTensor of shape
+                - ``boxes``: torch.FloatTensor of shape
                     [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
-                    [ymin, xmin, ymax, xmax] in absolute image coordinates.
-                - ``groundtruth_classes``: torch.IntTensor of shape
+                    [xmin, ymin, xmax, ymax] in absolute image coordinates.
+                - ``labels``: torch.IntTensor of shape
                     [num_boxes] containing 1-indexed groundtruth classes for the boxes.
 
         Raises:
@@ -188,10 +188,10 @@ class MAP(Metric):
             ValueError:
                 If `preds` and `target` are not of the same length
             ValueError:
-                If any of `preds.detection_boxes`, `preds.detection_scores`
-                and `preds.detection_classes` are not of the same length
+                If any of `preds.boxes`, `preds.scores`
+                and `preds.labels` are not of the same length
             ValueError:
-                If any of `target.groundtruth_boxes` and `target.groundtruth_classes` are not of the same length
+                If any of `target.boxes` and `target.labels` are not of the same length
             ValueError:
                 If any box is not type float and of length 4
             ValueError:
@@ -202,13 +202,13 @@ class MAP(Metric):
         _input_validator(preds, target)
 
         for item in preds:
-            self.detection_boxes.append(item["detection_boxes"])
-            self.detection_scores.append(item["detection_scores"])
-            self.detection_classes.append(item["detection_classes"])
+            self.boxes.append(item["boxes"])
+            self.scores.append(item["scores"])
+            self.labels.append(item["labels"])
 
         for item in target:
-            self.groundtruth_boxes.append(item["groundtruth_boxes"])
-            self.groundtruth_classes.append(item["groundtruth_classes"])
+            self.boxes.append(item["boxes"])
+            self.labels.append(item["labels"])
 
     def compute(self) -> MAPMetricResults:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
@@ -303,21 +303,21 @@ class MAP(Metric):
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        for i, _ in enumerate(self.groundtruth_boxes):
+        for i, _ in enumerate(self.boxes):
             images.append({"id": i})
 
             if is_pred:
-                boxes = self.detection_boxes[i]
-                classes = self.detection_classes[i]
-                scores = self.detection_scores[i]
+                boxes = self.boxes[i]
+                classes = self.labels[i]
+                scores = self.scores[i]
                 if len(boxes) != len(scores):
                     raise ValueError(
                         f"Input boxes and scores of sample {i} have a different"
                         f" length (expected {len(boxes)} scores, got {len(scores)})"
                     )
             else:
-                boxes = self.groundtruth_boxes[i]
-                classes = self.groundtruth_classes[i]
+                boxes = self.boxes[i]
+                classes = self.labels[i]
                 scores = None
 
             if len(boxes) != len(classes):
