@@ -92,9 +92,9 @@ class MAP(Metric):
     Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
-    Predicted boxes and targets have to be in COCO format with the box score at the end
-    (x-top left, y-top left, width, height, score). See the `update` function for more information
-    about the input format to this metric.
+    Predicted boxes and targets have to be in Pascal VOC format
+    (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
+    See the `update` function for more information about the input format to this metric.
 
     .. note::
         This metric is a wrapper for the
