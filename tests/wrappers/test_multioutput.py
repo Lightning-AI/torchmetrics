@@ -74,7 +74,8 @@ num_targets = 2
 Input = namedtuple("Input", ["preds", "target"])
 
 _multi_target_regression_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets), target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 _multi_target_classification_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_classes, num_targets),
