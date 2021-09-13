@@ -42,7 +42,8 @@ class _MultioutputMetric(Metric):
                 dist_sync_on_step=dist_sync_on_step,
                 process_group=process_group,
                 dist_sync_fn=dist_sync_fn,
-                **base_metric_kwargs),
+                **base_metric_kwargs,
+            ),
             num_outputs=num_outputs,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -73,8 +74,7 @@ num_targets = 2
 Input = namedtuple("Input", ["preds", "target"])
 
 _multi_target_regression_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets), target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 _multi_target_classification_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_classes, num_targets),
