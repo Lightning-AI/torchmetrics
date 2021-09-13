@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score as sk_r2score
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, MetricTester, NUM_BATCHES, NUM_CLASSES
 from torchmetrics import Metric
 from torchmetrics.classification import Accuracy
 from torchmetrics.regression import R2Score
@@ -68,7 +68,6 @@ class _MultioutputMetric(Metric):
         self.metric.reset()
 
 
-num_classes = 3
 num_targets = 2
 
 Input = namedtuple("Input", ["preds", "target"])
@@ -78,8 +77,8 @@ _multi_target_regression_inputs = Input(
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 _multi_target_classification_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_classes, num_targets),
-    target=torch.randint(num_classes, (NUM_BATCHES, BATCH_SIZE, num_targets)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, num_targets),
+    target=torch.randint(NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, num_targets)),
 )
 
 
@@ -118,7 +117,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
             _multi_target_classification_inputs.preds,
             _multi_target_classification_inputs.target,
             num_targets,
-            dict(num_classes=num_classes),
+            dict(num_classes=NUM_CLASSES),
         ),
     ],
 )
