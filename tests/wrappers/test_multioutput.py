@@ -18,7 +18,7 @@ seed_all(42)
 
 
 class _MultioutputMetric(Metric):
-    """Multi-output version of the R2 score class for testing."""
+    """Test class that allows passing base metric as a class rather than its instantiation to the wrapper."""
 
     def __init__(
         self,
@@ -73,8 +73,7 @@ num_targets = 2
 Input = namedtuple("Input", ["preds", "target"])
 
 _multi_target_regression_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets), target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 _multi_target_classification_inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, num_targets),
