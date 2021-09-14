@@ -109,13 +109,13 @@ def pit(
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     Args:
-        target:
-            shape [batch, spk, ...]
         preds:
+            shape [batch, spk, ...]
+        target:
             shape [batch, spk, ...]
         metric_func:
             a metric function accept a batch of target and estimate,
-            i.e. metric_func(target[:, i, ...], estimate[:, j, ...]), and returns a batch of metric tensors [batch]
+            i.e. metric_func(preds[:, i, ...], target[:, j, ...]), and returns a batch of metric tensors [batch]
         eval_func:
             the function to find the best permutation, can be 'min' or 'max',
             i.e. the smaller the better or the larger the better.
