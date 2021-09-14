@@ -474,6 +474,7 @@ def bert_score(
     matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
     human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
     and F1 measure, which can be useful for evaluating different language generation tasks. assert len(predictions)
+
     == len(references), "Number of predicted and reference sententes must be the same!".
 
     This implemenation follows the original implementation from `BERT_score`_
