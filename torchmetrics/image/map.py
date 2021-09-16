@@ -49,12 +49,12 @@ class _hide_prints:
         self._original_stdout = None
 
     def __enter__(self) -> None:
-        self._original_stdout = sys.stdout
+        self._original_stdout = sys.stdout  # type: ignore
         sys.stdout = open(os.devnull, "w")
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
         sys.stdout.close()
-        sys.stdout = self._original_stdout
+        sys.stdout = self._original_stdout  # type: ignore
 
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
