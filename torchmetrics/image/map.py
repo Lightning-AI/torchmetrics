@@ -144,11 +144,11 @@ class MAP(Metric):
             raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
         self.num_classes = num_classes
 
-        self.add_state("boxes", default=[], dist_reduce_fx="cat")
-        self.add_state("scores", default=[], dist_reduce_fx="cat")
-        self.add_state("labels", default=[], dist_reduce_fx="cat")
-        self.add_state("boxes", default=[], dist_reduce_fx="cat")
-        self.add_state("labels", default=[], dist_reduce_fx="cat")
+        self.add_state("detection_boxes", default=[], dist_reduce_fx="cat")
+        self.add_state("detection_scores", default=[], dist_reduce_fx="cat")
+        self.add_state("detection_labels", default=[], dist_reduce_fx="cat")
+        self.add_state("groundtruth_boxes", default=[], dist_reduce_fx="cat")
+        self.add_state("groundtruth_labels", default=[], dist_reduce_fx="cat")
 
         for class_id in range(num_classes):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
@@ -202,13 +202,13 @@ class MAP(Metric):
         _input_validator(preds, target)
 
         for item in preds:
-            self.boxes.append(item["boxes"])
-            self.scores.append(item["scores"])
-            self.labels.append(item["labels"])
+            self.detection_boxes.append(item["boxes"])
+            self.detection_scores.append(item["scores"])
+            self.detection_labels.append(item["labels"])
 
         for item in target:
-            self.boxes.append(item["boxes"])
-            self.labels.append(item["labels"])
+            self.groundtruth_boxes.append(item["boxes"])
+            self.groundtruth_labels.append(item["labels"])
 
     def compute(self) -> MAPMetricResults:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
@@ -303,21 +303,21 @@ class MAP(Metric):
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        for i, _ in enumerate(self.boxes):
+        for i, _ in enumerate(self.groundtruth_boxes):
             images.append({"id": i})
 
             if is_pred:
-                boxes = self.boxes[i]
-                classes = self.labels[i]
-                scores = self.scores[i]
+                boxes = self.detection_boxes[i]
+                classes = self.detection_labels[i]
+                scores = self.detection_scores[i]
                 if len(boxes) != len(scores):
                     raise ValueError(
                         f"Input boxes and scores of sample {i} have a different"
                         f" length (expected {len(boxes)} scores, got {len(scores)})"
                     )
             else:
-                boxes = self.boxes[i]
-                classes = self.labels[i]
+                boxes = self.groundtruth_boxes[i]
+                classes = self.groundtruth_labels[i]
                 scores = None
 
             if len(boxes) != len(classes):
