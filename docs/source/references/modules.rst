@@ -335,13 +335,17 @@ KID
 .. autoclass:: torchmetrics.KID
     :noindex:
 
+LPIPS
+~~~~~
+
+.. autoclass:: torchmetrics.LPIPS
+    :noindex:
 
 PSNR
 ~~~~
 
 .. autoclass:: torchmetrics.PSNR
     :noindex:
-
 
 SSIM
 ~~~~
@@ -419,6 +423,13 @@ SymmetricMeanAbsolutePercentageError
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.SymmetricMeanAbsolutePercentageError
+    :noindex:
+
+
+TweedieDevianceScore
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.TweedieDevianceScore
     :noindex:
 
 
@@ -524,6 +535,12 @@ RetrievalNormalizedDCG
 Text
 ****
 
+BERTScore
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BERTScore
+    :noindex:
+
 BLEUScore
 ~~~~~~~~~
 
@@ -543,7 +560,6 @@ WER
 .. autoclass:: torchmetrics.WER
     :noindex:
 
-
 ********
 Wrappers
 ********
@@ -555,4 +571,10 @@ BootStrapper
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BootStrapper
+    :noindex:
+
+MetricTracker
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MetricTracker
     :noindex:

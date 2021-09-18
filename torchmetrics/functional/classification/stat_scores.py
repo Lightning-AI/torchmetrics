@@ -84,6 +84,30 @@ def _stat_scores_update(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """Updates and returns the the number of true positives, false positives, true negatives, false negatives.
+    Raises ValueError if:
+
+        - The `ignore_index` is not valid
+        - When `ignore_index` is used with binary data
+        - When inputs are multi-dimensional multi-class, and the `mdmc_reduce` parameter is not set
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        reduce: Defines the reduction that is applied
+        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handeled
+        num_classes: Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
+        top_k: Number of highest probability or logit score predictions considered to find the correct label,
+            relevant only for (multi-dimensional) multi-class inputs
+        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
+            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities
+        multiclass: Used only in certain special cases, where you want to treat inputs as a different type
+            than what they appear to be
+        ignore_index: Specify a class (label) to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and
+            ``reduce='macro'``, the class statistics for the ignored class will all be returned
+            as ``-1``.
+    """
 
     preds, target, _ = _input_format_classification(
         preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
@@ -122,6 +146,27 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
+    """Computes the number of true positives, false positives, true negatives, false negatives. Concatenates the
+    input tensors along with the support into one output.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        tn: True negatives
+        fn: False negatives
+
+    Example:
+        >>> preds  = torch.tensor([1, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
+        >>> _stat_scores_compute(tp, fp, tn, fn)
+        tensor([[0, 1, 2, 1, 1],
+                [1, 1, 1, 1, 2],
+                [1, 0, 3, 0, 1]])
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> _stat_scores_compute(tp, fp, tn, fn)
+        tensor([2, 2, 6, 2, 4])
+    """
     stats = [
         tp.unsqueeze(-1),
         fp.unsqueeze(-1),
@@ -154,18 +199,10 @@ def _reduce_stat_scores(
             will be returned as ``nan`` (if ``average=None``).
             If the denominator is zero, then ``zero_division`` score will be
             used for those elements.
-        weights:
-            A tensor of weights to be used if ``average='weighted'``.
-        average:
-            The method to average the scores. Should be one of ``'micro'``, ``'macro'``,
-            ``'weighted'``, ``'none'``, ``None`` or ``'samples'``. The behavior
-            corresponds to `sklearn averaging methods`_.
-        mdmc_average:
-            The method to average the scores if inputs were multi-dimensional multi-class (MDMC).
-            Should be either ``'global'`` or ``'samplewise'``. If inputs were not
-            multi-dimensional multi-class, it should be ``None`` (default).
-        zero_division:
-            The value to use for the score if denominator equals zero.
+        weights: A tensor of weights to be used if ``average='weighted'``.
+        average: The method to average the scores
+        mdmc_average: The method to average the scores if inputs were multi-dimensional multi-class (MDMC)
+        zero_division: The value to use for the score if denominator equals zero.
     """
     numerator, denominator = numerator.float(), denominator.float()
     zero_div_mask = denominator == 0

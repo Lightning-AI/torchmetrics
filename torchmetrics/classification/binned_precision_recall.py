@@ -239,7 +239,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
 
     def compute(self) -> Union[List[Tensor], Tensor]:  # type: ignore
         precisions, recalls, _ = super().compute()
-        return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes)
+        return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes, average=None)
 
 
 class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):

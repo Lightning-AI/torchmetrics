@@ -20,6 +20,19 @@ _matthews_corrcoef_update = _confusion_matrix_update
 
 
 def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
+    """Computes Matthews correlation coefficient.
+
+    Args:
+        confmat: Confusion matrix
+
+    Example:
+        >>> target = torch.tensor([1, 1, 0, 0])
+        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> confmat = _matthews_corrcoef_update(preds, target, num_classes=2)
+        >>> _matthews_corrcoef_compute(confmat)
+        tensor(0.5774)
+    """
+
     tk = confmat.sum(dim=1).float()
     pk = confmat.sum(dim=0).float()
     c = torch.trace(confmat).float()

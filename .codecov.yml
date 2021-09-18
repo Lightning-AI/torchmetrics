@@ -20,7 +20,6 @@ coverage:
     # https://codecov.readme.io/v1.0/docs/commit-status
     project:
       default:
-        against: auto
         target: 95% # specify the target coverage for each commit status
         threshold: 30% # allow this little decrease on project
         # https://github.com/codecov/support/wiki/Filtering-Branches
@@ -29,9 +28,12 @@ coverage:
     # https://github.com/codecov/support/wiki/Patch-Status
     patch:
       default:
-        against: auto
         threshold: 50% # allow this much decrease on patch
     changes: false
+
+# https://docs.codecov.com/docs/github-checks#disabling-github-checks-patch-annotations
+github_checks:
+    annotations: false
 
 parsers:
   gcov:
