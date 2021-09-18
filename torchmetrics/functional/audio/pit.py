@@ -153,10 +153,15 @@ def pit(
 
     # calculate the metric matrix
     batch_size, spk_num = target.shape[0:2]
-    metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=preds.dtype, device=target.device)
+    metric_mtx = None
     for t in range(spk_num):
         for e in range(spk_num):
-            metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
+            if metric_mtx != None:
+                metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
+            else:
+                first_ele = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
+                metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=first_ele.dtype, device=first_ele.device)
+                metric_mtx[:, t, e] = first_ele
 
     # find best
     op = torch.max if eval_func == "max" else torch.min
