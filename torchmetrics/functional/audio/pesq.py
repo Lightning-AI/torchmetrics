@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
-    r""" PESQ (Perceptual Evaluation of Speech Quality)
+    r"""PESQ (Perceptual Evaluation of Speech Quality)
 
     This is a wrapper for the pesq package [1].
 

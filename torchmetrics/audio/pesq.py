@@ -20,8 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class PESQ(Metric):
-    """
-    PESQ (Perceptual Evaluation of Speech Quality)
+    """PESQ (Perceptual Evaluation of Speech Quality)
 
     This is a wrapper for the pesq package [1].
 
@@ -53,6 +52,7 @@ class PESQ(Metric):
     References:
         [1] https://github.com/ludlows/python-pesq
     """
+
     sum_pesq: Tensor
     total: Tensor
 
@@ -78,8 +78,7 @@ class PESQ(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -91,9 +90,7 @@ class PESQ(Metric):
         self.total += pesq_batch.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average PESQ.
-        """
+        """Computes average PESQ."""
         return self.sum_pesq / self.total
 
     @property

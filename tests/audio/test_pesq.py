@@ -27,7 +27,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
-Input = namedtuple('Input', ["preds", "target"])
+Input = namedtuple("Input", ["preds", "target"])
 
 # for 8k sample rate, need at least 8k/4=2000 samples
 inputs_8k = Input(
@@ -59,17 +59,17 @@ def average_metric(preds, target, metric_func):
     return metric_func(preds, target).mean()
 
 
-pesq_original_batch_8k_nb = partial(pesq_original_batch, fs=8000, mode='nb')
-pesq_original_batch_16k_nb = partial(pesq_original_batch, fs=16000, mode='nb')
-pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode='wb')
+pesq_original_batch_8k_nb = partial(pesq_original_batch, fs=8000, mode="nb")
+pesq_original_batch_16k_nb = partial(pesq_original_batch, fs=16000, mode="nb")
+pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode="wb")
 
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, fs, mode",
     [
-        (inputs_8k.preds, inputs_8k.target, pesq_original_batch_8k_nb, 8000, 'nb'),
-        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_nb, 16000, 'nb'),
-        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_wb, 16000, 'wb'),
+        (inputs_8k.preds, inputs_8k.target, pesq_original_batch_8k_nb, 8000, "nb"),
+        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_nb, 16000, "nb"),
+        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_wb, 16000, "wb"),
     ],
 )
 class TestPESQ(MetricTester):
@@ -103,35 +103,43 @@ class TestPESQ(MetricTester):
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_pesq_half_cpu(self, preds, target, sk_metric, fs, mode):
         pytest.xfail("PESQ metric does not support cpu + half precision")
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pesq_half_gpu(self, preds, target, sk_metric, fs, mode):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=PESQ,
             metric_functional=partial(pesq, fs=fs, mode=mode),
-            metric_args=dict(fs=fs, mode=mode)
+            metric_args=dict(fs=fs, mode=mode),
         )
 
 
 def test_error_on_different_shape(metric_class=PESQ):
-    metric = metric_class(16000, 'nb')
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+    metric = metric_class(16000, "nb")
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        metric(
+            torch.randn(
+                100,
+            ),
+            torch.randn(
+                50,
+            ),
+        )
 
 
 def test_on_real_audio():
     import os
 
     from scipy.io import wavfile
+
     current_file_dir = os.path.dirname(__file__)
 
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
-    assert pesq(torch.from_numpy(deg), torch.from_numpy(ref), rate, 'wb') == 1.0832337141036987
-    assert pesq(torch.from_numpy(deg), torch.from_numpy(ref), rate, 'nb') == 1.6072081327438354
+    assert pesq(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb") == 1.0832337141036987
+    assert pesq(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb") == 1.6072081327438354
