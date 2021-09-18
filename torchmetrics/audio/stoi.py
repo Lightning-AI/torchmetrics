@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 class STOI(Metric):
     r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
-    
+
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
     to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The
     STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
@@ -98,8 +98,7 @@ class STOI(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -111,9 +110,7 @@ class STOI(Metric):
         self.total += stoi_batch.numel()
 
     def compute(self) -> Tensor:
-        """
-        Computes average STOI.
-        """
+        """Computes average STOI."""
         return self.sum_stoi / self.total
 
     @property
