@@ -156,7 +156,7 @@ def pit(
     metric_mtx = None
     for t in range(spk_num):
         for e in range(spk_num):
-            if metric_mtx != None:
+            if metric_mtx is not None:
                 metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
             else:
                 first_ele = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
