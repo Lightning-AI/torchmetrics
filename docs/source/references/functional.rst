@@ -313,6 +313,14 @@ symmetric_mean_absolute_percentage_error [func]
 .. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
     :noindex:
 
+
+tweedie_deviance_score [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.tweedie_deviance_score
+    :noindex:
+
+
 ********
 Pairwise
 ********
@@ -371,6 +379,11 @@ retrieval_normalized_dcg [func]
 ****
 Text
 ****
+
+bert_score [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bert_score
 
 bleu_score [func]
 ~~~~~~~~~~~~~~~~~

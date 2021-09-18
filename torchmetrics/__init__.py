@@ -40,7 +40,7 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
-from torchmetrics.image import FID, IS, KID, PSNR, SSIM  # noqa: E402
+from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
@@ -53,6 +53,7 @@ from torchmetrics.regression import (  # noqa: E402
     R2Score,
     SpearmanCorrcoef,
     SymmetricMeanAbsolutePercentageError,
+    TweedieDevianceScore,
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
@@ -62,8 +63,8 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import WER, BLEUScore, ROUGEScore  # noqa: E402
-from torchmetrics.wrappers import BootStrapper  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore  # noqa: E402
+from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: E402
 
 __all__ = [
     "functional",
@@ -75,12 +76,14 @@ __all__ = [
     "BinnedAveragePrecision",
     "BinnedPrecisionRecallCurve",
     "BinnedRecallAtFixedPrecision",
+    "BERTScore",
     "BLEUScore",
     "BootStrapper",
     "CalibrationError",
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "TweedieDevianceScore",
     "ExplainedVariance",
     "F1",
     "FBeta",
@@ -91,6 +94,7 @@ __all__ = [
     "IS",
     "KID",
     "KLDivergence",
+    "LPIPS",
     "MatthewsCorrcoef",
     "MeanAbsoluteError",
     "MeanAbsolutePercentageError",
@@ -98,6 +102,7 @@ __all__ = [
     "MeanSquaredLogError",
     "Metric",
     "MetricCollection",
+    "MetricTracker",
     "PearsonCorrcoef",
     "PIT",
     "Precision",

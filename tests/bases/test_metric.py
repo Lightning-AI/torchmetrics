@@ -160,7 +160,7 @@ def test_hash():
 
     b1 = B()
     b2 = B()
-    assert hash(b1) == hash(b2)
+    assert hash(b1) != hash(b2)  # different ids
     assert isinstance(b1.x, list) and len(b1.x) == 0
     b1.x.append(tensor(5))
     assert isinstance(hash(b1), int)  # <- check that nothing crashes
@@ -253,17 +253,19 @@ def test_child_metric_state_dict():
 def test_device_and_dtype_transfer(tmpdir):
     metric = DummyMetricSum()
     assert metric.x.is_cuda is False
+    assert metric.device == torch.device("cpu")
     assert metric.x.dtype == torch.float32
 
     metric = metric.to(device="cuda")
     assert metric.x.is_cuda
+    assert metric.device == torch.device("cuda")
 
-    metric = metric.double()
+    metric.set_dtype(torch.double)
     assert metric.x.dtype == torch.float64
     metric.reset()
     assert metric.x.dtype == torch.float64
 
-    metric = metric.half()
+    metric.set_dtype(torch.half)
     assert metric.x.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16

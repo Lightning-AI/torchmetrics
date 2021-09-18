@@ -51,6 +51,7 @@ from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
     symmetric_mean_absolute_percentage_error,
 )
+from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
@@ -58,6 +59,7 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.functional.self_supervised import embedding_similarity
+from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.wer import wer
@@ -67,11 +69,13 @@ __all__ = [
     "auc",
     "auroc",
     "average_precision",
+    "bert_score",
     "bleu_score",
     "calibration_error",
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
+    "tweedie_deviance_score",
     "dice_score",
     "embedding_similarity",
     "explained_variance",

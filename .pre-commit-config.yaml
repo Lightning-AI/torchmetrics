@@ -37,7 +37,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.23.0
+    rev: v2.24.0
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
@@ -50,7 +50,7 @@ repos:
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.2
+    rev: 5.9.3
     hooks:
       - id: isort
         name: imports
@@ -63,7 +63,7 @@ repos:
         name: Format code
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.7
+    rev: 0.7.9
     hooks:
       - id: mdformat
         additional_dependencies:
