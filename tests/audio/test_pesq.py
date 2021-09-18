@@ -122,14 +122,7 @@ class TestPESQ(MetricTester):
 def test_error_on_different_shape(metric_class=PESQ):
     metric = metric_class(16000, "nb")
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
-        metric(
-            torch.randn(
-                100
-            ),
-            torch.randn(
-                50
-            )
-        )
+        metric(torch.randn(100), torch.randn(50))
 
 
 def test_on_real_audio():
