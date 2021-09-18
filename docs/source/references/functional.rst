@@ -12,7 +12,7 @@ Audio Metrics
 *************
 
 pesq [func]
-~~~~~~~~~~~~~
+~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.pesq
 

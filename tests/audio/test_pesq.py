@@ -124,11 +124,11 @@ def test_error_on_different_shape(metric_class=PESQ):
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(
             torch.randn(
-                100,
+                100
             ),
             torch.randn(
-                50,
-            ),
+                50
+            )
         )
 
 
