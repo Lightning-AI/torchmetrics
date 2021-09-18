@@ -157,7 +157,9 @@ def pit(
     for tar_speech_idx in range(spk_num):  # we have spk_num speeches in target in each sample
         for est_speech_idx in range(spk_num):  # we have spk_num speeches in preds in each sample
             if metric_mtx is not None:
-                metric_mtx[:, tar_speech_idx, est_speech_idx] = metric_func(preds[:, est_speech_idx, ...], target[:, tar_speech_idx, ...], **kwargs)
+                metric_mtx[:, tar_speech_idx, est_speech_idx] = metric_func(
+                    preds[:, est_speech_idx, ...], target[:, tar_speech_idx, ...], **kwargs
+                )
             else:
                 first_ele = metric_func(preds[:, est_speech_idx, ...], target[:, tar_speech_idx, ...], **kwargs)
                 metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=first_ele.dtype, device=first_ele.device)
