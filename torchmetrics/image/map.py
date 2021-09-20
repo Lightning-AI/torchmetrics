@@ -310,20 +310,20 @@ class MAP(Metric):
                 boxes = self.detection_boxes[i]
                 classes = self.detection_labels[i]
                 scores = self.detection_scores[i]
-                if len(boxes) != len(scores):
+                if boxes.size()[0] != scores.size()[0]:
                     raise ValueError(
                         f"Input boxes and scores of sample {i} have a different"
-                        f" length (expected {len(boxes)} scores, got {len(scores)})"
+                        f" length (expected {boxes.size()[0]} scores, got {scores.size()[0]})"
                     )
             else:
                 boxes = self.groundtruth_boxes[i]
                 classes = self.groundtruth_labels[i]
                 scores = None
 
-            if len(boxes) != len(classes):
+            if boxes.size()[0] != classes.size()[0]:
                 raise ValueError(
                     f"Input boxes and classes of sample {i} have a"
-                    f" different length (expected {len(boxes)} classes, got {len(classes)})"
+                    f" different length (expected {boxes.size()[0]} classes, got {classes.size()[0]})"
                 )
 
             boxes = boxes.cpu().tolist()
