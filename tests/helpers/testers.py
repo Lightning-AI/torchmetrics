@@ -123,21 +123,21 @@ def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = N
 
 
 def _class_test(
-        rank: int,
-        worldsize: int,
-        preds: Union[Tensor, List[Dict]],
-        target: Union[Tensor, List[Dict]],
-        metric_class: Metric,
-        sk_metric: Callable,
-        dist_sync_on_step: bool,
-        metric_args: dict = None,
-        check_dist_sync_on_step: bool = True,
-        check_batch: bool = True,
-        atol: float = 1e-8,
-        device: str = "cpu",
-        fragment_kwargs: bool = False,
-        check_scriptable: bool = True,
-        **kwargs_update: Any,
+    rank: int,
+    worldsize: int,
+    preds: Union[Tensor, List[Dict]],
+    target: Union[Tensor, List[Dict]],
+    metric_class: Metric,
+    sk_metric: Callable,
+    dist_sync_on_step: bool,
+    metric_args: dict = None,
+    check_dist_sync_on_step: bool = True,
+    check_batch: bool = True,
+    atol: float = 1e-8,
+    device: str = "cpu",
+    fragment_kwargs: bool = False,
+    check_scriptable: bool = True,
+    **kwargs_update: Any,
 ):
     """Utility function doing the actual comparison between lightning class metric and reference metric.
 
@@ -160,7 +160,7 @@ def _class_test(
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
-    if (type(preds) == torch.Tensor):
+    if type(preds) == torch.Tensor:
         assert preds.shape[0] == target.shape[0]
         num_batches = preds.shape[0]
     else:
@@ -249,15 +249,15 @@ def _class_test(
 
 
 def _functional_test(
-        preds: Tensor,
-        target: Tensor,
-        metric_functional: Callable,
-        sk_metric: Callable,
-        metric_args: dict = None,
-        atol: float = 1e-8,
-        device: str = "cpu",
-        fragment_kwargs: bool = False,
-        **kwargs_update,
+    preds: Tensor,
+    target: Tensor,
+    metric_functional: Callable,
+    sk_metric: Callable,
+    metric_args: dict = None,
+    atol: float = 1e-8,
+    device: str = "cpu",
+    fragment_kwargs: bool = False,
+    **kwargs_update,
 ):
     """Utility function doing the actual comparison between lightning functional metric and reference metric.
 
@@ -299,12 +299,12 @@ def _functional_test(
 
 
 def _assert_half_support(
-        metric_module: Metric,
-        metric_functional: Optional[Callable],
-        preds: Tensor,
-        target: Tensor,
-        device: str = "cpu",
-        **kwargs_update,
+    metric_module: Metric,
+    metric_functional: Optional[Callable],
+    preds: Tensor,
+    target: Tensor,
+    device: str = "cpu",
+    **kwargs_update,
 ):
     """Test if an metric can be used with half precision tensors.
 
@@ -355,14 +355,14 @@ class MetricTester:
         self.pool.join()
 
     def run_functional_metric_test(
-            self,
-            preds: Tensor,
-            target: Tensor,
-            metric_functional: Callable,
-            sk_metric: Callable,
-            metric_args: dict = None,
-            fragment_kwargs: bool = False,
-            **kwargs_update,
+        self,
+        preds: Tensor,
+        target: Tensor,
+        metric_functional: Callable,
+        sk_metric: Callable,
+        metric_args: dict = None,
+        fragment_kwargs: bool = False,
+        **kwargs_update,
     ):
         """Main method that should be used for testing functions. Call this inside testing method.
 
@@ -391,19 +391,19 @@ class MetricTester:
         )
 
     def run_class_metric_test(
-            self,
-            ddp: bool,
-            preds: Union[Tensor, List[Dict]],
-            target: Union[Tensor, List[Dict]],
-            metric_class: Metric,
-            sk_metric: Callable,
-            dist_sync_on_step: bool,
-            metric_args: dict = None,
-            check_dist_sync_on_step: bool = True,
-            check_batch: bool = True,
-            fragment_kwargs: bool = False,
-            check_scriptable: bool = True,
-            **kwargs_update,
+        self,
+        ddp: bool,
+        preds: Union[Tensor, List[Dict]],
+        target: Union[Tensor, List[Dict]],
+        metric_class: Metric,
+        sk_metric: Callable,
+        dist_sync_on_step: bool,
+        metric_args: dict = None,
+        check_dist_sync_on_step: bool = True,
+        check_batch: bool = True,
+        fragment_kwargs: bool = False,
+        check_scriptable: bool = True,
+        **kwargs_update,
     ):
         """Main method that should be used for testing class. Call this inside testing methods.
 
@@ -471,12 +471,12 @@ class MetricTester:
 
     @staticmethod
     def run_precision_test_cpu(
-            preds: Tensor,
-            target: Tensor,
-            metric_module: Metric,
-            metric_functional: Optional[Callable] = None,
-            metric_args: Optional[dict] = None,
-            **kwargs_update,
+        preds: Tensor,
+        target: Tensor,
+        metric_module: Metric,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
+        **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on cpu
         Args:
@@ -495,12 +495,12 @@ class MetricTester:
 
     @staticmethod
     def run_precision_test_gpu(
-            preds: Tensor,
-            target: Tensor,
-            metric_module: Metric,
-            metric_functional: Optional[Callable] = None,
-            metric_args: Optional[dict] = None,
-            **kwargs_update,
+        preds: Tensor,
+        target: Tensor,
+        metric_module: Metric,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
+        **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on gpu
         Args:
@@ -519,11 +519,11 @@ class MetricTester:
 
     @staticmethod
     def run_differentiability_test(
-            preds: Tensor,
-            target: Tensor,
-            metric_module: Metric,
-            metric_functional: Optional[Callable] = None,
-            metric_args: Optional[dict] = None,
+        preds: Tensor,
+        target: Tensor,
+        metric_module: Metric,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
     ):
         """Test if a metric is differentiable or not.
 
