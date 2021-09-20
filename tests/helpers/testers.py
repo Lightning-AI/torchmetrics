@@ -327,7 +327,7 @@ class MetricTester:
     `self.run_metric_test` is called inside.
     """
 
-    atol = 1e-2
+    atol = 1e-2  # TODO
 
     def setup_class(self):
         """Setup the metric class.
