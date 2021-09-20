@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Union, List
 
 import numpy as np
 import pytest
@@ -24,7 +24,7 @@ from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
-from torchmetrics.image.map import MAPMetricResults
+from torchmetrics.image.map import MAPMetricResults, MAP
 
 try:
     set_start_method("spawn")
@@ -72,12 +72,12 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Op
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     elif isinstance(pl_result, MAPMetricResults):
-        assert np.allclose(pl_result.map_value.detach().cpu().numpy(), sk_result.map_value.detach().cpu().numpy(), atol=atol, equal_nan=True)
-        assert np.allclose(pl_result.mar_value.detach().cpu().numpy(), sk_result.mar_value.detach().cpu().numpy(), atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.map_value.detach().cpu().numpy(), sk_result.map_value.numpy(), atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.mar_value.detach().cpu().numpy(), sk_result.mar_value.numpy(), atol=atol, equal_nan=True)
         for i, sk_value in enumerate(sk_result.map_per_class_value):
-            assert np.allclose(pl_result.map_per_class_value[i].detach().cpu().numpy(), sk_value.detach().cpu().numpy(), atol=atol, equal_nan=True)
+            assert np.allclose(pl_result.map_per_class_value[i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True)
         for i, sk_value in enumerate(sk_result.mar_per_class_value):
-            assert np.allclose(pl_result.mar_per_class_value[i].detach().cpu().numpy(), sk_value.detach().cpu().numpy(), atol=atol, equal_nan=True)
+            assert np.allclose(pl_result.mar_per_class_value[i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True)
     else:
         raise ValueError("Unknown format for comparison")
 
@@ -117,8 +117,8 @@ def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = N
 def _class_test(
     rank: int,
     worldsize: int,
-    preds: Tensor,
-    target: Tensor,
+    preds: Union[Tensor, List[Dict]],
+    target: Union[Tensor, List[Dict]],
     metric_class: Metric,
     sk_metric: Callable,
     dist_sync_on_step: bool,
@@ -152,9 +152,10 @@ def _class_test(
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
-    if(type(preds) == torch.Tensor):
-        assert preds.shape[0] == target.shape[0]
-        num_batches = preds.shape[0]
+    if metric_class == MAP:
+        assert len(preds) == len(target)
+        preds, target = [preds], [target]
+        num_batches = 1
     else:
         assert len(preds) == len(target)
         preds = [preds]
@@ -220,12 +221,13 @@ def _class_test(
     result = metric.compute()
     _assert_tensor(result)
 
-    if type(preds) is torch.Tensor:
-        total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
-        total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
-    else:
+    if metric_class == MAP:
         total_preds = [item for sublist in preds for item in sublist]
         total_target = [item for sublist in target for item in sublist]
+    else:
+        total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
+        total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
+
     total_kwargs_update = {
         k: torch.cat([v[i] for i in range(num_batches)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
@@ -381,8 +383,8 @@ class MetricTester:
     def run_class_metric_test(
         self,
         ddp: bool,
-        preds: Union[Tensor, list],
-        target: Union[Tensor, list],
+        preds: Union[Tensor, List[Dict]],
+        target: Union[Tensor, List[Dict]],
         metric_class: Metric,
         sk_metric: Callable,
         dist_sync_on_step: bool,
