@@ -142,28 +142,6 @@ class TestMAP(MetricTester):
     """
     atol = 1e-3
 
-    # @staticmethod
-    # @pytest.mark.parametrize("num_batches", [1, NUM_BATCHES])
-    # def test_map(num_batches):
-    #     """Test modular implementation for correctness.
-    #
-    #     Skipping the MetricTester method as it currently does not work for object detection inputs
-    #     """
-    #
-    #     map_metric = MAP(num_classes=_inputs.num_classes)
-    #
-    #     for _ in range(num_batches):
-    #         map_metric.update(preds=_inputs.preds, target=_inputs.target)
-    #     pl_result = map_metric.compute()
-    #
-    #     pycoco_result = _compare_fn()
-    #     assert pl_result.map_value.item() == pytest.approx(pycoco_result.map_value, 0.01)
-    #     assert pl_result.mar_value.item() == pytest.approx(pycoco_result.mar_value, 0.01)
-    #     for i in range(_inputs.num_classes):
-    #         assert pl_result.map_per_class_value[i].item() == pytest.approx(pycoco_result.map_per_class_value[i], 0.01)
-    #         assert pl_result.mar_per_class_value[i].item() == pytest.approx(pycoco_result.mar_per_class_value[i], 0.01)
-
-    # TODO adjust testers.py to enable testing with object detection inputs
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_map(self, ddp, dist_sync_on_step):
