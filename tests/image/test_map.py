@@ -84,7 +84,7 @@ _inputs = Input(
 )
 
 
-def _compare_fn() -> MAPMetricResults:
+def _compare_fn(preds, target) -> MAPMetricResults:
     """Comparison function for map implementation.
 
     Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
@@ -141,42 +141,42 @@ class TestMAP(MetricTester):
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
 
-    @staticmethod
-    @pytest.mark.parametrize("num_batches", [1, NUM_BATCHES])
-    def test_map(num_batches):
-        """Test modular implementation for correctness.
-
-        Skipping the MetricTester method as it currently does not work for object detection inputs
-        """
-
-        map_metric = MAP(num_classes=_inputs.num_classes)
-
-        for _ in range(num_batches):
-            map_metric.update(preds=_inputs.preds, target=_inputs.target)
-        pl_result = map_metric.compute()
-
-        pycoco_result = _compare_fn()
-        assert pl_result.map_value.item() == pytest.approx(pycoco_result.map_value, 0.01)
-        assert pl_result.mar_value.item() == pytest.approx(pycoco_result.mar_value, 0.01)
-        for i in range(_inputs.num_classes):
-            assert pl_result.map_per_class_value[i].item() == pytest.approx(pycoco_result.map_per_class_value[i], 0.01)
-            assert pl_result.mar_per_class_value[i].item() == pytest.approx(pycoco_result.mar_per_class_value[i], 0.01)
+    # @staticmethod
+    # @pytest.mark.parametrize("num_batches", [1, NUM_BATCHES])
+    # def test_map(num_batches):
+    #     """Test modular implementation for correctness.
+    #
+    #     Skipping the MetricTester method as it currently does not work for object detection inputs
+    #     """
+    #
+    #     map_metric = MAP(num_classes=_inputs.num_classes)
+    #
+    #     for _ in range(num_batches):
+    #         map_metric.update(preds=_inputs.preds, target=_inputs.target)
+    #     pl_result = map_metric.compute()
+    #
+    #     pycoco_result = _compare_fn()
+    #     assert pl_result.map_value.item() == pytest.approx(pycoco_result.map_value, 0.01)
+    #     assert pl_result.mar_value.item() == pytest.approx(pycoco_result.mar_value, 0.01)
+    #     for i in range(_inputs.num_classes):
+    #         assert pl_result.map_per_class_value[i].item() == pytest.approx(pycoco_result.map_per_class_value[i], 0.01)
+    #         assert pl_result.mar_per_class_value[i].item() == pytest.approx(pycoco_result.mar_per_class_value[i], 0.01)
 
     # TODO adjust testers.py to enable testing with object detection inputs
-    # @pytest.mark.parametrize("ddp", [True, False])
-    # @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    # def test_map(self, ddp, dist_sync_on_step):
-    #     """Test modular implementation for correctness."""
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
+    def test_map(self, ddp, dist_sync_on_step):
+        """Test modular implementation for correctness."""
 
-    #     self.run_class_metric_test(
-    #         ddp=ddp,
-    #         preds=_inputs.preds,
-    #         target=_inputs.target,
-    #         metric_class=MAP,
-    #         sk_metric=_compare_fn,
-    #         dist_sync_on_step=dist_sync_on_step,
-    #         metric_args={"num_classes": 3},
-    #     )
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=_inputs.preds,
+            target=_inputs.target,
+            metric_class=MAP,
+            sk_metric=_compare_fn,
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args={"num_classes": 5},
+        )
 
 
 # noinspection PyTypeChecker
