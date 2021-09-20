@@ -144,11 +144,11 @@ class MAP(Metric):
             raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
         self.num_classes = num_classes
 
-        self.add_state("detection_boxes", default=[], dist_reduce_fx="cat")
-        self.add_state("detection_scores", default=[], dist_reduce_fx="cat")
-        self.add_state("detection_labels", default=[], dist_reduce_fx="cat")
-        self.add_state("groundtruth_boxes", default=[], dist_reduce_fx="cat")
-        self.add_state("groundtruth_labels", default=[], dist_reduce_fx="cat")
+        self.add_state("detection_boxes", default=[])
+        self.add_state("detection_scores", default=[])
+        self.add_state("detection_labels", default=[])
+        self.add_state("groundtruth_boxes", default=[])
+        self.add_state("groundtruth_labels", default=[])
 
         for class_id in range(num_classes):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
