@@ -140,6 +140,7 @@ class TestMAP(MetricTester):
     A subset of the first 10 fake predictions of the official repo is used:
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
+    atol = 1e-3
 
     # @staticmethod
     # @pytest.mark.parametrize("num_batches", [1, NUM_BATCHES])
