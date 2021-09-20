@@ -201,8 +201,12 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
-            ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
+            if metric_class == MAP:
+                ddp_preds = [preds[i + r] for r in range(worldsize)]
+                ddp_target = [target[i + r] for r in range(worldsize)]
+            else:
+                ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
+                ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
             ddp_kwargs_upd = {
                 k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()

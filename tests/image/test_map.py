@@ -17,7 +17,7 @@ from collections import namedtuple
 import pytest
 import torch
 
-from tests.helpers.testers import NUM_BATCHES, MetricTester
+from tests.helpers.testers import MetricTester
 from torchmetrics.image.map import MAP, MAPMetricResults
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
 
@@ -144,7 +144,7 @@ class TestMAP(MetricTester):
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_map(self, ddp, dist_sync_on_step):
         """Test modular implementation for correctness."""
 
