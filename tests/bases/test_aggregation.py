@@ -88,6 +88,7 @@ class TestAggregation(MetricTester):
             pytest.skip("MinMetric and MaxMetric does not support half dtype on cpu")
         self.run_precision_test_cpu(preds=values, target=weights, metric_module=metric_class)
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_aggregation_half_gpu(self, metric_class, compare_fn, values, weights):
         self.run_precision_test_gpu(preds=values, target=weights, metric_module=metric_class)
 
