@@ -16,7 +16,7 @@ def _get_nan_indices(*tensors: torch.Tensor) -> torch.Tensor:
     nan_idxs = torch.zeros(len(sentinel), dtype=torch.bool)
     for tensor in tensors:
         permuted_tensor = tensor.flatten(start_dim=1)
-        nan_idxs |= torch.any(permuted_tensor.isnan(), dim=1)
+        nan_idxs |= torch.any(torch.isnan(permuted_tensor), dim=1)
     return nan_idxs
 
 
