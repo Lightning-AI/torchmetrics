@@ -127,8 +127,7 @@ def bleu_score(
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
-    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more
-    references.
+    """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
         reference_corpus:
@@ -152,10 +151,10 @@ def bleu_score(
 
     References:
         [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu http://www.aclweb.org/anthology/P02-1040.pdf
+        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
 
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
+        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
     if len(translate_corpus) != len(reference_corpus):

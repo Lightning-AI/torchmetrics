@@ -79,7 +79,7 @@ def specificity(
     multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
-    Computes `Specificity <https://en.wikipedia.org/wiki/Sensitivity_and_specificity>`_:
+    Computes `Specificity`_
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
