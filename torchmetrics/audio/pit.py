@@ -31,8 +31,8 @@ class PIT(Metric):
 
     Args:
         metric_func:
-            a metric function accept a batch of target and estimate, i.e. metric_func(target[:, i, ...],
-            estimate[:, j, ...]), and returns a batch of metric tensors [batch]
+            a metric function accept a batch of target and estimate, i.e. metric_func(preds[:, i, ...],
+            target[:, j, ...]), and returns a batch of metric tensors [batch]
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
