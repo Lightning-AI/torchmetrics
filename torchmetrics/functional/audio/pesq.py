@@ -52,7 +52,7 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
     """
     _check_same_shape(preds, target)
 
-    if len(preds.shape) == 1:
+    if preds.ndim == 1:
         pesq_val_np = pesq_backend.pesq(fs, target.detach().cpu().numpy(), preds.detach().cpu().numpy(), mode)
         pesq_val = torch.tensor(pesq_val_np)
     else:
