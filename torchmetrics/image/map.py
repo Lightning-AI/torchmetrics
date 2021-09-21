@@ -137,6 +137,9 @@ class MAP(Metric):
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
         )
+        if not _PYCOCOTOOLS_AVAILABLE:
+            raise ValueError("`MAP` metric requires that `pycocotools` installed. Please install"
+                                 " with `pip install pycocotools` or `pip install torchmetrics[image]`")
 
         self.add_state("average_precision", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
         self.add_state("average_recall", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
