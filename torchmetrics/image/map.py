@@ -111,7 +111,7 @@ class MAP(Metric):
         num_classes:
             Number of classes, required for mAP values per class. default: 0 (deactivate)
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False. default: False
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step. default: False
@@ -128,7 +128,7 @@ class MAP(Metric):
     def __init__(
         self,
         num_classes: int = 0,
-        compute_on_step: bool = True,
+        compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
