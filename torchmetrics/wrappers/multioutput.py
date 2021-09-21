@@ -8,14 +8,14 @@ from torchmetrics import Metric
 from torchmetrics.utilities import apply_to_collection
 
 
-def _get_nan_indices(*tensors: torch.Tensor, aligned_dim: int = 0) -> torch.Tensor:
-    """Get indices of rows along `aligned_dim` which have NaN values."""
+def _get_nan_indices(*tensors: torch.Tensor) -> torch.Tensor:
+    """Get indices of rows along dim 0 which have NaN values."""
     if len(tensors) == 0:
         raise ValueError("Must pass at least one tensor as argument")
     sentinel = tensors[0]
     nan_idxs = torch.zeros(len(sentinel), dtype=torch.bool)
     for tensor in tensors:
-        permuted_tensor = tensor.movedim(aligned_dim, 0).flatten(start_dim=1)
+        permuted_tensor = tensor.flatten(start_dim=1)
         nan_idxs |= torch.any(permuted_tensor.isnan(), dim=1)
     return nan_idxs
 
