@@ -18,8 +18,8 @@ import cloudpickle
 import numpy as np
 import pytest
 import torch
-from torch import nn, tensor
 from pytorch_lightning import LightningModule
+from torch import nn, tensor
 from torch.functional import Tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
@@ -333,7 +333,8 @@ def test_forward_and_compute_to_device(metric_class):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 @pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
 def test_device_if_child_module(metric_class):
-    """ Test that if a metric is a child module all values gets moved to the correct device """
+    """Test that if a metric is a child module all values gets moved to the correct device."""
+
     class TestModule(LightningModule):
         def __init__(self):
             super().__init__()
