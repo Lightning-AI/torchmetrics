@@ -171,7 +171,7 @@ class MaxMetric(BaseAggregator):
         """
         value = self._cast_and_nan_check_input(value)
         if any(value.flatten()):  # make sure tensor not empty
-            self.value = torch.maximum(self.value, torch.max(value))
+            self.value = torch.max(self.value, torch.max(value))
 
 
 class MinMetric(BaseAggregator):
@@ -238,7 +238,7 @@ class MinMetric(BaseAggregator):
         """
         value = self._cast_and_nan_check_input(value)
         if any(value.flatten()):  # make sure tensor not empty
-            self.value = torch.minimum(self.value, torch.min(value))
+            self.value = torch.min(self.value, torch.min(value))
 
 
 class SumMetric(BaseAggregator):
