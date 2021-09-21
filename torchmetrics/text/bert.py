@@ -38,8 +38,7 @@ def _concatenate(d: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
 
 
 class BERTScore(Metric):
-    """
-    `Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
+    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
     matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
     human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
     and F1 measure, which can be useful for evaluating different language generation tasks.
