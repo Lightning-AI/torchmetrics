@@ -89,8 +89,7 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
 
 def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> List[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
-    used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
-    score_Text Normailzition`_
+    used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge score_Text Normalizition`_
 
     Args:
         text:
@@ -244,7 +243,7 @@ def rouge_score(
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
-    """Calculate `ROUGE score `Calculate Rouge Score`_ , used for automatic summarization.
+    """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
 
     Args:
         preds:

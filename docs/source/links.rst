@@ -49,7 +49,7 @@
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
 .. _BLEU: http://www.aclweb.org/anthology/P02-1040.pdf
 .. _Machine Translation Evolution: https://aclanthology.org/P04-1077.pdf
-.. _Rouge score_Text Normailzition: https://github.com/google-research/google-research/blob/master/rouge/tokenize.py
+.. _Rouge score_Text Normalizition: https://github.com/google-research/google-research/blob/master/rouge/tokenize.py
 .. _Calculate Rouge Score: https://en.wikipedia.org/wiki/ROUGE_(metric)
 .. _Rouge Detail: https://aclanthology.org/W04-1013/
 .. _Square Root of a Positive Definite Matrix: https://github.com/steveli/pytorch-sqrtm/blob/master/sqrtm.py

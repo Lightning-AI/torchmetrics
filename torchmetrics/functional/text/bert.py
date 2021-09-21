@@ -470,12 +470,10 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
 ) -> Dict[str, Union[List[float], str]]:
-    """``Bert_score Evaluating Text Generation`_ .leverages the pre-trained contextual embeddings from BERT and
+    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
     matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
     human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall,
-    and F1 measure, which can be useful for evaluating different language generation tasks. assert len(predictions)
-
-    == len(references), "Number of predicted and reference sententes must be the same!".
+    and F1 measure, which can be useful for evaluating different language generation tasks.
 
     This implemenation follows the original implementation from `BERT_score`_
 

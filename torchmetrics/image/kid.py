@@ -125,7 +125,7 @@ class KID(Metric):
     References:
         [1] Demystifying MMD GANs
         Mikołaj Bińkowski, Danica J. Sutherland, Michael Arbel, Arthur Gretton
-        `Demystifying MMD GANs:`_
+        `Demystifying MMD GANs`_
 
         [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
         Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
