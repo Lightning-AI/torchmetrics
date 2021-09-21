@@ -66,7 +66,7 @@ class MultioutputWrapper(Metric):
 
     Example:
 
-         Mimic R2Score in `multioutput`, `raw_values` mode:
+         >>> # Mimic R2Score in `multioutput`, `raw_values` mode:
          >>> import torch
          >>> from torchmetrics import MultioutputWrapper, R2Score
          >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
@@ -74,8 +74,7 @@ class MultioutputWrapper(Metric):
          >>> r2score = MultioutputWrapper(R2Score(), 2)
          >>> r2score(preds, target)
          [tensor(0.9654), tensor(0.9082)]
-
-        Classification metric where prediction and label tensors have different shapes.
+         >>> # Classification metric where prediction and label tensors have different shapes.
          >>> from torchmetrics import BinnedAveragePrecision
          >>> target = torch.tensor([[1, 2], [2, 0], [1, 2]])
          >>> preds = torch.tensor([
