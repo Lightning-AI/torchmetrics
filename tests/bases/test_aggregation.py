@@ -83,15 +83,6 @@ class TestAggregation(MetricTester):
     def test_aggregation_differentiability(self, metric_class, compare_fn, values, weights):
         self.run_differentiability_test(preds=values, target=weights, metric_module=metric_class)
 
-    def test_aggregation_half_cpu(self, metric_class, compare_fn, values, weights):
-        if metric_class in (WrappedMinMetric, WrappedMaxMetric):
-            pytest.skip("MinMetric and MaxMetric does not support half dtype on cpu")
-        self.run_precision_test_cpu(preds=values, target=weights, metric_module=metric_class)
-
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_aggregation_half_gpu(self, metric_class, compare_fn, values, weights):
-        self.run_precision_test_gpu(preds=values, target=weights, metric_module=metric_class)
-
 
 _case1 = float("nan") * torch.ones(5)
 _case2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
