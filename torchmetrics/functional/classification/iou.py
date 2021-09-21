@@ -76,7 +76,7 @@ def iou(
     reduction: str = "elementwise_mean",
 ) -> Tensor:
     r"""
-    Computes `Intersection over union, or Jaccard index calculation <https://en.wikipedia.org/wiki/Jaccard_index>`_:
+    Computes `Jaccard index`_
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
