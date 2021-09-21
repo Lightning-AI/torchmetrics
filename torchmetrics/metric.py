@@ -506,14 +506,22 @@ class Metric(Module, ABC):
                 this._defaults[key] = [fn(v) for v in value]
 
             current_val = getattr(this, key)
+            device = None
             if isinstance(current_val, Tensor):
-                setattr(this, key, fn(current_val))
+                new_val = fn(current_val)
+                setattr(this, key, new_val)
+                device = new_val.device
             elif isinstance(current_val, Sequence):
-                setattr(this, key, [fn(cur_v) for cur_v in current_val])
+                new_val = [fn(cur_v) for cur_v in current_val]
+                setattr(this, key, new_val)
+                device = new_val[0].device if new_val else None
             else:
                 raise TypeError(
                     "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
                 )
+
+            # make sure to update the device attribute
+            if device is not None: self._device = device
 
         # Additional apply to forward cache and computed attributes (may be nested)
         if this._computed is not None:
