@@ -174,11 +174,11 @@ class FID(Metric):
     References:
         [1] Rethinking the Inception Architecture for Computer Vision
         Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna
-        `Rethinking the Inception Architecture for ComputerVision`_
+        https://arxiv.org/abs/1512.00567
 
         [2] GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium,
         Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, Sepp Hochreiter
-        `GANs Trained by a Two Time-Scale`_
+        https://arxiv.org/abs/1706.08500
 
     Raises:
         ValueError:

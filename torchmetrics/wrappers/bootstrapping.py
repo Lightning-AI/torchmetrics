@@ -62,7 +62,7 @@ class BootStrapper(Metric):
         dist_sync_fn: Callable = None,
     ) -> None:
         r"""
-        `Turn a Metric into a Bootstrapped`_
+        Using `Turn a Metric into a Bootstrapped`_
         That can automate the process of getting confidence intervals for metric values. This wrapper
         class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
         ``forward`` is called, all input tensors are resampled (with replacement) along the first dimension.

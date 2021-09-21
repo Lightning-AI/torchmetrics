@@ -76,7 +76,7 @@ def iou(
     reduction: str = "elementwise_mean",
 ) -> Tensor:
     r"""
-    `Jaccard index`_
+    Computes `Jaccard index`_
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 

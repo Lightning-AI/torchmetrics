@@ -161,7 +161,7 @@ def hinge(
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tensor:
     r"""
-    `Hinge loss`_
+    Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
      In the binary case it is defined as:
 

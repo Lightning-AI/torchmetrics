@@ -79,7 +79,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "me
 
 
 def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = "mean") -> Tensor:
-    r"""`KL divergence`_
+    r"""Computes `KL divergence`_
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
@@ -112,7 +112,7 @@ def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optio
 
 
 def kldivergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = "mean") -> Tensor:
-    r"""`KL divergence`_
+    r"""Computes `KL divergence`_
 
     .. deprecated:: v0.5
         `kldivergence` was renamed as `kl_divergence` in v0.5 and it will be removed in v0.6

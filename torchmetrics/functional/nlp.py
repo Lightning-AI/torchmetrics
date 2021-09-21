@@ -25,7 +25,7 @@ def bleu_score(
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
-    """`BLEU score`_
+    """Calculate `BLEU score`_ of machine-translated text with one or more references.
 
     Example:
         >>> from torchmetrics.functional import bleu_score

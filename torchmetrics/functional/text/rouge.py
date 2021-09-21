@@ -285,7 +285,7 @@ def rouge_score(
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
 
     References:
-        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. `Rouge Detail`_
+        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
     """
 
     if use_stemmer:

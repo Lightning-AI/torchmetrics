@@ -84,7 +84,7 @@ def precision(
     multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
-    `Precision`_
+    Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -281,7 +281,7 @@ def recall(
     multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
-    `Recall`_
+    Computes `Recall`_
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -427,7 +427,7 @@ def precision_recall(
     multiclass: Optional[bool] = None,
 ) -> Tuple[Tensor, Tensor]:
     r"""
-    `Precision`_
+    Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 

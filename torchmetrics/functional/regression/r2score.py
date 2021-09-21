@@ -26,7 +26,7 @@ def r2score(
     multioutput: str = "uniform_average",
 ) -> Tensor:
     r"""
-    `R2 Score_Coefficient Determination`_
+    Computes r2 score also known as `R2 Score_Coefficient Determination`_
 
     .. deprecated:: v0.5
         `r2score` was renamed as `r2_score` in v0.5 and it will be removed in v0.6
