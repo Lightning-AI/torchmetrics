@@ -160,7 +160,7 @@ def _class_test(
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
-    if type(preds) == torch.Tensor:
+    if type(preds) is torch.Tensor:
         assert preds.shape[0] == target.shape[0]
         num_batches = preds.shape[0]
     else:
@@ -183,7 +183,7 @@ def _class_test(
     # move to device
     metric = metric.to(device)
 
-    if type(preds) == torch.Tensor:
+    if type(preds) is torch.Tensor:
         preds = preds.to(device)
         target = target.to(device)
 
@@ -199,7 +199,7 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            if type(preds) == torch.Tensor:
+            if type(preds) is torch.Tensor:
                 ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
                 ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
             else:
@@ -218,7 +218,7 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            if type(preds) == torch.Tensor:
+            if type(preds) is torch.Tensor:
                 preds[i].cpu()
                 target[i].cpu()
             sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
@@ -231,7 +231,7 @@ def _class_test(
     result = metric.compute()
     _assert_tensor(result)
 
-    if type(preds) == torch.Tensor:
+    if type(preds) is torch.Tensor:
         total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
         total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
     else:
