@@ -86,8 +86,7 @@ def test_metric_lightning(tmpdir):
 def test_metrics_reset(tmpdir):
     """Tests that metrics are reset correctly after the end of the train/val/test epoch.
 
-    Taken from:
-        https://github.com/PyTorchLightning/pytorch-lightning/pull/7055
+    Taken from:     `Metric Test for Reset`_
     """
 
     class TestModel(LightningModule):
