@@ -260,7 +260,7 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.to(device="cuda")
     assert metric.x.is_cuda
-    assert metric.device == torch.device("cuda")
+    assert metric.device == torch.device("cuda", index=0)
 
     metric.set_dtype(torch.double)
     assert metric.x.dtype == torch.float64
@@ -350,4 +350,3 @@ def test_device_if_child_module(metric_class):
     assert module.device == module.metric.device
     if isinstance(module.metric.x, Tensor):
         assert module.device == module.metric.x.device
-
