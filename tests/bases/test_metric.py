@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 import torch
 from pytorch_lightning import LightningModule
-from torch import nn, tensor, Tensor
+from torch import Tensor, nn, tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
