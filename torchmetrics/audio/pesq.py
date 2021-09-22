@@ -30,10 +30,6 @@ class PESQ(Metric):
     - ``target``: ``shape [...,time]``
 
     Args:
-        preds:
-            shape ``[...,time]``
-        target:
-            shape ``[...,time]``
         fs:
             sampling frequency, should be 16000 or 8000 (Hz)
         mode:
