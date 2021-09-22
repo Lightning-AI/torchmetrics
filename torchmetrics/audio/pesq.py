@@ -80,9 +80,9 @@ class PESQ(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         if fs not in (8000, 16000):
-            raise ValueError(f'Expected argument `fs` to either be 8000 or 16000 but got {fs}')
+            raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
         self.fs = fs
-        if mode not in ('wb', 'nb'):
+        if mode not in ("wb", "nb"):
             raise ValueError("Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
         self.mode = mode
 
