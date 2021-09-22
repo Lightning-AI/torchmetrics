@@ -29,11 +29,11 @@ class MultioutputWrapper(Metric):
     (2, ...) where ... represents the dimensions the metric returns when not wrapped.
 
     In addition to enabling multioutput support for metrics that lack it, this class also supports, albeit in a crude
-    fashion, dealing with missing labels (or other data). When `remove_nans` is passed, the class will remove the
+    fashion, dealing with missing labels (or other data). When ``remove_nans`` is passed, the class will remove the
     intersection of NaN containing "rows" upon each update for each output. For example, suppose a user uses
     `MultioutputWrapper` to wrap :class:`torchmetrics.regression.r2.R2Score` with 2 outputs, one of which occasionally
-    has missing labels for classes like `R2Score` is that this class supports removing NaN values
-    (parameter `remove_nans`) on a per-output basis. When `remove_nans` is passed the wrapper will remove all rows
+    has missing labels for classes like ``R2Score`` is that this class supports removing NaN values
+    (parameter ``remove_nans``) on a per-output basis. When ``remove_nans`` is passed the wrapper will remove all rows
 
     Args:
         base_metric:
