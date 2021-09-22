@@ -23,9 +23,9 @@ class PESQ(Metric):
     """PESQ (Perceptual Evaluation of Speech Quality)
 
     This is a wrapper for the pesq package [1].
-    
-     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install 
-         torchmetrics[audio]`` or ``pip install pesq`` 
+
+     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
+         torchmetrics[audio]`` or ``pip install pesq``
 
     Forward accepts
 
