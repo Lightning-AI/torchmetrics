@@ -25,8 +25,7 @@ class MultioutputWrapper(Metric):
 
     Several torchmetrics metrics, such as :class:`torchmetrics.regression.spearman.SpearmanCorrcoef` lack support for
     multioutput mode. This class wraps such metrics to support computing one metric per output.
-    Unlike specific torchmetric metrics, it doesn't support any
-    aggregation across outputs. This means if you set `num_outputs` to 2, `compute()` will return a Tensor of dimension
+    Unlike specific torchmetric metrics, it doesn't support any aggregation across outputs. This means if you set `num_outputs` to 2, `compute()` will return a Tensor of dimension
     (2, ...) where ... represents the dimensions the metric returns when not wrapped.
 
     In addition to enabling multioutput support for metrics that lack it, this class also supports, albeit in a crude
