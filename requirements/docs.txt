@@ -13,3 +13,6 @@ sphinx-copybutton>=0.3
 
 # integrations
 pytorch-lightning>=1.1
+
+# audio
+-r audio.txt
