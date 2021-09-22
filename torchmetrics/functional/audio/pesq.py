@@ -22,7 +22,10 @@ from torchmetrics.utilities.checks import _check_same_shape
 def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
     r"""PESQ (Perceptual Evaluation of Speech Quality)
 
-    This is a wrapper for the pesq package [1].
+    This is a wrapper for the ``pesq`` package [1].
+
+     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install 
+         torchmetrics[audio]`` or ``pip install pesq`` 
 
     Args:
         preds:
