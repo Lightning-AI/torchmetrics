@@ -104,6 +104,7 @@ __all__ = [
     "MetricCollection",
     "MetricTracker",
     "PearsonCorrcoef",
+    "PESQ",
     "PIT",
     "Precision",
     "PrecisionRecallCurve",

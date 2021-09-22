@@ -93,6 +93,7 @@ __all__ = [
     "mean_squared_error",
     "mean_squared_log_error",
     "pearson_corrcoef",
+    "pesq",
     "pit",
     "pit_permutate",
     "precision",
