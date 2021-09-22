@@ -24,8 +24,8 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
 
     This is a wrapper for the ``pesq`` package [1].
 
-     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install 
-         torchmetrics[audio]`` or ``pip install pesq`` 
+     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
+         torchmetrics[audio]`` or ``pip install pesq``
 
     Args:
         preds:
