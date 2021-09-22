@@ -37,8 +37,7 @@ def _rank_data(data: Tensor) -> Tensor:
     corresponding sorted tensor (starting from 1). Duplicates of the same value will be assigned the mean of their
     rank.
 
-    Adopted from:
-        https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
+    Adopted from:     `Rank of element tensor`_
     """
     n = data.numel()
     rank = torch.empty_like(data)
