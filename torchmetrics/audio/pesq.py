@@ -36,6 +36,18 @@ class PESQ(Metric):
             'wb' (wide-band) or 'nb' (narrow-band)
         keep_same_device:
             whether to move the pesq value to the device of preds
+        compute_on_step:
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step
+        process_group:
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
+
 
     Example:
         >>> from torchmetrics.functional.audio import pesq
