@@ -13,7 +13,7 @@ def _get_nan_indices(*tensors: torch.Tensor) -> torch.Tensor:
     if len(tensors) == 0:
         raise ValueError("Must pass at least one tensor as argument")
     sentinel = tensors[0]
-    nan_idxs = torch.zeros(len(sentinel), dtype=torch.bool)
+    nan_idxs = torch.zeros(len(sentinel), dtype=torch.bool, device=sentinel.device)
     for tensor in tensors:
         permuted_tensor = tensor.flatten(start_dim=1)
         nan_idxs |= torch.any(torch.isnan(permuted_tensor), dim=1)
