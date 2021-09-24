@@ -75,7 +75,7 @@ class TestAggregation(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
             metric_class=metric_class,
             sk_metric=compare_fn,
-            check_scriptable=False,
+            check_scriptable=False if metric_class == WrappedCatMetric else True,
             # Abuse of names here
             preds=values,
             target=weights,
