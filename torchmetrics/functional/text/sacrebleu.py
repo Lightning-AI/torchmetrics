@@ -56,39 +56,38 @@
 # SOFTWARE.
 
 import re
-import regex
 from typing import Literal, Sequence
 
+import regex
 import torch
 from torch import Tensor, tensor
 
 from .bleu import _bleu_score_compute, _bleu_score_update
 
-
 _UCODE_RANGES = [
-    (u'\u3400', u'\u4db5'),  # CJK Unified Ideographs Extension A, release 3.0
-    (u'\u4e00', u'\u9fa5'),  # CJK Unified Ideographs, release 1.1
-    (u'\u9fa6', u'\u9fbb'),  # CJK Unified Ideographs, release 4.1
-    (u'\uf900', u'\ufa2d'),  # CJK Compatibility Ideographs, release 1.1
-    (u'\ufa30', u'\ufa6a'),  # CJK Compatibility Ideographs, release 3.2
-    (u'\ufa70', u'\ufad9'),  # CJK Compatibility Ideographs, release 4.1
-    (u'\u20000', u'\u2a6d6'),  # (UTF16) CJK Unified Ideographs Extension B, release 3.1
-    (u'\u2f800', u'\u2fa1d'),  # (UTF16) CJK Compatibility Supplement, release 3.1
-    (u'\uff00', u'\uffef'),  # Full width ASCII, full width of English punctuation,
-                             # half width Katakana, half wide half width kana, Korean alphabet
-    (u'\u2e80', u'\u2eff'),  # CJK Radicals Supplement
-    (u'\u3000', u'\u303f'),  # CJK punctuation mark
-    (u'\u31c0', u'\u31ef'),  # CJK stroke
-    (u'\u2f00', u'\u2fdf'),  # Kangxi Radicals
-    (u'\u2ff0', u'\u2fff'),  # Chinese character structure
-    (u'\u3100', u'\u312f'),  # Phonetic symbols
-    (u'\u31a0', u'\u31bf'),  # Phonetic symbols (Taiwanese and Hakka expansion)
-    (u'\ufe10', u'\ufe1f'),
-    (u'\ufe30', u'\ufe4f'),
-    (u'\u2600', u'\u26ff'),
-    (u'\u2700', u'\u27bf'),
-    (u'\u3200', u'\u32ff'),
-    (u'\u3300', u'\u33ff'),
+    ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
+    ("\u4e00", "\u9fa5"),  # CJK Unified Ideographs, release 1.1
+    ("\u9fa6", "\u9fbb"),  # CJK Unified Ideographs, release 4.1
+    ("\uf900", "\ufa2d"),  # CJK Compatibility Ideographs, release 1.1
+    ("\ufa30", "\ufa6a"),  # CJK Compatibility Ideographs, release 3.2
+    ("\ufa70", "\ufad9"),  # CJK Compatibility Ideographs, release 4.1
+    ("\u20000", "\u2a6d6"),  # (UTF16) CJK Unified Ideographs Extension B, release 3.1
+    ("\u2f800", "\u2fa1d"),  # (UTF16) CJK Compatibility Supplement, release 3.1
+    ("\uff00", "\uffef"),  # Full width ASCII, full width of English punctuation,
+    # half width Katakana, half wide half width kana, Korean alphabet
+    ("\u2e80", "\u2eff"),  # CJK Radicals Supplement
+    ("\u3000", "\u303f"),  # CJK punctuation mark
+    ("\u31c0", "\u31ef"),  # CJK stroke
+    ("\u2f00", "\u2fdf"),  # Kangxi Radicals
+    ("\u2ff0", "\u2fff"),  # Chinese character structure
+    ("\u3100", "\u312f"),  # Phonetic symbols
+    ("\u31a0", "\u31bf"),  # Phonetic symbols (Taiwanese and Hakka expansion)
+    ("\ufe10", "\ufe1f"),
+    ("\ufe30", "\ufe4f"),
+    ("\u2600", "\u26ff"),
+    ("\u2700", "\u27bf"),
+    ("\u3200", "\u32ff"),
+    ("\u3300", "\u33ff"),
 ]
 
 
@@ -97,15 +96,16 @@ class _SacreBLEUTokenizer:
 
     Source: https://github.com/mjpost/sacrebleu/tree/master/sacrebleu/tokenizers
     """
+
     _REGEX = [
         # language-dependent part (assuming Western languages)
-        (re.compile(r'([\{-\~\[-\` -\&\(-\+\:-\@\/])'), r' \1 '),
+        (re.compile(r"([\{-\~\[-\` -\&\(-\+\:-\@\/])"), r" \1 "),
         # tokenize period and comma unless preceded by a digit
-        (re.compile(r'([^0-9])([\.,])'), r'\1 \2 '),
+        (re.compile(r"([^0-9])([\.,])"), r"\1 \2 "),
         # tokenize period and comma unless followed by a digit
-        (re.compile(r'([\.,])([^0-9])'), r' \1 \2'),
+        (re.compile(r"([\.,])([^0-9])"), r" \1 \2"),
         # tokenize dash when preceded by a digit
-        (re.compile(r'([0-9])(-)'), r'\1 \2 '),
+        (re.compile(r"([0-9])(-)"), r"\1 \2 "),
         # one space only between words
         # NOTE: Doing this in Python (below) is faster
         # (re.compile(r'\s+'), r' '),
@@ -113,11 +113,11 @@ class _SacreBLEUTokenizer:
 
     _INT_REGEX = [
         # Separate out punctuations preceeded by a non-digit
-        (regex.compile(r'(\P{N})(\p{P})'), r'\1 \2 '),
+        (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
         # Separate out punctuations followed by a non-digit
-        (regex.compile(r'(\p{P})(\P{N})'), r' \1 \2'),
+        (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
         # Separate out symbols
-        (regex.compile(r'(\p{S})'), r' \1 '),
+        (regex.compile(r"(\p{S})"), r" \1 "),
     ]
 
     _TOKENIZE_FN = {
@@ -125,7 +125,7 @@ class _SacreBLEUTokenizer:
         "13a": "_tokenize_13a",
         "zh": "_tokenize_zh",
         "intl": "_tokenize_international",
-        "char": "_tokenize_char"
+        "char": "_tokenize_char",
     }
 
     def __init__(self, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False) -> None:
@@ -133,7 +133,7 @@ class _SacreBLEUTokenizer:
         self.lowercase = lowercase
 
     def __call__(self, line: str) -> Sequence[str]:
-        tokenized_line =  self.tokenize_fn(line)
+        tokenized_line = self.tokenize_fn(line)
         return self._lower(tokenized_line, self.lowercase).split()
 
     @classmethod
@@ -149,7 +149,7 @@ class _SacreBLEUTokenizer:
         """Common post-processing tokenizer for `13a` and `zh` tokenizers.
         Args:
             line: a segment to tokenize
-        
+
         Return:
             the tokenized line
         """
@@ -163,7 +163,7 @@ class _SacreBLEUTokenizer:
         """
         Args:
             uchar: input char in unicode
-        
+
         Return:
             whether the input char is a Chinese character.
         """
@@ -174,8 +174,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_base(cls, line: str) -> str:
-        """
-        Tokenizes an input line with the tokenizer.
+        """Tokenizes an input line with the tokenizer.
 
         Args:
             line: a segment to tokenize
@@ -187,25 +186,25 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_13a(cls, line: str) -> str:
-        """Tokenizes an input line using a relatively minimal tokenization
-        that is however equivalent to mteval-v13a, used by WMT.
+        """Tokenizes an input line using a relatively minimal tokenization that is however equivalent to
+        mteval-v13a, used by WMT.
 
         Args:
             line: input sentence
-        
+
         Return:
             tokenized sentence
         """
         # language-independent part:
-        line = line.replace('<skipped>', '')
-        line = line.replace('-\n', '')
-        line = line.replace('\n', ' ')
+        line = line.replace("<skipped>", "")
+        line = line.replace("-\n", "")
+        line = line.replace("\n", " ")
 
-        if '&' in line:
-            line = line.replace('&quot;', '"')
-            line = line.replace('&amp;', '&')
-            line = line.replace('&lt;', '<')
-            line = line.replace('&gt;', '>')
+        if "&" in line:
+            line = line.replace("&quot;", '"')
+            line = line.replace("&amp;", "&")
+            line = line.replace("&lt;", "<")
+            line = line.replace("&gt;", ">")
 
         return cls._tokenize_regex(line)
 
@@ -218,7 +217,7 @@ class _SacreBLEUTokenizer:
 
         Args:
             line: input sentence
-        
+
         Return:
             tokenized sentence
         """
@@ -259,14 +258,14 @@ class _SacreBLEUTokenizer:
 
         Args:
             line: the input string to tokenize.
-        
+
         Return:
             The tokenized string.
         """
         for (_re, repl) in cls._INT_REGEX:
             line = _re.sub(repl, line)
 
-        return ' '.join(line.split())
+        return " ".join(line.split())
 
     @classmethod
     def _tokenize_char(cls, line: str) -> str:
@@ -277,7 +276,7 @@ class _SacreBLEUTokenizer:
         Return:
             the tokenized line
         """
-        return " ".join((char for char in line))
+        return " ".join(char for char in line)
 
     @staticmethod
     def _lower(line: str, lowercase: bool) -> str:
@@ -293,7 +292,6 @@ def sacrebleu_score(
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
     lowercase: bool = False,
-
 ) -> Tensor:
     """Calculate `BLEU score`_ of machine translated text with one or more references. This implementation follows
     the behaviour of SacreBLEU [1] implementation from https://github.com/mjpost/sacrebleu.
@@ -338,7 +336,7 @@ def sacrebleu_score(
         )
     if len(translate_corpus) != len(reference_corpus):
         raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
-    
+
     reference_corpus = [
         [_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in reference]
         for reference in reference_corpus

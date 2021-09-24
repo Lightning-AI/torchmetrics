@@ -21,9 +21,10 @@ from typing import Any, Callable, Literal, Optional, Sequence
 import torch
 from torch import Tensor, tensor
 
-from .bleu import BLEUScore
 from torchmetrics.functional.text.bleu import _bleu_score_update
 from torchmetrics.functional.text.sacrebleu import _SacreBLEUTokenizer
+
+from .bleu import BLEUScore
 
 
 class SacreBLEUScore(BLEUScore):
@@ -113,7 +114,7 @@ class SacreBLEUScore(BLEUScore):
             [self.tokenizer(line, self.tokenize) for line in reference] for reference in reference_corpus
         ]
         translate_corpus = [self.tokenizer(line, self.tokenize) for line in translate_corpus]
-                
+
         self.trans_len, self.ref_len = _bleu_score_update(
             reference_corpus,
             translate_corpus,
