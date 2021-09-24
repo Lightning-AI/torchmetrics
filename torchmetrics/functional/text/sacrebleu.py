@@ -128,16 +128,21 @@ class _SacreBLEUTokenizer:
         "char": "_tokenize_char"
     }
 
-    def __init__(self, tokenize: Literal["none", "13a", "zh", "intl", "char"]) -> None:
+    def __init__(self, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False) -> None:
         self.tokenize_fn = getattr(self, self._TOKENIZE_FN[tokenize])
+        self.lowercase = lowercase
 
     def __call__(self, line: str) -> Sequence[str]:
-        return self.tokenize_fn(line).split()
+        tokenized_line =  self.tokenize_fn(line)
+        return self._lower(tokenized_line, self.lowercase).split()
 
     @classmethod
-    def tokenize(cls, line: str, tokenize: Literal["none", "13a", "zh", "intl", "char"]) -> Sequence[str]:
+    def tokenize(
+        cls, line: str, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False
+    ) -> Sequence[str]:
         tokenize_fn = getattr(cls, cls._TOKENIZE_FN[tokenize])
-        return tokenize_fn(line).split()
+        tokenized_line = tokenize_fn(line)
+        return cls._lower(tokenized_line, lowercase).split()
 
     @classmethod
     def _tokenize_regex(cls, line: str) -> str:
@@ -274,6 +279,12 @@ class _SacreBLEUTokenizer:
         """
         return " ".join((char for char in line))
 
+    @staticmethod
+    def _lower(line: str, lowercase: bool) -> str:
+        if lowercase:
+            return line.lower()
+        return line
+
 
 def sacrebleu_score(
     reference_corpus: Sequence[Sequence[str]],
@@ -281,6 +292,7 @@ def sacrebleu_score(
     n_gram: int = 4,
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
+    lowercase: bool = False,
 
 ) -> Tensor:
     """Calculate `BLEU score`_ of machine translated text with one or more references. This implementation follows
@@ -298,7 +310,8 @@ def sacrebleu_score(
         tokenize:
             Tokenization technique to be used. (Default '13a')
             Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
-
+        lowercase:
+            If ``True``, BLEU score over lowercased text is calculated.
 
     Return:
         Tensor with BLEU Score
@@ -327,9 +340,10 @@ def sacrebleu_score(
         raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
     
     reference_corpus = [
-        [_SacreBLEUTokenizer.tokenize(line, tokenize) for line in reference] for reference in reference_corpus
+        [_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in reference]
+        for reference in reference_corpus
     ]
-    translate_corpus = [_SacreBLEUTokenizer.tokenize(line, tokenize) for line in translate_corpus]
+    translate_corpus = [_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in translate_corpus]
 
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
