@@ -52,6 +52,13 @@ class PESQ(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
+    Raises:
+        ValueError:
+            If ``peqs`` package is not installed
+        ValueError:
+            If ``fs`` is not either  ``8000`` or ``16000``
+        ValueError:
+            If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
         >>> from torchmetrics.audio import PESQ
