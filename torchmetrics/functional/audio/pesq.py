@@ -63,11 +63,9 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> nb_pesq_val = pesq(preds, target, 8000, 'nb')
-        >>> nb_pesq_val
+        >>> pesq(preds, target, 8000, 'nb')
         tensor(2.2076)
-        >>> wb_pesq_val = pesq(preds, target, 16000, 'wb')
-        >>> wb_pesq_val
+        >>> pesq(preds, target, 16000, 'wb')
         tensor(1.7359)
 
     References:

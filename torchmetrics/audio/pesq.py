@@ -67,12 +67,10 @@ class PESQ(Metric):
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> nb_pesq = PESQ(8000, 'nb')
-        >>> nb_pesq_val = nb_pesq(preds, target)
-        >>> nb_pesq_val
+        >>> nb_pesq(preds, target)
         tensor(2.2076)
         >>> wb_pesq = PESQ(16000, 'wb')
-        >>> wb_pesq_val = wb_pesq(preds, target)
-        >>> wb_pesq_val
+        >>> wb_pesq(preds, target)
         tensor(1.7359)
 
     References:
