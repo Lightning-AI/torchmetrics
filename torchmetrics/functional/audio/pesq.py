@@ -63,6 +63,11 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
     References:
         [1] https://github.com/ludlows/python-pesq
     """
+    if not _PESQ_AVAILABLE:
+            raise ValueError(
+                "PESQ metric requires that pesq is installed."
+                "Either install as `pip install torchmetrics[audio]` or `pip install pesq`"
+            )
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
     if mode not in ("wb", "nb"):
