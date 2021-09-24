@@ -22,8 +22,8 @@ from torchmetrics.metric import Metric
 class PESQ(Metric):
     """PESQ (Perceptual Evaluation of Speech Quality)
 
-    This is a wrapper for the pesq package [1].
-
+    This is a wrapper for the pesq package [1]. . Note that input will be moved to `cpu`
+    to perform the metric calculation.
      .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
          torchmetrics[audio]`` or ``pip install pesq``
 
