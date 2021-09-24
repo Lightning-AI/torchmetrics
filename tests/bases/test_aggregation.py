@@ -23,7 +23,7 @@ def compare_max(values, weights):
 
 
 def compare_cat(values, weights):
-    return np.concatenate(values.numpy())
+    return values.numpy()
 
 
 # wrap all other than mean metric to take an additional argument
@@ -75,6 +75,7 @@ class TestAggregation(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
             metric_class=metric_class,
             sk_metric=compare_fn,
+            check_scriptable=False,
             # Abuse of names here
             preds=values,
             target=weights,
