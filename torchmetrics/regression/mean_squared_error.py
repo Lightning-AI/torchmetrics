@@ -25,7 +25,7 @@ from torchmetrics.metric import Metric
 
 class MeanSquaredError(Metric):
     r"""
-    Computes `mean squared error <https://en.wikipedia.org/wiki/Mean_squared_error>`_ (MSE):
+    Computes `mean squared error`_ (MSE):
 
     .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
 
