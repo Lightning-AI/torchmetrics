@@ -89,6 +89,11 @@ class PESQ(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if not _PESQ_AVAILABLE:
+            raise ValueError(
+                "PESQ metric requires that pesq is installed."
+                "Either install as `pip install torchmetrics[audio]` or `pip install pesq`"
+            )
         if fs not in (8000, 16000):
             raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
         self.fs = fs
