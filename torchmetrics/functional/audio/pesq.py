@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import numpy as np
-import pesq as pesq_backend
+from torchmetrics.utilities.imports import _PESQ_AVAILABLE
+if _PESQ_AVAILABLE:
+    import pesq as pesq_backend
+else:
+    pesq_backend = None
 import torch
 from torch import Tensor
 
