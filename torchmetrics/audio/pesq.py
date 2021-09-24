@@ -93,7 +93,7 @@ class PESQ(Metric):
             raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
         self.fs = fs
         if mode not in ("wb", "nb"):
-            raise ValueError("Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
+            raise ValueError(f"Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
         self.mode = mode
 
         self.add_state("sum_pesq", default=tensor(0.0), dist_reduce_fx="sum")
