@@ -49,6 +49,14 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
     Returns:
         pesq value of shape [...]
 
+    Raises:
+        ValueError:
+            If ``peqs`` package is not installed
+        ValueError:
+            If ``fs`` is not either  ``8000`` or ``16000``
+        ValueError:
+            If ``mode`` is not either ``"wb"`` or ``"nb"``
+
     Example:
         >>> from torchmetrics.functional.audio import pesq
         >>> import torch
