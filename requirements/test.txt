@@ -19,6 +19,7 @@ scikit-image>0.17.1
 # add extra requirements
 -r image.txt
 -r text.txt
+-r integrate.txt
 
 # audio
 pypesq
