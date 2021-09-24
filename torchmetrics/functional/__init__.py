@@ -27,7 +27,7 @@ from torchmetrics.functional.classification.f_beta import f1, fbeta
 from torchmetrics.functional.classification.hamming_distance import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge
 from torchmetrics.functional.classification.iou import iou
-from torchmetrics.functional.classification.kl_divergence import kl_divergence, kldivergence
+from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
