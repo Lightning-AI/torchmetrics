@@ -64,7 +64,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRecall,
 )
 from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore  # noqa: E402
-from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: E402
+from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
 __all__ = [
     "functional",
@@ -103,6 +103,7 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MultioutputWrapper",
     "PearsonCorrcoef",
     "PESQ",
     "PIT",
