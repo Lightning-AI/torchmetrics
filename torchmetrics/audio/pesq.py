@@ -19,6 +19,7 @@ from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
+
 class PESQ(Metric):
     """PESQ (Perceptual Evaluation of Speech Quality)
 
