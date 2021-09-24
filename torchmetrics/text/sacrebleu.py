@@ -16,10 +16,9 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Callable, Literal, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
-import torch
-from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
 from torchmetrics.functional.text.sacrebleu import _SacreBLEUTokenizer
@@ -69,11 +68,6 @@ class SacreBLEUScore(BLEUScore):
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
-    trans_len: Tensor
-    ref_len: Tensor
-    numerator: Tensor
-    denominator: Tensor
-
     def __init__(
         self,
         n_gram: int = 4,
@@ -86,20 +80,14 @@ class SacreBLEUScore(BLEUScore):
         dist_sync_fn: Optional[Callable] = None,
     ):
         super().__init__(
+            n_gram=n_gram,
+            smooth=smooth,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-
-        self.n_gram = n_gram
-        self.smooth = smooth
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
-
-        self.add_state("trans_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("ref_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
-        self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
     def update(  # type: ignore
         self, reference_corpus: Sequence[Sequence[str]], translate_corpus: Sequence[str]
@@ -110,10 +98,8 @@ class SacreBLEUScore(BLEUScore):
             reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
         """
-        reference_corpus = [
-            [self.tokenizer(line, self.tokenize) for line in reference] for reference in reference_corpus
-        ]
-        translate_corpus = [self.tokenizer(line, self.tokenize) for line in translate_corpus]
+        reference_corpus = [[self.tokenizer(line) for line in reference] for reference in reference_corpus]
+        translate_corpus = [self.tokenizer(line) for line in translate_corpus]
 
         self.trans_len, self.ref_len = _bleu_score_update(
             reference_corpus,

@@ -56,11 +56,12 @@
 # SOFTWARE.
 
 import re
-from typing import Literal, Sequence
+from typing import Sequence
 
 import regex
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from .bleu import _bleu_score_compute, _bleu_score_update
 
