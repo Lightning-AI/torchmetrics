@@ -18,7 +18,6 @@ import cloudpickle
 import numpy as np
 import pytest
 import torch
-from pytorch_lightning import LightningModule
 from torch import Tensor, nn, tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
@@ -334,10 +333,15 @@ def test_forward_and_compute_to_device(metric_class):
 def test_device_if_child_module(metric_class):
     """Test that if a metric is a child module all values gets moved to the correct device."""
 
-    class TestModule(LightningModule):
+    class TestModule(nn.Module):
         def __init__(self):
             super().__init__()
             self.metric = metric_class()
+            self.register_buffer("dummy", torch.zeros(1))
+
+        @property
+        def device(self):
+            return self.dummy.device
 
     module = TestModule()
 
