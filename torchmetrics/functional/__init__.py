@@ -61,6 +61,7 @@ from torchmetrics.functional.self_supervised import embedding_similarity
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.rouge import rouge_score
+from torchmetrics.functional.text.sacrebleu import sacrebleu_score
 from torchmetrics.functional.text.wer import wer
 
 __all__ = [
@@ -109,6 +110,7 @@ __all__ = [
     "retrieval_reciprocal_rank",
     "roc",
     "rouge_score",
+    "sacrebleu_score",
     "si_sdr",
     "si_snr",
     "snr",
