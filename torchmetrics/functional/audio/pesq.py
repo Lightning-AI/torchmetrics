@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import numpy as np
-import pesq as pesq_backend
+from torchmetrics.utilities.imports import _PESQ_AVAILABLE
+if _PESQ_AVAILABLE:
+    import pesq as pesq_backend
+else:
+    pesq_backend = None
 import torch
 from torch import Tensor
 
@@ -22,7 +26,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
     r"""PESQ (Perceptual Evaluation of Speech Quality)
 
-    This is a wrapper for the ``pesq`` package [1].
+    This is a wrapper for the ``pesq`` package [1]. Note that input will be moved to `cpu`
+    to perform the metric calculation.
 
      .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
          torchmetrics[audio]`` or ``pip install pesq``
@@ -58,10 +63,15 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
     References:
         [1] https://github.com/ludlows/python-pesq
     """
+    if not _PESQ_AVAILABLE:
+            raise ValueError(
+                "PESQ metric requires that pesq is installed."
+                "Either install as `pip install torchmetrics[audio]` or `pip install pesq`"
+            )
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
     if mode not in ("wb", "nb"):
-        raise ValueError("Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
+        raise ValueError(f"Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
     _check_same_shape(preds, target)
 
     if preds.ndim == 1:

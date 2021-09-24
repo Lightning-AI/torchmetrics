@@ -17,13 +17,13 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
 class PESQ(Metric):
     """PESQ (Perceptual Evaluation of Speech Quality)
 
-    This is a wrapper for the pesq package [1].
-
+    This is a wrapper for the pesq package [1]. . Note that input will be moved to `cpu`
+    to perform the metric calculation.
      .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
          torchmetrics[audio]`` or ``pip install pesq``
 
@@ -89,11 +89,16 @@ class PESQ(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if not _PESQ_AVAILABLE:
+            raise ValueError(
+                "PESQ metric requires that pesq is installed."
+                "Either install as `pip install torchmetrics[audio]` or `pip install pesq`"
+            )
         if fs not in (8000, 16000):
             raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
         self.fs = fs
         if mode not in ("wb", "nb"):
-            raise ValueError("Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
+            raise ValueError(f"Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
         self.mode = mode
 
         self.add_state("sum_pesq", default=tensor(0.0), dist_reduce_fx="sum")
