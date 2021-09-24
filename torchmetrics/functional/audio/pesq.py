@@ -52,7 +52,7 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
     Example:
         >>> from torchmetrics.functional.audio import pesq
         >>> import torch
-        >>> torch.manual_seed(1)
+        >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> nb_pesq_val = pesq(preds, target, 8000, 'nb')

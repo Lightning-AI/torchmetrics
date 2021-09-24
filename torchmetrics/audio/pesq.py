@@ -56,7 +56,7 @@ class PESQ(Metric):
     Example:
         >>> from torchmetrics.audio import PESQ
         >>> import torch
-        >>> torch.manual_seed(1)
+        >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> nb_pesq = PESQ(8000, 'nb')
