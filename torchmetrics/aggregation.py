@@ -95,7 +95,7 @@ class BaseAggregator(Metric):
             else:
                 x[nans] = self.nan_strategy
 
-        return x
+        return x.float()
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
