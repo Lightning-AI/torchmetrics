@@ -33,7 +33,16 @@ REFERENCES = [
 
 HYPOTHESES = ["The dog bit the man.", "It wasn't surprising.", "The man had just bitten him."]
 
-TOKENIZERS = ["13a", "zh", "char"]
+TOKENIZERS = ["none", "13a", "zh", "char"]
+
+ROUND_N_DIGITS = 4
+
+
+def metrics_score_fn(targets, preds, tokenize):
+    metrics_score = sacrebleu_score(targets, preds, tokenize=tokenize)
+    # rescale to 0-100 and round to 4 decimals to match blue
+    metrics_score_normed = torch.round(100 * metrics_score * 10 ** ROUND_N_DIGITS) / 10 ** ROUND_N_DIGITS
+    return metrics_score_normed
 
 
 @pytest.mark.parametrize(
@@ -47,18 +56,18 @@ TOKENIZERS = ["13a", "zh", "char"]
 class TestSacreBLEUScore(TextTester):
     def test_sacrebleu_score_functional(self, preds, targets, tokenize):
         sacrebleu_metrics = BLEU(tokenize=tokenize)
-        original_score = torch.tensor(sacrebleu_metrics.corpus_score(preds, targets).score)
+        original_score = torch.tensor(round(sacrebleu_metrics.corpus_score(preds, targets).score, ROUND_N_DIGITS))
 
         metrics_targets = [[ref[i] for ref in targets] for i in range(len(targets[0]))]
-        metrics_score = 100 * sacrebleu_score(metrics_targets, preds, tokenize=tokenize)  # rescale to 0-100
+        metrics_score = metrics_score_fn(metrics_targets, preds, tokenize)
         assert metrics_score == original_score
 
     def test_sacrebleu_score_metrics(self, preds, targets, tokenize):
         sacrebleu_metrics = BLEU(tokenize=tokenize)
-        original_score = torch.tensor(sacrebleu_metrics.corpus_score(preds, targets).score)
+        original_score = torch.tensor(round(sacrebleu_metrics.corpus_score(preds, targets).score, ROUND_N_DIGITS))
 
         metrics_targets = [[ref[i] for ref in targets] for i in range(len(targets[0]))]
         tm_metrics = SacreBLEUScore(tokenize=tokenize)
         tm_metrics.update(metrics_targets, preds)
-        metrics_score = 100 * tm_metrics.compute()  # rescale to 0-100
+        metrics_score = metrics_score_fn(metrics_targets, preds, tokenize)
         assert metrics_score == original_score
