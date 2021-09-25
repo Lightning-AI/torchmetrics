@@ -45,7 +45,6 @@ from torchmetrics.functional.regression.mean_squared_error import mean_squared_e
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
-from torchmetrics.functional.regression.r2score import r2score
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
     symmetric_mean_absolute_percentage_error,
