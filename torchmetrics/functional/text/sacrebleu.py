@@ -294,8 +294,8 @@ def sacrebleu_score(
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
     lowercase: bool = False,
 ) -> Tensor:
-    """Calculate `BLEU score`_ of machine translated text with one or more references. This implementation follows
-    the behaviour of SacreBLEU [1] implementation from https://github.com/mjpost/sacrebleu.
+    """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
+    follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     Args:
         reference_corpus:
@@ -323,10 +323,10 @@ def sacrebleu_score(
         tensor(0.7598)
 
     References:
-        [1] A Call for Clarity in Reporting BLEU Scores by Matt Post.
-
-        [2] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
+        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
         Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
+
+        [2] A Call for Clarity in Reporting BLEU Scores by Matt Post.
 
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
