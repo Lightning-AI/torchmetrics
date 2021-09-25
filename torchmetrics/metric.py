@@ -412,6 +412,11 @@ class Metric(Module, ABC):
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
+    def __setattr__(self, name, value):
+        if name in ("higher_is_better", "is_differentiable"):
+            raise RuntimeError(f"Can't change const `{name}`.")
+        self.__dict__[name] = value
+
     @property
     def device(self) -> "torch.device":
         """Return the device of the metric."""
