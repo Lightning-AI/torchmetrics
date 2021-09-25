@@ -600,3 +600,9 @@ MetricTracker
 
 .. autoclass:: torchmetrics.MetricTracker
     :noindex:
+
+MultioutputWrapper
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MultioutputWrapper
+    :noindex:
