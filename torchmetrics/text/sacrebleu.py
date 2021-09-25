@@ -27,8 +27,8 @@ from .bleu import BLEUScore
 
 
 class SacreBLEUScore(BLEUScore):
-    """Calculate `BLEU score`_ of machine translated text with one or more references. This implementation follows
-    the behaviour of SacreBLEU [1] implementation from https://github.com/mjpost/sacrebleu.
+    """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
+    follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
 
@@ -56,7 +56,7 @@ class SacreBLEUScore(BLEUScore):
     Example:
         >>> translate_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = BLEUScore()
+        >>> metric = SacreBLEUScore()
         >>> metric(reference_corpus, translate_corpus)
         tensor(0.7598)
 
@@ -64,7 +64,9 @@ class SacreBLEUScore(BLEUScore):
         [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
         Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
 
-        [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
+        [2] A Call for Clarity in Reporting BLEU Scores by Matt Post.
+
+        [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
