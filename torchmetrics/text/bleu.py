@@ -58,6 +58,7 @@ class BLEUScore(Metric):
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+
     is_differentiable = False
     trans_len: Tensor
     ref_len: Tensor

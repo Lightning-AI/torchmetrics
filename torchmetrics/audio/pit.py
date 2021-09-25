@@ -68,6 +68,7 @@ class PIT(Metric):
         speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
+
     is_differentiable = True
     sum_pit_metric: Tensor
     total: Tensor

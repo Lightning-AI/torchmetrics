@@ -87,6 +87,7 @@ class MultioutputWrapper(Metric):
          >>> binned_avg_precision(preds, target)
          [[tensor(-0.), tensor(1.0000), tensor(1.0000)], [tensor(0.3333), tensor(-0.), tensor(0.6667)]]
     """
+
     is_differentiable = False
 
     def __init__(
