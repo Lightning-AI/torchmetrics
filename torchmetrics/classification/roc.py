@@ -102,7 +102,7 @@ class ROC(Metric):
          tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
-
+    is_differentiable = False
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -166,7 +166,3 @@ class ROC(Metric):
         if not self.num_classes:
             raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
         return _roc_compute(preds, target, self.num_classes, self.pos_label)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

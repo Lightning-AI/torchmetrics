@@ -80,7 +80,7 @@ class PrecisionRecallCurve(Metric):
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
     """
-
+    is_differentiable = False
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -146,7 +146,3 @@ class PrecisionRecallCurve(Metric):
         if not self.num_classes:
             raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
         return _precision_recall_curve_compute(preds, target, self.num_classes, self.pos_label)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

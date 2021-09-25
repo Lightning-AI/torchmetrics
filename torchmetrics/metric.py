@@ -69,6 +69,7 @@ class Metric(Module, ABC):
 
     __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
+    is_differentiable: Optional[bool] = None
 
     def __init__(
         self,
@@ -674,12 +675,6 @@ class Metric(Module, ABC):
 
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
-
-    @property
-    def is_differentiable(self) -> Optional[bool]:
-        # There is a bug in PyTorch that leads to properties being executed during scripting
-        # To make the metric scriptable, we add property to ignore list and switch to return None here
-        return None
 
 
 def _neg(x: Tensor) -> Tensor:

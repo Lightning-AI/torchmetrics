@@ -150,7 +150,7 @@ def _class_test(
         compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
     )
     with pytest.raises(RuntimeError):
-        metric.higher_is_better = not metric.higher_is_better
+        metric.is_differentiable = not metric.is_differentiable
 
     # check that the metric is scriptable
     if check_scriptable:
