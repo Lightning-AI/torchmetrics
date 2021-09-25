@@ -83,6 +83,7 @@ class AveragePrecision(Metric):
         >>> average_precision(pred, target)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
+
     is_differentiable = False
     preds: List[Tensor]
     target: List[Tensor]

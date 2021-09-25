@@ -268,6 +268,7 @@ class F1(FBeta):
         >>> f1(preds, target)
         tensor(0.3333)
     """
+
     is_differentiable = False
 
     def __init__(

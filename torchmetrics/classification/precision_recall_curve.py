@@ -80,6 +80,7 @@ class PrecisionRecallCurve(Metric):
         >>> thresholds
         [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
     """
+
     is_differentiable = False
     preds: List[Tensor]
     target: List[Tensor]
