@@ -72,12 +72,8 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Op
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     elif isinstance(pl_result, MAPMetricResults):
-        assert np.allclose(
-            pl_result.map.detach().cpu().numpy(), sk_result.map.numpy(), atol=atol, equal_nan=True
-        )
-        assert np.allclose(
-            pl_result.mar.detach().cpu().numpy(), sk_result.mar.numpy(), atol=atol, equal_nan=True
-        )
+        assert np.allclose(pl_result.map.detach().cpu().numpy(), sk_result.map.numpy(), atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.mar.detach().cpu().numpy(), sk_result.mar.numpy(), atol=atol, equal_nan=True)
         for i, sk_value in enumerate(sk_result.map_per_class):
             assert np.allclose(
                 pl_result.map_per_class[i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
