@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
+import logging
 import sys
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
@@ -31,6 +31,8 @@ else:
 COCO_STATS_MAP_VALUE_INDEX = 0
 COCO_STATS_MAR_VALUE_INDEX = 8
 
+log = logging.getLogger(__name__)
+
 
 @dataclass
 class MAPMetricResults:
@@ -42,6 +44,20 @@ class MAPMetricResults:
     mar_per_class_value: List[Tensor]
 
 
+class WriteToLog:
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            log.debug(line.rstrip())
+
+    def flush(self):
+        for handler in log.handlers:
+            handler.flush()
+
+    def close(self):
+        for handler in log.handlers:
+            handler.close()
+
+
 class _hide_prints:
     """Internal helper context to suppress the default output of the pycocotools package."""
 
@@ -50,7 +66,7 @@ class _hide_prints:
 
     def __enter__(self) -> None:
         self._original_stdout = sys.stdout  # type: ignore
-        sys.stdout = open(os.devnull, "w")
+        sys.stdout = WriteToLog()
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
         sys.stdout.close()
