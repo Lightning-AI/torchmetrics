@@ -182,10 +182,10 @@ def test_error_on_wrong_input():
     metric.update([], [])  # no error
 
     with pytest.raises(ValueError, match="Expected argument `preds` to be of type List"):
-        metric.update(torch.Tensor(), [])
+        metric.update(torch.Tensor(), [])  # type: ignore
 
     with pytest.raises(ValueError, match="Expected argument `target` to be of type List"):
-        metric.update([], torch.Tensor())
+        metric.update([], torch.Tensor())  # type: ignore
 
     with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
         metric.update([{}], [{}, {}])
