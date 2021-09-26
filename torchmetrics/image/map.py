@@ -280,13 +280,13 @@ class MAP(Metric):
             setattr(self, f"ap_{class_id}", class_map_value)
 
             current_value = getattr(self, f"ar_{class_id}")
-            class_map_value = torch.cat(
+            class_mar_value = torch.cat(
                 (
                     current_value,
                     torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=current_value.device),
                 )
             )
-            setattr(self, f"ar_{class_id}", class_map_value)
+            setattr(self, f"ar_{class_id}", class_mar_value)
 
         map_per_class_value = [torch.mean(getattr(self, f"ap_{class_id}")) for class_id in range(self.num_classes)]
         mar_per_class_value = [torch.mean(getattr(self, f"ar_{class_id}")) for class_id in range(self.num_classes)]
