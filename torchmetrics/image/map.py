@@ -14,7 +14,7 @@
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 import torch
 from torch import Tensor
@@ -76,9 +76,9 @@ class _hide_prints:
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
 
-    if not isinstance(preds, list):
+    if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type List")
-    if not isinstance(targets, list):
+    if not isinstance(targets, Sequence):
         raise ValueError("Expected argument `target` to be of type List")
     if len(preds) != len(targets):
         raise ValueError("Expected argument `preds` and `target` to have the same length")
