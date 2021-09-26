@@ -66,7 +66,7 @@ class RetrievalPrecision(RetrievalMetric):
         >>> p2(preds, target, indexes=indexes)
         tensor(0.5000)
     """
-    higher_is_better: bool = True
+    higher_is_better = True
 
     def __init__(
         self,

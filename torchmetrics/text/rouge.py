@@ -77,7 +77,6 @@ class ROUGEScore(Metric):
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin `Rouge Detail`_
     """
-
     higher_is_better = True
 
     def __init__(

@@ -68,7 +68,7 @@ class RetrievalFallOut(RetrievalMetric):
         >>> fo(preds, target, indexes=indexes)
         tensor(0.5000)
     """
-    higher_is_better: bool = False
+    higher_is_better = False
 
     def __init__(
         self,
