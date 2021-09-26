@@ -87,48 +87,17 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
         raise ValueError("Expected all labels in `target` to be of type torch.Tensor")
 
     for i, k in enumerate(targets):
-        boxes = k["boxes"]
-        labels = k["labels"]
-        if boxes.size(0) != labels.size(0):
+        if k["boxes"].size(0) != k["labels"].size(0):
             raise ValueError(
                 f"Input boxes and labels of sample {i} in targets have a"
-                f" different length (expected {boxes.size(0)} labels, got {labels.size(0)})"
+                f" different length (expected {k['boxes'].size(0)} labels, got {k['labels'].size(0)})"
             )
-        _validate_boxes_labels_scores(sample_id=0, boxes=boxes, labels=labels)
     for i, k in enumerate(preds):
-        boxes = k["boxes"]
-        labels = k["labels"]
-        scores = k["scores"]
-        if boxes.size(0) != labels.size(0) != scores.size(0):
+        if k["boxes"].size(0) != k["labels"].size(0) != k["scores"].size(0):
             raise ValueError(
                 f"Input boxes, labels and scores of sample {i} in preds have a"
-                f" different length (expected {boxes.size(0)} labels and scores,"
-                f" got {labels.size(0)} labels and {scores.size(0)})"
-            )
-        _validate_boxes_labels_scores(sample_id=0, boxes=boxes, labels=labels, scores=scores)
-
-
-def _validate_boxes_labels_scores(sample_id, boxes, labels, scores=None):
-    for j, box in enumerate(boxes):
-        if len(box) != 4:
-            raise ValueError(
-                f"Invalid input box of sample {sample_id}, element {j} (expected 4 values, got {len(box)})"
-            )
-
-    for j, label in enumerate(labels):
-        if type(label) != int:
-            raise ValueError(
-                f"Invalid input class of sample {sample_id}, element {j}"
-                f" (expected value of type integer, got type {type(label)})"
-            )
-
-    if scores is None:
-        return
-    for j, score in enumerate(scores):
-        if type(score) != float:
-            raise ValueError(
-                f"Invalid input score of sample {sample_id}, element {j}"
-                f" (expected value of type float, got type {type(score)})"
+                f" different length (expected {k['boxes'].size(0)} labels and scores,"
+                f" got {k['labels'].size(0)} labels and {k['scores'].size(0)})"
             )
 
 
