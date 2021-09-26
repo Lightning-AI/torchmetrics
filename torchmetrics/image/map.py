@@ -105,7 +105,7 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
                 f" different length (expected {boxes.size(0)} labels and scores,"
                 f" got {labels.size(0)} labels and {scores.size(0)})"
             )
-        _validate_boxes_labels_scores(sample_id=0, boxes= boxes, labels=labels, scores=scores)
+        _validate_boxes_labels_scores(sample_id=0, boxes=boxes, labels=labels, scores=scores)
 
 
 def _validate_boxes_labels_scores(sample_id, boxes, labels, scores=None):
