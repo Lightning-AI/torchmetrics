@@ -44,16 +44,19 @@ class MAPMetricResults:
     mar_per_class: List[Tensor]
 
 
+# noinspection PyMethodMayBeStatic
 class WriteToLog:
-    def write(self, buf):
+    """Logging class to move logs to log.debug()."""
+
+    def write(self, buf):  # skipcq: PY-D0003
         for line in buf.rstrip().splitlines():
             log.debug(line.rstrip())
 
-    def flush(self):
+    def flush(self):  # skipcq: PY-D0003
         for handler in log.handlers:
             handler.flush()
 
-    def close(self):
+    def close(self):  # skipcq: PY-D0003
         for handler in log.handlers:
             handler.close()
 
