@@ -73,18 +73,18 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Op
         assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     elif isinstance(pl_result, MAPMetricResults):
         assert np.allclose(
-            pl_result.map_value.detach().cpu().numpy(), sk_result.map_value.numpy(), atol=atol, equal_nan=True
+            pl_result.map.detach().cpu().numpy(), sk_result.map.numpy(), atol=atol, equal_nan=True
         )
         assert np.allclose(
-            pl_result.mar_value.detach().cpu().numpy(), sk_result.mar_value.numpy(), atol=atol, equal_nan=True
+            pl_result.mar.detach().cpu().numpy(), sk_result.mar.numpy(), atol=atol, equal_nan=True
         )
-        for i, sk_value in enumerate(sk_result.map_per_class_value):
+        for i, sk_value in enumerate(sk_result.map_per_class):
             assert np.allclose(
-                pl_result.map_per_class_value[i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
+                pl_result.map_per_class[i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
             )
-        for i, sk_value in enumerate(sk_result.mar_per_class_value):
+        for i, sk_value in enumerate(sk_result.mar_per_class):
             assert np.allclose(
-                pl_result.mar_per_class_value[i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
+                pl_result.mar_per_class[i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
             )
     else:
         raise ValueError("Unknown format for comparison")
@@ -100,10 +100,10 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert isinstance(pl_result[key], Tensor)
     elif isinstance(pl_result, MAPMetricResults):
-        assert isinstance(pl_result.map_value, Tensor)
-        assert isinstance(pl_result.mar_value, Tensor)
-        assert isinstance(pl_result.map_per_class_value, Sequence)
-        assert isinstance(pl_result.mar_per_class_value, Sequence)
+        assert isinstance(pl_result.map, Tensor)
+        assert isinstance(pl_result.mar, Tensor)
+        assert isinstance(pl_result.map_per_class, Sequence)
+        assert isinstance(pl_result.mar_per_class, Sequence)
     else:
         assert isinstance(pl_result, Tensor)
 

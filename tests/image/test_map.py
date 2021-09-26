@@ -113,16 +113,16 @@ def _compare_fn(preds, target) -> MAPMetricResults:
         Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
     """
     return MAPMetricResults(
-        map_value=torch.Tensor([0.658]),
-        mar_value=torch.Tensor([0.670]),
-        map_per_class_value=[
+        map=torch.Tensor([0.658]),
+        mar=torch.Tensor([0.670]),
+        map_per_class=[
             torch.Tensor([0.725]),
             torch.Tensor([0.800]),
             torch.Tensor([0.454]),
             torch.Tensor([-1.000]),
             torch.Tensor([0.650]),
         ],
-        mar_per_class_value=[
+        mar_per_class=[
             torch.Tensor([0.780]),
             torch.Tensor([0.800]),
             torch.Tensor([0.450]),

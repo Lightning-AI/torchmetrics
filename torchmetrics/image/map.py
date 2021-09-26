@@ -38,10 +38,10 @@ log = logging.getLogger(__name__)
 class MAPMetricResults:
     """Dataclass to wrap the final mAP results."""
 
-    map_value: Tensor
-    mar_value: Tensor
-    map_per_class_value: List[Tensor]
-    mar_per_class_value: List[Tensor]
+    map: Tensor
+    mar: Tensor
+    map_per_class: List[Tensor]
+    mar_per_class: List[Tensor]
 
 
 class WriteToLog:
@@ -321,10 +321,10 @@ class MAP(Metric):
         map_per_class_value = [torch.mean(getattr(self, f"ap_{class_id}")) for class_id in range(self.num_classes)]
         mar_per_class_value = [torch.mean(getattr(self, f"ar_{class_id}")) for class_id in range(self.num_classes)]
         metrics = MAPMetricResults(
-            map_value=torch.mean(self.average_precision),
-            mar_value=torch.mean(self.average_recall),
-            map_per_class_value=map_per_class_value,
-            mar_per_class_value=mar_per_class_value,
+            map=torch.mean(self.average_precision),
+            mar=torch.mean(self.average_recall),
+            map_per_class=map_per_class_value,
+            mar_per_class=mar_per_class_value,
         )
         return metrics
 
