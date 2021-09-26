@@ -189,7 +189,7 @@ class MAP(Metric):
             self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
             self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
-    def update(self, preds: Any, target: Any) -> None:  # type: ignore
+    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Updates mAP and mAR values with metric values from given predictions and groundtruth.
 
         Args:
