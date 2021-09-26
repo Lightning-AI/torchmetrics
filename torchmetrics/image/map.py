@@ -155,18 +155,9 @@ class MAP(Metric):
             If ``num_classes`` is not an integer larger or equal to 0
     """
 
-    def __init__(
-        self,
-        num_classes: int = 0,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+    def __init__(self, num_classes: int = 0, **kwargs) -> None:
+        super().__init__(**kwargs)
+
         if not _PYCOCOTOOLS_AVAILABLE:
             raise ValueError(
                 "`MAP` metric requires that `pycocotools` installed. Please install"
