@@ -245,8 +245,8 @@ class MAP(Metric):
             - mar_per_class_value: ``List[torch.Tensor]``
         """
         coco_target, coco_preds = COCO(), COCO()
-        coco_target.dataset = self._get_coco_format()
-        coco_preds.dataset = self._get_coco_format(is_pred=True)
+        coco_target.dataset = self._get_coco_format(self.groundtruth_boxes, self.groundtruth_labels)
+        coco_preds.dataset = self._get_coco_format(self.detection_boxes, self.detection_labels, self.detection_scores)
 
         with _hide_prints():
             coco_target.createIndex()
@@ -312,7 +312,7 @@ class MAP(Metric):
         )
         return metrics
 
-    def _get_coco_format(self, is_pred: bool = False) -> Dict:
+    def _get_coco_format(self, boxes, labels, scores=None) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
         Format is defined at https://cocodataset.org/#format-data
@@ -322,49 +322,22 @@ class MAP(Metric):
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        for i, _ in enumerate(self.groundtruth_boxes):
-            images.append({"id": i})
+        for image_id, (image_boxes, image_labels) in enumerate(zip(boxes, labels)):
+            image_boxes = image_boxes.cpu().tolist()
+            image_labels = image_labels.cpu().tolist()
 
-            if is_pred:
-                boxes = self.detection_boxes[i]
-                classes = self.detection_labels[i]
-                scores = self.detection_scores[i]
-            else:
-                boxes = self.groundtruth_boxes[i]
-                classes = self.groundtruth_labels[i]
-                scores = None
-
-            boxes = boxes.cpu().tolist()
-            classes = classes.cpu().tolist()
-            if scores is not None:
-                scores = scores.cpu().tolist()
-
-            for k, (box, label) in enumerate(zip(boxes, classes)):
-                if len(box) != 4:
-                    raise ValueError(
-                        f"Invalid input box of sample {i}, element {k} (expected 4 values, got {len(box)})"
-                    )
-                if type(label) != int:
-                    raise ValueError(
-                        f"Invalid input class of sample {i}, element {k}"
-                        f" (expected value of type integer, got type {type(label)})"
-                    )
+            images.append({"id": image_id})
+            for k, (image_box, image_label) in enumerate(zip(image_boxes, image_labels)):
                 annotation = {
                     "id": annotation_id,
-                    "image_id": i,
-                    "bbox": box,
-                    "category_id": label,
-                    "area": box[2] * box[3],
+                    "image_id": image_id,
+                    "bbox": image_box,
+                    "category_id": image_label,
+                    "area": image_box[2] * image_box[3],
                     "iscrowd": 0,
                 }
-                if is_pred and scores is not None:
-                    score = scores[k]
-                    if type(score) != float:
-                        raise ValueError(
-                            f"Invalid input score of sample {i}, element {k}"
-                            f" (expected value of type float, got type {type(score)})"
-                        )
-                    annotation["score"] = score
+                if scores is not None:
+                    annotation["score"] = scores[image_id][k].cpu()
                 annotations.append(annotation)
                 annotation_id += 1
 
