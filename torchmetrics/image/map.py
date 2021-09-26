@@ -86,6 +86,20 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
     if any(type(target["labels"]) is not torch.Tensor for target in targets):
         raise ValueError("Expected all labels in `target` to be of type torch.Tensor")
 
+    for i, k in enumerate(targets):
+        if k["boxes"].size(0) != k["labels"].size(0):
+            raise ValueError(
+                f"Input boxes and labels of sample {i} in targets have a"
+                f" different length (expected {k['boxes'].size(0)} labels, got {k['labels'].size(0)})"
+            )
+    for i, k in enumerate(preds):
+        if k["boxes"].size(0) != k["labels"].size(0) != k["scores"].size(0):
+            raise ValueError(
+                f"Input boxes, labels and scores of sample {i} in preds have a"
+                f" different length (expected {k['boxes'].size(0)} labels and scores,"
+                f" got {k['labels'].size(0)} labels and {k['scores'].size(0)})"
+            )
+
 
 class MAP(Metric):
     r"""
@@ -315,21 +329,10 @@ class MAP(Metric):
                 boxes = self.detection_boxes[i]
                 classes = self.detection_labels[i]
                 scores = self.detection_scores[i]
-                if boxes.size()[0] != scores.size()[0]:
-                    raise ValueError(
-                        f"Input boxes and scores of sample {i} have a different"
-                        f" length (expected {boxes.size()[0]} scores, got {scores.size()[0]})"
-                    )
             else:
                 boxes = self.groundtruth_boxes[i]
                 classes = self.groundtruth_labels[i]
                 scores = None
-
-            if boxes.size()[0] != classes.size()[0]:
-                raise ValueError(
-                    f"Input boxes and classes of sample {i} have a"
-                    f" different length (expected {boxes.size()[0]} classes, got {classes.size()[0]})"
-                )
 
             boxes = boxes.cpu().tolist()
             classes = classes.cpu().tolist()
