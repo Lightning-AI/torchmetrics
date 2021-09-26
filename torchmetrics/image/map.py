@@ -328,6 +328,17 @@ class MAP(Metric):
 
             images.append({"id": image_id})
             for k, (image_box, image_label) in enumerate(zip(image_boxes, image_labels)):
+                if len(image_box) != 4:
+                    raise ValueError(
+                        f"Invalid input box of sample {image_id}, element {k} (expected 4 values, got {len(image_box)})"
+                    )
+
+                if type(image_label) != int:
+                    raise ValueError(
+                        f"Invalid input class of sample {image_id}, element {k}"
+                        f" (expected value of type integer, got type {type(image_label)})"
+                    )
+
                 annotation = {
                     "id": annotation_id,
                     "image_id": image_id,
@@ -337,7 +348,13 @@ class MAP(Metric):
                     "iscrowd": 0,
                 }
                 if scores is not None:
-                    annotation["score"] = scores[image_id][k].cpu()
+                    score = scores[image_id][k].cpu().tolist()
+                    if type(score) != float:
+                        raise ValueError(
+                            f"Invalid input score of sample {image_id}, element {k}"
+                            f" (expected value of type float, got type {type(score)})"
+                        )
+                    annotation["score"] = score
                 annotations.append(annotation)
                 annotation_id += 1
 
