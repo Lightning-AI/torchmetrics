@@ -72,15 +72,15 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Op
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     elif isinstance(pl_result, MAPMetricResults):
-        for val_id in [a for a in dir(sk_result) if not a.startswith("__")]:
-            if type(sk_result[val_id]) is Tensor:
+        for val_index in [a for a in dir(sk_result) if not a.startswith("__")]:
+            if type(sk_result[val_index ]) is Tensor:
                 assert np.allclose(
-                    pl_result[val_id].detach().cpu().numpy(), sk_result[val_id].numpy(), atol=atol, equal_nan=True
+                    pl_result[val_index ].detach().cpu().numpy(), sk_result[val_index ].numpy(), atol=atol, equal_nan=True
                 )
-            if isinstance(sk_result[val_id], Sequence):
-                for i, sk_value in enumerate(sk_result[val_id]):
+            if isinstance(sk_result[val_index ], Sequence):
+                for i, sk_value in enumerate(sk_result[val_index ]):
                     assert np.allclose(
-                        pl_result[val_id][i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
+                        pl_result[val_index ][i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
                     )
     else:
         raise ValueError("Unknown format for comparison")
@@ -96,11 +96,11 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert isinstance(pl_result[key], Tensor)
     elif isinstance(pl_result, MAPMetricResults):
-        for val_id in [a for a in dir(pl_result) if not a.startswith("__")]:
-            if val_id in ["map_per_class", "mar_100_per_class"]:
-                assert isinstance(pl_result[val_id], Sequence)
+        for val_index in [a for a in dir(pl_result) if not a.startswith("__")]:
+            if val_index in ["map_per_class", "mar_100_per_class"]:
+                assert isinstance(pl_result[val_index], Sequence)
             else:
-                assert isinstance(pl_result[val_id], Tensor)
+                assert isinstance(pl_result[val_index], Tensor)
     else:
         assert isinstance(pl_result, Tensor)
 
