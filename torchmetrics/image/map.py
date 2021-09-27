@@ -58,15 +58,15 @@ class MAPMetricResults:
 class WriteToLog:
     """Logging class to move logs to log.debug()."""
 
-    def write(self, buf: str) -> None:  # skipcq: PY-D0003
+    def write(self, buf: str) -> None:  # skipcq: PY-D0003, PYL-R0201
         for line in buf.rstrip().splitlines():
             log.debug(line.rstrip())
 
-    def flush(self) -> None:  # skipcq: PY-D0003
+    def flush(self) -> None:  # skipcq: PY-D0003, PYL-R0201
         for handler in log.handlers:
             handler.flush()
 
-    def close(self) -> None:  # skipcq: PY-D0003
+    def close(self) -> None:  # skipcq: PY-D0003, PYL-R0201
         for handler in log.handlers:
             handler.close()
 
@@ -281,19 +281,6 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        map = torch.Tensor([stats[0]])
-        map_50 = torch.Tensor([stats[1]])
-        map_75 = torch.Tensor([stats[2]])
-        map_s = torch.Tensor([stats[3]])
-        map_m = torch.Tensor([stats[4]])
-        map_l = torch.Tensor([stats[5]])
-        mar_1 = torch.Tensor([stats[6]])
-        mar_10 = torch.Tensor([stats[7]])
-        mar_100 = torch.Tensor([stats[8]])
-        mar_s = torch.Tensor([stats[9]])
-        mar_m = torch.Tensor([stats[10]])
-        mar_l = torch.Tensor([stats[11]])
-
         # if class mode is enabled, evaluate metrics per class
         map_per_class_values = []
         mar_100_per_class_values = []
@@ -303,24 +290,24 @@ class MAP(Metric):
                 coco_eval.evaluate()
                 coco_eval.accumulate()
                 coco_eval.summarize()
-                stats = coco_eval.stats
+                class_stats = coco_eval.stats
 
-            map_per_class_values.append(torch.Tensor([stats[0]]))
-            mar_100_per_class_values.append(torch.Tensor([stats[8]]))
+            map_per_class_values.append(torch.Tensor([class_stats[0]]))
+            mar_100_per_class_values.append(torch.Tensor([class_stats[8]]))
 
         metrics = MAPMetricResults(
-            map=map,
-            map_50=map_50,
-            map_75=map_75,
-            map_s=map_s,
-            map_m=map_m,
-            map_l=map_l,
-            mar_1=mar_1,
-            mar_10=mar_10,
-            mar_100=mar_100,
-            mar_s=mar_s,
-            mar_m=mar_m,
-            mar_l=mar_l,
+            map=torch.Tensor([stats[0]]),
+            map_50=torch.Tensor([stats[1]]),
+            map_75=torch.Tensor([stats[2]]),
+            map_s=torch.Tensor([stats[3]]),
+            map_m=torch.Tensor([stats[4]]),
+            map_l=torch.Tensor([stats[5]]),
+            mar_1=torch.Tensor([stats[6]]),
+            mar_10=torch.Tensor([stats[7]]),
+            mar_100=torch.Tensor([stats[8]]),
+            mar_s=torch.Tensor([stats[9]]),
+            mar_m=torch.Tensor([stats[10]]),
+            mar_l=torch.Tensor([stats[11]]),
             map_per_class=map_per_class_values,
             mar_100_per_class=mar_100_per_class_values,
         )
