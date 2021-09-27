@@ -65,7 +65,7 @@ class WER(Metric):
         >>> metric(predictions, references)
         tensor(0.5000)
     """
-
+    is_differentiable = False
     error: Tensor
     total: Tensor
 
@@ -106,7 +106,3 @@ class WER(Metric):
             (Tensor) Word error rate
         """
         return _wer_compute(self.errors, self.total)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

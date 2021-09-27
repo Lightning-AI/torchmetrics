@@ -64,6 +64,7 @@ class SI_SDR(Metric):
         and Signal Processing (ICASSP) 2019.
     """
 
+    is_differentiable = True
     sum_si_sdr: Tensor
     total: Tensor
 
@@ -101,7 +102,3 @@ class SI_SDR(Metric):
     def compute(self) -> Tensor:
         """Computes average SI-SDR."""
         return self.sum_si_sdr / self.total
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

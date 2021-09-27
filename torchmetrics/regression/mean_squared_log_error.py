@@ -52,6 +52,7 @@ class MeanSquaredLogError(Metric):
         Half precision is only support on GPU for this metric
 
     """
+    is_differentiable = True
     sum_squared_log_error: Tensor
     total: Tensor
 
@@ -87,7 +88,3 @@ class MeanSquaredLogError(Metric):
     def compute(self) -> Tensor:
         """Compute mean squared logarithmic error over state."""
         return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

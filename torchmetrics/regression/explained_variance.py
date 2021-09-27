@@ -77,6 +77,7 @@ class ExplainedVariance(Metric):
         tensor([0.9677, 1.0000])
 
     """
+    is_differentiable = True
     n_obs: Tensor
     sum_error: Tensor
     sum_squared_error: Tensor
@@ -133,7 +134,3 @@ class ExplainedVariance(Metric):
             self.sum_squared_target,
             self.multioutput,
         )
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

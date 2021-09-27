@@ -91,7 +91,7 @@ class ConfusionMatrix(Metric):
                 [[0., 1.], [0., 1.]]])
 
     """
-
+    is_differentiable = False
     confmat: Tensor
 
     def __init__(
@@ -139,7 +139,3 @@ class ConfusionMatrix(Metric):
             this will be a `[n_classes, 2, 2]` tensor
         """
         return _confusion_matrix_compute(self.confmat, self.normalize)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False
