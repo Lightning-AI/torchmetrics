@@ -80,6 +80,8 @@ class PESQ(Metric):
 
     sum_pesq: Tensor
     total: Tensor
+    is_differentiable = False
+    higher_is_better = True
 
     def __init__(
         self,
