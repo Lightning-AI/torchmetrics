@@ -14,7 +14,7 @@
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Dict, List, Sequence, TextIO, Optional
+from typing import Dict, List, Optional, Sequence, TextIO
 
 import torch
 from torch import Tensor
@@ -326,7 +326,9 @@ class MAP(Metric):
         )
         return metrics
 
-    def _get_coco_format(self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]]=None) -> Dict:
+    def _get_coco_format(
+        self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
+    ) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
         Format is defined at https://cocodataset.org/#format-data
