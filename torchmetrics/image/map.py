@@ -14,7 +14,7 @@
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, TextIO
+from typing import Dict, List, Sequence, Optional, Union
 
 import torch
 from torch import Tensor
@@ -50,12 +50,12 @@ class MAPMetricResults:
     map_per_class: List[Tensor]
     mar_100_per_class: List[Tensor]
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
         return getattr(self, key)
 
 
 # noinspection PyMethodMayBeStatic
-class WriteToLog(TextIO):
+class WriteToLog:
     """Logging class to move logs to log.debug()."""
 
     def write(self, buf: str) -> None:  # skipcq: PY-D0003
@@ -79,7 +79,7 @@ class _hide_prints:
 
     def __enter__(self) -> None:
         self._original_stdout = sys.stdout  # type: ignore
-        sys.stdout = WriteToLog()
+        sys.stdout = WriteToLog()  # type: ignore
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
         sys.stdout.close()
@@ -115,18 +115,18 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
     if any(type(target["labels"]) is not torch.Tensor for target in targets):
         raise ValueError("Expected all labels in `target` to be of type torch.Tensor")
 
-    for i, k in enumerate(targets):
-        if k["boxes"].size(0) != k["labels"].size(0):
+    for i, item in enumerate(targets):
+        if item["boxes"].size(0) != item["labels"].size(0):
             raise ValueError(
                 f"Input boxes and labels of sample {i} in targets have a"
-                f" different length (expected {k['boxes'].size(0)} labels, got {k['labels'].size(0)})"
+                f" different length (expected {item['boxes'].size(0)} labels, got {item['labels'].size(0)})"
             )
-    for i, k in enumerate(preds):
-        if k["boxes"].size(0) != k["labels"].size(0) != k["scores"].size(0):
+    for i, item in enumerate(preds):
+        if item["boxes"].size(0) != item["labels"].size(0) != item["scores"].size(0):
             raise ValueError(
                 f"Input boxes, labels and scores of sample {i} in preds have a"
-                f" different length (expected {k['boxes'].size(0)} labels and scores,"
-                f" got {k['labels'].size(0)} labels and {k['scores'].size(0)})"
+                f" different length (expected {item['boxes'].size(0)} labels and scores,"
+                f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
             )
 
 
