@@ -72,9 +72,11 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Op
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     elif isinstance(pl_result, MAPMetricResults):
-        for key in [a for a in dir(sk_result) if not a.startswith('__')]:
+        for key in [a for a in dir(sk_result) if not a.startswith("__")]:
             if type(sk_result[key]) == Tensor:
-                assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result[key].numpy(), atol=atol, equal_nan=True)
+                assert np.allclose(
+                    pl_result[key].detach().cpu().numpy(), sk_result[key].numpy(), atol=atol, equal_nan=True
+                )
             if isinstance(sk_result[key], Sequence):
                 for i, sk_value in enumerate(sk_result[key]):
                     assert np.allclose(
@@ -94,8 +96,8 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert isinstance(pl_result[key], Tensor)
     elif isinstance(pl_result, MAPMetricResults):
-        for key in [a for a in dir(pl_result) if not a.startswith('__')]:
-            if key == 'map_per_class' or key == 'mar_100_per_class':
+        for key in [a for a in dir(pl_result) if not a.startswith("__")]:
+            if key == "map_per_class" or key == "mar_100_per_class":
                 assert isinstance(pl_result[key], Sequence)
             else:
                 assert isinstance(pl_result[key], Tensor)
