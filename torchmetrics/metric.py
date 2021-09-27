@@ -416,7 +416,7 @@ class Metric(Module, ABC):
     def __setattr__(self, name: str, value: Any) -> None:
         if name in ("higher_is_better", "is_differentiable"):
             raise RuntimeError(f"Can't change const `{name}`.")
-        super(). __setattr__(name, value)
+        super().__setattr__(name, value)
 
     @property
     def device(self) -> "torch.device":
