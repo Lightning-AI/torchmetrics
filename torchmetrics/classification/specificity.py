@@ -121,6 +121,7 @@ class Specificity(StatScores):
         tensor(0.6250)
 
     """
+    is_differentiable = False
 
     def __init__(
         self,
@@ -168,7 +169,3 @@ class Specificity(StatScores):
         """
         tp, fp, tn, fn = self._get_final_stats()
         return _specificity_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

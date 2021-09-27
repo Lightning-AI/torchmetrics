@@ -70,6 +70,7 @@ class SNR(Metric):
         and Signal Processing (ICASSP) 2019.
 
     """
+    is_differentiable = True
     sum_snr: Tensor
     total: Tensor
 
@@ -107,7 +108,3 @@ class SNR(Metric):
     def compute(self) -> Tensor:
         """Computes average SNR."""
         return self.sum_snr / self.total
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True
