@@ -53,6 +53,7 @@ from torchmetrics.regression import (  # noqa: E402
     R2Score,
     SpearmanCorrcoef,
     SymmetricMeanAbsolutePercentageError,
+    TweedieDevianceScore,
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
@@ -63,7 +64,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRecall,
 )
 from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore  # noqa: E402
-from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: E402
+from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
 __all__ = [
     "functional",
@@ -82,6 +83,7 @@ __all__ = [
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "TweedieDevianceScore",
     "ExplainedVariance",
     "F1",
     "FBeta",
@@ -101,6 +103,7 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MultioutputWrapper",
     "PearsonCorrcoef",
     "PIT",
     "Precision",

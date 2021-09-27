@@ -18,7 +18,7 @@ import cloudpickle
 import numpy as np
 import pytest
 import torch
-from torch import nn, tensor
+from torch import Tensor, nn, tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
@@ -253,17 +253,19 @@ def test_child_metric_state_dict():
 def test_device_and_dtype_transfer(tmpdir):
     metric = DummyMetricSum()
     assert metric.x.is_cuda is False
+    assert metric.device == torch.device("cpu")
     assert metric.x.dtype == torch.float32
 
     metric = metric.to(device="cuda")
     assert metric.x.is_cuda
+    assert metric.device == torch.device("cuda", index=0)
 
-    metric = metric.double()
+    metric.set_dtype(torch.double)
     assert metric.x.dtype == torch.float64
     metric.reset()
     assert metric.x.dtype == torch.float64
 
-    metric = metric.half()
+    metric.set_dtype(torch.half)
     assert metric.x.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16
@@ -324,3 +326,31 @@ def test_forward_and_compute_to_device(metric_class):
     assert metric._computed is not None
     is_cuda = metric._computed[0].is_cuda if isinstance(metric._computed, list) else metric._computed.is_cuda
     assert is_cuda, "computed result was not moved to the correct device"
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+@pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
+def test_device_if_child_module(metric_class):
+    """Test that if a metric is a child module all values gets moved to the correct device."""
+
+    class TestModule(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.metric = metric_class()
+            self.register_buffer("dummy", torch.zeros(1))
+
+        @property
+        def device(self):
+            return self.dummy.device
+
+    module = TestModule()
+
+    assert module.device == module.metric.device
+    if isinstance(module.metric.x, Tensor):
+        assert module.device == module.metric.x.device
+
+    module.to(device="cuda")
+
+    assert module.device == module.metric.device
+    if isinstance(module.metric.x, Tensor):
+        assert module.device == module.metric.x.device

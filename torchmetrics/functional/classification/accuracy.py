@@ -275,7 +275,7 @@ def accuracy(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
 ) -> Tensor:
-    r"""Computes `Accuracy <https://en.wikipedia.org/wiki/Accuracy_and_precision>`_:
+    r"""Computes `Accuracy`_
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)

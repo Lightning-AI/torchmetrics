@@ -426,6 +426,13 @@ SymmetricMeanAbsolutePercentageError
     :noindex:
 
 
+TweedieDevianceScore
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.TweedieDevianceScore
+    :noindex:
+
+
 *********
 Retrieval
 *********
@@ -570,4 +577,10 @@ MetricTracker
 ~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MetricTracker
+    :noindex:
+
+MultioutputWrapper
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MultioutputWrapper
     :noindex:

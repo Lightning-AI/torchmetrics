@@ -67,6 +67,8 @@ class RetrievalRecall(RetrievalMetric):
         tensor(0.7500)
     """
 
+    higher_is_better = True
+
     def __init__(
         self,
         empty_target_action: str = "neg",

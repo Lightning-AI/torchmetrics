@@ -16,6 +16,7 @@ from typing import Optional, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
 
@@ -88,11 +89,7 @@ def _hinge_update(
             ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
             ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
     """
-
-    if preds.shape[0] == 1:
-        preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
-    else:
-        preds, target = preds.squeeze(), target.squeeze()
+    preds, target = _input_squeeze(preds, target)
 
     mode = _check_shape_and_type_consistency_hinge(preds, target)
 
@@ -164,8 +161,9 @@ def hinge(
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tensor:
     r"""
-    Computes the mean `Hinge loss <https://en.wikipedia.org/wiki/Hinge_loss>`_, typically used for Support Vector
-    Machines (SVMs). In the binary case it is defined as:
+    Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+
+     In the binary case it is defined as:
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})

@@ -62,8 +62,8 @@ class BootStrapper(Metric):
         dist_sync_fn: Callable = None,
     ) -> None:
         r"""
-        Use to turn a metric into a `bootstrapped <https://en.wikipedia.org/wiki/Bootstrapping_(statistics)>`_
-        metric that can automate the process of getting confidence intervals for metric values. This wrapper
+        Using `Turn a Metric into a Bootstrapped`_
+        That can automate the process of getting confidence intervals for metric values. This wrapper
         class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
         ``forward`` is called, all input tensors are resampled (with replacement) along the first dimension.
 
@@ -149,7 +149,7 @@ class BootStrapper(Metric):
                 size = kwargs_sizes[0]
             else:
                 raise ValueError("None of the input contained tensors, so could not determine the sampling size")
-            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy)
+            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
             new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)

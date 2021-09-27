@@ -426,22 +426,25 @@ def test_top_k(
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
 
+@pytest.mark.parametrize("ignore_index", [None, 2])
 @pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
 @pytest.mark.parametrize(
     "metric_class, metric_functional, sk_fn",
     [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)],
 )
-def test_same_input(metric_class, metric_functional, sk_fn, average):
+def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_index):
     preds = _input_miss_class.preds
     target = _input_miss_class.target
-    preds_flat = torch.cat([p for p in preds], dim=0)
-    target_flat = torch.cat([t for t in target], dim=0)
+    preds_flat = torch.cat(list(preds), dim=0)
+    target_flat = torch.cat(list(target), dim=0)
 
-    mc = metric_class(num_classes=NUM_CLASSES, average=average)
+    mc = metric_class(num_classes=NUM_CLASSES, average=average, ignore_index=ignore_index)
     for i in range(NUM_BATCHES):
         mc.update(preds[i], target[i])
     class_res = mc.compute()
-    func_res = metric_functional(preds_flat, target_flat, num_classes=NUM_CLASSES, average=average)
+    func_res = metric_functional(
+        preds_flat, target_flat, num_classes=NUM_CLASSES, average=average, ignore_index=ignore_index
+    )
     sk_res = sk_fn(target_flat, preds_flat, average=average, zero_division=0)
 
     assert torch.allclose(class_res, torch.tensor(sk_res).float())

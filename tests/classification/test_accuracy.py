@@ -348,8 +348,8 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
 def test_same_input(average):
     preds = _input_miss_class.preds
     target = _input_miss_class.target
-    preds_flat = torch.cat([p for p in preds], dim=0)
-    target_flat = torch.cat([t for t in target], dim=0)
+    preds_flat = torch.cat(list(preds), dim=0)
+    target_flat = torch.cat(list(target), dim=0)
 
     mc = Accuracy(num_classes=NUM_CLASSES, average=average)
     for i in range(NUM_BATCHES):

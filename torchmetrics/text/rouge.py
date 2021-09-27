@@ -22,9 +22,8 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
 class ROUGEScore(Metric):
-    """Calculate `ROUGE score <https://en.wikipedia.org/wiki/ROUGE_(metric)>`_, used for automatic summarization.
-    This implementation should imitate the behaviour of the `rouge-score` package https://pypi.org/project/rouge-
-    score/.
+    """`Calculate Rouge Score`_, used for automatic summarization. This implementation should imitate the behaviour
+    of the `rouge-score` package `Python ROUGE Implementation`
 
     Args:
         newline_sep:
@@ -76,8 +75,10 @@ class ROUGEScore(Metric):
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
 
     References:
-        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin https://aclanthology.org/W04-1013/
+        [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin `Rouge Detail`_
     """
+
+    higher_is_better = True
 
     def __init__(
         self,
@@ -115,7 +116,11 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
-        self.sentence_results: Optional[Dict[Union[int, str], List[Dict[str, float]]]] = None
+
+        # Adding stated dynamically to prevent IndexError during sync function as some lists can be empty.
+        for rouge_key in self.rouge_keys:
+            for score in ["fmeasure", "precision", "recall"]:
+                self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
     def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
         """Compute rouge scores.
@@ -131,9 +136,13 @@ class ROUGEScore(Metric):
         if isinstance(targets, str):
             targets = [targets]
 
-        self.sentence_results = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, self.sentence_results, self.stemmer
+        output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
+            preds, targets, self.rouge_keys_values, stemmer=self.stemmer
         )
+        for rouge_key, metrics in output.items():
+            for metric in metrics:
+                for type, value in metric.items():
+                    getattr(self, f"rouge{rouge_key}_{type}").append(value.to(self.device))
 
     def compute(self) -> Dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score.
@@ -141,7 +150,12 @@ class ROUGEScore(Metric):
         Return:
             Python dictionary of rouge scores for each input rouge key.
         """
-        return _rouge_score_compute(self.sentence_results)
+        update_output = {}
+        for rouge_key in self.rouge_keys_values:
+            for type in ["fmeasure", "precision", "recall"]:
+                update_output[f"rouge{rouge_key}_{type}"] = getattr(self, f"rouge{rouge_key}_{type}")
+
+        return _rouge_score_compute(update_output)
 
     def __hash__(self) -> int:
         # override to hash list objects.

@@ -21,7 +21,7 @@ from copy import deepcopy
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
@@ -35,7 +35,7 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(nn.Module, ABC):
+class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
@@ -67,8 +67,10 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ["device", "dtype"]
+    __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
+    is_differentiable: Optional[bool] = None
+    higher_is_better: Optional[bool] = None
 
     def __init__(
         self,
@@ -84,6 +86,7 @@ class Metric(nn.Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
+        self._device = torch.device("cpu")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
@@ -411,6 +414,51 @@ class Metric(nn.Module, ABC):
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name in ("higher_is_better", "is_differentiable"):
+            raise RuntimeError(f"Can't change const `{name}`.")
+        super().__setattr__(name, value)
+
+    @property
+    def device(self) -> "torch.device":
+        """Return the device of the metric."""
+        return self._device
+
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def float(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def double(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def half(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+        """Special version of `type` for transferring all metric states to specific dtype
+        Arguments:
+            dst_type (type or string): the desired type
+        """
+        return super().type(dst_type)
+
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,
         `.cuda`, etc methods are called."""
@@ -431,6 +479,10 @@ class Metric(nn.Module, ABC):
                 raise TypeError(
                     "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
                 )
+
+        # make sure to update the device attribute
+        # if the dummy tensor moves device by fn function we should also update the attribute
+        self._device = fn(torch.zeros(1, device=self.device)).device
 
         # Additional apply to forward cache and computed attributes (may be nested)
         if this._computed is not None:
@@ -624,12 +676,6 @@ class Metric(nn.Module, ABC):
 
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
-
-    @property
-    def is_differentiable(self) -> Optional[bool]:
-        # There is a bug in PyTorch that leads to properties being executed during scripting
-        # To make the metric scriptable, we add property to ignore list and switch to return None here
-        return None
 
 
 def _neg(x: Tensor) -> Tensor:
