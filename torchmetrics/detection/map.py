@@ -282,7 +282,7 @@ class MAP(Metric):
             stats = coco_eval.stats
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values : Optional[List[Tensor]] = None
+        map_per_class_values: Optional[List[Tensor]] = None
         mar_100_per_class_values: Optional[List[Tensor]] = None
         if self.class_metrics:
             map_per_class_values = []
@@ -364,6 +364,8 @@ class MAP(Metric):
                 annotations.append(annotation)
                 annotation_id += 1
 
-        classes = [{"id": i.item(), "name": str(i.item())} for i in
-                   torch.cat(self.detection_labels + self.groundtruth_labels).unique()]
+        classes = [
+            {"id": i.item(), "name": str(i.item())}
+            for i in torch.cat(self.detection_labels + self.groundtruth_labels).unique()
+        ]
         return {"images": images, "annotations": annotations, "categories": classes}
