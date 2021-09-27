@@ -22,6 +22,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
 from torchmetrics.functional.text.sacrebleu import _SacreBLEUTokenizer
+from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
 from .bleu import BLEUScore
 
@@ -89,6 +90,8 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if tokenize == "intl" and not _REGEX_AVAILABLE:
+            raise ValueError("`'intl'` tokenization requires `regex` installed. Use `pip install regex`.")
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(  # type: ignore

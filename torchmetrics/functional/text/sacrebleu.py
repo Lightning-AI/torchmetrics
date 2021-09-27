@@ -58,10 +58,11 @@
 import re
 from typing import Sequence
 
-import regex
 import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
+
+from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
 from .bleu import _bleu_score_compute, _bleu_score_update
 
@@ -112,14 +113,17 @@ class _SacreBLEUTokenizer:
         # (re.compile(r'\s+'), r' '),
     ]
 
-    _INT_REGEX = [
-        # Separate out punctuations preceeded by a non-digit
-        (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
-        # Separate out punctuations followed by a non-digit
-        (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
-        # Separate out symbols
-        (regex.compile(r"(\p{S})"), r" \1 "),
-    ]
+    if _REGEX_AVAILABLE:
+        import regex
+
+        _INT_REGEX = [
+            # Separate out punctuations preceeded by a non-digit
+            (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
+            # Separate out punctuations followed by a non-digit
+            (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
+            # Separate out symbols
+            (regex.compile(r"(\p{S})"), r" \1 "),
+        ]
 
     _TOKENIZE_FN = {
         "none": "_tokenize_base",
@@ -337,6 +341,8 @@ def sacrebleu_score(
         )
     if len(translate_corpus) != len(reference_corpus):
         raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
+    if tokenize == "intl" and not _REGEX_AVAILABLE:
+        raise ValueError("`'intl'` tokenization requires `regex` installed. Use `pip install regex`.")
 
     reference_corpus = [
         [_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in reference]
