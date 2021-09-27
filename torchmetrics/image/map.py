@@ -14,7 +14,7 @@
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Dict, List, Sequence
+from typing import Dict, List, Sequence, TextIO, Optional
 
 import torch
 from torch import Tensor
@@ -50,23 +50,23 @@ class MAPMetricResults:
     map_per_class: List[Tensor]
     mar_100_per_class: List[Tensor]
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         return getattr(self, key)
 
 
 # noinspection PyMethodMayBeStatic
-class WriteToLog:
+class WriteToLog(TextIO):
     """Logging class to move logs to log.debug()."""
 
-    def write(self, buf):  # skipcq: PY-D0003
+    def write(self, buf: str) -> None:  # skipcq: PY-D0003
         for line in buf.rstrip().splitlines():
             log.debug(line.rstrip())
 
-    def flush(self):  # skipcq: PY-D0003
+    def flush(self) -> None:  # skipcq: PY-D0003
         for handler in log.handlers:
             handler.flush()
 
-    def close(self):  # skipcq: PY-D0003
+    def close(self) -> None:  # skipcq: PY-D0003
         for handler in log.handlers:
             handler.close()
 
@@ -168,7 +168,7 @@ class MAP(Metric):
             If ``num_classes`` is not an integer larger or equal to 0
     """
 
-    def __init__(self, num_classes: int = 0, **kwargs) -> None:
+    def __init__(self, num_classes: int = 0, **kwargs) -> None:  # type: ignore
         super().__init__(**kwargs)
 
         if not _PYCOCOTOOLS_AVAILABLE:
@@ -326,7 +326,7 @@ class MAP(Metric):
         )
         return metrics
 
-    def _get_coco_format(self, boxes, labels, scores=None) -> Dict:
+    def _get_coco_format(self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]]=None) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
         Format is defined at https://cocodataset.org/#format-data
