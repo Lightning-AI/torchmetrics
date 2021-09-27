@@ -128,4 +128,3 @@ class PESQ(Metric):
     def compute(self) -> Tensor:
         """Computes average PESQ."""
         return self.sum_pesq / self.total
-
