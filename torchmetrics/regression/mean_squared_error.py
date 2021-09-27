@@ -51,6 +51,7 @@ class MeanSquaredError(Metric):
         tensor(0.8750)
 
     """
+    is_differentiable = True
     sum_squared_error: Tensor
     total: Tensor
 
@@ -88,7 +89,3 @@ class MeanSquaredError(Metric):
     def compute(self) -> Tensor:
         """Computes mean squared error over state."""
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

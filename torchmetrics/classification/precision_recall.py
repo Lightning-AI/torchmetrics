@@ -120,6 +120,7 @@ class Precision(StatScores):
         tensor(0.2500)
 
     """
+    is_differentiable = False
 
     def __init__(
         self,
@@ -167,10 +168,6 @@ class Precision(StatScores):
         """
         tp, fp, _, fn = self._get_final_stats()
         return _precision_compute(tp, fp, fn, self.average, self.mdmc_reduce)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False
 
 
 class Recall(StatScores):
@@ -273,6 +270,7 @@ class Recall(StatScores):
         tensor(0.2500)
 
     """
+    is_differentiable = False
 
     def __init__(
         self,
@@ -320,7 +318,3 @@ class Recall(StatScores):
         """
         tp, fp, _, fn = self._get_final_stats()
         return _recall_compute(tp, fp, fn, self.average, self.mdmc_reduce)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

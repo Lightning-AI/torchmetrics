@@ -73,6 +73,7 @@ class MatthewsCorrcoef(Metric):
         tensor(0.5774)
 
     """
+    is_differentiable = False
     confmat: Tensor
 
     def __init__(
@@ -108,7 +109,3 @@ class MatthewsCorrcoef(Metric):
     def compute(self) -> Tensor:
         """Computes matthews correlation coefficient."""
         return _matthews_corrcoef_compute(self.confmat)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

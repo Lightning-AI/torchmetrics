@@ -164,6 +164,7 @@ class Accuracy(StatScores):
         tensor(0.6667)
 
     """
+    is_differentiable = False
     correct: Tensor
     total: Tensor
 
@@ -273,7 +274,3 @@ class Accuracy(StatScores):
             return _subset_accuracy_compute(self.correct, self.total)
         tp, fp, tn, fn = self._get_final_stats()
         return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

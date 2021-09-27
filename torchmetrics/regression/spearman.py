@@ -53,6 +53,7 @@ class SpearmanCorrcoef(Metric):
         tensor(1.0000)
 
     """
+    is_differentiable = False
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -93,7 +94,3 @@ class SpearmanCorrcoef(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False
