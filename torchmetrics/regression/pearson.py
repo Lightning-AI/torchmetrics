@@ -85,6 +85,7 @@ class PearsonCorrcoef(Metric):
         tensor(0.9849)
 
     """
+    is_differentiable = True
     preds: List[Tensor]
     target: List[Tensor]
     mean_x: Tensor
@@ -137,7 +138,3 @@ class PearsonCorrcoef(Metric):
             n_total = self.n_total
 
         return _pearson_corrcoef_compute(var_x, var_y, corr_xy, n_total)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

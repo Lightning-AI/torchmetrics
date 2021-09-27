@@ -48,6 +48,7 @@ class MeanAbsoluteError(Metric):
         >>> mean_absolute_error(preds, target)
         tensor(0.5000)
     """
+    is_differentiable = True
     sum_abs_error: Tensor
     total: Tensor
 
@@ -83,7 +84,3 @@ class MeanAbsoluteError(Metric):
     def compute(self) -> Tensor:
         """Computes mean absolute error over state."""
         return _mean_absolute_error_compute(self.sum_abs_error, self.total)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

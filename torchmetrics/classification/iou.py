@@ -77,6 +77,7 @@ class IoU(ConfusionMatrix):
         tensor(0.9660)
 
     """
+    is_differentiable = False
 
     def __init__(
         self,
@@ -104,7 +105,3 @@ class IoU(ConfusionMatrix):
     def compute(self) -> Tensor:
         """Computes intersection over union (IoU)"""
         return _iou_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

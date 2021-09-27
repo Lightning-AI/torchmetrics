@@ -127,7 +127,7 @@ class StatScores(Metric):
         tensor([2, 2, 6, 2, 4])
 
     """
-
+    is_differentiable = False
     # TODO: canot be used because if scripting
     # tp: Union[Tensor, List[Tensor]]
     # fp: Union[Tensor, List[Tensor]]
@@ -265,7 +265,3 @@ class StatScores(Metric):
         """
         tp, fp, tn, fn = self._get_final_stats()
         return _stat_scores_compute(tp, fp, tn, fn)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

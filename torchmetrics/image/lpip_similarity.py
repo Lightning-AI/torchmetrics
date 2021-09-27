@@ -87,6 +87,7 @@ class LPIPS(Metric):
         tensor([0.3566], grad_fn=<DivBackward0>)
     """
 
+    is_differentiable = True
     real_features: List[Tensor]
     fake_features: List[Tensor]
 
@@ -153,7 +154,3 @@ class LPIPS(Metric):
             return self.sum_scores / self.total
         if self.reduction == "sum":
             return self.sum_scores
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

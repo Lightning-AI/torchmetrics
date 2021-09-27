@@ -99,6 +99,7 @@ class AUROC(Metric):
         tensor(0.7778)
 
     """
+    is_differentiable = False
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -183,9 +184,3 @@ class AUROC(Metric):
             self.average,
             self.max_fpr,
         )
-
-    @property
-    def is_differentiable(self) -> bool:
-        """AUROC metrics is considered as non differentiable so it should have `false` value for
-        `is_differentiable` property."""
-        return False

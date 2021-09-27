@@ -77,6 +77,7 @@ class CohenKappa(Metric):
         tensor(0.5000)
 
     """
+    is_differentiable = False
     confmat: Tensor
 
     def __init__(
@@ -116,9 +117,3 @@ class CohenKappa(Metric):
     def compute(self) -> Tensor:
         """Computes cohen kappa score."""
         return _cohen_kappa_compute(self.confmat, self.weights)
-
-    @property
-    def is_differentiable(self) -> bool:
-        """cohen kappa is not differentiable since the implementation is based on calculating the confusion matrix
-        which in general is not differentiable."""
-        return False
