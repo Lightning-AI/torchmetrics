@@ -14,7 +14,7 @@
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Dict, List, Sequence, Optional, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
