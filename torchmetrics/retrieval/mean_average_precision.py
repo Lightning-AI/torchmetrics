@@ -64,5 +64,7 @@ class RetrievalMAP(RetrievalMetric):
         tensor(0.7917)
     """
 
+    higher_is_better = True
+
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_average_precision(preds, target)
