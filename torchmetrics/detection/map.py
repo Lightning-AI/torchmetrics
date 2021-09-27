@@ -177,7 +177,7 @@ class MAP(Metric):
                 " with `pip install pycocotools` or `pip install torchmetrics[image]`"
             )
 
-        if not (isinstance(class_metrics, bool)):
+        if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
         self.class_metrics = class_metrics
 
