@@ -14,7 +14,7 @@
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Dict, List, Sequence
 
 import torch
 from torch import Tensor
@@ -28,9 +28,6 @@ if _PYCOCOTOOLS_AVAILABLE:
 else:
     COCO, COCOeval = None, None
 
-COCO_STATS_MAP_VALUE_INDEX = 0
-COCO_STATS_MAR_VALUE_INDEX = 8
-
 log = logging.getLogger(__name__)
 
 
@@ -39,9 +36,22 @@ class MAPMetricResults:
     """Dataclass to wrap the final mAP results."""
 
     map: Tensor
-    mar: Tensor
+    map_50: Tensor
+    map_75: Tensor
+    map_s: Tensor
+    map_m: Tensor
+    map_l: Tensor
+    mar_1: Tensor
+    mar_10: Tensor
+    mar_100: Tensor
+    mar_s: Tensor
+    mar_m: Tensor
+    mar_l: Tensor
     map_per_class: List[Tensor]
-    mar_per_class: List[Tensor]
+    mar_100_per_class: List[Tensor]
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 
 
 # noinspection PyMethodMayBeStatic
@@ -261,12 +271,22 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        average_precision = stats[COCO_STATS_MAP_VALUE_INDEX]
-        average_recall = stats[COCO_STATS_MAR_VALUE_INDEX]
+        map = torch.Tensor([stats[0]])
+        map_50 = torch.Tensor([stats[1]])
+        map_75 = torch.Tensor([stats[2]])
+        map_s = torch.Tensor([stats[3]])
+        map_m = torch.Tensor([stats[4]])
+        map_l = torch.Tensor([stats[5]])
+        mar_1 = torch.Tensor([stats[6]])
+        mar_10 = torch.Tensor([stats[7]])
+        mar_100 = torch.Tensor([stats[8]])
+        mar_s = torch.Tensor([stats[9]])
+        mar_m = torch.Tensor([stats[10]])
+        mar_l = torch.Tensor([stats[11]])
 
         # if class mode is enabled, evaluate metrics per class
         map_per_class_values = []
-        mar_per_class_values = []
+        mar_100_per_class_values = []
         for class_id in range(self.num_classes):
             coco_eval.params.catIds = [class_id]
             with _hide_prints():
@@ -275,14 +295,24 @@ class MAP(Metric):
                 coco_eval.summarize()
                 stats = coco_eval.stats
 
-            map_per_class_values.append(torch.Tensor([stats[COCO_STATS_MAP_VALUE_INDEX]]))
-            mar_per_class_values.append(torch.Tensor([stats[COCO_STATS_MAR_VALUE_INDEX]]))
+            map_per_class_values.append(torch.Tensor([stats[0]]))
+            mar_100_per_class_values.append(torch.Tensor([stats[8]]))
 
         metrics = MAPMetricResults(
-            map=torch.Tensor([average_precision]),
-            mar=torch.Tensor([average_recall]),
+            map=map,
+            map_50=map_50,
+            map_75=map_75,
+            map_s=map_s,
+            map_m=map_m,
+            map_l=map_l,
+            mar_1=mar_1,
+            mar_10=mar_10,
+            mar_100=mar_100,
+            mar_s=mar_s,
+            mar_m=mar_m,
+            mar_l=mar_l,
             map_per_class=map_per_class_values,
-            mar_per_class=mar_per_class_values,
+            mar_100_per_class=mar_100_per_class_values,
         )
         return metrics
 
