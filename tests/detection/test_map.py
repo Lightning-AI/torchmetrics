@@ -175,7 +175,7 @@ class TestMAP(MetricTester):
             metric_class=MAP,
             sk_metric=_compare_fn,
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"num_classes": 5},
+            metric_args={"class_metrics": True},
         )
 
 
@@ -186,11 +186,8 @@ def test_error_on_wrong_init():
 
     MAP()  # no error
 
-    with pytest.raises(ValueError, match="Expected argument `num_classes` to be a integer larger or equal to 0"):
-        MAP(num_classes=-1)
-
-    with pytest.raises(ValueError, match="Expected argument `num_classes` to be a integer larger or equal to 0"):
-        MAP(num_classes=None)
+    with pytest.raises(ValueError, match="Expected argument `class_metrics` to be a boolean"):
+        MAP(class_metrics=0)
 
 
 @pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")

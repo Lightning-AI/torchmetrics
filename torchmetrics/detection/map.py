@@ -47,8 +47,8 @@ class MAPMetricResults:
     mar_s: Tensor
     mar_m: Tensor
     mar_l: Tensor
-    map_per_class: List[Tensor]
-    mar_100_per_class: List[Tensor]
+    map_per_class: Optional[List[Tensor]]
+    mar_100_per_class: Optional[List[Tensor]]
 
     def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
         return getattr(self, key)
@@ -144,15 +144,15 @@ class MAP(Metric):
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
         which is a standard implementation for the mAP metric for object detection. Using this metric
         therefore requires you to have `pycocotools` installed. Please install with `pip install pycocotools` or
-        `pip install torchmetrics[image]`
+        `pip install torchmetrics[detection]`.
 
     .. note::
         As the pycocotools library cannot deal with tensors directly, all results have to be transfered
-        to the CPU, this might have an performance impact on your training
+        to the CPU, this might have an performance impact on your training.
 
     Args:
-        num_classes:
-            Number of classes, required for mAP values per class. default: 0 (deactivate)
+        class_metrics:
+            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. defualt: False
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: False
         dist_sync_on_step:
@@ -165,10 +165,10 @@ class MAP(Metric):
         ValueError:
             If ``pycocotools`` is not installed
         ValueError:
-            If ``num_classes`` is not an integer larger or equal to 0
+            If ``class_metrics`` is not a boolean
     """
 
-    def __init__(self, num_classes: int = 0, **kwargs) -> None:  # type: ignore
+    def __init__(self, class_metrics: bool = True, **kwargs) -> None:  # type: ignore
         super().__init__(**kwargs)
 
         if not _PYCOCOTOOLS_AVAILABLE:
@@ -177,9 +177,9 @@ class MAP(Metric):
                 " with `pip install pycocotools` or `pip install torchmetrics[image]`"
             )
 
-        if not (isinstance(num_classes, int) and num_classes >= 0):
-            raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
-        self.num_classes = num_classes
+        if not (isinstance(class_metrics, bool)):
+            raise ValueError("Expected argument `class_metrics` to be a boolean")
+        self.class_metrics = class_metrics
 
         self.add_state("detection_boxes", default=[])
         self.add_state("detection_scores", default=[])
@@ -282,18 +282,21 @@ class MAP(Metric):
             stats = coco_eval.stats
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values = []
-        mar_100_per_class_values = []
-        for class_id in range(self.num_classes):
-            coco_eval.params.catIds = [class_id]
-            with _hide_prints():
-                coco_eval.evaluate()
-                coco_eval.accumulate()
-                coco_eval.summarize()
-                class_stats = coco_eval.stats
+        map_per_class_values : Optional[List[Tensor]] = None
+        mar_100_per_class_values: Optional[List[Tensor]] = None
+        if self.class_metrics:
+            map_per_class_values = []
+            mar_100_per_class_values = []
+            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique():
+                coco_eval.params.catIds = [class_id]
+                with _hide_prints():
+                    coco_eval.evaluate()
+                    coco_eval.accumulate()
+                    coco_eval.summarize()
+                    class_stats = coco_eval.stats
 
-            map_per_class_values.append(torch.Tensor([class_stats[0]]))
-            mar_100_per_class_values.append(torch.Tensor([class_stats[8]]))
+                map_per_class_values.append(torch.Tensor([class_stats[0]]))
+                mar_100_per_class_values.append(torch.Tensor([class_stats[8]]))
 
         metrics = MAPMetricResults(
             map=torch.Tensor([stats[0]]),
@@ -361,5 +364,6 @@ class MAP(Metric):
                 annotations.append(annotation)
                 annotation_id += 1
 
-        classes = [{"id": i, "name": str(i)} for i in range(self.num_classes)]
+        classes = [{"id": i.item(), "name": str(i.item())} for i in
+                   torch.cat(self.detection_labels + self.groundtruth_labels).unique()]
         return {"images": images, "annotations": annotations, "categories": classes}
