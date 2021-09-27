@@ -127,6 +127,3 @@ class PESQ(Metric):
         """Computes average PESQ."""
         return self.sum_pesq / self.total
 
-    @property
-    def is_differentiable(self) -> bool:
-        return False
