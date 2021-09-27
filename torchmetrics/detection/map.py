@@ -365,7 +365,7 @@ class MAP(Metric):
                 annotation_id += 1
 
         classes = [
-            {"id": i.item(), "name": str(i.item())}
+            {"id": i, "name": str(i)}
             for i in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
         ]
         return {"images": images, "annotations": annotations, "categories": classes}
