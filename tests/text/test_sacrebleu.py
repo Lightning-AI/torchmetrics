@@ -33,7 +33,7 @@ REFERENCES = [
 
 HYPOTHESES = ["The dog bit the man.", "It wasn't surprising.", "The man had just bitten him."]
 
-TOKENIZERS = ["none", "13a", "zh", "char"]
+TOKENIZERS = ["none", "13a", "zh", "intl", "char"]
 
 ROUND_N_DIGITS = 4
 
