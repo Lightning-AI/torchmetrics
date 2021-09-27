@@ -28,9 +28,9 @@ def _prepare_extras():
     extras = {
         "image": setup_tools._load_requirements(path_dir=_PATH_REQUIRE, file_name="image.txt"),  # skipcq: PYL-W0212
         "text": setup_tools._load_requirements(path_dir=_PATH_REQUIRE, file_name="text.txt"),  # skipcq: PYL-W0212
-        "detection": setup_tools._load_requirements(
+        "detection": setup_tools._load_requirements(  # skipcq: PYL-W0212
             path_dir=_PATH_REQUIRE, file_name="detection.txt"
-        ),  # skipcq: PYL-W0212
+        ),
     }
     # create an 'all' keyword that install all possible denpendencies
     extras["all"] = [package for extra in extras.values() for package in extra]
