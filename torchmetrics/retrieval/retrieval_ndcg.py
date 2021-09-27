@@ -67,6 +67,8 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         tensor(0.8467)
     """
 
+    higher_is_better = True
+
     def __init__(
         self,
         empty_target_action: str = "neg",

@@ -65,6 +65,7 @@ class SI_SDR(Metric):
     """
 
     is_differentiable = True
+    higher_is_better = True
     sum_si_sdr: Tensor
     total: Tensor
 

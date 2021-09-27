@@ -151,6 +151,8 @@ def _class_test(
     )
     with pytest.raises(RuntimeError):
         metric.is_differentiable = not metric.is_differentiable
+    with pytest.raises(RuntimeError):
+        metric.higher_is_better = not metric.higher_is_better
 
     # check that the metric is scriptable
     if check_scriptable:

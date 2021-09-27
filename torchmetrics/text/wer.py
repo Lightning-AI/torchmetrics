@@ -66,6 +66,7 @@ class WER(Metric):
         tensor(0.5000)
     """
     is_differentiable = False
+    higher_is_better = False
     error: Tensor
     total: Tensor
 

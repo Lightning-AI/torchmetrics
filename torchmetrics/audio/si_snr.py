@@ -65,6 +65,7 @@ class SI_SNR(Metric):
     is_differentiable = True
     sum_si_snr: Tensor
     total: Tensor
+    higher_is_better = True
 
     def __init__(
         self,
