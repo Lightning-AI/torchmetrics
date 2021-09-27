@@ -167,8 +167,6 @@ class MAP(Metric):
                 " with `pip install pycocotools` or `pip install torchmetrics[image]`"
             )
 
-        self.add_state("average_precision", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
-        self.add_state("average_recall", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
         if not (isinstance(num_classes, int) and num_classes >= 0):
             raise ValueError("Expected argument `num_classes` to be a integer larger or equal to 0")
         self.num_classes = num_classes
@@ -178,10 +176,6 @@ class MAP(Metric):
         self.add_state("detection_labels", default=[])
         self.add_state("groundtruth_boxes", default=[])
         self.add_state("groundtruth_labels", default=[])
-
-        for class_id in range(num_classes):
-            self.add_state(f"ap_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
-            self.add_state(f"ar_{class_id}", default=torch.tensor(data=[], dtype=torch.float), dist_reduce_fx="mean")
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Updates mAP and mAR values with metric values from given predictions and groundtruth.
@@ -267,25 +261,12 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
-        new_average_precision = torch.cat(
-            (
-                self.average_precision,
-                torch.tensor(
-                    [stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=self.average_precision.device
-                ),
-            )
-        )
-        setattr(self, "average_precision", new_average_precision)
-
-        new_average_recall = torch.cat(
-            (
-                self.average_recall,
-                torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=self.average_recall.device),
-            )
-        )
-        setattr(self, "average_recall", new_average_recall)
+        average_precision = stats[COCO_STATS_MAP_VALUE_INDEX]
+        average_recall = stats[COCO_STATS_MAR_VALUE_INDEX]
 
         # if class mode is enabled, evaluate metrics per class
+        map_per_class_values = []
+        mar_per_class_values = []
         for class_id in range(self.num_classes):
             coco_eval.params.catIds = [class_id]
             with _hide_prints():
@@ -294,31 +275,14 @@ class MAP(Metric):
                 coco_eval.summarize()
                 stats = coco_eval.stats
 
-            current_value = getattr(self, f"ap_{class_id}")
-            class_map_value = torch.cat(
-                (
-                    current_value,
-                    torch.tensor([stats[COCO_STATS_MAP_VALUE_INDEX]], dtype=torch.float, device=current_value.device),
-                )
-            )
-            setattr(self, f"ap_{class_id}", class_map_value)
+            map_per_class_values.append(torch.Tensor([stats[COCO_STATS_MAP_VALUE_INDEX]]))
+            mar_per_class_values.append(torch.Tensor([stats[COCO_STATS_MAR_VALUE_INDEX]]))
 
-            current_value = getattr(self, f"ar_{class_id}")
-            class_mar_value = torch.cat(
-                (
-                    current_value,
-                    torch.tensor([stats[COCO_STATS_MAR_VALUE_INDEX]], dtype=torch.float, device=current_value.device),
-                )
-            )
-            setattr(self, f"ar_{class_id}", class_mar_value)
-
-        map_per_class_value = [torch.mean(getattr(self, f"ap_{class_id}")) for class_id in range(self.num_classes)]
-        mar_per_class_value = [torch.mean(getattr(self, f"ar_{class_id}")) for class_id in range(self.num_classes)]
         metrics = MAPMetricResults(
-            map=torch.mean(self.average_precision),
-            mar=torch.mean(self.average_recall),
-            map_per_class=map_per_class_value,
-            mar_per_class=mar_per_class_value,
+            map=torch.Tensor([average_precision]),
+            mar=torch.Tensor([average_recall]),
+            map_per_class=map_per_class_values,
+            mar_per_class=mar_per_class_values,
         )
         return metrics
 
