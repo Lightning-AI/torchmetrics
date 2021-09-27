@@ -253,10 +253,20 @@ class MAP(Metric):
         Returns:
             dict containing
 
-            - map_value: ``torch.Tensor``
-            - mar_value: ``torch.Tensor``
-            - map_per_class_value: ``List[torch.Tensor]``
-            - mar_per_class_value: ``List[torch.Tensor]``
+            - map: ``torch.Tensor``
+            - map_50: ``torch.Tensor``
+            - map_75: ``torch.Tensor``
+            - map_s: ``torch.Tensor``
+            - map_m: ``torch.Tensor``
+            - map_l: ``torch.Tensor``
+            - mar_1: ``torch.Tensor``
+            - mar_10: ``torch.Tensor``
+            - mar_100: ``torch.Tensor``
+            - mar_s: ``torch.Tensor``
+            - mar_m: ``torch.Tensor``
+            - mar_l: ``torch.Tensor``
+            - map_per_class: ``List[torch.Tensor]``
+            - mar_100_per_class: ``List[torch.Tensor]``
         """
         coco_target, coco_preds = COCO(), COCO()
         coco_target.dataset = self._get_coco_format(self.groundtruth_boxes, self.groundtruth_labels)
