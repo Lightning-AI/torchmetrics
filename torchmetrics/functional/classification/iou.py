@@ -26,8 +26,28 @@ def _iou_from_confmat(
     num_classes: int,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
-    reduction: str = 'elementwise_mean',
+    reduction: str = "elementwise_mean",
 ) -> Tensor:
+    """Computes the intersection over union from confusion matrix.
+
+    Args:
+        confmat: Confusion matrix without normalization
+        num_classes: Number of classes for a given prediction and target tensor
+        ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method.
+        absent_score: score to use for an individual class, if no instances of the class index were present in `pred`
+            AND no instances of the class index were present in `target`.
+        reduction: a method to reduce metric score over labels.
+
+            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
+            - ``'none'``: no reduction will be applied
+    """
+
+    # Remove the ignored class index from the scores.
+    if ignore_index is not None and 0 <= ignore_index < num_classes:
+        confmat[ignore_index] = 0.0
+
     intersection = torch.diag(confmat)
     union = confmat.sum(0) + confmat.sum(1) - intersection
 
@@ -35,12 +55,14 @@ def _iou_from_confmat(
     scores = intersection.float() / union.float()
     scores[union == 0] = absent_score
 
-    # Remove the ignored class index from the scores.
     if ignore_index is not None and 0 <= ignore_index < num_classes:
-        scores = torch.cat([
-            scores[:ignore_index],
-            scores[ignore_index + 1:],
-        ])
+        scores = torch.cat(
+            [
+                scores[:ignore_index],
+                scores[ignore_index + 1 :],
+            ]
+        )
+
     return reduce(scores, reduction=reduction)
 
 
@@ -51,10 +73,10 @@ def iou(
     absent_score: float = 0.0,
     threshold: float = 0.5,
     num_classes: Optional[int] = None,
-    reduction: str = 'elementwise_mean',
+    reduction: str = "elementwise_mean",
 ) -> Tensor:
     r"""
-    Computes `Intersection over union, or Jaccard index calculation <https://en.wikipedia.org/wiki/Jaccard_index>`_:
+    Computes `Jaccard index`_
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
@@ -94,7 +116,7 @@ def iou(
             - ``'none'``: no reduction will be applied
 
     Return:
-        IoU score : Tensor containing single value if reduction is
+        IoU score: Tensor containing single value if reduction is
         'elementwise_mean', or number of classes if reduction is 'none'
 
     Example:

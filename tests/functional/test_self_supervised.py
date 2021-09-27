@@ -19,11 +19,11 @@ from torch import tensor
 from torchmetrics.functional import embedding_similarity
 
 
-@pytest.mark.parametrize('similarity', ['cosine', 'dot'])
-@pytest.mark.parametrize('reduction', ['none', 'mean', 'sum'])
+@pytest.mark.parametrize("similarity", ["cosine", "dot"])
+@pytest.mark.parametrize("reduction", ["none", "mean", "sum"])
 def test_against_sklearn(similarity, reduction):
     """Compare PL metrics to sklearn version."""
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     batch = torch.randn(5, 10, device=device)  # 100 samples in 10 dimensions
 
@@ -31,12 +31,12 @@ def test_against_sklearn(similarity, reduction):
 
     def sklearn_embedding_distance(batch, similarity, reduction):
 
-        metric_func = {'cosine': pairwise.cosine_similarity, 'dot': pairwise.linear_kernel}[similarity]
+        metric_func = {"cosine": pairwise.cosine_similarity, "dot": pairwise.linear_kernel}[similarity]
 
         dist = metric_func(batch, batch)
-        if reduction == 'mean':
+        if reduction == "mean":
             return dist.mean(axis=-1)
-        if reduction == 'sum':
+        if reduction == "sum":
             return dist.sum(axis=-1)
         return dist
 

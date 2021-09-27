@@ -18,10 +18,10 @@ import cloudpickle
 import numpy as np
 import pytest
 import torch
-from torch import nn, tensor
+from torch import Tensor, nn, tensor
 
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
-from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
+from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
 
 seed_all(42)
@@ -41,19 +41,19 @@ def test_add_state():
     assert np.allclose(a._reductions["b"](tensor([1.0, 2.0])).numpy(), 1.5)
 
     a.add_state("c", tensor(0), "cat")
-    assert a._reductions["c"]([tensor([1]), tensor([1])]).shape == (2, )
+    assert a._reductions["c"]([tensor([1]), tensor([1])]).shape == (2,)
 
     with pytest.raises(ValueError):
-        a.add_state("d1", tensor(0), 'xyz')
+        a.add_state("d1", tensor(0), "xyz")
 
     with pytest.raises(ValueError):
         a.add_state("d2", tensor(0), 42)
 
     with pytest.raises(ValueError):
-        a.add_state("d3", [tensor(0)], 'sum')
+        a.add_state("d3", [tensor(0)], "sum")
 
     with pytest.raises(ValueError):
-        a.add_state("d4", 42, 'sum')
+        a.add_state("d4", 42, "sum")
 
     def custom_fx(_):
         return -1
@@ -75,7 +75,6 @@ def test_add_state_persistent():
 
 
 def test_reset():
-
     class A(DummyMetric):
         pass
 
@@ -108,9 +107,7 @@ def test_reset_compute():
 
 
 def test_update():
-
     class A(DummyMetric):
-
         def update(self, x):
             self.x += x
 
@@ -126,9 +123,7 @@ def test_update():
 
 
 def test_compute():
-
     class A(DummyMetric):
-
         def update(self, x):
             self.x += x
 
@@ -153,7 +148,6 @@ def test_compute():
 
 
 def test_hash():
-
     class A(DummyMetric):
         pass
 
@@ -166,7 +160,7 @@ def test_hash():
 
     b1 = B()
     b2 = B()
-    assert hash(b1) == hash(b2)
+    assert hash(b1) != hash(b2)  # different ids
     assert isinstance(b1.x, list) and len(b1.x) == 0
     b1.x.append(tensor(5))
     assert isinstance(hash(b1), int)  # <- check that nothing crashes
@@ -179,9 +173,7 @@ def test_hash():
 
 
 def test_forward():
-
     class A(DummyMetric):
-
         def update(self, x):
             self.x += x
 
@@ -218,7 +210,7 @@ def test_pickle(tmpdir):
 
 
 def test_state_dict(tmpdir):
-    """ test that metric states can be removed and added to state dict """
+    """test that metric states can be removed and added to state dict."""
     metric = DummyMetric()
     assert metric.state_dict() == OrderedDict()
     metric.persistent(True)
@@ -228,7 +220,7 @@ def test_state_dict(tmpdir):
 
 
 def test_load_state_dict(tmpdir):
-    """ test that metric states can be loaded with state dict """
+    """test that metric states can be loaded with state dict."""
     metric = DummyMetricSum()
     metric.persistent(True)
     metric.update(5)
@@ -238,22 +230,21 @@ def test_load_state_dict(tmpdir):
 
 
 def test_child_metric_state_dict():
-    """ test that child metric states will be added to parent state dict """
+    """test that child metric states will be added to parent state dict."""
 
     class TestModule(nn.Module):
-
         def __init__(self):
             super().__init__()
             self.metric = DummyMetric()
-            self.metric.add_state('a', tensor(0), persistent=True)
-            self.metric.add_state('b', [], persistent=True)
-            self.metric.register_buffer('c', tensor(0))
+            self.metric.add_state("a", tensor(0), persistent=True)
+            self.metric.add_state("b", [], persistent=True)
+            self.metric.register_buffer("c", tensor(0))
 
     module = TestModule()
     expected_state_dict = {
-        'metric.a': tensor(0),
-        'metric.b': [],
-        'metric.c': tensor(0),
+        "metric.a": tensor(0),
+        "metric.b": [],
+        "metric.c": tensor(0),
     }
     assert module.state_dict() == expected_state_dict
 
@@ -262,23 +253,26 @@ def test_child_metric_state_dict():
 def test_device_and_dtype_transfer(tmpdir):
     metric = DummyMetricSum()
     assert metric.x.is_cuda is False
+    assert metric.device == torch.device("cpu")
     assert metric.x.dtype == torch.float32
 
-    metric = metric.to(device='cuda')
+    metric = metric.to(device="cuda")
     assert metric.x.is_cuda
+    assert metric.device == torch.device("cuda", index=0)
 
-    metric = metric.double()
+    metric.set_dtype(torch.double)
     assert metric.x.dtype == torch.float64
     metric.reset()
     assert metric.x.dtype == torch.float64
 
-    metric = metric.half()
+    metric.set_dtype(torch.half)
     assert metric.x.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16
 
 
 def test_warning_on_compute_before_update():
+    """test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
@@ -288,7 +282,7 @@ def test_warning_on_compute_before_update():
 
     metric.reset()
 
-    with pytest.warns(UserWarning, match=r'The ``compute`` method of metric .*'):
+    with pytest.warns(UserWarning, match=r"The ``compute`` method of metric .*"):
         val = metric.compute()
     assert val == 0.0
 
@@ -301,13 +295,62 @@ def test_warning_on_compute_before_update():
 
 
 def test_metric_scripts():
+    """test that metrics are scriptable."""
     torch.jit.script(DummyMetric())
     torch.jit.script(DummyMetricSum())
 
 
 def test_metric_forward_cache_reset():
+    """test that forward cache is reset when `reset` is called."""
     metric = DummyMetricSum()
     _ = metric(2.0)
     assert metric._forward_cache == 2.0
     metric.reset()
     assert metric._forward_cache is None
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+@pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
+def test_forward_and_compute_to_device(metric_class):
+    metric = metric_class()
+    metric(1)
+    metric.to(device="cuda")
+
+    assert metric._forward_cache is not None
+    is_cuda = (
+        metric._forward_cache[0].is_cuda if isinstance(metric._forward_cache, list) else metric._forward_cache.is_cuda
+    )
+    assert is_cuda, "forward cache was not moved to the correct device"
+
+    metric.compute()
+    assert metric._computed is not None
+    is_cuda = metric._computed[0].is_cuda if isinstance(metric._computed, list) else metric._computed.is_cuda
+    assert is_cuda, "computed result was not moved to the correct device"
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+@pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
+def test_device_if_child_module(metric_class):
+    """Test that if a metric is a child module all values gets moved to the correct device."""
+
+    class TestModule(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.metric = metric_class()
+            self.register_buffer("dummy", torch.zeros(1))
+
+        @property
+        def device(self):
+            return self.dummy.device
+
+    module = TestModule()
+
+    assert module.device == module.metric.device
+    if isinstance(module.metric.x, Tensor):
+        assert module.device == module.metric.x.device
+
+    module.to(device="cuda")
+
+    assert module.device == module.metric.device
+    if isinstance(module.metric.x, Tensor):
+        assert module.device == module.metric.x.device

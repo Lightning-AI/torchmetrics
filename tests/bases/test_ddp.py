@@ -20,7 +20,7 @@ import torch
 from torch import tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import DummyMetric, setup_ddp
+from tests.helpers.testers import DummyMetric, DummyMetricSum, setup_ddp
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
@@ -81,25 +81,36 @@ def _test_ddp_gather_uneven_tensors_multidim(rank, worldsize):
         assert (val == torch.ones_like(val)).all()
 
 
+def _test_ddp_compositional_tensor(rank, worldsize):
+    setup_ddp(rank, worldsize)
+    dummy = DummyMetricSum()
+    dummy._reductions = {"x": torch.sum}
+    dummy = dummy.clone() + dummy.clone()
+    dummy.update(tensor(1))
+    val = dummy.compute()
+    assert val == 2 * worldsize
+
+
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize(
-    "process", [
+    "process",
+    [
         _test_ddp_cat,
         _test_ddp_sum,
         _test_ddp_sum_cat,
         _test_ddp_gather_uneven_tensors,
         _test_ddp_gather_uneven_tensors_multidim,
-    ]
+        _test_ddp_compositional_tensor,
+    ],
 )
 def test_ddp(process):
-    torch.multiprocessing.spawn(process, args=(2, ), nprocs=2)
+    torch.multiprocessing.spawn(process, args=(2,), nprocs=2)
 
 
 def _test_non_contiguous_tensors(rank, worldsize):
     setup_ddp(rank, worldsize)
 
     class DummyCatMetric(Metric):
-
         def __init__(self):
             super().__init__()
             self.add_state("x", default=[], dist_reduce_fx=None)
@@ -117,15 +128,14 @@ def _test_non_contiguous_tensors(rank, worldsize):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_non_contiguous_tensors():
-    """ Test that gather_all operation works for non contiguous tensors """
-    torch.multiprocessing.spawn(_test_non_contiguous_tensors, args=(2, ), nprocs=2)
+    """Test that gather_all operation works for non contiguous tensors."""
+    torch.multiprocessing.spawn(_test_non_contiguous_tensors, args=(2,), nprocs=2)
 
 
 def _test_state_dict_is_synced(rank, worldsize, tmpdir):
     setup_ddp(rank, worldsize)
 
     class DummyCatMetric(Metric):
-
         def __init__(self):
             super().__init__()
             self.add_state("x", torch.tensor(0), dist_reduce_fx=torch.sum)
@@ -215,7 +225,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     metric.sync()
 
-    filepath = os.path.join(tmpdir, f'weights-{rank}.pt')
+    filepath = os.path.join(tmpdir, f"weights-{rank}.pt")
 
     torch.save(metric.state_dict(), filepath)
 
@@ -226,8 +236,6 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_state_dict_is_synced(tmpdir):
-    """
-    This test asserts that metrics are synced while creating the state
-    dict but restored after to continue accumulation.
-    """
+    """This test asserts that metrics are synced while creating the state dict but restored after to continue
+    accumulation."""
     torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)

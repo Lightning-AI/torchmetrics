@@ -7,14 +7,14 @@ requires = [
 [tool.black]
 # https://github.com/psf/black
 line-length = 120
-target-version = ["py38"]
-exclude = "(.eggs|.git|.hg|.mypy_cache|.nox|.tox|.venv|.svn|_build|buck-out|build|dist)"
+exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 
 [tool.isort]
 known_first_party = [
     "torchmetrics",
     "tests",
     "integrations",
+    "tm_examples",
 ]
 skip_glob = []
 profile = "black"

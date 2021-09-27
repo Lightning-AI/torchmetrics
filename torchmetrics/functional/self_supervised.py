@@ -19,10 +19,9 @@ from torch import Tensor
 from torchmetrics.functional.pairwise import pairwise_cosine_distance, pairwise_euclidean_distance
 
 def embedding_similarity(
-    batch: Tensor, similarity: str = 'cosine', reduction: str = 'none', zero_diagonal: bool = True
+    batch: Tensor, similarity: str = "cosine", reduction: str = "none", zero_diagonal: bool = True
 ) -> Tensor:
-    """
-    Computes representation similarity
+    """Computes representation similarity.
 
     Example:
         >>> from torchmetrics.functional import embedding_similarity

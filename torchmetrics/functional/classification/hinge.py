@@ -16,6 +16,7 @@ from typing import Optional, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
 
@@ -35,8 +36,22 @@ def _check_shape_and_type_consistency_hinge(
     preds: Tensor,
     target: Tensor,
 ) -> DataType:
+    """Checks shape and type of `preds` and `target` and returns mode of the input tensors.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+
+    Raises:
+        `ValueError`: if `target` is not one dimensional
+        `ValueError`: if `preds` and `target` do not have the same shape in the first dimension
+        `ValueError`: if `pred` is neither one nor two dimensional
+    """
+
     if target.ndim > 1:
-        raise ValueError(f"The `target` should be one dimensional, got `target` with shape={target.shape}.", )
+        raise ValueError(
+            f"The `target` should be one dimensional, got `target` with shape={target.shape}.",
+        )
 
     if preds.ndim == 1:
         if preds.shape != target.shape:
@@ -63,10 +78,18 @@ def _hinge_update(
     squared: bool = False,
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    if preds.shape[0] == 1:
-        preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
-    else:
-        preds, target = preds.squeeze(), target.squeeze()
+    """Updates and returns sum over Hinge loss scores for each observation and the total number of observations.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        squared: If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss.
+        multiclass_mode:
+            Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default),
+            ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
+            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
+    """
+    preds, target = _input_squeeze(preds, target)
 
     mode = _check_shape_and_type_consistency_hinge(preds, target)
 
@@ -99,6 +122,35 @@ def _hinge_update(
 
 
 def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
+    """Computes mean Hinge loss.
+
+    Args:
+        measure: Sum over hinge losses for each each observation
+        total: Number of observations
+
+    Example:
+        >>> # binary case
+        >>> target = torch.tensor([0, 1, 1])
+        >>> preds = torch.tensor([-2.2, 2.4, 0.1])
+        >>> measure, total = _hinge_update(preds, target)
+        >>> _hinge_compute(measure, total)
+        tensor(0.3000)
+
+        >>> # multiclass case
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> measure, total = _hinge_update(preds, target)
+        >>> _hinge_compute(measure, total)
+        tensor(2.9000)
+
+        >>> # multiclass one-vs-all mode case
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> measure, total = _hinge_update(preds, target, multiclass_mode="one-vs-all")
+        >>> _hinge_compute(measure, total)
+        tensor([2.2333, 1.5000, 1.2333])
+    """
+
     return measure / total
 
 
@@ -109,8 +161,9 @@ def hinge(
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tensor:
     r"""
-    Computes the mean `Hinge loss <https://en.wikipedia.org/wiki/Hinge_loss>`_, typically used for Support Vector
-    Machines (SVMs). In the binary case it is defined as:
+    Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+
+     In the binary case it is defined as:
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})

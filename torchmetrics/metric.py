@@ -21,7 +21,7 @@ from copy import deepcopy
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
@@ -35,9 +35,8 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(nn.Module, ABC):
-    """
-    Base class for all metrics present in the Metrics API.
+class Metric(Module, ABC):
+    """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
     handle distributed synchronization and per-step metric computation.
@@ -68,7 +67,8 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ['is_differentiable', 'device', 'dtype']
+    __jit_ignored_attributes__ = ["device"]
+    __jit_unused_properties__ = ["is_differentiable"]
 
     def __init__(
         self,
@@ -84,6 +84,7 @@ class Metric(nn.Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
+        self._device = torch.device("cpu")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
@@ -113,10 +114,9 @@ class Metric(nn.Module, ABC):
         name: str,
         default: Union[list, Tensor],
         dist_reduce_fx: Optional[Union[str, Callable]] = None,
-        persistent: bool = False
+        persistent: bool = False,
     ) -> None:
-        """
-        Adds metric state variable. Only used by subclasses.
+        """Adds metric state variable. Only used by subclasses.
 
         Args:
             name: The name of the state variable. The variable will then be accessible at ``self.name``.
@@ -176,8 +176,9 @@ class Metric(nn.Module, ABC):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        Automatically calls ``update()``. Returns the metric value over inputs if ``compute_on_step`` is True.
+        """Automatically calls ``update()``.
+
+        Returns the metric value over inputs if ``compute_on_step`` is True.
         """
         # add current step
         if self._is_synced:
@@ -236,12 +237,11 @@ class Metric(nn.Module, ABC):
                 output_dict[attr] = _flatten(output_dict[attr])
 
             if not (callable(reduction_fn) or reduction_fn is None):
-                raise TypeError('reduction_fn must be callable or None')
+                raise TypeError("reduction_fn must be callable or None")
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
     def _wrap_update(self, update: Callable) -> Callable:
-
         @functools.wraps(update)
         def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
             self._computed = None
@@ -257,8 +257,7 @@ class Metric(nn.Module, ABC):
         should_sync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> None:
-        """
-        Sync function for manually controlling when metrics states should be synced across processes
+        """Sync function for manually controlling when metrics states should be synced across processes.
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
@@ -268,7 +267,6 @@ class Metric(nn.Module, ABC):
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
-
         """
         if self._is_synced and should_sync:
             raise TorchMetricsUserError("The Metric has already been synced.")
@@ -289,12 +287,11 @@ class Metric(nn.Module, ABC):
         self._is_synced = True
 
     def unsync(self, should_unsync: bool = True) -> None:
-        """
-        Unsync function for manually controlling when metrics states should be reverted back to their local states.
+        """Unsync function for manually controlling when metrics states should be reverted back to their local
+        states.
 
         Args:
             should_unsync: Whether to perform unsync
-
         """
         if not should_unsync:
             return
@@ -320,9 +317,8 @@ class Metric(nn.Module, ABC):
         should_unsync: bool = True,
         distributed_available: Optional[Callable] = jit_distributed_available,
     ) -> Generator:
-        """
-        Context manager to synchronize the states between processes when running in a distributed setting
-        and restore the local cache states after yielding.
+        """Context manager to synchronize the states between processes when running in a distributed setting and
+        restore the local cache states after yielding.
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
@@ -339,7 +335,7 @@ class Metric(nn.Module, ABC):
             dist_sync_fn=dist_sync_fn,
             process_group=process_group,
             should_sync=should_sync,
-            distributed_available=distributed_available
+            distributed_available=distributed_available,
         )
 
         yield
@@ -347,14 +343,14 @@ class Metric(nn.Module, ABC):
         self.unsync(should_unsync=self._is_synced and should_unsync)
 
     def _wrap_compute(self, compute: Callable) -> Callable:
-
         @functools.wraps(compute)
         def wrapped_func(*args: Any, **kwargs: Any) -> Any:
             if not self._update_called:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
                     " was called before the ``update`` method which may lead to errors,"
-                    " as metric states have not yet been updated.", UserWarning
+                    " as metric states have not yet been updated.",
+                    UserWarning,
                 )
 
             # return cached value
@@ -375,21 +371,15 @@ class Metric(nn.Module, ABC):
 
     @abstractmethod
     def update(self, *_: Any, **__: Any) -> None:
-        """
-        Override this method to update the state variables of your metric class.
-        """
+        """Override this method to update the state variables of your metric class."""
 
     @abstractmethod
     def compute(self) -> Any:
-        """
-        Override this method to compute the final metric value from state variables
-        synchronized across the distributed backend.
-        """
+        """Override this method to compute the final metric value from state variables synchronized across the
+        distributed backend."""
 
     def reset(self) -> None:
-        """
-        This method automatically resets the metric state variables to their default value.
-        """
+        """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log
@@ -408,7 +398,7 @@ class Metric(nn.Module, ABC):
         self._is_synced = False
 
     def clone(self) -> "Metric":
-        """ Make a copy of the metric """
+        """Make a copy of the metric."""
         return deepcopy(self)
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -422,10 +412,49 @@ class Metric(nn.Module, ABC):
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
-    def _apply(self, fn: Callable) -> Module:
-        """Overwrite _apply function such that we can also move metric states
-        to the correct device when `.to`, `.cuda`, etc methods are called
+    @property
+    def device(self) -> "torch.device":
+        """Return the device of the metric."""
+        return self._device
+
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
         """
+        return self
+
+    def float(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def double(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def half(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+        """Special version of `type` for transferring all metric states to specific dtype
+        Arguments:
+            dst_type (type or string): the desired type
+        """
+        return super().type(dst_type)
+
+    def _apply(self, fn: Callable) -> Module:
+        """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,
+        `.cuda`, etc methods are called."""
         this = super()._apply(fn)
         # Also apply fn to metric states and defaults
         for key, value in this._defaults.items():
@@ -441,15 +470,23 @@ class Metric(nn.Module, ABC):
                 setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a Tensor"
-                    f"or a list of Tensor, but encountered {current_val}"
+                    "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
                 )
+
+        # make sure to update the device attribute
+        # if the dummy tensor moves device by fn function we should also update the attribute
+        self._device = fn(torch.zeros(1, device=self.device)).device
+
+        # Additional apply to forward cache and computed attributes (may be nested)
+        if this._computed is not None:
+            this._computed = apply_to_collection(this._computed, Tensor, fn)
+        if this._forward_cache is not None:
+            this._forward_cache = apply_to_collection(this._forward_cache, Tensor, fn)
+
         return this
 
     def persistent(self, mode: bool = False) -> None:
-        """Method for post-init to change if metric states should be saved to
-        its state_dict
-        """
+        """Method for post-init to change if metric states should be saved to its state_dict."""
         for key in self._persistent:
             self._persistent[key] = mode
 
@@ -483,7 +520,7 @@ class Metric(nn.Module, ABC):
         unexpected_keys: List[str],
         error_msgs: List[str],
     ) -> None:
-        """ Loads metric states from state_dict """
+        """Loads metric states from state_dict."""
 
         for key in self._defaults:
             name = prefix + key
@@ -494,15 +531,14 @@ class Metric(nn.Module, ABC):
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
-        """ filter kwargs such that they match the update signature of the metric """
+        """filter kwargs such that they match the update signature of the metric."""
 
         # filter all parameters based on update signature except those of
         # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         _sign_params = self._update_signature.parameters
         filtered_kwargs = {
-            k: v
-            for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
+            k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
         }
 
         # if no kwargs filtered, return al kwargs as default
@@ -511,7 +547,12 @@ class Metric(nn.Module, ABC):
         return filtered_kwargs
 
     def __hash__(self) -> int:
-        hash_vals = [self.__class__.__name__]
+        # we need to add the id here, since PyTorch requires a module hash to be unique.
+        # Internally, PyTorch nn.Module relies on that for children discovery
+        # (see https://github.com/pytorch/pytorch/blob/v1.9.0/torch/nn/modules/module.py#L1544)
+        # For metrics that include tensors it is not a problem,
+        # since their hash is unique based on the memory location but we cannot rely on that for every metric.
+        hash_vals = [self.__class__.__name__, id(self)]
 
         for key in self._defaults:
             val = getattr(self, key)
@@ -641,7 +682,7 @@ def _neg(x: Tensor) -> Tensor:
 
 
 class CompositionalMetric(Metric):
-    """Composition of two metrics with a specific operator which will be executed upon metrics compute """
+    """Composition of two metrics with a specific operator which will be executed upon metrics compute."""
 
     def __init__(
         self,
@@ -672,7 +713,7 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, *_: Any) -> None:
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 

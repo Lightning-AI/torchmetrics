@@ -67,13 +67,12 @@ class AUC(Metric):
         self.add_state("y", default=[], dist_reduce_fx="cat")
 
         rank_zero_warn(
-            'Metric `AUC` will save all targets and predictions in buffer.'
-            ' For large datasets this may lead to large memory footprint.'
+            "Metric `AUC` will save all targets and predictions in buffer."
+            " For large datasets this may lead to large memory footprint."
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model (probabilities, or labels)
@@ -85,17 +84,13 @@ class AUC(Metric):
         self.y.append(y)
 
     def compute(self) -> Tensor:
-        """
-        Computes AUC based on inputs passed in to ``update`` previously.
-        """
+        """Computes AUC based on inputs passed in to ``update`` previously."""
         x = dim_zero_cat(self.x)
         y = dim_zero_cat(self.y)
         return _auc_compute(x, y, reorder=self.reorder)
 
     @property
     def is_differentiable(self) -> bool:
-        """
-        AUC metrics is considered as non differentiable so it should have `false`
-        value for `is_differentiable` property
-        """
+        """AUC metrics is considered as non differentiable so it should have `false` value for `is_differentiable`
+        property."""
         return False

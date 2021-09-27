@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.specificity import _specificity_comp
 
 class Specificity(StatScores):
     r"""
-    Computes `Specificity <https://en.wikipedia.org/wiki/Sensitivity_and_specificity>`_:
+    Computes `Specificity`_:
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -157,8 +157,7 @@ class Specificity(StatScores):
         self.average = average
 
     def compute(self) -> Tensor:
-        """
-        Computes the specificity score based on inputs passed in to ``update`` previously.
+        """Computes the specificity score based on inputs passed in to ``update`` previously.
 
         Return:
             The shape of the returned tensor depends on the ``average`` parameter

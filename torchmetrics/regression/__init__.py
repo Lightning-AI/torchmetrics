@@ -18,7 +18,9 @@ from torchmetrics.regression.mean_absolute_percentage_error import MeanAbsoluteP
 from torchmetrics.regression.mean_squared_error import MeanSquaredError  # noqa: F401
 from torchmetrics.regression.mean_squared_log_error import MeanSquaredLogError  # noqa: F401
 from torchmetrics.regression.pearson import PearsonCorrcoef  # noqa: F401
-from torchmetrics.regression.psnr import PSNR  # noqa: F401
-from torchmetrics.regression.r2score import R2Score  # noqa: F401
+from torchmetrics.regression.r2 import R2Score  # noqa: F401
 from torchmetrics.regression.spearman import SpearmanCorrcoef  # noqa: F401
-from torchmetrics.regression.ssim import SSIM  # noqa: F401
+from torchmetrics.regression.symmetric_mean_absolute_percentage_error import (  # noqa: F401
+    SymmetricMeanAbsolutePercentageError,
+)
+from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore  # noqa: F401

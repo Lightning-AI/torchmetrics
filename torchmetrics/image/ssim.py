@@ -16,16 +16,14 @@ from typing import Any, List, Optional, Sequence
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.ssim import _ssim_compute, _ssim_update
+from torchmetrics.functional.image.ssim import _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SSIM(Metric):
-    """
-    Computes `Structual Similarity Index Measure
-    <https://en.wikipedia.org/wiki/Structural_similarity>`_ (SSIM).
+    """Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
         kernel_size: size of the gaussian kernel (default: (11, 11))
@@ -51,6 +49,7 @@ class SSIM(Metric):
         >>> ssim(preds, target)
         tensor(0.9219)
     """
+
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -72,9 +71,9 @@ class SSIM(Metric):
             process_group=process_group,
         )
         rank_zero_warn(
-            'Metric `SSIM` will save all targets and'
-            ' predictions in buffer. For large datasets this may lead'
-            ' to large memory footprint.'
+            "Metric `SSIM` will save all targets and"
+            " predictions in buffer. For large datasets this may lead"
+            " to large memory footprint."
         )
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
@@ -87,8 +86,7 @@ class SSIM(Metric):
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -99,9 +97,7 @@ class SSIM(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """
-        Computes explained variance over state.
-        """
+        """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ssim_compute(

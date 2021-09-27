@@ -2,6 +2,8 @@
 Module metrics
 ##############
 
+.. include:: ../links.rst
+
 **********
 Base class
 **********
@@ -39,6 +41,12 @@ the metric will be computed over the ``time`` dimension.
     >>> snr_val = snr(preds, target)
     >>> snr_val
     tensor(16.1805)
+
+PIT
+~~~
+
+.. autoclass:: torchmetrics.PIT
+    :noindex:
 
 SI_SDR
 ~~~~~~
@@ -203,6 +211,12 @@ BinnedRecallAtFixedPrecision
 .. autoclass:: torchmetrics.BinnedRecallAtFixedPrecision
     :noindex:
 
+CalibrationError
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CalibrationError
+    :noindex:
+
 CohenKappa
 ~~~~~~~~~~
 
@@ -296,7 +310,6 @@ StatScores
 .. autoclass:: torchmetrics.StatScores
     :noindex:
 
-
 *************
 Image Metrics
 *************
@@ -320,6 +333,24 @@ KID
 ~~~
 
 .. autoclass:: torchmetrics.KID
+    :noindex:
+
+LPIPS
+~~~~~
+
+.. autoclass:: torchmetrics.LPIPS
+    :noindex:
+
+PSNR
+~~~~
+
+.. autoclass:: torchmetrics.PSNR
+    :noindex:
+
+SSIM
+~~~~
+
+.. autoclass:: torchmetrics.SSIM
     :noindex:
 
 ******************
@@ -375,13 +406,6 @@ PearsonCorrcoef
     :noindex:
 
 
-PSNR
-~~~~
-
-.. autoclass:: torchmetrics.PSNR
-    :noindex:
-
-
 R2Score
 ~~~~~~~
 
@@ -395,13 +419,18 @@ SpearmanCorrcoef
 .. autoclass:: torchmetrics.SpearmanCorrcoef
     :noindex:
 
+SymmetricMeanAbsolutePercentageError
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-SSIM
-~~~~
-
-.. autoclass:: torchmetrics.SSIM
+.. autoclass:: torchmetrics.SymmetricMeanAbsolutePercentageError
     :noindex:
 
+
+TweedieDevianceScore
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.TweedieDevianceScore
+    :noindex:
 
 
 *********
@@ -502,6 +531,34 @@ RetrievalNormalizedDCG
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
     :noindex:
 
+****
+Text
+****
+
+BERTScore
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.BERTScore
+    :noindex:
+
+BLEUScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.BLEUScore
+    :noindex:
+
+ROUGEScore
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ROUGEScore
+    :noindex:
+
+
+WER
+~~~
+
+.. autoclass:: torchmetrics.WER
+    :noindex:
 
 ********
 Wrappers
@@ -514,4 +571,16 @@ BootStrapper
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BootStrapper
+    :noindex:
+
+MetricTracker
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MetricTracker
+    :noindex:
+
+MultioutputWrapper
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MultioutputWrapper
     :noindex:

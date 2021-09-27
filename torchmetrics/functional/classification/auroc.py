@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import warnings
 from typing import Optional, Sequence, Tuple
 
 import torch
@@ -24,14 +25,22 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
+    """Updates and returns variables required to compute Area Under the Receiver Operating Characteristic Curve.
+    Validates the inputs and returns the mode of the inputs.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     # use _input_format_classification for validating the input and get the mode of data
     _, _, mode = _input_format_classification(preds, target)
 
-    if mode == 'multi class multi dim':
+    if mode == "multi class multi dim":
         n_classes = preds.shape[1]
         preds = preds.transpose(0, 1).reshape(n_classes, -1).transpose(0, 1)
         target = target.flatten()
-    if mode == 'multi-label' and preds.ndim > 2:
+    if mode == "multi-label" and preds.ndim > 2:
         n_classes = preds.shape[1]
         preds = preds.transpose(0, 1).reshape(n_classes, -1).transpose(0, 1)
         target = target.transpose(0, 1).reshape(n_classes, -1).transpose(0, 1)
@@ -45,10 +54,45 @@ def _auroc_compute(
     mode: DataType,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-    average: Optional[str] = 'macro',
+    average: Optional[str] = "macro",
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
+    """Computes Area Under the Receiver Operating Characteristic Curve.
+
+    Args:
+        preds: predictions from model (logits or probabilities)
+        target: Ground truth labels
+        mode: 'multi class multi dim' or 'multi-label' or 'binary'
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
+        pos_label: integer determining the positive class.
+            Should be set to ``None`` for binary problems
+        average: Defines the reduction that is applied to the output:
+        max_fpr: If not ``None``, calculates standardized partial AUC over the
+            range [0, max_fpr]. Should be a float between 0 and 1.
+        sample_weights: sample weights for each data point
+
+    Example:
+        >>> # binary case
+        >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
+        >>> target = torch.tensor([0, 0, 1, 1, 1])
+        >>> preds, target, mode = _auroc_update(preds, target)
+        >>> _auroc_compute(preds, target, mode, pos_label=1)
+        tensor(0.5000)
+
+        >>> # multiclass case
+        >>> preds = torch.tensor([[0.90, 0.05, 0.05],
+        ...                       [0.05, 0.90, 0.05],
+        ...                       [0.05, 0.05, 0.90],
+        ...                       [0.85, 0.05, 0.10],
+        ...                       [0.10, 0.10, 0.80]])
+        >>> target = torch.tensor([0, 1, 1, 2, 2])
+        >>> preds, target, mode = _auroc_update(preds, target)
+        >>> _auroc_compute(preds, target, mode, num_classes=3)
+        tensor(0.7778)
+    """
+
     # binary mode override num_classes
     if mode == DataType.BINARY:
         num_classes = 1
@@ -60,8 +104,7 @@ def _auroc_compute(
 
         if _TORCH_LOWER_1_6:
             raise RuntimeError(
-                "`max_fpr` argument requires `torch.bucketize` which"
-                " is not available below PyTorch version 1.6"
+                "`max_fpr` argument requires `torch.bucketize` which" " is not available below PyTorch version 1.6"
             )
 
         # max_fpr parameter is only support for binary
@@ -85,10 +128,25 @@ def _auroc_compute(
             fpr = [o[0] for o in output]
             tpr = [o[1] for o in output]
         else:
-            raise ValueError('Detected input to be `multilabel` but you did not provide `num_classes` argument')
+            raise ValueError("Detected input to be `multilabel` but you did not provide `num_classes` argument")
     else:
-        if mode != DataType.BINARY and num_classes is None:
-            raise ValueError('Detected input to `multiclass` but you did not provide `num_classes` argument')
+        if mode != DataType.BINARY:
+            if num_classes is None:
+                raise ValueError("Detected input to `multiclass` but you did not provide `num_classes` argument")
+            if average == AverageMethod.WEIGHTED and len(torch.unique(target)) < num_classes:
+                # If one or more classes has 0 observations, we should exclude them, as its weight will be 0
+                target_bool_mat = torch.zeros((len(target), num_classes), dtype=bool)
+                target_bool_mat[torch.arange(len(target)), target.long()] = 1
+                class_observed = target_bool_mat.sum(axis=0) > 0
+                for c in range(num_classes):
+                    if not class_observed[c]:
+                        warnings.warn(f"Class {c} had 0 observations, omitted from AUROC calculation", UserWarning)
+                preds = preds[:, class_observed]
+                target = target_bool_mat[:, class_observed]
+                target = torch.where(target)[1]
+                num_classes = class_observed.sum()
+                if num_classes == 1:
+                    raise ValueError("Found 1 non-empty class in `multiclass` AUROC calculation")
         fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
@@ -113,8 +171,7 @@ def _auroc_compute(
 
             allowed_average = (AverageMethod.NONE.value, AverageMethod.MACRO.value, AverageMethod.WEIGHTED.value)
             raise ValueError(
-                f"Argument `average` expected to be one of the following:"
-                f" {allowed_average} but got {average}"
+                f"Argument `average` expected to be one of the following:" f" {allowed_average} but got {average}"
             )
 
         return _auc_compute_without_check(fpr, tpr, 1.0)
@@ -132,7 +189,7 @@ def _auroc_compute(
     partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
     # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
-    min_area: Tensor = 0.5 * max_area**2
+    min_area: Tensor = 0.5 * max_area ** 2
     return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
 
 
@@ -141,12 +198,11 @@ def auroc(
     target: Tensor,
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
-    average: Optional[str] = 'macro',
+    average: Optional[str] = "macro",
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
-    """ Compute `Area Under the Receiver Operating Characteristic Curve (ROC AUC)
-    <https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Further_interpretations>`_
+    """Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
 
     Args:
         preds: predictions from model (logits or probabilities)

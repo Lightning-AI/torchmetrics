@@ -25,7 +25,7 @@ from torchmetrics.metric import Metric
 
 class MeanSquaredError(Metric):
     r"""
-    Computes `mean squared error <https://en.wikipedia.org/wiki/Mean_squared_error>`_ (MSE):
+    Computes `mean squared error`_ (MSE):
 
     .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
 
@@ -74,8 +74,7 @@ class MeanSquaredError(Metric):
         self.squared = squared
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -87,9 +86,7 @@ class MeanSquaredError(Metric):
         self.total += n_obs
 
     def compute(self) -> Tensor:
-        """
-        Computes mean squared error over state.
-        """
+        """Computes mean squared error over state."""
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
 
     @property

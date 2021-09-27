@@ -4,9 +4,13 @@ import re
 import sys
 from typing import Dict, Optional
 
+from packaging.version import Version
+
 VERSIONS = [
     dict(torch="1.10.0", torchvision="0.11.0", torchtext=""),  # nightly
+    dict(torch="1.9.1", torchvision="0.10.1", torchtext="0.10.1"),
     dict(torch="1.9.0", torchvision="0.10.0", torchtext="0.10.0"),
+    dict(torch="1.8.2", torchvision="0.9.1", torchtext="0.9.1"),
     dict(torch="1.8.1", torchvision="0.9.1", torchtext="0.9.1"),
     dict(torch="1.8.0", torchvision="0.9.0", torchtext="0.9.0"),
     dict(torch="1.7.1", torchvision="0.8.2", torchtext="0.8.1"),
@@ -18,14 +22,14 @@ VERSIONS = [
     dict(torch="1.3.1", torchvision="0.4.2", torchtext="0.4"),
     dict(torch="1.3.0", torchvision="0.4.1", torchtext="0.4"),
 ]
-VERSIONS.sort(key=lambda v: v["torch"], reverse=True)
+VERSIONS.sort(key=lambda v: Version(v["torch"]), reverse=True)
 
 
 def find_latest(ver: str) -> Dict[str, str]:
     # drop all except semantic version
-    ver = re.search(r'([\.\d]+)', ver).groups()[0]
+    ver = re.search(r"([\.\d]+)", ver).groups()[0]
     # in case there remaining dot at the end - e.g "1.9.0.dev20210504"
-    ver = ver[:-1] if ver[-1] == '.' else ver
+    ver = ver[:-1] if ver[-1] == "." else ver
     logging.info(f"finding ecosystem versions for: {ver}")
 
     # find first match
@@ -39,6 +43,7 @@ def find_latest(ver: str) -> Dict[str, str]:
 def main(path_req: str, torch_version: Optional[str] = None) -> None:
     if not torch_version:
         import torch
+
         torch_version = torch.__version__
     assert torch_version, f"invalid torch: {torch_version}"
     latest = find_latest(torch_version)
@@ -49,10 +54,10 @@ def main(path_req: str, torch_version: Optional[str] = None) -> None:
         print(req)
         return
 
-    with open(path_req, "r") as fp:
+    with open(path_req) as fp:
         req = fp.readlines()
     # remove comments
-    req = [r[:r.index("#")] if "#" in r else r for r in req]
+    req = [r[: r.index("#")] if "#" in r else r for r in req]
     req = [r.strip() for r in req]
 
     for lib, ver in latest.items():

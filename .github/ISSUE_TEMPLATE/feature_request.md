@@ -2,12 +2,12 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: enhancement, help wanted
+labels: enhancement
 assignees: ''
-
 ---
 
 ## 🚀 Feature
+
 <!-- A clear and concise description of the feature proposal -->
 
 ### Motivation

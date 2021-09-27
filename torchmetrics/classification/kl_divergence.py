@@ -22,7 +22,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class KLDivergence(Metric):
-    r"""Computes the `KL divergence <https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence>`_:
+    r"""Computes the `KL divergence`_:
 
     .. math::
         D_{KL}(P||Q) = \sum_{x\in\mathcal{X}} P(x) \log\frac{P(x)}{Q{x}}
@@ -59,6 +59,7 @@ class KLDivergence(Metric):
         >>> q = torch.tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
+
     """
     # TODO: canot be used because if scripting
     # measures: Union[List[Tensor], Tensor]
@@ -67,7 +68,7 @@ class KLDivergence(Metric):
     def __init__(
         self,
         log_prob: bool = False,
-        reduction: Optional[str] = 'mean',
+        reduction: Optional[str] = "mean",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -80,30 +81,30 @@ class KLDivergence(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         if not isinstance(log_prob, bool):
-            raise TypeError(f'Expected argument `log_prob` to be bool but got {log_prob}')
+            raise TypeError(f"Expected argument `log_prob` to be bool but got {log_prob}")
         self.log_prob = log_prob
 
-        allowed_reduction = ['mean', 'sum', 'none', None]
+        allowed_reduction = ["mean", "sum", "none", None]
         if reduction not in allowed_reduction:
             raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction} but got {reduction}")
         self.reduction = reduction
 
-        if self.reduction in ['mean', 'sum']:
-            self.add_state('measures', torch.zeros(1), dist_reduce_fx='sum')
+        if self.reduction in ["mean", "sum"]:
+            self.add_state("measures", torch.zeros(1), dist_reduce_fx="sum")
         else:
-            self.add_state('measures', [], dist_reduce_fx='cat')
-        self.add_state('total', torch.zeros(1), dist_reduce_fx='sum')
+            self.add_state("measures", [], dist_reduce_fx="cat")
+        self.add_state("total", torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
         measures, total = _kld_update(p, q, self.log_prob)
-        if self.reduction is None or self.reduction == 'none':
+        if self.reduction is None or self.reduction == "none":
             self.measures.append(measures)
         else:
             self.measures += measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
-        measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == 'none' else self.measures
+        measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
         return _kld_compute(measures, self.total, self.reduction)
 
     @property

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, List, Optional, Tuple, Union
-from warnings import warn
 
 import torch
 from torch import Tensor
@@ -29,8 +28,9 @@ def _recall_at_precision(
     min_precision: float,
 ) -> Tuple[Tensor, Tensor]:
     try:
-        max_recall, _, best_threshold = \
-            max((r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision)
+        max_recall, _, best_threshold = max(
+            (r, p, t) for p, r, t in zip(precision, recall, thresholds) if p >= min_precision
+        )
 
     except ValueError:
         max_recall = torch.tensor(0.0, device=recall.device, dtype=recall.dtype)
@@ -43,13 +43,11 @@ def _recall_at_precision(
 
 
 class BinnedPrecisionRecallCurve(Metric):
-    """
-    Computes precision-recall pairs for different thresholds. Works for both
-    binary and multiclass problems. In the case of multiclass, the values will
-    be calculated based on a one-vs-the-rest approach.
+    """Computes precision-recall pairs for different thresholds. Works for both binary and multiclass problems. In
+    the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
-    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+    for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
 
     Forward accepts
 
@@ -60,11 +58,6 @@ class BinnedPrecisionRecallCurve(Metric):
 
     Args:
         num_classes: integer with number of classes. For binary, set to 1.
-        num_thresholds: number of bins used for computation.
-
-            .. deprecated:: v0.4
-                Use `thresholds`. Will be removed in v0.5.
-
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory.
@@ -120,6 +113,7 @@ class BinnedPrecisionRecallCurve(Metric):
         tensor([0.0000, 0.5000, 1.0000]),
         tensor([0.0000, 0.5000, 1.0000])]
     """
+
     TPs: Tensor
     FPs: Tensor
     FNs: Tensor
@@ -127,11 +121,10 @@ class BinnedPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        thresholds: Union[float, Tensor, List[float], None] = None,
+        thresholds: Union[int, Tensor, List[float], None] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        num_thresholds: Optional[int] = 100,  # ToDo: remove in v0.5
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -140,19 +133,13 @@ class BinnedPrecisionRecallCurve(Metric):
         )
 
         self.num_classes = num_classes
-        if thresholds is None and num_thresholds is not None:
-            warn(
-                "Argument `num_thresholds` is deprecated in v0.4 and will be removed in v0.5."
-                " Use `thresholds` instead.", DeprecationWarning
-            )
-            thresholds = num_thresholds
         if isinstance(thresholds, int):
             self.num_thresholds = thresholds
             thresholds = torch.linspace(0, 1.0, thresholds)
             self.register_buffer("thresholds", thresholds)
         elif thresholds is not None:
             if not isinstance(thresholds, (list, Tensor)):
-                raise ValueError('Expected argument `thresholds` to either be an integer, list of floats or a tensor')
+                raise ValueError("Expected argument `thresholds` to either be an integer, list of floats or a tensor")
             thresholds = torch.tensor(thresholds) if isinstance(thresholds, list) else thresholds
             self.num_thresholds = thresholds.numel()
             self.register_buffer("thresholds", thresholds)
@@ -187,7 +174,7 @@ class BinnedPrecisionRecallCurve(Metric):
             self.FNs[:, i] += ((target) & (~predictions)).sum(dim=0)
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """Returns float tensor of size n_classes"""
+        """Returns float tensor of size n_classes."""
         precisions = (self.TPs + METRIC_EPS) / (self.TPs + self.FPs + METRIC_EPS)
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
 
@@ -202,13 +189,12 @@ class BinnedPrecisionRecallCurve(Metric):
 
 
 class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
-    """
-    Computes the average precision score, which summarises the precision recall
-    curve into one number. Works for both binary and multiclass problems.
-    In the case of multiclass, the values will be calculated based on a one-vs-the-rest approach.
+    """Computes the average precision score, which summarises the precision recall curve into one number. Works for
+    both binary and multiclass problems. In the case of multiclass, the values will be calculated based on a one-
+    vs-the-rest approach.
 
     Computation is performed in constant-memory by computing precision and recall
-    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+    for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
 
     Forward accepts
 
@@ -220,11 +206,6 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
     Args:
         num_classes: integer with number of classes. Not nessesary to provide
             for binary problems.
-        num_thresholds: number of bins used for computation.
-
-            .. deprecated:: v0.4
-                Use `thresholds`. Will be removed in v0.5.
-
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
@@ -241,7 +222,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         >>> from torchmetrics import BinnedAveragePrecision
         >>> pred = torch.tensor([0, 1, 2, 3])
         >>> target = torch.tensor([0, 1, 1, 1])
-        >>> average_precision = BinnedAveragePrecision(num_classes=1, num_thresholds=10)
+        >>> average_precision = BinnedAveragePrecision(num_classes=1, thresholds=10)
         >>> average_precision(pred, target)
         tensor(1.0000)
 
@@ -251,22 +232,21 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision = BinnedAveragePrecision(num_classes=5, num_thresholds=10)
+        >>> average_precision = BinnedAveragePrecision(num_classes=5, thresholds=10)
         >>> average_precision(pred, target)
         [tensor(1.0000), tensor(1.0000), tensor(0.2500), tensor(0.2500), tensor(-0.)]
     """
 
     def compute(self) -> Union[List[Tensor], Tensor]:  # type: ignore
         precisions, recalls, _ = super().compute()
-        return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes)
+        return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes, average=None)
 
 
 class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
-    """
-    Computes the higest possible recall value given the minimum precision thresholds provided.
+    """Computes the higest possible recall value given the minimum precision thresholds provided.
 
     Computation is performed in constant-memory by computing precision and recall
-    for ``num_thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
+    for ``thresholds`` buckets/thresholds (evenly distributed between 0 and 1).
 
     Forward accepts
 
@@ -278,11 +258,6 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
     Args:
         num_classes: integer with number of classes. Provide 1 for for binary problems.
         min_precision: float value specifying minimum precision threshold.
-        num_thresholds: number of bins used for computation.
-
-            .. deprecated:: v0.4
-                Use `thresholds`. Will be removed in v0.5.
-
         thresholds: list or tensor with specific thresholds or a number of bins from linear sampling.
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
@@ -299,7 +274,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         >>> from torchmetrics import BinnedRecallAtFixedPrecision
         >>> pred = torch.tensor([0, 0.2, 0.5, 0.8])
         >>> target = torch.tensor([0, 1, 1, 0])
-        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=1, num_thresholds=10, min_precision=0.5)
+        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=1, thresholds=10, min_precision=0.5)
         >>> average_precision(pred, target)
         (tensor(1.0000), tensor(0.1111))
 
@@ -309,7 +284,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=5, num_thresholds=10, min_precision=0.5)
+        >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=5, thresholds=10, min_precision=0.5)
         >>> average_precision(pred, target)   # doctest: +NORMALIZE_WHITESPACE
         (tensor([1.0000, 1.0000, 0.0000, 0.0000, 0.0000]),
         tensor([6.6667e-01, 6.6667e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
@@ -319,15 +294,13 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         self,
         num_classes: int,
         min_precision: float,
-        thresholds: Optional[Union[Tensor, List[float]]] = None,
+        thresholds: Union[int, Tensor, List[float], None] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
-        num_thresholds: int = 100,  # ToDo: remove in v0.5
     ) -> None:
         super().__init__(
             num_classes=num_classes,
-            num_thresholds=num_thresholds,
             thresholds=thresholds,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -336,7 +309,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         self.min_precision = min_precision
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
-        """Returns float tensor of size n_classes"""
+        """Returns float tensor of size n_classes."""
         precisions, recalls, thresholds = super().compute()
 
         if self.num_classes == 1:

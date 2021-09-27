@@ -18,6 +18,7 @@ from torchmetrics.classification.average_precision import AveragePrecision  # no
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedPrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision  # noqa: F401
+from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401
 from torchmetrics.classification.cohen_kappa import CohenKappa  # noqa: F401
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
 from torchmetrics.classification.f_beta import F1, FBeta  # noqa: F401
