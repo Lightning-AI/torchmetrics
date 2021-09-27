@@ -269,6 +269,8 @@ class F1(FBeta):
         tensor(0.3333)
     """
 
+    is_differentiable = False
+
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -297,7 +299,3 @@ class F1(FBeta):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

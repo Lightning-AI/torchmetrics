@@ -87,6 +87,7 @@ class R2Score(Metric):
         tensor([0.9654, 0.9082])
 
     """
+    is_differentiable = True
     sum_squared_error: Tensor
     sum_error: Tensor
     residual: Tensor
@@ -146,7 +147,3 @@ class R2Score(Metric):
         return _r2_score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
         )
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

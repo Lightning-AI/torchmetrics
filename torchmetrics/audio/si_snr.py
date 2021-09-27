@@ -62,6 +62,7 @@ class SI_SNR(Metric):
         696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
 
+    is_differentiable = True
     sum_si_snr: Tensor
     total: Tensor
 
@@ -97,7 +98,3 @@ class SI_SNR(Metric):
     def compute(self) -> Tensor:
         """Computes average SI-SNR."""
         return self.sum_si_snr / self.total
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

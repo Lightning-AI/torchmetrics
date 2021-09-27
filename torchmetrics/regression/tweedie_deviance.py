@@ -74,6 +74,7 @@ class TweedieDevianceScore(Metric):
         tensor(1.2083)
 
     """
+    is_differentiable = True
     sum_deviance_score: Tensor
     num_observations: Tensor
 
@@ -113,7 +114,3 @@ class TweedieDevianceScore(Metric):
 
     def compute(self) -> Tensor:
         return _tweedie_deviance_score_compute(self.sum_deviance_score, self.num_observations)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True
