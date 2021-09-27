@@ -18,123 +18,85 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics.pairwise import linear_kernel
+from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.metrics.pairwise import manhattan_distances
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import (
     pairwise_euclidean_distance,
-    pairwise_cosine_distance,
+    pairwise_cosine_similarity,
+    pairwise_manhatten_distance
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
-num_targets = 5
+extra_dim = 5
 
 Input = namedtuple('Input', ["X", "Y"])
 
-_single_inputs = Input(
-    X=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    Y=None,
-)
 
-_multi_inputs = Input(
-    X=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    Y=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+_inputs1 = Input(
+    X=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
+    Y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
 
 
-def _sk_metric(preds, target, sk_fn, metric_args):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-    res = sk_fn(sk_target, sk_preds)
-    return math.sqrt(res) if (metric_args and not metric_args['squared']) else res
+_inputs2 = Input(
+    X=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
+    Y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
+)
 
 
-@pytest.mark.parametrize(
-    "X, Y",
+def _sk_metric(X, Y, sk_fn, reduction):
+    X = X.view(-1, extra_dim).numpy()
+    Y = Y.view(-1, extra_dim).numpy()
+    res = sk_fn(X, Y)
+    if reduction == 'sum':
+        return res.sum(axis=-1)
+    elif reduction == 'mean':
+        return res.mean(axis=-1)
+    return res
+
+
+@pytest.mark.parametrize("X, Y",
     [
-        (_single_inputs.X, _single_inputs.target, _single_target_sk_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
+        (_inputs1.X, _inputs1.Y),
+        (_inputs1.X, _inputs1.Y),
     ],
 )
-@pytest.mark.parametrize(
-    "metric_class, metric_functional, sk_fn, metric_args",
+@pytest.mark.parametrize("metric_functional, sk_fn",
     [
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {
-            'squared': True
-        }),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {
-            'squared': False
-        }),
-        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
-        (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
-        (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
+        (pairwise_cosine_similarity, cosine_similarity),
+        (pairwise_euclidean_distance, euclidean_distances),
+        (pairwise_manhatten_distance, manhattan_distances)
     ],
 )
-class TestMeanError(MetricTester):
-
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_mean_error_class(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
-    ):
-        # todo: `metric_functional` is unused
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=preds,
-            target=target,
-            metric_class=metric_class,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args=metric_args
-        )
-
-    def test_mean_error_functional(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+@pytest.mark.parametrize("reduction", ["sum", "mean", None])
+class TestPairwise(MetricTester):
+    def test_pairwise_functional(self, X, Y, metric_functional, sk_fn, reduction):
         # todo: `metric_class` is unused
         self.run_functional_metric_test(
-            preds=preds,
-            target=target,
+            preds=X,
+            target=Y,
             metric_functional=metric_functional,
-            sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
-            metric_args=metric_args
+            sk_metric=partial(_sk_metric, sk_fn=sk_fn, reduction=reduction),
+            metric_args={'reduction': reduction}
         )
-
-    def test_mean_error_differentiability(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args
-    ):
-        self.run_differentiability_test(
-            preds=preds,
-            target=target,
-            metric_module=metric_class,
-            metric_functional=metric_functional,
-            metric_args=metric_args
-        )
-
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason='half support of core operations on not support before pytorch v1.6'
-    )
-    def test_mean_error_half_cpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
-        if metric_class == MeanSquaredLogError:
-            # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
-            pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
-
-        if metric_class == MeanAbsolutePercentageError:
-            # MeanSquaredPercentageError half + cpu does not work due to missing support in torch.log
-            pytest.xfail("MeanSquaredPercentageError metric does not support cpu + half precision")
-
-        self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
-
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='test requires cuda')
-    def test_mean_error_half_gpu(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
-        self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 
 @pytest.mark.parametrize(
-    "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
+    "metric", [pairwise_cosine_similarity, pairwise_euclidean_distance, pairwise_manhatten_distance]
 )
-def test_error_on_different_shape(metric_class):
-    metric = metric_class()
-    with pytest.raises(RuntimeError, match='Predictions and targets are expected to have the same shape'):
-        metric(torch.randn(100, ), torch.randn(50, ))
+def test_error_on_wrong_shapes(metric):
+    with pytest.raises(ValueError, match='Expected argument `X` to be a 2D tensor .*'):
+        metric(torch.randn(10))
+
+    with pytest.raises(ValueError, match='Expected argument `Y` to be a 2D tensor .*'):
+        metric(torch.randn(10, 5), torch.randn(5, 3))
+
+    with pytest.raises(ValueError, match='Expected reduction to be one of -*'):
+        metric(torch.randn(10, 5), torch.randn(10, 5), reduction=1)
+
+    

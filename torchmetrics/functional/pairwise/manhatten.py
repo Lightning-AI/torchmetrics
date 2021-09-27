@@ -18,31 +18,26 @@ from torch import Tensor
 
 from torchmetrics.functional.pairwise.euclidean import (
     _pairwise_euclidean_distance_compute, 
-    _check_input,
+    _check_input
 )
 
 
-def _pairwise_cosine_similarity_update(
+def _pairwise_manhatten_distance_update(
     X: Tensor, Y: Optional[Tensor] = None, reduction: Optional[str] = 'mean', zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     X, Y, zero_diagonal = _check_input(X, Y, zero_diagonal)
 
-    norm = torch.norm(X, p=2, dim=1)
-    X = X / norm.unsqueeze(1)
-    norm = torch.norm(Y, p=2, dim=1)
-    Y = Y / norm.unsqueeze(1)
-
-    distance = X @ Y.T
+    distance = (X.unsqueeze(1) - Y.unsqueeze(0).repeat(X.shape[0], 1, 1)).abs().sum(dim=-1)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance
 
 
-def pairwise_cosine_similarity(
+def pairwise_manhatten_distance(
     X: Tensor, Y: Optional[Tensor] = None, reduction: Optional[str] = 'mean', zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     """
 
     """
-    distance = _pairwise_cosine_similarity_update(X, Y, zero_diagonal)
+    distance = _pairwise_manhatten_distance_update(X, Y, zero_diagonal)
     return _pairwise_euclidean_distance_compute(distance, reduction)
