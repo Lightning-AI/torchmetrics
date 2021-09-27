@@ -67,6 +67,8 @@ class RetrievalPrecision(RetrievalMetric):
         tensor(0.5000)
     """
 
+    higher_is_better = True
+
     def __init__(
         self,
         empty_target_action: str = "neg",

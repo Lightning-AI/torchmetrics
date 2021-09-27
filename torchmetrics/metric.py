@@ -70,6 +70,7 @@ class Metric(Module, ABC):
     __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
     is_differentiable: Optional[bool] = None
+    higher_is_better: Optional[bool] = None
 
     def __init__(
         self,

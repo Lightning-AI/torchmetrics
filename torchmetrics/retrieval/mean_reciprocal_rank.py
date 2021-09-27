@@ -64,5 +64,7 @@ class RetrievalMRR(RetrievalMetric):
         tensor(0.7500)
     """
 
+    higher_is_better = True
+
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_reciprocal_rank(preds, target)

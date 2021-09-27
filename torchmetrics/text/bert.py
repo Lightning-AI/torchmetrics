@@ -121,6 +121,8 @@ class BERTScore(Metric):
          'f1': [0.99..., 0.99...]}
     """
 
+    higher_is_better = True
+
     def __init__(
         self,
         model_name_or_path: Optional[str] = None,

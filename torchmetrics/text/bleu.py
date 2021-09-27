@@ -60,6 +60,7 @@ class BLEUScore(Metric):
     """
 
     is_differentiable = False
+    higher_is_better = True
     trans_len: Tensor
     ref_len: Tensor
     numerator: Tensor
