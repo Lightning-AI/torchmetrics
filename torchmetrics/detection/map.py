@@ -287,7 +287,7 @@ class MAP(Metric):
         if self.class_metrics:
             map_per_class_values = []
             mar_100_per_class_values = []
-            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique():
+            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
                 coco_eval.params.catIds = [class_id]
                 with _hide_prints():
                     coco_eval.evaluate()
@@ -366,6 +366,6 @@ class MAP(Metric):
 
         classes = [
             {"id": i.item(), "name": str(i.item())}
-            for i in torch.cat(self.detection_labels + self.groundtruth_labels).unique()
+            for i in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
         ]
         return {"images": images, "annotations": annotations, "categories": classes}
