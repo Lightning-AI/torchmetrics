@@ -24,7 +24,7 @@ from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
-from torchmetrics.image.map import MAPMetricResults
+from torchmetrics.detection.map import MAPMetricResults
 
 try:
     set_start_method("spawn")

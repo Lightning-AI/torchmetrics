@@ -341,12 +341,6 @@ LPIPS
 .. autoclass:: torchmetrics.LPIPS
     :noindex:
 
-MAP
-~~~
-
-.. autoclass:: torchmetrics.MAP
-    :noindex:
-
 PSNR
 ~~~~
 
@@ -357,6 +351,18 @@ SSIM
 ~~~~
 
 .. autoclass:: torchmetrics.SSIM
+    :noindex:
+
+*************
+Detection Metrics
+*************
+
+Object detection metrics can be used to evaluate the predicted detections with given groundtruth detections on images.
+
+MAP
+~~~
+
+.. autoclass:: torchmetrics.MAP
     :noindex:
 
 ******************

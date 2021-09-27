@@ -18,7 +18,7 @@ import pytest
 import torch
 
 from tests.helpers.testers import MetricTester
-from torchmetrics.image.map import MAP, MAPMetricResults
+from torchmetrics.detection.map import MAP, MAPMetricResults
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
 
 Input = namedtuple("Input", ["preds", "target", "num_classes"])
