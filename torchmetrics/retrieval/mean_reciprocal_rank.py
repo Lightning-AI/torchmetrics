@@ -63,6 +63,7 @@ class RetrievalMRR(RetrievalMetric):
         >>> mrr(preds, target, indexes=indexes)
         tensor(0.7500)
     """
+
     higher_is_better = True
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:

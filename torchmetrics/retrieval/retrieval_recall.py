@@ -66,6 +66,7 @@ class RetrievalRecall(RetrievalMetric):
         >>> r2(preds, target, indexes=indexes)
         tensor(0.7500)
     """
+
     higher_is_better = True
 
     def __init__(

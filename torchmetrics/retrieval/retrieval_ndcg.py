@@ -66,6 +66,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         >>> ndcg(preds, target, indexes=indexes)
         tensor(0.8467)
     """
+
     higher_is_better = True
 
     def __init__(

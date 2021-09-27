@@ -120,6 +120,7 @@ class BERTScore(Metric):
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
     """
+
     higher_is_better = True
 
     def __init__(
