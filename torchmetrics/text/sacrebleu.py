@@ -22,9 +22,10 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
 from torchmetrics.functional.text.sacrebleu import _SacreBLEUTokenizer
+from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
-from .bleu import BLEUScore
+AVAILABLE_TOKENIZERS = ["none", "13a", "zh", "intl", "char"]
 
 
 class SacreBLEUScore(BLEUScore):
@@ -53,6 +54,13 @@ class SacreBLEUScore(BLEUScore):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
+
+     Raises:
+        ValueError:
+            If ``tokenize`` not one of 'none', '13a', 'zh', 'intl' or 'char'
+        ValueError:
+            If ``tokenize`` is set to 'intl' and `regex` is not installed
+
 
     Example:
         >>> translate_corpus = ['the cat is on the mat']
@@ -90,8 +98,14 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if tokenize not in AVAILABLE_TOKENIZERS:
+            raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
+
         if tokenize == "intl" and not _REGEX_AVAILABLE:
-            raise ValueError("`'intl'` tokenization requires `regex` installed. Use `pip install regex`.")
+            raise ValueError(
+                "`'intl'` tokenization requires `regex` installed. Use `pip install regex` or `pip install "
+                "torchmetrics[text]`."
+            )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(  # type: ignore

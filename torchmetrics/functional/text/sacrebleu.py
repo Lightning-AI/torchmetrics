@@ -62,9 +62,10 @@ import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
-from .bleu import _bleu_score_compute, _bleu_score_update
+AVAILABLE_TOKENIZERS = ["none", "13a", "zh", "intl", "char"]
 
 _UCODE_RANGES = [
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
@@ -335,6 +336,9 @@ def sacrebleu_score(
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+    if tokenize not in AVAILABLE_TOKENIZERS:
+        raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
+
     if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN.keys():
         raise ValueError(
             f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
@@ -342,7 +346,10 @@ def sacrebleu_score(
     if len(translate_corpus) != len(reference_corpus):
         raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
     if tokenize == "intl" and not _REGEX_AVAILABLE:
-        raise ValueError("`'intl'` tokenization requires `regex` installed. Use `pip install regex`.")
+        raise ValueError(
+            "`'intl'` tokenization requires `regex` installed. Use `pip install regex` or `pip install "
+            "torchmetrics[text]`."
+        )
 
     reference_corpus = [
         [_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in reference]
