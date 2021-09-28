@@ -37,23 +37,6 @@
 # MIT License
 # Copyright (c) 2017 - Shujian Huang <huangsj@nju.edu.cn>
 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
 
 import re
 from typing import Sequence
@@ -65,9 +48,9 @@ from typing_extensions import Literal
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
-AVAILABLE_TOKENIZERS = ["none", "13a", "zh", "intl", "char"]
+AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
-_UCODE_RANGES = [
+_UCODE_RANGES = (
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
     ("\u4e00", "\u9fa5"),  # CJK Unified Ideographs, release 1.1
     ("\u9fa6", "\u9fbb"),  # CJK Unified Ideographs, release 4.1
@@ -91,7 +74,7 @@ _UCODE_RANGES = [
     ("\u2700", "\u27bf"),
     ("\u3200", "\u32ff"),
     ("\u3300", "\u33ff"),
-]
+)
 
 
 class _SacreBLEUTokenizer:
@@ -100,7 +83,7 @@ class _SacreBLEUTokenizer:
     Source: https://github.com/mjpost/sacrebleu/tree/master/sacrebleu/tokenizers
     """
 
-    _REGEX = [
+    _REGEX = (
         # language-dependent part (assuming Western languages)
         (re.compile(r"([\{-\~\[-\` -\&\(-\+\:-\@\/])"), r" \1 "),
         # tokenize period and comma unless preceded by a digit
@@ -112,19 +95,19 @@ class _SacreBLEUTokenizer:
         # one space only between words
         # NOTE: Doing this in Python (below) is faster
         # (re.compile(r'\s+'), r' '),
-    ]
+    )
 
     if _REGEX_AVAILABLE:
         import regex
 
-        _INT_REGEX = [
+        _INT_REGEX = (
             # Separate out punctuations preceeded by a non-digit
             (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
             # Separate out punctuations followed by a non-digit
             (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
             # Separate out symbols
             (regex.compile(r"(\p{S})"), r" \1 "),
-        ]
+        )
 
     _TOKENIZE_FN = {
         "none": "_tokenize_base",
@@ -291,7 +274,7 @@ class _SacreBLEUTokenizer:
         return line
 
 
-def sacrebleu_score(
+def sacre_bleu_score(
     reference_corpus: Sequence[Sequence[str]],
     translate_corpus: Sequence[str],
     n_gram: int = 4,
@@ -321,10 +304,10 @@ def sacrebleu_score(
         Tensor with BLEU Score
 
     Example:
-        >>> from torchmetrics.functional import bleu_score
-        >>> translate_corpus = ['the cat is on the mat'.split()]
-        >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
-        >>> bleu_score(reference_corpus, translate_corpus)
+        >>> from torchmetrics.functional import sacre_bleu_score
+        >>> translate_corpus = ['the cat is on the mat']
+        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> sacre_bleu_score(reference_corpus, translate_corpus)
         tensor(0.7598)
 
     References:

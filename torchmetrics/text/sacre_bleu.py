@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 # referenced from
 # Library Name: torchtext
 # Authors: torchtext authors and @sluks
@@ -21,11 +22,11 @@ from typing import Any, Callable, Optional, Sequence
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
-from torchmetrics.functional.text.sacrebleu import _SacreBLEUTokenizer
+from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer
 from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
-AVAILABLE_TOKENIZERS = ["none", "13a", "zh", "intl", "char"]
+AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
 class SacreBLEUScore(BLEUScore):
