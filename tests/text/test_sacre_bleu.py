@@ -16,8 +16,8 @@ import pytest
 import torch
 
 from tests.text.helpers import TextTester
-from torchmetrics.functional.text.sacrebleu import sacrebleu_score
-from torchmetrics.text.sacrebleu import SacreBLEUScore
+from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
+from torchmetrics.text.sacre_bleu import SacreBLEUScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
 if _SACREBLEU_AVAILABLE:
@@ -39,7 +39,7 @@ ROUND_N_DIGITS = 4
 
 
 def metrics_score_fn(targets, preds, tokenize):
-    metrics_score = sacrebleu_score(targets, preds, tokenize=tokenize)
+    metrics_score = sacre_bleu_score(targets, preds, tokenize=tokenize)
     # rescale to 0-100 and round to 4 decimals to match blue
     metrics_score_normed = torch.round(100 * metrics_score * 10 ** ROUND_N_DIGITS) / 10 ** ROUND_N_DIGITS
     return metrics_score_normed
