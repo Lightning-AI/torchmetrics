@@ -20,7 +20,7 @@ from pesq import pesq as pesq_backend
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import MetricTester
 from torchmetrics.audio import PESQ
 from torchmetrics.functional import pesq
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -31,13 +31,13 @@ Input = namedtuple("Input", ["preds", "target"])
 
 # for 8k sample rate, need at least 8k/4=2000 samples
 inputs_8k = Input(
-    preds=torch.rand(4, 8, 2100),
-    target=torch.rand(4, 8, 2100),
+    preds=torch.rand(2, 3, 2100),
+    target=torch.rand(2, 3, 2100),
 )
 # for 16k sample rate, need at least 16k/4=4000 samples
 inputs_16k = Input(
-    preds=torch.rand(4, 8, 4100),
-    target=torch.rand(4, 8, 4100),
+    preds=torch.rand(2, 3, 4100),
+    target=torch.rand(2, 3, 4100),
 )
 
 
