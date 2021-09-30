@@ -48,7 +48,7 @@ def metrics_score_fn(targets, preds, tokenize):
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        pytest.param(HYPOTHESES, REFERENCES),
+        (HYPOTHESES, REFERENCES),
     ],
 )
 @pytest.mark.parametrize("tokenize", TOKENIZERS)

@@ -262,6 +262,7 @@ class _SacreBLEUTokenizer:
 
         Args:
             line: a segment to tokenize
+
         Return:
             the tokenized line
         """
