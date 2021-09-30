@@ -13,4 +13,5 @@
 # limitations under the License.
 
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
+from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score  # noqa: F401
 from torchmetrics.functional.text.wer import wer  # noqa: F401
