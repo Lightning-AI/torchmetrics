@@ -69,6 +69,8 @@ class Metric(Module, ABC):
 
     __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
+    is_differentiable: Optional[bool] = None
+    higher_is_better: Optional[bool] = None
 
     def __init__(
         self,
@@ -412,6 +414,11 @@ class Metric(Module, ABC):
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name in ("higher_is_better", "is_differentiable"):
+            raise RuntimeError(f"Can't change const `{name}`.")
+        super().__setattr__(name, value)
+
     @property
     def device(self) -> "torch.device":
         """Return the device of the metric."""
@@ -669,12 +676,6 @@ class Metric(Module, ABC):
 
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
-
-    @property
-    def is_differentiable(self) -> Optional[bool]:
-        # There is a bug in PyTorch that leads to properties being executed during scripting
-        # To make the metric scriptable, we add property to ignore list and switch to return None here
-        return None
 
 
 def _neg(x: Tensor) -> Tensor:

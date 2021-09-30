@@ -54,7 +54,7 @@ pull_request_rules:
       - "#approved-reviews-by>=1"  # number of review approvals
       - "#changes-requested-reviews-by=0"  # no requested changes
       - "#check-pending<=2"
-      - "#check-failure<=5"
+      - "#check-failure<5"
     actions:
       label:
         add: [ "0:] Ready-To-Go" ]

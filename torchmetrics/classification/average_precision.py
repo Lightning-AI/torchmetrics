@@ -84,6 +84,7 @@ class AveragePrecision(Metric):
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 
+    is_differentiable = False
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -144,7 +145,3 @@ class AveragePrecision(Metric):
         if not self.num_classes:
             raise ValueError(f"`num_classes` bas to be positive number, but got {self.num_classes}")
         return _average_precision_compute(preds, target, self.num_classes, self.pos_label, self.average)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False
