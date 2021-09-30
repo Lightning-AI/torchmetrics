@@ -1,10 +1,8 @@
-from functools import partial
-
 import numpy as np
 import pytest
 import torch
 
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_PROCESSES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
 
 
