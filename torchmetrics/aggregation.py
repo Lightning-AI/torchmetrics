@@ -273,7 +273,7 @@ class SumMetric(BaseAggregator):
         >>> metric.update(1)
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
-        tensor([6.])
+        tensor(6.)
     """
 
     def __init__(
