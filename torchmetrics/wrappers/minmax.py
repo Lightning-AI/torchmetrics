@@ -1,11 +1,11 @@
-from torchmetrics.metric import Metric
 from pytorch_lightning.utilities.distributed import gather_all_tensors
+
+from torchmetrics.metric import Metric
 
 
 class MaxMetric(Metric):
-    """
-      Pytorch-Lightning Metric that tracks the maximum value of a scalar/tensor across an experiment
-    """
+    """Pytorch-Lightning Metric that tracks the maximum value of a scalar/tensor across an experiment."""
+
     def __init__(self, dist_sync_on_step=False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.add_state("max_val", default=torch.tensor(0))
@@ -17,11 +17,7 @@ class MaxMetric(Metric):
                 return self._computed
 
             dist_sync_fn = self.dist_sync_fn
-            if (
-                dist_sync_fn is None
-                and torch.distributed.is_available()
-                and torch.distributed.is_initialized()
-            ):
+            if dist_sync_fn is None and torch.distributed.is_available() and torch.distributed.is_initialized():
                 # User provided a bool, so we assume DDP if available
                 dist_sync_fn = gather_all_tensors
 
