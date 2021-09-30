@@ -31,13 +31,13 @@ Input = namedtuple("Input", ["preds", "target"])
 
 # for 8k sample rate, need at least 8k/4=2000 samples
 inputs_8k = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2100),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2100),
+    preds=torch.rand(4, 8, 2100),
+    target=torch.rand(4, 8, 2100),
 )
 # for 16k sample rate, need at least 16k/4=4000 samples
 inputs_16k = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 4100),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 4100),
+    preds=torch.rand(4, 8, 4100),
+    target=torch.rand(4, 8, 4100),
 )
 
 
