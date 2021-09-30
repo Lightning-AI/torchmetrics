@@ -357,8 +357,8 @@ class CatMetric(BaseAggregator):
             return dim_zero_cat(self.value)
         else:
             return self.value
-        #print(self.value)
-        #return dim_zero_cat(self.value) if self.value else self.value
+        # print(self.value)
+        # return dim_zero_cat(self.value) if self.value else self.value
 
 
 class MeanMetric(BaseAggregator):
