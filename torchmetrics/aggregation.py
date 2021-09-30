@@ -99,7 +99,7 @@ class BaseAggregator(Metric):
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value
+        return self.value.squeeze() if isinstance(self.value, Tensor) else self.value
 
     @property
     def is_differentiable(self) -> bool:
@@ -356,7 +356,12 @@ class CatMetric(BaseAggregator):
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return dim_zero_cat(self.value) if self.value else self.value
+        if isinstance(self.value, list) and self.value:
+            return dim_zero_cat(self.value)
+        else:
+            return self.value
+        #print(self.value)
+        #return dim_zero_cat(self.value) if self.value else self.value
 
 
 class MeanMetric(BaseAggregator):

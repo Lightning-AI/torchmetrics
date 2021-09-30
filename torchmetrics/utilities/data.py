@@ -38,11 +38,11 @@ def dim_zero_mean(x: Tensor) -> Tensor:
 
 
 def dim_zero_max(x: Tensor) -> Tensor:
-    return torch.max(x, dim=0)
+    return torch.max(x, dim=0).values
 
 
 def dim_zero_min(x: Tensor) -> Tensor:
-    return torch.min(x, dim=0)
+    return torch.min(x, dim=0).values
 
 
 def _flatten(x: Sequence) -> list:

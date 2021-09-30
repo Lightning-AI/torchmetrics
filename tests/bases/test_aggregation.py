@@ -1,8 +1,10 @@
+from functools import partial
+
 import numpy as np
 import pytest
 import torch
 
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_PROCESSES, MetricTester
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
 
 
@@ -20,10 +22,6 @@ def compare_min(values, weights):
 
 def compare_max(values, weights):
     return np.max(values.numpy())
-
-
-def compare_cat(values, weights):
-    return values.numpy()
 
 
 # wrap all other than mean metric to take an additional argument
@@ -62,20 +60,19 @@ class WrappedCatMetric(CatMetric):
         (WrappedMinMetric, compare_min),
         (WrappedMaxMetric, compare_max),
         (WrappedSumMetric, compare_sum),
-        (WrappedCatMetric, compare_cat),
         (MeanMetric, compare_mean),
     ],
 )
 class TestAggregation(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_aggreagation(self, ddp, dist_sync_on_step, metric_class, compare_fn, values, weights):
         self.run_class_metric_test(
             ddp=ddp,
             dist_sync_on_step=dist_sync_on_step,
             metric_class=metric_class,
             sk_metric=compare_fn,
-            check_scriptable=False if metric_class == WrappedCatMetric else True,
+            check_scriptable=True,
             # Abuse of names here
             preds=values,
             target=weights,
