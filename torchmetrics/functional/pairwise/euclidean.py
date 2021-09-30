@@ -36,12 +36,10 @@ def _check_input(
                 "Expected argument `Y` to be a 2D tensor of shape `[M, d]` where"
                 " `d` should be same as the last dimension of `X`"
             )
-        if zero_diagonal is None:
-            zero_diagonal = False
+        zero_diagonal = False if zero_diagonal is None else zero_diagonal
     else:
         Y = X.clone()
-        if zero_diagonal is None:
-            zero_diagonal = True
+        zero_diagonal = True if zero_diagonal is None else zero_diagonal
     return X, Y, zero_diagonal
 
 
@@ -72,12 +70,11 @@ def _pairwise_euclidean_distance_compute(distance: Tensor, reduction: Tensor) ->
     """
     if reduction == "mean":
         return distance.mean(dim=-1)
-    elif reduction == "sum":
+    if reduction == "sum":
         return distance.sum(dim=-1)
-    elif reduction is None or reduction == "none":
+    if reduction is None or reduction == "none":
         return distance
-    else:
-        raise ValueError(f"Expected reduction to be one of `['mean', 'sum', None]` but got {reduction}")
+    raise ValueError(f"Expected reduction to be one of `['mean', 'sum', None]` but got {reduction}")
 
 
 def pairwise_euclidean_distance(

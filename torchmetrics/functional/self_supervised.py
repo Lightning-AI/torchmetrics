@@ -54,5 +54,4 @@ def embedding_similarity(
     )
     if similarity == "cosine":
         return pairwise_cosine_similarity(batch, reduction=reduction, zero_diagonal=zero_diagonal)
-    else:
-        return pairwise_linear_similarity(batch, reduction=reduction, zero_diagonal=zero_diagonal)
+    return pairwise_linear_similarity(batch, reduction=reduction, zero_diagonal=zero_diagonal)
