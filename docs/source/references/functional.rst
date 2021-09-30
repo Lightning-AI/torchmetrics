@@ -319,11 +319,33 @@ tweedie_deviance_score [func]
 Pairwise
 ********
 
-embedding_similarity [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+pairwise_cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.embedding_similarity
+.. autofunction:: torchmetrics.functional.pairwise_cosine_similarity
     :noindex:
+
+
+pairwise_euclidean_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_euclidean_distance
+    :noindex:
+
+
+pairwise_linear_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_linear_similarity
+    :noindex:
+
+
+pairwise_manhatten_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_manhatten_distance
+    :noindex:
+
 
 *********
 Retrieval

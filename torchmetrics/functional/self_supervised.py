@@ -16,7 +16,7 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.pairwise import pairwise_cosine_similarity, pairwise_euclidean_distance
+from torchmetrics.functional.pairwise import pairwise_cosine_similarity, pairwise_linear_similarity
 
 
 def embedding_similarity(
@@ -50,10 +50,10 @@ def embedding_similarity(
     warn(
         "Function `embedding_similarity` was deprecated v0.6 and will be removed in v0.7."
         " Use `torchmetrics.functional.pairwise_cosine_similarity` instead when argument"
-        " similarity='cosine' else use `torchmetrics.functional.pairwise_euclidean_distance",
+        " similarity='cosine' else use `torchmetrics.functional.pairwise_linear_similarity",
         DeprecationWarning
     )
     if similarity == 'cosine':
         return pairwise_cosine_similarity(batch, reduction=reduction, zero_diagonal=zero_diagonal)
     else:
-        return pairwise_euclidean_distance(batch, reduction=reduction, zero_diagonal=zero_diagonal)
+        return pairwise_linear_similarity(batch, reduction=reduction, zero_diagonal=zero_diagonal)

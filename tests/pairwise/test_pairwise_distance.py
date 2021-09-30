@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import math
 from collections import namedtuple
 from functools import partial
 
@@ -20,12 +19,14 @@ import torch
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.metrics.pairwise import manhattan_distances
+from sklearn.metrics.pairwise import linear_kernel
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import (
     pairwise_euclidean_distance,
     pairwise_cosine_similarity,
+    pairwise_linear_similarity,
     pairwise_manhatten_distance
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -70,13 +71,13 @@ def _sk_metric(X, Y, sk_fn, reduction):
     [
         (pairwise_cosine_similarity, cosine_similarity),
         (pairwise_euclidean_distance, euclidean_distances),
-        (pairwise_manhatten_distance, manhattan_distances)
+        (pairwise_manhatten_distance, manhattan_distances),
+        (pairwise_linear_similarity, linear_kernel)
     ],
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestPairwise(MetricTester):
     def test_pairwise_functional(self, X, Y, metric_functional, sk_fn, reduction):
-        # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=X,
             target=Y,
