@@ -16,18 +16,14 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.pairwise.euclidean import (
-    _pairwise_euclidean_distance_compute, 
-    _check_input,
-)
+from torchmetrics.functional.pairwise.euclidean import _check_input, _pairwise_euclidean_distance_compute
 
 
 def _pairwise_cosine_similarity_update(
     X: Tensor, Y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """ 
-    Calculates the pairwise cosine similarity matrix
-    
+    """Calculates the pairwise cosine similarity matrix.
+
     Args:
         X: tensor of shape ``[N,d]``
         Y: if provided, a tensor of shape ``[M,d]``
@@ -49,20 +45,20 @@ def _pairwise_cosine_similarity_update(
 def pairwise_cosine_similarity(
     X: Tensor, Y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    r""" 
+    r"""
     Calculates pairwise cosine similarity:
-    
+
     .. math::
         s_{cos}(x,y) = \frac{<x,y>}{||x|| \cdot ||y||} = \frac{\sum_{d=1}^D x_d \cdot y_d }{\sqrt{\sum_{d=1}^D x_i^2} \cdot \sqrt{\sum_{d=1}^D x_i^2}}
-    
+
     If two tensors are passed in, the calculation will be performed
     pairwise between the rows of the tensors. If a single tensor is passed in, the calculation will
     be performed between the rows of that tensor.
-    
+
     Args:
         X: Tensor with shape ``[N, d]``
         Y: Tensor with shape ``[M, d]``, optional
-        reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'` 
+        reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'`
             (applied along column dimension) or  `'none'`, `None` for no reduction
         zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `X` is given
             this defaults to `True` else if `Y` is also given it defaults to `False`

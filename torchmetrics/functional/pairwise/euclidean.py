@@ -19,9 +19,8 @@ from torch import Tensor
 def _check_input(
     X: Tensor, Y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Union[Tensor, Tensor, bool]:
-    """ 
-    Check that input has the right dimensionality and sets the zero_diagonal
-    argument if user has not provided import module
+    """Check that input has the right dimensionality and sets the zero_diagonal argument if user has not provided
+    import module.
 
     Args:
         X: tensor of shape ``[N,d]``
@@ -29,12 +28,14 @@ def _check_input(
         zero_diagonal: determines if the diagonal should be set to zero
     """
     if X.ndim != 2:
-        raise ValueError(f'Expected argument `X` to be a 2D tensor of shape `[N, d]` but got {X.shape}')
+        raise ValueError(f"Expected argument `X` to be a 2D tensor of shape `[N, d]` but got {X.shape}")
 
     if Y is not None:
         if Y.ndim != 2 or Y.shape[1] != X.shape[1]:
-            raise ValueError('Expected argument `Y` to be a 2D tensor of shape `[M, d]` where'
-                             ' `d` should be same as the last dimension of `X`')
+            raise ValueError(
+                "Expected argument `Y` to be a 2D tensor of shape `[M, d]` where"
+                " `d` should be same as the last dimension of `X`"
+            )
         if zero_diagonal is None:
             zero_diagonal = False
     else:
@@ -47,9 +48,8 @@ def _check_input(
 def _pairwise_euclidean_distance_update(
     X: Tensor, Y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """ 
-    Calculates the pairwise euclidean distance matrix 
-    
+    """Calculates the pairwise euclidean distance matrix.
+
     Args:
         X: tensor of shape ``[N,d]``
         Y: if provided, a tensor of shape ``[M,d]``
@@ -57,25 +57,24 @@ def _pairwise_euclidean_distance_update(
     """
     X, Y, zero_diagonal = _check_input(X, Y, zero_diagonal)
 
-    distance = X.norm(dim=1, keepdim=True)**2 + Y.norm(dim=1).T**2 - 2 * X.mm(Y.T)
+    distance = X.norm(dim=1, keepdim=True) ** 2 + Y.norm(dim=1).T ** 2 - 2 * X.mm(Y.T)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance.sqrt()
 
 
 def _pairwise_euclidean_distance_compute(distance: Tensor, reduction: Tensor) -> Tensor:
-    """ Final reduction of distance matrix 
-    
+    """Final reduction of distance matrix.
+
     Args:
         distance: a ``[N,M]`` matrix
         reduction: string determining how to reduce along last dimension
-
     """
-    if reduction == 'mean':
+    if reduction == "mean":
         return distance.mean(dim=-1)
-    elif reduction == 'sum':
+    elif reduction == "sum":
         return distance.sum(dim=-1)
-    elif reduction is None or reduction == 'none':
+    elif reduction is None or reduction == "none":
         return distance
     else:
         raise ValueError(f"Expected reduction to be one of `['mean', 'sum', None]` but got {reduction}")
@@ -97,7 +96,7 @@ def pairwise_euclidean_distance(
     Args:
         X: Tensor with shape ``[N, d]``
         Y: Tensor with shape ``[M, d]``, optional
-        reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'` 
+        reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'`
             (applied along column dimension) or  `'none'`, `None` for no reduction
         zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `X` is given
             this defaults to `True` else if `Y` is also given it defaults to `False`

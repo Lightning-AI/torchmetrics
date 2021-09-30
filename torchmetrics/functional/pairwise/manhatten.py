@@ -15,17 +15,13 @@ from typing import Optional
 
 from torch import Tensor
 
-from torchmetrics.functional.pairwise.euclidean import (
-    _pairwise_euclidean_distance_compute, 
-    _check_input
-)
+from torchmetrics.functional.pairwise.euclidean import _check_input, _pairwise_euclidean_distance_compute
 
 
 def _pairwise_manhatten_distance_update(
-    X: Tensor, Y: Optional[Tensor] = None, reduction: Optional[str] = 'mean', zero_diagonal: Optional[bool] = None
+    X: Tensor, Y: Optional[Tensor] = None, reduction: Optional[str] = "mean", zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """
-    Calculates the pairwise manhatten similarity matrix
+    """Calculates the pairwise manhatten similarity matrix.
 
     Args:
         X: tensor of shape ``[N,d]``
@@ -56,7 +52,7 @@ def pairwise_manhatten_distance(
     Args:
         X: Tensor with shape ``[N, d]``
         Y: Tensor with shape ``[M, d]``, optional
-        reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'` 
+        reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'`
             (applied along column dimension) or  `'none'`, `None` for no reduction
         zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `X` is given
             this defaults to `True` else if `Y` is also given it defaults to `False`

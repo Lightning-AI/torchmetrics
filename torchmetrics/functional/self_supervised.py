@@ -45,15 +45,14 @@ def embedding_similarity(
     .. deprecated:: v0.6
         Use :func:`torchmetrics.functional.pairwise_cosine_similarity` when `similarity='cosine'`
         else use :func:`torchmetrics.functional.pairwise_euclidean_distance`. Will be removed in v0.7.
-
     """
     warn(
         "Function `embedding_similarity` was deprecated v0.6 and will be removed in v0.7."
         " Use `torchmetrics.functional.pairwise_cosine_similarity` instead when argument"
         " similarity='cosine' else use `torchmetrics.functional.pairwise_linear_similarity",
-        DeprecationWarning
+        DeprecationWarning,
     )
-    if similarity == 'cosine':
+    if similarity == "cosine":
         return pairwise_cosine_similarity(batch, reduction=reduction, zero_diagonal=zero_diagonal)
     else:
         return pairwise_linear_similarity(batch, reduction=reduction, zero_diagonal=zero_diagonal)
