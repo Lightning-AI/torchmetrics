@@ -14,3 +14,4 @@
 from torchmetrics.wrappers.bootstrapping import BootStrapper  # noqa: F401
 from torchmetrics.wrappers.multioutput import MultioutputWrapper  # noqa: F401
 from torchmetrics.wrappers.tracker import MetricTracker  # noqa: F401
+from torchmetrics.wrappers.minmax import MinMaxMetric
