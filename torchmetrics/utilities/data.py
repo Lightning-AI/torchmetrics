@@ -50,6 +50,10 @@ def dim_zero_min(x: Tensor) -> Tensor:
     return torch.min(x, dim=0).values
 
 
+def _flatten(x: Sequence) -> list:
+    return [item for sublist in x for item in sublist]
+
+
 def to_onehot(
     label_tensor: Tensor,
     num_classes: Optional[int] = None,
