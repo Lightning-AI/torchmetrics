@@ -52,6 +52,7 @@ class BaseAggregator(Metric):
     """
 
     value: Tensor
+    is_differentiable = True
 
     def __init__(
         self,
@@ -100,10 +101,6 @@ class BaseAggregator(Metric):
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
         return self.value.squeeze() if isinstance(self.value, Tensor) else self.value
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True
 
 
 class MaxMetric(BaseAggregator):
