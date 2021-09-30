@@ -80,7 +80,10 @@ class BaseAggregator(Metric):
         self.nan_strategy = nan_strategy
         self.add_state("value", default=default_value, dist_reduce_fx=fn)
 
-    def _cast_and_nan_check_input(self, x: float) -> Tensor:
+    def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
+        """ Converts input x to a tensor if not already and afterwards
+            checks for nans that either give an error, warning or just ignored
+        """
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
 
@@ -88,7 +91,7 @@ class BaseAggregator(Metric):
         if any(nans.flatten()):
             if self.nan_strategy == "error":
                 raise RuntimeError("Encounted `nan` values in tensor")
-            elif self.nan_strategy == "warn":
+            if self.nan_strategy == "warn":
                 warnings.warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
                 x = x[~nans]
             elif self.nan_strategy == "ignore":
@@ -97,6 +100,9 @@ class BaseAggregator(Metric):
                 x[nans] = self.nan_strategy
 
         return x.float()
+
+    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+        pass
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
@@ -357,8 +363,6 @@ class CatMetric(BaseAggregator):
             return dim_zero_cat(self.value)
         else:
             return self.value
-        # print(self.value)
-        # return dim_zero_cat(self.value) if self.value else self.value
 
 
 class MeanMetric(BaseAggregator):
