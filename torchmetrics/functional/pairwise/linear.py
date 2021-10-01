@@ -13,10 +13,10 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor
 
-from torchmetrics.functional.pairwise.euclidean import _check_input, _pairwise_euclidean_distance_compute
+from torchmetrics.functional.pairwise.euclidean import _pairwise_euclidean_distance_compute
+from torchmetrics.functional.pairwise.helpers import _check_input
 
 
 def _pairwise_linear_similarity_update(

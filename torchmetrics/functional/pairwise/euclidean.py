@@ -11,37 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import Optional
 
 from torch import Tensor
-
-
-def _check_input(
-    x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
-) -> Union[Tensor, Tensor, bool]:
-    """Check that input has the right dimensionality and sets the zero_diagonal argument if user has not provided
-    import module.
-
-    Args:
-        x: tensor of shape ``[N,d]``
-        y: if provided, a tensor of shape ``[M,d]``
-        zero_diagonal: determines if the diagonal should be set to zero
-    """
-    if x.ndim != 2:
-        raise ValueError(f"Expected argument `x` to be a 2D tensor of shape `[N, d]` but got {x.shape}")
-
-    if y is not None:
-        if y.ndim != 2 or y.shape[1] != x.shape[1]:
-            raise ValueError(
-                "Expected argument `y` to be a 2D tensor of shape `[M, d]` where"
-                " `d` should be same as the last dimension of `x`"
-            )
-        zero_diagonal = False if zero_diagonal is None else zero_diagonal
-    else:
-        y = x.clone()
-        zero_diagonal = True if zero_diagonal is None else zero_diagonal
-    return x, y, zero_diagonal
-
+from torchmetrics.functional.pairwise.helpers import _check_input
 
 def _pairwise_euclidean_distance_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
