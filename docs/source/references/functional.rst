@@ -315,9 +315,9 @@ tweedie_deviance_score [func]
     :noindex:
 
 
-********
-Pairwise
-********
+****************
+Pairwise Metrics
+****************
 
 pairwise_cosine_similarity [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

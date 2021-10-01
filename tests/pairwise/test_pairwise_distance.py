@@ -26,7 +26,6 @@ from torchmetrics.functional import (
     pairwise_linear_similarity,
     pairwise_manhatten_distance,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
