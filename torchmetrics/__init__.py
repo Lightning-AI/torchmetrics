@@ -63,7 +63,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore, SacreBLEUScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
 __all__ = [
@@ -120,6 +120,7 @@ __all__ = [
     "RetrievalRecall",
     "ROC",
     "ROUGEScore",
+    "SacreBLEUScore",
     "SI_SDR",
     "SI_SNR",
     "SNR",
