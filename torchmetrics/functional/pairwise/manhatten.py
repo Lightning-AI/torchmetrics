@@ -19,25 +19,25 @@ from torchmetrics.functional.pairwise.euclidean import _check_input, _pairwise_e
 
 
 def _pairwise_manhatten_distance_update(
-    X: Tensor, Y: Optional[Tensor] = None, reduction: Optional[str] = "mean", zero_diagonal: Optional[bool] = None
+    x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = "mean", zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     """Calculates the pairwise manhatten similarity matrix.
 
     Args:
-        X: tensor of shape ``[N,d]``
-        Y: if provided, a tensor of shape ``[M,d]``
+        x: tensor of shape ``[N,d]``
+        y: if provided, a tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal should be set to zero
     """
-    X, Y, zero_diagonal = _check_input(X, Y, zero_diagonal)
+    x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
-    distance = (X.unsqueeze(1) - Y.unsqueeze(0).repeat(X.shape[0], 1, 1)).abs().sum(dim=-1)
+    distance = (x.unsqueeze(1) - y.unsqueeze(0).repeat(x.shape[0], 1, 1)).abs().sum(dim=-1)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance
 
 
 def pairwise_manhatten_distance(
-    X: Tensor, Y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
+    x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     r"""
     Calculates pairwise manhatten distance:
@@ -50,15 +50,15 @@ def pairwise_manhatten_distance(
     be performed between the rows of that tensor.
 
     Args:
-        X: Tensor with shape ``[N, d]``
-        Y: Tensor with shape ``[M, d]``, optional
+        x: Tensor with shape ``[N, d]``
+        y: Tensor with shape ``[M, d]``, optional
         reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'`
             (applied along column dimension) or  `'none'`, `None` for no reduction
-        zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `X` is given
-            this defaults to `True` else if `Y` is also given it defaults to `False`
+        zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `x` is given
+            this defaults to `True` else if `y` is also given it defaults to `False`
 
     Returns:
-        A ``[N,N]`` matrix of distances if only ``X`` is given, else a ``[N,M]`` matrix
+        A ``[N,N]`` matrix of distances if only ``x`` is given, else a ``[N,M]`` matrix
 
     Example:
         >>> import torch
@@ -75,5 +75,5 @@ def pairwise_manhatten_distance(
                 [8., 5., 0.]])
 
     """
-    distance = _pairwise_manhatten_distance_update(X, Y, zero_diagonal)
+    distance = _pairwise_manhatten_distance_update(x, y, zero_diagonal)
     return _pairwise_euclidean_distance_compute(distance, reduction)
