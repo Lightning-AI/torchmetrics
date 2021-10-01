@@ -14,7 +14,9 @@
 from typing import Optional
 
 from torch import Tensor
+
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
+
 
 def _pairwise_euclidean_distance_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None

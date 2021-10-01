@@ -88,10 +88,11 @@ class TestPairwise(MetricTester):
     def test_pairwise_half_cpu(self, x, y, metric_functional, sk_fn, reduction):
         if metric_functional == pairwise_euclidean_distance:
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
-        self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={'reduction': reduction})
+        self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
     def test_pairwise_half_gpu(self, x, y, metric_functional, sk_fn, reduction):
-        self.run_precision_test_gpu(x, y, None, metric_functional, metric_args={'reduction': reduction})    
+        self.run_precision_test_gpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
+
 
 @pytest.mark.parametrize(
     "metric", [pairwise_cosine_similarity, pairwise_euclidean_distance, pairwise_manhatten_distance]

@@ -455,7 +455,11 @@ class MetricTester:
         metric_args = metric_args or {}
         _assert_half_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            metric_functional, preds, target, device="cpu", **kwargs_update
+            metric_functional,
+            preds,
+            target,
+            device="cpu",
+            **kwargs_update,
         )
 
     @staticmethod
@@ -480,7 +484,11 @@ class MetricTester:
         metric_args = metric_args or {}
         _assert_half_support(
             metric_module(**metric_args) if metric_module is not None else None,
-            metric_functional, preds, target, device="cuda", **kwargs_update
+            metric_functional,
+            preds,
+            target,
+            device="cuda",
+            **kwargs_update,
         )
 
     @staticmethod
