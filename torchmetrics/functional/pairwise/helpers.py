@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import Optional, Tuple
 
 from torch import Tensor
 
 
 def _check_input(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
-) -> Union[Tensor, Tensor, bool]:
+) -> Tuple[Tensor, Tensor, bool]:
     """Check that input has the right dimensionality and sets the zero_diagonal argument if user has not provided
     import module.
 
@@ -43,7 +43,7 @@ def _check_input(
     return x, y, zero_diagonal
 
 
-def _reduce_distance_matrix(distmat: Tensor, reduction: Optional[str] = None):
+def _reduce_distance_matrix(distmat: Tensor, reduction: Optional[str] = None) -> Tensor:
     """Final reduction of distance matrix.
 
     Args:

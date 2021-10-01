@@ -19,7 +19,7 @@ from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_dista
 
 
 def _pairwise_linear_similarity_update(
-    x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = "mean", zero_diagonal: Optional[bool] = None
+    x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     """Calculates the pairwise linear similarity matrix.
 
