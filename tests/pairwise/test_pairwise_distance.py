@@ -32,25 +32,25 @@ seed_all(42)
 
 extra_dim = 5
 
-Input = namedtuple("Input", ["X", "Y"])
+Input = namedtuple("Input", ["x", "y"])
 
 
 _inputs1 = Input(
-    X=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
-    Y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
+    x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
+    y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
 
 
 _inputs2 = Input(
-    X=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
-    Y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
+    x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
+    y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
 
 
-def _sk_metric(X, Y, sk_fn, reduction):
-    X = X.view(-1, extra_dim).numpy()
-    Y = Y.view(-1, extra_dim).numpy()
-    res = sk_fn(X, Y)
+def _sk_metric(x, y, sk_fn, reduction):
+    x = x.view(-1, extra_dim).numpy()
+    y = y.view(-1, extra_dim).numpy()
+    res = sk_fn(x, y)
     if reduction == "sum":
         return res.sum(axis=-1)
     elif reduction == "mean":
@@ -59,10 +59,10 @@ def _sk_metric(X, Y, sk_fn, reduction):
 
 
 @pytest.mark.parametrize(
-    "X, Y",
+    "x, y",
     [
-        (_inputs1.X, _inputs1.Y),
-        (_inputs1.X, _inputs1.Y),
+        (_inputs1.x, _inputs1.y),
+        (_inputs1.x, _inputs1.y),
     ],
 )
 @pytest.mark.parametrize(
@@ -76,25 +76,32 @@ def _sk_metric(X, Y, sk_fn, reduction):
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestPairwise(MetricTester):
-    def test_pairwise_functional(self, X, Y, metric_functional, sk_fn, reduction):
+    def test_pairwise_functional(self, x, y, metric_functional, sk_fn, reduction):
         self.run_functional_metric_test(
-            preds=X,
-            target=Y,
+            preds=x,
+            target=y,
             metric_functional=metric_functional,
             sk_metric=partial(_sk_metric, sk_fn=sk_fn, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
+    def test_pairwise_half_cpu(self, x, y, metric_functional, sk_fn, reduction):
+        if metric_functional == pairwise_euclidean_distance:
+            pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
+        self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={'reduction': reduction})
+
+    def test_pairwise_half_gpu(self, x, y, metric_functional, sk_fn, reduction):
+        self.run_precision_test_gpu(x, y, None, metric_functional, metric_args={'reduction': reduction})    
 
 @pytest.mark.parametrize(
     "metric", [pairwise_cosine_similarity, pairwise_euclidean_distance, pairwise_manhatten_distance]
 )
 def test_error_on_wrong_shapes(metric):
-    with pytest.raises(ValueError, match="Expected argument `X` to be a 2D tensor .*"):
+    with pytest.raises(ValueError, match="Expected argument `x` to be a 2D tensor .*"):
         metric(torch.randn(10))
 
-    with pytest.raises(ValueError, match="Expected argument `Y` to be a 2D tensor .*"):
+    with pytest.raises(ValueError, match="Expected argument `y` to be a 2D tensor .*"):
         metric(torch.randn(10, 5), torch.randn(5, 3))
 
-    with pytest.raises(ValueError, match="Expected reduction to be one of -*"):
+    with pytest.raises(ValueError, match="Expected reduction to be one of .*"):
         metric(torch.randn(10, 5), torch.randn(10, 5), reduction=1)

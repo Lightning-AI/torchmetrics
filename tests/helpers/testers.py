@@ -262,7 +262,7 @@ def _functional_test(
 
 
 def _assert_half_support(
-    metric_module: Metric,
+    metric_module: Optional[Metric],
     metric_functional: Optional[Callable],
     preds: Tensor,
     target: Tensor,
@@ -286,8 +286,9 @@ def _assert_half_support(
         k: (v[0].half() if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    metric_module = metric_module.to(device)
-    _assert_tensor(metric_module(y_hat, y, **kwargs_update))
+    if metric_module is not None:
+        metric_module = metric_module.to(device)
+        _assert_tensor(metric_module(y_hat, y, **kwargs_update))
     if metric_functional is not None:
         _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
@@ -436,7 +437,7 @@ class MetricTester:
     def run_precision_test_cpu(
         preds: Tensor,
         target: Tensor,
-        metric_module: Metric,
+        metric_module: Optional[Metric] = None,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
         **kwargs_update,
@@ -453,14 +454,15 @@ class MetricTester:
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, target, device="cpu", **kwargs_update
+            metric_module(**metric_args) if metric_module is not None else None,
+            metric_functional, preds, target, device="cpu", **kwargs_update
         )
 
     @staticmethod
     def run_precision_test_gpu(
         preds: Tensor,
         target: Tensor,
-        metric_module: Metric,
+        metric_module: Optional[Metric] = None,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
         **kwargs_update,
@@ -477,7 +479,8 @@ class MetricTester:
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, target, device="cuda", **kwargs_update
+            metric_module(**metric_args) if metric_module is not None else None,
+            metric_functional, preds, target, device="cuda", **kwargs_update
         )
 
     @staticmethod

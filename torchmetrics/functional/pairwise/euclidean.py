@@ -27,8 +27,9 @@ def _pairwise_euclidean_distance_update(
         zero_diagonal: determines if the diagonal should be set to zero
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
-
-    distance = x.norm(dim=1, keepdim=True) ** 2 + y.norm(dim=1).T ** 2 - 2 * x.mm(y.T)
+    x_norm = x.norm(dim=1, keepdim=True)
+    y_norm = y.norm(dim=1).T
+    distance = x_norm * x_norm + y_norm * y_norm - 2 * x.mm(y.T)
     if zero_diagonal:
         distance.fill_diagonal_(0)
     return distance.sqrt()
