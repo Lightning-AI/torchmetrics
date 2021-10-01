@@ -14,7 +14,7 @@
 from typing import Optional
 
 from torch import Tensor
-from torchmetrics.functional.pairwise.helpers import _check_input
+from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
 def _pairwise_euclidean_distance_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
@@ -23,7 +23,7 @@ def _pairwise_euclidean_distance_update(
 
     Args:
         x: tensor of shape ``[N,d]``
-        y: if provided, a tensor of shape ``[M,d]``
+        y: tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal should be set to zero
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
@@ -35,22 +35,6 @@ def _pairwise_euclidean_distance_update(
     return distance.sqrt()
 
 
-def _pairwise_euclidean_distance_compute(distance: Tensor, reduction: Tensor) -> Tensor:
-    """Final reduction of distance matrix.
-
-    Args:
-        distance: a ``[N,M]`` matrix
-        reduction: string determining how to reduce along last dimension
-    """
-    if reduction == "mean":
-        return distance.mean(dim=-1)
-    if reduction == "sum":
-        return distance.sum(dim=-1)
-    if reduction is None or reduction == "none":
-        return distance
-    raise ValueError(f"Expected reduction to be one of `['mean', 'sum', None]` but got {reduction}")
-
-
 def pairwise_euclidean_distance(
     x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
@@ -60,9 +44,8 @@ def pairwise_euclidean_distance(
     .. math::
         d_{euc}(x,y) = ||x - y||_2 = \sqrt{\sum_{d=1}^D (x_d - y_d)^2}
 
-    If two tensors are passed in, the calculation will be performed
-    pairwise between the rows of the tensors. If a single tensor is passed in, the calculation will
-    be performed between the rows of that tensor.
+    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
+    If only `x` is passed in, the calculation will be performed between the rows of `x`.
 
     Args:
         x: Tensor with shape ``[N, d]``
@@ -91,4 +74,4 @@ def pairwise_euclidean_distance(
 
     """
     distance = _pairwise_euclidean_distance_update(x, y, zero_diagonal)
-    return _pairwise_euclidean_distance_compute(distance, reduction)
+    return _reduce_distance_matrix(distance, reduction)

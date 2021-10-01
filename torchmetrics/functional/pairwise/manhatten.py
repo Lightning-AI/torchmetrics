@@ -15,8 +15,7 @@ from typing import Optional
 
 from torch import Tensor
 
-from torchmetrics.functional.pairwise.euclidean import _pairwise_euclidean_distance_compute
-from torchmetrics.functional.pairwise.helpers import _check_input
+from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
 
 def _pairwise_manhatten_distance_update(
@@ -46,9 +45,8 @@ def pairwise_manhatten_distance(
     .. math::
         d_{man}(x,y) = ||x-y||_1 = \sum_{d=1}^D |x_d - y_d|
 
-    If two tensors are passed in, the calculation will be performed
-    pairwise between the rows of the tensors. If a single tensor is passed in, the calculation will
-    be performed between the rows of that tensor.
+    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
+    If only `x` is passed in, the calculation will be performed between the rows of `x`.
 
     Args:
         x: Tensor with shape ``[N, d]``
@@ -77,4 +75,4 @@ def pairwise_manhatten_distance(
 
     """
     distance = _pairwise_manhatten_distance_update(x, y, zero_diagonal)
-    return _pairwise_euclidean_distance_compute(distance, reduction)
+    return _reduce_distance_matrix(distance, reduction)

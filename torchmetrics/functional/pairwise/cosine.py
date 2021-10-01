@@ -16,8 +16,7 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.pairwise.euclidean import _pairwise_euclidean_distance_compute
-from torchmetrics.functional.pairwise.helpers import _check_input
+from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
 
 def _pairwise_cosine_similarity_update(
@@ -27,7 +26,7 @@ def _pairwise_cosine_similarity_update(
 
     Args:
         x: tensor of shape ``[N,d]``
-        y: if provided, a tensor of shape ``[M,d]``
+        y: tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal should be set to zero
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
@@ -52,9 +51,8 @@ def pairwise_cosine_similarity(
     .. math::
         s_{cos}(x,y) = \frac{<x,y>}{||x|| \cdot ||y||} = \frac{\sum_{d=1}^D x_d \cdot y_d }{\sqrt{\sum_{d=1}^D x_i^2} \cdot \sqrt{\sum_{d=1}^D x_i^2}}
 
-    If two tensors are passed in, the calculation will be performed
-    pairwise between the rows of the tensors. If a single tensor is passed in, the calculation will
-    be performed between the rows of that tensor.
+    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
+    If only `x` is passed in, the calculation will be performed between the rows of `x`.
 
     Args:
         x: Tensor with shape ``[N, d]``
@@ -83,4 +81,4 @@ def pairwise_cosine_similarity(
 
     """
     distance = _pairwise_cosine_similarity_update(x, y, zero_diagonal)
-    return _pairwise_euclidean_distance_compute(distance, reduction)
+    return _reduce_distance_matrix(distance, reduction)

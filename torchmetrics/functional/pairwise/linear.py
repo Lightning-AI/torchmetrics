@@ -15,13 +15,19 @@ from typing import Optional
 
 from torch import Tensor
 
-from torchmetrics.functional.pairwise.euclidean import _pairwise_euclidean_distance_compute
-from torchmetrics.functional.pairwise.helpers import _check_input
+from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
 
 def _pairwise_linear_similarity_update(
     x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = "mean", zero_diagonal: Optional[bool] = None
 ) -> Tensor:
+    """Calculates the pairwise linear similarity matrix.
+
+    Args:
+        x: tensor of shape ``[N,d]``
+        y: tensor of shape ``[M,d]``
+        zero_diagonal: determines if the diagonal should be set to zero
+    """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
     distance = x @ y.T
@@ -39,9 +45,8 @@ def pairwise_linear_similarity(
     .. math::
         s_{lin}(x,y) = <x,y> = \sum_{d=1}^D x_d \cdot y_d
 
-    If two tensors are passed in, the calculation will be performed
-    pairwise between the rows of the tensors. If a single tensor is passed in, the calculation will
-    be performed between the rows of that tensor.
+    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
+    If only `x` is passed in, the calculation will be performed between the rows of `x`.
 
     Args:
         x: Tensor with shape ``[N, d]``
@@ -70,4 +75,4 @@ def pairwise_linear_similarity(
 
     """
     distance = _pairwise_linear_similarity_update(x, y, zero_diagonal)
-    return _pairwise_euclidean_distance_compute(distance, reduction)
+    return _reduce_distance_matrix(distance, reduction)
