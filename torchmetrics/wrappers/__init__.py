@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.wrappers.bootstrapping import BootStrapper  # noqa: F401
-from torchmetrics.wrappers.minmax import MinMaxMetric
+from torchmetrics.wrappers.minmax import MinMaxMetric  # noqa: F401
 from torchmetrics.wrappers.multioutput import MultioutputWrapper  # noqa: F401
 from torchmetrics.wrappers.tracker import MetricTracker  # noqa: F401
