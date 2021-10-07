@@ -27,7 +27,7 @@ class BaseAggregator(Metric):
     Args:
         fn: string specifying the reduction function
         default_value: default tensor value to use for the metric state
-        nan_strategy:
+        nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
             - ``'warn'``: if any `nan` values are encounted will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
@@ -52,11 +52,12 @@ class BaseAggregator(Metric):
     """
 
     value: Tensor
-    is_differentiable = True
+    is_differentiable = None
+    higher_is_better = None
 
     def __init__(
         self,
-        fn: str,
+        fn: Union[Callable, str],
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
         compute_on_step: bool = True,
@@ -112,7 +113,7 @@ class MaxMetric(BaseAggregator):
     """Aggregate a stream of value into their maximum value.
 
     Args:
-        nan_strategy:
+        nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
             - ``'warn'``: if any `nan` values are encounted will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
@@ -178,7 +179,7 @@ class MinMetric(BaseAggregator):
     """Aggregate a stream of value into their minimum value.
 
     Args:
-        nan_strategy:
+        nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
             - ``'warn'``: if any `nan` values are encounted will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
@@ -244,7 +245,7 @@ class SumMetric(BaseAggregator):
     """Aggregate a stream of value into their sum.
 
     Args:
-        nan_strategy:
+        nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
             - ``'warn'``: if any `nan` values are encounted will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
@@ -303,7 +304,7 @@ class CatMetric(BaseAggregator):
     """Concatenate a stream of values.
 
     Args:
-        nan_strategy:
+        nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
             - ``'warn'``: if any `nan` values are encounted will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
@@ -368,7 +369,7 @@ class MeanMetric(BaseAggregator):
     """Aggregate a stream of value into their mean value.
 
     Args:
-        nan_strategy:
+       nan_strategy: options:
             - ``'error'``: if any `nan` values are encounted will give a RuntimeError
             - ``'warn'``: if any `nan` values are encounted will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
