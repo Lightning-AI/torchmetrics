@@ -89,6 +89,7 @@ class TestPairwise(MetricTester):
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
         self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pairwise_half_gpu(self, x, y, metric_functional, sk_fn, reduction):
         self.run_precision_test_gpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
