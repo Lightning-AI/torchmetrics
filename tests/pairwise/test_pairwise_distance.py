@@ -48,7 +48,7 @@ _inputs2 = Input(
 
 
 def _sk_metric(x, y, sk_fn, reduction):
-    """ comparison function """
+    """comparison function."""
     x = x.view(-1, extra_dim).numpy()
     y = y.view(-1, extra_dim).numpy()
     res = sk_fn(x, y)
@@ -78,10 +78,11 @@ def _sk_metric(x, y, sk_fn, reduction):
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestPairwise(MetricTester):
     """ test pairwise implementations"""
+    
     atol = 1e-4
 
     def test_pairwise_functional(self, x, y, metric_functional, sk_fn, reduction):
-        """ test functional pairwise implementations"""
+        """test functional pairwise implementations."""
         self.run_functional_metric_test(
             preds=x,
             target=y,
@@ -94,14 +95,14 @@ class TestPairwise(MetricTester):
         not _TORCH_GREATER_EQUAL_1_7, reason="half support of core operations on not support before pytorch v1.7"
     )
     def test_pairwise_half_cpu(self, x, y, metric_functional, sk_fn, reduction):
-        """ test half precision support on cpu"""
+        """test half precision support on cpu."""
         if metric_functional == pairwise_euclidean_distance:
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
         self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pairwise_half_gpu(self, x, y, metric_functional, sk_fn, reduction):
-        """ test half precision support on gpu"""
+        """test half precision support on gpu."""
         self.run_precision_test_gpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
 
@@ -109,7 +110,7 @@ class TestPairwise(MetricTester):
     "metric", [pairwise_cosine_similarity, pairwise_euclidean_distance, pairwise_manhatten_distance]
 )
 def test_error_on_wrong_shapes(metric):
-    """ Test errors are raised on wrong input """
+    """Test errors are raised on wrong input."""
     with pytest.raises(ValueError, match="Expected argument `x` to be a 2D tensor .*"):
         metric(torch.randn(10))
 
