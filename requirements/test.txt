@@ -22,6 +22,7 @@ scikit-image>0.17.1
 -r audio.txt
 
 # audio
+mkl-service>=2.4.0
 pypesq
 mir_eval>=0.6
 #pesq @ https://github.com/ludlows/python-pesq/archive/refs/heads/master.zip
