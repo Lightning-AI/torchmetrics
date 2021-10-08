@@ -78,7 +78,7 @@ def _sk_metric(x, y, sk_fn, reduction):
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestPairwise(MetricTester):
     """ test pairwise implementations"""
-    atol = 1e-6
+    atol = 1e-4
 
     def test_pairwise_functional(self, x, y, metric_functional, sk_fn, reduction):
         """ test functional pairwise implementations"""
