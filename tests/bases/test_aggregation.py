@@ -85,10 +85,6 @@ class TestAggregation(MetricTester):
             target=weights,
         )
 
-    def test_aggregation_differentiability(self, metric_class, compare_fn, values, weights):
-        """test functional implementation."""
-        self.run_differentiability_test(preds=values, target=weights, metric_module=metric_class)
-
 
 _case1 = float("nan") * torch.ones(5)
 _case2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
