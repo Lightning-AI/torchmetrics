@@ -102,6 +102,7 @@ class BaseAggregator(Metric):
         return x.float()
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+        """ Overwrite in child class """
         pass
 
     def compute(self) -> Tensor:
@@ -361,8 +362,7 @@ class CatMetric(BaseAggregator):
         """Compute the aggregated value."""
         if isinstance(self.value, list) and self.value:
             return dim_zero_cat(self.value)
-        else:
-            return self.value
+        return self.value
 
 
 class MeanMetric(BaseAggregator):
