@@ -102,7 +102,7 @@ class BaseAggregator(Metric):
         return x.float()
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
-        """ Overwrite in child class """
+        """Overwrite in child class."""
         pass
 
     def compute(self) -> Tensor:

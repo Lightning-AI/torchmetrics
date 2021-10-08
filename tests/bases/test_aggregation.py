@@ -29,28 +29,32 @@ def compare_max(values, weights):
 # wrap all other than mean metric to take an additional argument
 # this lets them fit into the testing framework
 class WrappedMinMetric(MinMetric):
-    """ Wrapped min metric"""
+    """Wrapped min metric."""
+
     def update(self, values, weights):
         """only pass values on."""
         super().update(values)
 
 
 class WrappedMaxMetric(MaxMetric):
-    """ Wrapped max metric"""
+    """Wrapped max metric."""
+
     def update(self, values, weights):
         """only pass values on."""
         super().update(values)
 
 
 class WrappedSumMetric(SumMetric):
-    """ Wrapped min metric"""
+    """Wrapped min metric."""
+
     def update(self, values, weights):
         """only pass values on."""
         super().update(values)
 
 
 class WrappedCatMetric(CatMetric):
-    """ Wrapped cat metric"""
+    """Wrapped cat metric."""
+
     def update(self, values, weights):
         """only pass values on."""
         super().update(values)
@@ -74,7 +78,8 @@ class WrappedCatMetric(CatMetric):
     ],
 )
 class TestAggregation(MetricTester):
-    """ Test aggregation metrics"""
+    """Test aggregation metrics."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_aggreagation(self, ddp, dist_sync_on_step, metric_class, compare_fn, values, weights):
