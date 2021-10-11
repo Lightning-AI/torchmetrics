@@ -69,6 +69,8 @@ class Metric(Module, ABC):
 
     __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
+    is_differentiable: Optional[bool] = None
+    higher_is_better: Optional[bool] = None
 
     def __init__(
         self,
@@ -412,52 +414,15 @@ class Metric(Module, ABC):
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name in ("higher_is_better", "is_differentiable"):
+            raise RuntimeError(f"Can't change const `{name}`.")
+        super().__setattr__(name, value)
+
     @property
     def device(self) -> "torch.device":
         """Return the device of the metric."""
         return self._device
-
-    def to(self, *args: Any, **kwargs: Any) -> "Metric":
-        """Moves the parameters and buffers.
-
-        Normal dtype casting is not supported by this method instead use the `set_dtype` method instead.
-        """
-        out = torch._C._nn._parse_to(*args, **kwargs)
-        if len(out) == 4:  # pytorch 1.5 and higher
-            device, dtype, non_blocking, convert_to_format = out
-        else:  # pytorch 1.4 and lower
-            device, dtype, non_blocking = out
-            convert_to_format = None
-        dtype = None  # prevent dtype being casted
-
-        def convert(t: Tensor) -> Tensor:
-            if convert_to_format is not None and t.dim() in (4, 5):
-                return t.to(
-                    device,
-                    dtype if t.is_floating_point() or t.is_complex() else None,
-                    non_blocking,
-                    memory_format=convert_to_format,
-                )
-            return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
-
-        self._device = device
-        return self._apply(convert)
-
-    def cuda(self, device: Optional[Union[torch.device, int]] = None) -> "Metric":
-        """Moves all model parameters and buffers to the GPU.
-
-        Arguments:
-            device: if specified, all parameters will be copied to that device
-        """
-        if device is None or isinstance(device, int):
-            device = torch.device("cuda", index=device)
-        self._device = device
-        return super().cuda(device=device)
-
-    def cpu(self) -> "Metric":
-        """Moves all model parameters and buffers to the CPU."""
-        self._device = torch.device("cpu")
-        return super().cpu()
 
     def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
         """Method override default and prevent dtype casting.
@@ -514,6 +479,10 @@ class Metric(Module, ABC):
                 raise TypeError(
                     "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
                 )
+
+        # make sure to update the device attribute
+        # if the dummy tensor moves device by fn function we should also update the attribute
+        self._device = fn(torch.zeros(1, device=self.device)).device
 
         # Additional apply to forward cache and computed attributes (may be nested)
         if this._computed is not None:
@@ -707,12 +676,6 @@ class Metric(Module, ABC):
 
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
-
-    @property
-    def is_differentiable(self) -> Optional[bool]:
-        # There is a bug in PyTorch that leads to properties being executed during scripting
-        # To make the metric scriptable, we add property to ignore list and switch to return None here
-        return None
 
 
 def _neg(x: Tensor) -> Tensor:

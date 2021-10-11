@@ -12,7 +12,7 @@ _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
-from torchmetrics.audio import PIT, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
+from torchmetrics.audio import PESQ, PIT, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
 from torchmetrics.average import AverageMeter  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402
     AUC,
@@ -63,8 +63,8 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore  # noqa: E402
-from torchmetrics.wrappers import BootStrapper, MetricTracker  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore, SacreBLEUScore  # noqa: E402
+from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
 __all__ = [
     "functional",
@@ -103,7 +103,9 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MultioutputWrapper",
     "PearsonCorrcoef",
+    "PESQ",
     "PIT",
     "Precision",
     "PrecisionRecallCurve",
@@ -118,6 +120,7 @@ __all__ = [
     "RetrievalRecall",
     "ROC",
     "ROUGEScore",
+    "SacreBLEUScore",
     "SI_SDR",
     "SI_SNR",
     "SNR",

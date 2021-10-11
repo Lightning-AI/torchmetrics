@@ -61,6 +61,7 @@ class KLDivergence(Metric):
         tensor(0.0853)
 
     """
+    is_differentiable = True
     # TODO: canot be used because if scripting
     # measures: Union[List[Tensor], Tensor]
     total: Tensor
@@ -106,7 +107,3 @@ class KLDivergence(Metric):
     def compute(self) -> Tensor:
         measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
         return _kld_compute(measures, self.total, self.reduction)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

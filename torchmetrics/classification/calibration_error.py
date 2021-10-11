@@ -24,8 +24,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 class CalibrationError(Metric):
     r"""
 
-    Computes the top-label calibration error as described in `this paper <https://arxiv.org/pdf/1909.10155.pdf>`_.
-
+    `Computes the Top-label Calibration Error`_
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     L1 norm (Expected Calibration Error)

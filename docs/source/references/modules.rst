@@ -42,6 +42,11 @@ the metric will be computed over the ``time`` dimension.
     >>> snr_val
     tensor(16.1805)
 
+PESQ
+~~~~
+
+.. autoclass:: torchmetrics.PESQ
+
 PIT
 ~~~
 
@@ -577,4 +582,10 @@ MetricTracker
 ~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MetricTracker
+    :noindex:
+
+MultioutputWrapper
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MultioutputWrapper
     :noindex:

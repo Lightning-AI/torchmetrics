@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.functional.audio.pit import pit, pit_permutate
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
@@ -28,7 +29,7 @@ from torchmetrics.functional.classification.f_beta import f1, fbeta
 from torchmetrics.functional.classification.hamming_distance import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge
 from torchmetrics.functional.classification.iou import iou
-from torchmetrics.functional.classification.kl_divergence import kl_divergence, kldivergence
+from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
@@ -46,7 +47,6 @@ from torchmetrics.functional.regression.mean_squared_error import mean_squared_e
 from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
-from torchmetrics.functional.regression.r2score import r2score
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
     symmetric_mean_absolute_percentage_error,
@@ -62,6 +62,7 @@ from torchmetrics.functional.self_supervised import embedding_similarity
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.rouge import rouge_score
+from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.wer import wer
 
 __all__ = [
@@ -93,6 +94,7 @@ __all__ = [
     "mean_squared_error",
     "mean_squared_log_error",
     "pearson_corrcoef",
+    "pesq",
     "pit",
     "pit_permutate",
     "precision",
@@ -110,6 +112,7 @@ __all__ = [
     "retrieval_reciprocal_rank",
     "roc",
     "rouge_score",
+    "sacre_bleu_score",
     "si_sdr",
     "si_snr",
     "snr",

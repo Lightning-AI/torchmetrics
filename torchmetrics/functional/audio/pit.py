@@ -141,9 +141,7 @@ def pit(
                  [-0.1719,  0.3205,  0.2951]]])
 
     Reference:
-        [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
-        speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
-        Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
+        [1]	`Permutation Invariant Training of Deep Models`_
     """
     _check_same_shape(preds, target)
     if eval_func not in ["max", "min"]:
@@ -153,10 +151,17 @@ def pit(
 
     # calculate the metric matrix
     batch_size, spk_num = target.shape[0:2]
-    metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=preds.dtype, device=target.device)
-    for t in range(spk_num):
-        for e in range(spk_num):
-            metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...], **kwargs)
+    metric_mtx = None
+    for target_idx in range(spk_num):  # we have spk_num speeches in target in each sample
+        for preds_idx in range(spk_num):  # we have spk_num speeches in preds in each sample
+            if metric_mtx is not None:
+                metric_mtx[:, target_idx, preds_idx] = metric_func(
+                    preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs
+                )
+            else:
+                first_ele = metric_func(preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs)
+                metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=first_ele.dtype, device=first_ele.device)
+                metric_mtx[:, target_idx, preds_idx] = first_ele
 
     # find best
     op = torch.max if eval_func == "max" else torch.min
