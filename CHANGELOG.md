@@ -31,6 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `SacreBLEUScore` metric to text package ([#546](https://github.com/PyTorchLightning/metrics/pull/546))
 
 
+- Added pairwise submodule with metrics ([#553](https://github.com/PyTorchLightning/metrics/pull/553))
+  - `pairwise_cosine_similarity`
+  - `pairwise_euclidean_distance`
+  - `pairwise_linear_similarity`
+  - `pairwise_manhatten_distance`
+
 ### Changed
 
 - `AveragePrecision` will now as default output the `macro` average for multilabel and multiclass problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
@@ -44,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+- Deprecated `torchmetrics.functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
 
 ### Removed
 
