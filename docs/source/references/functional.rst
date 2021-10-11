@@ -11,6 +11,12 @@ Functional metrics
 Audio Metrics
 *************
 
+pesq [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pesq
+
+
 pit [func]
 ~~~~~~~~~~
 
