@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.functional.audio.pit import pit, pit_permutate
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
@@ -92,6 +93,7 @@ __all__ = [
     "mean_squared_error",
     "mean_squared_log_error",
     "pearson_corrcoef",
+    "pesq",
     "pit",
     "pit_permutate",
     "precision",
