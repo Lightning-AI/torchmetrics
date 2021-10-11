@@ -27,7 +27,7 @@ def _pairwise_cosine_similarity_update(
     Args:
         x: tensor of shape ``[N,d]``
         y: tensor of shape ``[M,d]``
-        zero_diagonal: determines if the diagonal should be set to zero
+        zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 

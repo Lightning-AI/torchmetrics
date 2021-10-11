@@ -25,7 +25,7 @@ def _check_input(
     Args:
         x: tensor of shape ``[N,d]``
         y: if provided, a tensor of shape ``[M,d]``
-        zero_diagonal: determines if the diagonal should be set to zero
+        zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
     """
     if x.ndim != 2:
         raise ValueError(f"Expected argument `x` to be a 2D tensor of shape `[N, d]` but got {x.shape}")

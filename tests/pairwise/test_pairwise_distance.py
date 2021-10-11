@@ -63,7 +63,7 @@ def _sk_metric(x, y, sk_fn, reduction):
     "x, y",
     [
         (_inputs1.x, _inputs1.y),
-        (_inputs1.x, _inputs1.y),
+        (_inputs2.x, _inputs2.y),
     ],
 )
 @pytest.mark.parametrize(
