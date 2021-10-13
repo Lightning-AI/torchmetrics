@@ -13,7 +13,11 @@
 # limitations under the License.
 import numpy as np
 import torch
-from pystoi import stoi as stoi_backend
+from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
+if _PYSTOI_AVAILABLE:
+    from pystoi import stoi as stoi_backend
+else:
+    stoi_backend = None
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -47,6 +51,10 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended=False, keep_same_devic
     Returns:
         stoi value of shape [...]
 
+    Raises:
+        ValueError:
+            If ``pystoi`` package is not installed
+
     Example:
         >>> from torchmetrics.functional.audio import stoi
         >>> import torch
@@ -67,6 +75,11 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended=False, keep_same_devic
         Maskers', IEEE Transactions on Audio, Speech and Language Processing, 2016.
 
     """
+    if not _PYSTOI_AVAILABLE:
+        raise ValueError(
+            "STOI metric requires that pystoi is installed."
+            "Either install as `pip install torchmetrics[audio]` or `pip install pystoi`"
+        )
     _check_same_shape(preds, target)
 
     if len(preds.shape) == 1:

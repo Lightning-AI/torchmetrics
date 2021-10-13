@@ -56,6 +56,10 @@ class STOI(Metric):
     Returns:
         average STOI value
 
+    Raises:
+        ValueError:
+            If ``pystoi`` package is not installed
+
     Example:
         >>> from torchmetrics.audio import STOI
         >>> import torch
