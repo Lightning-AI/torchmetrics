@@ -120,6 +120,7 @@ __all__ = [
     "specificity",
     "ssim",
     "stat_scores",
+    "stoi",
     "symmetric_mean_absolute_percentage_error",
     "wer",
 ]

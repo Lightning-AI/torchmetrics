@@ -78,6 +78,8 @@ class STOI(Metric):
     """
     sum_stoi: Tensor
     total: Tensor
+    is_differentiable = False
+    higher_is_better = True
 
     def __init__(
         self,
@@ -115,7 +117,3 @@ class STOI(Metric):
     def compute(self) -> Tensor:
         """Computes average STOI."""
         return self.sum_stoi / self.total
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False
