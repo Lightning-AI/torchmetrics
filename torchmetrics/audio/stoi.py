@@ -89,7 +89,7 @@ class STOI(Metric):
     def __init__(
         self,
         fs: int,
-        extended=False,
+        extended: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
