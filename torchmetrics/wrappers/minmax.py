@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from typing import Any, Dict
 
 import torch
 from torch import Tensor
+
 from torchmetrics.metric import Metric
-from typing import Any, Dict
+
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment."""
@@ -36,11 +37,11 @@ class MinMaxMetric(Metric):
         self.min_bound_init = min_bound_init
         self.max_bound_init = max_bound_init
 
-    def update(self, *args: Any, **kwargs: Any) -> None: # type: ignore
-        """Update underlying metric"""
+    def update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+        """Update underlying metric."""
         self._base_metric.update(*args, **kwargs)
 
-    def compute(self) -> Dict[str, Tensor]: # type: ignore
+    def compute(self) -> Dict[str, Tensor]:  # type: ignore
         """Compute underlying metric as well as max and min values."""
         val = self._base_metric.compute()
         self.max_val = val if self.max_val < val else self.max_val
