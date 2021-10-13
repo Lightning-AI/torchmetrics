@@ -13,7 +13,9 @@
 # limitations under the License.
 import numpy as np
 import torch
+
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
+
 if _PYSTOI_AVAILABLE:
     from pystoi import stoi as stoi_backend
 else:
