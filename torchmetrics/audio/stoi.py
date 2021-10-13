@@ -67,7 +67,7 @@ class STOI(Metric):
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> stoi = STOI(8000, False)
-        >>> stoi_val = stoi(preds, target)
+        >>> stoi(preds, target)
         tensor(-0.0100)
 
     References:
