@@ -128,6 +128,7 @@ __all__ = [
     "Specificity",
     "SSIM",
     "StatScores",
+    "STOI",
     "SymmetricMeanAbsolutePercentageError",
     "WER",
 ]
