@@ -20,7 +20,25 @@ from torchmetrics.metric import Metric
 from typing import Any, Dict
 
 class MinMaxMetric(Metric):
-    """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment."""
+    """Wrapper Metric that tracks both the minimum and maximum of a 
+    scalar/tensor across an experiment.
+
+    Note:
+        Make sure you pass proper initialization values to the ``min_bound_init`` and ``max_bound_init`` parameters.
+        For the ``Accuracy`` metric, the defaults of ``0.0`` and ``1.0`` make sense, 
+        however, for other metrics you will likely want to use different initialization values.
+
+    Args: 
+        base_metric: 
+            The metric of which you want to keep track of its maximum and minimum values.
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
+        min_bound_init:
+            Initialization value of the ``min`` parameter. default: 0.0
+        max_bound_init:
+            Initialization value of the ``max`` parameter. default: 1.0
+    """
 
     def __init__(
         self,
@@ -37,18 +55,22 @@ class MinMaxMetric(Metric):
         self.max_bound_init = max_bound_init
 
     def update(self, *args: Any, **kwargs: Any) -> None: # type: ignore
-        """Update underlying metric"""
+        """Updates the underlying metric"""
         self._base_metric.update(*args, **kwargs)
 
     def compute(self) -> Dict[str, Tensor]: # type: ignore
-        """Compute underlying metric as well as max and min values."""
+        """Computes the underlying metric as well as max and min values for this metric.
+        
+        Returns a dictionary that consists of the computed value (``raw``), as well as the
+        minimum (``min``) and maximum (``max``) values.
+        """
         val = self._base_metric.compute()
         self.max_val = val if self.max_val < val else self.max_val
         self.min_val = val if self.min_val > val else self.min_val
         return {"raw": val, "max": self.max_val, "min": self.min_val}
 
     def reset(self) -> None:
-        """Sets max_val and min_val to the initialization bounds and resets the base metric."""
+        """Sets ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
         self.max_val = self.max_bound_init
         self.min_val = self.min_bound_init
         self._base_metric.reset()
