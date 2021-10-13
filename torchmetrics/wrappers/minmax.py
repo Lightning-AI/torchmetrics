@@ -21,16 +21,15 @@ from torchmetrics.metric import Metric
 
 
 class MinMaxMetric(Metric):
-    """Wrapper Metric that tracks both the minimum and maximum of a 
-    scalar/tensor across an experiment.
+    """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
 
     Note:
         Make sure you pass proper initialization values to the ``min_bound_init`` and ``max_bound_init`` parameters.
-        For the ``Accuracy`` metric, the defaults of ``0.0`` and ``1.0`` make sense, 
+        For the ``Accuracy`` metric, the defaults of ``0.0`` and ``1.0`` make sense,
         however, for other metrics you will likely want to use different initialization values.
 
-    Args: 
-        base_metric: 
+    Args:
+        base_metric:
             The metric of which you want to keep track of its maximum and minimum values.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
@@ -55,15 +54,15 @@ class MinMaxMetric(Metric):
         self.min_bound_init = min_bound_init
         self.max_bound_init = max_bound_init
 
-    def update(self, *args: Any, **kwargs: Any) -> None: # type: ignore
-        """Updates the underlying metric"""
+    def update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+        """Updates the underlying metric."""
         self._base_metric.update(*args, **kwargs)
 
-    def compute(self) -> Dict[str, Tensor]: # type: ignore
+    def compute(self) -> Dict[str, Tensor]:  # type: ignore
         """Computes the underlying metric as well as max and min values for this metric.
-        
-        Returns a dictionary that consists of the computed value (``raw``), as well as the
-        minimum (``min``) and maximum (``max``) values.
+
+        Returns a dictionary that consists of the computed value (``raw``), as well as the minimum (``min``) and maximum
+        (``max``) values.
         """
         val = self._base_metric.compute()
         self.max_val = val if self.max_val < val else self.max_val
