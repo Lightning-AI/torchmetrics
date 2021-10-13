@@ -3,7 +3,7 @@ from pytorch_lightning.utilities.distributed import gather_all_tensors
 from torchmetrics.metric import Metric
 
 
-class MaxMetric(Metric):
+class MinMaxMetric(Metric):
     """Pytorch-Lightning Metric that tracks the maximum value of a scalar/tensor across an experiment."""
 
     def __init__(self, dist_sync_on_step=False):
