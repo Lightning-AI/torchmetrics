@@ -29,6 +29,9 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended=False, keep_same_devic
     of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech intelligibility.
     Description taken from [Cees Taal's website](http://www.ceestaal.nl/code/).
 
+    .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+        torchmetrics[audio]`` or ``pip install pystoi``
+
     Args:
         preds:
             shape ``[...,time]``

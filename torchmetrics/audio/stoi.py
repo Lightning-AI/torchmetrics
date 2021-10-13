@@ -29,6 +29,9 @@ class STOI(Metric):
     of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech intelligibility.
     Description taken from [Cees Taal's website](http://www.ceestaal.nl/code/).
 
+    .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+        torchmetrics[audio]`` or ``pip install pystoi``
+
     Forward accepts
 
     - ``preds``: ``shape [...,time]``
