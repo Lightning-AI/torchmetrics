@@ -45,6 +45,13 @@ snr [func]
     :noindex:
 
 
+stoi [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.stoi
+    :noindex:
+
+
 **********************
 Classification Metrics
 **********************
