@@ -139,8 +139,5 @@ def test_on_real_audio():
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
     assert torch.allclose(
-        stoi(torch.from_numpy(deg), torch.from_numpy(ref), rate),
-        torch.tensor(0.6739177),
-        rtol=0.0001,
-        atol=1e-4,
+        stoi(torch.from_numpy(deg), torch.from_numpy(ref), rate), torch.tensor(0.6739177), rtol=0.0001, atol=1e-4
     )
