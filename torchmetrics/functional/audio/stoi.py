@@ -60,9 +60,11 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
     Example:
         >>> from torchmetrics.functional.audio import stoi
         >>> import torch
+        >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> stoi_val = stoi(preds, target, 8000)
+        >>> stoi(preds, target, 8000)
+        tensor(-0.0100, dtype=torch.float64)
 
     References:
         [1] https://github.com/mpariente/pystoi

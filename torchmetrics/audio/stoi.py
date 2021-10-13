@@ -63,10 +63,12 @@ class STOI(Metric):
     Example:
         >>> from torchmetrics.audio import STOI
         >>> import torch
+        >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> stoi = STOI(8000, False)
         >>> stoi_val = stoi(preds, target)
+        tensor(-0.0100)
 
     References:
         [1] https://github.com/mpariente/pystoi
