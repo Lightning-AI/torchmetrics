@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from typing import Any, Dict
 
 import torch
 from torch import Tensor
+
 from torchmetrics.metric import Metric
-from typing import Any, Dict
+
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a 
