@@ -1,7 +1,8 @@
 import pytest
 import torch
-from torchmetrics.wrappers import MinMaxMetric
+
 from torchmetrics.classification import Accuracy
+from torchmetrics.wrappers import MinMaxMetric
 
 
 @pytest.mark.parametrize("device", ["cpu", "cuda"])
@@ -16,8 +17,8 @@ def test_minmax(device, type):
     preds_3 = torch.Tensor([[0.1, 0.9], [0.8, 0.2]])
     labels = torch.Tensor([[0, 1], [0, 1]]).long()
 
-    min_max_acc(preds_1, labels)  
-    acc = min_max_acc.compute()  
+    min_max_acc(preds_1, labels)
+    acc = min_max_acc.compute()
     assert acc["raw"] == 0.5
     assert acc["max"] == 0.5
     assert acc["min"] == 0.5
