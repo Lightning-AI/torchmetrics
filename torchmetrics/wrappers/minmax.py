@@ -13,8 +13,9 @@
  # limitations under the License. 
 
 import torch
+from torch import Tensor
 from torchmetrics.metric import Metric
-from typing import Any
+from typing import Any, Dict
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment."""
@@ -27,19 +28,19 @@ class MinMaxMetric(Metric):
         self.min_bound_init = min_bound_init
         self.max_bound_init = max_bound_init
 
-    def update(self, *args: Any, **kwargs: Any):
+    def update(self, *args: Any, **kwargs: Any) -> None: # type: ignore
         "Update underlying metric"
         self._base_metric.update(*args, **kwargs)
         
 
-    def compute(self):
+    def compute(self) -> Dict[str, Tensor]: # type: ignore
         "Compute underlying metric as well as max and min values."
         val = self._base_metric.compute()
         self.max_val = val if self.max_val < val else self.max_val
         self.min_val = val if self.min_val > val else self.min_val
         return {"raw" : val, "max" : self.max_val, "min" : self.min_val}
 
-    def reset(self):
+    def reset(self) -> None:
         "Sets max_val and min_val to 0. and resets the base metric."
         self.max_val = self.max_bound_init
         self.min_val = self.min_bound_init
