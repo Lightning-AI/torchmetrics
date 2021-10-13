@@ -29,11 +29,11 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended=False, keep_same_devic
     r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
-    to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The
-    STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
-    to the speech intelligibility index (SII) or the speech transmission index (STI), when you are interested in the effect
-    of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech intelligibility.
-    Description taken from [Cees Taal's website](http://www.ceestaal.nl/code/).
+    to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.
+    The STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good
+    alternative to the speech intelligibility index (SII) or the speech transmission index (STI), when you are
+    interested in the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms,
+    on speech intelligibility. Description taken from [Cees Taal's website](http://www.ceestaal.nl/code/).
 
     .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``
@@ -67,14 +67,14 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended=False, keep_same_devic
     References:
         [1] https://github.com/mpariente/pystoi
 
-        [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time Objective Intelligibility Measure for Time-Frequency
-        Weighted Noisy Speech', ICASSP 2010, Texas, Dallas.
+        [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time Objective Intelligibility Measure for
+        Time-Frequency Weighted Noisy Speech', ICASSP 2010, Texas, Dallas.
 
-        [3] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for Intelligibility Prediction of Time-Frequency
-        Weighted Noisy Speech', IEEE Transactions on Audio, Speech, and Language Processing, 2011.
+        [3] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for Intelligibility Prediction of
+        Time-Frequency Weighted Noisy Speech', IEEE Transactions on Audio, Speech, and Language Processing, 2011.
 
-        [4] J. Jensen and C. H. Taal, 'An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated Noise
-        Maskers', IEEE Transactions on Audio, Speech and Language Processing, 2016.
+        [4] J. Jensen and C. H. Taal, 'An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated
+        Noise Maskers', IEEE Transactions on Audio, Speech and Language Processing, 2016.
 
     """
     if not _PYSTOI_AVAILABLE:
