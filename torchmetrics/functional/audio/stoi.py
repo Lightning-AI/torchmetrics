@@ -63,8 +63,8 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> stoi(preds, target, 8000)
-        tensor(-0.0100, dtype=torch.float64)
+        >>> stoi(preds, target, 8000).float()
+        tensor(-0.0100)
 
     References:
         [1] https://github.com/mpariente/pystoi
