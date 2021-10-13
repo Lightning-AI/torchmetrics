@@ -12,8 +12,8 @@ _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
+from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
 from torchmetrics.audio import PESQ, PIT, SI_SDR, SI_SNR, SNR  # noqa: E402
-from torchmetrics.average import AverageMeter  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402
     AUC,
     AUROC,
@@ -71,7 +71,6 @@ __all__ = [
     "Accuracy",
     "AUC",
     "AUROC",
-    "AverageMeter",
     "AveragePrecision",
     "BinnedAveragePrecision",
     "BinnedPrecisionRecallCurve",
@@ -80,6 +79,7 @@ __all__ = [
     "BLEUScore",
     "BootStrapper",
     "CalibrationError",
+    "CatMetric",
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
@@ -96,13 +96,16 @@ __all__ = [
     "KLDivergence",
     "LPIPS",
     "MatthewsCorrcoef",
+    "MaxMetric",
     "MeanAbsoluteError",
     "MeanAbsolutePercentageError",
+    "MeanMetric",
     "MeanSquaredError",
     "MeanSquaredLogError",
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinMetric",
     "MultioutputWrapper",
     "PearsonCorrcoef",
     "PESQ",
@@ -128,6 +131,7 @@ __all__ = [
     "Specificity",
     "SSIM",
     "StatScores",
+    "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "WER",
 ]
