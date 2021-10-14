@@ -22,6 +22,7 @@ METRIC_EPS = 1e-6
 
 
 def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
+    """concatenation along the zero dimension."""
     x = x if isinstance(x, (list, tuple)) else [x]
     x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
     if not x:  # empty list
@@ -30,11 +31,23 @@ def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
 
 
 def dim_zero_sum(x: Tensor) -> Tensor:
+    """summation along the zero dimension."""
     return torch.sum(x, dim=0)
 
 
 def dim_zero_mean(x: Tensor) -> Tensor:
+    """average along the zero dimension."""
     return torch.mean(x, dim=0)
+
+
+def dim_zero_max(x: Tensor) -> Tensor:
+    """max along the zero dimension."""
+    return torch.max(x, dim=0).values
+
+
+def dim_zero_min(x: Tensor) -> Tensor:
+    """min along the zero dimension."""
+    return torch.min(x, dim=0).values
 
 
 def _flatten(x: Sequence) -> list:
