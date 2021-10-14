@@ -14,10 +14,42 @@ metrics.
 .. autoclass:: torchmetrics.Metric
     :noindex:
 
-We also have an ``AverageMeter`` class that is helpful for defining ad-hoc metrics, when creating
-your own metric type might be too burdensome.
 
-.. autoclass:: torchmetrics.AverageMeter
+*************************
+Basic Aggregation Metrics
+*************************
+
+Torchmetrics comes with a number of metrics for aggregation of basic statistics: mean, max, min etc. of
+either tensors or native python floats.
+
+CatMetric
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.CatMetric
+    :noindex:
+
+MaxMetric
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.MaxMetric
+    :noindex:
+
+MeanMetric
+~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MeanMetric
+    :noindex:
+
+MinMetric
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.MinMetric
+    :noindex:
+
+SumMetric
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.SumMetric
     :noindex:
 
 *************
@@ -41,6 +73,11 @@ the metric will be computed over the ``time`` dimension.
     >>> snr_val = snr(preds, target)
     >>> snr_val
     tensor(16.1805)
+
+PESQ
+~~~~
+
+.. autoclass:: torchmetrics.PESQ
 
 PIT
 ~~~

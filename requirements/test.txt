@@ -20,6 +20,7 @@ scikit-image>0.17.1
 -r image.txt
 -r text.txt
 -r detection.txt
+-r audio.txt
 
 # audio
 pypesq
