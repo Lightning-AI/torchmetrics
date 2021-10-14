@@ -84,7 +84,7 @@ _inputs = Input(
 )
 
 
-def _compare_fn(preds, target) -> MAPMetricResults:
+def _compare_fn(preds, target) -> dict:
     """Comparison function for map implementation.
 
     Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
@@ -122,22 +122,22 @@ def _compare_fn(preds, target) -> MAPMetricResults:
         Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
         Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
     """
-    return MAPMetricResults(
-        map=torch.Tensor([0.658]),
-        map_50=torch.Tensor([0.876]),
-        map_75=torch.Tensor([0.807]),
-        map_s=torch.Tensor([0.689]),
-        map_m=torch.Tensor([0.800]),
-        map_l=torch.Tensor([0.635]),
-        mar_1=torch.Tensor([0.515]),
-        mar_10=torch.Tensor([0.670]),
-        mar_100=torch.Tensor([0.670]),
-        mar_s=torch.Tensor([0.767]),
-        mar_m=torch.Tensor([0.800]),
-        mar_l=torch.Tensor([0.633]),
-        map_per_class=torch.Tensor([0.725, 0.800, 0.454, -1.000, 0.650]),
-        mar_100_per_class=torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650]),
-    )
+    return {
+        "map": torch.Tensor([0.658]),
+        "map_50": torch.Tensor([0.876]),
+        "map_75": torch.Tensor([0.807]),
+        "map_s": torch.Tensor([0.689]),
+        "map_m": torch.Tensor([0.800]),
+        "map_l": torch.Tensor([0.635]),
+        "mar_1": torch.Tensor([0.515]),
+        "mar_10": torch.Tensor([0.670]),
+        "mar_100": torch.Tensor([0.670]),
+        "mar_s": torch.Tensor([0.767]),
+        "mar_m": torch.Tensor([0.800]),
+        "mar_l": torch.Tensor([0.633]),
+        "map_per_class": torch.Tensor([0.725, 0.800, 0.454, -1.000, 0.650]),
+        "mar_100_per_class": torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650])
+    }
 
 
 @pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")

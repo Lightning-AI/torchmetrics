@@ -71,12 +71,6 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Op
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
-    elif isinstance(pl_result, MAPMetricResults):
-        for val_index in [a for a in dir(sk_result) if not a.startswith("__")]:
-            if type(sk_result[val_index]) is Tensor:
-                assert np.allclose(
-                    pl_result[val_index].detach().cpu().numpy(), sk_result[val_index].numpy(), atol=atol, equal_nan=True
-                )
     else:
         raise ValueError("Unknown format for comparison")
 
@@ -204,7 +198,11 @@ def _class_test(
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            if type(batch_result) == dict:
+                for key in batch_result.keys():
+                    _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
@@ -215,14 +213,22 @@ def _class_test(
                 preds[i].cpu()
                 target[i].cpu()
             sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            if type(batch_result) == dict:
+                for key in batch_result.keys():
+                    _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check that metrics are hashable
     assert hash(metric)
 
     # check on all batches on all ranks
     result = metric.compute()
-    _assert_tensor(result)
+    if type(result) == dict:
+        for key in result.keys():
+            _assert_tensor(result, key=key)
+    else:
+        _assert_tensor(result)
 
     if type(preds) is torch.Tensor:
         total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
@@ -238,7 +244,11 @@ def _class_test(
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
-    _assert_allclose(result, sk_result, atol=atol)
+    if type(sk_result) == dict:
+        for key in sk_result.keys():
+            _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
+    else:
+        _assert_allclose(result, sk_result, atol=atol)
 
 
 def _functional_test(

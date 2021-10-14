@@ -243,7 +243,7 @@ class MAP(Metric):
             self.groundtruth_boxes.append(item["boxes"])
             self.groundtruth_labels.append(item["labels"])
 
-    def compute(self) -> MAPMetricResults:
+    def compute(self) -> dict:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
         the `update()` method are included.
 
@@ -265,8 +265,8 @@ class MAP(Metric):
             - mar_s: ``torch.Tensor``
             - mar_m: ``torch.Tensor``
             - mar_l: ``torch.Tensor``
-            - map_per_class: ``List[torch.Tensor]``
-            - mar_100_per_class: ``List[torch.Tensor]``
+            - map_per_class: ``Optional[torch.Tensor]``
+            - mar_100_per_class: ``Optional[torch.Tensor]``
         """
         coco_target, coco_preds = COCO(), COCO()
         coco_target.dataset = self._get_coco_format(self.groundtruth_boxes, self.groundtruth_labels)
@@ -316,7 +316,7 @@ class MAP(Metric):
             map_per_class=map_per_class_values,
             mar_100_per_class=mar_100_per_class_values,
         )
-        return metrics
+        return metrics.__dict__
 
     def _get_coco_format(
         self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
