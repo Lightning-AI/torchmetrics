@@ -103,6 +103,12 @@ SNR
 .. autoclass:: torchmetrics.SNR
     :noindex:
 
+STOI
+~~~~
+
+.. autoclass:: torchmetrics.STOI
+    :noindex:
+
 
 **********************
 Classification Metrics

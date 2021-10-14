@@ -16,6 +16,7 @@ from torchmetrics.functional.audio.pit import pit, pit_permutate
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.functional.audio.snr import snr
+from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
@@ -119,6 +120,7 @@ __all__ = [
     "specificity",
     "ssim",
     "stat_scores",
+    "stoi",
     "symmetric_mean_absolute_percentage_error",
     "wer",
 ]

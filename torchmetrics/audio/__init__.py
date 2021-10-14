@@ -16,3 +16,4 @@ from torchmetrics.audio.pit import PIT  # noqa: F401
 from torchmetrics.audio.si_sdr import SI_SDR  # noqa: F401
 from torchmetrics.audio.si_snr import SI_SNR  # noqa: F401
 from torchmetrics.audio.snr import SNR  # noqa: F401
+from torchmetrics.audio.stoi import STOI  # noqa: F401
