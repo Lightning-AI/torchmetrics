@@ -15,9 +15,9 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
 
 class STOI(Metric):
