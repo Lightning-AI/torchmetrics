@@ -198,7 +198,7 @@ def _class_test(
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
-            if type(batch_result) == dict:
+            if type(batch_result) is dict:
                 for key in batch_result.keys():
                     _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
             else:
@@ -213,7 +213,7 @@ def _class_test(
                 preds[i].cpu()
                 target[i].cpu()
             sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
-            if type(batch_result) == dict:
+            if type(batch_result) is dict:
                 for key in batch_result.keys():
                     _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
             else:
@@ -224,7 +224,7 @@ def _class_test(
 
     # check on all batches on all ranks
     result = metric.compute()
-    if type(result) == dict:
+    if type(result) is dict:
         for key in result.keys():
             _assert_tensor(result, key=key)
     else:
@@ -244,7 +244,7 @@ def _class_test(
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
-    if type(sk_result) == dict:
+    if type(sk_result) is dict:
         for key in sk_result.keys():
             _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
     else:
