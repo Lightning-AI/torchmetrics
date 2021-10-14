@@ -105,6 +105,7 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinMaxMetric",
     "MinMetric",
     "MultioutputWrapper",
     "PearsonCorrcoef",
