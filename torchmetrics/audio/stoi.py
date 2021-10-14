@@ -57,7 +57,7 @@ class STOI(Metric):
         average STOI value
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``pystoi`` package is not installed
 
     Example:
@@ -103,6 +103,11 @@ class STOI(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if not _PYSTOI_AVAILABLE:
+            raise ModuleNotFoundError(
+            "STOI metric requires that pystoi is installed."
+            " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`"
+            )
         self.fs = fs
         self.extended = extended
 
