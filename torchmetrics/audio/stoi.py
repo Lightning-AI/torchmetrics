@@ -15,12 +15,14 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
+from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.metric import Metric
 
 
 class STOI(Metric):
-    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1]. Note that input will be moved to `cpu` to perform the metric calculation.
+    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
+    Note that input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
     to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.

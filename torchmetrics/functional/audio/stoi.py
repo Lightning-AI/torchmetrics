@@ -26,7 +26,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1]. Note that input will be moved to `cpu` to perform the metric calculation.
+    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
+    Note that input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
     to additive noise, single/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations.
