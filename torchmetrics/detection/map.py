@@ -38,15 +38,15 @@ class MAPMetricResults:
     map: Tensor
     map_50: Tensor
     map_75: Tensor
-    map_s: Tensor
-    map_m: Tensor
-    map_l: Tensor
+    map_small: Tensor
+    map_medium: Tensor
+    map_large: Tensor
     mar_1: Tensor
     mar_10: Tensor
     mar_100: Tensor
-    mar_s: Tensor
-    mar_m: Tensor
-    mar_l: Tensor
+    mar_small: Tensor
+    mar_medium: Tensor
+    mar_large: Tensor
     map_per_class: Optional[Tensor]
     mar_100_per_class: Optional[Tensor]
 
@@ -256,15 +256,15 @@ class MAP(Metric):
             - map: ``torch.Tensor``
             - map_50: ``torch.Tensor``
             - map_75: ``torch.Tensor``
-            - map_s: ``torch.Tensor``
-            - map_m: ``torch.Tensor``
-            - map_l: ``torch.Tensor``
+            - map_small: ``torch.Tensor``
+            - map_medium: ``torch.Tensor``
+            - map_large: ``torch.Tensor``
             - mar_1: ``torch.Tensor``
             - mar_10: ``torch.Tensor``
             - mar_100: ``torch.Tensor``
-            - mar_s: ``torch.Tensor``
-            - mar_m: ``torch.Tensor``
-            - mar_l: ``torch.Tensor``
+            - mar_small: ``torch.Tensor``
+            - mar_medium: ``torch.Tensor``
+            - mar_large: ``torch.Tensor``
             - map_per_class: ``Optional[torch.Tensor]``
             - mar_100_per_class: ``Optional[torch.Tensor]``
         """
@@ -304,15 +304,15 @@ class MAP(Metric):
             map=torch.Tensor([stats[0]]),
             map_50=torch.Tensor([stats[1]]),
             map_75=torch.Tensor([stats[2]]),
-            map_s=torch.Tensor([stats[3]]),
-            map_m=torch.Tensor([stats[4]]),
-            map_l=torch.Tensor([stats[5]]),
+            map_small=torch.Tensor([stats[3]]),
+            map_medium=torch.Tensor([stats[4]]),
+            map_large=torch.Tensor([stats[5]]),
             mar_1=torch.Tensor([stats[6]]),
             mar_10=torch.Tensor([stats[7]]),
             mar_100=torch.Tensor([stats[8]]),
-            mar_s=torch.Tensor([stats[9]]),
-            mar_m=torch.Tensor([stats[10]]),
-            mar_l=torch.Tensor([stats[11]]),
+            mar_small=torch.Tensor([stats[9]]),
+            mar_medium=torch.Tensor([stats[10]]),
+            mar_large=torch.Tensor([stats[11]]),
             map_per_class=map_per_class_values,
             mar_100_per_class=mar_100_per_class_values,
         )
