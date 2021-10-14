@@ -136,7 +136,7 @@ def _compare_fn(preds, target) -> MAPMetricResults:
         mar_m=torch.Tensor([0.800]),
         mar_l=torch.Tensor([0.633]),
         map_per_class=torch.Tensor([0.725, 0.800, 0.454, -1.000, 0.650]),
-        mar_100_per_class=torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650])
+        mar_100_per_class=torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650]),
     )
 
 

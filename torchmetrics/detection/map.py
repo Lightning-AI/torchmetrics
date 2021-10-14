@@ -314,7 +314,7 @@ class MAP(Metric):
             mar_m=torch.Tensor([stats[10]]),
             mar_l=torch.Tensor([stats[11]]),
             map_per_class=map_per_class_values,
-            mar_100_per_class=mar_100_per_class_values
+            mar_100_per_class=mar_100_per_class_values,
         )
         return metrics
 
