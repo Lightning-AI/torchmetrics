@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added simple aggregation metrics: `SumMetric`, `MeanMetric`, `CatMetric`, `MinMetric`, `MaxMetric` ([#506](https://github.com/PyTorchLightning/metrics/pull/506))
 
 
+- Added pairwise submodule with metrics ([#553](https://github.com/PyTorchLightning/metrics/pull/553))
+  - `pairwise_cosine_similarity`
+  - `pairwise_euclidean_distance`
+  - `pairwise_linear_similarity`
+  - `pairwise_manhatten_distance`
+
+
 - Added Short Term Objective Intelligibility (`STOI`) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
 
 
@@ -58,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+- Deprecated `torchmetrics.functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
 
 ### Removed
 
