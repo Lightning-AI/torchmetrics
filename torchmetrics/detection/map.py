@@ -47,8 +47,8 @@ class MAPMetricResults:
     mar_s: Tensor
     mar_m: Tensor
     mar_l: Tensor
-    map_per_class: Optional[List[Tensor]]
-    mar_100_per_class: Optional[List[Tensor]]
+    map_per_class: Optional[Tensor]
+    mar_100_per_class: Optional[Tensor]
 
     def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
         return getattr(self, key)
@@ -282,11 +282,11 @@ class MAP(Metric):
             stats = coco_eval.stats
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values: Optional[List[Tensor]] = None
-        mar_100_per_class_values: Optional[List[Tensor]] = None
+        map_per_class_values: Optional[Tensor] = None
+        mar_100_per_class_values: Optional[Tensor] = None
         if self.class_metrics:
-            map_per_class_values = []
-            mar_100_per_class_values = []
+            map_per_class_list = []
+            mar_100_per_class_list = []
             for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
                 coco_eval.params.catIds = [class_id]
                 with _hide_prints():
@@ -295,8 +295,10 @@ class MAP(Metric):
                     coco_eval.summarize()
                     class_stats = coco_eval.stats
 
-                map_per_class_values.append(torch.Tensor([class_stats[0]]))
-                mar_100_per_class_values.append(torch.Tensor([class_stats[8]]))
+                map_per_class_list.append(torch.Tensor([class_stats[0]]))
+                mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
+            map_per_class_values = torch.Tensor(map_per_class_list)
+            mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
 
         metrics = MAPMetricResults(
             map=torch.Tensor([stats[0]]),
@@ -312,7 +314,7 @@ class MAP(Metric):
             mar_m=torch.Tensor([stats[10]]),
             mar_l=torch.Tensor([stats[11]]),
             map_per_class=map_per_class_values,
-            mar_100_per_class=mar_100_per_class_values,
+            mar_100_per_class=mar_100_per_class_values
         )
         return metrics
 

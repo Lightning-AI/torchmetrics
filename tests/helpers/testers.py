@@ -77,11 +77,6 @@ def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Op
                 assert np.allclose(
                     pl_result[val_index].detach().cpu().numpy(), sk_result[val_index].numpy(), atol=atol, equal_nan=True
                 )
-            if isinstance(sk_result[val_index], Sequence):
-                for i, sk_value in enumerate(sk_result[val_index]):
-                    assert np.allclose(
-                        pl_result[val_index][i].detach().cpu().numpy(), sk_value.numpy(), atol=atol, equal_nan=True
-                    )
     else:
         raise ValueError("Unknown format for comparison")
 
@@ -97,10 +92,7 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
         assert isinstance(pl_result[key], Tensor)
     elif isinstance(pl_result, MAPMetricResults):
         for val_index in [a for a in dir(pl_result) if not a.startswith("__")]:
-            if val_index in ["map_per_class", "mar_100_per_class"]:
-                assert isinstance(pl_result[val_index], Sequence)
-            else:
-                assert isinstance(pl_result[val_index], Tensor)
+            assert isinstance(pl_result[val_index], Tensor)
     else:
         assert isinstance(pl_result, Tensor)
 
