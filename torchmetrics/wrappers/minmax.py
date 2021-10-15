@@ -19,11 +19,13 @@ from torch import Tensor
 
 from torchmetrics.metric import Metric
 
+
 def _is_suitable_val(val: Any) -> bool:
     """Utility function that checks whether min/max value is either a:
-       - int
-       - float
-       - tensor with 1 element
+
+    - int
+    - float
+    - tensor with 1 element
     """
     print(val)
     print(type(val))
@@ -36,8 +38,7 @@ def _is_suitable_val(val: Any) -> bool:
         else:
             return False
     else:
-        return False 
-
+        return False
 
 
 class MinMaxMetric(Metric):
@@ -65,7 +66,7 @@ class MinMaxMetric(Metric):
         base_metric: Metric,
         dist_sync_on_step: bool = False,
         min_bound_init: float = float("inf"),
-        max_bound_init: float = float("-inf")
+        max_bound_init: float = float("-inf"),
     ):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self._base_metric = base_metric

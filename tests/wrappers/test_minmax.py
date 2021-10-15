@@ -2,8 +2,9 @@ import pytest
 import torch
 
 from torchmetrics.classification import Accuracy
-from torchmetrics.wrappers import MinMaxMetric
 from torchmetrics.metric import Metric
+from torchmetrics.wrappers import MinMaxMetric
+
 
 def test_base() -> None:
     """test that both min and max versions of MinMaxMetric operate correctly after calling compute."""
@@ -33,20 +34,23 @@ def test_base() -> None:
     assert acc["max"] == 1.0
     assert acc["min"] == 0.5
 
+
 def test_no_scalar_compute() -> None:
-    """test that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute"""
+    """test that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
 
     class NonScalarMetric(Metric):
         def __init__(self):
             super().__init__()
             pass
+
         def update(self):
             pass
+
         def compute(self):
             return ""
-        
+
     nsm = NonScalarMetric()
     min_max_nsm = MinMaxMetric(nsm)
-    
+
     with pytest.raises(AssertionError):
         min_max_nsm.compute()
