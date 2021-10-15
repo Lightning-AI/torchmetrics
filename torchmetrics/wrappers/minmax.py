@@ -19,6 +19,26 @@ from torch import Tensor
 
 from torchmetrics.metric import Metric
 
+def _is_suitable_val(val: Any) -> bool:
+    """Utility function that checks whether min/max value is either a:
+       - int
+       - float
+       - tensor with 1 element
+    """
+    print(val)
+    print(type(val))
+    if (type(val) == int) or (type(val) == float):
+        return True
+    elif type(val) == torch.Tensor:
+        print(val.size())
+        if val.size() == torch.Size([]):
+            return True
+        else:
+            return False
+    else:
+        return False 
+
+
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
@@ -65,6 +85,9 @@ class MinMaxMetric(Metric):
         (``max``) values.
         """
         val = self._base_metric.compute()
+        isv = _is_suitable_val(val)
+        print(isv)
+        assert _is_suitable_val(val), "Computed Base Metric should be a scalar (Int, Float or Tensor of Size 1)"
         self.max_val = val if self.max_val < val else self.max_val
         self.min_val = val if self.min_val > val else self.min_val
         return {"raw": val, "max": self.max_val, "min": self.min_val}
