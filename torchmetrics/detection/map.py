@@ -132,7 +132,7 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
 
 class MAP(Metric):
     r"""
-    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
+    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_ for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
@@ -143,8 +143,8 @@ class MAP(Metric):
         This metric is a wrapper for the
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
         which is a standard implementation for the mAP metric for object detection. Using this metric
-        therefore requires you to have `pycocotools` installed. Please install with `pip install pycocotools` or
-        `pip install torchmetrics[detection]`.
+        therefore requires you to have `pycocotools` installed. Please install with ``pip install pycocotools`` or
+        ``pip install torchmetrics[detection]``.
 
     .. note::
         As the pycocotools library cannot deal with tensors directly, all results have to be transfered
@@ -188,29 +188,23 @@ class MAP(Metric):
         self.add_state("groundtruth_labels", default=[])
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
-        """Updates mAP and mAR values with metric values from given predictions and groundtruth.
+        """Add detections and groundtruth to the metric.
 
         Args:
-            preds:
-                A list consisting of dictionaries each containing the key-values
-                (each dictionary corresponds to a single image):
-
-                - ``boxes``: torch.FloatTensor of shape
+            preds: A list consisting of dictionaries each containing the key-values (each dictionary corresponds to a single image):
+                - `boxes`: torch.FloatTensor of shape
                     [num_boxes, 4] containing `num_boxes` detection boxes of the format
                     [xmin, ymin, xmax, ymax] in absolute image coordinates.
-                - ``scores``: torch.FloatTensor of shape
+                - `scores`: torch.FloatTensor of shape
                     [num_boxes] containing detection scores for the boxes.
-                - ``labels``: torch.IntTensor of shape
+                - `labels`: torch.IntTensor of shape
                     [num_boxes] containing 0-indexed detection classes for the boxes.
 
-            target:
-                A list consisting of dictionaries each containing the key-values
-                (each dictionary corresponds to a single image):
-
-                - ``boxes``: torch.FloatTensor of shape
+            target: A list consisting of dictionaries each containing the key-values(each dictionary corresponds to a single image):
+                - `boxes`: torch.FloatTensor of shape
                     [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
                     [xmin, ymin, xmax, ymax] in absolute image coordinates.
-                - ``labels``: torch.IntTensor of shape
+                - `labels`: torch.IntTensor of shape
                     [num_boxes] containing 1-indexed groundtruth classes for the boxes.
 
         Raises:
@@ -248,7 +242,7 @@ class MAP(Metric):
         the `update()` method are included.
 
         .. note::
-            Scores are calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
+            Main `map` score is calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
 
         Returns:
             dict containing
