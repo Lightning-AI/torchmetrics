@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pesq import pesq  # noqa: F401
-from torchmetrics.functional.audio.pit import pit, pit_permutate  # noqa: F401
-from torchmetrics.functional.audio.si_sdr import si_sdr  # noqa: F401
-from torchmetrics.functional.audio.si_snr import si_snr  # noqa: F401
-from torchmetrics.functional.audio.snr import snr  # noqa: F401
-from torchmetrics.functional.audio.stoi import stoi  # noqa: F401
+from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity  # noqa: F401
+from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance  # noqa: F401
+from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity  # noqa: F401
+from torchmetrics.functional.pairwise.manhatten import pairwise_manhatten_distance  # noqa: F401
