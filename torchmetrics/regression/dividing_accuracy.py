@@ -1,8 +1,6 @@
 import torch
 from tqdm import tqdm
 
-import torchmetrics
-
 
 def get_percentile_accuracy(y_true, y_preds, dividing_amount) -> float:
     """
