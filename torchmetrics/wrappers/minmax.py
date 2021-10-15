@@ -64,8 +64,8 @@ class MinMaxMetric(Metric):
         self,
         base_metric: Metric,
         dist_sync_on_step: bool = False,
-        min_bound_init: float = 1.0,
-        max_bound_init: float = 0.0,
+        min_bound_init: float = float("inf"),
+        max_bound_init: float = float("-inf")
     ):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self._base_metric = base_metric
