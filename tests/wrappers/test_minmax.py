@@ -4,9 +4,7 @@ import torch
 from torchmetrics.classification import Accuracy
 from torchmetrics.wrappers import MinMaxMetric
 
-
-@pytest.mark.parametrize("device", ["cpu", "cuda"])
-def test_minmax(device: str) -> None:
+def test_minmax() -> None:
     """test that both min and max versions of MinMaxMetric operate correctly after calling compute."""
     acc = Accuracy()
     min_max_acc = MinMaxMetric(acc)
