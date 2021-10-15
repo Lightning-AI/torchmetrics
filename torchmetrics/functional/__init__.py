@@ -13,10 +13,10 @@
 # limitations under the License.
 from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.functional.audio.pit import pit, pit_permutate
+from torchmetrics.functional.audio.sdr_sir_sar import sar, sdr, sdr_sir_sar, sir
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.functional.audio.snr import snr
-from torchmetrics.functional.audio.sdr_sir_sar import sdr_sir_sar, sdr, sir, sar
 from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc

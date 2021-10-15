@@ -83,8 +83,7 @@ class SDR_SIR_SAR(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """
-        Update state with predictions and targets.
+        """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model
@@ -98,9 +97,7 @@ class SDR_SIR_SAR(Metric):
         self.total += sdr_batch.numel()
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
-        """
-        Computes average SDR, SIR, SAR.
-        """
+        """Computes average SDR, SIR, SAR."""
         return self.sum_sdr / self.total, self.sum_sir / self.total, self.sum_sar / self.total
 
     @property
@@ -109,7 +106,6 @@ class SDR_SIR_SAR(Metric):
 
 
 class SDR(SDR_SIR_SAR):
-
     def __init__(
         self,
         compute_permutation: bool = False,
@@ -127,14 +123,11 @@ class SDR(SDR_SIR_SAR):
         )
 
     def compute(self) -> Tensor:
-        """
-        Computes average SDR.
-        """
+        """Computes average SDR."""
         return self.sum_sdr / self.total
 
 
 class SIR(SDR_SIR_SAR):
-
     def __init__(
         self,
         compute_permutation: bool = False,
@@ -152,14 +145,11 @@ class SIR(SDR_SIR_SAR):
         )
 
     def compute(self) -> Tensor:
-        """
-        Computes average SIR.
-        """
+        """Computes average SIR."""
         return self.sum_sir / self.total
 
 
 class SAR(SDR_SIR_SAR):
-
     def __init__(
         self,
         compute_permutation: bool = False,
@@ -177,7 +167,5 @@ class SAR(SDR_SIR_SAR):
         )
 
     def compute(self) -> Tensor:
-        """
-        Computes average SAR.
-        """
+        """Computes average SAR."""
         return self.sum_sar / self.total

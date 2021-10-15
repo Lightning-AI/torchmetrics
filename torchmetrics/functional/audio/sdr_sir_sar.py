@@ -11,16 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
-import numpy as np
-from mir_eval.separation import bss_eval_sources
-import torch
-from torch import Tensor
 import warnings
+from typing import Tuple
+
+import numpy as np
+import torch
+from mir_eval.separation import bss_eval_sources
+from torch import Tensor
+
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def sdr_sir_sar(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False) -> Tuple[Tensor, Tensor, Tensor]:
+def sdr_sir_sar(
+    preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False
+) -> Tuple[Tensor, Tensor, Tensor]:
     r"""sdr_sir_sar evaluates the SDR, SIR, SAR metrics of preds and target. sdr_sir_sar is a wrapper for the mir_eval.separation.bss_eval_sources function.
 
     Args:
@@ -49,8 +53,10 @@ def sdr_sir_sar(preds: Tensor, target: Tensor, compute_permutation: bool = False
     _check_same_shape(preds, target)
 
     if preds.ndim == 1:
-        warnings.warn('preds and target should be of the shape [..., spk, time], but 1d tensor detected')
-        sdr_val_np, sir_val_np, sar_val_np, perm = bss_eval_sources(target.detach().cpu().numpy()[None, ...], preds.detach().cpu().numpy()[None, ...], compute_permutation)
+        warnings.warn("preds and target should be of the shape [..., spk, time], but 1d tensor detected")
+        sdr_val_np, sir_val_np, sar_val_np, perm = bss_eval_sources(
+            target.detach().cpu().numpy()[None, ...], preds.detach().cpu().numpy()[None, ...], compute_permutation
+        )
         sdr_val = torch.tensor(sdr_val_np[0])
         sir_val = torch.tensor(sir_val_np[0])
         sar_val = torch.tensor(sar_val_np[0])
@@ -68,7 +74,15 @@ def sdr_sir_sar(preds: Tensor, target: Tensor, compute_permutation: bool = False
         sir_val_np = np.empty(preds_np.shape[:-1])
         sar_val_np = np.empty(preds_np.shape[:-1])
         for b in range(preds_np.shape[0]):
-            sdr_val_np[b, :], sir_val_np[b, :], sar_val_np[b, :], perm = bss_eval_sources(target_np[b,], preds_np[b,], compute_permutation)
+            sdr_val_np[b, :], sir_val_np[b, :], sar_val_np[b, :], perm = bss_eval_sources(
+                target_np[
+                    b,
+                ],
+                preds_np[
+                    b,
+                ],
+                compute_permutation,
+            )
         sdr_val = torch.tensor(sdr_val_np)
         sir_val = torch.tensor(sir_val_np)
         sar_val = torch.tensor(sar_val_np)
