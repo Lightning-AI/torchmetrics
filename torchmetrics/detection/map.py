@@ -139,7 +139,7 @@ class MAP(Metric):
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
     See the :meth:`update` method for more information about the input format to this metric.
 
-    .. note::
+    Note:
         This metric is a wrapper for the
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
         which is a standard implementation for the mAP metric for object detection. Using this metric
