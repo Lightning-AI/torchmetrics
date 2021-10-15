@@ -146,7 +146,7 @@ class MAP(Metric):
         therefore requires you to have `pycocotools` installed. Please install with ``pip install pycocotools`` or
         ``pip install torchmetrics[detection]``.
 
-    .. note::
+    Note:
         As the pycocotools library cannot deal with tensors directly, all results have to be transfered
         to the CPU, this might have an performance impact on your training.
 
@@ -241,7 +241,7 @@ class MAP(Metric):
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
         the `update()` method are included.
 
-        .. note::
+        Note:
             Main `map` score is calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
 
         Returns:
