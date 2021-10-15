@@ -1,6 +1,5 @@
-import torch
 from tqdm import tqdm
-
+import torch
 import torchmetrics
 
 
@@ -18,8 +17,17 @@ def get_percentile_accuracy(y_true, y_preds, dividing_amount) -> float:
     new_y_preds = []
     new_y_true = []
     for y_true_iter, y_preds_iter in tqdm(zip(y_true, y_preds)):
-        new_y_preds.append(int(y_preds_iter) / dividing_amount)
-        new_y_true.append(int(y_true_iter) / dividing_amount)
+        new_y_preds.append(torch.tensor(int(int(y_preds_iter) / dividing_amount)).float())
+        new_y_true.append(torch.tensor(int(y_true_iter) / dividing_amount).float())
     new_y_preds = torch.tensor(new_y_preds)
     new_y_true = torch.tensor(new_y_true)
-    return torchmetrics.functional.accuracy(new_y_preds, new_y_true), new_y_preds, new_y_true
+    correct = 0
+    total = 0
+    for pred, yb in zip(new_y_preds, new_y_true):
+        pred = int(torch.round(pred))
+        yb = int(torch.round(yb))
+        if pred == yb:
+            correct += 1
+        total += 1
+    acc = round(correct / total, 3) * 100
+    return acc
