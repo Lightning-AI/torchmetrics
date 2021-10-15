@@ -119,7 +119,7 @@ def r2_score(
     multioutput: str = "uniform_average",
 ) -> Tensor:
     r"""
-    Computes r2 score also known as `coefficient of determination`_:
+    Computes r2 score also known as `R2 Score_Coefficient Determination`_:
 
     .. math:: R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 

@@ -113,6 +113,8 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             val3 = self.metric3['accuracy'](preds, target)
             val4 = self.metric4(preds, target)
 
+You can always check which device the metric is located on using the `.device` property.
+
 Metrics in Dataparallel (DP) mode
 =================================
 
@@ -142,7 +144,7 @@ it will lead to wrong accumulation. In practice do the following:
 Metrics in Distributed Data Parallel (DDP) mode
 ===============================================
 
-When using metrics in `Distributed Data Parallel (DPP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`_
+When using metrics in `Distributed Data Parallel (DDP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`_
 mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is
 not equally divisible by ``batch_size * num_processors``. The added samples will always be replicates of datapoints
 already in your dataset. This is done to secure an equal load for all processes. However, this has the consequence
@@ -168,6 +170,8 @@ the following limitations:
   - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
   - :ref:`references/modules:SSIM` and :ref:`references/functional:ssim [func]`
   - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kl_divergence [func]`
+
+You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
 ******************
 Metric Arithmetics
@@ -311,23 +315,17 @@ Metrics and differentiability
 
 Metrics support backpropagation, if all computations involved in the metric calculation
 are differentiable. All modular metrics have a property that determines if a metric is
-differentible or not.
-
-.. code-block:: python
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True/False
+differentiable or not.
 
 However, note that the cached state is detached from the computational
-graph and cannot be backpropagated. Not doing this would mean storing the computational
+graph and cannot be back-propagated. Not doing this would mean storing the computational
 graph for each update call, which can lead to out-of-memory errors.
 In practise this means that:
 
 .. code-block:: python
 
     metric = MyMetric()
-    val = metric(pred, target) # this value can be backpropagated
-    val = metric.compute() # this value cannot be backpropagated
+    val = metric(pred, target) # this value can be back-propagated
+    val = metric.compute() # this value cannot be back-propagated
 
 A functional metric is differentiable if its corresponding modular metric is differentiable.

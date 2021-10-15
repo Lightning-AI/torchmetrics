@@ -21,11 +21,11 @@ from copy import deepcopy
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_mean, dim_zero_sum
+from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_max, dim_zero_mean, dim_zero_min, dim_zero_sum
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
@@ -35,7 +35,7 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
-class Metric(nn.Module, ABC):
+class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
     Implements ``add_state()``, ``forward()``, ``reset()`` and a few other things to
@@ -67,7 +67,10 @@ class Metric(nn.Module, ABC):
             will be used to perform the allgather.
     """
 
-    __jit_ignored_attributes__ = ["is_differentiable", "device", "dtype"]
+    __jit_ignored_attributes__ = ["device"]
+    __jit_unused_properties__ = ["is_differentiable"]
+    is_differentiable: Optional[bool] = None
+    higher_is_better: Optional[bool] = None
 
     def __init__(
         self,
@@ -83,6 +86,7 @@ class Metric(nn.Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
+        self._device = torch.device("cpu")
 
         self.dist_sync_on_step = dist_sync_on_step
         self.compute_on_step = compute_on_step
@@ -121,10 +125,10 @@ class Metric(nn.Module, ABC):
             default: Default value of the state; can either be a ``torch.Tensor`` or an empty list. The state will be
                 reset to this value when ``self.reset()`` is called.
             dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
-                If value is ``"sum"``, ``"mean"``, or ``"cat"``, we will use ``torch.sum``, ``torch.mean``,
-                and ``torch.cat`` respectively, each with argument ``dim=0``. Note that the ``"cat"`` reduction
-                only makes sense if the state is a list, and not a tensor. The user can also pass a custom
-                function in this parameter.
+                If value is ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"`` we will use ``torch.sum``,
+                ``torch.mean``, ``torch.cat``, ``torch.min`` and ``torch.max``` respectively, each with argument
+                ``dim=0``. Note that the ``"cat"`` reduction only makes sense if the state is a list, and not
+                a tensor. The user can also pass a custom function in this parameter.
             persistent (Optional): whether the state will be saved as part of the modules ``state_dict``.
                 Default is ``False``.
 
@@ -158,6 +162,10 @@ class Metric(nn.Module, ABC):
             dist_reduce_fx = dim_zero_sum
         elif dist_reduce_fx == "mean":
             dist_reduce_fx = dim_zero_mean
+        elif dist_reduce_fx == "max":
+            dist_reduce_fx = dim_zero_max
+        elif dist_reduce_fx == "min":
+            dist_reduce_fx = dim_zero_min
         elif dist_reduce_fx == "cat":
             dist_reduce_fx = dim_zero_cat
         elif dist_reduce_fx is not None and not callable(dist_reduce_fx):
@@ -410,6 +418,51 @@ class Metric(nn.Module, ABC):
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name in ("higher_is_better", "is_differentiable"):
+            raise RuntimeError(f"Can't change const `{name}`.")
+        super().__setattr__(name, value)
+
+    @property
+    def device(self) -> "torch.device":
+        """Return the device of the metric."""
+        return self._device
+
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def float(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def double(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def half(self) -> "Metric":
+        """Method override default and prevent dtype casting.
+
+        Please use `metric.set_dtype(dtype)` instead.
+        """
+        return self
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+        """Special version of `type` for transferring all metric states to specific dtype
+        Arguments:
+            dst_type (type or string): the desired type
+        """
+        return super().type(dst_type)
+
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device when `.to`,
         `.cuda`, etc methods are called."""
@@ -430,6 +483,10 @@ class Metric(nn.Module, ABC):
                 raise TypeError(
                     "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
                 )
+
+        # make sure to update the device attribute
+        # if the dummy tensor moves device by fn function we should also update the attribute
+        self._device = fn(torch.zeros(1, device=self.device)).device
 
         # Additional apply to forward cache and computed attributes (may be nested)
         if this._computed is not None:
@@ -501,7 +558,12 @@ class Metric(nn.Module, ABC):
         return filtered_kwargs
 
     def __hash__(self) -> int:
-        hash_vals = [self.__class__.__name__]
+        # we need to add the id here, since PyTorch requires a module hash to be unique.
+        # Internally, PyTorch nn.Module relies on that for children discovery
+        # (see https://github.com/pytorch/pytorch/blob/v1.9.0/torch/nn/modules/module.py#L1544)
+        # For metrics that include tensors it is not a problem,
+        # since their hash is unique based on the memory location but we cannot rely on that for every metric.
+        hash_vals = [self.__class__.__name__, id(self)]
 
         for key in self._defaults:
             val = getattr(self, key)
@@ -619,12 +681,6 @@ class Metric(nn.Module, ABC):
     def __getitem__(self, idx: int) -> "Metric":
         return CompositionalMetric(lambda x: x[idx], self, None)
 
-    @property
-    def is_differentiable(self) -> Optional[bool]:
-        # There is a bug in PyTorch that leads to properties being executed during scripting
-        # To make the metric scriptable, we add property to ignore list and switch to return None here
-        return None
-
 
 def _neg(x: Tensor) -> Tensor:
     return -torch.abs(x)
@@ -662,7 +718,7 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
-    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, *_: Any) -> None:
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 

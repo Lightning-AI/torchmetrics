@@ -31,8 +31,8 @@ class PIT(Metric):
 
     Args:
         metric_func:
-            a metric function accept a batch of target and estimate, i.e. metric_func(target[:, i, ...],
-            estimate[:, j, ...]), and returns a batch of metric tensors [batch]
+            a metric function accept a batch of target and estimate, i.e. metric_func(preds[:, i, ...],
+            target[:, j, ...]), and returns a batch of metric tensors [batch]
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
@@ -69,6 +69,7 @@ class PIT(Metric):
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
 
+    is_differentiable = True
     sum_pit_metric: Tensor
     total: Tensor
 
@@ -110,7 +111,3 @@ class PIT(Metric):
     def compute(self) -> Tensor:
         """Computes average PIT metric."""
         return self.sum_pit_metric / self.total
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

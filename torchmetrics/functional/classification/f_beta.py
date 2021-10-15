@@ -37,7 +37,33 @@ def _fbeta_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    """Computes f_beta metric from stat scores: true positives, false positives, true negatives, false negatives.
 
+    Args:
+        tp: True positives
+        fp: False positives
+        tn: True negatives
+        fn: False negatives
+        beta: The parameter `beta` (which determines the weight of recall in the combined score)
+        ignore_index: Integer specifying a target class to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method
+        average: Defines the reduction that is applied
+        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter)
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> tp, fp, tn, fn = _stat_scores_update(
+        ...                         preds,
+        ...                         target,
+        ...                         reduce='micro',
+        ...                         num_classes=3,
+        ...                     )
+        >>> _fbeta_compute(tp, fp, tn, fn, beta=0.5, ignore_index=None, average='micro', mdmc_average=None)
+        tensor(0.3333)
+    """
     if average == AvgMethod.MICRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         mask = tp >= 0
         precision = _safe_divide(tp[mask].sum().float(), (tp[mask] + fp[mask]).sum())
@@ -45,11 +71,6 @@ def _fbeta_compute(
     else:
         precision = _safe_divide(tp.float(), tp + fp)
         recall = _safe_divide(tp.float(), tp + fn)
-
-    if average == AvgMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        cond = tp + fp + fn == 0
-        precision = precision[~cond]
-        recall = recall[~cond]
 
     num = (1 + beta ** 2) * precision * recall
     denom = beta ** 2 * precision + recall
@@ -72,6 +93,11 @@ def _fbeta_compute(
         elif average not in (AvgMethod.MICRO, AvgMethod.SAMPLES):
             num[ignore_index, ...] = -1
             denom[ignore_index, ...] = -1
+
+    if average == AvgMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        cond = (tp + fp + fn == 0) | (tp + fp + fn == -3)
+        num = num[~cond]
+        denom = denom[~cond]
 
     return _reduce_stat_scores(
         numerator=num,

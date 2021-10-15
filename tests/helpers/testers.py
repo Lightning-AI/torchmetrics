@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Dict, Optional, Sequence
 
 import numpy as np
 import pytest
@@ -57,34 +57,46 @@ def setup_ddp(rank, world_size):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8):
+def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, Sequence):
         for pl_res, sk_res in zip(pl_result, sk_result):
             _assert_allclose(pl_res, sk_res, atol=atol)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
     else:
         raise ValueError("Unknown format for comparison")
 
 
-def _assert_tensor(pl_result: Any):
+def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
     """Utility function for recursively checking that some input only consists of torch tensors."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
             _assert_tensor(plr)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert isinstance(pl_result[key], Tensor)
     else:
         assert isinstance(pl_result, Tensor)
 
 
-def _assert_requires_grad(metric: Metric, pl_result: Any):
+def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None) -> None:
     """Utility function for recursively asserting that metric output is consistent with the `is_differentiable`
     attribute."""
     if isinstance(pl_result, Sequence):
         for plr in pl_result:
-            _assert_requires_grad(metric, plr)
+            _assert_requires_grad(metric, plr, key=key)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert metric.is_differentiable == pl_result[key].requires_grad
     else:
         assert metric.is_differentiable == pl_result.requires_grad
 
@@ -127,13 +139,20 @@ def _class_test(
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
+    assert preds.shape[0] == target.shape[0]
+    num_batches = preds.shape[0]
+
     if not metric_args:
         metric_args = {}
 
-    # Instanciate lightning metric
+    # Instantiate lightning metric
     metric = metric_class(
         compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
     )
+    with pytest.raises(RuntimeError):
+        metric.is_differentiable = not metric.is_differentiable
+    with pytest.raises(RuntimeError):
+        metric.higher_is_better = not metric.higher_is_better
 
     # check that the metric is scriptable
     if check_scriptable:
@@ -149,7 +168,7 @@ def _class_test(
     pickled_metric = pickle.dumps(metric)
     metric = pickle.loads(pickled_metric)
 
-    for i in range(rank, NUM_BATCHES, worldsize):
+    for i in range(rank, num_batches, worldsize):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
@@ -173,14 +192,17 @@ def _class_test(
             sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
+    # check that metrics are hashable
+    assert hash(metric)
+
     # check on all batches on all ranks
     result = metric.compute()
     _assert_tensor(result)
 
-    total_preds = torch.cat([preds[i] for i in range(NUM_BATCHES)]).cpu()
-    total_target = torch.cat([target[i] for i in range(NUM_BATCHES)]).cpu()
+    total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
+    total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
     total_kwargs_update = {
-        k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
+        k: torch.cat([v[i] for i in range(num_batches)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
@@ -213,6 +235,9 @@ def _functional_test(
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
+    assert preds.shape[0] == target.shape[0]
+    num_batches = preds.shape[0]
+
     if not metric_args:
         metric_args = {}
 
@@ -223,7 +248,7 @@ def _functional_test(
     target = target.to(device)
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
-    for i in range(NUM_BATCHES):
+    for i in range(num_batches):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         lightning_result = metric(preds[i], target[i], **extra_kwargs)
         extra_kwargs = {
@@ -237,8 +262,8 @@ def _functional_test(
 
 
 def _assert_half_support(
-    metric_module: Metric,
-    metric_functional: Callable,
+    metric_module: Optional[Metric],
+    metric_functional: Optional[Callable],
     preds: Tensor,
     target: Tensor,
     device: str = "cpu",
@@ -261,9 +286,11 @@ def _assert_half_support(
         k: (v[0].half() if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    metric_module = metric_module.to(device)
-    _assert_tensor(metric_module(y_hat, y, **kwargs_update))
-    _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
+    if metric_module is not None:
+        metric_module = metric_module.to(device)
+        _assert_tensor(metric_module(y_hat, y, **kwargs_update))
+    if metric_functional is not None:
+        _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
 class MetricTester:
@@ -410,9 +437,9 @@ class MetricTester:
     def run_precision_test_cpu(
         preds: Tensor,
         target: Tensor,
-        metric_module: Metric,
-        metric_functional: Callable,
-        metric_args: dict = None,
+        metric_module: Optional[Metric] = None,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on cpu
@@ -427,16 +454,21 @@ class MetricTester:
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, target, device="cpu", **kwargs_update
+            metric_module(**metric_args) if metric_module is not None else None,
+            metric_functional,
+            preds,
+            target,
+            device="cpu",
+            **kwargs_update,
         )
 
     @staticmethod
     def run_precision_test_gpu(
         preds: Tensor,
         target: Tensor,
-        metric_module: Metric,
-        metric_functional: Callable,
-        metric_args: dict = None,
+        metric_module: Optional[Metric] = None,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
         **kwargs_update,
     ):
         """Test if a metric can be used with half precision tensors on gpu
@@ -451,7 +483,12 @@ class MetricTester:
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, target, device="cuda", **kwargs_update
+            metric_module(**metric_args) if metric_module is not None else None,
+            metric_functional,
+            preds,
+            target,
+            device="cuda",
+            **kwargs_update,
         )
 
     @staticmethod
@@ -459,8 +496,8 @@ class MetricTester:
         preds: Tensor,
         target: Tensor,
         metric_module: Metric,
-        metric_functional: Callable,
-        metric_args: dict = None,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
     ):
         """Test if a metric is differentiable or not.
 
@@ -480,7 +517,7 @@ class MetricTester:
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
 
-            if metric.is_differentiable:
+            if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
                     partial(metric_functional, **metric_args), (preds[0].double(), target[0])

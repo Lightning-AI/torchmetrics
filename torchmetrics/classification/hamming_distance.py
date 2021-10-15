@@ -67,6 +67,7 @@ class HammingDistance(Metric):
         tensor(0.2500)
 
     """
+    is_differentiable = False
     correct: Tensor
     total: Tensor
 
@@ -107,7 +108,3 @@ class HammingDistance(Metric):
     def compute(self) -> Tensor:
         """Computes hamming distance based on inputs passed in to ``update`` previously."""
         return _hamming_distance_compute(self.correct, self.total)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False

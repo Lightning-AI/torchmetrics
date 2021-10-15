@@ -100,18 +100,22 @@ def _bleu_score_compute(
         n_gram: gram value ranged 1 to 4
         smooth: Whether or not to apply smoothing
     """
+    device = numerator.device
     if min(numerator) == 0.0:
-        return tensor(0.0)
+        return tensor(0.0, device=device)
 
     if smooth:
-        precision_scores = torch.add(numerator, torch.ones(n_gram)) / torch.add(denominator, torch.ones(n_gram))
+        precision_scores = torch.div(
+            torch.add(numerator, torch.ones(n_gram, device=device)),
+            torch.add(denominator, torch.ones(n_gram, device=device)),
+        )
         precision_scores[0] = numerator[0] / denominator[0]
     else:
         precision_scores = numerator / denominator
 
-    log_precision_scores = tensor([1.0 / n_gram] * n_gram) * torch.log(precision_scores)
+    log_precision_scores = tensor([1.0 / n_gram] * n_gram, device=device) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = tensor(1.0) if trans_len > ref_len else torch.exp(1 - (ref_len / trans_len))
+    brevity_penalty = tensor(1.0, device=device) if trans_len > ref_len else torch.exp(1 - (ref_len / trans_len))
     bleu = brevity_penalty * geometric_mean
 
     return bleu
@@ -123,8 +127,7 @@ def bleu_score(
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
-    """Calculate `BLEU score <https://en.wikipedia.org/wiki/BLEU>`_ of machine translated text with one or more
-    references.
+    """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
         reference_corpus:
@@ -148,10 +151,10 @@ def bleu_score(
 
     References:
         [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu http://www.aclweb.org/anthology/P02-1040.pdf
+        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
 
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och https://aclanthology.org/P04-1077.pdf
+        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
     if len(translate_corpus) != len(reference_corpus):

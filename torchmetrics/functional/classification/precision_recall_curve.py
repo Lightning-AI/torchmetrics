@@ -67,6 +67,19 @@ def _precision_recall_curve_update(
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
+    """Updates and returns variables required to compute the precision-recall pairs for different thresholds.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
+        pos_label: integer determining the positive class. Default is ``None``
+            which for binary problem is translate to 1. For multiclass problems
+            this argument should not be set as we iteratively change it in the
+            range [0,num_classes-1]
+    """
+
     if len(preds.shape) == len(target.shape):
         if pos_label is None:
             rank_zero_warn("`pos_label` automatically set 1.")
@@ -115,6 +128,15 @@ def _precision_recall_curve_compute_single_class(
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
+    """Computes precision-recall pairs for single class inputs.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        pos_label: integer determining the positive class.
+        sample_weights: sample weights for each data point
+    """
+
     fps, tps, thresholds = _binary_clf_curve(
         preds=preds, target=target, sample_weights=sample_weights, pos_label=pos_label
     )
@@ -131,7 +153,7 @@ def _precision_recall_curve_compute_single_class(
 
     recall = torch.cat([reversed(recall[sl]), torch.zeros(1, dtype=recall.dtype, device=recall.device)])
 
-    thresholds = tensor(reversed(thresholds[sl]))
+    thresholds = reversed(thresholds[sl]).detach().clone()  # type: ignore
 
     return precision, recall, thresholds
 
@@ -142,6 +164,16 @@ def _precision_recall_curve_compute_multi_class(
     num_classes: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
+    """Computes precision-recall pairs for multi class inputs.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
+        sample_weights: sample weights for each data point
+    """
+
     # Recursively call per class
     precision, recall, thresholds = [], [], []
     for cls in range(num_classes):
@@ -176,6 +208,51 @@ def _precision_recall_curve_compute(
     pos_label: Optional[int] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    """Computes precision-recall pairs based on the number of classes.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
+        pos_label: integer determining the positive class. Default is ``None``
+            which for binary problem is translate to 1. For multiclass problems
+            this argument should not be set as we iteratively change it in the
+            range [0,num_classes-1]
+        sample_weights: sample weights for each data point
+
+    Example:
+        >>> # binary case
+        >>> preds = torch.tensor([0, 1, 2, 3])
+        >>> target = torch.tensor([0, 1, 1, 0])
+        >>> pos_label = 1
+        >>> preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, pos_label=pos_label)
+        >>> precision, recall, thresholds = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
+        >>> precision
+        tensor([0.6667, 0.5000, 0.0000, 1.0000])
+        >>> recall
+        tensor([1.0000, 0.5000, 0.0000, 0.0000])
+        >>> thresholds
+        tensor([1, 2, 3])
+
+        >>> # multiclass case
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> num_classes = 5
+        >>> preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes)
+        >>> precision, recall, thresholds = _precision_recall_curve_compute(preds, target, num_classes)
+        >>> precision   # doctest: +NORMALIZE_WHITESPACE
+        [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
+         tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
+        >>> recall
+        [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
+        >>> thresholds
+        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+    """
+
     with torch.no_grad():
         if num_classes == 1:
             if pos_label is None:

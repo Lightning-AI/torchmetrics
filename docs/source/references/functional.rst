@@ -11,6 +11,12 @@ Functional metrics
 Audio Metrics
 *************
 
+pesq [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pesq
+
+
 pit [func]
 ~~~~~~~~~~
 
@@ -36,6 +42,13 @@ snr [func]
 ~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.snr
+    :noindex:
+
+
+stoi [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.stoi
     :noindex:
 
 
@@ -307,15 +320,45 @@ symmetric_mean_absolute_percentage_error [func]
 .. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
     :noindex:
 
-********
-Pairwise
-********
 
-embedding_similarity [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tweedie_deviance_score [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.embedding_similarity
+.. autofunction:: torchmetrics.functional.tweedie_deviance_score
     :noindex:
+
+
+****************
+Pairwise Metrics
+****************
+
+pairwise_cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_cosine_similarity
+    :noindex:
+
+
+pairwise_euclidean_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_euclidean_distance
+    :noindex:
+
+
+pairwise_linear_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_linear_similarity
+    :noindex:
+
+
+pairwise_manhatten_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_manhatten_distance
+    :noindex:
+
 
 *********
 Retrieval
@@ -365,6 +408,11 @@ retrieval_normalized_dcg [func]
 ****
 Text
 ****
+
+bert_score [func]
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.bert_score
 
 bleu_score [func]
 ~~~~~~~~~~~~~~~~~

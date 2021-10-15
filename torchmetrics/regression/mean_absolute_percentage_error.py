@@ -25,7 +25,7 @@ from torchmetrics.metric import Metric
 
 class MeanAbsolutePercentageError(Metric):
     r"""
-    Computes `mean absolute percentage error <https://en.wikipedia.org/wiki/Mean_absolute_percentage_error>`_ (MAPE):
+    Computes `Mean Absolute Percentage Error`_ (MAPE):
 
     .. math:: \text{MAPE} = \frac{1}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, y_i)}
 
@@ -57,6 +57,7 @@ class MeanAbsolutePercentageError(Metric):
         tensor(0.2667)
 
     """
+    is_differentiable = True
     sum_abs_per_error: Tensor
     total: Tensor
 
@@ -92,7 +93,3 @@ class MeanAbsolutePercentageError(Metric):
     def compute(self) -> Tensor:
         """Computes mean absolute percentage error over state."""
         return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

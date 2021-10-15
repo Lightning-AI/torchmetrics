@@ -27,6 +27,28 @@ def _precision_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        fn: False negatives
+        average: Defines the reduction that is applied
+        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter)
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update( preds, target, reduce='macro', num_classes=3)
+        >>> _precision_compute(tp, fp, fn, average='macro', mdmc_average=None)
+        tensor(0.1667)
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> _precision_compute(tp, fp, fn, average='micro', mdmc_average=None)
+        tensor(0.2500)
+    """
+
     numerator = tp
     denominator = tp + fp
 
@@ -62,7 +84,7 @@ def precision(
     multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
-    Computes `Precision <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -203,6 +225,27 @@ def _recall_compute(
     average: str,
     mdmc_average: Optional[str],
 ) -> Tensor:
+    """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        fn: False negatives
+        average: Defines the reduction that is applied
+        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter)
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
+        >>> _recall_compute(tp, fp, fn, average='macro', mdmc_average=None)
+        tensor(0.3333)
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> _recall_compute(tp, fp, fn, average='micro', mdmc_average=None)
+        tensor(0.2500)
+    """
     numerator = tp
     denominator = tp + fn
 
@@ -238,7 +281,7 @@ def recall(
     multiclass: Optional[bool] = None,
 ) -> Tensor:
     r"""
-    Computes `Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Computes `Recall`_
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -384,7 +427,7 @@ def precision_recall(
     multiclass: Optional[bool] = None,
 ) -> Tuple[Tensor, Tensor]:
     r"""
-    Computes `Precision and Recall <https://en.wikipedia.org/wiki/Precision_and_recall>`_:
+    Computes `Precision`_
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 

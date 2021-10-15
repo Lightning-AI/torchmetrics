@@ -61,6 +61,7 @@ class CosineSimilarity(Metric):
         tensor(0.8536)
 
     """
+    is_differentiable = True
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -102,7 +103,3 @@ class CosineSimilarity(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _cosine_similarity_compute(preds, target, self.reduction)
-
-    @property
-    def is_differentiable(self) -> bool:
-        return True

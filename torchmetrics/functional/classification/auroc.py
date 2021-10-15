@@ -25,6 +25,14 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 
 def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
+    """Updates and returns variables required to compute Area Under the Receiver Operating Characteristic Curve.
+    Validates the inputs and returns the mode of the inputs.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+    """
+
     # use _input_format_classification for validating the input and get the mode of data
     _, _, mode = _input_format_classification(preds, target)
 
@@ -50,6 +58,41 @@ def _auroc_compute(
     max_fpr: Optional[float] = None,
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
+    """Computes Area Under the Receiver Operating Characteristic Curve.
+
+    Args:
+        preds: predictions from model (logits or probabilities)
+        target: Ground truth labels
+        mode: 'multi class multi dim' or 'multi-label' or 'binary'
+        num_classes: integer with number of classes for multi-label and multiclass problems.
+            Should be set to ``None`` for binary problems
+        pos_label: integer determining the positive class.
+            Should be set to ``None`` for binary problems
+        average: Defines the reduction that is applied to the output:
+        max_fpr: If not ``None``, calculates standardized partial AUC over the
+            range [0, max_fpr]. Should be a float between 0 and 1.
+        sample_weights: sample weights for each data point
+
+    Example:
+        >>> # binary case
+        >>> preds = torch.tensor([0.13, 0.26, 0.08, 0.19, 0.34])
+        >>> target = torch.tensor([0, 0, 1, 1, 1])
+        >>> preds, target, mode = _auroc_update(preds, target)
+        >>> _auroc_compute(preds, target, mode, pos_label=1)
+        tensor(0.5000)
+
+        >>> # multiclass case
+        >>> preds = torch.tensor([[0.90, 0.05, 0.05],
+        ...                       [0.05, 0.90, 0.05],
+        ...                       [0.05, 0.05, 0.90],
+        ...                       [0.85, 0.05, 0.10],
+        ...                       [0.10, 0.10, 0.80]])
+        >>> target = torch.tensor([0, 1, 1, 2, 2])
+        >>> preds, target, mode = _auroc_update(preds, target)
+        >>> _auroc_compute(preds, target, mode, num_classes=3)
+        tensor(0.7778)
+    """
+
     # binary mode override num_classes
     if mode == DataType.BINARY:
         num_classes = 1

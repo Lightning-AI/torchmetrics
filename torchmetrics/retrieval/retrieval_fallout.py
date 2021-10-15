@@ -69,6 +69,8 @@ class RetrievalFallOut(RetrievalMetric):
         tensor(0.5000)
     """
 
+    higher_is_better = False
+
     def __init__(
         self,
         empty_target_action: str = "pos",

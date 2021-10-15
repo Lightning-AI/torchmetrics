@@ -27,7 +27,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
     Forward accepts:
 
     - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long or bool tensor): ``(N, ...)``
+    - ``target`` (long, int, bool or float tensor): ``(N, ...)``
     - ``indexes`` (long tensor): ``(N, ...)``
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
@@ -66,6 +66,8 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         >>> ndcg(preds, target, indexes=indexes)
         tensor(0.8467)
     """
+
+    higher_is_better = True
 
     def __init__(
         self,
