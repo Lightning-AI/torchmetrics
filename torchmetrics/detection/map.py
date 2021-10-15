@@ -152,7 +152,7 @@ class MAP(Metric):
 
     Args:
         class_metrics:
-            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. defualt: False
+            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. default: False
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: False
         dist_sync_on_step:
