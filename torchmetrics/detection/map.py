@@ -47,8 +47,8 @@ class MAPMetricResults:
     mar_small: Tensor
     mar_medium: Tensor
     mar_large: Tensor
-    map_per_class: Optional[Tensor]
-    mar_100_per_class: Optional[Tensor]
+    map_per_class: Tensor
+    mar_100_per_class: Tensor
 
     def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
         return getattr(self, key)
@@ -170,7 +170,7 @@ class MAP(Metric):
             If ``class_metrics`` is not a boolean
     """
 
-    def __init__(self, class_metrics: bool = True, **kwargs) -> None:  # type: ignore
+    def __init__(self, class_metrics: bool = False, **kwargs) -> None:  # type: ignore
         super().__init__(**kwargs)
 
         if not _PYCOCOTOOLS_AVAILABLE:
@@ -263,8 +263,8 @@ class MAP(Metric):
             - mar_small: ``torch.Tensor``
             - mar_medium: ``torch.Tensor``
             - mar_large: ``torch.Tensor``
-            - map_per_class: ``Optional[torch.Tensor]``
-            - mar_100_per_class: ``Optional[torch.Tensor]``
+            - map_per_class: ``torch.Tensor``
+            - mar_100_per_class: ``torch.Tensor``
         """
         coco_target, coco_preds = COCO(), COCO()
         coco_target.dataset = self._get_coco_format(self.groundtruth_boxes, self.groundtruth_labels)
@@ -280,8 +280,8 @@ class MAP(Metric):
             stats = coco_eval.stats
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values: Optional[Tensor] = None
-        mar_100_per_class_values: Optional[Tensor] = None
+        map_per_class_values: Tensor = torch.Tensor()
+        mar_100_per_class_values: Tensor = torch.Tensor()
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
