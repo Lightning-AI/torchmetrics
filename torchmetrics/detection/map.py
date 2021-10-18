@@ -132,7 +132,9 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
 
 class MAP(Metric):
     r"""
-    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR) <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_ for object detection predictions.
+    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)\
+    <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_\
+    for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
     Predicted boxes and targets have to be in Pascal VOC format
@@ -191,21 +193,23 @@ class MAP(Metric):
         """Add detections and groundtruth to the metric.
 
         Args:
-            preds: A list consisting of dictionaries each containing the key-values (each dictionary corresponds to a single image):
-                - `boxes`: torch.FloatTensor of shape
-                    [num_boxes, 4] containing `num_boxes` detection boxes of the format
-                    [xmin, ymin, xmax, ymax] in absolute image coordinates.
-                - `scores`: torch.FloatTensor of shape
-                    [num_boxes] containing detection scores for the boxes.
-                - `labels`: torch.IntTensor of shape
-                    [num_boxes] containing 0-indexed detection classes for the boxes.
+            preds: A list consisting of dictionaries each containing the key-values\
+            (each dictionary corresponds to a single image):
+            - ``boxes``: torch.FloatTensor of shape
+                [num_boxes, 4] containing `num_boxes` detection boxes of the format
+                [xmin, ymin, xmax, ymax] in absolute image coordinates.
+            - ``scores``: torch.FloatTensor of shape
+                [num_boxes] containing detection scores for the boxes.
+            - ``labels``: torch.IntTensor of shape
+                [num_boxes] containing 0-indexed detection classes for the boxes.
 
-            target: A list consisting of dictionaries each containing the key-values(each dictionary corresponds to a single image):
-                - `boxes`: torch.FloatTensor of shape
-                    [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
-                    [xmin, ymin, xmax, ymax] in absolute image coordinates.
-                - `labels`: torch.IntTensor of shape
-                    [num_boxes] containing 1-indexed groundtruth classes for the boxes.
+            target: A list consisting of dictionaries each containing the key-values\
+            (each dictionary corresponds to a single image):
+            - ``boxes``: torch.FloatTensor of shape
+                [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
+                [xmin, ymin, xmax, ymax] in absolute image coordinates.
+            - ``labels``: torch.IntTensor of shape
+                [num_boxes] containing 1-indexed groundtruth classes for the boxes.
 
         Raises:
             ValueError:
@@ -213,12 +217,12 @@ class MAP(Metric):
             ValueError:
                 If ``target`` is not of type List[Dict[str, torch.Tensor]]
             ValueError:
-                If `preds` and `target` are not of the same length
+                If ``preds`` and ``target`` are not of the same length
             ValueError:
-                If any of `preds.boxes`, `preds.scores`
-                and `preds.labels` are not of the same length
+                If any of ``preds.boxes``, ``preds.scores``
+                and ``preds.labels`` are not of the same length
             ValueError:
-                If any of `target.boxes` and `target.labels` are not of the same length
+                If any of ``target.boxes`` and ``target.labels`` are not of the same length
             ValueError:
                 If any box is not type float and of length 4
             ValueError:
