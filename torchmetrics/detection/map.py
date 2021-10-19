@@ -263,8 +263,8 @@ class MAP(Metric):
             - mar_small: ``torch.Tensor``
             - mar_medium: ``torch.Tensor``
             - mar_large: ``torch.Tensor``
-            - map_per_class: ``torch.Tensor``
-            - mar_100_per_class: ``torch.Tensor``
+            - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
+            - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
         coco_target, coco_preds = COCO(), COCO()
         coco_target.dataset = self._get_coco_format(self.groundtruth_boxes, self.groundtruth_labels)
@@ -279,9 +279,9 @@ class MAP(Metric):
             coco_eval.summarize()
             stats = coco_eval.stats
 
+        map_per_class_values: Tensor = torch.Tensor([-1])
+        mar_100_per_class_values: Tensor = torch.Tensor([-1])
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values: Tensor = torch.Tensor()
-        mar_100_per_class_values: Tensor = torch.Tensor()
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
