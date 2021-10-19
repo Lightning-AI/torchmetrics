@@ -66,6 +66,31 @@ from torchmetrics.retrieval import (  # noqa: E402
 from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore, SacreBLEUScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
+# define compute groups for metric collection
+_COMPUTE_GROUP_REGISTRY = []
+
+
+def register_compute_group(*metrics):
+    for m in metrics:
+        if not issubclass(m, Metric):
+            raise ValueError(
+                'Expected all metrics in compute group to be subclass of `torchmetrics.Metric` but got {m}'
+            )
+    _COMPUTE_GROUP_REGISTRY.append(tuple(m.__name__ for m in metrics))
+
+
+register_compute_group(F1, FBeta, Recall, Precision, Specificity, StatScores)
+register_compute_group(AUROC, AveragePrecision, PrecisionRecallCurve, ROC)
+register_compute_group(BinnedPrecisionRecallCurve, BinnedAveragePrecision)
+register_compute_group(CohenKappa, ConfusionMatrix, IoU, MatthewsCorrcoef)
+register_compute_group(CosineSimilarity, SpearmanCorrcoef)
+register_compute_group(FID, KID)
+register_compute_group(
+    RetrievalMAP, RetrievalMRR, RetrievalFallOut, RetrievalNormalizedDCG, RetrievalPrecision, RetrievalRecall
+)
+
+
+
 __all__ = [
     "functional",
     "Accuracy",
@@ -135,4 +160,6 @@ __all__ = [
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "WER",
+    "register_compute_group"
 ]
+
