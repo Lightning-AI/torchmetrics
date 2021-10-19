@@ -20,9 +20,8 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_hit_rate(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
-    """
-    Computes the hit rate (for information retrieval). The hit rate is 1.0 if there is at least one
-    relevant document among all the top `k` retrieved documents.
+    """Computes the hit rate (for information retrieval). The hit rate is 1.0 if there is at least one relevant
+    document among all the top `k` retrieved documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,

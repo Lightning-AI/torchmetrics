@@ -34,8 +34,7 @@ seed_all(42)
 
 
 def _hit_rate_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
-    """Didn't find a reliable implementation of Hit Rate in Information Retrieval, so, reimplementing here.
-    """
+    """Didn't find a reliable implementation of Hit Rate in Information Retrieval, so, reimplementing here."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
