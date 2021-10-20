@@ -33,12 +33,8 @@ def _is_suitable_val(val: Any) -> bool:
         return True
     elif type(val) == torch.Tensor:
         print(val.size())
-        if val.size() == torch.Size([]):
-            return True
-        else:
-            return False
-    else:
-        return False
+        return val.size() == torch.Size([])
+    return False
 
 
 class MinMaxMetric(Metric):
