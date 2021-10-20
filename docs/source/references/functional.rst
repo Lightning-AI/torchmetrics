@@ -407,7 +407,7 @@ retrieval_normalized_dcg [func]
 
 
 retrieval_hit_rate [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_hit_rate
     :noindex:

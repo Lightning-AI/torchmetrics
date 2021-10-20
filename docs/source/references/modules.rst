@@ -576,7 +576,7 @@ RetrievalNormalizedDCG
 
 
 RetrievalHitRate
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.RetrievalHitRate
     :noindex:
