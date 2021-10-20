@@ -21,12 +21,7 @@ from torchmetrics.metric import Metric
 
 
 def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:
-    """Utility function that checks whether min/max value is either a:
-
-    - int
-    - float
-    - tensor with 1 element
-    """
+    """Utility function that checks whether min/max value."""
     print(val)
     print(type(val))
     if (type(val) == int) or (type(val) == float):
