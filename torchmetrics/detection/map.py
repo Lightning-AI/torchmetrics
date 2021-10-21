@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
+from torchvision.ops import box_convert
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
@@ -317,7 +318,7 @@ class MAP(Metric):
         return metrics.__dict__
 
     def _get_coco_format(
-        self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
+            self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
     ) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
@@ -328,6 +329,7 @@ class MAP(Metric):
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
+        boxes = [box_convert(box, in_fmt="xyxy", out_fmt="xywh") for box in boxes]
         for image_id, (image_boxes, image_labels) in enumerate(zip(boxes, labels)):
             image_boxes = image_boxes.cpu().tolist()
             image_labels = image_labels.cpu().tolist()
