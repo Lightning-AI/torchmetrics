@@ -100,7 +100,7 @@ def cer(
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
         >>> cer(predictions=predictions, references=references)
-        tensor(0.5000)
+        tensor(0.3415)
     """
     if concatenate_texts is not None:
         warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
