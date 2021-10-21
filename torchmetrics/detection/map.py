@@ -18,10 +18,15 @@ from typing import Dict, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
-from torchvision.ops import box_convert
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+
+if _TORCHVISION_AVAILABLE:
+    from torchvision.ops import box_convert
+else:
+    box_convert = None
 
 if _PYCOCOTOOLS_AVAILABLE:
     from pycocotools.coco import COCO
@@ -168,6 +173,8 @@ class MAP(Metric):
         ValueError:
             If ``pycocotools`` is not installed
         ValueError:
+            If ``torchvision`` is not installed
+        ValueError:
             If ``class_metrics`` is not a boolean
     """
 
@@ -177,7 +184,12 @@ class MAP(Metric):
         if not _PYCOCOTOOLS_AVAILABLE:
             raise ValueError(
                 "`MAP` metric requires that `pycocotools` installed. Please install"
-                " with `pip install pycocotools` or `pip install torchmetrics[image]`"
+                " with `pip install pycocotools` or `pip install torchmetrics[detection]`"
+            )
+        if not _TORCHVISION_AVAILABLE:
+            raise ValueError(
+                "`MAP` metric requires that `torchvision` installed. Please install"
+                " with `pip install torchvision` or `pip install torchmetrics[detection]`"
             )
 
         if not isinstance(class_metrics, bool):
