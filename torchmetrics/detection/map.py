@@ -318,7 +318,7 @@ class MAP(Metric):
         return metrics.__dict__
 
     def _get_coco_format(
-            self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
+        self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
     ) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
