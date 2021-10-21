@@ -21,6 +21,7 @@ from torch import Tensor, tensor
 
 def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
     """Standard dynamic programming algorithm to compute the edit distance.
+
     Args:
         prediction_tokens: A tokenized predicted sentence
         reference_tokens: A tokenized reference sentence
@@ -46,6 +47,7 @@ def _cer_update(
     references: Union[str, List[str]],
 ) -> Tuple[Tensor, Tensor]:
     """Update the cer score with the current set of references and predictions.
+
     Args:
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
@@ -69,6 +71,7 @@ def _cer_update(
 
 def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
     """Compute the Character error rate.
+
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
         total: Number of characters over all references
