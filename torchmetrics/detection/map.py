@@ -20,8 +20,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE
 
 if _TORCHVISION_AVAILABLE:
     from torchvision.ops import box_convert
