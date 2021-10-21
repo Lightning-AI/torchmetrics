@@ -42,7 +42,7 @@ class MinMaxMetric(Metric):
             Initialization value of the ``min`` parameter. default: -inf
         max_bound_init:
             Initialization value of the ``max`` parameter. default: inf
-    
+
     Example::
             >>> import torch
             >>> from torchmetrics import Accuracy, MinMaxMetric
@@ -50,7 +50,7 @@ class MinMaxMetric(Metric):
             >>> minmax_metric = MinMaxMetric(base_metric)
             >>> preds_1 = torch.Tensor([[0.9, 0.1], [0.2, 0.8]])
             >>> preds_2 = torch.Tensor([[0.1, 0.9], [0.2, 0.8]])
-            >>> labels = torch.Tensor([[0, 1], [0, 1]]).long() 
+            >>> labels = torch.Tensor([[0, 1], [0, 1]]).long()
             >>> minmax_metric(preds_1,labels) # Accuracy is 0.5
             >>> output = minmax_metric.compute()
             >>> print(output)
