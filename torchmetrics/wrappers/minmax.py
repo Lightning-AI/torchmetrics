@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import torch
 from torch import Tensor
@@ -22,23 +22,15 @@ from torchmetrics.metric import Metric
 
 def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:
     """Utility function that checks whether min/max value."""
-    print(val)
-    print(type(val))
     if (type(val) == int) or (type(val) == float):
         return True
     elif type(val) == torch.Tensor:
-        print(val.size())
         return val.size() == torch.Size([])
     return False
 
 
 class MinMaxMetric(Metric):
     """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
-
-    Note:
-        Make sure you pass proper initialization values to the ``min_bound_init`` and ``max_bound_init`` parameters.
-        For the ``Accuracy`` metric, the defaults of ``0.0`` and ``1.0`` make sense,
-        however, for other metrics you will likely want to use different initialization values.
 
     Args:
         base_metric:
@@ -47,9 +39,26 @@ class MinMaxMetric(Metric):
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         min_bound_init:
-            Initialization value of the ``min`` parameter. default: 0.0
+            Initialization value of the ``min`` parameter. default: -inf
         max_bound_init:
-            Initialization value of the ``max`` parameter. default: 1.0
+            Initialization value of the ``max`` parameter. default: inf
+    
+    Example::
+            >>> import torch
+            >>> from torchmetrics import Accuracy, MinMaxMetric
+            >>> base_metric = Accuracy()
+            >>> minmax_metric = MinMaxMetric(base_metric)
+            >>> preds_1 = torch.Tensor([[0.9, 0.1], [0.2, 0.8]])
+            >>> preds_2 = torch.Tensor([[0.1, 0.9], [0.2, 0.8]])
+            >>> labels = torch.Tensor([[0, 1], [0, 1]]).long() 
+            >>> minmax_metric(preds_1,labels) # Accuracy is 0.5
+            >>> output = minmax_metric.compute()
+            >>> print(output)
+            {'raw': tensor(0.5000), 'max': tensor(0.5000), 'min': tensor(0.5000)}
+            >>> minmax_metric(preds_2,labels) # Accuracy is 1.0
+            >>> output = minmax_metric.compute()
+            >>> print(output)
+            {'raw': tensor(1.), 'max': tensor(1.), 'min': tensor(0.5000)}
     """
 
     def __init__(
@@ -77,8 +86,6 @@ class MinMaxMetric(Metric):
         (``max``) values.
         """
         val = self._base_metric.compute()
-        isv = _is_suitable_val(val)
-        print(isv)
         assert _is_suitable_val(val), "Computed Base Metric should be a scalar (Int, Float or Tensor of Size 1)"
         self.max_val = val if self.max_val < val else self.max_val
         self.min_val = val if self.min_val > val else self.min_val
