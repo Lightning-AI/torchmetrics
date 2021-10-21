@@ -42,7 +42,7 @@ def _r_precision(target: np.ndarray, preds: np.ndarray):
 
     if target.sum() > 0:
         order_indexes = np.argsort(preds, axis=0)[::-1]
-        relevant = np.sum(target[order_indexes][:target.sum()])
+        relevant = np.sum(target[order_indexes][: target.sum()])
         return relevant * 1.0 / target.sum()
     return np.NaN
 
@@ -124,9 +124,7 @@ class TestRPrecision(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(
-        **_errors_test_functional_metric_parameters_default
-    )
+    @pytest.mark.parametrize(**_errors_test_functional_metric_parameters_default)
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
         self.run_functional_metric_arguments_test(
             preds=preds,

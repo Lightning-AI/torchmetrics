@@ -18,9 +18,9 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_r_precision(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes the r-precision metric (for information retrieval). R-Precision is the fraction
-    of relevant documents among all the top ``k`` retrieved documents where ``k`` is equal to the
-    total number of relevant documents.
+    """Computes the r-precision metric (for information retrieval). R-Precision is the fraction of relevant
+    documents among all the top ``k`` retrieved documents where ``k`` is equal to the total number of relevant
+    documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
