@@ -13,13 +13,12 @@ else:
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
 
-
 BATCHES = {
     "preds": [
-        ['A', ' ', 'q', 'u', 'i', 'c', 'k', ' ', 'b', 'r', 'o', 'w', 'n', ' ', 'f', 'o'],
+        ["A", " ", "q", "u", "i", "c", "k", " ", "b", "r", "o", "w", "n", " ", "f", "o"],
     ],
     "targets": [
-        ['A', ' ', 'q', 'u', 'i', 'c', 'k', ' ', 'b', 'r', 'o', 'w', 'n', ' ', 'f', 'o', 'x'],
+        ["A", " ", "q", "u", "i", "c", "k", " ", "b", "r", "o", "w", "n", " ", "f", "o", "x"],
     ],
 }
 
