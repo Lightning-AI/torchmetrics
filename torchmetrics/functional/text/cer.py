@@ -18,7 +18,7 @@ import torch
 from torch import Tensor, tensor
 
 
-def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
+def _edit_distance(prediction_tokens: str, reference_tokens: str) -> int:
     """Standard dynamic programming algorithm to compute the edit distance.
 
     Args:
@@ -63,7 +63,7 @@ def _cer_update(
     for prediction, reference in zip(predictions, references):
         prediction_tokens = prediction
         reference_tokens = reference
-        errors += _edit_distance(list(prediction_tokens), list(reference_tokens))
+        errors += _edit_distance(prediction_tokens, reference_tokens)
         total += len(reference_tokens)
     return errors, total
 
