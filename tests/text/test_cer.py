@@ -8,7 +8,6 @@ from tests.text.helpers import INPUT_ORDER, TextTester
 
 
 
-
 BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
 
 BATCHES_2 = {
@@ -21,7 +20,6 @@ BATCHES_2 = {
         ["hello world", "i like monthy python"],
     ],
 }
-
 
 
 class TestCER(TextTester):
