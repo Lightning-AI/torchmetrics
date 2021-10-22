@@ -1,14 +1,13 @@
-from typing import Callable, List, Union
+from torchmetrics.functional.text.cer import char_error_rate
+from torchmetrics.text.cer import CharErrorRate
+from typing import Callable
 
 import pytest
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 
 
-compute_measures = Callable
 
-from torchmetrics.functional.text.cer import char_error_rate
-from torchmetrics.text.cer import CharErrorRate
 
 BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
 
