@@ -35,6 +35,10 @@ def retrieval_hit_rate(preds: Tensor, target: Tensor, k: Optional[int] = None) -
     Returns:
         a single-value tensor with the hit rate (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
 
+    Raises:
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0
+
     Example:
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
