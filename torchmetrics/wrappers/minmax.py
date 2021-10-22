@@ -69,6 +69,10 @@ class MinMaxMetric(Metric):
         max_bound_init: float = float("-inf"),
     ):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
+        if not isinstance(base_metric, Metric):
+            raise raise ValueError(
+                f"Expected base metric to be an instance of torchmetrics.Metric but received {base_metric}"
+            )
         self._base_metric = base_metric
         self.add_state("min_val", default=torch.tensor(min_bound_init))
         self.add_state("max_val", default=torch.tensor(max_bound_init))
