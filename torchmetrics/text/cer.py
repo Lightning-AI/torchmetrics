@@ -63,7 +63,7 @@ class CER(Metric):
         >>> references = ["this is the reference", "there is another one"]
         >>> metric = CER()
         >>> metric(predictions, references)
-        tensor(0.5000)
+        tensor(0.3415)
     """
     is_differentiable = False
     higher_is_better = False
