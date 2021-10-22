@@ -25,7 +25,7 @@ def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:
     if (type(val) == int) or (type(val) == float):
         return True
     elif type(val) == torch.Tensor:
-        return val.size() == torch.Size([])
+        return val.numel() == 1
     return False
 
 
