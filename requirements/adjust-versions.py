@@ -7,7 +7,8 @@ from typing import Dict, Optional
 from packaging.version import Version
 
 VERSIONS = [
-    dict(torch="1.10.0", torchvision="0.11.0", torchtext=""),  # nightly
+    dict(torch="1.11.0", torchvision="0.12.0", torchtext=""),  # nightly
+    dict(torch="1.10.0", torchvision="0.11.0", torchtext="0.11.0"),
     dict(torch="1.9.1", torchvision="0.10.1", torchtext="0.10.1"),
     dict(torch="1.9.0", torchvision="0.10.0", torchtext="0.10.0"),
     dict(torch="1.8.2", torchvision="0.9.1", torchtext="0.9.1"),
