@@ -95,7 +95,7 @@ def char_error_rate(
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> cer(predictions=predictions, references=references)
+        >>> char_error_rate(predictions=predictions, references=references)
         tensor(0.3415)
     """
     errors, total = _cer_update(predictions, references)
