@@ -69,6 +69,8 @@ from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.wer import wer
+from torchmetrics.functional.text.cer import char_error_rate
+
 
 __all__ = [
     "accuracy",
@@ -133,4 +135,5 @@ __all__ = [
     "stoi",
     "symmetric_mean_absolute_percentage_error",
     "wer",
+    "char_error_rate",
 ]

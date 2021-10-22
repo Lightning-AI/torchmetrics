@@ -610,6 +610,12 @@ WER
 .. autoclass:: torchmetrics.WER
     :noindex:
 
+CharErrorRate
+~~~
+
+.. autoclass:: torchmetrics.CharErrorRate
+    :noindex:
+
 ********
 Wrappers
 ********

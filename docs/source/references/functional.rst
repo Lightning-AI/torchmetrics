@@ -437,3 +437,9 @@ wer [func]
 
 .. autofunction:: torchmetrics.functional.wer
     :noindex:
+
+cer [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.cer
+    :noindex:
