@@ -14,6 +14,7 @@
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision  # noqa: F401
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out  # noqa: F401
+from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate  # noqa: F401
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg  # noqa: F401
 from torchmetrics.functional.retrieval.precision import retrieval_precision  # noqa: F401
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision  # noqa: F401
