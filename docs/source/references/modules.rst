@@ -611,7 +611,7 @@ WER
     :noindex:
 
 CharErrorRate
-~~~
+~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.CharErrorRate
     :noindex:

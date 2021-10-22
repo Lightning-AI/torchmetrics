@@ -439,7 +439,7 @@ wer [func]
     :noindex:
 
 char_error_rate [func]
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.char_error_rate
     :noindex:
