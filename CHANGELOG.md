@@ -47,7 +47,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Short Term Objective Intelligibility (`STOI`) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
 
 
+<<<<<<< HEAD
 - Added `RetrievalRPrecision` metric to retrieval package ([#577](https://github.com/PyTorchLightning/metrics/pull/577/))
+=======
+- Added `RetrievalRPrecision` for information retrieval ([#577](https://github.com/PyTorchLightning/metrics/pull/577))
+
+>>>>>>> 489c27d186caaf2b611606a975c585c19aff6f58
 
 
 ### Changed
