@@ -63,7 +63,7 @@ def _cer_update(
     for prediction, reference in zip(predictions, references):
         prediction_tokens = prediction
         reference_tokens = reference
-        errors += _edit_distance(prediction_tokens, reference_tokens)
+        errors += _edit_distance(list(prediction_tokens), list(reference_tokens))
         total += len(reference_tokens)
     return errors, total
 
