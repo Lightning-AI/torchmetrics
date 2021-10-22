@@ -21,7 +21,7 @@ from torchmetrics.functional.text.cer import _cer_compute, _cer_update
 from torchmetrics.metric import Metric
 
 
-class CER(Metric):
+class CharErrorRate(Metric):
     r"""
     Character error rate (CER_) is a  metric of the performance of an automatic speech recognition (ASR) system.
     This value indicates the percentage of characters that were incorrectly predicted.
