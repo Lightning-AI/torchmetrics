@@ -84,7 +84,6 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
 def cer(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
-    concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
 ) -> Tensor:
     """character error rate is a common metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
@@ -92,8 +91,6 @@ def cer(
     Args:
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
-        concatenate_texts: Whether to concatenate all input texts or compute CER iteratively
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
     Returns:
         (Tensor) Character error rate
     Examples:
@@ -102,7 +99,5 @@ def cer(
         >>> cer(predictions=predictions, references=references)
         tensor(0.3415)
     """
-    if concatenate_texts is not None:
-        warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
     errors, total = _cer_update(predictions, references)
     return _cer_compute(errors, total)
