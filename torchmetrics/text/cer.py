@@ -24,7 +24,7 @@ from torchmetrics.metric import Metric
 
 class CER(Metric):
     r"""
-    Character error rate (CER_) is a  metric of the performance of an automatic speech recognition system.
+    Character error rate (CER_) is a  metric of the performance of an automatic speech recognition (ASR) system.
     This value indicates the percentage of characters that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
     Character error rate can then be computed as:
@@ -42,8 +42,6 @@ class CER(Metric):
     Compute CER score of transcribed segments against references.
 
     Args:
-        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -72,7 +70,6 @@ class CER(Metric):
 
     def __init__(
         self,
-        concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -84,8 +81,6 @@ class CER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        if concatenate_texts is not None:
-            warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
