@@ -56,6 +56,9 @@ class RetrievalHitRate(RetrievalMetric):
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
         k: consider only the top k elements for each query. default: None
+    Raises:
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0
 
     Example:
         >>> from torchmetrics import RetrievalHitRate
