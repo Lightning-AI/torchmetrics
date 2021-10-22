@@ -597,6 +597,12 @@ BLEUScore
 .. autoclass:: torchmetrics.BLEUScore
     :noindex:
 
+CharErrorRate
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CharErrorRate
+    :noindex:
+
 ROUGEScore
 ~~~~~~~~~~
 
@@ -610,11 +616,6 @@ WER
 .. autoclass:: torchmetrics.WER
     :noindex:
 
-CharErrorRate
-~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.CharErrorRate
-    :noindex:
 
 ********
 Wrappers
