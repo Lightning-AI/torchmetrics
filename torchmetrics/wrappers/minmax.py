@@ -97,6 +97,5 @@ class MinMaxMetric(Metric):
 
     def reset(self) -> None:
         """Sets ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
-        self.max_val = self.max_bound_init
-        self.min_val = self.min_bound_init
+        super().reset()
         self._base_metric.reset()
