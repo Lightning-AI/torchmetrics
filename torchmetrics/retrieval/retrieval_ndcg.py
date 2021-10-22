@@ -44,6 +44,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
+        k: consider only the top k elements for each query (default: None, which considers them all)
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -55,7 +56,10 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather. default: None
-        k: consider only the top k elements for each query. default: None
+
+    Raises:
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0
 
     Example:
         >>> from torchmetrics import RetrievalNormalizedDCG
@@ -72,11 +76,11 @@ class RetrievalNormalizedDCG(RetrievalMetric):
     def __init__(
         self,
         empty_target_action: str = "neg",
+        k: int = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        k: int = None,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,

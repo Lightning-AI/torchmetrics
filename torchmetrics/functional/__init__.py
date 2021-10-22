@@ -58,6 +58,7 @@ from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
+from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.functional.retrieval.recall import retrieval_recall
@@ -114,6 +115,7 @@ __all__ = [
     "recall",
     "retrieval_average_precision",
     "retrieval_fall_out",
+    "retrieval_hit_rate",
     "retrieval_normalized_dcg",
     "retrieval_precision",
     "retrieval_recall",
