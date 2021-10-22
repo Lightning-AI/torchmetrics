@@ -57,6 +57,7 @@ from torchmetrics.regression import (  # noqa: E402
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
+    RetrievalHitRate,
     RetrievalMAP,
     RetrievalMRR,
     RetrievalNormalizedDCG,
@@ -116,6 +117,7 @@ __all__ = [
     "R2Score",
     "Recall",
     "RetrievalFallOut",
+    "RetrievalHitRate",
     "RetrievalMAP",
     "RetrievalMRR",
     "RetrievalNormalizedDCG",

@@ -15,12 +15,12 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.retrieval.precision import retrieval_precision
+from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
 
 
-class RetrievalPrecision(RetrievalMetric):
-    """Computes `IR Precision`_.
+class RetrievalHitRate(RetrievalMetric):
+    """Computes `IR HitRate`.
 
     Works with binary target data. Accepts float predictions from a model output.
 
@@ -32,8 +32,8 @@ class RetrievalPrecision(RetrievalMetric):
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `Precision` will be computed as the mean
-    of the `Precision` over each query.
+    Predictions will be first grouped by ``indexes`` and then the `Hit Rate` will be computed as the mean
+    of the `Hit Rate` over each query.
 
     Args:
         empty_target_action:
@@ -62,12 +62,12 @@ class RetrievalPrecision(RetrievalMetric):
             If ``k`` parameter is not `None` or an integer larger than 0
 
     Example:
-        >>> from torchmetrics import RetrievalPrecision
+        >>> from torchmetrics import RetrievalHitRate
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
-        >>> target = tensor([False, False, True, False, True, False, True])
-        >>> p2 = RetrievalPrecision(k=2)
-        >>> p2(preds, target, indexes=indexes)
+        >>> target = tensor([True, False, False, False, True, False, True])
+        >>> hr2 = RetrievalHitRate(k=2)
+        >>> hr2(preds, target, indexes=indexes)
         tensor(0.5000)
     """
 
@@ -95,4 +95,4 @@ class RetrievalPrecision(RetrievalMetric):
         self.k = k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_precision(preds, target, k=self.k)
+        return retrieval_hit_rate(preds, target, k=self.k)
