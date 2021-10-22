@@ -4,7 +4,6 @@ import pytest
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 
-
 compute_measures = Callable
 
 from torchmetrics.functional.text.cer import char_error_rate
@@ -22,7 +21,6 @@ BATCHES_2 = {
         ["hello world", "i like monthy python"],
     ],
 }
-
 
 
 class TestCER(TextTester):
