@@ -23,9 +23,10 @@ from torchmetrics.metric import Metric
 
 class CharErrorRate(Metric):
     r"""
-    Character error rate (CharErrorRate_) is a  metric of the performance of an automatic speech recognition (ASR) system.
-    This value indicates the percentage of characters that were incorrectly predicted.
-    The lower the value, the better the performance of the ASR system with a CharErrorRate of 0 being a perfect score.
+    Character error rate (CharErrorRate_) is a metric of the performance of an automatic speech recognition 
+    (ASR) system. This value indicates the percentage of characters that were incorrectly predicted.
+    The lower the value, the better the performance of the ASR system with a CharErrorRate of 0 being 
+    a perfect score. 
     Character error rate can then be computed as:
 
     .. math::
