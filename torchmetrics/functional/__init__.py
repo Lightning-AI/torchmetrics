@@ -66,11 +66,10 @@ from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciproc
 from torchmetrics.functional.self_supervised import embedding_similarity
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
+from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.wer import wer
-from torchmetrics.functional.text.cer import char_error_rate
-
 
 __all__ = [
     "accuracy",

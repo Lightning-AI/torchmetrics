@@ -64,7 +64,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalPrecision,
     RetrievalRecall,
 )
-from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore, SacreBLEUScore, CharErrorRate  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, CharErrorRate, ROUGEScore, SacreBLEUScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
 __all__ = [
