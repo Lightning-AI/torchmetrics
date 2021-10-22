@@ -80,7 +80,7 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-def cer(
+def char_error_rate(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
 ) -> Tensor:
