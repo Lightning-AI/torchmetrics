@@ -1,47 +1,46 @@
-import pytest
 
-from tests.text.helpers import TextTester
+from tests.text.helpers import INPUT_ORDER, TextTester
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
 
 
-def char_error_rate_metric_fn(preds, targets):
-    """
-        Computes Character Error Rates.
-    """
-    cer_score = char_error_rate(preds, targets)
-    return round(cer_score.item(), 4)
+import pytest
 
 
-preds = ["A quick brown fo"]
-targets = ["A quick brown fox"]
+
+
+
+BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
+
+BATCHES_2 = {
+    "preds": [
+        ["i like python", "what you mean or swallow"],
+        ["hello duck", "i like python"],
+    ],
+    "targets": [
+        ["i like monthy python", "what do you mean, african or european swallow"],
+        ["hello world", "i like monthy python"],
+    ],
+}
+
 
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        (preds, targets),
+        pytest.param(BATCHES_1["preds"], BATCHES_1["targets"]),
+        pytest.param(BATCHES_2["preds"], BATCHES_2["targets"]),
     ],
 )
 class TestCharErrorRate(TextTester):
-    @staticmethod
-    def test_char_error_rate_functional(self, preds, targets):
-        """
-        Computes Character Error Rates of a prediction with target texts.
-        """
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    def test_wer_differentiability(self, preds, targets):
 
-        cer_score = char_error_rate(preds, targets)
-        original_score = char_error_rate_metric_fn(preds, targets)
-        assert round(cer_score.item(), 4) == original_score
-
-    @staticmethod
-    def test_char_error_rate_metric(self, preds, targets):
-        """
-        Computes Character Error Rates of a prediction with target texts.
-        """
-
-        cer_metric = CharErrorRate()
-        cer_score = cer_metric(preds, targets)
-        original_score = char_error_rate_metric_fn(preds, targets)
-
-        assert round(cer_score.item(), 4) == original_score
+        self.run_differentiability_test(
+            preds=preds,
+            targets=targets,
+            metric_module=CharErrorRate,
+            metric_functional=char_error_rate,
+            input_order=INPUT_ORDER.PREDS_FIRST,
+        )
