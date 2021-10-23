@@ -1,15 +1,8 @@
+import pytest
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
-
-
-import pytest
-
-
-
-
-
 
 BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
 
@@ -23,7 +16,6 @@ BATCHES_2 = {
         ["hello world", "i like monthy python"],
     ],
 }
-
 
 
 @pytest.mark.parametrize(
@@ -43,4 +35,3 @@ class TestCharErrorRate(TextTester):
             metric_functional=char_error_rate,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
-
