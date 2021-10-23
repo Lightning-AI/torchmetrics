@@ -1,7 +1,6 @@
 from torchmetrics.text.cer import CharErrorRate
 from torchmetrics.functional.text.cer import char_error_rate
 
-import torch
 import pytest
 
 from tests.text.helpers import TextTester
