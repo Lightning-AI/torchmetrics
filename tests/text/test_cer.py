@@ -10,6 +10,7 @@ import pytest
 
 
 
+
 BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
 
 BATCHES_2 = {
@@ -35,7 +36,7 @@ BATCHES_2 = {
 class TestCharErrorRate(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_wer_differentiability(self, preds, targets):
+    def test_cer_differentiability(self, preds, targets):
 
         self.run_differentiability_test(
             preds=preds,
@@ -44,3 +45,4 @@ class TestCharErrorRate(TextTester):
             metric_functional=char_error_rate,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
+
