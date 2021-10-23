@@ -34,8 +34,6 @@ BATCHES_2 = {
     ],
 )
 class TestCharErrorRate(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_cer_differentiability(self, preds, targets):
 
         self.run_differentiability_test(
