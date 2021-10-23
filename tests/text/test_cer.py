@@ -6,6 +6,7 @@ import pytest
 
 from tests.text.helpers import TextTester
 
+
 def char_error_rate_metric_fn(preds, targets):
     cer_score = char_error_rate(preds, targets)   
     return round(cer_score.item(), 4)

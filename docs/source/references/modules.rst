@@ -554,6 +554,13 @@ RetrievalPrecision
     :noindex:
 
 
+RetrievalRPrecision
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalRPrecision
+    :noindex:
+
+
 RetrievalRecall
 ~~~~~~~~~~~~~~~
 

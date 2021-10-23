@@ -5,6 +5,7 @@
 .. _Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
 .. _Normalized Discounted Cumulative Gain: https://en.wikipedia.org/wiki/Discounted_cumulative_gain
 .. _IR Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision
+.. _IR R-Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#R-precision
 .. _IR Recall: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Recall
 .. _Accuracy: https://en.wikipedia.org/wiki/Accuracy_and_precision
 .. _SMAPE: https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error
