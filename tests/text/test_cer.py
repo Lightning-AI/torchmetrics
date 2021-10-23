@@ -6,12 +6,15 @@ import pytest
 from tests.text.helpers import TextTester
 
 
+
 def char_error_rate_metric_fn(preds, targets):
-    cer_score = char_error_rate(preds, targets)   
+    cer_score = char_error_rate(preds, targets)
     return round(cer_score.item(), 4)
+
 
 preds = ["A quick brown fo"]
 targets = ["A quick brown fox"]
+
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
@@ -25,14 +28,9 @@ class TestCharErrorRate(TextTester):
         original_score = char_error_rate_metric_fn(preds, targets)
         assert round(cer_score.item(), 4) == original_score
 
-
     def test_char_error_rate_metric(self, preds, targets):
         cer_metric = CharErrorRate()
         cer_score = cer_metric(preds, targets)
         original_score = char_error_rate_metric_fn(preds, targets)
 
         assert round(cer_score.item(), 4) == original_score
-
-    
-
-    
