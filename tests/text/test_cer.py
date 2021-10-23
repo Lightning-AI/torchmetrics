@@ -1,71 +1,38 @@
-from typing import Callable, List, Union
+from torchmetrics.text.cer import CharErrorRate
+from torchmetrics.functional.text.cer import char_error_rate
 
+import torch
 import pytest
 
-from tests.text.helpers import INPUT_ORDER, TextTester
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
+from tests.text.helpers import TextTester
 
-if _JIWER_AVAILABLE:
-    from jiwer import compute_measures
-else:
-    compute_measures = Callable
+def char_error_rate_metric_fn(preds, targets):
+    cer_score = char_error_rate(preds, targets)   
+    return round(cer_score.item(), 4)
 
-from torchmetrics.functional.text.cer import char_error_rate
-from torchmetrics.text.cer import CharErrorRate
+preds = ["A quick brown fo"]
+targets = ["A quick brown fox"]
 
-
-BATCHES = {
-    "preds": [
-        ['A', ' ', 'q', 'u', 'i', 'c', 'k', ' ', 'b', 'r', 'o', 'w', 'n', ' ', 'f', 'o'],
-    ],
-    "targets": [
-        ['A', ' ', 'q', 'u', 'i', 'c', 'k', ' ', 'b', 'r', 'o', 'w', 'n', ' ', 'f', 'o', 'x'],
-    ],
-}
-
-
-def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return compute_measures(reference, prediction)["wer"]
-
-
-@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        pytest.param(BATCHES["preds"], BATCHES["targets"]),
+        (preds, targets),
     ],
 )
-class TestWER(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_wer_class(self, ddp, dist_sync_on_step, preds, targets):
+class TestCharErrorRate(TextTester):
+    def test_char_error_rate_functional(self, preds, targets):
+        cer_score = char_error_rate(preds, targets)
+        original_score = char_error_rate_metric_fn(preds, targets)
+        assert round(cer_score.item(), 4) == original_score
 
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=preds,
-            targets=targets,
-            metric_class=CharErrorRate,
-            sk_metric=_compute_wer_metric_jiwer,
-            dist_sync_on_step=dist_sync_on_step,
-            input_order=INPUT_ORDER.PREDS_FIRST,
-        )
 
-    def test_wer_functional(self, preds, targets):
+    def test_char_error_rate_metric(self, preds, targets):
+        cer_metric = CharErrorRate()
+        cer_score = cer_metric(preds, targets)
+        original_score = char_error_rate_metric_fn(preds, targets)
 
-        self.run_functional_metric_test(
-            preds,
-            targets,
-            metric_functional=char_error_rate,
-            sk_metric=_compute_wer_metric_jiwer,
-            input_order=INPUT_ORDER.PREDS_FIRST,
-        )
+        assert round(cer_score.item(), 4) == original_score
 
-    def test_wer_differentiability(self, preds, targets):
+    
 
-        self.run_differentiability_test(
-            preds=preds,
-            targets=targets,
-            metric_module=CharErrorRate,
-            metric_functional=char_error_rate,
-            input_order=INPUT_ORDER.PREDS_FIRST,
-        )
+    
