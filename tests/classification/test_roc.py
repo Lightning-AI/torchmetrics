@@ -157,11 +157,11 @@ def test_warnings_on_missing_class():
     with pytest.warns(UserWarning, match=warning):
         _, tpr, _ = metric(
             torch.randn(
-                10,
+                10
             ).sigmoid(),
             torch.zeros(
-                10,
-            ),
+                10
+            )
         )
     assert all(tpr == 0)
 
@@ -172,10 +172,10 @@ def test_warnings_on_missing_class():
     with pytest.warns(UserWarning, match=warning):
         fpr, _, _ = metric(
             torch.randn(
-                10,
+                10
             ).sigmoid(),
             torch.ones(
-                10,
-            ),
+                10
+            )
         )
     assert all(fpr == 0)

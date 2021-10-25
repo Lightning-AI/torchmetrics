@@ -229,11 +229,11 @@ def test_warnings_on_missing_class():
     with pytest.warns(UserWarning, match=warning):
         score = metric(
             torch.randn(
-                10,
+                10
             ).sigmoid(),
             torch.zeros(
-                10,
-            ).int(),
+                10
+            ).int()
         )
     assert score == 0
 
@@ -244,10 +244,10 @@ def test_warnings_on_missing_class():
     with pytest.warns(UserWarning, match=warning):
         score = metric(
             torch.randn(
-                10,
+                10
             ).sigmoid(),
             torch.ones(
-                10,
-            ).int(),
+                10
+            ).int()
         )
     assert score == 0
