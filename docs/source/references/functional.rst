@@ -434,6 +434,12 @@ bleu_score [func]
 .. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
 
+char_error_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.char_error_rate
+    :noindex:
+
 rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 
