@@ -11,52 +11,39 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
-
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_fall_out(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
-    """Computes the Fall-out (for information retrieval), as explained in `IR Fall-out`_ Fall-out is the fraction
-    of non-relevant documents retrieved among all the non-relevant documents.
+def retrieval_r_precision(preds: Tensor, target: Tensor) -> Tensor:
+    """Computes the r-precision metric (for information retrieval). R-Precision is the fraction of relevant
+    documents among all the top ``k`` retrieved documents where ``k`` is equal to the total number of relevant
+    documents.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be `float`,
-    otherwise an error is raised. If you want to measure Fall-out@K, ``k`` must be a positive integer.
+    otherwise an error is raised. If you want to measure Precision@K, ``k`` must be a positive integer.
 
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document being relevant or not.
-        k: consider only the top k elements (default: None, which considers them all)
 
     Returns:
-        a single-value tensor with the fall-out (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
-
-    Raises:
-        ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+        a single-value tensor with the r-precision of the predictions ``preds`` w.r.t. the labels ``target``.
 
     Example:
-        >>> from  torchmetrics.functional import retrieval_fall_out
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
-        >>> retrieval_fall_out(preds, target, k=2)
-        tensor(1.)
+        >>> retrieval_r_precision(preds, target)
+        tensor(0.5000)
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
-    k = preds.shape[-1] if k is None else k
-
-    if not (isinstance(k, int) and k > 0):
-        raise ValueError("`k` has to be a positive integer or None")
-
-    target = 1 - target
-
-    if not target.sum():
+    relevant_number = target.sum()
+    if not relevant_number:
         return tensor(0.0, device=preds.device)
 
-    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:k].sum().float()
-    return relevant / target.sum()
+    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:relevant_number].sum().float()
+    return relevant / relevant_number

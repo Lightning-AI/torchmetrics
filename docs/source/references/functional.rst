@@ -385,6 +385,13 @@ retrieval_precision [func]
     :noindex:
 
 
+retrieval_r_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_r_precision
+    :noindex:
+
+
 retrieval_recall [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -403,6 +410,13 @@ retrieval_normalized_dcg [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
+    :noindex:
+
+
+retrieval_hit_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_hit_rate
     :noindex:
 
 ****

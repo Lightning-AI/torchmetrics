@@ -82,7 +82,6 @@ def _precision_recall_curve_update(
 
     if len(preds.shape) == len(target.shape):
         if pos_label is None:
-            rank_zero_warn("`pos_label` automatically set 1.")
             pos_label = 1
         if num_classes is not None and num_classes != 1:
             # multilabel problem
