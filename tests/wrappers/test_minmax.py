@@ -63,34 +63,44 @@ class TestMultioutputWrapper(MetricTester):
             check_scriptable=False,
         )
 
-
-def test_basic_example() -> None:
+@pytest.mark.parametrize(
+    "preds, labels, raws, maxs, mins", 
+    [
+        (
+            ([[0.9, 0.1], [0.2, 0.8]],[[0.1, 0.9], [0.2, 0.8]], [[0.1, 0.9], [0.8, 0.2]]),
+            [[0, 1], [0, 1]],
+            (0.5, 1.0, 0.5),
+            (0.5, 1.0, 1.0),
+            (0.5, 0.5, 0.5)
+        )
+    ])
+def test_basic_example(preds, labels, raws, maxs, mins) -> None:
     """tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
     acc = Accuracy()
     min_max_acc = MinMaxMetric(acc)
 
-    preds_1 = torch.Tensor([[0.9, 0.1], [0.2, 0.8]])
-    preds_2 = torch.Tensor([[0.1, 0.9], [0.2, 0.8]])
-    preds_3 = torch.Tensor([[0.1, 0.9], [0.8, 0.2]])
-    labels = torch.Tensor([[0, 1], [0, 1]]).long()
+    preds_1 = torch.Tensor(preds[0])
+    preds_2 = torch.Tensor(preds[1])
+    preds_3 = torch.Tensor(preds[2])
+    labels = torch.Tensor(labels).long()
 
     min_max_acc(preds_1, labels)
     acc = min_max_acc.compute()
-    assert acc["raw"] == 0.5
-    assert acc["max"] == 0.5
-    assert acc["min"] == 0.5
+    assert acc["raw"] == raws[0]
+    assert acc["max"] == maxs[0]
+    assert acc["min"] == mins[0]
 
     min_max_acc(preds_2, labels)
     acc = min_max_acc.compute()
-    assert acc["raw"] == 1.0
-    assert acc["max"] == 1.0
-    assert acc["min"] == 0.5
+    assert acc["raw"] == raws[1]
+    assert acc["max"] == maxs[1]
+    assert acc["min"] == mins[1]
 
     min_max_acc(preds_3, labels)
     acc = min_max_acc.compute()
-    assert acc["raw"] == 0.5
-    assert acc["max"] == 1.0
-    assert acc["min"] == 0.5
+    assert acc["raw"] == raws[2]
+    assert acc["max"] == maxs[2]
+    assert acc["min"] == mins[2]
 
 
 def test_no_base_metric() -> None:
