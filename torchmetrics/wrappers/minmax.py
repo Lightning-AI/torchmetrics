@@ -45,6 +45,7 @@ class MinMaxMetric(Metric):
     Example::
             >>> import torch
             >>> from torchmetrics import Accuracy, MinMaxMetric
+            >>> from pprint import pprint
             >>> base_metric = Accuracy()
             >>> minmax_metric = MinMaxMetric(base_metric)
             >>> preds_1 = torch.Tensor([[0.9, 0.1], [0.2, 0.8]])
@@ -52,11 +53,11 @@ class MinMaxMetric(Metric):
             >>> labels = torch.Tensor([[0, 1], [0, 1]]).long()
             >>> _ = minmax_metric(preds_1, labels)  # Accuracy is 0.5
             >>> output = minmax_metric.compute()
-            >>> print(output)
+            >>> pprint(output)
             {'raw': tensor(0.5000), 'max': tensor(0.5000), 'min': tensor(0.5000)}
             >>> _ = minmax_metric(preds_2, labels)  # Accuracy is 1.0
             >>> output = minmax_metric.compute()
-            >>> print(output)
+            >>> pprint(output)
             {'raw': tensor(1.), 'max': tensor(1.), 'min': tensor(0.5000)}
     """
 
