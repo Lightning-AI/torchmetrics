@@ -227,14 +227,7 @@ def test_warnings_on_missing_class():
         " Returning zero tensor in true positive score"
     )
     with pytest.warns(UserWarning, match=warning):
-        score = metric(
-            torch.randn(
-                10
-            ).sigmoid(),
-            torch.zeros(
-                10
-            ).int()
-        )
+        score = metric(torch.randn(10).sigmoid(), torch.zeros(10).int())
     assert score == 0
 
     warning = (
@@ -242,12 +235,5 @@ def test_warnings_on_missing_class():
         " Returning zero tensor in false positive score"
     )
     with pytest.warns(UserWarning, match=warning):
-        score = metric(
-            torch.randn(
-                10
-            ).sigmoid(),
-            torch.ones(
-                10
-            ).int()
-        )
+        score = metric(torch.randn(10).sigmoid(), torch.ones(10).int())
     assert score == 0
