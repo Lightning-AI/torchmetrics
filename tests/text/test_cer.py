@@ -3,9 +3,9 @@ from typing import Callable, List, Union
 import pytest
 
 from tests.text.helpers import INPUT_ORDER, TextTester
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
+from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 if _JIWER_AVAILABLE:
     from jiwer import compute_measures
@@ -27,7 +27,7 @@ BATCHES_2 = {
 
 
 def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    """ compute cer as wer where we just split each word by character """
+    """compute cer as wer where we just split each word by character."""
     # we also need to count spaces, so these need to be mapped to some not so common character
     prediction = map(lambda s: s.replace(" ", "@"), prediction)
     reference = map(lambda s: s.replace(" ", "@"), reference)
@@ -46,11 +46,12 @@ def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str
     ],
 )
 class TestCharErrorRate(TextTester):
-    """ test class for character error rate """
+    """test class for character error rate."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_cer_class(self, ddp, dist_sync_on_step, preds, targets):
-        """ test modular version of cer"""
+        """test modular version of cer."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -62,7 +63,7 @@ class TestCharErrorRate(TextTester):
         )
 
     def test_cer_functional(self, preds, targets):
-        """ test functional version of cer """
+        """test functional version of cer."""
         self.run_functional_metric_test(
             preds,
             targets,
@@ -71,9 +72,8 @@ class TestCharErrorRate(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-
     def test_cer_differentiability(self, preds, targets):
-        """ test differentiability of cer metric """ 
+        """test differentiability of cer metric."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,
