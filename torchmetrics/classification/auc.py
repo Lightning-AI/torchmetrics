@@ -43,6 +43,7 @@ class AUC(Metric):
             Callback that performs the ``allgather`` operation on the metric state. When ``None``, DDP
             will be used to perform the ``allgather``.
     """
+    is_differentiable = False
     x: List[Tensor]
     y: List[Tensor]
 
@@ -88,9 +89,3 @@ class AUC(Metric):
         x = dim_zero_cat(self.x)
         y = dim_zero_cat(self.y)
         return _auc_compute(x, y, reorder=self.reorder)
-
-    @property
-    def is_differentiable(self) -> bool:
-        """AUC metrics is considered as non differentiable so it should have `false` value for `is_differentiable`
-        property."""
-        return False

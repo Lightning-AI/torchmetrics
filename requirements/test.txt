@@ -19,6 +19,7 @@ scikit-image>0.17.1
 # add extra requirements
 -r image.txt
 -r text.txt
+-r audio.txt
 
 # audio
 pypesq
@@ -32,3 +33,4 @@ jiwer>=2.2.0
 rouge-score>=0.0.4
 bert_score==0.3.10
 transformers>=4.0
+sacrebleu>=2.0.0
