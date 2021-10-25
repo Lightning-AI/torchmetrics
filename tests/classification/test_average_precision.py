@@ -24,7 +24,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
-from torchmetrics.classification.average_precision import AveragePrecision
+from torchmetrics.classification.avg_precision import AveragePrecision
 from torchmetrics.functional import average_precision
 
 seed_all(42)
