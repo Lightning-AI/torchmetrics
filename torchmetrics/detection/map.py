@@ -21,7 +21,9 @@ from torch import Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import (
-    _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+    _PYCOCOTOOLS_AVAILABLE,
+    _TORCHVISION_AVAILABLE,
+    _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
