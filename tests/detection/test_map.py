@@ -159,7 +159,7 @@ class TestMAP(MetricTester):
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_map(self, ddp, dist_sync_on_step):
+    def test_map(self, ddp):
         """Test modular implementation for correctness."""
 
         self.run_class_metric_test(
