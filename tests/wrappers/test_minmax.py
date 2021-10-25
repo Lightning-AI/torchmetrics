@@ -63,17 +63,19 @@ class TestMultioutputWrapper(MetricTester):
             check_scriptable=False,
         )
 
+
 @pytest.mark.parametrize(
-    "preds, labels, raws, maxs, mins", 
+    "preds, labels, raws, maxs, mins",
     [
         (
-            ([[0.9, 0.1], [0.2, 0.8]],[[0.1, 0.9], [0.2, 0.8]], [[0.1, 0.9], [0.8, 0.2]]),
+            ([[0.9, 0.1], [0.2, 0.8]], [[0.1, 0.9], [0.2, 0.8]], [[0.1, 0.9], [0.8, 0.2]]),
             [[0, 1], [0, 1]],
             (0.5, 1.0, 0.5),
             (0.5, 1.0, 1.0),
-            (0.5, 0.5, 0.5)
+            (0.5, 0.5, 0.5),
         )
-    ])
+    ],
+)
 def test_basic_example(preds, labels, raws, maxs, mins) -> None:
     """tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
     acc = Accuracy()
