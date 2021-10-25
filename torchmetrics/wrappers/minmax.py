@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Dict, Union, Optional
+from typing import Any, Callable, Dict, Optional, Union
 
 import torch
 from torch import Tensor
@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 
 
 class MinMaxMetric(Metric):
-    """ Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
+    """Wrapper Metric that tracks both the minimum and maximum of a scalar/tensor across an experiment. The min/max
     value will be updated each time `.compute` is called.
 
     Args:
@@ -94,7 +94,9 @@ class MinMaxMetric(Metric):
         """
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
-            raise RuntimeError('Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}')
+            raise RuntimeError(
+                "Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}"
+            )
         self.max_val = val if self.max_val < val else self.max_val
         self.min_val = val if self.min_val > val else self.min_val
         return {"raw": val, "max": self.max_val, "min": self.min_val}
@@ -112,4 +114,3 @@ class MinMaxMetric(Metric):
         elif type(val) == torch.Tensor:
             return val.numel() == 1
         return False
-
