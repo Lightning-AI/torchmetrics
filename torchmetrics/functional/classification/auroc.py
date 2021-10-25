@@ -204,6 +204,16 @@ def auroc(
 ) -> Tensor:
     """Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
 
+    For non-binary input, if the ``preds`` and ``target`` tensor have the same
+    size the input will be interpretated as multilabel and if ``preds`` have one
+    dimension more than the ``target`` tensor the input will be interpretated as
+    multiclass.
+
+    .. note::
+        If either the positive class or negative class is completly missing in the target tensor, 
+        the auroc score is meaningless in this case and a score of 0 will be returned together
+        with an warning.
+
     Args:
         preds: predictions from model (logits or probabilities)
         target: Ground truth labels
