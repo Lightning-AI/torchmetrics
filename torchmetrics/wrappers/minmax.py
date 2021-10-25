@@ -38,10 +38,6 @@ class MinMaxMetric(Metric):
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
-        min_bound_init:
-            Initialization value of the ``min`` parameter. default: -inf
-        max_bound_init:
-            Initialization value of the ``max`` parameter. default: inf
 
     Example::
             >>> import torch
@@ -65,19 +61,17 @@ class MinMaxMetric(Metric):
         self,
         base_metric: Metric,
         dist_sync_on_step: bool = False,
-        min_bound_init: float = float("inf"),
-        max_bound_init: float = float("-inf"),
     ):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         if not isinstance(base_metric, Metric):
-            raise raise ValueError(
+            raise ValueError(
                 f"Expected base metric to be an instance of torchmetrics.Metric but received {base_metric}"
             )
         self._base_metric = base_metric
         self.add_state("min_val", default=torch.tensor(min_bound_init))
         self.add_state("max_val", default=torch.tensor(max_bound_init))
-        self.min_bound_init = min_bound_init
-        self.max_bound_init = max_bound_init
+        self.min_bound_init = float("inf")
+        self.max_bound_init = float("-inf")
 
     def update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
         """Updates the underlying metric."""
