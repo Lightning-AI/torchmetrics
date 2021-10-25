@@ -19,7 +19,7 @@ import torch
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.map import MAP
-from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE
+from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target", "num_classes"])
 
@@ -140,7 +140,9 @@ def _compare_fn(preds, target) -> dict:
     }
 
 
-@pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
+condition = not _PYCOCOTOOLS_AVAILABLE and not _TORCHVISION_AVAILABLE and not _TORCHVISION_GREATER_EQUAL_0_8
+
+@pytest.mark.skipif(condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 class TestMAP(MetricTester):
     """Test the MAP metric for object detection predictions.
 
@@ -168,7 +170,7 @@ class TestMAP(MetricTester):
 
 
 # noinspection PyTypeChecker
-@pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
+@pytest.mark.skipif(condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
 
@@ -178,7 +180,7 @@ def test_error_on_wrong_init():
         MAP(class_metrics=0)
 
 
-@pytest.mark.skipif(not _PYCOCOTOOLS_AVAILABLE, reason="test requires that pycocotools is installed")
+@pytest.mark.skipif(condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 def test_error_on_wrong_input():
     """Test class input validation."""
 

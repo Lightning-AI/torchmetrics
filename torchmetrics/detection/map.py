@@ -14,15 +14,17 @@
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import (
+    _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+)
 
-if _TORCHVISION_AVAILABLE:
+if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_convert
 else:
     box_convert = None
@@ -146,14 +148,19 @@ class MAP(Metric):
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
     See the :meth:`update` method for more information about the input format to this metric.
 
-    Note:
+    .. note::
         This metric is a wrapper for the
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
         which is a standard implementation for the mAP metric for object detection. Using this metric
         therefore requires you to have `pycocotools` installed. Please install with ``pip install pycocotools`` or
         ``pip install torchmetrics[detection]``.
 
-    Note:
+    .. note::
+        This metric requires you to have `torchvision` version 0.8.0 or newer installed (with corresponding
+        version 1.7.0 of torch or newer). Please install with ``pip install torchvision`` or
+        ``pip install torchmetrics[detection]``.
+
+    .. note::
         As the pycocotools library cannot deal with tensors directly, all results have to be transfered
         to the CPU, this might have an performance impact on your training.
 
@@ -161,33 +168,49 @@ class MAP(Metric):
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. default: False
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: False
+            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
+            default: ``None`` (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
 
     Raises:
         ValueError:
             If ``pycocotools`` is not installed
         ValueError:
-            If ``torchvision`` is not installed
+            If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ValueError:
             If ``class_metrics`` is not a boolean
     """
 
-    def __init__(self, class_metrics: bool = False, **kwargs) -> None:  # type: ignore
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        class_metrics: bool = False,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+    ) -> None:  # type: ignore
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
 
         if not _PYCOCOTOOLS_AVAILABLE:
             raise ValueError(
                 "`MAP` metric requires that `pycocotools` installed. Please install"
                 " with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
-        if not _TORCHVISION_AVAILABLE:
+        if not _TORCHVISION_AVAILABLE and not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ValueError(
-                "`MAP` metric requires that `torchvision` installed. Please install"
+                "`MAP` metric requires that `torchvision` version 0.8.0 or newer is installed. Please install"
                 " with `pip install torchvision` or `pip install torchmetrics[detection]`"
             )
 
