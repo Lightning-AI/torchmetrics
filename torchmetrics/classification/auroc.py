@@ -42,7 +42,7 @@ class AUROC(Metric):
     multiclass.
 
     .. note::
-        If either the positive class or negative class is completly missing in the target tensor, 
+        If either the positive class or negative class is completly missing in the target tensor,
         the auroc score is meaningless in this case and a score of 0 will be returned together
         with an warning.
 

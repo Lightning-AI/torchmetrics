@@ -147,7 +147,7 @@ def test_roc_curve(pred, target, expected_tpr, expected_fpr):
 
 
 def test_warnings_on_missing_class():
-    """ Test that a warning is given if either the positive or negative class is missing"""
+    """Test that a warning is given if either the positive or negative class is missing."""
     metric = ROC()
     # no positive samples
     warning = (
@@ -155,7 +155,14 @@ def test_warnings_on_missing_class():
         " Returning zero tensor in true positive score"
     )
     with pytest.warns(UserWarning, match=warning):
-        _, tpr, _ = metric(torch.randn(10,).sigmoid(), torch.zeros(10,))
+        _, tpr, _ = metric(
+            torch.randn(
+                10,
+            ).sigmoid(),
+            torch.zeros(
+                10,
+            ),
+        )
     assert all(tpr == 0)
 
     warning = (
@@ -163,5 +170,12 @@ def test_warnings_on_missing_class():
         " Returning zero tensor in false positive score"
     )
     with pytest.warns(UserWarning, match=warning):
-        fpr, _, _ = metric(torch.randn(10,).sigmoid(), torch.ones(10,))
+        fpr, _, _ = metric(
+            torch.randn(
+                10,
+            ).sigmoid(),
+            torch.ones(
+                10,
+            ),
+        )
     assert all(fpr == 0)

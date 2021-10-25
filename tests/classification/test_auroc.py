@@ -218,9 +218,8 @@ def test_weighted_with_empty_classes():
         _ = auroc(preds, target, average="weighted", num_classes=num_classes + 1)
 
 
-
 def test_warnings_on_missing_class():
-    """ Test that a warning is given if either the positive or negative class is missing"""
+    """Test that a warning is given if either the positive or negative class is missing."""
     metric = AUROC()
     # no positive samples
     warning = (
@@ -228,7 +227,14 @@ def test_warnings_on_missing_class():
         " Returning zero tensor in true positive score"
     )
     with pytest.warns(UserWarning, match=warning):
-        score = metric(torch.randn(10,).sigmoid(), torch.zeros(10,).int())
+        score = metric(
+            torch.randn(
+                10,
+            ).sigmoid(),
+            torch.zeros(
+                10,
+            ).int(),
+        )
     assert score == 0
 
     warning = (
@@ -236,5 +242,12 @@ def test_warnings_on_missing_class():
         " Returning zero tensor in false positive score"
     )
     with pytest.warns(UserWarning, match=warning):
-        score = metric(torch.randn(10,).sigmoid(), torch.ones(10,).int())
+        score = metric(
+            torch.randn(
+                10,
+            ).sigmoid(),
+            torch.ones(
+                10,
+            ).int(),
+        )
     assert score == 0

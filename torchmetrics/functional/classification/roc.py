@@ -77,7 +77,7 @@ def _roc_compute_single_class(
         rank_zero_warn(
             "No negative samples in targets, false positive value should be meaningless."
             " Returning zero tensor in false positive score",
-            UserWarning
+            UserWarning,
         )
         fpr = torch.zeros_like(thresholds)
     else:
@@ -87,7 +87,7 @@ def _roc_compute_single_class(
         rank_zero_warn(
             "No positive samples in targets, true positive value should be meaningless."
             " Returning zero tensor in true positive score",
-            UserWarning
+            UserWarning,
         )
         tpr = torch.zeros_like(thresholds)
     else:
