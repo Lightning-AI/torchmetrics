@@ -554,6 +554,13 @@ RetrievalPrecision
     :noindex:
 
 
+RetrievalRPrecision
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalRPrecision
+    :noindex:
+
+
 RetrievalRecall
 ~~~~~~~~~~~~~~~
 
@@ -572,6 +579,13 @@ RetrievalNormalizedDCG
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
+    :noindex:
+
+
+RetrievalHitRate
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalHitRate
     :noindex:
 
 ****
