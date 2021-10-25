@@ -59,6 +59,8 @@ class MinMaxMetric(Metric):
             >>> print(output)
             {'raw': tensor(1.), 'max': tensor(1.), 'min': tensor(0.5000)}
     """
+    min_val: Tensor
+    max_val: Tensor
 
     def __init__(
         self,
@@ -111,6 +113,6 @@ class MinMaxMetric(Metric):
         """Utility function that checks whether min/max value."""
         if (type(val) == int) or (type(val) == float):
             return True
-        elif type(val) == torch.Tensor:
+        elif isinstance(val, Tensor):
             return val.numel() == 1
         return False
