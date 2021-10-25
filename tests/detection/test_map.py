@@ -144,7 +144,7 @@ def _compare_fn(preds, target) -> dict:
     }
 
 
-condition = not _PYCOCOTOOLS_AVAILABLE and not _TORCHVISION_AVAILABLE and not _TORCHVISION_GREATER_EQUAL_0_8
+condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
 @pytest.mark.skipif(condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")

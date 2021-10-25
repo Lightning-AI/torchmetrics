@@ -210,7 +210,7 @@ class MAP(Metric):
                 "`MAP` metric requires that `pycocotools` installed. Please install"
                 " with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
-        if not _TORCHVISION_AVAILABLE and not _TORCHVISION_GREATER_EQUAL_0_8:
+        if not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8):
             raise ValueError(
                 "`MAP` metric requires that `torchvision` version 0.8.0 or newer is installed. Please install"
                 " with `pip install torchvision` or `pip install torchmetrics[detection]`"
