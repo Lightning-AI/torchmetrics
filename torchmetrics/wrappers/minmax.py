@@ -59,6 +59,7 @@ class MinMaxMetric(Metric):
             >>> print(output)
             {'raw': tensor(1.), 'max': tensor(1.), 'min': tensor(0.5000)}
     """
+
     min_val: Tensor
     max_val: Tensor
 
