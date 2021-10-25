@@ -34,8 +34,9 @@ def test_base() -> None:
     assert acc["max"] == 1.0
     assert acc["min"] == 0.5
 
+
 def test_no_base_metric() -> None:
-    """tests that ValueError is raised when no base_metric is passed"""
+    """tests that ValueError is raised when no base_metric is passed."""
     x = ""
     with pytest.raises(ValueError):
         MinMaxMetric(x)
