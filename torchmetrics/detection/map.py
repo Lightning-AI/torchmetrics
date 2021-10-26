@@ -220,11 +220,11 @@ class MAP(Metric):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
         self.class_metrics = class_metrics
 
-        self.add_state("detection_boxes", default=[])
-        self.add_state("detection_scores", default=[])
-        self.add_state("detection_labels", default=[])
-        self.add_state("groundtruth_boxes", default=[])
-        self.add_state("groundtruth_labels", default=[])
+        self.add_state("detection_boxes", default=[], dist_reduce_fx='cat')
+        self.add_state("detection_scores", default=[], dist_reduce_fx='cat')
+        self.add_state("detection_labels", default=[], dist_reduce_fx='cat')
+        self.add_state("groundtruth_boxes", default=[], dist_reduce_fx='cat')
+        self.add_state("groundtruth_labels", default=[], dist_reduce_fx='cat')
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and groundtruth to the metric.

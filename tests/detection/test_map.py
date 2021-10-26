@@ -29,60 +29,77 @@ Input = namedtuple("Input", ["preds", "target", "num_classes"])
 
 _inputs = Input(
     preds=[
-        {
-            "boxes": torch.Tensor([[258.15, 41.29, 606.41, 285.07]]),
-            "scores": torch.Tensor([0.236]),
-            "labels": torch.IntTensor([4]),
-        },  # coco image id 42
-        {
-            "boxes": torch.Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
-            "scores": torch.Tensor([0.318, 0.726]),
-            "labels": torch.IntTensor([3, 2]),
-        },  # coco image id 73
-        {
-            "boxes": torch.Tensor(
-                [
-                    [87.87, 276.25, 384.29, 379.43],
-                    [0.00, 3.66, 142.15, 316.06],
-                    [296.55, 93.96, 314.97, 152.79],
-                    [328.94, 97.05, 342.49, 122.98],
-                    [356.62, 95.47, 372.33, 147.55],
-                    [464.08, 105.09, 495.74, 146.99],
-                    [276.11, 103.84, 291.44, 150.72],
-                ]
-            ),
-            "scores": torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
-            "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
-        },  # coco image id 74
+        [
+            {
+                "boxes": torch.Tensor([[258.15, 41.29, 606.41, 285.07]]),
+                "scores": torch.Tensor([0.236]),
+                "labels": torch.IntTensor([4]),
+            },  # coco image id 42
+            {
+                "boxes": torch.Tensor([[258.15, 41.29, 606.41, 285.07]]),
+                "scores": torch.Tensor([0.236]),
+                "labels": torch.IntTensor([4]),
+            },  # coco image id 42
+        ],
+        [
+            {
+                "boxes": torch.Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
+                "scores": torch.Tensor([0.318, 0.726]),
+                "labels": torch.IntTensor([3, 2]),
+            },  # coco image id 73
+            {
+                "boxes": torch.Tensor(
+                    [
+                        [87.87, 276.25, 384.29, 379.43],
+                        [0.00, 3.66, 142.15, 316.06],
+                        [296.55, 93.96, 314.97, 152.79],
+                        [328.94, 97.05, 342.49, 122.98],
+                        [356.62, 95.47, 372.33, 147.55],
+                        [464.08, 105.09, 495.74, 146.99],
+                        [276.11, 103.84, 291.44, 150.72],
+                    ]
+                ),
+                "scores": torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
+                "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
+            },  # coco image id 74
+        ]
     ],
     target=[
-        {
-            "boxes": torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-            "labels": torch.IntTensor([4]),
-        },  # coco image id 42
-        {
-            "boxes": torch.Tensor(
-                [
-                    [13.00, 22.75, 548.98, 632.42],
-                    [1.66, 3.32, 270.26, 275.23],
-                ]
-            ),
-            "labels": torch.IntTensor([2, 2]),
-        },  # coco image id 73
-        {
-            "boxes": torch.Tensor(
-                [
-                    [61.87, 276.25, 358.29, 379.43],
-                    [2.75, 3.66, 162.15, 316.06],
-                    [295.55, 93.96, 313.97, 152.79],
-                    [326.94, 97.05, 340.49, 122.98],
-                    [356.62, 95.47, 372.33, 147.55],
-                    [462.08, 105.09, 493.74, 146.99],
-                    [277.11, 103.84, 292.44, 150.72],
-                ]
-            ),
-            "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
-        },  # coco image id 74
+        [
+            {
+                "boxes": torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                "labels": torch.IntTensor([4]),
+            },  # coco image id 42
+            {
+                "boxes": torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                "labels": torch.IntTensor([4]),
+            },  # coco image id 42
+        ],
+        [
+            {
+                "boxes": torch.Tensor(
+                    [
+                        [13.00, 22.75, 548.98, 632.42],
+                        [1.66, 3.32, 270.26, 275.23],
+                    ]
+                ),
+                "labels": torch.IntTensor([2, 2]),
+            },  # coco image id 73
+            {
+                "boxes": torch.Tensor(
+                    [
+                        [61.87, 276.25, 358.29, 379.43],
+                        [2.75, 3.66, 162.15, 316.06],
+                        [295.55, 93.96, 313.97, 152.79],
+                        [326.94, 97.05, 340.49, 122.98],
+                        [356.62, 95.47, 372.33, 147.55],
+                        [462.08, 105.09, 493.74, 146.99],
+                        [277.11, 103.84, 292.44, 150.72],
+                    ]
+                ),
+                "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
+            },  # coco image id 74
+        ]
     ],
     num_classes=5,
 )

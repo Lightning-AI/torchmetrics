@@ -148,8 +148,7 @@ def _class_test(
         num_batches = preds.shape[0]
     else:
         assert len(preds) == len(target)
-        preds, target = [preds], [target]
-        num_batches = 1
+        num_batches = len(preds)
 
     if not metric_args:
         metric_args = {}
