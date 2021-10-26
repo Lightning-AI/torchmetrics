@@ -54,11 +54,11 @@ class MinMaxMetric(Metric):
             >>> _ = minmax_metric(preds_1, labels)  # Accuracy is 0.5
             >>> output = minmax_metric.compute()
             >>> pprint(output)
-            {'raw': tensor(0.5000), 'max': tensor(0.5000), 'min': tensor(0.5000)}
+            {'max': tensor(0.5000), 'min': tensor(0.5000), 'raw': tensor(0.5000)}
             >>> _ = minmax_metric(preds_2, labels)  # Accuracy is 1.0
             >>> output = minmax_metric.compute()
             >>> pprint(output)
-            {'raw': tensor(1.), 'max': tensor(1.), 'min': tensor(0.5000)}
+            {'max': tensor(1.), 'min': tensor(0.5000), 'raw': tensor(1.)}
     """
 
     min_val: Tensor
