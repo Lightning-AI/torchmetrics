@@ -101,6 +101,7 @@ class IS(Metric):
 
     """
     features: List
+    higher_is_better = True
 
     def __init__(
         self,

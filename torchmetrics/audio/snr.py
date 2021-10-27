@@ -71,6 +71,7 @@ class SNR(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = True
     sum_snr: Tensor
     total: Tensor
 

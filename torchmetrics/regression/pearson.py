@@ -86,6 +86,7 @@ class PearsonCorrcoef(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = None  # both -1 and 1 are optimal
     preds: List[Tensor]
     target: List[Tensor]
     mean_x: Tensor
