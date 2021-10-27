@@ -32,6 +32,11 @@ class ROC(Metric):
 
     - ``target`` (long tensor): ``(N, ...)`` or ``(N, C, ...)`` with integer labels
 
+    .. note::
+        If either the positive class or negative class is completly missing in the target tensor,
+        the roc values are not well defined in this case and a tensor of zeros will be returned (either fpr
+        or tpr depending on what class is missing) together with an warning.
+
     Args:
         num_classes: integer with number of classes for multi-label and multiclass problems.
             Should be set to ``None`` for binary problems
