@@ -204,10 +204,9 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            if isinstance(preds, torch.Tensor):
-                preds[i].cpu()
-                target[i].cpu()
-            sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
+            preds_ = preds[i].cpu() if isinstance(preds, torch.Tensor) else preds[i]
+            target_ = target[i].cpu() if isinstance(target, torch.Tensor) else target[i]
+            sk_batch_result = sk_metric(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
                 for key in batch_result.keys():
                     _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
