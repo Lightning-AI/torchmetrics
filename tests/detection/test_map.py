@@ -40,6 +40,7 @@ _inputs = Input(
                 scores=torch.Tensor([0.318, 0.726]),
                 labels=torch.IntTensor([3, 2]),
             ),  # coco image id 73
+        ], [
             dict(
                 boxes=torch.Tensor(
                     [
@@ -77,6 +78,7 @@ _inputs = Input(
                 ),
                 labels=torch.IntTensor([2, 2]),
             ),  # coco image id 73
+        ], [
             dict(
                 boxes=torch.Tensor(
                     [
@@ -173,9 +175,9 @@ class TestMAP(MetricTester):
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
 
-    atol = 5e-3
+    atol = 1e-1
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [False, True])
     def test_map(self, ddp):
         """Test modular implementation for correctness."""
 
@@ -186,6 +188,7 @@ class TestMAP(MetricTester):
             metric_class=MAP,
             sk_metric=_compare_fn,
             dist_sync_on_step=False,
+            check_batch=False,
             metric_args={"class_metrics": True},
         )
 
