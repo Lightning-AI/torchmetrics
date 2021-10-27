@@ -36,13 +36,6 @@ _inputs = Input(
                 "labels": torch.IntTensor([4]),
             },  # coco image id 42
             {
-                "boxes": torch.Tensor([[258.15, 41.29, 606.41, 285.07]]),
-                "scores": torch.Tensor([0.236]),
-                "labels": torch.IntTensor([4]),
-            },  # coco image id 42
-        ],
-        [
-            {
                 "boxes": torch.Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
                 "scores": torch.Tensor([0.318, 0.726]),
                 "labels": torch.IntTensor([3, 2]),
@@ -62,6 +55,11 @@ _inputs = Input(
                 "scores": torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
                 "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
             },  # coco image id 74
+            {
+                "boxes": torch.Tensor([[0.00, 2.87, 601.00, 421.52]]),
+                "scores": torch.Tensor([0.699, 0.423]),
+                "labels": torch.IntTensor([5]),
+            }  # coco image id 133
         ],
     ],
     target=[
@@ -70,12 +68,6 @@ _inputs = Input(
                 "boxes": torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
                 "labels": torch.IntTensor([4]),
             },  # coco image id 42
-            {
-                "boxes": torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                "labels": torch.IntTensor([4]),
-            },  # coco image id 42
-        ],
-        [
             {
                 "boxes": torch.Tensor(
                     [
@@ -99,9 +91,13 @@ _inputs = Input(
                 ),
                 "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
             },  # coco image id 74
+            {
+                "boxes": torch.Tensor([[13.99, 2.87, 640.00, 421.52]]),
+                "labels": torch.IntTensor([5]),
+            }  # coco image id 133
         ],
     ],
-    num_classes=5,
+    num_classes=6,
 )
 
 
@@ -110,18 +106,18 @@ def _compare_fn(preds, target) -> dict:
 
     Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
         All classes
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.658
-        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.876
-        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.807
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.706
+        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.901
+        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.846
         Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.689
         Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.800
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.635
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.515
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.670
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.670
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.701
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.592
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.716
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.716
         Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.767
         Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.800
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.633
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.700
 
         Class 0
         Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.725
@@ -142,22 +138,26 @@ def _compare_fn(preds, target) -> dict:
         Class 4
         Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
         Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
+
+        Class 5
+        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.900
+        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.900
     """
     return {
-        "map": torch.Tensor([0.658]),
-        "map_50": torch.Tensor([0.876]),
-        "map_75": torch.Tensor([0.807]),
+        "map": torch.Tensor([0.706]),
+        "map_50": torch.Tensor([0.901]),
+        "map_75": torch.Tensor([0.846]),
         "map_small": torch.Tensor([0.689]),
         "map_medium": torch.Tensor([0.800]),
-        "map_large": torch.Tensor([0.635]),
-        "mar_1": torch.Tensor([0.515]),
-        "mar_10": torch.Tensor([0.670]),
-        "mar_100": torch.Tensor([0.670]),
+        "map_large": torch.Tensor([0.701]),
+        "mar_1": torch.Tensor([0.592]),
+        "mar_10": torch.Tensor([0.716]),
+        "mar_100": torch.Tensor([0.716]),
         "mar_small": torch.Tensor([0.767]),
         "mar_medium": torch.Tensor([0.800]),
-        "mar_large": torch.Tensor([0.633]),
-        "map_per_class": torch.Tensor([0.725, 0.800, 0.454, -1.000, 0.650]),
-        "mar_100_per_class": torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650]),
+        "mar_large": torch.Tensor([0.700]),
+        "map_per_class": torch.Tensor([0.725, 0.800, 0.454, -1.000, 0.650, 0.900]),
+        "mar_100_per_class": torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650, 0.900]),
     }
 
 
@@ -173,7 +173,7 @@ class TestMAP(MetricTester):
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
 
-    atol = 1e-3
+    atol = 5e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_map(self, ddp):
