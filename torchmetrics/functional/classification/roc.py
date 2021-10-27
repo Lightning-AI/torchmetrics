@@ -20,6 +20,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _binary_clf_curve,
     _precision_recall_curve_update,
 )
+from torchmetrics.utilities import rank_zero_warn
 
 
 def _roc_update(
@@ -73,12 +74,24 @@ def _roc_compute_single_class(
     thresholds = torch.cat([thresholds[0][None] + 1, thresholds])
 
     if fps[-1] <= 0:
-        raise ValueError("No negative samples in targets, false positive value should be meaningless")
-    fpr = fps / fps[-1]
+        rank_zero_warn(
+            "No negative samples in targets, false positive value should be meaningless."
+            " Returning zero tensor in false positive score",
+            UserWarning,
+        )
+        fpr = torch.zeros_like(thresholds)
+    else:
+        fpr = fps / fps[-1]
 
     if tps[-1] <= 0:
-        raise ValueError("No positive samples in targets, true positive value should be meaningless")
-    tpr = tps / tps[-1]
+        rank_zero_warn(
+            "No positive samples in targets, true positive value should be meaningless."
+            " Returning zero tensor in true positive score",
+            UserWarning,
+        )
+        tpr = torch.zeros_like(thresholds)
+    else:
+        tpr = tps / tps[-1]
 
     return fpr, tpr, thresholds
 
@@ -195,6 +208,11 @@ def roc(
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """Computes the Receiver Operating Characteristic (ROC). Works with both binary, multiclass and multilabel
     input.
+
+    .. note::
+        If either the positive class or negative class is completly missing in the target tensor,
+        the roc values are not well defined in this case and a tensor of zeros will be returned (either fpr
+        or tpr depending on what class is missing) together with an warning.
 
     Args:
         preds: predictions from model (logits or probabilities)
