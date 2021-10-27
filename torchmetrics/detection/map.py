@@ -182,9 +182,9 @@ class MAP(Metric):
             will be used to perform the allgather
 
     Raises:
-        ValueError:
+        ImportError:
             If ``pycocotools`` is not installed
-        ValueError:
+        ImportError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ValueError:
             If ``class_metrics`` is not a boolean
@@ -206,14 +206,14 @@ class MAP(Metric):
         )
 
         if not _PYCOCOTOOLS_AVAILABLE:
-            raise ValueError(
-                "`MAP` metric requires that `pycocotools` installed. Please install"
-                " with `pip install pycocotools` or `pip install torchmetrics[detection]`"
+            raise ImportError(
+                "`MAP` metric requires that `pycocotools` installed."
+                " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
         if not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8):
-            raise ValueError(
-                "`MAP` metric requires that `torchvision` version 0.8.0 or newer is installed. Please install"
-                " with `pip install torchvision` or `pip install torchmetrics[detection]`"
+            raise ImportError(
+                "`MAP` metric requires that `torchvision` version 0.8.0 or newer is installed."
+                " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`"
             )
 
         if not isinstance(class_metrics, bool):
