@@ -80,7 +80,7 @@ class MinMaxMetric(Metric):
         )
         if not isinstance(base_metric, Metric):
             raise ValueError(
-                f"Expected base metric to be an instance of torchmetrics.Metric but received {base_metric}"
+                f"Expected base metric to be an instance of `torchmetrics.Metric` but received {base_metric}"
             )
         self._base_metric = base_metric
         self.add_state("min_val", default=torch.tensor(float("inf")), dist_reduce_fx="min")
@@ -99,7 +99,7 @@ class MinMaxMetric(Metric):
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
             raise RuntimeError(
-                "Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}"
+                f"Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}"
             )
         self.max_val = val if self.max_val < val else self.max_val
         self.min_val = val if self.min_val > val else self.min_val
@@ -113,8 +113,8 @@ class MinMaxMetric(Metric):
     @staticmethod
     def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:
         """Utility function that checks whether min/max value."""
-        if (type(val) == int) or (type(val) == float):
+        if isinstance(val, (int, float)):
             return True
-        elif isinstance(val, Tensor):
+        if isinstance(val, Tensor):
             return val.numel() == 1
         return False
