@@ -88,6 +88,7 @@ class LPIPS(Metric):
     """
 
     is_differentiable = True
+    higher_is_better = False
     real_features: List[Tensor]
     fake_features: List[Tensor]
 

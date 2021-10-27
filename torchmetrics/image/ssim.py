@@ -52,6 +52,7 @@ class SSIM(Metric):
 
     preds: List[Tensor]
     target: List[Tensor]
+    higher_is_better = True
 
     def __init__(
         self,
