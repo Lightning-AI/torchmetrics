@@ -444,6 +444,13 @@ rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.rouge_score
+    :noindex:
+
+sacre_bleu_score [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.sacre_bleu_score
+    :noindex:
 
 wer [func]
 ~~~~~~~~~~
