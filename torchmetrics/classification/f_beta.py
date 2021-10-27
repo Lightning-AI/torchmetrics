@@ -137,7 +137,7 @@ class FBeta(StatScores):
         num_classes: Optional[int] = None,
         beta: float = 1.0,
         threshold: float = 0.5,
-        average: str = "micro",
+        average: str = "none",
         mdmc_average: Optional[str] = None,
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -171,6 +171,8 @@ class FBeta(StatScores):
     def compute(self) -> Tensor:
         """Computes fbeta over state."""
         tp, fp, tn, fn = self._get_final_stats()
+        if self.average is 'none':
+            return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)[self.num_classes - 1]
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
