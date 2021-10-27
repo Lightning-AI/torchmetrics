@@ -143,12 +143,8 @@ def _class_test(
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
-    if type(preds) is torch.Tensor:
-        assert preds.shape[0] == target.shape[0]
-        num_batches = preds.shape[0]
-    else:
-        assert len(preds) == len(target)
-        num_batches = len(preds)
+    assert len(preds) == len(target)
+    num_batches = len(preds)
 
     if not metric_args:
         metric_args = {}
@@ -169,7 +165,7 @@ def _class_test(
     # move to device
     metric = metric.to(device)
 
-    if type(preds) is torch.Tensor:
+    if isinstance(preds, torch.Tensor):
         preds = preds.to(device)
         target = target.to(device)
 
@@ -185,7 +181,7 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            if type(preds) is torch.Tensor:
+            if isinstance(preds, torch.Tensor):
                 ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
                 ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
             else:
@@ -197,8 +193,8 @@ def _class_test(
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
-            if type(batch_result) is dict:
-                for key in batch_result.keys():
+            if isinstance(batch_result, dict):
+                for key in batch_result:
                     _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
             else:
                 _assert_allclose(batch_result, sk_batch_result, atol=atol)
@@ -208,11 +204,11 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            if type(preds) is torch.Tensor:
+            if isinstance(preds, torch.Tensor):
                 preds[i].cpu()
                 target[i].cpu()
             sk_batch_result = sk_metric(preds[i], target[i], **batch_kwargs_update)
-            if type(batch_result) is dict:
+            if isinstance(batch_result, dict):
                 for key in batch_result.keys():
                     _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
             else:
@@ -223,13 +219,13 @@ def _class_test(
 
     # check on all batches on all ranks
     result = metric.compute()
-    if type(result) is dict:
+    if isinstance(result, dict):
         for key in result.keys():
             _assert_tensor(result, key=key)
     else:
         _assert_tensor(result)
 
-    if type(preds) is torch.Tensor:
+    if isinstance(preds, torch.Tensor):
         total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
         total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
     else:
@@ -243,7 +239,7 @@ def _class_test(
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
-    if type(sk_result) is dict:
+    if isinstance(sk_result, dict):
         for key in sk_result.keys():
             _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
     else:
