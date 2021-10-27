@@ -279,7 +279,7 @@ We currently have implemented metrics within the following domains:
   [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
   [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
   [RetrievalNormalizedDCG](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalnormalizeddcg)
-  and [5 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
+  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
   )
 - Image (
   [FID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#fid),
@@ -291,13 +291,13 @@ We currently have implemented metrics within the following domains:
   [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
   [PearsonCorrcoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
   [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-  and [8 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
+  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
   )
 - Text (
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
   [WER](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#wer)
-  and [3 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
+  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
 In total torchmetrics contains 60+ metrics!
