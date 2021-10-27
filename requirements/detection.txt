@@ -1,3 +1,2 @@
-numpy>=1.20.0  # try to fix cocotools for PT 1.4
 pycocotools>=2.0.2
 torchvision
