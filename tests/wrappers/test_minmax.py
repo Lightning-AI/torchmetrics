@@ -80,29 +80,15 @@ def test_basic_example(preds, labels, raws, maxs, mins) -> None:
     """tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
     acc = Accuracy()
     min_max_acc = MinMaxMetric(acc)
-
-    preds_1 = torch.Tensor(preds[0])
-    preds_2 = torch.Tensor(preds[1])
-    preds_3 = torch.Tensor(preds[2])
     labels = torch.Tensor(labels).long()
 
-    min_max_acc(preds_1, labels)
-    acc = min_max_acc.compute()
-    assert acc["raw"] == raws[0]
-    assert acc["max"] == maxs[0]
-    assert acc["min"] == mins[0]
-
-    min_max_acc(preds_2, labels)
-    acc = min_max_acc.compute()
-    assert acc["raw"] == raws[1]
-    assert acc["max"] == maxs[1]
-    assert acc["min"] == mins[1]
-
-    min_max_acc(preds_3, labels)
-    acc = min_max_acc.compute()
-    assert acc["raw"] == raws[2]
-    assert acc["max"] == maxs[2]
-    assert acc["min"] == mins[2]
+    for i in range(3):
+        preds_ = torch.Tensor(preds[i])
+        min_max_acc(preds_, labels)
+        acc = min_max_acc.compute()
+        assert acc["raw"] == raws[i]
+        assert acc["max"] == maxs[i]
+        assert acc["min"] == mins[i]
 
 
 def test_no_base_metric() -> None:
