@@ -74,6 +74,7 @@ class MatthewsCorrcoef(Metric):
 
     """
     is_differentiable = False
+    higher_is_better = True
     confmat: Tensor
 
     def __init__(
