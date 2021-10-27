@@ -616,6 +616,11 @@ ROUGEScore
 .. autoclass:: torchmetrics.ROUGEScore
     :noindex:
 
+SacreBLEUScore
+~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SacreBLEUScore
+    :noindex:
 
 WER
 ~~~
