@@ -43,22 +43,22 @@ class MinMaxMetric(Metric):
             If ``base_metric` argument is not an subclasses instance of ``torchmetrics.Metric``
 
     Example::
-            >>> import torch
-            >>> from torchmetrics import Accuracy
-            >>> from pprint import pprint
-            >>> base_metric = Accuracy()
-            >>> minmax_metric = MinMaxMetric(base_metric)
-            >>> preds_1 = torch.Tensor([[0.9, 0.1], [0.2, 0.8]])
-            >>> preds_2 = torch.Tensor([[0.1, 0.9], [0.2, 0.8]])
-            >>> labels = torch.Tensor([[0, 1], [0, 1]]).long()
-            >>> pprint(minmax_metric(preds_1, labels))
-            {'max': tensor(0.5000), 'min': tensor(0.5000), 'raw': tensor(0.5000)}
-            >>> pprint(minmax_metric.compute())
-            {'max': tensor(0.5000), 'min': tensor(0.5000), 'raw': tensor(0.5000)}
-            >>> pprint(minmax_metric(preds_2, labels))
-            {'max': tensor(1.), 'min': tensor(1.), 'raw': tensor(1.)}
-            >>> pprint(minmax_metric.compute())
-            {'max': tensor(1.), 'min': tensor(0.5000), 'raw': tensor(1.)}
+        >>> import torch
+        >>> from torchmetrics import Accuracy
+        >>> from pprint import pprint
+        >>> base_metric = Accuracy()
+        >>> minmax_metric = MinMaxMetric(base_metric)
+        >>> preds_1 = torch.Tensor([[0.9, 0.1], [0.2, 0.8]])
+        >>> preds_2 = torch.Tensor([[0.1, 0.9], [0.2, 0.8]])
+        >>> labels = torch.Tensor([[0, 1], [0, 1]]).long()
+        >>> pprint(minmax_metric(preds_1, labels))
+        {'max': tensor(0.5000), 'min': tensor(0.5000), 'raw': tensor(0.5000)}
+        >>> pprint(minmax_metric.compute())
+        {'max': tensor(0.5000), 'min': tensor(0.5000), 'raw': tensor(0.5000)}
+        >>> pprint(minmax_metric(preds_2, labels))
+        {'max': tensor(1.), 'min': tensor(1.), 'raw': tensor(1.)}
+        >>> pprint(minmax_metric.compute())
+        {'max': tensor(1.), 'min': tensor(0.5000), 'raw': tensor(1.)}
     """
 
     min_val: Tensor
