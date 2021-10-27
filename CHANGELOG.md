@@ -21,11 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CharErrorRate` ([#575](https://github.com/PyTorchLightning/metrics/pull/575))
 - Added other metrics:
   - Tweedie Deviance Score ([#499](https://github.com/PyTorchLightning/metrics/pull/499))
-  - Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
+  - Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/pull/431))
 - Added support for float targets in `nDCG` metric ([#437](https://github.com/PyTorchLightning/metrics/pull/437))
 - Added `average` argument to `AveragePrecision` metric for reducing multi-label and multi-class problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
 - Added `MultioutputWrapper` ([#510](https://github.com/PyTorchLightning/metrics/pull/510))
-- Added metric sweeping `higher_is_better` as constant attribute ([#544](https://github.com/PyTorchLightning/metrics/pull/544))
+- Added metric sweeping: 
+  - `higher_is_better` as constant attribute ([#544](https://github.com/PyTorchLightning/metrics/pull/544))
+  - `higher_is_better` to rest of codebase ([#584](https://github.com/PyTorchLightning/metrics/pull/584))
 - Added simple aggregation metrics: `SumMetric`, `MeanMetric`, `CatMetric`, `MinMetric`, `MaxMetric` ([#506](https://github.com/PyTorchLightning/metrics/pull/506))
 - Added pairwise submodule with metrics ([#553](https://github.com/PyTorchLightning/metrics/pull/553))
   - `pairwise_cosine_similarity`
