@@ -171,7 +171,7 @@ class FBeta(StatScores):
     def compute(self) -> Tensor:
         """Computes fbeta over state."""
         tp, fp, tn, fn = self._get_final_stats()
-        if self.average == "none"or self.average is None:
+        if self.average == "none" or self.average is None:
             return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)[
                 self.num_classes - 1
             ]
