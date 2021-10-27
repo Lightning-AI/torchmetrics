@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added audio metrics:
-  - Perceptual Evaluation of Speech Quality (PESQ) ([#535](https://github.com/PyTorchLightning/metrics/pull/535))
-  - Short Term Objective Intelligibility (STOI) ([#536](https://github.com/PyTorchLightning/metrics/pull/536))
+  - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
+  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
 - Added Information retrieval metrics:
   - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577/))
   - `RetrievalHitRate` ([#576](https://github.com/PyTorchLightning/metrics/pull/576))
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CharErrorRate` ([#575](https://github.com/PyTorchLightning/metrics/pull/575))
 - Added other metrics:
   - Tweedie Deviance Score ([#499](https://github.com/PyTorchLightning/metrics/pull/499))
-  - Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
+  - Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/pull/431))
 - Added support for float targets in `nDCG` metric ([#437](https://github.com/PyTorchLightning/metrics/pull/437))
 - Added `average` argument to `AveragePrecision` metric for reducing multi-label and multi-class problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
 - Added `MultioutputWrapper` ([#510](https://github.com/PyTorchLightning/metrics/pull/510))
