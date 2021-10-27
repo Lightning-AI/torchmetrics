@@ -108,8 +108,8 @@ def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = N
 def _class_test(
     rank: int,
     worldsize: int,
-    preds: Union[Tensor, List[Dict]],
-    target: Union[Tensor, List[Dict]],
+    preds: Union[Tensor, List[Dict[str, Tensor]]],
+    target: Union[Tensor, List[Dict[str, Tensor]]],
     metric_class: Metric,
     sk_metric: Callable,
     dist_sync_on_step: bool,
