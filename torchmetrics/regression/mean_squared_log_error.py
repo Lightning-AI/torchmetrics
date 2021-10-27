@@ -53,6 +53,7 @@ class MeanSquaredLogError(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = False
     sum_squared_log_error: Tensor
     total: Tensor
 
