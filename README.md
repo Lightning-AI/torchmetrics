@@ -267,13 +267,19 @@ We currently have implemented metrics within the following domains:
   [SI_SDR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-sdr),
   [SI_SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-snr),
   [SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#snr)
-  and [1 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
+  and [3 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
   )
 - Classification (
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
   [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1),
   [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
   and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
+  )
+- Information Retrieval (
+  [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
+  [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
+  [RetrievalNormalizedDCG](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalnormalizeddcg)
+  and [5 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
   )
 - Image (
   [FID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#fid),
@@ -285,22 +291,16 @@ We currently have implemented metrics within the following domains:
   [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
   [PearsonCorrcoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
   [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
-  and [7 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
-  )
-- Information Retrieval (
-  [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
-  [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
-  [RetrievalNormalizedDCG](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalnormalizeddcg)
-  and [3 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
+  and [8 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
   )
 - Text (
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
   [WER](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#wer)
-  and [1 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
+  and [3 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
-In total torchmetrics contains 50+ metrics!
+In total torchmetrics contains 60+ metrics!
 
 ## Contribute!
 
