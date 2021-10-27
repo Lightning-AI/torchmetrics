@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `pairwise_euclidean_distance`
   - `pairwise_linear_similarity`
   - `pairwise_manhatten_distance`
+- Added `MAP` (mean average precision) metric to new detection package ([#467](https://github.com/PyTorchLightning/metrics/pull/467))
 
 ### Changed
 

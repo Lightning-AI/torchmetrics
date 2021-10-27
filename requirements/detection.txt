@@ -1,0 +1,2 @@
+pycocotools>=2.0.2
+torchvision

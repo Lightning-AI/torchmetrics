@@ -60,6 +60,11 @@ jobs:
       # prevent hanging Conda creations
       timeout-minutes: 10
 
+    - name: Temp COCO env. fix
+      if: matrix.pytorch-version == '1.4'
+      run: |
+        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4
+
     - name: Update Environment
       run: |
         sudo apt install libsndfile1
