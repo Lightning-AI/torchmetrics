@@ -40,7 +40,8 @@ _inputs = Input(
                 scores=torch.Tensor([0.318, 0.726]),
                 labels=torch.IntTensor([3, 2]),
             ),  # coco image id 73
-        ], [
+        ],
+        [
             dict(
                 boxes=torch.Tensor(
                     [
@@ -78,7 +79,8 @@ _inputs = Input(
                 ),
                 labels=torch.IntTensor([2, 2]),
             ),  # coco image id 73
-        ], [
+        ],
+        [
             dict(
                 boxes=torch.Tensor(
                     [
