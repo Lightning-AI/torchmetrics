@@ -122,6 +122,7 @@ class Specificity(StatScores):
 
     """
     is_differentiable = False
+    higher_is_better = True
 
     def __init__(
         self,

@@ -14,7 +14,7 @@
 from torchmetrics.classification.accuracy import Accuracy  # noqa: F401
 from torchmetrics.classification.auc import AUC  # noqa: F401
 from torchmetrics.classification.auroc import AUROC  # noqa: F401
-from torchmetrics.classification.average_precision import AveragePrecision  # noqa: F401
+from torchmetrics.classification.avg_precision import AveragePrecision  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedPrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFixedPrecision  # noqa: F401

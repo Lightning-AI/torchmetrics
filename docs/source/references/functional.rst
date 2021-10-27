@@ -11,6 +11,12 @@ Functional metrics
 Audio Metrics
 *************
 
+pesq [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pesq
+
+
 pit [func]
 ~~~~~~~~~~
 
@@ -36,6 +42,13 @@ snr [func]
 ~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.snr
+    :noindex:
+
+
+stoi [func]
+~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.stoi
     :noindex:
 
 
@@ -315,15 +328,37 @@ tweedie_deviance_score [func]
     :noindex:
 
 
-********
-Pairwise
-********
+****************
+Pairwise Metrics
+****************
 
-embedding_similarity [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+pairwise_cosine_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.embedding_similarity
+.. autofunction:: torchmetrics.functional.pairwise_cosine_similarity
     :noindex:
+
+
+pairwise_euclidean_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_euclidean_distance
+    :noindex:
+
+
+pairwise_linear_similarity [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_linear_similarity
+    :noindex:
+
+
+pairwise_manhatten_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.pairwise_manhatten_distance
+    :noindex:
+
 
 *********
 Retrieval
@@ -350,6 +385,13 @@ retrieval_precision [func]
     :noindex:
 
 
+retrieval_r_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_r_precision
+    :noindex:
+
+
 retrieval_recall [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -370,6 +412,13 @@ retrieval_normalized_dcg [func]
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
     :noindex:
 
+
+retrieval_hit_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_hit_rate
+    :noindex:
+
 ****
 Text
 ****
@@ -383,6 +432,12 @@ bleu_score [func]
 ~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.bleu_score
+    :noindex:
+
+char_error_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.char_error_rate
     :noindex:
 
 rouge_score [func]

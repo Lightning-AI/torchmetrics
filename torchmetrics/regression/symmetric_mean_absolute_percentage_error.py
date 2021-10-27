@@ -27,7 +27,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
     r"""
     Computes symmetric mean absolute percentage error (`SMAPE`_).
 
-    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
+    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n max(\frac{|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon})
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -55,6 +55,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         tensor(0.2290)
     """
     is_differentiable = True
+    higher_is_better = False
     sum_abs_per_error: Tensor
     total: Tensor
 

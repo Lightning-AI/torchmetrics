@@ -6,58 +6,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-## [unReleased] - 2021-MM-DD
+## [0.6.0] - 2021-10-DD
 
 ### Added
 
-- Added Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/issues/431))
-
-
-- Added Tweedie Deviance Score ([#499](https://github.com/PyTorchLightning/metrics/pull/499))
-
-
+- Added audio metrics:
+  - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
+  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
+- Added Information retrieval metrics:
+  - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577/))
+  - `RetrievalHitRate` ([#576](https://github.com/PyTorchLightning/metrics/pull/576))
+- Added NLP metrics:
+  - `SacreBLEUScore` ([#546](https://github.com/PyTorchLightning/metrics/pull/546))
+  - `CharErrorRate` ([#575](https://github.com/PyTorchLightning/metrics/pull/575))
+- Added other metrics:
+  - Tweedie Deviance Score ([#499](https://github.com/PyTorchLightning/metrics/pull/499))
+  - Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/pull/431))
 - Added support for float targets in `nDCG` metric ([#437](https://github.com/PyTorchLightning/metrics/pull/437))
-
-
-- Added `average` argument to `AveragePrecision` metric for reducing multilabel and multiclass problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
-
-
+- Added `average` argument to `AveragePrecision` metric for reducing multi-label and multi-class problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
 - Added `MultioutputWrapper` ([#510](https://github.com/PyTorchLightning/metrics/pull/510))
-
-
-- Added metric sweeping `higher_is_better` as constant attribute ([#544](https://github.com/PyTorchLightning/metrics/pull/544))
-
+- Added metric sweeping:
+  - `higher_is_better` as constant attribute ([#544](https://github.com/PyTorchLightning/metrics/pull/544))
+  - `higher_is_better` to rest of codebase ([#584](https://github.com/PyTorchLightning/metrics/pull/584))
+- Added simple aggregation metrics: `SumMetric`, `MeanMetric`, `CatMetric`, `MinMetric`, `MaxMetric` ([#506](https://github.com/PyTorchLightning/metrics/pull/506))
+- Added pairwise submodule with metrics ([#553](https://github.com/PyTorchLightning/metrics/pull/553))
+  - `pairwise_cosine_similarity`
+  - `pairwise_euclidean_distance`
+  - `pairwise_linear_similarity`
+  - `pairwise_manhatten_distance`
 
 ### Changed
 
 - `AveragePrecision` will now as default output the `macro` average for multilabel and multiclass problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
-
-
 - `half`, `double`, `float` will no longer change the dtype of the metric states. Use `metric.set_dtype` instead ([#493](https://github.com/PyTorchLightning/metrics/pull/493))
-
-
+- Renamed `AverageMeter` to `MeanMetric` ([#506](https://github.com/PyTorchLightning/metrics/pull/506))
 - Changed `is_differentiable` from property to a constant attribute ([#551](https://github.com/PyTorchLightning/metrics/pull/551))
-
+- `ROC` and `AUROC` will no longer throw an error when either the positive or negative class is missing. Instead return 0 score and give a warning
 
 ### Deprecated
 
+- Deprecated `torchmetrics.functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
 
 ### Removed
 
 - Removed `dtype` property ([#493](https://github.com/PyTorchLightning/metrics/pull/493))
 
-
 ### Fixed
 
 - Fixed bug in `F1` with `average='macro'` and `ignore_index!=None` ([#495](https://github.com/PyTorchLightning/metrics/pull/495))
-
-
 - Fixed bug in `pit` by using the returned first result to initialize device and type ([#533](https://github.com/PyTorchLightning/metrics/pull/533))
-
-
 - Fixed `SSIM` metric using too much memory ([#539](https://github.com/PyTorchLightning/metrics/pull/539))
-
-
 - Fixed bug where `device` property was not properly update when metric was a child of a module ([#542](https://github.com/PyTorchLightning/metrics/pull/542))
 
 ## [0.5.1] - 2021-08-30

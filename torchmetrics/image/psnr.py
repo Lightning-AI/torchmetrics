@@ -69,6 +69,7 @@ class PSNR(Metric):
     """
     min_target: Tensor
     max_target: Tensor
+    higher_is_better = False
 
     def __init__(
         self,
