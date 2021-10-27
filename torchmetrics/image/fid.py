@@ -204,6 +204,7 @@ class FID(Metric):
     """
     real_features: List[Tensor]
     fake_features: List[Tensor]
+    higher_is_better = False
 
     def __init__(
         self,
