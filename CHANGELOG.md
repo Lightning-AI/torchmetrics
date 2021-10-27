@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for float targets in `nDCG` metric ([#437](https://github.com/PyTorchLightning/metrics/pull/437))
 - Added `average` argument to `AveragePrecision` metric for reducing multi-label and multi-class problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
 - Added `MultioutputWrapper` ([#510](https://github.com/PyTorchLightning/metrics/pull/510))
-- Added metric sweeping: 
+- Added metric sweeping:
   - `higher_is_better` as constant attribute ([#544](https://github.com/PyTorchLightning/metrics/pull/544))
   - `higher_is_better` to rest of codebase ([#584](https://github.com/PyTorchLightning/metrics/pull/584))
 - Added simple aggregation metrics: `SumMetric`, `MeanMetric`, `CatMetric`, `MinMetric`, `MaxMetric` ([#506](https://github.com/PyTorchLightning/metrics/pull/506))
