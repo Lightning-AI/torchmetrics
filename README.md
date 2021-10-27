@@ -267,7 +267,7 @@ We currently have implemented metrics within the following domains:
   [SI_SDR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-sdr),
   [SI_SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-snr),
   [SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#snr)
-  and [3 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
+  and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
   )
 - Classification (
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
