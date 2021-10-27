@@ -59,7 +59,7 @@ _inputs = Input(
                 "boxes": torch.Tensor([[0.00, 2.87, 601.00, 421.52]]),
                 "scores": torch.Tensor([0.699, 0.423]),
                 "labels": torch.IntTensor([5]),
-            }  # coco image id 133
+            },  # coco image id 133
         ],
     ],
     target=[
@@ -94,7 +94,7 @@ _inputs = Input(
             {
                 "boxes": torch.Tensor([[13.99, 2.87, 640.00, 421.52]]),
                 "labels": torch.IntTensor([5]),
-            }  # coco image id 133
+            },  # coco image id 133
         ],
     ],
     num_classes=6,
