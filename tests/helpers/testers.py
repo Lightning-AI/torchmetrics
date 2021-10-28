@@ -15,7 +15,7 @@ import os
 import pickle
 import sys
 from functools import partial
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import pytest
@@ -24,6 +24,7 @@ from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
+from torchmetrics.detection.map import MAPMetricResults
 
 try:
     set_start_method("spawn")
@@ -83,6 +84,9 @@ def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert isinstance(pl_result[key], Tensor)
+    elif isinstance(pl_result, MAPMetricResults):
+        for val_index in [a for a in dir(pl_result) if not a.startswith("__")]:
+            assert isinstance(pl_result[val_index], Tensor)
     else:
         assert isinstance(pl_result, Tensor)
 
@@ -104,8 +108,8 @@ def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = N
 def _class_test(
     rank: int,
     worldsize: int,
-    preds: Tensor,
-    target: Tensor,
+    preds: Union[Tensor, List[Dict[str, Tensor]]],
+    target: Union[Tensor, List[Dict[str, Tensor]]],
     metric_class: Metric,
     sk_metric: Callable,
     dist_sync_on_step: bool,
@@ -139,8 +143,8 @@ def _class_test(
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
     """
-    assert preds.shape[0] == target.shape[0]
-    num_batches = preds.shape[0]
+    assert len(preds) == len(target)
+    num_batches = len(preds)
 
     if not metric_args:
         metric_args = {}
@@ -160,8 +164,11 @@ def _class_test(
 
     # move to device
     metric = metric.to(device)
-    preds = preds.to(device)
-    target = target.to(device)
+
+    if isinstance(preds, torch.Tensor):
+        preds = preds.to(device)
+        target = target.to(device)
+
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
     # verify metrics work after being loaded from pickled state
@@ -174,33 +181,56 @@ def _class_test(
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
-            ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
-            ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
+            if isinstance(preds, torch.Tensor):
+                ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
+                ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
+            else:
+                ddp_preds = [preds[i + r] for r in range(worldsize)]
+                ddp_target = [target[i + r] for r in range(worldsize)]
             ddp_kwargs_upd = {
                 k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
             sk_batch_result = sk_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            if isinstance(batch_result, dict):
+                for key in batch_result:
+                    _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            sk_batch_result = sk_metric(preds[i].cpu(), target[i].cpu(), **batch_kwargs_update)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol)
+            preds_ = preds[i].cpu() if isinstance(preds, torch.Tensor) else preds[i]
+            target_ = target[i].cpu() if isinstance(target, torch.Tensor) else target[i]
+            sk_batch_result = sk_metric(preds_, target_, **batch_kwargs_update)
+            if isinstance(batch_result, dict):
+                for key in batch_result.keys():
+                    _assert_allclose(batch_result, sk_batch_result[key].numpy(), atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol)
 
     # check that metrics are hashable
     assert hash(metric)
 
     # check on all batches on all ranks
     result = metric.compute()
-    _assert_tensor(result)
+    if isinstance(result, dict):
+        for key in result.keys():
+            _assert_tensor(result, key=key)
+    else:
+        _assert_tensor(result)
 
-    total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
-    total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
+    if isinstance(preds, torch.Tensor):
+        total_preds = torch.cat([preds[i] for i in range(num_batches)]).cpu()
+        total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
+    else:
+        total_preds = [item for sublist in preds for item in sublist]
+        total_target = [item for sublist in target for item in sublist]
+
     total_kwargs_update = {
         k: torch.cat([v[i] for i in range(num_batches)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
@@ -208,7 +238,11 @@ def _class_test(
     sk_result = sk_metric(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
-    _assert_allclose(result, sk_result, atol=atol)
+    if isinstance(sk_result, dict):
+        for key in sk_result.keys():
+            _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
+    else:
+        _assert_allclose(result, sk_result, atol=atol)
 
 
 def _functional_test(
@@ -357,8 +391,8 @@ class MetricTester:
     def run_class_metric_test(
         self,
         ddp: bool,
-        preds: Tensor,
-        target: Tensor,
+        preds: Union[Tensor, List[Dict]],
+        target: Union[Tensor, List[Dict]],
         metric_class: Metric,
         sk_metric: Callable,
         dist_sync_on_step: bool,
