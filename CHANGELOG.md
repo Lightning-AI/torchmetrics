@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added other metrics:
   - Tweedie Deviance Score ([#499](https://github.com/PyTorchLightning/metrics/pull/499))
   - Learned Perceptual Image Patch Similarity (LPIPS) ([#431](https://github.com/PyTorchLightning/metrics/pull/431))
+- Added `MAP` (mean average precision) metric to new detection package ([#467](https://github.com/PyTorchLightning/metrics/pull/467))
 - Added support for float targets in `nDCG` metric ([#437](https://github.com/PyTorchLightning/metrics/pull/437))
 - Added `average` argument to `AveragePrecision` metric for reducing multi-label and multi-class problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
 - Added `MultioutputWrapper` ([#510](https://github.com/PyTorchLightning/metrics/pull/510))
@@ -34,7 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `pairwise_euclidean_distance`
   - `pairwise_linear_similarity`
   - `pairwise_manhatten_distance`
-- Added `MAP` (mean average precision) metric to new detection package ([#467](https://github.com/PyTorchLightning/metrics/pull/467))
 
 ### Changed
 
