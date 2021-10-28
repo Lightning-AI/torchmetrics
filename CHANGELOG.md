@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-## [0.6.0] - 2021-10-DD
+## [0.6.0] - 2021-10-28
 
 ### Added
 

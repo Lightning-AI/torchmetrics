@@ -18,7 +18,7 @@ from typing import List
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 
 
-def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comment_char: str = "#") -> List[str]:
+def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comment_char: str = "#@") -> List[str]:
     """Load requirements from a file.
 
     >>> _load_requirements(_PROJECT_ROOT)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
@@ -30,7 +30,8 @@ def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comme
     for ln in lines:
         # filer all comments
         if comment_char in ln:
-            ln = ln[: ln.index(comment_char)].strip()
+            char_idx = min(ln.index(ch) for ch in comment_char)
+            ln = ln[:char_idx].strip()
         # skip directly installed dependencies
         if ln.startswith("http") or ln.startswith("git") or ln.startswith("-r"):
             continue
