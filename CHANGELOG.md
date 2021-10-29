@@ -23,16 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix empty predictions in MAP metric ([#594](https://github.com/PyTorchLightning/metrics/pull/594))
+
 
 ## [0.6.0] - 2021-10-28
 
 ### Added
 
 - Added audio metrics:
-  - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
-  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/issues/353))
+  - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
+  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
 - Added Information retrieval metrics:
-  - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577/))
+  - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577))
   - `RetrievalHitRate` ([#576](https://github.com/PyTorchLightning/metrics/pull/576))
 - Added NLP metrics:
   - `SacreBLEUScore` ([#546](https://github.com/PyTorchLightning/metrics/pull/546))
