@@ -365,7 +365,7 @@ class MAP(Metric):
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        boxes = [box_convert(box, in_fmt="xyxy", out_fmt="xywh") for box in boxes]
+        boxes = [box_convert(box, in_fmt="xyxy", out_fmt="xywh") if boxes[0].size(1) == 4 else box for box in boxes]
         for image_id, (image_boxes, image_labels) in enumerate(zip(boxes, labels)):
             image_boxes = image_boxes.cpu().tolist()
             image_labels = image_labels.cpu().tolist()
