@@ -217,13 +217,13 @@ def test_empty_preds():
             dict(
                 boxes=torch.Tensor([[]]),
                 scores=torch.Tensor([]),
-                labels=torch.IntTensor([]),
+                labels=torch.IntTensor([])
             ),
         ],
         [
             dict(
                 boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                labels=torch.IntTensor([4]),
+                labels=torch.IntTensor([4])
             ),
         ],
     )
