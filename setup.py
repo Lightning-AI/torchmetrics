@@ -30,7 +30,7 @@ long_description = setup_tools._load_readme_description(
 BASE_REQUIREMENTS = setup_tools._load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
-def _prepare_extras(base_req: List[str], skip_files: Tuple[str] = ("devel.txt")):
+def _prepare_extras(skip_files: Tuple[str] = ("devel.txt")):
     # find all extra requirements
     _load_req = partial(setup_tools._load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
@@ -38,7 +38,7 @@ def _prepare_extras(base_req: List[str], skip_files: Tuple[str] = ("devel.txt"))
     found_req_files = [n for n in found_req_files if n not in skip_files]
     found_req_names = [os.path.splitext(req)[0].replace("datatype_", "") for req in found_req_files]
     # define basic and extra extras
-    extras_req = {name: base_req + _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files)}
+    extras_req = {name: _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files)}
     # filter the uniques
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible denpendencies
@@ -69,7 +69,7 @@ setup(
     python_requires=">=3.6",
     setup_requires=[],
     install_requires=BASE_REQUIREMENTS,
-    extras_require=_prepare_extras(BASE_REQUIREMENTS),
+    extras_require=_prepare_extras(),
     project_urls={
         "Bug Tracker": os.path.join(about.__homepage__, "issues"),
         "Documentation": "https://torchmetrics.rtfd.io/en/latest/",
@@ -80,7 +80,7 @@ setup(
         "Natural Language :: English",
         # How mature is this project? Common values are
         #   3 - Alpha, 4 - Beta, 5 - Production/Stable
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         # Indicate who your project is intended for
         "Intended Audience :: Developers",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -96,5 +96,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )
