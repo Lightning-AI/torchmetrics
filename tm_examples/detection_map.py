@@ -25,6 +25,8 @@ preds = [
         # The boxes keyword should contain an [N,4] tensor,
         # where N is the number of detected boxes and ...
         boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
+        # The scores keyword should contain an [N,] tensor where
+        # each element is confidence score between 0 and 1
         scores=torch.Tensor([0.536]),
         labels=torch.IntTensor([0]),
     )
