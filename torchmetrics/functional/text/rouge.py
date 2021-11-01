@@ -248,9 +248,9 @@ def rouge_score(
 
     Args:
         preds:
-            An iterable of predicted sentences.
+            An iterable of predicted sentences or a single predicted sentence.
         targets:
-            An iterable of target sentences.
+            An iterable of target sentences or a single target sentence.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:

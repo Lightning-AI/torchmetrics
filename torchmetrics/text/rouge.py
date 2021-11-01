@@ -126,8 +126,8 @@ class ROUGEScore(Metric):
         """Compute rouge scores.
 
         Args:
-            preds: An iterable of predicted sentences.
-            targets: An iterable of target sentences.
+            preds: An iterable of predicted sentences or a single predicted sentence.
+            targets: An iterable of target sentences or a single target sentence.
         """
 
         if isinstance(preds, str):
