@@ -49,12 +49,12 @@ target = [
 ]
 
 if __name__ == "__main__":
-    # initialize metric
+    # Initialize metric
     metric = MAP()
 
-    # update metric with predictions and respective ground truth
+    # Update metric with predictions and respective ground truth
     metric.update(preds, target)
 
-    # after adding the data, compute the results
+    # Compute the results
     result = metric.compute()
     print(result)
