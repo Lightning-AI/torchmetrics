@@ -18,6 +18,8 @@ import torch
 
 from torchmetrics import MAP
 
+# Preds should be a list of elements, where each element is a dict
+# containing 3 keys: boxes, scores, labels
 preds = [
     dict(
         boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
