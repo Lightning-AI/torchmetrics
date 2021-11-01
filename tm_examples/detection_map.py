@@ -11,10 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An example of how to the predictions and target should be defined for the
-MAP object detection metric
-To run: python detection_map.py
-"""
+"""An example of how to the predictions and target should be defined for the MAP object detection metric To run:
+python detection_map.py."""
 
 import torch
 
