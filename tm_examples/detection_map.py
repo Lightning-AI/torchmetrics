@@ -22,6 +22,8 @@ from torchmetrics import MAP
 # containing 3 keys: boxes, scores, labels
 preds = [
     dict(
+        # The boxes keyword should contain an [N,4] tensor,
+        # where N is the number of detected boxes and ...
         boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
         scores=torch.Tensor([0.536]),
         labels=torch.IntTensor([0]),
