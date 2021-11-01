@@ -150,6 +150,9 @@ class MAP(Metric):
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
     See the :meth:`update` method for more information about the input format to this metric.
 
+    For an example on how to use this metric check the `torchmetrics examples\
+    <https://github.com/PyTorchLightning/metrics/blob/master/tm_examples/detection_map.py>`_
+
     .. note::
         This metric is a wrapper for the
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,

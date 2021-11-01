@@ -25,7 +25,7 @@ from torchmetrics.utilities.imports import (
     _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
-Input = namedtuple("Input", ["preds", "target", "num_classes"])
+Input = namedtuple("Input", ["preds", "target"])
 
 _inputs = Input(
     preds=[
@@ -101,7 +101,6 @@ _inputs = Input(
             ),  # coco image id 133
         ],
     ],
-    num_classes=6,
 )
 
 
