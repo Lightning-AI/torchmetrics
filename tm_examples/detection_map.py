@@ -30,6 +30,10 @@ preds = [
     )
 ]
 
+# Target should be a list of elements, where each element is a dict
+# containing 2 keys: boxes and labels. Each keyword should be formatted
+# similar to the preds argument. The number of elements in preds and
+# target should match
 target = [
     dict(
         boxes=torch.Tensor([[214.0, 41.0, 562.0, 285.0]]),
