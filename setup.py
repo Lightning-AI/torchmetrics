@@ -3,7 +3,7 @@ import glob
 import os
 from functools import partial
 from importlib.util import module_from_spec, spec_from_file_location
-from typing import List, Tuple
+from typing import Tuple
 
 from setuptools import find_packages, setup
 
