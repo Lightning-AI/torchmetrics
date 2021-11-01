@@ -39,4 +39,4 @@ if __name__ == "__main__":
     metric = MAP()
     metric.update(preds, target)
     result = metric.compute()
-    print(result["map"].cpu().item())
+    print(result)
