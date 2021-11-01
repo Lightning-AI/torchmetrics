@@ -261,8 +261,8 @@ def rouge_score(
         Python dictionary of rouge scores for each input rouge key.
 
     Example:
-        >>> targets = "Is your name John".split()
-        >>> preds = "My name is John".split()
+        >>> targets = "Is your name John"
+        >>> preds = "My name is John"
         >>> from pprint import pprint
         >>> pprint(rouge_score(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'rouge1_fmeasure': 0.25,

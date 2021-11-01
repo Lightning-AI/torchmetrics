@@ -50,8 +50,8 @@ class ROUGEScore(Metric):
 
     Example:
 
-        >>> targets = "Is your name John".split()
-        >>> preds = "My name is John".split()
+        >>> targets = "Is your name John"
+        >>> preds = "My name is John"
         >>> rouge = ROUGEScore()   # doctest: +SKIP
         >>> from pprint import pprint
         >>> pprint(rouge(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
