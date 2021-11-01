@@ -100,7 +100,7 @@ _inputs = Input(
                 labels=torch.IntTensor([5]),
             ),  # coco image id 133
         ],
-    ]
+    ],
 )
 
 
