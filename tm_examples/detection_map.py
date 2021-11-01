@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """An example of how to the predictions and target should be defined for the MAP object detection metric To run:
-python detection_map.py."""
+
+python detection_map.py.
+"""
 
 import torch
 
