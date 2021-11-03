@@ -89,22 +89,15 @@ def _sdr_sir_sar(
     else:
         preds_np = preds.reshape(-1, preds.shape[-2], preds.shape[-1]).detach().cpu().numpy()
         target_np = target.reshape(-1, preds.shape[-2], preds.shape[-1]).detach().cpu().numpy()
-        sdr_val_np = np.empty(preds_np.shape[:-1])
-        sir_val_np = np.empty(preds_np.shape[:-1])
-        sar_val_np = np.empty(preds_np.shape[:-1])
+        sdr_vals, sir_vals, sar_vals = [], [], []
         for b in range(preds_np.shape[0]):
-            sdr_val_np[b, :], sir_val_np[b, :], sar_val_np[b, :], perm = bss_eval_sources(
-                target_np[
-                    b,
-                ],
-                preds_np[
-                    b,
-                ],
-                compute_permutation,
-            )
-        sdr_val = torch.tensor(sdr_val_np)
-        sir_val = torch.tensor(sir_val_np)
-        sar_val = torch.tensor(sar_val_np)
+            output = bss_eval_sources(target_np[b], preds_np[b], compute_permutation)
+            sdr_vals.append(output[0])
+            sir_vals.append(output[1])
+            sar_vals.append(output[2])
+        sdr_val = torch.tensor(np.stack(sdr_vals))
+        sir_val = torch.tensor(np.stack(sir_vals))
+        sar_val = torch.tensor(np.stack(sar_vals))
 
     if keep_same_device:
         sdr_val = sdr_val.to(preds.device)
