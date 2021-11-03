@@ -29,23 +29,20 @@
 
 
 from itertools import chain
-from typing import Any, Dict, List, Set,Tuple, Union
+from typing import Any, Dict, List, Set, Tuple, Union
 
-from torch import tensor, Tensor
+from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-AVAILABLE_STEMMERS = ("portert")
+AVAILABLE_STEMMERS = "portert"
 
 
 class _NLTKStemmerWrapper:
-    """
-    """
+    """"""
 
-    _STEMMER_CLASS = {
-        "porter": "PorterStemmer"
-    }
+    _STEMMER_CLASS = {"porter": "PorterStemmer"}
 
     def __init__(self, stemmer: Literal["porter"] = "porter", *args: Any, **kwargs: Any) -> None:
         if not _NLTK_AVAILABLE:
@@ -54,19 +51,15 @@ class _NLTKStemmerWrapper:
 
         stemmer_class = getattr(getattr(stem, stemmer), self._STEMMER_CLASS[stemmer])
         self.stemmer = stemmer_class(*args, **kwargs)
-        
 
     def __call__(self, word: str) -> str:
         self.stemmer.stem(word)
 
 
 class _NLTKWordnetWrapper:
-    """
-    """
+    """"""
 
-    _WORDNET_CLASS = {
-        "wordnet": "wordnet"
-    }
+    _WORDNET_CLASS = {"wordnet": "wordnet"}
 
     def __init__(self, wordnet: Literal["wordnet"], *args: Any, **kwargs: Any) -> None:
         if not _NLTK_AVAILABLE:
@@ -88,8 +81,7 @@ def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
     """
     synonyms_set = set(
         chain.from_iterable(
-            (lemma.name() for lemma in synset.lemmas() if lemma.name().find("_") < 0)
-            for synset in wordnet(word)
+            (lemma.name() for lemma in synset.lemmas() if lemma.name().find("_") < 0) for synset in wordnet(word)
         )
     ).union(set(word))
     return synonyms_set
@@ -123,9 +115,8 @@ def _match_enums(
 def _match_stem_enums(
     enum_reference: List[Tuple[int, str]], enum_hypothesis: List[Tuple[int, str]], stemmer: _NLTKStemmerWrapper
 ) -> Tuple[List[Tuple[int, int]], List[Tuple[int, str]], List[Tuple[int, str]]]:
-    """
-    Stems each word in both reference and hypothesis and then aligns/matches stemmed words in the hypothesis to the
-    reference.
+    """Stems each word in both reference and hypothesis and then aligns/matches stemmed words in the hypothesis to
+    the reference.
 
     Args:
         enum_reference: an enumerated list of a tokenized reference
@@ -155,7 +146,7 @@ def _match_synonym_enums(
     Return:
         an enumerated list of unmatched reference words
         an enumerated list of unmatched hypothesis words
-    
+
     """
     word_match = []
     for i in range(len(enum_hypothesis))[::-1]:
@@ -172,10 +163,9 @@ def _match_synonym_enums(
 def _align_enum_words(
     enum_reference: List[str], enum_hypothesis: List[str], stemmer: _NLTKStemmerWrapper, wordnet: _NLTKWordnetWrapper
 ) -> List[Tuple[int, int]]:
-    """
-    Aligns/matches words in the hypothesis to the reference. This is achieved by sequentially applying
-    exact match, stemmed match and synonym match based on `nltk` wordnet.
-    
+    """Aligns/matches words in the hypothesis to the reference. This is achieved by sequentially applying exact
+    match, stemmed match and synonym match based on `nltk` wordnet.
+
     Args:
         enum_reference: an enumerated list of a tokenized reference
         enum_hypothesis: an enumerated list of a tokenized hypothessis
@@ -188,15 +178,14 @@ def _align_enum_words(
     exact_matches, enum_reference, enum_hypothesis = _match_enums(enum_reference, enum_hypothesis)
     stem_matches, enum_reference, enum_hypothesis = _match_stem_enums(enum_reference, enum_hypothesis, stemmer)
     synonym_matches, enum_reference, enum_hypothesis = _match_synonym_enums(enum_reference, enum_hypothesis, wordnet)
-    
+
     sorted_matches = sorted(exact_matches + stem_matches + synonym_matches, key=lambda wordpair: wordpair[0])
     return sorted_matches, float(len(sorted_matches))
 
 
 def _count_chunks(matches: List[Tuple[int, int]]) -> int:
-    """
-    Counts the fewest possible number of chunks such that matched unigrams of each chunk are adjacent to each other.
-    This is used to calculate the fragmentation part of the metric.
+    """Counts the fewest possible number of chunks such that matched unigrams of each chunk are adjacent to each
+    other. This is used to calculate the fragmentation part of the metric.
 
     Args:
         matches: a list of a mapping of matched reference and hypothesis words
@@ -218,7 +207,7 @@ def _calculate_meteor_components_single_sentence(
     hypothesis: str,
     stemmer: _NLTKStemmerWrapper,
     wordnet: _NLTKWordnetWrapper,
-) -> Tuple[float, float, float, float]:
+) -> Dict[str, Tensor]:
     """
     Args:
         reference: a reference sentence
@@ -238,37 +227,32 @@ def _calculate_meteor_components_single_sentence(
     hypothesis_len = float(len(enum_hypothesis))
     matches, matches_count = _align_enum_words(enum_reference, enum_hypothesis, stemmer, wordnet)
     frag_frac = _count_chunks(matches) / matches_count
-    return tensor(matches_count), tensor(reference_len), tensor(hypothesis_len), tensor(frag_frac)
+    return {
+        "matches_count": tensor(matches_count),
+        "reference_len": tensor(reference_len),
+        "hypothesis_len": tensor(hypothesis_len),
+        "frag_frac": tensor(frag_frac),
+    }
 
 
-def _calculate_meteor_score(
-    matches: List[Tuple[int, int]], reference_len: int, hypothesis_len: int, alpha: float, beta: float, gamma: float
-) -> Tuple[float, float, float]:
-    """
-    Calculate the METEOR score for a single pair of a reference and hypothesis based on a list of a mapping of matched
-    reference and hypothesis words and.
-
-    Args:
-        matches: a list with a mapping of matched reference and hypothesis words
-        reference_len: a length of reference sentence by splitting words
-        hypothesis_len: a length of hypothesis sentence by splitting words
-        alpha: a parameter for controlling relative weights of precision and recall
-        beta: a parameter for controlling shape of penalty as a function of as a function of fragmentation
-        gamma: a relative weight assigned to fragmentation penalty
-
-    Return:
-        METEOR score for a single pair of a reference and a hypothesis
-    """
-    matches_count = len(matches)
-    if reference_len == 0 or hypothesis_len == 0:
-        return (0.0, 0.0, 0.0)
-    
-    precision = matches_count / hypothesis_len
-    recall = matches_count / reference_len
-    frag_frac = _count_chunks(matches) / matches_count
-    penalty = gamma * frag_frac ** beta
-    return precision, recall, penalty
-
+def _calculate_sentence_level_meteor_score(
+    matches_count: Tensor,
+    reference_len: Tensor,
+    hypothesis_len: Tensor,
+    frag_frac: Tensor,
+    alpha: float,
+    beta: float,
+    gamma: float,
+) -> Tensor:
+    try:
+        precision = matches_count / hypothesis_len
+        recall = matches_count / reference_len
+        fmean = (precision * recall) / (alpha * precision + (1 - alpha) * recall)
+    except ZeroDivisionError:
+        return tensor(0.0)
+    penalty = gamma + frag_frac ** beta
+    meteor_score = (1 - penalty) * fmean
+    return meteor_score
 
 
 def _meteor_score_update(
@@ -276,10 +260,7 @@ def _meteor_score_update(
     hypothesis_corpus: List[str],
     stemmer: _NLTKStemmerWrapper,
     wordnet: _NLTKWordnetWrapper,
-    alpha: float = 0.9,
-    beta: float = 3.0,
-    gamma: float = 0.5,
-):
+) -> List[List[Dict[str, Tensor]]]:
     """
     Args:
         reference_corpus:
@@ -294,22 +275,30 @@ def _meteor_score_update(
         Sentence-level METEOR score for given reference and hypothesis corpora
     """
 
-    results: Dict[str, List[tensor]] = {
-        "matches_count": [],
-        "reference_len": [],
-        "hypothesis_len": [],
-        "frag_frac": [],
-    }
+    results: List[List[Dict[str, Tensor]]] = []
     for references, hypothesis in zip(reference_corpus, hypothesis_corpus):
-        meteor_components = [
-            _calculate_meteor_components_single_sentence(reference, hypothesis, stemmer, wordnet)
-            for reference in references
-        ]
+        results.append(
+            [
+                _calculate_meteor_components_single_sentence(reference, hypothesis, stemmer, wordnet)
+                for reference in references
+            ]
+        )
     return results
 
 
-def _meteor_score_compute(sentence_results) -> tensor:
-    pass
+def _meteor_score_compute(
+    meteor_score_components: List[List[Dict[str, Tensor]]], alpha: float, beta: float, gamma: float
+) -> Tensor:
+    # Sentence-level METEOR score
+    sentence_results: List[Tensor] = []
+    for components in meteor_score_components:
+        sentence_results.append(
+            max(
+                _calculate_sentence_level_meteor_score(**sentence_pair_components, alpha=alpha, beta=beta, gamma=gamma)
+                for sentence_pair_components in components
+            )
+        )
+    return tensor(sentence_results)
 
 
 def meteor_score(
@@ -333,12 +322,17 @@ def meteor_score(
     Alon Lavie.
     """
     if not _NLTK_AVAILABLE:
-        raise ValueError("METEOR metric requires that nltk is installed. Use `pip install nltk` or `pip install torchmetrics[text].`")
+        raise ValueError(
+            "METEOR metric requires that nltk is installed. Use `pip install nltk` or `pip install torchmetrics[text].`"
+        )
 
     if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
         reference_corpus = [list(reference) for reference in reference_corpus]
     if isinstance(hypothesis_corpus, str):
         hypothesis_corpus = [hypothesis_corpus]
-    
+
     if len(reference_corpus) != len(hypothesis_corpus):
         raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
+
+    meteor_score_components = _meteor_score_update(reference_corpus, hypothesis_corpus, stemmer, wordnet)
+    return _meteor_score_compute(meteor_score_components, alpha, beta, gamma)
