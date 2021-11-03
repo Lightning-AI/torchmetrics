@@ -20,7 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SDR(Metric):
-    r"""SDR evaluates the average Signal to Distortion Ratio (SDR) metric of preds and target. A wrapper for
+    r"""SDR evaluates the average Signal to Distortion Ratio (SDR) [1] metric of preds and target. A wrapper for
     the mir_eval.separation.bss_eval_sources function.
 
     Forward accepts
@@ -59,6 +59,11 @@ class SDR(Metric):
         >>> sdr = SDR()
         >>> sdr(preds, target)
         tensor(-12.0589)
+        
+    References:
+        [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
+         IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
+
     """
 
     sum_sdr: Tensor
