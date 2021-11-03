@@ -22,7 +22,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def sdr_sir_sar(
+def _sdr_sir_sar(
     preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False
 ) -> Tuple[Tensor, Tensor, Tensor]:
     r"""sdr_sir_sar evaluates the SDR, SIR, SAR metrics of preds and target. sdr_sir_sar is a wrapper for the mir_eval.separation.bss_eval_sources function.
@@ -41,13 +41,6 @@ def sdr_sir_sar(
         sdr value of shape [..., spk]
         sir value of shape [..., spk]
         sar value of shape [..., spk]
-
-    Example:
-        >>> from torchmetrics.functional.audio import sdr_sir_sar
-        >>> import torch
-        >>> preds = torch.randn(2, 8000)
-        >>> target = torch.randn(2, 8000)
-        >>> sdr_val, sir_val, sar_val = sdr_sir_sar(preds, target)
 
     """
     _check_same_shape(preds, target)
@@ -96,7 +89,7 @@ def sdr_sir_sar(
 
 
 def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""sdr evaluates the SDR metric of preds and target. sdr is a wrapper for the mir_eval.separation.bss_eval_sources function.
+    r"""sdr evaluates the Signal to Distortion Ratio (SDR) metric of preds and target. sdr is a wrapper for the mir_eval.separation.bss_eval_sources function.
 
     Args:
         preds:
@@ -119,58 +112,5 @@ def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_s
         >>> sdr_val = sdr(preds, target)
     """
 
-    return sdr_sir_sar(preds, target, compute_permutation, keep_same_device)[0]
+    return _sdr_sir_sar(preds, target, compute_permutation, keep_same_device)[0]
 
-
-def sir(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""sir evaluates the SIR metric of preds and target. sir is a wrapper for the mir_eval.separation.bss_eval_sources function.
-
-    Args:
-        preds:
-            shape ``[..., spk, time]``
-        target:
-            shape ``[..., spk, time]``
-        compute_permutation:
-            whether to compute the metrics permutation invariantly. By default, it is False for we can use PIT to compute the permutation in a better way and in the sense of any metrics.
-        keep_same_device:
-            whether to move the metric value to the device of preds
-
-    Returns:
-        sir value of shape [..., spk]
-
-    Example:
-        >>> from torchmetrics.functional.audio import sir
-        >>> import torch
-        >>> preds = torch.randn(2, 8000)
-        >>> target = torch.randn(2, 8000)
-        >>> sir_val = sir(preds, target)
-    """
-
-    return sdr_sir_sar(preds, target, compute_permutation, keep_same_device)[1]
-
-
-def sar(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""sar evaluates the SAR metric of preds and target. sar is a wrapper for the mir_eval.separation.bss_eval_sources function.
-
-    Args:
-        preds:
-            shape ``[..., spk, time]``
-        target:
-            shape ``[..., spk, time]``
-        compute_permutation:
-            whether to compute the metrics permutation invariantly. By default, it is False for we can use PIT to compute the permutation in a better way and in the sense of any metrics.
-        keep_same_device:
-            whether to move the metric value to the device of preds
-
-    Returns:
-        sar value of shape [..., spk]
-
-    Example:
-        >>> from torchmetrics.functional.audio import sar
-        >>> import torch
-        >>> preds = torch.randn(2, 8000)
-        >>> target = torch.randn(2, 8000)
-        >>> sar_val = sar(preds, target)
-    """
-
-    return sdr_sir_sar(preds, target, compute_permutation, keep_same_device)[2]
