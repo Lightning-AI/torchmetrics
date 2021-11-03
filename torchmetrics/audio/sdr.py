@@ -91,7 +91,7 @@ class SDR(Metric):
         self.total += sdr_batch.numel()
 
     def compute(self) -> Tuple[Tensor]:
-        """Computes average SDR"""
+        """Computes average SDR."""
         return self.sum_sdr / self.total
 
     @property

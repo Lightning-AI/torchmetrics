@@ -113,4 +113,3 @@ def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_s
     """
 
     return _sdr_sir_sar(preds, target, compute_permutation, keep_same_device)[0]
-

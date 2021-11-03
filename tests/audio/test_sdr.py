@@ -50,6 +50,7 @@ def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool)
         mss.append(sdr_val_np)
     return torch.tensor(mss)
 
+
 def average_metric(preds, target, metric_func):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
@@ -103,7 +104,9 @@ class TestSDR(MetricTester):
             metric_args=dict(compute_permutation=compute_permutation),
         )
 
-    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
+    )
     def test_sdr_half_cpu(self, preds, target, sk_metric, compute_permutation):
         pytest.xfail("SDR metric does not support cpu + half precision")
 
