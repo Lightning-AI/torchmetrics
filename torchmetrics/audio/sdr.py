@@ -63,6 +63,8 @@ class SDR(Metric):
 
     sum_sdr: Tensor
     total: Tensor
+    is_differentiable = False
+    higher_is_better = True
 
     def __init__(
         self,
@@ -99,7 +101,3 @@ class SDR(Metric):
     def compute(self) -> Tuple[Tensor]:
         """Computes average SDR."""
         return self.sum_sdr / self.total
-
-    @property
-    def is_differentiable(self) -> bool:
-        return False
