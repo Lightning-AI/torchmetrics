@@ -25,8 +25,8 @@ class SDR(Metric):
 
     Forward accepts
 
-    - ``preds``: ``shape [..., spk, time]``
-    - ``target``: ``shape [..., spk, time]``
+    - ``preds``: shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
+    - ``target``: shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
 
     Args:
         compute_permutation:
@@ -43,16 +43,22 @@ class SDR(Metric):
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
 
+    Raises:
+        ValueError:
+            If ``mir_eval`` package is not installed, or 1D input is given when compute_permutation is True
+
     Returns:
         average SDR values
 
     Example:
-        >>> from torchmetrics.audio import SDR_SIR_SAR
+        >>> from torchmetrics.audio import SDR
         >>> import torch
+        >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> sdr = SDR()
-        >>> sdr_val= sdr_sir_sar(preds, target)
+        >>> sdr(preds, target)
+        tensor(-12.0589)
     """
 
     sum_sdr: Tensor
