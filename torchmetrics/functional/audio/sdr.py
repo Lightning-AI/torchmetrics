@@ -68,7 +68,7 @@ def _sdr_sir_sar(
         if compute_permutation:
             raise ValueError(
                 "SDR metric requires preds and target to be of shape [..., spk, time]"
-                " if compute_permutation is True, but 1D Tensor is given."
+                " when compute_permutation is True, but 1D Tensor is given."
             )
 
         sdr_val_np, sir_val_np, sar_val_np, perm = bss_eval_sources(
