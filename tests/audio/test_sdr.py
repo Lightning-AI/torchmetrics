@@ -124,6 +124,13 @@ def test_error_on_different_shape(metric_class=SDR):
         metric(torch.randn(100), torch.randn(50))
 
 
+def test_error_on_1D_input_and_compute_permutation(metric_class=SDR):
+    metric = metric_class(compute_permutation=True)
+    with pytest.raises(ValueError, match="SDR metric requires preds and target to be of shape \[..., spk, time\]"
+        " when compute_permutation is True, but 1D Tensor is given."):
+        metric(torch.randn(100), torch.randn(100))
+
+
 def test_on_real_audio():
     import os
 
@@ -134,7 +141,7 @@ def test_on_real_audio():
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
     assert torch.allclose(
-        sdr(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
+        sdr(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
         torch.tensor(0.2211),
         rtol=0.0001,
         atol=1e-4,
