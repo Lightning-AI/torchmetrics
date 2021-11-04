@@ -68,6 +68,7 @@ class HammingDistance(Metric):
 
     """
     is_differentiable = False
+    higher_is_better = False
     correct: Tensor
     total: Tensor
 

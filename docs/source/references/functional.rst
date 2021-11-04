@@ -392,6 +392,13 @@ retrieval_precision [func]
     :noindex:
 
 
+retrieval_r_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_r_precision
+    :noindex:
+
+
 retrieval_recall [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -412,6 +419,13 @@ retrieval_normalized_dcg [func]
 .. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
     :noindex:
 
+
+retrieval_hit_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.retrieval_hit_rate
+    :noindex:
+
 ****
 Text
 ****
@@ -427,10 +441,23 @@ bleu_score [func]
 .. autofunction:: torchmetrics.functional.bleu_score
     :noindex:
 
+char_error_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.char_error_rate
+    :noindex:
+
 rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.rouge_score
+    :noindex:
+
+sacre_bleu_score [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.sacre_bleu_score
+    :noindex:
 
 wer [func]
 ~~~~~~~~~~

@@ -39,6 +39,12 @@ The example below shows how to use a metric in your `LightningModule <https://py
             # log epoch metric
             self.log('train_acc_epoch', self.accuracy.compute())
 
+.. note::
+    ``self.log`` in Lightning only supports logging of *scalar-tensors*. While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics such as
+    :class:`~torchmetrics.ConfusionMatrix`, :class:`~torchmetrics.ROC`, :class:`~torchmetrics.MAP`, :class:`~torchmetrics.RougeScore` return outputs that are non-scalar
+    tensors (often dicts or list of tensors) and should therefore be dealt with separately. For info about the return type and shape please look at the documentation for
+    the ``compute`` method for each metric you want to log.
+
 ********************
 Logging TorchMetrics
 ********************
