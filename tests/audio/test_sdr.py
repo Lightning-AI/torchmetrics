@@ -129,8 +129,11 @@ def test_error_on_different_shape(metric_class=SDR):
 
 def test_error_on_1D_input_and_compute_permutation(metric_class=SDR):
     metric = metric_class(compute_permutation=True)
-    with pytest.raises(ValueError, match="SDR metric requires preds and target to be of shape \[..., spk, time\]"
-        " when compute_permutation is True, but 1D Tensor is given."):
+    with pytest.raises(
+        ValueError,
+        match=r"SDR metric requires preds and target to be of shape \[..., spk, time\]"
+        " when compute_permutation is True, but 1D Tensor is given.",
+    ):
         metric(torch.randn(100), torch.randn(100))
 
 

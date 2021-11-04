@@ -32,7 +32,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _sdr_sir_sar(
     preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""_sdr_sir_sar evaluates the SDR, SIR, SAR metrics of preds and target. _sdr_sir_sar is a wrapper for the 
+    r"""_sdr_sir_sar evaluates the SDR, SIR, SAR metrics of preds and target. _sdr_sir_sar is a wrapper for the
     mir_eval.separation.bss_eval_sources function.
 
     Args:
@@ -108,7 +108,7 @@ def _sdr_sir_sar(
 
 
 def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""sdr evaluates the Signal to Distortion Ratio (SDR) [1] metric of preds and target. sdr is a wrapper for the 
+    r"""sdr evaluates the Signal to Distortion Ratio (SDR) [1] metric of preds and target. sdr is a wrapper for the
     mir_eval.separation.bss_eval_sources function.
 
     Args:
@@ -137,7 +137,7 @@ def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_s
         >>> target = torch.randn(8000)
         >>> sdr(preds, target).float()
         tensor(-12.0589)
-        
+
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
          IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
