@@ -191,8 +191,8 @@ def test_weighted_with_empty_classes(device):
 
     Tests that the proper warnings and errors are raised
     """
-    if not torch.cuda.is_available() and device=='cuda':
-        pytest.skip('Test requires gpu to run')
+    if not torch.cuda.is_available() and device == "cuda":
+        pytest.skip("Test requires gpu to run")
 
     preds = torch.tensor(
         [
