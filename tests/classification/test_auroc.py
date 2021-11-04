@@ -185,11 +185,15 @@ def test_error_multiclass_no_num_classes():
         _ = auroc(torch.randn(20, 3).softmax(dim=-1), torch.randint(3, (20,)))
 
 
-def test_weighted_with_empty_classes():
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_weighted_with_empty_classes(device):
     """Tests that weighted multiclass AUROC calculation yields the same results if a new but empty class exists.
 
     Tests that the proper warnings and errors are raised
     """
+    if not torch.cuda.is_available() and device=='cuda':
+        pytest.skip('Test requires gpu to run')
+
     preds = torch.tensor(
         [
             [0.90, 0.05, 0.05],
@@ -198,8 +202,8 @@ def test_weighted_with_empty_classes():
             [0.85, 0.05, 0.10],
             [0.10, 0.10, 0.80],
         ]
-    )
-    target = torch.tensor([0, 1, 1, 2, 2])
+    ).to(device)
+    target = torch.tensor([0, 1, 1, 2, 2]).to(device)
     num_classes = 3
     _auroc = auroc(preds, target, average="weighted", num_classes=num_classes)
 
