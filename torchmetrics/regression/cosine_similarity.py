@@ -62,6 +62,7 @@ class CosineSimilarity(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = True
     preds: List[Tensor]
     target: List[Tensor]
 

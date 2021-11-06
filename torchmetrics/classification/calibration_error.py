@@ -60,6 +60,7 @@ class CalibrationError(Metric):
             default: None (which selects the entire world)
     """
     DISTANCES = {"l1", "l2", "max"}
+    higher_is_better = False
     confidences: List[Tensor]
     accuracies: List[Tensor]
 

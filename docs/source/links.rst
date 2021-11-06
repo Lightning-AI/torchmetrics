@@ -5,6 +5,7 @@
 .. _Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
 .. _Normalized Discounted Cumulative Gain: https://en.wikipedia.org/wiki/Discounted_cumulative_gain
 .. _IR Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision
+.. _IR R-Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#R-precision
 .. _IR Recall: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Recall
 .. _Accuracy: https://en.wikipedia.org/wiki/Accuracy_and_precision
 .. _SMAPE: https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error
@@ -37,6 +38,7 @@
 .. _MAPE implementation returns: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
 .. _mean squared logarithmic error: https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error
 .. _LPIPS: https://arxiv.org/abs/1801.03924
+.. _Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR): https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
 .. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/document/7952154
 .. _Computes the Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf

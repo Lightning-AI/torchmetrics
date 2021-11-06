@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def retrieval_fall_out(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
+def retrieval_fall_out(preds: Tensor, target: Tensor, k: Optional[int] = None) -> Tensor:
     """Computes the Fall-out (for information retrieval), as explained in `IR Fall-out`_ Fall-out is the fraction
     of non-relevant documents retrieved among all the non-relevant documents.
 
@@ -28,10 +30,14 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, k: int = None) -> Tensor:
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document being relevant or not.
-        k: consider only the top k elements (default: None)
+        k: consider only the top k elements (default: None, which considers them all)
 
     Returns:
         a single-value tensor with the fall-out (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
+
+    Raises:
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0
 
     Example:
         >>> from  torchmetrics.functional import retrieval_fall_out

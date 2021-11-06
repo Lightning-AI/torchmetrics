@@ -165,6 +165,7 @@ class Accuracy(StatScores):
 
     """
     is_differentiable = False
+    higher_is_better = True
     correct: Tensor
     total: Tensor
 

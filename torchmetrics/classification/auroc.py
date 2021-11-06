@@ -41,6 +41,11 @@ class AUROC(Metric):
     dimension more than the ``target`` tensor the input will be interpretated as
     multiclass.
 
+    .. note::
+        If either the positive class or negative class is completly missing in the target tensor,
+        the auroc score is meaningless in this case and a score of 0 will be returned together
+        with an warning.
+
     Args:
        num_classes: integer with number of classes for multi-label and multiclass problems.
            Should be set to ``None`` for binary problems
@@ -100,6 +105,7 @@ class AUROC(Metric):
 
     """
     is_differentiable = False
+    higher_is_better = True
     preds: List[Tensor]
     target: List[Tensor]
 

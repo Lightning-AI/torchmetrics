@@ -59,7 +59,7 @@ class SDR(Metric):
         >>> sdr = SDR()
         >>> sdr(preds, target)
         tensor(-12.0589)
-        
+
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
          IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.

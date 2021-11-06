@@ -402,6 +402,18 @@ SSIM
 .. autoclass:: torchmetrics.SSIM
     :noindex:
 
+*****************
+Detection Metrics
+*****************
+
+Object detection metrics can be used to evaluate the predicted detections with given groundtruth detections on images.
+
+MAP
+~~~
+
+.. autoclass:: torchmetrics.MAP
+    :noindex:
+
 ******************
 Regression Metrics
 ******************
@@ -560,6 +572,13 @@ RetrievalPrecision
     :noindex:
 
 
+RetrievalRPrecision
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalRPrecision
+    :noindex:
+
+
 RetrievalRecall
 ~~~~~~~~~~~~~~~
 
@@ -580,6 +599,13 @@ RetrievalNormalizedDCG
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
     :noindex:
 
+
+RetrievalHitRate
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalHitRate
+    :noindex:
+
 ****
 Text
 ****
@@ -596,18 +622,30 @@ BLEUScore
 .. autoclass:: torchmetrics.BLEUScore
     :noindex:
 
+CharErrorRate
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CharErrorRate
+    :noindex:
+
 ROUGEScore
 ~~~~~~~~~~
 
 .. autoclass:: torchmetrics.ROUGEScore
     :noindex:
 
+SacreBLEUScore
+~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SacreBLEUScore
+    :noindex:
 
 WER
 ~~~
 
 .. autoclass:: torchmetrics.WER
     :noindex:
+
 
 ********
 Wrappers
