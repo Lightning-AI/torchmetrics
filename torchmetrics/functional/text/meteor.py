@@ -53,7 +53,7 @@ class _NLTKStemmerWrapper:
         self.stemmer = stemmer_class(*args, **kwargs)
 
     def __call__(self, word: str) -> str:
-        self.stemmer.stem(word)
+        return self.stemmer.stem(word)
 
 
 class _NLTKWordnetWrapper:
@@ -66,11 +66,10 @@ class _NLTKWordnetWrapper:
             raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
         from nltk import corpus
 
-        wordnet_class = getattr(corpus, self._WORDNET_CLASS[wordnet])
-        self.wordnet = wordnet_class(*args, **kwargs)
+        self.wordnet = getattr(corpus, self._WORDNET_CLASS[wordnet])
 
     def __call__(self, word: str):
-        self.wordnet.synsets(word)
+        return self.wordnet.synsets(word)
 
 
 def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
@@ -83,7 +82,7 @@ def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
         chain.from_iterable(
             (lemma.name() for lemma in synset.lemmas() if lemma.name().find("_") < 0) for synset in wordnet(word)
         )
-    ).union(set(word))
+    ).union({word})
     return synonyms_set
 
 
@@ -150,7 +149,7 @@ def _match_synonym_enums(
     """
     word_match = []
     for i in range(len(enum_hypothesis))[::-1]:
-        hypothesis_synonyms = _generate_synonyms(enum_hypothesis[i], wordnet)
+        hypothesis_synonyms = _generate_synonyms(enum_hypothesis[i][1], wordnet)
         for j in range(len(enum_reference))[::-1]:
             if enum_reference[j][1] in hypothesis_synonyms:
                 word_match.append((enum_reference[j][0], enum_hypothesis[i][0]))
@@ -221,12 +220,12 @@ def _calculate_meteor_components_single_sentence(
         hypothesis_len:
         frag_frac:
     """
-    enum_reference = enumerate(reference.strip())
-    enum_hypothesis = enumerate(hypothesis.stirp())
+    enum_reference = list(enumerate(reference.split()))
+    enum_hypothesis = list(enumerate(hypothesis.split()))
     reference_len = float(len(enum_reference))
     hypothesis_len = float(len(enum_hypothesis))
     matches, matches_count = _align_enum_words(enum_reference, enum_hypothesis, stemmer, wordnet)
-    frag_frac = _count_chunks(matches) / matches_count
+    frag_frac = _count_chunks(matches) / matches_count if matches_count != 0 else 0.0
     return {
         "matches_count": tensor(matches_count),
         "reference_len": tensor(reference_len),
@@ -250,8 +249,8 @@ def _calculate_sentence_level_meteor_score(
         fmean = (precision * recall) / (alpha * precision + (1 - alpha) * recall)
     except ZeroDivisionError:
         return tensor(0.0)
-    penalty = gamma + frag_frac ** beta
-    meteor_score = (1 - penalty) * fmean
+    penalty = gamma * frag_frac ** beta
+    meteor_score = (1.0 - penalty) * fmean
     return meteor_score
 
 
@@ -309,10 +308,7 @@ def meteor_score(
     alpha: float = 0.9,
     beta: float = 3.0,
     gamma: float = 0.5,
-    delta: float = 0.2,
-    weights: List[float, float, float] = [1.0, 1.0, 1.0, 1.0],
 ) -> Tensor:
-    pass
     """
     References:
     [1] METEOR: An Automatic Metric for MT Evaluation with High Levels of Correlation with Human Judgments by Alon
@@ -327,12 +323,15 @@ def meteor_score(
         )
 
     if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
-        reference_corpus = [list(reference) for reference in reference_corpus]
+        reference_corpus = [[reference] for reference in reference_corpus]
     if isinstance(hypothesis_corpus, str):
         hypothesis_corpus = [hypothesis_corpus]
 
     if len(reference_corpus) != len(hypothesis_corpus):
         raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
 
-    meteor_score_components = _meteor_score_update(reference_corpus, hypothesis_corpus, stemmer, wordnet)
+    stemmer_class = _NLTKStemmerWrapper(stemmer)
+    wordnet_class = _NLTKWordnetWrapper(wordnet)
+    
+    meteor_score_components = _meteor_score_update(reference_corpus, hypothesis_corpus, stemmer_class, wordnet_class)
     return _meteor_score_compute(meteor_score_components, alpha, beta, gamma)
