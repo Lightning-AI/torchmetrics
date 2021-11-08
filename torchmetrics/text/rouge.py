@@ -50,8 +50,8 @@ class ROUGEScore(Metric):
 
     Example:
 
-        >>> targets = "Is your name John".split()
-        >>> preds = "My name is John".split()
+        >>> targets = "Is your name John"
+        >>> preds = "My name is John"
         >>> rouge = ROUGEScore()   # doctest: +SKIP
         >>> from pprint import pprint
         >>> pprint(rouge(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
@@ -126,8 +126,8 @@ class ROUGEScore(Metric):
         """Compute rouge scores.
 
         Args:
-            preds: An iterable of predicted sentences.
-            targets: An iterable of target sentences.
+            preds: An iterable of predicted sentences or a single predicted sentence.
+            targets: An iterable of target sentences or a single target sentence.
         """
 
         if isinstance(preds, str):
