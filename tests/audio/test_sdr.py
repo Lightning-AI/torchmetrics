@@ -14,6 +14,8 @@
 from collections import namedtuple
 from functools import partial
 
+import os
+from scipy.io import wavfile
 import pytest
 import torch
 from mir_eval.separation import bss_eval_sources
@@ -138,7 +140,6 @@ def test_error_on_1D_input_and_compute_permutation(metric_class=SDR):
 
 
 def test_on_real_audio():
-
     current_file_dir = os.path.dirname(__file__)
 
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
