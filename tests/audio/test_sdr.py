@@ -138,9 +138,6 @@ def test_error_on_1D_input_and_compute_permutation(metric_class=SDR):
 
 
 def test_on_real_audio():
-    import os
-
-    from scipy.io import wavfile
 
     current_file_dir = os.path.dirname(__file__)
 
