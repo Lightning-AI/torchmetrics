@@ -27,7 +27,7 @@
 # URL: <https://www.nltk.org/>
 # For license information, see LICENSE.TXT
 
-
+import warnings
 from itertools import chain
 from typing import Any, Dict, List, Set, Tuple, Union
 
@@ -36,47 +36,82 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-AVAILABLE_STEMMERS = "portert"
-
 
 class _NLTKStemmerWrapper:
-    """"""
+    """TorchMetrics wrapper for `nltk` stemmers."""
 
     _STEMMER_CLASS = {"porter": "PorterStemmer"}
 
     def __init__(self, stemmer: Literal["porter"] = "porter", *args: Any, **kwargs: Any) -> None:
+        """
+        Args:
+            stemmer:
+
+        Raises:
+        """
         if not _NLTK_AVAILABLE:
             raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
         from nltk import stem
 
-        stemmer_class = getattr(getattr(stem, stemmer), self._STEMMER_CLASS[stemmer])
+        try:
+            stemmer_class = getattr(getattr(stem, stemmer), self._STEMMER_CLASS[stemmer])
+        except ImportError:
+            print(123)
+
         self.stemmer = stemmer_class(*args, **kwargs)
 
     def __call__(self, word: str) -> str:
+        """
+        Args:
+            word
+
+        Returns:
+        """
         return self.stemmer.stem(word)
 
 
 class _NLTKWordnetWrapper:
-    """"""
+    """TorchMetrics wrapper for `nltk` wordnet corpuses."""
 
     _WORDNET_CLASS = {"wordnet": "wordnet"}
 
     def __init__(self, wordnet: Literal["wordnet"], *args: Any, **kwargs: Any) -> None:
+        """
+        Args:
+            wordnet
+
+        Raises:
+        """
         if not _NLTK_AVAILABLE:
             raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
         from nltk import corpus
 
-        self.wordnet = getattr(corpus, self._WORDNET_CLASS[wordnet])
+        try:
+            self.wordnet = getattr(corpus, self._WORDNET_CLASS[wordnet])
+        except ImportError:
+            print(123)
 
     def __call__(self, word: str):
+        """
+        Args:
+            word
+
+        Returns:
+        """
         return self.wordnet.synsets(word)
 
 
 def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
-    """
+    """Generate synonyms using `nltk` wordnet corpus for an input word.
+
     Args:
         word:
+            An input word.
         wordnet:
+            `_NLTKWordnetWrapper` object utilizing `nltk` wordnet corpus for looking up for synonyms.
+
+    Returns:
+        A set of found synonyms for the input word.
     """
     synonyms_set = set(
         chain.from_iterable(
@@ -89,16 +124,19 @@ def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
 def _match_enums(
     enum_reference: List[Tuple[int, str]], enum_hypothesis: List[Tuple[int, str]]
 ) -> Tuple[List[Tuple[int, int]], List[Tuple[int, str]], List[Tuple[int, str]]]:
-    """
-    Args:
-        enum_reference: an enumerated list of a tokenized reference
-        enum_hypothesis: an enumerated list of a tokenized hypothessis
+    """Align/match words in the hypothesis to the reference.
 
-    Return:
-        tuple of lists:
-            an enumerated list of matched words
-            an enumerated list of unmatched reference words
-            an enumerated list of unmatched hypothesis words
+    Args:
+        enum_reference:
+            An enumerated list of a tokenized reference.
+        enum_hypothesis:
+            An enumerated list of a tokenized hypothessis.
+
+    Returns:
+        A tuple of lists:
+            A list of tuples mapping matched reference and hypothesis words.
+            An enumerated list of unmatched reference words.
+            An enumerated list of unmatched hypothesis words.
     """
     word_match = []
     for i in range(len(enum_hypothesis))[::-1]:
@@ -114,19 +152,22 @@ def _match_enums(
 def _match_stem_enums(
     enum_reference: List[Tuple[int, str]], enum_hypothesis: List[Tuple[int, str]], stemmer: _NLTKStemmerWrapper
 ) -> Tuple[List[Tuple[int, int]], List[Tuple[int, str]], List[Tuple[int, str]]]:
-    """Stems each word in both reference and hypothesis and then aligns/matches stemmed words in the hypothesis to
+    """Stem each word in both reference and hypothesis and then aligns/matches stemmed words in the hypothesis to
     the reference.
 
     Args:
-        enum_reference: an enumerated list of a tokenized reference
-        enum_hypothesis: an enumerated list of a tokenized hypothessis
-        stemmer: `_NLTKStemmerWrapper` object
+        enum_reference:
+            An enumerated list of a tokenized reference.
+        enum_hypothesis:
+            An enumerated list of a tokenized hypothessis.
+        stemmer:
+            `_NLTKWordnetWrapper` object utilizing `nltk` stemmer.
 
-    Return:
-        tuple of lists:
-            an enumerated list of matched stemmed words
-            an enumerated list of unmatched stemmed reference words
-            an enumerated list of unmatched stemmed hypothesis words
+    Returns:
+        A tuple of lists:
+            A list of tuples mapping matched stemmed reference and hypothesis words.
+            An enumerated list of unmatched stemmed reference words.
+            An enumerated list of unmatched stemmed hypothesis words.
     """
     stemmed_enum_reference = [(word_pair[0], stemmer(word_pair[1])) for word_pair in enum_reference]
     stemmed_enum_hypothesis = [(word_pair[0], stemmer(word_pair[1])) for word_pair in enum_hypothesis]
@@ -138,14 +179,18 @@ def _match_synonym_enums(
 ) -> Tuple[List[Tuple[int, int]], List[Tuple[int, str]], List[Tuple[int, str]]]:
     """
     Args:
-        enum_reference: an enumerated list of a tokenized reference
-        enum_hypothesis: an enumerated list of a tokenized hypothessis
-        wordnet: `_NLTKWordnetWrapper` object
+        enum_reference:
+            An enumerated list of a tokenized reference.
+        enum_hypothesis:
+            An enumerated list of a tokenized hypothesis.
+        wordnet:
+            `_NLTKWordnetWrapper` object utilizing `nltk` wordnet corpus for looking up for synonyms.
 
-    Return:
-        an enumerated list of unmatched reference words
-        an enumerated list of unmatched hypothesis words
-
+    Returns:
+        A tuple of lists:
+            A list of tuples mapping matched reference and hypothesis words based on synonym match..
+            An enumerated list of unmatched stemmed reference words.
+            An enumerated list of unmatched stemmed hypothesis words.
     """
     word_match = []
     for i in range(len(enum_hypothesis))[::-1]:
@@ -162,17 +207,22 @@ def _match_synonym_enums(
 def _align_enum_words(
     enum_reference: List[str], enum_hypothesis: List[str], stemmer: _NLTKStemmerWrapper, wordnet: _NLTKWordnetWrapper
 ) -> List[Tuple[int, int]]:
-    """Aligns/matches words in the hypothesis to the reference. This is achieved by sequentially applying exact
-    match, stemmed match and synonym match based on `nltk` wordnet.
+    """Align/match words in the hypothesis to the reference. This is achieved by sequentially applying exact match,
+    stemmed match and synonym match based on `nltk` wordnet.
 
     Args:
-        enum_reference: an enumerated list of a tokenized reference
-        enum_hypothesis: an enumerated list of a tokenized hypothessis
-        stemmer: `_NLTKStemmerWrapper` object
-        wordnet: `_NLTKWordnetWrapper` object
+        enum_reference:
+            An enumerated list of a tokenized reference.
+        enum_hypothesis:
+            An enumerated list of a tokenized hypothesis.
+        stemmer:
+            `_NLTKWordnetWrapper` object utilizing `nltk` stemmer.
+        wordnet:
+            `_NLTKWordnetWrapper` object utilizing `nltk` wordnet corpus for looking up for synonyms.
 
-    Return:
-        an enumerated sorted list of matched words
+    Returns:
+        An enumerated sorted list of matched words.
+        A length of the list of matched words.
     """
     exact_matches, enum_reference, enum_hypothesis = _match_enums(enum_reference, enum_hypothesis)
     stem_matches, enum_reference, enum_hypothesis = _match_stem_enums(enum_reference, enum_hypothesis, stemmer)
@@ -183,14 +233,15 @@ def _align_enum_words(
 
 
 def _count_chunks(matches: List[Tuple[int, int]]) -> int:
-    """Counts the fewest possible number of chunks such that matched unigrams of each chunk are adjacent to each
+    """Count the fewest possible number of chunks such that matched unigrams of each chunk are adjacent to each
     other. This is used to calculate the fragmentation part of the metric.
 
     Args:
-        matches: a list of a mapping of matched reference and hypothesis words
+        matches:
+            A list of a mapping of matched reference and hypothesis words.
 
-    Return:
-        a number of chunks a sentence is divided into post alignment
+    Returns:
+        A number of chunks a sentence is divided into post alignment.
     """
     chunks = 1
     chunks += sum(
@@ -201,24 +252,34 @@ def _count_chunks(matches: List[Tuple[int, int]]) -> int:
     return chunks
 
 
-def _calculate_meteor_components_single_sentence(
+def _calculate_meteor_components(
     reference: str,
     hypothesis: str,
     stemmer: _NLTKStemmerWrapper,
     wordnet: _NLTKWordnetWrapper,
 ) -> Dict[str, Tensor]:
-    """
-    Args:
-        reference: a reference sentence
-        hypothesis: a hypothesis sentence
-        stemmer: `_NLTKStemmerWrapper` object
-        wordnet: `_NLTKWordnetWrapper` object
+    """Calculate components used for the METEOR score calculation.
 
-    Return:
-        matches_count: METEOR score for a single pair of a reference and a hypothesis
-        reference_len:
-        hypothesis_len:
-        frag_frac:
+    Args:
+        reference:
+            A single reference sentence.
+        hypothesis:
+            A single hypothesis sentence.
+        stemmer:
+            `_NLTKWordnetWrapper` object utilizing `nltk` stemmer.
+        wordnet:
+            `_NLTKWordnetWrapper` object utilizing `nltk` wordnet corpus for looking up for synonyms.
+
+    Returns:
+        A python dictionary containing components for calculating METEOR score.
+            matches_count:
+                A number of matches between reference and hypothesis sentences.
+            reference_len:
+                A length of a tokenized reference sentence.
+            hypothesis_len:
+                A length of a tokenized hypothesis sentence.
+            frag_frac:
+                A value used for constructing `penalty` component for calculating the METEOR score from F-mean.
     """
     enum_reference = list(enumerate(reference.split()))
     enum_hypothesis = list(enumerate(hypothesis.split()))
@@ -234,7 +295,7 @@ def _calculate_meteor_components_single_sentence(
     }
 
 
-def _calculate_sentence_level_meteor_score(
+def _calculate_meteor_score(
     matches_count: Tensor,
     reference_len: Tensor,
     hypothesis_len: Tensor,
@@ -243,6 +304,27 @@ def _calculate_sentence_level_meteor_score(
     beta: float,
     gamma: float,
 ) -> Tensor:
+    """Calculate METEOR score using pre-calculated components.
+
+    Args:
+        matches_count:
+            A number of matches between reference and hypothesis sentences.
+        reference_len:
+            A length of a tokenized reference sentence.
+        hypothesis_len:
+            A length of a tokenized hypothesis sentence.
+        frag_frac:
+            A value used for constructing `penalty` component for calculating the METEOR score from F-mean.
+        alpha:
+            A parameter for controlling relative weights of precision and recall.
+        beta:
+            A parameter for controlling shape of penalty as a function of as a function of fragmentation.
+        gamma:
+            A relative weight assigned to fragmentation penalty.
+
+    Returns:
+        Sentence-level METEOR score for a given reference and hypothesis.
+    """
     try:
         precision = matches_count / hypothesis_len
         recall = matches_count / reference_len
@@ -263,12 +345,19 @@ def _meteor_score_update(
     """
     Args:
         reference_corpus:
+            An iterable of iterables of reference corpus.
         hypothesis_corpus:
-        stemmer: `_NLTKStemmerWrapper` object
-        wordnet: `_NLTKWordnetWrapper` object
-        alpha: a parameter for controlling relative weights of precision and recall
-        beta: a parameter for controlling shape of penalty as a function of as a function of fragmentation
-        gamma: a relative weight assigned to fragmentation penalty
+            An iterable of machine translated corpus.
+        stemmer:
+            `_NLTKStemmerWrapper` object
+        wordnet:
+            `_NLTKWordnetWrapper` object
+        alpha:
+            A parameter for controlling relative weights of precision and recall.
+        beta:
+            A parameter for controlling shape of penalty as a function of as a function of fragmentation.
+        gamma:
+            A relative weight assigned to fragmentation penalty.
 
     Return:
         Sentence-level METEOR score for given reference and hypothesis corpora
@@ -277,10 +366,7 @@ def _meteor_score_update(
     results: List[List[Dict[str, Tensor]]] = []
     for references, hypothesis in zip(reference_corpus, hypothesis_corpus):
         results.append(
-            [
-                _calculate_meteor_components_single_sentence(reference, hypothesis, stemmer, wordnet)
-                for reference in references
-            ]
+            [_calculate_meteor_components(reference, hypothesis, stemmer, wordnet) for reference in references]
         )
     return results
 
@@ -288,12 +374,26 @@ def _meteor_score_update(
 def _meteor_score_compute(
     meteor_score_components: List[List[Dict[str, Tensor]]], alpha: float, beta: float, gamma: float
 ) -> Tensor:
+    """
+    Args:
+        meteor_score_components:
+
+        alpha:
+            A parameter for controlling relative weights of precision and recall.
+        beta:
+            A parameter for controlling shape of penalty as a function of as a function of fragmentation.
+        gamma:
+            A relative weight assigned to fragmentation penalty.
+
+    Returns:
+
+    """
     # Sentence-level METEOR score
     sentence_results: List[Tensor] = []
     for components in meteor_score_components:
         sentence_results.append(
             max(
-                _calculate_sentence_level_meteor_score(**sentence_pair_components, alpha=alpha, beta=beta, gamma=gamma)
+                _calculate_meteor_score(**sentence_pair_components, alpha=alpha, beta=beta, gamma=gamma)
                 for sentence_pair_components in components
             )
         )
@@ -309,7 +409,40 @@ def meteor_score(
     beta: float = 3.0,
     gamma: float = 0.5,
 ) -> Tensor:
-    """
+    """Calculate `METEOR Score`_ used for automatic machine translation evaluation.
+
+    Current implementation follows the METEOR metric orignially proposed in the paper of Lavie and Agarwal [1], whicg
+    is implemented in `nltk` package. It is itended to upgrade this metric to the currently used version 1.5 [2].
+
+    Args:
+        reference_corpus:
+            An iterable of iterables of reference corpus.
+        hypothesis_corpus:
+            An iterable of machine translated corpus.
+        stemmer:
+            A name of stemmer from `nltk` package to be used.
+        wordnet:
+            A name of wordnet corpus from `nltk` package to be used.
+        alpha:
+            A parameter for controlling relative weights of precision and recall.
+        beta:
+            A parameter for controlling shape of penalty as a function of as a function of fragmentation.
+        gamma:
+            A relative weight assigned to fragmentation penalty.
+
+    Returns:
+        Tensor with sentence-level METEOR score.
+
+    Raises:
+        ValueError:
+            If `nltk` package is not installed.
+
+    Example:
+        >>> predictions = ['the cat is on the mat']
+        >>> references = [['there is a cat on the mat']]
+        >>> meteor_score(references, predictions)  # doctest: +SKIP
+        tensor([0.6464])
+
     References:
     [1] METEOR: An Automatic Metric for MT Evaluation with High Levels of Correlation with Human Judgments by Alon
     Lavie and Abhaya Agarwal.
@@ -317,6 +450,10 @@ def meteor_score(
     [2] Meteor Universal: Language Specific Translation Evaluation for Any Target Language by Michael Denkowski and
     Alon Lavie.
     """
+    warnings.info(
+        "Current implementation follows the original METEOR metric and thus is not suitable for reporting results "
+        "into the research papers."
+    )
     if not _NLTK_AVAILABLE:
         raise ValueError(
             "METEOR metric requires that nltk is installed. Use `pip install nltk` or `pip install torchmetrics[text].`"
