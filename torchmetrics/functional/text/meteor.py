@@ -13,8 +13,8 @@
 # limitations under the License.
 # referenced from
 # Library Name: torchtext
-# Authors: torchtext authors and @sluks
-# Date: 2021-11-02
+# Authors: torchtext authors
+# Date: 2021-11-15
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#meteor_score
 
 ##############

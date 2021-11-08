@@ -66,7 +66,7 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRecall,
     RetrievalRPrecision,
 )
-from torchmetrics.text import WER, BERTScore, BLEUScore, CharErrorRate, ROUGEScore, SacreBLEUScore  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, CharErrorRate, METEORScore, ROUGEScore, SacreBLEUScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
 __all__ = [
@@ -106,6 +106,7 @@ __all__ = [
     "MeanMetric",
     "MeanSquaredError",
     "MeanSquaredLogError",
+    "METEORScore",
     "Metric",
     "MetricCollection",
     "MetricTracker",
