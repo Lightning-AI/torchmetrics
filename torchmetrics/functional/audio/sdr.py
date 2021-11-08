@@ -107,8 +107,7 @@ def _sdr_sir_sar(
 
 
 def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""sdr evaluates the Signal to Distortion Ratio (SDR) [1] metric of preds and target. sdr is a wrapper for the
-    mir_eval.separation.bss_eval_sources function.
+    r"""sdr evaluates the Signal to Distortion Ratio (SDR) [1] metric of preds and target.
 
     Args:
         preds:
