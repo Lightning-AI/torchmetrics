@@ -46,8 +46,6 @@ class SDR(Metric):
         ValueError:
             If ``mir_eval`` package is not installed, or 1D input is given when compute_permutation is True
 
-    Returns:
-        average SDR values
 
     Example:
         >>> from torchmetrics.audio import SDR
