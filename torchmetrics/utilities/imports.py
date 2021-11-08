@@ -71,6 +71,7 @@ _TORCH_LOWER_1_5: Optional[bool] = _compare_version("torch", operator.lt, "1.5.0
 _TORCH_LOWER_1_6: Optional[bool] = _compare_version("torch", operator.lt, "1.6.0")
 _TORCH_GREATER_EQUAL_1_6: Optional[bool] = _compare_version("torch", operator.ge, "1.6.0")
 _TORCH_GREATER_EQUAL_1_7: Optional[bool] = _compare_version("torch", operator.ge, "1.7.0")
+_TORCH_GREATER_EQUAL_1_8: Optional[bool] = _compare_version("torch", operator.ge, "1.8.0")
 
 _LIGHTNING_AVAILABLE: bool = _module_available("pytorch_lightning")
 _JIWER_AVAILABLE: bool = _module_available("jiwer")
@@ -89,4 +90,4 @@ _PESQ_AVAILABLE: bool = _module_available("pesq")
 _SACREBLEU_AVAILABLE: bool = _module_available("sacrebleu")
 _REGEX_AVAILABLE: bool = _module_available("regex")
 _PYSTOI_AVAILABLE: bool = _module_available("pystoi")
-_MIR_EVAL_AVAILABLE: bool = _module_available("mir_eval")
+_FAST_BSS_EVAL_AVAILABLE: bool = _module_available("fast_bss_eval")

@@ -25,7 +25,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SDR
 from torchmetrics.functional import sdr
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
 
 seed_all(42)
 
@@ -41,7 +41,7 @@ inputs_2spk = Input(
 )
 
 
-def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool):
+def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool=False):
     # shape: preds [BATCH_SIZE, spk, Time] , target [BATCH_SIZE, spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, spk, Time] , target [NUM_BATCHES*BATCH_SIZE, spk, Time]
     target = target.detach().cpu().numpy()
@@ -59,17 +59,17 @@ def average_metric(preds, target, metric_func):
     return metric_func(preds, target).mean()
 
 
-original_impl_compute_permutation = partial(sdr_original_batch, compute_permutation=True)
-original_impl_no_compute_permutation = partial(sdr_original_batch, compute_permutation=False)
+original_impl_compute_permutation = partial(sdr_original_batch)
+# original_impl_no_compute_permutation = partial(sdr_original_batch)
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, compute_permutation",
+    "preds, target, sk_metric",
     [
-        (inputs_1spk.preds, inputs_1spk.target, original_impl_compute_permutation, True),
-        (inputs_1spk.preds, inputs_1spk.target, original_impl_no_compute_permutation, False),
-        (inputs_2spk.preds, inputs_2spk.target, original_impl_compute_permutation, True),
-        (inputs_2spk.preds, inputs_2spk.target, original_impl_no_compute_permutation, False),
+        (inputs_1spk.preds, inputs_1spk.target, original_impl_compute_permutation),
+        # (inputs_1spk.preds, inputs_1spk.target, original_impl_no_compute_permutation, False),
+        (inputs_2spk.preds, inputs_2spk.target, original_impl_compute_permutation),
+        # (inputs_2spk.preds, inputs_2spk.target, original_impl_no_compute_permutation, False),
     ],
 )
 class TestSDR(MetricTester):
@@ -77,7 +77,7 @@ class TestSDR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_sdr(self, preds, target, sk_metric, compute_permutation, ddp, dist_sync_on_step):
+    def test_sdr(self, preds, target, sk_metric, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -85,41 +85,44 @@ class TestSDR(MetricTester):
             SDR,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(compute_permutation=compute_permutation),
+            metric_args=dict(),
         )
 
-    def test_sdr_functional(self, preds, target, sk_metric, compute_permutation):
+    def test_sdr_functional(self, preds, target, sk_metric):
         self.run_functional_metric_test(
             preds,
             target,
             sdr,
             sk_metric,
-            metric_args=dict(compute_permutation=compute_permutation),
+            metric_args=dict(),
         )
 
-    def test_sdr_differentiability(self, preds, target, sk_metric, compute_permutation):
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_1_8, reason="sdr is not differentiable for pytorch < 1.8"
+    )
+    def test_sdr_differentiability(self, preds, target, sk_metric):
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=SDR,
             metric_functional=sdr,
-            metric_args=dict(compute_permutation=compute_permutation),
+            metric_args=dict(),
         )
 
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
-    def test_sdr_half_cpu(self, preds, target, sk_metric, compute_permutation):
+    def test_sdr_half_cpu(self, preds, target, sk_metric):
         pytest.xfail("SDR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_sdr_half_gpu(self, preds, target, sk_metric, compute_permutation):
+    def test_sdr_half_gpu(self, preds, target, sk_metric):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=SDR,
-            metric_functional=partial(sdr, compute_permutation=compute_permutation),
-            metric_args=dict(compute_permutation=compute_permutation),
+            metric_functional=partial(sdr, ),
+            metric_args=dict(),
         )
 
 
@@ -130,7 +133,7 @@ def test_error_on_different_shape(metric_class=SDR):
 
 
 def test_error_on_1D_input_and_compute_permutation(metric_class=SDR):
-    metric = metric_class(compute_permutation=True)
+    metric = metric_class()
     with pytest.raises(
         ValueError,
         match=r"SDR metric requires preds and target to be of shape \[..., spk, time\]"

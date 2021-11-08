@@ -20,17 +20,36 @@ from torchmetrics.metric import Metric
 
 
 class SDR(Metric):
-    r"""SDR evaluates the average Signal to Distortion Ratio (SDR) [1] metric of preds and target.
+    r"""Signal to Distortion Ratio (SDR) [1,2,3]
+
+    .. note:: 1) using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
+        torchmetrics[audio]`` or ``pip install fast-bss-eval``
+        2) preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+        3) when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
 
     Forward accepts
 
-    - ``preds``: shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
-    - ``target``: shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
+    - ``preds``: shape ``[..., time]``
+    - ``target``: shape ``[..., time]``
 
     Args:
-        compute_permutation:
-            whether to compute the metrics permutation invariantly. By default, it is False for we can use PIT to
-            compute the permutation in a better way and in the sense of any metrics.
+        use_cg_iter:
+            If provided, an iterative method is used to solve for the distortion
+            filter coefficients instead of direct Gaussian elimination.
+            This can speed up the computation of the metrics in case the filters
+            are long. Using a value of 10 here has been shown to provide
+            good accuracy in most cases and is sufficient when using this
+            loss to train neural separation networks.
+        filter_length:
+            The length of the distortion filter allowed
+        zero_mean:
+            When set to True, the mean of all signals is subtracted prior
+            to computation of the metrics
+        load_diag:
+            If provided, this small value is added to the diagonal coefficients of
+            the system metrics when solving for the filter coefficients.
+            This can help stabilize the metric in the case where some of the reference
+            signals may sometimes be zero
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -44,8 +63,7 @@ class SDR(Metric):
 
     Raises:
         ValueError:
-            If ``mir_eval`` package is not installed, or 1D input is given when compute_permutation is True
-
+            If ``fast-bss-eval`` package is not installed
 
     Example:
         >>> from torchmetrics.audio import SDR
@@ -56,21 +74,34 @@ class SDR(Metric):
         >>> sdr = SDR()
         >>> sdr(preds, target)
         tensor(-12.0589)
+        >>> # use with pit
+        >>> from torchmetrics.audio import PIT
+        >>> from torchmetrics.functional.audio import sdr
+        >>> # [batch, spk, time]
+        >>> preds = torch.randn(4, 2, 8000)
+        >>> target = torch.randn(4, 2, 8000)
+        >>> pit = PIT(sdr, 'max')
+        >>> pit(preds, target)
+        tensor(-11.6051)
 
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
          IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
-
+        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations. 
+        [3] https://github.com/fakufaku/fast_bss_eval
     """
 
     sum_sdr: Tensor
     total: Tensor
-    is_differentiable = False
+    is_differentiable = True
     higher_is_better = True
 
     def __init__(
         self,
-        compute_permutation: bool = False,
+        use_cg_iter: Optional[int] = None,
+        filter_length: int = 512,
+        zero_mean: bool = False,
+        load_diag: Optional[float] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -83,7 +114,10 @@ class SDR(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.compute_permutation = compute_permutation
+        self.use_cg_iter = use_cg_iter
+        self.filter_length = filter_length
+        self.zero_mean = zero_mean
+        self.load_diag = load_diag
 
         self.add_state("sum_sdr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
@@ -95,9 +129,9 @@ class SDR(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sdr_batch = sdr(preds, target, self.compute_permutation, False)
+        sdr_batch = sdr(preds, target, self.use_cg_iter, self.filter_length, self.zero_mean, self.load_diag)
 
-        self.sum_sdr += sdr_batch.sum().to(self.sum_sdr.device)
+        self.sum_sdr += sdr_batch.sum()
         self.total += sdr_batch.numel()
 
     def compute(self) -> Tuple[Tensor]:

@@ -11,118 +11,74 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Optional
 
-import numpy as np
 import torch
+import numpy as np
 
-from torchmetrics.utilities.imports import _MIR_EVAL_AVAILABLE
+from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8, _TORCH_GREATER_EQUAL_1_7
 
-if _MIR_EVAL_AVAILABLE:
-    from mir_eval.separation import bss_eval_sources
+if _FAST_BSS_EVAL_AVAILABLE:
+    from fast_bss_eval.torch.linalg import toeplitz
+    from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
+    from fast_bss_eval.numpy.linalg import toeplitz as toeplitz_np
+    from fast_bss_eval.numpy.cgd import toeplitz_conjugate_gradient as toeplitz_conjugate_gradient_np
+    from fast_bss_eval.torch.metrics import compute_stats
+    from fast_bss_eval.torch.helpers import _normalize
 else:
-    bss_eval_sources = None
+    toeplitz = None
+    toeplitz_conjugate_gradient = None
+    compute_stats = None
+    _normalize = None
+    toeplitz_np = None
+    toeplitz_conjugate_gradient_np = None
 
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _sdr_sir_sar(
-    preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False
-) -> Tuple[Tensor, Tensor, Tensor]:
-    r"""_sdr_sir_sar evaluates the SDR, SIR, SAR metrics of preds and target. _sdr_sir_sar is a wrapper for the
-    mir_eval.separation.bss_eval_sources function.
+def sdr(
+    preds: Tensor,
+    target: Tensor,
+    use_cg_iter: Optional[int] = None,
+    filter_length: int = 512,
+    zero_mean: bool = False,
+    load_diag: Optional[float] = None,
+) -> Tensor:
+    r"""Signal to Distortion Ratio (SDR) [1,2,3]
+
+    .. note:: 1) using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
+        torchmetrics[audio]`` or ``pip install fast-bss-eval``
+        2) preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+        3) when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
 
     Args:
         preds:
-            shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
+            shape ``[..., time]``
         target:
-            shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
-        compute_permutation:
-            whether to compute the metrics permutation invariantly. By default, it is False
-            for we can use PIT to compute the permutation in a better way and in the sense of any metrics.
-        keep_same_device:
-            whether to move the metric value to the device of preds
+            shape ``[..., time]``
+        use_cg_iter:
+            If provided, an iterative method is used to solve for the distortion
+            filter coefficients instead of direct Gaussian elimination.
+            This can speed up the computation of the metrics in case the filters
+            are long. Using a value of 10 here has been shown to provide
+            good accuracy in most cases and is sufficient when using this
+            loss to train neural separation networks.
+        filter_length:
+            The length of the distortion filter allowed
+        zero_mean:
+            When set to True, the mean of all signals is subtracted prior
+            to computation of the metrics
+        load_diag:
+            If provided, this small value is added to the diagonal coefficients of
+            the system metrics when solving for the filter coefficients.
+            This can help stabilize the metric in the case where some of the reference
+            signals may sometimes be zero
 
     Raises:
         ValueError:
-            If ``mir_eval`` package is not installed, or 1D input is given when compute_permutation is True
-
-    Returns:
-        sdr value of shape ``[...]`` if compute_permutation is False, else ``[..., spk]``
-        sir value of shape ``[...]`` if compute_permutation is False, else ``[..., spk]``
-        sar value of shape ``[...]`` if compute_permutation is False, else ``[..., spk]``
-
-    """
-    if not _MIR_EVAL_AVAILABLE:
-        raise ValueError(
-            "SDR metric requires that mir_eval is installed."
-            "Either install as `pip install torchmetrics[audio]` or `pip install mir_eval`"
-        )
-
-    _check_same_shape(preds, target)
-
-    if preds.ndim == 1:
-        if compute_permutation:
-            raise ValueError(
-                "SDR metric requires preds and target to be of shape [..., spk, time]"
-                " when compute_permutation is True, but 1D Tensor is given."
-            )
-
-        sdr_val_np, sir_val_np, sar_val_np, perm = bss_eval_sources(
-            target.detach().cpu().numpy()[None, ...],
-            preds.detach().cpu().numpy()[None, ...],
-            compute_permutation,
-        )
-        sdr_val = torch.tensor(sdr_val_np[0])
-        sir_val = torch.tensor(sir_val_np[0])
-        sar_val = torch.tensor(sar_val_np[0])
-    elif preds.ndim == 2:
-        preds_np = preds.detach().cpu().numpy()
-        target_np = target.detach().cpu().numpy()
-        sdr_val_np, sir_val_np, sar_val_np, perm = bss_eval_sources(target_np, preds_np, compute_permutation)
-        sdr_val = torch.tensor(sdr_val_np)
-        sir_val = torch.tensor(sir_val_np)
-        sar_val = torch.tensor(sar_val_np)
-    else:
-        preds_np = preds.reshape(-1, preds.shape[-2], preds.shape[-1]).detach().cpu().numpy()
-        target_np = target.reshape(-1, preds.shape[-2], preds.shape[-1]).detach().cpu().numpy()
-        sdr_vals, sir_vals, sar_vals = [], [], []
-        for b in range(preds_np.shape[0]):
-            output = bss_eval_sources(target_np[b], preds_np[b], compute_permutation)
-            sdr_vals.append(output[0])
-            sir_vals.append(output[1])
-            sar_vals.append(output[2])
-        sdr_val = torch.tensor(np.stack(sdr_vals))
-        sir_val = torch.tensor(np.stack(sir_vals))
-        sar_val = torch.tensor(np.stack(sar_vals))
-
-    if keep_same_device:
-        sdr_val = sdr_val.to(preds.device)
-        sir_val = sir_val.to(preds.device)
-        sar_val = sar_val.to(preds.device)
-
-    return sdr_val, sir_val, sar_val
-
-
-def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""sdr evaluates the Signal to Distortion Ratio (SDR) [1] metric of preds and target.
-
-    Args:
-        preds:
-            shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
-        target:
-            shape ``[..., time]`` if compute_permutation is False, else ``[..., spk, time]``
-        compute_permutation:
-            whether to compute the metrics permutation invariantly. By default, it is False
-            for we can use PIT to compute the permutation in a better way and in the sense of any metrics.
-        keep_same_device:
-            whether to move the metric value to the device of preds
-
-    Raises:
-        ValueError:
-            If ``mir_eval`` package is not installed, or 1D input is given when compute_permutation is True
+            If ``fast-bss-eval`` package is not installed
 
     Returns:
         sdr value of shape ``[...]`` if compute_permutation is False, else ``[..., spk]``
@@ -133,13 +89,79 @@ def sdr(preds: Tensor, target: Tensor, compute_permutation: bool = False, keep_s
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> sdr(preds, target).float()
+        >>> sdr(preds, target)
         tensor(-12.0589)
+        >>> # use with pit
+        >>> from torchmetrics.functional.audio import pit
+        >>> # [batch, spk, time]
+        >>> preds = torch.randn(4, 2, 8000)
+        >>> target = torch.randn(4, 2, 8000)
+        >>> best_metric, best_perm = pit(preds, target, sdr, 'max')
+        >>> best_metric
+        tensor([-11.6375, -11.4358, -11.7148, -11.6325])
+        >>> best_perm
+        tensor([[1, 0],
+                [0, 1],
+                [1, 0],
+                [0, 1]])
 
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
          IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
-
+        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations. 
+        [3] https://github.com/fakufaku/fast_bss_eval
     """
 
-    return _sdr_sir_sar(preds, target, compute_permutation, keep_same_device)[0]
+    if not _FAST_BSS_EVAL_AVAILABLE:
+        raise ValueError(
+            "SDR metric requires that fast-bss-eval is installed."
+            "Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`"
+        )
+    _check_same_shape(preds, target)
+
+    if preds.dtype != target.dtype: # for torch.linalg.solve
+        target = target.to(preds.dtype)
+
+    if zero_mean:
+        preds = preds - preds.mean(dim=-1, keepdim=True)
+        target = target - target.mean(dim=-1, keepdim=True)
+
+    # normalize along time-axis
+    preds = _normalize(preds, dim=-1)
+    target = _normalize(target, dim=-1)
+
+    # compute auto-correlation and cross-correlation
+    acf, xcorr = compute_stats(target, preds, length=filter_length, pairwise=False)
+
+    if load_diag is not None:
+        # the diagonal factor of the Toeplitz matrix is the first
+        # coefficient of the acf
+        acf[..., 0] += load_diag
+
+    # solve for the optimal filter
+    if (not _TORCH_GREATER_EQUAL_1_8):
+        # torch.linalg.solve does not exist in torch under 1.8, so use numpy instead
+        if use_cg_iter is not None:
+            # use preconditioned conjugate gradient
+            sol = toeplitz_conjugate_gradient_np(acf.detach().cpu().numpy(), xcorr.detach().cpu().numpy(), n_iter=use_cg_iter,)
+        else:
+            # regular matrix solver
+            R_mat = toeplitz_np(acf.detach().cpu().numpy())
+            sol = np.linalg.solve(R_mat.detach().cpu().numpy(), xcorr.detach().cpu().numpy())
+        sol = torch.tensor(sol, device=preds.device)
+    else:
+        if use_cg_iter is not None:
+            # use preconditioned conjugate gradient
+            sol = toeplitz_conjugate_gradient(acf, xcorr, n_iter=use_cg_iter)
+        else:
+            # regular matrix solver
+            R_mat = toeplitz(acf)
+            sol = torch.linalg.solve(R_mat, xcorr)
+
+    # compute the coherence
+    coh = torch.einsum("...l,...l->...", xcorr, sol)
+
+    # transform to decibels
+    ratio = coh / (1 - coh)
+    sdr_val = 10.0 * torch.log10(ratio)
+    return sdr_val
