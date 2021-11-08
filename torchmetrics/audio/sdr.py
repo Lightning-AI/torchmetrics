@@ -87,7 +87,7 @@ class SDR(Metric):
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
          IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
-        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations. 
+        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
         [3] https://github.com/fakufaku/fast_bss_eval
     """
 

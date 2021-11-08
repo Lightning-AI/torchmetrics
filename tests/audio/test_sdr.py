@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from collections import namedtuple
 from functools import partial
 
-import os
-from scipy.io import wavfile
 import pytest
 import torch
 from mir_eval.separation import bss_eval_sources
+from scipy.io import wavfile
 from torch import Tensor
 
 from tests.helpers import seed_all
@@ -41,7 +41,7 @@ inputs_2spk = Input(
 )
 
 
-def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool=False):
+def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False):
     # shape: preds [BATCH_SIZE, spk, Time] , target [BATCH_SIZE, spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, spk, Time] , target [NUM_BATCHES*BATCH_SIZE, spk, Time]
     target = target.detach().cpu().numpy()
@@ -97,9 +97,7 @@ class TestSDR(MetricTester):
             metric_args=dict(),
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_8, reason="sdr is not differentiable for pytorch < 1.8"
-    )
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_8, reason="sdr is not differentiable for pytorch < 1.8")
     def test_sdr_differentiability(self, preds, target, sk_metric):
         self.run_differentiability_test(
             preds=preds,
@@ -121,7 +119,9 @@ class TestSDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=SDR,
-            metric_functional=partial(sdr, ),
+            metric_functional=partial(
+                sdr,
+            ),
             metric_args=dict(),
         )
 

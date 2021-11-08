@@ -13,18 +13,18 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 import numpy as np
+import torch
 
-from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8, _TORCH_GREATER_EQUAL_1_7
+from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_7, _TORCH_GREATER_EQUAL_1_8
 
 if _FAST_BSS_EVAL_AVAILABLE:
-    from fast_bss_eval.torch.linalg import toeplitz
-    from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
-    from fast_bss_eval.numpy.linalg import toeplitz as toeplitz_np
     from fast_bss_eval.numpy.cgd import toeplitz_conjugate_gradient as toeplitz_conjugate_gradient_np
-    from fast_bss_eval.torch.metrics import compute_stats
+    from fast_bss_eval.numpy.linalg import toeplitz as toeplitz_np
+    from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
     from fast_bss_eval.torch.helpers import _normalize
+    from fast_bss_eval.torch.linalg import toeplitz
+    from fast_bss_eval.torch.metrics import compute_stats
 else:
     toeplitz = None
     toeplitz_conjugate_gradient = None
@@ -108,7 +108,7 @@ def sdr(
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
          IEEE Transactions on Audio, Speech and Language Processing, 14(4), 1462–1469.
-        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations. 
+        [2] Scheibler, R. (2021). SDR -- Medium Rare with Fast Computations.
         [3] https://github.com/fakufaku/fast_bss_eval
     """
 
@@ -119,7 +119,7 @@ def sdr(
         )
     _check_same_shape(preds, target)
 
-    if preds.dtype != target.dtype: # for torch.linalg.solve
+    if preds.dtype != target.dtype:  # for torch.linalg.solve
         target = target.to(preds.dtype)
 
     if zero_mean:
@@ -139,11 +139,15 @@ def sdr(
         acf[..., 0] += load_diag
 
     # solve for the optimal filter
-    if (not _TORCH_GREATER_EQUAL_1_8):
+    if not _TORCH_GREATER_EQUAL_1_8:
         # torch.linalg.solve does not exist in torch under 1.8, so use numpy instead
         if use_cg_iter is not None:
             # use preconditioned conjugate gradient
-            sol = toeplitz_conjugate_gradient_np(acf.detach().cpu().numpy(), xcorr.detach().cpu().numpy(), n_iter=use_cg_iter,)
+            sol = toeplitz_conjugate_gradient_np(
+                acf.detach().cpu().numpy(),
+                xcorr.detach().cpu().numpy(),
+                n_iter=use_cg_iter,
+            )
         else:
             # regular matrix solver
             R_mat = toeplitz_np(acf.detach().cpu().numpy())
