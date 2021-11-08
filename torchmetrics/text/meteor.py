@@ -17,12 +17,18 @@
 # Date: 2021-11-15
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#meteor_score
 
-from typing import Any, Callable, Literal, List, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Union
 
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.meteor import _meteor_score_compute, _meteor_score_update, _NLTKStemmerWrapper, _NLTKWordnetWrapper
+from torchmetrics.functional.text.meteor import (
+    _meteor_score_compute,
+    _meteor_score_update,
+    _NLTKStemmerWrapper,
+    _NLTKWordnetWrapper,
+)
+
 
 class METEORScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
@@ -42,7 +48,6 @@ class METEORScore(Metric):
     Example:
 
     References:
-
     """
 
     is_differentiable = False
@@ -76,15 +81,16 @@ class METEORScore(Metric):
         self.add_state("meteor_score_components", [], dist_reduce_fx="cat")
 
     def update(  # type: ignore
-        self, reference_corpus: Union[List[str], List[List[str]]], hypothesis_corpus: Union[str, List[str]],
+        self,
+        reference_corpus: Union[List[str], List[List[str]]],
+        hypothesis_corpus: Union[str, List[str]],
     ) -> None:
-        """
-        """
+        """"""
         if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
             reference_corpus = [[reference] for reference in reference_corpus]
         if isinstance(hypothesis_corpus, str):
             hypothesis_corpus = [hypothesis_corpus]
-            
+
         self.meteor_score_components = _meteor_score_update(
             reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet
         )

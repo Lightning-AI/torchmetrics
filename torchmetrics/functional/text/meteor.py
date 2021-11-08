@@ -332,6 +332,6 @@ def meteor_score(
 
     stemmer_class = _NLTKStemmerWrapper(stemmer)
     wordnet_class = _NLTKWordnetWrapper(wordnet)
-    
+
     meteor_score_components = _meteor_score_update(reference_corpus, hypothesis_corpus, stemmer_class, wordnet_class)
     return _meteor_score_compute(meteor_score_components, alpha, beta, gamma)
