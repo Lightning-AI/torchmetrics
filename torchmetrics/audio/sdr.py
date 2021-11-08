@@ -20,8 +20,7 @@ from torchmetrics.metric import Metric
 
 
 class SDR(Metric):
-    r"""SDR evaluates the average Signal to Distortion Ratio (SDR) [1] metric of preds and target. A wrapper for
-    the mir_eval.separation.bss_eval_sources function.
+    r"""SDR evaluates the average Signal to Distortion Ratio (SDR) [1] metric of preds and target.
 
     Forward accepts
 
