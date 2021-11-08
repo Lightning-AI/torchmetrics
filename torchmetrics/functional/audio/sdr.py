@@ -16,7 +16,7 @@ from typing import Optional
 import torch
 import numpy as np
 
-from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8, _TORCH_GREATER_EQUAL_1_7
+from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
 
 if _FAST_BSS_EVAL_AVAILABLE:
     from fast_bss_eval.torch.linalg import toeplitz
