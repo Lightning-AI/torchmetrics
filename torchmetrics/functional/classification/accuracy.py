@@ -388,31 +388,34 @@ def accuracy(
         >>> accuracy(preds, target, top_k=2)
         tensor(0.6667)
     """
-    allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
-    if average not in allowed_average:
-        raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-    if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
-        raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
-
-    allowed_mdmc_average = [None, "samplewise", "global"]
-    if mdmc_average not in allowed_mdmc_average:
-        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
-
-    if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
-        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
-
-    if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
-        raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
     preds, target = _input_squeeze(preds, target)
     mode = _mode(preds, target, threshold, top_k, num_classes, multiclass)
     reduce = "macro" if average in ["weighted", "none", None] else average
 
-    if subset_accuracy and _check_subset_validity(mode):
-        correct, total = _subset_accuracy_update(preds, target, threshold, top_k)
-        return _subset_accuracy_compute(correct, total)
-    tp, fp, tn, fn = _accuracy_update(
-        preds, target, reduce, mdmc_average, threshold, num_classes, top_k, multiclass, ignore_index, mode
-    )
-    return _accuracy_compute(tp, fp, tn, fn, average, mdmc_average, mode)
+    try:
+        if subset_accuracy and _check_subset_validity(mode):
+            correct, total = _subset_accuracy_update(preds, target, threshold, top_k)
+            return _subset_accuracy_compute(correct, total)
+        tp, fp, tn, fn = _accuracy_update(
+            preds, target, reduce, mdmc_average, threshold, num_classes, top_k, multiclass, ignore_index, mode
+        )
+        return _accuracy_compute(tp, fp, tn, fn, average, mdmc_average, mode)
+
+    except:
+        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        if average not in allowed_average:
+            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
+        if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
+            raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
+
+        allowed_mdmc_average = [None, "samplewise", "global"]
+        if mdmc_average not in allowed_mdmc_average:
+            raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
+
+        if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
+            raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
+
+        if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
+            raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
