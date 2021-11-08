@@ -135,7 +135,7 @@ def _auroc_compute(
                 raise ValueError("Detected input to `multiclass` but you did not provide `num_classes` argument")
             if average == AverageMethod.WEIGHTED and len(torch.unique(target)) < num_classes:
                 # If one or more classes has 0 observations, we should exclude them, as its weight will be 0
-                target_bool_mat = torch.zeros((len(target), num_classes), dtype=bool)
+                target_bool_mat = torch.zeros((len(target), num_classes), dtype=bool, device=target.device)
                 target_bool_mat[torch.arange(len(target)), target.long()] = 1
                 class_observed = target_bool_mat.sum(axis=0) > 0
                 for c in range(num_classes):
