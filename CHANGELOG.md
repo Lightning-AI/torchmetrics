@@ -59,7 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `pairwise_linear_similarity`
   - `pairwise_manhatten_distance`
 
-
 ### Changed
 
 - `AveragePrecision` will now as default output the `macro` average for multilabel and multiclass problems ([#477](https://github.com/PyTorchLightning/metrics/pull/477))
