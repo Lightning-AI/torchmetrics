@@ -402,7 +402,7 @@ def accuracy(
         )
         return _accuracy_compute(tp, fp, tn, fn, average, mdmc_average, mode)
 
-    except:
+    except ValueError:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
