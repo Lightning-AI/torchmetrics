@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 
-- Added Signal to Distortion Ratio (`SDR`) ([#565](https://github.com/PyTorchLightning/metrics/pull/565))
+- Added Signal to Distortion Ratio (`SDR`) to `audio` package ([#565](https://github.com/PyTorchLightning/metrics/pull/565))
 
 
 ### Changed
