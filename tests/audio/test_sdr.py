@@ -14,6 +14,7 @@
 import os
 from collections import namedtuple
 from functools import partial
+from typing import Callable
 
 import pytest
 import torch
@@ -41,7 +42,7 @@ inputs_2spk = Input(
 )
 
 
-def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False):
+def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False) -> Tensor:
     # shape: preds [BATCH_SIZE, spk, Time] , target [BATCH_SIZE, spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, spk, Time] , target [NUM_BATCHES*BATCH_SIZE, spk, Time]
     target = target.detach().cpu().numpy()
