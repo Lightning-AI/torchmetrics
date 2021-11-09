@@ -19,19 +19,21 @@ import torch
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
 
 if _FAST_BSS_EVAL_AVAILABLE:
-    from fast_bss_eval.numpy.cgd import toeplitz_conjugate_gradient as toeplitz_conjugate_gradient_np
-    from fast_bss_eval.numpy.linalg import toeplitz as toeplitz_np
-    from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
-    from fast_bss_eval.torch.helpers import _normalize
-    from fast_bss_eval.torch.linalg import toeplitz
-    from fast_bss_eval.torch.metrics import compute_stats
+    if _TORCH_GREATER_EQUAL_1_8:
+        from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
+        from fast_bss_eval.torch.helpers import _normalize
+        from fast_bss_eval.torch.linalg import toeplitz
+        from fast_bss_eval.torch.metrics import compute_stats
+    else:
+        from fast_bss_eval.numpy.cgd import toeplitz_conjugate_gradient
+        from fast_bss_eval.numpy.helpers import _normalize
+        from fast_bss_eval.numpy.linalg import toeplitz
+        from fast_bss_eval.numpy.metrics import compute_stats
 else:
     toeplitz = None
     toeplitz_conjugate_gradient = None
     compute_stats = None
     _normalize = None
-    toeplitz_np = None
-    toeplitz_conjugate_gradient_np = None
 
 from torch import Tensor
 
@@ -113,10 +115,13 @@ def sdr(
 
     if not _FAST_BSS_EVAL_AVAILABLE:
         raise ValueError(
-            "SDR metric requires that fast-bss-eval is installed."
+            "SDR metric requires that fast-bss-eval is installed." \
             "Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`"
         )
     _check_same_shape(preds, target)
+
+    if not preds.dtype.is_floating_point:
+        preds = preds.float()  # for torch.norm
 
     if preds.dtype != target.dtype:  # for torch.linalg.solve
         target = target.to(preds.dtype)
@@ -125,10 +130,16 @@ def sdr(
         preds = preds - preds.mean(dim=-1, keepdim=True)
         target = target - target.mean(dim=-1, keepdim=True)
 
+    # use numpy if torch<1.8
+    if not _TORCH_GREATER_EQUAL_1_8:
+        preds = preds.detach().cpu().numpy()
+        target = target.detach().cpu().numpy()
+
     # normalize along time-axis
     preds = _normalize(preds, dim=-1)
     target = _normalize(target, dim=-1)
 
+    # solve for the optimal filter
     # compute auto-correlation and cross-correlation
     acf, xcorr = compute_stats(target, preds, length=filter_length, pairwise=False)
 
@@ -137,29 +148,17 @@ def sdr(
         # coefficient of the acf
         acf[..., 0] += load_diag
 
-    # solve for the optimal filter
-    if not _TORCH_GREATER_EQUAL_1_8:
-        # torch.linalg.solve does not exist in torch under 1.8, so use numpy instead
-        if use_cg_iter is not None:
-            # use preconditioned conjugate gradient
-            sol = toeplitz_conjugate_gradient_np(
-                acf.detach().cpu().numpy(),
-                xcorr.detach().cpu().numpy(),
-                n_iter=use_cg_iter,
-            )
-        else:
-            # regular matrix solver
-            R_mat = toeplitz_np(acf.detach().cpu().numpy())
-            sol = np.linalg.solve(R_mat.detach().cpu().numpy(), xcorr.detach().cpu().numpy())
-        sol = torch.tensor(sol, device=preds.device)
+    if use_cg_iter is not None:
+        # use preconditioned conjugate gradient
+        sol = toeplitz_conjugate_gradient(acf, xcorr, n_iter=use_cg_iter)
     else:
-        if use_cg_iter is not None:
-            # use preconditioned conjugate gradient
-            sol = toeplitz_conjugate_gradient(acf, xcorr, n_iter=use_cg_iter)
-        else:
-            # regular matrix solver
-            R_mat = toeplitz(acf)
-            sol = torch.linalg.solve(R_mat, xcorr)
+        # regular matrix solver
+        R_mat = toeplitz(acf)
+        sol = torch.linalg.solve(R_mat, xcorr)
+
+    # to tensor if torch<1.8
+    if not _TORCH_GREATER_EQUAL_1_8:
+        sol = torch.tensor(sol, device=preds.device)
 
     # compute the coherence
     coh = torch.einsum("...l,...l->...", xcorr, sol)
