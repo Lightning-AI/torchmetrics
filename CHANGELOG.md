@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Optimize the Metric forward method to perform only 1 update ([#612](https://github.com/PyTorchLightning/metrics/pull/612))
+
 
 ### Deprecated
 
