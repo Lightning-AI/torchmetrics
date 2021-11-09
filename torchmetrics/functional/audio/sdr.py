@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-
-import numpy as np
+import warnings
 import torch
 
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
@@ -132,6 +131,10 @@ def sdr(
 
     # use numpy if torch<1.8
     if not _TORCH_GREATER_EQUAL_1_8:
+        warnings.warn(
+            "pytorch is under 1.8, thus SDR numpy version is used."\
+            "For better performance and differentiability, you should change to pytorch 1.8+"
+        )
         preds = preds.detach().cpu().numpy()
         target = target.detach().cpu().numpy()
 
