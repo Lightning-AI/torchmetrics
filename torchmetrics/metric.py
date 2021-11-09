@@ -235,10 +235,13 @@ class Metric(Module, ABC):
             default = self._defaults[attr]
             values = [state[attr] for state in states if should_keep(state[attr], default)]
 
-            if isinstance(default, list):
+            if isinstance(values[0], Tensor):
+                if values[0].dim() > 0:
+                    values = torch.stack(values)
+                else:
+                    values = dim_zero_cat(values)
+            elif isinstance(values[0], list):
                 values = _flatten(values)
-            else:
-                values = dim_zero_cat(values)
 
             if not (callable(reduction_fn) or reduction_fn is None):
                 raise TypeError("reduction_fn must be callable or None")
