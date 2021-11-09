@@ -218,22 +218,22 @@ class Metric(Module, ABC):
 
             return self._forward_cache
 
+    @staticmethod
+    def __should_keep(value: Union[list, Tensor], default: Union[list, Tensor]) -> bool:
+        if isinstance(default, Tensor):
+            return not torch.equal(value, default)
+        return True
+
     def _reduce_states(self, states: List[Dict[str, Union[list, Tensor]]]) -> None:
         """This function can be used to reduce a list of metric states.
 
         Args:
             states: List of metric states.
         """
-
-        def should_keep(value, default):
-            if isinstance(default, Tensor):
-                return not torch.equal(value, default)
-            return True
-
         for attr, reduction_fn in self._reductions.items():
 
             default = self._defaults[attr]
-            values = [state[attr] for state in states if should_keep(state[attr], default)]
+            values = [state[attr] for state in states if self.__should_keep(state[attr], default)]
 
             if isinstance(values[0], Tensor):
                 if values[0].dim() > 0:
