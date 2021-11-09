@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 import warnings
+from typing import Optional
+
 import torch
 
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
@@ -114,7 +115,7 @@ def sdr(
 
     if not _FAST_BSS_EVAL_AVAILABLE:
         raise ValueError(
-            "SDR metric requires that fast-bss-eval is installed." \
+            "SDR metric requires that fast-bss-eval is installed."
             "Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`"
         )
     _check_same_shape(preds, target)
@@ -132,7 +133,7 @@ def sdr(
     # use numpy if torch<1.8
     if not _TORCH_GREATER_EQUAL_1_8:
         warnings.warn(
-            "pytorch is under 1.8, thus SDR numpy version is used."\
+            "pytorch is under 1.8, thus SDR numpy version is used."
             "For better performance and differentiability, you should change to pytorch 1.8+"
         )
         preds = preds.detach().cpu().numpy()
