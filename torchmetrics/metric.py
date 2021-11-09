@@ -219,8 +219,7 @@ class Metric(Module, ABC):
             return self._forward_cache
 
     def _reduce_states(self, states: List[Dict[str, Union[list, Tensor]]]) -> None:
-        """
-        This function can be used to reduce a list of metric states.
+        """This function can be used to reduce a list of metric states.
 
         Args:
             states: List of metric states.
@@ -229,7 +228,7 @@ class Metric(Module, ABC):
 
             values = [state[attr] for state in states]
             if isinstance(values[0], list):
-                values = _flatten(values) 
+                values = _flatten(values)
             elif isinstance(values[0], Tensor):
                 values = dim_zero_cat(values)
 
@@ -238,7 +237,6 @@ class Metric(Module, ABC):
 
             reduced = reduction_fn(values) if reduction_fn is not None else values
             setattr(self, attr, reduced)
-
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
