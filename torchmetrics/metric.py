@@ -231,9 +231,7 @@ class Metric(Module, ABC):
             states: List of metric states.
         """
         for attr, reduction_fn in self._reductions.items():
-
-            default = self._defaults[attr]
-            values = [state[attr] for state in states if self.__should_keep(state[attr], default)]
+            values = [state[attr] for state in states if self.__should_keep(state[attr], self._defaults[attr])]
 
             if isinstance(values[0], Tensor):
                 if values[0].dim() > 0:
