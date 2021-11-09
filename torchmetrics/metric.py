@@ -197,6 +197,8 @@ class Metric(Module, ABC):
         update_called = False
         if self.compute_on_step:
             update_called = self._update_called
+            # the `accumulated_state` should be captured only if an update has already been performed.
+            # Otherwise, `accumulated_state` would be the default states.
             if update_called:
                 accumulated_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
             self.reset()
