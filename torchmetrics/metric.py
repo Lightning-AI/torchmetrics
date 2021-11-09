@@ -194,8 +194,11 @@ class Metric(Module, ABC):
             )
 
         accumulated_state = {}
+        update_called = False
         if self.compute_on_step:
-            accumulated_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+            update_called = self._update_called
+            if update_called:
+                accumulated_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
             self.reset()
 
         self.update(*args, **kwargs)
@@ -208,8 +211,9 @@ class Metric(Module, ABC):
             self._forward_cache = self.compute()
 
             batch_state = {attr: getattr(self, attr) for attr in self._reductions}
+            states = [batch_state, accumulated_state] if update_called else [batch_state]
             with torch.no_grad():
-                self._reduce_states([batch_state, accumulated_state])
+                self._reduce_states(states)
 
             self._is_synced = False
             self._should_unsync = True
@@ -225,6 +229,7 @@ class Metric(Module, ABC):
             states: List of metric states.
         """
         for attr, reduction_fn in self._reductions.items():
+
             values = [state[attr] for state in states]
 
             if isinstance(values[0], Tensor):
