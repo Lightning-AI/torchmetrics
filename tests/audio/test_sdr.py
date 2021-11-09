@@ -53,7 +53,7 @@ def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool 
     return torch.tensor(mss)
 
 
-def average_metric(preds, target, metric_func):
+def average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
