@@ -210,10 +210,10 @@ class Metric(Module, ABC):
 
             self._forward_cache = self.compute()
 
-            batch_state = {attr: getattr(self, attr) for attr in self._reductions}
-            states = [batch_state, accumulated_state] if update_called else [batch_state]
-            with torch.no_grad():
-                self._reduce_states(states)
+            if update_called:
+                batch_state = {attr: getattr(self, attr) for attr in self._reductions}
+                with torch.no_grad():
+                    self._reduce_states([batch_state, accumulated_state])
 
             self._is_synced = False
             self._should_unsync = True
