@@ -193,6 +193,11 @@ class Metric(Module, ABC):
                 "HINT: Did you forget to call ``unsync`` ?."
             )
 
+        accumulated_state = {}
+        if self.compute_on_step:
+            accumulated_state = {attr: getattr(self, attr) for attr in self._defaults.keys()}
+            self.reset()
+
         with torch.no_grad():
             self.update(*args, **kwargs)
 
@@ -201,24 +206,39 @@ class Metric(Module, ABC):
             # skip restore cache operation from compute as cache is stored below.
             self._should_unsync = False
 
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults}
-
-            # call reset, update, compute, on single batch
-            self.reset()
-            self.update(*args, **kwargs)
             self._forward_cache = self.compute()
 
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._is_synced = False
+            batch_state = {attr: getattr(self, attr) for attr in self._reductions}
+            self._reduce_states([batch_state, accumulated_state])
 
+            self._is_synced = False
             self._should_unsync = True
             self._to_sync = True
             self._computed = None
 
             return self._forward_cache
+
+    def _reduce_states(self, states: List[Dict[str, Union[list, Tensor]]]) -> None:
+        """
+        This function can be used to reduce a list of metric states.
+
+        Args:
+            states: List of metric states.
+        """
+        for attr, reduction_fn in self._reductions.items():
+
+            values = [state[attr] for state in states]
+            if isinstance(values[0], list):
+                values = _flatten(values) 
+            elif isinstance(values[0], Tensor):
+                values = dim_zero_cat(values)
+
+            if not (callable(reduction_fn) or reduction_fn is None):
+                raise TypeError("reduction_fn must be callable or None")
+
+            reduced = reduction_fn(values) if reduction_fn is not None else values
+            setattr(self, attr, reduced)
+
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}

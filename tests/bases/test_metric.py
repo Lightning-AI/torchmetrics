@@ -20,6 +20,7 @@ import pytest
 import torch
 from torch import Tensor, nn, tensor
 
+from torchmetrics import Metric
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
@@ -172,14 +173,52 @@ def test_hash():
     assert hash(b1) != hash(b2)
 
 
-def test_forward():
-    class A(DummyMetric):
-        def update(self, x):
-            self.x += x
+class DummyMetricReduce(Metric):
+    name = "Dummy"
 
-        def compute(self):
-            return self.x
+    def __init__(self):
+        super().__init__()
+        self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
+    def update(self, x):
+        x = torch.tensor(x)
+        self.x += x
+
+    def compute(self):
+        return self.x
+
+
+class DummyListMetricReduce(Metric):
+    name = "DummyList"
+
+    def __init__(self):
+        super().__init__()
+        self.add_state("x", [], dist_reduce_fx="cat")
+
+    def update(self, x):
+        self.x.append(torch.tensor(x))
+
+    def compute(self):
+        return torch.tensor(self.x).sum()
+
+
+class CustomDummyMetric(Metric):
+    name = "Dummy"
+
+    def __init__(self):
+        super().__init__()
+        self.add_state("x", tensor(0.0))
+
+    def update(self, x):
+        x = torch.tensor(x)
+        self.x += x
+
+    def compute(self):
+        return torch.sum(self.x)
+
+
+@pytest.mark.parametrize("A", [CustomDummyMetric, DummyListMetricReduce, DummyMetricReduce])
+def test_forward(A):
     a = A()
     assert a(5) == 5
     assert a._forward_cache == 5
@@ -188,6 +227,11 @@ def test_forward():
     assert a._forward_cache == 8
 
     assert a.compute() == 13
+
+    assert a(1) == 1
+    assert a._forward_cache == 1
+
+    assert a.compute() == 14
 
 
 def test_pickle(tmpdir):
