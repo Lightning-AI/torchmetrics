@@ -234,6 +234,33 @@ def test_forward(A):
     assert a.compute() == 14
 
 
+class BatchMetric(Metric):
+    def __init__(self):
+        super().__init__()
+        self.add_state("x", tensor(0.0), dist_reduce_fx=None)
+        self.add_state("y", [], dist_reduce_fx=None)
+
+    def update(self, x, y):
+        self.x = self.x + x
+        self.y.append(y)
+
+    def compute(self):
+        return self.x.sum() + sum(y.sum() for y in self.y)
+
+
+@pytest.mark.parametrize("A", [BatchMetric])
+def test_forward_batch(A):
+    a = A()
+    x = torch.ones(2, 2)
+    assert a(x, x) == 8
+    assert a._forward_cache == 8
+
+    assert a(x, x) == 8
+    assert a._forward_cache == 8
+
+    assert a.compute() == 16
+
+
 def test_pickle(tmpdir):
     # doesn't tests for DDP
     a = DummyMetricSum()

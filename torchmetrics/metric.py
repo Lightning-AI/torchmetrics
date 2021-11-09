@@ -224,12 +224,20 @@ class Metric(Module, ABC):
         Args:
             states: List of metric states.
         """
+
+        def should_keep(value, default):
+            if isinstance(default, Tensor):
+                return not torch.equal(value, default)
+            return True
+
         for attr, reduction_fn in self._reductions.items():
 
-            values = [state[attr] for state in states]
-            if isinstance(values[0], list):
+            default = self._defaults[attr]
+            values = [state[attr] for state in states if should_keep(state[attr], default)]
+
+            if isinstance(default, list):
                 values = _flatten(values)
-            elif isinstance(values[0], Tensor):
+            else:
                 values = dim_zero_cat(values)
 
             if not (callable(reduction_fn) or reduction_fn is None):
