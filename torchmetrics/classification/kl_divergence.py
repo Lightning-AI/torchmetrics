@@ -62,6 +62,7 @@ class KLDivergence(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = False
     # TODO: canot be used because if scripting
     # measures: Union[List[Tensor], Tensor]
     total: Tensor

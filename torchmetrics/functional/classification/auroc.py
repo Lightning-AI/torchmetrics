@@ -135,7 +135,7 @@ def _auroc_compute(
                 raise ValueError("Detected input to `multiclass` but you did not provide `num_classes` argument")
             if average == AverageMethod.WEIGHTED and len(torch.unique(target)) < num_classes:
                 # If one or more classes has 0 observations, we should exclude them, as its weight will be 0
-                target_bool_mat = torch.zeros((len(target), num_classes), dtype=bool)
+                target_bool_mat = torch.zeros((len(target), num_classes), dtype=bool, device=target.device)
                 target_bool_mat[torch.arange(len(target)), target.long()] = 1
                 class_observed = target_bool_mat.sum(axis=0) > 0
                 for c in range(num_classes):
@@ -203,6 +203,16 @@ def auroc(
     sample_weights: Optional[Sequence] = None,
 ) -> Tensor:
     """Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_)
+
+    For non-binary input, if the ``preds`` and ``target`` tensor have the same
+    size the input will be interpretated as multilabel and if ``preds`` have one
+    dimension more than the ``target`` tensor the input will be interpretated as
+    multiclass.
+
+    .. note::
+        If either the positive class or negative class is completly missing in the target tensor,
+        the auroc score is meaningless in this case and a score of 0 will be returned together
+        with an warning.
 
     Args:
         preds: predictions from model (logits or probabilities)

@@ -49,6 +49,7 @@ class MeanAbsoluteError(Metric):
         tensor(0.5000)
     """
     is_differentiable = True
+    higher_is_better = False
     sum_abs_error: Tensor
     total: Tensor
 

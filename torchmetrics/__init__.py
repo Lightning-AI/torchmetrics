@@ -12,8 +12,8 @@ _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
-from torchmetrics.audio import PIT, SI_SDR, SI_SNR, SNR  # noqa: E402
-from torchmetrics.average import AverageMeter  # noqa: E402
+from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
+from torchmetrics.audio import PESQ, PIT, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402
     AUC,
     AUROC,
@@ -40,6 +40,7 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
+from torchmetrics.detection import MAP  # noqa: E402
 from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
@@ -57,13 +58,15 @@ from torchmetrics.regression import (  # noqa: E402
 )
 from torchmetrics.retrieval import (  # noqa: E402
     RetrievalFallOut,
+    RetrievalHitRate,
     RetrievalMAP,
     RetrievalMRR,
     RetrievalNormalizedDCG,
     RetrievalPrecision,
     RetrievalRecall,
+    RetrievalRPrecision,
 )
-from torchmetrics.text import WER, BERTScore, BLEUScore, ROUGEScore, SacreBLEUScore  # noqa: E402
+from torchmetrics.text import WER, BERTScore, BLEUScore, CharErrorRate, ROUGEScore, SacreBLEUScore  # noqa: E402
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
 
 __all__ = [
@@ -71,7 +74,6 @@ __all__ = [
     "Accuracy",
     "AUC",
     "AUROC",
-    "AverageMeter",
     "AveragePrecision",
     "BinnedAveragePrecision",
     "BinnedPrecisionRecallCurve",
@@ -80,6 +82,7 @@ __all__ = [
     "BLEUScore",
     "BootStrapper",
     "CalibrationError",
+    "CatMetric",
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
@@ -95,16 +98,21 @@ __all__ = [
     "KID",
     "KLDivergence",
     "LPIPS",
+    "MAP",
     "MatthewsCorrcoef",
+    "MaxMetric",
     "MeanAbsoluteError",
     "MeanAbsolutePercentageError",
+    "MeanMetric",
     "MeanSquaredError",
     "MeanSquaredLogError",
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinMetric",
     "MultioutputWrapper",
     "PearsonCorrcoef",
+    "PESQ",
     "PIT",
     "Precision",
     "PrecisionRecallCurve",
@@ -112,11 +120,13 @@ __all__ = [
     "R2Score",
     "Recall",
     "RetrievalFallOut",
+    "RetrievalHitRate",
     "RetrievalMAP",
     "RetrievalMRR",
     "RetrievalNormalizedDCG",
     "RetrievalPrecision",
     "RetrievalRecall",
+    "RetrievalRPrecision",
     "ROC",
     "ROUGEScore",
     "SacreBLEUScore",
@@ -127,6 +137,9 @@ __all__ = [
     "Specificity",
     "SSIM",
     "StatScores",
+    "STOI",
+    "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "WER",
+    "CharErrorRate",
 ]

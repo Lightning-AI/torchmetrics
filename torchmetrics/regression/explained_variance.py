@@ -78,6 +78,7 @@ class ExplainedVariance(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = True
     n_obs: Tensor
     sum_error: Tensor
     sum_squared_error: Tensor

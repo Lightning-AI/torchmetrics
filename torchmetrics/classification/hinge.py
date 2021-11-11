@@ -85,6 +85,7 @@ class Hinge(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = False
     measure: Tensor
     total: Tensor
 

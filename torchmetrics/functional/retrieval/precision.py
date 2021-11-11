@@ -30,10 +30,14 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None) 
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document being relevant or not.
-        k: consider only the top k elements (default: None)
+        k: consider only the top k elements (default: None, which considers them all)
 
     Returns:
         a single-value tensor with the precision (at ``k``) of the predictions ``preds`` w.r.t. the labels ``target``.
+
+    Raises:
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0
 
     Example:
         >>> preds = tensor([0.2, 0.3, 0.5])

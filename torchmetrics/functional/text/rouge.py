@@ -248,9 +248,9 @@ def rouge_score(
 
     Args:
         preds:
-            An iterable of predicted sentences.
+            An iterable of predicted sentences or a single predicted sentence.
         targets:
-            An iterable of target sentences.
+            An iterable of target sentences or a single target sentence.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
@@ -261,8 +261,8 @@ def rouge_score(
         Python dictionary of rouge scores for each input rouge key.
 
     Example:
-        >>> targets = "Is your name John".split()
-        >>> preds = "My name is John".split()
+        >>> targets = "Is your name John"
+        >>> preds = "My name is John"
         >>> from pprint import pprint
         >>> pprint(rouge_score(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
         {'rouge1_fmeasure': 0.25,
