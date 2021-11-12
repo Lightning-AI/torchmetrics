@@ -1,6 +1,6 @@
 ## What does this PR do?
 
-Fixes #<issue_number>
+Fixes #\<issue_number>
 
 ## Before submitting
 
