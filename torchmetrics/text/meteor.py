@@ -17,7 +17,8 @@
 # Date: 2021-11-15
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#meteor_score
 
-from typing import Any, Callable, List, Literal, Optional, Union
+import warnings
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from torch import Tensor
 
@@ -34,6 +35,16 @@ class METEORScore(Metric):
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
+        stemmer:
+            A name of stemmer from `nltk` package to be used.
+        wordnet:
+            A name of wordnet corpus from `nltk` package to be used.
+        alpha:
+            A parameter for controlling relative weights of precision and recall.
+        beta:
+            A parameter for controlling shape of penalty as a function of as a function of fragmentation.
+        gamma:
+            A relative weight assigned to fragmentation penalty.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -46,12 +57,19 @@ class METEORScore(Metric):
             will be used to perform the allgather.
 
     Example:
+        >>> predictions = ['the cat is on the mat']
+        >>> references = [['there is a cat on the mat']]
+        >>> meteor_score = METEORScore()
+        >>> meteor_score.update(references, predictions)
+        >>> meteor_score.compute()
+        tensor([0.6464])
 
     References:
     """
 
     is_differentiable = False
     higher_is_better = True
+    meteor_score_components: List[List[Dict[str, Tensor]]]
 
     def __init__(
         self,
@@ -65,6 +83,10 @@ class METEORScore(Metric):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable] = None,
     ):
+        warnings.warn(
+            "Current implementation follows the original METEOR metric and thus is not suitable for reporting results "
+            "in research papers."
+        )
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -90,6 +112,9 @@ class METEORScore(Metric):
             reference_corpus = [[reference] for reference in reference_corpus]
         if isinstance(hypothesis_corpus, str):
             hypothesis_corpus = [hypothesis_corpus]
+
+        if len(reference_corpus) != len(hypothesis_corpus):
+            raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
 
         self.meteor_score_components = _meteor_score_update(
             reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet

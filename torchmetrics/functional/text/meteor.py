@@ -63,7 +63,7 @@ class _NLTKStemmerWrapper:
     def __call__(self, word: str) -> str:
         """
         Args:
-            word
+            word:
 
         Returns:
         """
@@ -78,7 +78,7 @@ class _NLTKWordnetWrapper:
     def __init__(self, wordnet: Literal["wordnet"], *args: Any, **kwargs: Any) -> None:
         """
         Args:
-            wordnet
+            wordnet:
 
         Raises:
         """
@@ -94,7 +94,7 @@ class _NLTKWordnetWrapper:
     def __call__(self, word: str):
         """
         Args:
-            word
+            word:
 
         Returns:
         """
@@ -436,6 +436,8 @@ def meteor_score(
     Raises:
         ValueError:
             If `nltk` package is not installed.
+        ValueError:
+            If length of reference and hypothesis corpus differs.
 
     Example:
         >>> predictions = ['the cat is on the mat']
@@ -450,9 +452,9 @@ def meteor_score(
     [2] Meteor Universal: Language Specific Translation Evaluation for Any Target Language by Michael Denkowski and
     Alon Lavie.
     """
-    warnings.info(
+    warnings.warn(
         "Current implementation follows the original METEOR metric and thus is not suitable for reporting results "
-        "into the research papers."
+        "in research papers."
     )
     if not _NLTK_AVAILABLE:
         raise ValueError(
