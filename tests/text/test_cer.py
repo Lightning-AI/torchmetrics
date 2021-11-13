@@ -8,7 +8,8 @@ from torchmetrics.text.cer import CharErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 if _JIWER_AVAILABLE:
-    from jiwer import compute_measures
+    from jiwer import cer
+
 else:
     compute_measures = Callable
 
@@ -27,14 +28,7 @@ BATCHES_2 = {
 
 
 def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    """compute cer as wer where we just split each word by character."""
-    # we also need to count spaces, so these need to be mapped to some not so common character
-    prediction = map(lambda s: s.replace(" ", "@"), prediction)
-    reference = map(lambda s: s.replace(" ", "@"), reference)
-    # split into individual characters
-    prediction = [char for seq in prediction for char in seq]
-    reference = [char for seq in reference for char in seq]
-    return compute_measures(reference, prediction)["wer"]
+    return cer(reference, prediction)
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
