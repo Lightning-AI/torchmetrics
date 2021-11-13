@@ -31,7 +31,6 @@ def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str
     return cer(reference, prediction)
 
 
-
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 @pytest.mark.parametrize(
     ["preds", "targets"],
