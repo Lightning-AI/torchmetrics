@@ -30,7 +30,7 @@ mir_eval>=0.6
 speechmetrics @ https://github.com/aliutkus/speechmetrics/archive/refs/heads/master.zip
 
 # text
-jiwer>=2.2.0
+jiwer>=2.3.0
 rouge-score>=0.0.4
 bert_score==0.3.10
 transformers>=4.0
