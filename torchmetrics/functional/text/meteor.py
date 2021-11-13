@@ -29,7 +29,7 @@
 
 import warnings
 from itertools import chain
-from typing import Any, Dict, List, Set, Tuple, Union
+from typing import List, NamedTuple, Set, Tuple, Union
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
@@ -37,28 +37,30 @@ from typing_extensions import Literal
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
+class _METEORScoreComponents(NamedTuple):
+    matches_count: Tensor
+    reference_len: Tensor
+    hypothesis_len: Tensor
+    frag_frac: Tensor
+
+
 class _NLTKStemmerWrapper:
     """TorchMetrics wrapper for `nltk` stemmers."""
 
-    _STEMMER_CLASS = {"porter": "PorterStemmer"}
+    if not _NLTK_AVAILABLE:
+        raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
+    from nltk.stem import PorterStemmer
 
-    def __init__(self, stemmer: Literal["porter"] = "porter", *args: Any, **kwargs: Any) -> None:
+    _STEMMER_CLASS = {"porter": PorterStemmer}
+
+    def __init__(self, stemmer: Literal["porter"] = "porter") -> None:
         """
         Args:
             stemmer:
 
         Raises:
         """
-        if not _NLTK_AVAILABLE:
-            raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
-        from nltk import stem
-
-        try:
-            stemmer_class = getattr(getattr(stem, stemmer), self._STEMMER_CLASS[stemmer])
-        except ImportError:
-            print(123)
-
-        self.stemmer = stemmer_class(*args, **kwargs)
+        self.stemmer = stemmer
 
     def __call__(self, word: str) -> str:
         """
@@ -67,29 +69,27 @@ class _NLTKStemmerWrapper:
 
         Returns:
         """
-        return self.stemmer.stem(word)
+        stemmer = self._STEMMER_CLASS.get(self.stemmer)()
+        return stemmer.stem(word)
 
 
 class _NLTKWordnetWrapper:
     """TorchMetrics wrapper for `nltk` wordnet corpuses."""
 
-    _WORDNET_CLASS = {"wordnet": "wordnet"}
+    if not _NLTK_AVAILABLE:
+        raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
+    from nltk.corpus import wordnet
 
-    def __init__(self, wordnet: Literal["wordnet"], *args: Any, **kwargs: Any) -> None:
+    _WORDNET_CLASS = {"wordnet": wordnet}
+
+    def __init__(self, wordnet: Literal["wordnet"]) -> None:
         """
         Args:
             wordnet:
 
         Raises:
         """
-        if not _NLTK_AVAILABLE:
-            raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
-        from nltk import corpus
-
-        try:
-            self.wordnet = getattr(corpus, self._WORDNET_CLASS[wordnet])
-        except ImportError:
-            print(123)
+        self.wordnet = wordnet
 
     def __call__(self, word: str):
         """
@@ -98,7 +98,8 @@ class _NLTKWordnetWrapper:
 
         Returns:
         """
-        return self.wordnet.synsets(word)
+        wordnet = self._WORDNET_CLASS.get(self.wordnet)
+        return wordnet.synsets(word)
 
 
 def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
@@ -257,7 +258,7 @@ def _calculate_meteor_components(
     hypothesis: str,
     stemmer: _NLTKStemmerWrapper,
     wordnet: _NLTKWordnetWrapper,
-) -> Dict[str, Tensor]:
+) -> _METEORScoreComponents:
     """Calculate components used for the METEOR score calculation.
 
     Args:
@@ -287,12 +288,12 @@ def _calculate_meteor_components(
     hypothesis_len = float(len(enum_hypothesis))
     matches, matches_count = _align_enum_words(enum_reference, enum_hypothesis, stemmer, wordnet)
     frag_frac = _count_chunks(matches) / matches_count if matches_count != 0 else 0.0
-    return {
-        "matches_count": tensor(matches_count),
-        "reference_len": tensor(reference_len),
-        "hypothesis_len": tensor(hypothesis_len),
-        "frag_frac": tensor(frag_frac),
-    }
+    return _METEORScoreComponents(
+        matches_count=tensor(matches_count),
+        reference_len=tensor(reference_len),
+        hypothesis_len=tensor(hypothesis_len),
+        frag_frac=tensor(frag_frac),
+    )
 
 
 def _calculate_meteor_score(
@@ -341,7 +342,7 @@ def _meteor_score_update(
     hypothesis_corpus: List[str],
     stemmer: _NLTKStemmerWrapper,
     wordnet: _NLTKWordnetWrapper,
-) -> List[List[Dict[str, Tensor]]]:
+) -> List[Tuple[_METEORScoreComponents]]:
     """
     Args:
         reference_corpus:
@@ -352,27 +353,21 @@ def _meteor_score_update(
             `_NLTKStemmerWrapper` object
         wordnet:
             `_NLTKWordnetWrapper` object
-        alpha:
-            A parameter for controlling relative weights of precision and recall.
-        beta:
-            A parameter for controlling shape of penalty as a function of as a function of fragmentation.
-        gamma:
-            A relative weight assigned to fragmentation penalty.
 
-    Return:
-        Sentence-level METEOR score for given reference and hypothesis corpora
+    Returns:
+        Individual components for sentence-level METEOR score for given reference and hypothesis corpora
     """
 
-    results: List[List[Dict[str, Tensor]]] = []
+    results: List[Tuple[_METEORScoreComponents]] = []
     for references, hypothesis in zip(reference_corpus, hypothesis_corpus):
         results.append(
-            [_calculate_meteor_components(reference, hypothesis, stemmer, wordnet) for reference in references]
+            tuple(_calculate_meteor_components(reference, hypothesis, stemmer, wordnet) for reference in references)
         )
     return results
 
 
 def _meteor_score_compute(
-    meteor_score_components: List[List[Dict[str, Tensor]]], alpha: float, beta: float, gamma: float
+    meteor_score_components: List[Tuple[_METEORScoreComponents]], alpha: float, beta: float, gamma: float
 ) -> Tensor:
     """
     Args:
@@ -386,17 +381,27 @@ def _meteor_score_compute(
             A relative weight assigned to fragmentation penalty.
 
     Returns:
-
+        Sentence-level METEOR score for given references and a single hypothesis
     """
     # Sentence-level METEOR score
     sentence_results: List[Tensor] = []
     for components in meteor_score_components:
         sentence_results.append(
             max(
-                _calculate_meteor_score(**sentence_pair_components, alpha=alpha, beta=beta, gamma=gamma)
+                _calculate_meteor_score(
+                    sentence_pair_components.matches_count,
+                    sentence_pair_components.reference_len,
+                    sentence_pair_components.hypothesis_len,
+                    sentence_pair_components.frag_frac,
+                    alpha,
+                    beta,
+                    gamma,
+                )
                 for sentence_pair_components in components
             )
         )
+    # TODO: Add Corpus-level METEOR score in a newer version
+
     return tensor(sentence_results)
 
 
@@ -460,11 +465,14 @@ def meteor_score(
         raise ValueError(
             "METEOR metric requires that nltk is installed. Use `pip install nltk` or `pip install torchmetrics[text].`"
         )
-
-    if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
-        reference_corpus = [[reference] for reference in reference_corpus]
     if isinstance(hypothesis_corpus, str):
         hypothesis_corpus = [hypothesis_corpus]
+
+    if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
+        if len(hypothesis_corpus) == 1:
+            reference_corpus = [reference_corpus]
+        else:
+            reference_corpus = [[reference] for reference in reference_corpus]
 
     if len(reference_corpus) != len(hypothesis_corpus):
         raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")

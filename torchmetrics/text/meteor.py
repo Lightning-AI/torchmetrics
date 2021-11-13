@@ -18,7 +18,7 @@
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#meteor_score
 
 import warnings
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Tuple, Union
 
 from torch import Tensor
 
@@ -26,6 +26,7 @@ from torchmetrics import Metric
 from torchmetrics.functional.text.meteor import (
     _meteor_score_compute,
     _meteor_score_update,
+    _METEORScoreComponents,
     _NLTKStemmerWrapper,
     _NLTKWordnetWrapper,
 )
@@ -69,7 +70,7 @@ class METEORScore(Metric):
 
     is_differentiable = False
     higher_is_better = True
-    meteor_score_components: List[List[Dict[str, Tensor]]]
+    meteor_score_components: List[Tuple[_METEORScoreComponents]]
 
     def __init__(
         self,
@@ -100,7 +101,7 @@ class METEORScore(Metric):
         self.beta = beta
         self.gamma = gamma
 
-        self.add_state("meteor_score_components", [], dist_reduce_fx="cat")
+        self.add_state("meteor_score_components", [], dist_reduce_fx=None)
 
     def update(  # type: ignore
         self,
@@ -108,16 +109,20 @@ class METEORScore(Metric):
         hypothesis_corpus: Union[str, List[str]],
     ) -> None:
         """"""
-        if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
-            reference_corpus = [[reference] for reference in reference_corpus]
         if isinstance(hypothesis_corpus, str):
             hypothesis_corpus = [hypothesis_corpus]
+
+        if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
+            if len(hypothesis_corpus) == 1:
+                reference_corpus = [reference_corpus]
+            else:
+                reference_corpus = [[reference] for reference in reference_corpus]
 
         if len(reference_corpus) != len(hypothesis_corpus):
             raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
 
-        self.meteor_score_components = _meteor_score_update(
-            reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet
+        self.meteor_score_components.append(
+            *_meteor_score_update(reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet)
         )
 
     def compute(self) -> Tensor:
