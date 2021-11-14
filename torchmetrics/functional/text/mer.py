@@ -29,10 +29,8 @@ def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) ->
         (int) Edit distance between the predicted sentence and the reference sentence
     """
     dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
-    for i in range(len(prediction_tokens) + 1):
-        dp[i][0] = i
-    for j in range(len(reference_tokens) + 1):
-        dp[0][j] = j
+    dp[:][0] = list(range(len(prediction_tokens) + 1))
+    dp[0][:] = list(range(len(reference_tokens) + 1))
     for i in range(1, len(prediction_tokens) + 1):
         for j in range(1, len(reference_tokens) + 1):
             if prediction_tokens[i - 1] == reference_tokens[j - 1]:
