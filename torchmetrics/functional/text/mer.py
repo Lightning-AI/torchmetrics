@@ -51,8 +51,8 @@ def _mer_update(
         references: Reference(s) for each speech input as a string or list of strings
 
     Returns:
-        (Tensor) Number of edit operations to get from the reference to the prediction, summed over all samples
-        (Tensor) Number of words over all references
+        Number of edit operations to get from the reference to the prediction, summed over all samples
+        Number of words over all references
     """
     if isinstance(predictions, str):
         predictions = [predictions]
