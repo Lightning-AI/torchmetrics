@@ -39,7 +39,7 @@ class MatchErrorRate(Metric):
         - C is the number of correct words,
         - N is the number of words in the reference (N=S+D+C).
 
-    Compute MatchErrorRate score of transcribed segments against references.
+    Compute ``MatchErrorRate`` score of transcribed segments against references.
 
     Args:
         concatenate_texts: Whether to concatenate all input texts or compute MatchErrorRate iteratively.
