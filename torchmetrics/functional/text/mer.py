@@ -96,7 +96,7 @@ def match_error_rate(
 
 
     Returns:
-        (Tensor) Match error rate
+        Match error rate
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
