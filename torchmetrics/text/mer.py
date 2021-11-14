@@ -45,7 +45,7 @@ class MatchErrorRate(Metric):
         concatenate_texts: Whether to concatenate all input texts or compute MatchErrorRate iteratively.
             This argument is deprecated in v0.6 and it will be removed in v0.7.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
