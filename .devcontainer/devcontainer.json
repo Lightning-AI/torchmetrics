@@ -22,6 +22,7 @@
 			120
 		],
 		"python.pythonPath": "/usr/local/bin/python",
+		"python.defaultInterpreterPath": "/usr/local/bin/python",
 		"python.languageServer": "Pylance",
 		"python.autoComplete.addBrackets": true,
 		"python.analysis.autoImportCompletions": true,
