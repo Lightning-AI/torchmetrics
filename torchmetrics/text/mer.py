@@ -104,6 +104,6 @@ class MatchErrorRate(Metric):
         """Calculate the Match error rate.
 
         Returns:
-            (Tensor) Match error rate
+            Match error rate
         """
         return _mer_compute(self.errors, self.total)
