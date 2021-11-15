@@ -17,7 +17,7 @@
 import re
 import string
 from collections import Counter
-from typing import Any, Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -25,7 +25,7 @@ from torch import Tensor, tensor
 from torchmetrics.utilities import rank_zero_warn
 
 PREDS_TYPE = Dict[str, str]
-TARGETS_TYPE = List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]]
+TARGETS_TYPE = List[Dict[str, List[Dict[str, List[Dict[str, Union[str, List[Dict[str, str]]]]]]]]]
 
 
 def normalize_text(s: str) -> str:
@@ -85,10 +85,7 @@ def metric_max_over_ground_truths(metric_fn, prediction, ground_truths) -> Tenso
     return torch.max(tensor(scores_for_ground_truths))
 
 
-def _squad_update(
-    preds: PREDS_TYPE,
-    targets: TARGETS_TYPE,
-) -> Tuple[Tensor, Tensor, Tensor]:
+def _squad_update(preds: PREDS_TYPE, targets: TARGETS_TYPE) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute F1 Score and Exact Match for a collection of predictions and references.
 
     Args:
