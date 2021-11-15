@@ -398,7 +398,7 @@ class MeanMetric(BaseAggregator):
         >>> metric.update(1)
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
-        tensor([2.])
+        tensor(2.])
     """
 
     def __init__(

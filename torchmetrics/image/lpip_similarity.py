@@ -84,7 +84,7 @@ class LPIPS(Metric):
         >>> img1 = torch.rand(10, 3, 100, 100)
         >>> img2 = torch.rand(10, 3, 100, 100)
         >>> lpips(img1, img2)
-        tensor([0.3566], grad_fn=<DivBackward0>)
+        tensor(0.3566, grad_fn=<DivBackward0>)
     """
 
     is_differentiable = True
