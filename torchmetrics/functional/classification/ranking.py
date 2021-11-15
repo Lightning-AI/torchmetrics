@@ -14,9 +14,31 @@
 from typing import Optional, Tuple
 import torch
 from torch import Tensor
+from torchmetrics.utilities.checks import _input_format_classification
 
+
+def rank_data(x: Tensor) -> Tensor:
+    _, inverse, counts = torch.unique(
+        x, sorted=True, return_inverse=True, return_counts=True)
+    ranks = counts.cumsum(dim=0)
+    return ranks[inverse]
+
+
+def _check_ranking_input(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor
+
+
+    return preds
 
 def _coverage_error_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tuple[Tensor, int, Optional[Tensor]]:
+    preds, target = _input_format_classification(
+        preds: Tensor,
+        target: Tensor,
+        threshold: float = 0.5,
+    top_k: Optional[int] = None,
+    num_classes: Optional[int] = None,
+    multiclass: Optional[bool] = None,
+
+    )
     offset = torch.zeros_like(preds)
     offset[target == 0] = 1.1  # Any number >1 works
     preds_mod = preds + offset
@@ -53,6 +75,18 @@ def coverage_error(y_pred, y_true, sample_weights=None):
     return coverage.mean()
 
 
+def _label_ranking_average_precision_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None):
+    # Invert so that the highest score receives rank 1
+    preds = -preds
+    relevant = 
+
+def _label_ranking_average_precision_compute():
+
+
+def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
+
+
+
 def label_ranking_average_precision(y_pred, y_true, sample_weights=None):
     # Invert so that the highest score receives rank 1
     y_pred = -y_pred
@@ -78,6 +112,40 @@ def label_ranking_average_precision(y_pred, y_true, sample_weights=None):
     else:
         score /= sample_weights.sum()
     return score
+
+
+
+def _label_ranking_loss_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None):
+    n_labels = preds.shape[1]
+    relevant = target == 1
+    n_relevant = relevant.sum(dim=1)
+
+    # Ignore instances where number of true labels is 0 or n_labels
+    mask = (n_relevant > 0) & (n_relevant < n_labels)
+    preds = preds[mask]
+    relevant = relevant[mask]
+    n_relevant = n_relevant[mask]
+
+    # Nothing is relevant
+    if len(preds) == 0:
+        return torch.tensor(0.0, device=preds.device)
+
+    inverse = preds.argsort(dim=1).argsort(dim=1)
+    per_label_loss = ((n_labels - inverse) * relevant).to(torch.float32)
+    correction = 0.5 * n_relevant * (n_relevant + 1)
+    denom = n_relevant * (n_labels - n_relevant)
+    loss = (per_label_loss.sum(dim=1) - correction) / denom
+
+    if sample_weights is not None:
+        coverage *= sample_weights
+        return coverage.sum() / sample_weights.sum()
+
+
+def _label_ranking_loss_compute():
+
+
+def label_ranking_loss(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
+
 
 
 def label_ranking_loss(y_pred, y_true, sample_weights=None):
@@ -107,8 +175,3 @@ def label_ranking_loss(y_pred, y_true, sample_weights=None):
     return loss.mean()
 
 
-def rank_data(x):
-    unique, inverse, counts = torch.unique(
-        x, sorted=True, return_inverse=True, return_counts=True)
-    ranks = counts.cumsum(dim=0)
-    return ranks[inverse]
