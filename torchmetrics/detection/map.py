@@ -325,7 +325,7 @@ class MAP(Metric):
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
-            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
+            for class_id in self._get_classes():
                 coco_eval.params.catIds = [class_id]
                 with _hide_prints():
                     coco_eval.evaluate()
@@ -368,7 +368,7 @@ class MAP(Metric):
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        boxes = [box_convert(box, in_fmt="xyxy", out_fmt="xywh") if box.size(1) == 4 else box for box in boxes]
+        boxes = [box_convert(box, in_fmt="xyxy", out_fmt="xywh") if box.size() == torch.Size([1,4]) else box for box in boxes]
         for image_id, (image_boxes, image_labels) in enumerate(zip(boxes, labels)):
             image_boxes = image_boxes.cpu().tolist()
             image_labels = image_labels.cpu().tolist()
@@ -407,6 +407,12 @@ class MAP(Metric):
 
         classes = [
             {"id": i, "name": str(i)}
-            for i in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
+            for i in self._get_classes()
         ]
         return {"images": images, "annotations": annotations, "categories": classes}
+
+    def _get_classes(self):
+        if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
+            return torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
+        else:
+            return []
