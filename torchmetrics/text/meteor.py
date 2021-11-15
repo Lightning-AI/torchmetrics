@@ -15,7 +15,6 @@
 # Library Name: torchtext
 # Authors: torchtext authors
 # Date: 2021-11-15
-# Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#meteor_score
 
 import warnings
 from typing import Any, Callable, List, Literal, Optional, Tuple, Union
@@ -30,10 +29,14 @@ from torchmetrics.functional.text.meteor import (
     _NLTKStemmerWrapper,
     _NLTKWordnetWrapper,
 )
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
 class METEORScore(Metric):
-    """Calculate `BLEU score`_ of machine translated text with one or more references.
+    """Calculate the [METEOR](https://en.wikipedia.org/wiki/METEOR) (Metric for Evaluation of Translation with
+    Explicit ORdering) score of machine translated text with one or more references. This metric was designed to
+    fix some of the problems found in the more popular BLEU metric, and also produce good correlation with human
+    judgement at the sentence or segment level.
 
     Args:
         stemmer:
@@ -66,6 +69,8 @@ class METEORScore(Metric):
         tensor([0.6464])
 
     References:
+    [1] METEOR: An Automatic Metric for MT Evaluation with High Levels of Correlation with Human Judgments by Alon
+    Lavie and Abhaya Agarwal.
     """
 
     is_differentiable = False
@@ -95,10 +100,21 @@ class METEORScore(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
+        if not _NLTK_AVAILABLE:
+            raise ValueError(
+                "METEORScore metric requires that `nltk` is installed. "
+                "Either install with `pip install nltk` or `pip install torchmetrics[text]`"
+            )
+
         self.stemmer = _NLTKStemmerWrapper(stemmer)
         self.wordnet = _NLTKWordnetWrapper(wordnet)
+
+        if not 0 <= alpha <= 1:
+            raise ValueError("Expected `alpha` argument to be between 0 and 1")
         self.alpha = alpha
         self.beta = beta
+        if not 0 <= gamma <= 1:
+            raise ValueError("Expected `gamma` argument to be between 0 and 1")
         self.gamma = gamma
 
         self.add_state("meteor_score_components", [], dist_reduce_fx=None)
@@ -108,7 +124,12 @@ class METEORScore(Metric):
         reference_corpus: Union[List[str], List[List[str]]],
         hypothesis_corpus: Union[str, List[str]],
     ) -> None:
-        """"""
+        """Updates state with METEORScore calculated on the input.
+
+        Args:
+            reference_corpus: Either an list of reference corpus or an list of lists of reference corpus
+            hypothesis_corpus: Either an single reference corpus or an list of reference corpus
+        """
         if isinstance(hypothesis_corpus, str):
             hypothesis_corpus = [hypothesis_corpus]
 

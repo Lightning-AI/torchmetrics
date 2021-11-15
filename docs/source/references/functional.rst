@@ -463,3 +463,9 @@ wer [func]
 
 .. autofunction:: torchmetrics.functional.wer
     :noindex:
+
+meteor [func]
+~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.meteor
+    :noindex:

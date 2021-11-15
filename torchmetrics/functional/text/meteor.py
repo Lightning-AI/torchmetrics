@@ -15,7 +15,6 @@
 # Library Name: torchtext
 # Authors: torchtext authors
 # Date: 2021-11-15
-# Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#meteor_score
 
 ##############
 
@@ -461,6 +460,11 @@ def meteor_score(
         "Current implementation follows the original METEOR metric and thus is not suitable for reporting results "
         "in research papers."
     )
+    if not 0 <= alpha <= 1:
+        raise ValueError("Expected `alpha` argument to be between 0 and 1")
+    if not 0 <= gamma <= 1:
+        raise ValueError("Expected `gamma` argument to be between 0 and 1")
+
     if not _NLTK_AVAILABLE:
         raise ValueError(
             "METEOR metric requires that nltk is installed. Use `pip install nltk` or `pip install torchmetrics[text].`"
