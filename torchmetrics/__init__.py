@@ -71,6 +71,7 @@ from torchmetrics.text import (  # noqa: E402
     BERTScore,
     BLEUScore,
     CharErrorRate,
+    MatchErrorRate,
     METEORScore,
     ROUGEScore,
     SacreBLEUScore,
@@ -151,4 +152,5 @@ __all__ = [
     "SymmetricMeanAbsolutePercentageError",
     "WER",
     "CharErrorRate",
+    "MatchErrorRate",
 ]

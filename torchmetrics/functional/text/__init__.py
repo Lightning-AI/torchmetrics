@@ -14,6 +14,7 @@
 
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
 from torchmetrics.functional.text.cer import char_error_rate  # noqa: F401
+from torchmetrics.functional.text.mer import match_error_rate  # noqa: F401
 from torchmetrics.functional.text.meteor import meteor_score  # noqa: F401
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score  # noqa: F401
 from torchmetrics.functional.text.wer import wer  # noqa: F401
