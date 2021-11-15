@@ -19,7 +19,6 @@ import string
 from collections import Counter
 from typing import Dict, List, Tuple, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities import rank_zero_warn
@@ -30,7 +29,16 @@ SINGLE_TARGET_TYPE = Dict[str, Union[str, Dict[str, Union[List[str], List[int]]]
 TARGETS_TYPE = Union[SINGLE_TARGET_TYPE, List[SINGLE_TARGET_TYPE]]
 
 
-def normalize_text(s: str) -> str:
+SQuAD_FORMAT = {
+    "answers": {"answer_start": [1], "text": ["This is a test text"]},
+    "context": "This is a test context.",
+    "id": "1",
+    "question": "Is this a test?",
+    "title": "train test",
+}
+
+
+def _normalize_text(s: str) -> str:
     """Lower text and remove punctuation, articles and extra whitespace."""
 
     def remove_articles(text: str) -> str:
@@ -51,15 +59,13 @@ def normalize_text(s: str) -> str:
 
 def get_tokens(s: str) -> List[str]:
     """Split a sentence into separate tokens."""
-    if not s:
-        return []
-    return normalize_text(s).split()
+    return [] if not s else _normalize_text(s).split()
 
 
 def compute_f1_score(predictied_answer, target_answer) -> Tensor:
     """Compute F1 Score for two sentences."""
-    target_tokens: Tensor = get_tokens(target_answer)
-    predicted_tokens: Tensor = get_tokens(predictied_answer)
+    target_tokens: List[str] = get_tokens(target_answer)
+    predicted_tokens: List[str] = get_tokens(predictied_answer)
     common = Counter(target_tokens) & Counter(predicted_tokens)
     num_same: Tensor = tensor(sum(common.values()))
     if len(target_tokens) == 0 or len(predicted_tokens) == 0:
@@ -75,16 +81,12 @@ def compute_f1_score(predictied_answer, target_answer) -> Tensor:
 
 def compute_exact_match_score(prediction, ground_truth) -> Tensor:
     """Compute Exact Match for two sentences."""
-    return tensor(int(normalize_text(prediction) == normalize_text(ground_truth)))
+    return tensor(int(_normalize_text(prediction) == _normalize_text(ground_truth)))
 
 
 def metric_max_over_ground_truths(metric_fn, prediction, ground_truths) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
-    scores_for_ground_truths: List[Tensor] = []
-    for ground_truth in ground_truths:
-        score: Tensor = metric_fn(prediction, ground_truth)
-        scores_for_ground_truths.append(score)
-    return torch.max(tensor(scores_for_ground_truths))
+    return max(metric_fn(prediction, truth) for truth in ground_truths)
 
 
 def _squad_update(
@@ -143,7 +145,7 @@ def _squad_update(
     return f1, exact_match, total
 
 
-def _squad_compute(scores: Tuple[Tensor, Tensor, Tensor]) -> Dict[str, Tensor]:
+def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, Tensor]:
     """Aggregate the F1 Score and Exact match for the batch.
 
     Args:
@@ -153,9 +155,6 @@ def _squad_compute(scores: Tuple[Tensor, Tensor, Tensor]) -> Dict[str, Tensor]:
     Return:
         Dictionary containing the F1 score, Exact match score for the batch.
     """
-    f1: Tensor = scores[0]
-    exact_match: Tensor = scores[1]
-    total: Tensor = scores[2]
     exact_match = 100.0 * exact_match / total
     f1 = 100.0 * f1 / total
     return {"exact_match": exact_match, "f1": f1}
@@ -242,16 +241,7 @@ def squad(
                 "Expected keys in a single target are 'answers' and 'id'."
                 "Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key string.\n"
                 "SQuAD Format: "
-                "{"
-                "    'answers': {"
-                "        'answer_start': [1],"
-                "        'text': ['This is a test text']"
-                "    },"
-                "    'context': 'This is a test context.',"
-                "    'id': '1',"
-                "    'question': 'Is this a test?',"
-                "    'title': 'train test'"
-                "}"
+                f"{SQuAD_FORMAT}"
             )
 
         answers_keys = target["answers"].keys()
@@ -260,16 +250,7 @@ def squad(
                 "Expected keys in a 'answers' are 'text'."
                 "Please make sure that 'answer' maps to a `SQuAD` format dictionary.\n"
                 "SQuAD Format: "
-                "{"
-                "    'answers': {"
-                "        'answer_start': [1],"
-                "        'text': ['This is a test text']"
-                "    },"
-                "    'context': 'This is a test context.',"
-                "    'id': '1',"
-                "    'question': 'Is this a test?',"
-                "    'title': 'train test'"
-                "}"
+                f"{SQuAD_FORMAT}"
             )
 
     preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
@@ -288,5 +269,5 @@ def squad(
             ]
         }
     ]
-    scores: Tuple[Tensor, Tensor, Tensor] = _squad_update(preds_dict, targets_dict)
-    return _squad_compute(scores)
+    f1, exact_match, total = _squad_update(preds_dict, targets_dict)
+    return _squad_compute(f1, exact_match, total)

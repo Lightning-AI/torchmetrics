@@ -72,8 +72,8 @@ def test_accumulation(preds, targets, exact_match, f1):
     _assert_allclose(metrics_score["f1"], torch.mean(torch.tensor(f1)))
 
 
-def _bert_score_ddp(rank, world_size, pred, target, exact_match, f1):
-    """Define a DDP process for BERTScore."""
+def _squad_score_ddp(rank, world_size, pred, target, exact_match, f1):
+    """Define a DDP process for SQuAD metric."""
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "12355"
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
@@ -89,7 +89,7 @@ def _bert_score_ddp(rank, world_size, pred, target, exact_match, f1):
 
 def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
     """Core functionality for the `test_score_ddp` test."""
-    _bert_score_ddp(rank, world_size, preds[rank], targets[rank], exact_match[rank], f1[rank])
+    _squad_score_ddp(rank, world_size, preds[rank], targets[rank], exact_match[rank], f1[rank])
 
 
 @pytest.mark.parametrize(

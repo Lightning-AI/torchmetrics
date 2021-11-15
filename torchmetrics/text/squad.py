@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional
 
 import torch
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.squad import PREDS_TYPE, TARGETS_TYPE, _squad_compute, _squad_update
+from torchmetrics.functional.text.squad import PREDS_TYPE, TARGETS_TYPE, SQuAD_FORMAT, _squad_compute, _squad_update
 
 
 class SQuAD(Metric):
-    """Calculate `SQuAD Metric`_.
+    """Calculate `SQuAD Metric`_ which corresponds to the scoring script for version 1 of the Stanford Question
+    Answering Dataset (SQuAD).
 
     Args:
         compute_on_step:
@@ -36,11 +37,11 @@ class SQuAD(Metric):
             will be used to perform the allgather.
 
     Example:
-        >>> from torchmetrics.text.squad import SQuAD
+        >>> from torchmetrics import SQuAD
         >>> predictions = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
         >>> references = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
-        >>> _sqaud = SQuAD()
-        >>> _sqaud(predictions, references)
+        >>> sqaud = SQuAD()
+        >>> sqaud(predictions, references)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
 
     References:
@@ -135,16 +136,7 @@ class SQuAD(Metric):
                     "Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key"
                     "string.\n"
                     "SQuAD Format: "
-                    "{"
-                    "    'answers': {"
-                    "        'answer_start': [1],"
-                    "        'text': ['This is a test text']"
-                    "    },"
-                    "    'context': 'This is a test context.',"
-                    "    'id': '1',"
-                    "    'question': 'Is this a test?',"
-                    "    'title': 'train test'"
-                    "}"
+                    f"{SQuAD_FORMAT}"
                 )
 
             answers_keys = target["answers"].keys()
@@ -153,16 +145,7 @@ class SQuAD(Metric):
                     "Expected keys in a 'answers' are 'text'."
                     "Please make sure that 'answer' maps to a `SQuAD` format dictionary.\n"
                     "SQuAD Format: "
-                    "{"
-                    "    'answers': {"
-                    "        'answer_start': [1],"
-                    "        'text': ['This is a test text']"
-                    "    },"
-                    "    'context': 'This is a test context.',"
-                    "    'id': '1',"
-                    "    'question': 'Is this a test?',"
-                    "    'title': 'train test'"
-                    "}"
+                    f"{SQuAD_FORMAT}"
                 )
 
         preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
@@ -181,10 +164,10 @@ class SQuAD(Metric):
                 ]
             }
         ]
-        scores: Tuple[Tensor, Tensor, Tensor] = _squad_update(preds_dict, targets_dict)
-        getattr(self, "f1_score").append(scores[0].to(self.device))
-        getattr(self, "exact_match").append(scores[1].to(self.device))
-        getattr(self, "total").append(scores[2].to(self.device))
+        f1_score, exact_match, total = _squad_update(preds_dict, targets_dict)
+        getattr(self, "f1_score").append(f1_score.to(self.device))
+        getattr(self, "exact_match").append(exact_match.to(self.device))
+        getattr(self, "total").append(total.to(self.device))
 
     def compute(self) -> Dict[str, Tensor]:
         """Aggregate the F1 Score and Exact match for the batch.
@@ -195,4 +178,4 @@ class SQuAD(Metric):
         f1_score = torch.sum(torch.tensor(getattr(self, "f1_score")))
         exact_match = torch.sum(torch.tensor(getattr(self, "exact_match")))
         total = torch.sum(torch.tensor(getattr(self, "total")))
-        return _squad_compute((f1_score, exact_match, total))
+        return _squad_compute(f1_score, exact_match, total)
