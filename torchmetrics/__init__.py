@@ -77,7 +77,6 @@ from torchmetrics.text import (  # noqa: E402
 )
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
-
 __all__ = [
     "functional",
     "Accuracy",
