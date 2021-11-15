@@ -45,7 +45,6 @@ def compare_fn_ddp(preds, target, base_fn):
         val = base_fn.compute().cpu().numpy()
         min = min if min < val else val
         max = max if max > val else val
-        print(min, max)
     raw = base_fn(preds, target)
     return [raw.cpu().numpy(), min, max]
 
