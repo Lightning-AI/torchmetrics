@@ -53,7 +53,7 @@ class MatchErrorRate(Metric):
             will be used to perform the allgather
 
     Returns:
-        Match error rate
+        Match error rate score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]

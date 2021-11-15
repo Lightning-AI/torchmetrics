@@ -96,7 +96,7 @@ def match_error_rate(
 
 
     Returns:
-        Match error rate
+        Match error rate score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
