@@ -52,7 +52,7 @@ class _NLTKStemmerWrapper:
         )
     from nltk.stem import PorterStemmer, StemmerI
 
-    _STEMMER_CLASS: Dict[str,StemmerI] = {"porter": PorterStemmer}
+    _STEMMER_CLASS: Dict[str, StemmerI] = {"porter": PorterStemmer}
 
     def __init__(self, stemmer: Literal["porter"] = "porter") -> None:
         """
@@ -89,7 +89,7 @@ class _NLTKWordnetWrapper:
         raise ValueError(
             "Stemmer requires that nltk is installed. Use `pip install nltk` or or `pip install torchmetrics[text]."
         )
-    from nltk.corpus import wordnet, WordNetCorpusReader
+    from nltk.corpus import WordNetCorpusReader, wordnet
 
     _WORDNET_CLASS: Dict[str, WordNetCorpusReader] = {"wordnet": wordnet}
 
@@ -222,7 +222,10 @@ def _match_synonym_enums(
 
 
 def _align_enum_words(
-    enum_reference: List[Tuple[int, str]], enum_hypothesis: List[Tuple[int, str]], stemmer: _NLTKStemmerWrapper, wordnet: _NLTKWordnetWrapper
+    enum_reference: List[Tuple[int, str]],
+    enum_hypothesis: List[Tuple[int, str]],
+    stemmer: _NLTKStemmerWrapper,
+    wordnet: _NLTKWordnetWrapper,
 ) -> Tuple[List[Tuple[int, int]], float]:
     """Align/match words in the hypothesis to the reference. This is achieved by sequentially applying exact match,
     stemmed match and synonym match based on `nltk` wordnet.

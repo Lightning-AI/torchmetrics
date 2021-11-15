@@ -26,6 +26,7 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 if _NLTK_AVAILABLE:
     import nltk
     from nltk.translate.meteor_score import meteor_score as nltk_meteor_score
+
     nltk.download("wordnet")
 
 

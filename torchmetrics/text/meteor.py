@@ -18,9 +18,9 @@
 
 import warnings
 from typing import Any, Callable, List, Optional, Tuple, Union
-from typing_extensions import Literal
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.meteor import (
