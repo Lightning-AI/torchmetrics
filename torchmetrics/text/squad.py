@@ -77,9 +77,37 @@ class SQuAD(Metric):
 
         Args:
             preds:
-                An iterable of predicted sentences or a single predicted sentence.
+                A Dictionary or List of Dictionary-s that map `id` and `prediction_text` to the respective values.
+
+                Example prediction:
+
+                .. code-block:: python
+
+                    {"prediction_text": "TorchMetrics is awesome", "id": "123"}
+
             targets:
-                An iterable of target sentences or a single target sentence.
+                A Dictioinary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
+
+                Example target:
+
+                .. code-block:: python
+
+                    {
+                        'answers': [{'answer_start': [1], 'text': ['This is a test answer']}],
+                        'id': '1',
+                    }
+
+                Reference SQuAD Format:
+
+                .. code-block:: python
+
+                    {
+                        'answers': {'answer_start': [1], 'text': ['This is a test text']},
+                        'context': 'This is a test context.',
+                        'id': '1',
+                        'question': 'Is this a test?',
+                        'title': 'train test'
+                    }
 
         Raises:
             KeyError:
