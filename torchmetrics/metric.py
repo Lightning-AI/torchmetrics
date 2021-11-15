@@ -27,7 +27,7 @@ from torch.nn import Module
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import (
     _flatten,
-    _squeeze_if_possible,
+    _squeeze_if_scalar,
     dim_zero_cat,
     dim_zero_max,
     dim_zero_mean,
@@ -378,7 +378,7 @@ class Metric(Module, ABC):
                 dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
             ):
                 value = compute(*args, **kwargs)
-                self._computed = _squeeze_if_possible(value)
+                self._computed = _squeeze_if_scalar(value)
 
             return self._computed
 
