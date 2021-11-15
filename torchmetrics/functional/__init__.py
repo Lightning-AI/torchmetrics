@@ -69,6 +69,7 @@ from torchmetrics.functional.self_supervised import embedding_similarity
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
+from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.wer import wer
@@ -139,4 +140,5 @@ __all__ = [
     "symmetric_mean_absolute_percentage_error",
     "wer",
     "char_error_rate",
+    "match_error_rate",
 ]
