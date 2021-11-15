@@ -246,4 +246,3 @@ def _squeeze_1_element_tensor(x: Tensor) -> Tensor:
 
 def _squeeze_if_possible(data: Any) -> Any:
     return apply_to_collection(data, Tensor, _squeeze_1_element_tensor)
-    
