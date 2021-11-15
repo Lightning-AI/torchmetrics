@@ -83,8 +83,8 @@ class MinMaxMetric(Metric):
                 f"Expected base metric to be an instance of `torchmetrics.Metric` but received {base_metric}"
             )
         self._base_metric = base_metric
-        self.add_state("min_val", default=torch.tensor(float("inf")), dist_reduce_fx="min")
-        self.add_state("max_val", default=torch.tensor(float("-inf")), dist_reduce_fx="max")
+        self.register_buffer("min_val", torch.tensor(float("inf")))
+        self.register_buffer("max_val", torch.tensor(float("-inf")))
 
     def update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
         """Updates the underlying metric."""
