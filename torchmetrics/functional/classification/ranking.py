@@ -11,16 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Tuple
 import torch
 from torch import Tensor
 
 
-
-def _coverage_error_update(preds: Tensor, target: Tensor, sample_weight: Tensor) -> Tensor:
+def _coverage_error_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tuple[Tensor, int, Optional[Tensor]]:
     offset = torch.zeros_like(preds)
+    offset[target == 0] = 1.1  # Any number >1 works
+    preds_mod = preds + offset
+    preds_min = preds_mod.min(dim=1)[0]
+    coverage = (preds >= preds_min[:, None]).sum(dim=1).to(torch.float32)
+    if isinstance(sample_weight, Tensor):
+        coverage *= sample_weight
+        sample_weight = sample_weight.sum()
+    return coverage.sum(), coverage.numel(), sample_weight
 
 
-def _coverage_error_compute()
+def _coverage_error_compute(coverage: Tensor, n_elements: int, sample_weight: Optional[Tensor] = None) -> Tensor:
+    if sample_weight is not None:
+        return coverage / sample_weight
+    return coverage / n_elements
+
+
+def coverage_error(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
+    coverage, n_elements, sample_weight = _coverage_error_update(preds, target, sample_weight)
+    return _coverage_error_compute(coverage, n_elements, sample_weight)
+
 
 def coverage_error(y_pred, y_true, sample_weights=None):
     offset = torch.zeros_like(y_pred)
