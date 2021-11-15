@@ -65,15 +65,11 @@ class SQuAD(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state(name="f1_score", default=[], dist_reduce_fx=None)
-        self.add_state(name="exact_match", default=[], dist_reduce_fx=None)
-        self.add_state(name="total", default=[], dist_reduce_fx=None)
+        self.add_state(name="f1_score", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state(name="exact_match", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(
-        self,
-        preds: PREDS_TYPE,
-        targets: TARGETS_TYPE,
-    ) -> None:  # type: ignore
+    def update(self, preds: PREDS_TYPE, targets: TARGETS_TYPE) -> None:  # type: ignore
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
         Args:
@@ -139,7 +135,8 @@ class SQuAD(Metric):
                     f"{SQuAD_FORMAT}"
                 )
 
-            if "text" not in target["answers"].keys():
+            answers: Dict[str, Any] = target["answers"]
+            if "text" not in answers.keys():
                 raise KeyError(
                     "Expected keys in a 'answers' are 'text'."
                     "Please make sure that 'answer' maps to a `SQuAD` format dictionary.\n"
@@ -164,9 +161,9 @@ class SQuAD(Metric):
             }
         ]
         f1_score, exact_match, total = _squad_update(preds_dict, targets_dict)
-        self.f1_score.append(f1_score.to(self.device))
-        self.exact_match.append(exact_match.to(self.device))
-        self.total.append(total.to(self.device))
+        self.f1_score += f1_score
+        self.exact_match += exact_match
+        self.total += total
 
     def compute(self) -> Dict[str, Tensor]:
         """Aggregate the F1 Score and Exact match for the batch.
@@ -174,7 +171,4 @@ class SQuAD(Metric):
         Return:
             Dictionary containing the F1 score, Exact match score for the batch.
         """
-        f1_score = torch.sum(torch.tensor(self.f1_score))
-        exact_match = torch.sum(torch.tensor(self.exact_match))
-        total = torch.sum(torch.tensor(self.total))
-        return _squad_compute(f1_score, exact_match, total)
+        return _squad_compute(self.f1_score, self.exact_match, self.total)  # type: ignore
