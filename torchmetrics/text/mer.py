@@ -38,7 +38,6 @@ class MatchErrorRate(Metric):
         - C is the number of correct words,
         - N is the number of words in the reference (N=S+D+C).
 
-    Compute ``MatchErrorRate`` score of transcribed segments against references.
 
     Args:
         compute_on_step:
