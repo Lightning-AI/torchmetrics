@@ -71,6 +71,7 @@ from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
+from torchmetrics.functional.text.squad import squad
 from torchmetrics.functional.text.wer import wer
 
 __all__ = [
@@ -132,6 +133,7 @@ __all__ = [
     "snr",
     "spearman_corrcoef",
     "specificity",
+    "squad",
     "ssim",
     "stat_scores",
     "stoi",
