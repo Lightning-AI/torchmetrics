@@ -24,7 +24,9 @@ from torchmetrics.text.meteor import METEORScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 if _NLTK_AVAILABLE:
+    import nltk
     from nltk.translate.meteor_score import meteor_score as nltk_meteor_score
+    nltk.download("wordnet")
 
 
 # Examples taken from https://github.com/nltk/nltk/blob/develop/nltk/translate/meteor_score.py
@@ -92,5 +94,5 @@ class TestMETEORScore(TextTester):
             metric_functional=meteor_score,
             sk_metric=nltk_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
         )

@@ -28,7 +28,7 @@
 
 import warnings
 from itertools import chain
-from typing import List, NamedTuple, Set, Tuple, Union
+from typing import Dict, List, NamedTuple, Set, Tuple, Union
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
@@ -47,47 +47,64 @@ class _NLTKStemmerWrapper:
     """TorchMetrics wrapper for `nltk` stemmers."""
 
     if not _NLTK_AVAILABLE:
-        raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
-    from nltk.stem import PorterStemmer
+        raise ValueError(
+            "Stemmer requires that nltk is installed. Use `pip install nltk` or or `pip install torchmetrics[text]."
+        )
+    from nltk.stem import PorterStemmer, StemmerI
 
-    _STEMMER_CLASS = {"porter": PorterStemmer}
+    _STEMMER_CLASS: Dict[str,StemmerI] = {"porter": PorterStemmer}
 
     def __init__(self, stemmer: Literal["porter"] = "porter") -> None:
         """
         Args:
             stemmer:
+                A name of stemmer from `nltk` package to be used.
 
         Raises:
+            KeyError:
+                If invalid stemmer class is chosen.
         """
+        if stemmer not in self._STEMMER_CLASS.keys():
+            raise KeyError(f"{stemmer} is not a valid stemmer choice. Please use one of {self._STEMMER_CLASS.keys()}.")
         self.stemmer = stemmer
 
     def __call__(self, word: str) -> str:
-        """
+        """Return a stemmed word.
+
         Args:
             word:
+                A word to be stemmed.
 
         Returns:
+            A stemmed word.
         """
-        stemmer = self._STEMMER_CLASS.get(self.stemmer)()
-        return stemmer.stem(word)
+        stemmer = self._STEMMER_CLASS[self.stemmer]
+        return stemmer().stem(word)
 
 
 class _NLTKWordnetWrapper:
     """TorchMetrics wrapper for `nltk` wordnet corpuses."""
 
     if not _NLTK_AVAILABLE:
-        raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
-    from nltk.corpus import wordnet
+        raise ValueError(
+            "Stemmer requires that nltk is installed. Use `pip install nltk` or or `pip install torchmetrics[text]."
+        )
+    from nltk.corpus import wordnet, WordNetCorpusReader
 
-    _WORDNET_CLASS = {"wordnet": wordnet}
+    _WORDNET_CLASS: Dict[str, WordNetCorpusReader] = {"wordnet": wordnet}
 
     def __init__(self, wordnet: Literal["wordnet"]) -> None:
         """
         Args:
             wordnet:
+                A name of wordnet corpus from `nltk` package to be used.
 
         Raises:
+            KeyError:
+                If invalid wordnet class is chosen.
         """
+        if wordnet not in self._WORDNET_CLASS.keys():
+            raise KeyError(f"{wordnet} is not a valid stemmer choice. Please use one of {self._WORDNET_CLASS.keys()}.")
         self.wordnet = wordnet
 
     def __call__(self, word: str):
@@ -97,7 +114,7 @@ class _NLTKWordnetWrapper:
 
         Returns:
         """
-        wordnet = self._WORDNET_CLASS.get(self.wordnet)
+        wordnet = self._WORDNET_CLASS[self.wordnet]
         return wordnet.synsets(word)
 
 
@@ -205,8 +222,8 @@ def _match_synonym_enums(
 
 
 def _align_enum_words(
-    enum_reference: List[str], enum_hypothesis: List[str], stemmer: _NLTKStemmerWrapper, wordnet: _NLTKWordnetWrapper
-) -> List[Tuple[int, int]]:
+    enum_reference: List[Tuple[int, str]], enum_hypothesis: List[Tuple[int, str]], stemmer: _NLTKStemmerWrapper, wordnet: _NLTKWordnetWrapper
+) -> Tuple[List[Tuple[int, int]], float]:
     """Align/match words in the hypothesis to the reference. This is achieved by sequentially applying exact match,
     stemmed match and synonym match based on `nltk` wordnet.
 
@@ -341,7 +358,7 @@ def _meteor_score_update(
     hypothesis_corpus: List[str],
     stemmer: _NLTKStemmerWrapper,
     wordnet: _NLTKWordnetWrapper,
-) -> List[Tuple[_METEORScoreComponents]]:
+) -> List[Tuple[_METEORScoreComponents, ...]]:
     """
     Args:
         reference_corpus:
@@ -357,7 +374,7 @@ def _meteor_score_update(
         Individual components for sentence-level METEOR score for given reference and hypothesis corpora
     """
 
-    results: List[Tuple[_METEORScoreComponents]] = []
+    results: List[Tuple[_METEORScoreComponents, ...]] = []
     for references, hypothesis in zip(reference_corpus, hypothesis_corpus):
         results.append(
             tuple(_calculate_meteor_components(reference, hypothesis, stemmer, wordnet) for reference in references)
@@ -366,7 +383,7 @@ def _meteor_score_update(
 
 
 def _meteor_score_compute(
-    meteor_score_components: List[Tuple[_METEORScoreComponents]], alpha: float, beta: float, gamma: float
+    meteor_score_components: List[Tuple[_METEORScoreComponents, ...]], alpha: float, beta: float, gamma: float
 ) -> Tensor:
     """
     Args:
@@ -483,6 +500,7 @@ def meteor_score(
 
     stemmer_class = _NLTKStemmerWrapper(stemmer)
     wordnet_class = _NLTKWordnetWrapper(wordnet)
-
+    print("hypothesis corpus -", hypothesis_corpus)
+    print("reference_corpus -", reference_corpus)
     meteor_score_components = _meteor_score_update(reference_corpus, hypothesis_corpus, stemmer_class, wordnet_class)
     return _meteor_score_compute(meteor_score_components, alpha, beta, gamma)

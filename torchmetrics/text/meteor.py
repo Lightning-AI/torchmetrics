@@ -17,7 +17,8 @@
 # Date: 2021-11-15
 
 import warnings
-from typing import Any, Callable, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
+from typing_extensions import Literal
 
 from torch import Tensor
 
@@ -75,7 +76,6 @@ class METEORScore(Metric):
 
     is_differentiable = False
     higher_is_better = True
-    meteor_score_components: List[Tuple[_METEORScoreComponents]]
 
     def __init__(
         self,
@@ -117,7 +117,7 @@ class METEORScore(Metric):
             raise ValueError("Expected `gamma` argument to be between 0 and 1")
         self.gamma = gamma
 
-        self.add_state("meteor_score_components", [], dist_reduce_fx=None)
+        self.meteor_score_components: List[Tuple[_METEORScoreComponents, ...]] = []
 
     def update(  # type: ignore
         self,
@@ -141,10 +141,11 @@ class METEORScore(Metric):
 
         if len(reference_corpus) != len(hypothesis_corpus):
             raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
-
-        self.meteor_score_components.append(
-            *_meteor_score_update(reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet)
+        print(hypothesis_corpus)
+        self.meteor_score_components.extend(
+            _meteor_score_update(reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet)
         )
+        print(self.meteor_score_components)
 
     def compute(self) -> Tensor:
         """Calculate METEOR score.
