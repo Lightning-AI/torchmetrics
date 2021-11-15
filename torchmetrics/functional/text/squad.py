@@ -24,8 +24,10 @@ from torch import Tensor, tensor
 
 from torchmetrics.utilities import rank_zero_warn
 
-PREDS_TYPE = Dict[str, str]
-TARGETS_TYPE = List[Dict[str, List[Dict[str, List[Dict[str, Union[str, List[Dict[str, str]]]]]]]]]
+SINGLE_PRED_TYPE = Dict[str, str]
+PREDS_TYPE = Union[SINGLE_PRED_TYPE, List[SINGLE_PRED_TYPE]]
+SINGLE_TARGET_TYPE = Dict[str, Union[str, Dict[str, Union[List[str], List[int]]]]]
+TARGETS_TYPE = Union[SINGLE_TARGET_TYPE, List[SINGLE_TARGET_TYPE]]
 
 
 def normalize_text(s: str) -> str:
@@ -85,7 +87,9 @@ def metric_max_over_ground_truths(metric_fn, prediction, ground_truths) -> Tenso
     return torch.max(tensor(scores_for_ground_truths))
 
 
-def _squad_update(preds: PREDS_TYPE, targets: TARGETS_TYPE) -> Tuple[Tensor, Tensor, Tensor]:
+def _squad_update(
+    preds: Dict[str, str], targets: List[Dict[str, List[Dict[str, List[Dict[str, Union[str, List[Dict[str, str]]]]]]]]]
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute F1 Score and Exact Match for a collection of predictions and references.
 
     Args:
@@ -158,8 +162,8 @@ def _squad_compute(scores: Tuple[Tensor, Tensor, Tensor]) -> Dict[str, Tensor]:
 
 
 def squad(
-    preds: List[Dict[str, str]],
-    targets: List[Dict[str, Union[str, Dict[str, Union[List[str], List[int]]]]]],
+    preds: PREDS_TYPE,
+    targets: TARGETS_TYPE,
 ) -> Dict[str, Tensor]:
     """Calculate `SQuAD Metric`_ .
 
@@ -187,6 +191,12 @@ def squad(
         [1] SQuAD: 100,000+ Questions for Machine Comprehension of Text by Pranav Rajpurkar, Jian Zhang, Konstantin
         Lopyrev, Percy Liang `SQuAD Metric`_ .
     """
+
+    if isinstance(preds, Dict):
+        preds = [preds]
+
+    if isinstance(targets, Dict):
+        targets = [targets]
 
     for pred in preds:
         keys = pred.keys()

@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import torch
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.squad import _squad_compute, _squad_update
+from torchmetrics.functional.text.squad import PREDS_TYPE, TARGETS_TYPE, _squad_compute, _squad_update
 
 
 class SQuAD(Metric):
@@ -70,8 +70,8 @@ class SQuAD(Metric):
 
     def update(
         self,
-        preds: List[Dict[str, str]],
-        targets: List[Dict[str, Union[str, Dict[str, Union[List[str], List[int]]]]]],
+        preds: PREDS_TYPE,
+        targets: TARGETS_TYPE,
     ) -> None:  # type: ignore
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
@@ -85,6 +85,11 @@ class SQuAD(Metric):
             KeyError:
                 If the required keys are missing in either predictions or targets.
         """
+        if isinstance(preds, Dict):
+            preds = [preds]
+
+        if isinstance(targets, Dict):
+            targets = [targets]
 
         for pred in preds:
             keys = pred.keys()
