@@ -107,7 +107,7 @@ class BaseAggregator(Metric):
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value.squeeze() if isinstance(self.value, Tensor) else self.value
+        return self.value
 
 
 class MaxMetric(BaseAggregator):
