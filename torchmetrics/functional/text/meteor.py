@@ -464,6 +464,8 @@ def meteor_score(
             If length of reference and hypothesis corpus differs.
 
     Example:
+        >>> import nltk
+        >>> nltk.download('wordnet')
         >>> predictions = ['the cat is on the mat']
         >>> references = [['there is a cat on the mat']]
         >>> meteor_score(references, predictions)  # doctest: +SKIP

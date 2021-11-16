@@ -69,6 +69,7 @@ from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.mer import match_error_rate
+from torchmetrics.functional.text.meteor import meteor_score
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.wer import wer
@@ -101,6 +102,7 @@ __all__ = [
     "mean_absolute_percentage_error",
     "mean_squared_error",
     "mean_squared_log_error",
+    "meteor_score",
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",

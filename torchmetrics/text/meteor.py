@@ -62,6 +62,8 @@ class METEORScore(Metric):
             will be used to perform the allgather.
 
     Example:
+        >>> import nltk
+        >>> nltk.download('wordnet')
         >>> predictions = ['the cat is on the mat']
         >>> references = [['there is a cat on the mat']]
         >>> meteor_score = METEORScore()
