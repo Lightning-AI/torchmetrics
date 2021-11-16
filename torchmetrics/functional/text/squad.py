@@ -17,7 +17,7 @@
 import re
 import string
 from collections import Counter
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 from torch import Tensor, tensor
 
@@ -91,7 +91,7 @@ def metric_max_over_ground_truths(metric_fn: Callable, prediction: str, ground_t
 
 def _squad_update(
     preds: Dict[str, str],
-    targets: List[Dict[str, List[Dict[str, List[Dict[str, UPDATE_METHOD_SINGLE_PRED_TYPE]]]]]],
+    targets: List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]],
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute F1 Score and Exact Match for a collection of predictions and references.
 

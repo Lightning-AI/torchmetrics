@@ -49,7 +49,12 @@ class SQuAD(Metric):
         Lopyrev, Percy Liang `SQuAD Metric`_ .
     """
 
+    is_differentiable = False
     higher_is_better = True
+
+    f1_score: Tensor
+    exact_match: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -135,7 +140,7 @@ class SQuAD(Metric):
                     f"{SQuAD_FORMAT}"
                 )
 
-            answers: Dict[str, Any] = target["answers"]
+            answers: Dict[str, Any] = target["answers"]  # type: ignore
             if "text" not in answers.keys():
                 raise KeyError(
                     "Expected keys in a 'answers' are 'text'."
@@ -151,7 +156,9 @@ class SQuAD(Metric):
                     {
                         "qas": [
                             {
-                                "answers": [{"text": answer_text} for answer_text in target["answers"]["text"]],
+                                "answers": [
+                                    {"text": answer_text} for answer_text in target["answers"]["text"]  # type: ignore
+                                ],
                                 "id": target["id"],
                             }
                             for target in targets
@@ -171,4 +178,4 @@ class SQuAD(Metric):
         Return:
             Dictionary containing the F1 score, Exact match score for the batch.
         """
-        return _squad_compute(self.f1_score, self.exact_match, self.total)  # type: ignore
+        return _squad_compute(self.f1_score, self.exact_match, self.total)
