@@ -76,7 +76,7 @@ from torchmetrics.text import (  # noqa: E402
     SacreBLEUScore,
     SQuAD,
 )
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
+from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
 __all__ = [
     "functional",
@@ -118,6 +118,7 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinMaxMetric",
     "MinMetric",
     "MultioutputWrapper",
     "PearsonCorrcoef",
