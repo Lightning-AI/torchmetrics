@@ -84,7 +84,9 @@ def compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:
     return tensor(int(_normalize_text(prediction) == _normalize_text(ground_truth)))
 
 
-def metric_max_over_ground_truths(metric_fn: Callable, prediction: str, ground_truths: List[str]) -> Tensor:
+def metric_max_over_ground_truths(
+    metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str]
+) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
     return max(metric_fn(prediction, truth) for truth in ground_truths)
 
