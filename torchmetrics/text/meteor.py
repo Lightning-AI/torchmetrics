@@ -64,6 +64,7 @@ class METEORScore(Metric):
     Example:
         >>> import nltk
         >>> nltk.download('wordnet')
+        True
         >>> predictions = ['the cat is on the mat']
         >>> references = [['there is a cat on the mat']]
         >>> meteor_score = METEORScore()

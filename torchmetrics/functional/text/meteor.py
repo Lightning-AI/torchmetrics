@@ -28,12 +28,18 @@
 
 import warnings
 from itertools import chain
-from typing import Dict, List, NamedTuple, Set, Tuple, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Set, Tuple, Union
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
+
+if _NLTK_AVAILABLE:
+    from nltk.corpus import WordNetCorpusReader, wordnet
+    from nltk.stem import PorterStemmer, StemmerI
+else:
+    PorterStemmer, StemmerI, WordNetCorpusReader, wordnet = None, None, None, None
 
 
 class _METEORScoreComponents(NamedTuple):
@@ -46,13 +52,7 @@ class _METEORScoreComponents(NamedTuple):
 class _NLTKStemmerWrapper:
     """TorchMetrics wrapper for `nltk` stemmers."""
 
-    if not _NLTK_AVAILABLE:
-        raise ValueError(
-            "Stemmer requires that nltk is installed. Use `pip install nltk` or or `pip install torchmetrics[text]."
-        )
-    from nltk.stem import PorterStemmer, StemmerI
-
-    _STEMMER_CLASS: Dict[str, StemmerI] = {"porter": PorterStemmer}
+    _STEMMER_CLASS: Dict[str, Optional[StemmerI]] = {"porter": PorterStemmer}
 
     def __init__(self, stemmer: Literal["porter"] = "porter") -> None:
         """
@@ -68,7 +68,7 @@ class _NLTKStemmerWrapper:
             raise KeyError(f"{stemmer} is not a valid stemmer choice. Please use one of {self._STEMMER_CLASS.keys()}.")
         self.stemmer = stemmer
 
-    def __call__(self, word: str) -> str:
+    def __call__(self, word: str) -> Optional[str]:
         """Return a stemmed word.
 
         Args:
@@ -79,19 +79,14 @@ class _NLTKStemmerWrapper:
             A stemmed word.
         """
         stemmer = self._STEMMER_CLASS[self.stemmer]
-        return stemmer().stem(word)
+        if stemmer is not None:
+            return stemmer().stem(word)
 
 
 class _NLTKWordnetWrapper:
     """TorchMetrics wrapper for `nltk` wordnet corpuses."""
 
-    if not _NLTK_AVAILABLE:
-        raise ValueError(
-            "Stemmer requires that nltk is installed. Use `pip install nltk` or or `pip install torchmetrics[text]."
-        )
-    from nltk.corpus import WordNetCorpusReader, wordnet
-
-    _WORDNET_CLASS: Dict[str, WordNetCorpusReader] = {"wordnet": wordnet}
+    _WORDNET_CLASS: Dict[str, Optional[WordNetCorpusReader]] = {"wordnet": wordnet}
 
     def __init__(self, wordnet: Literal["wordnet"]) -> None:
         """
@@ -107,7 +102,7 @@ class _NLTKWordnetWrapper:
             raise KeyError(f"{wordnet} is not a valid stemmer choice. Please use one of {self._WORDNET_CLASS.keys()}.")
         self.wordnet = wordnet
 
-    def __call__(self, word: str):
+    def __call__(self, word: str) -> Optional[Any]:
         """
         Args:
             word:
@@ -115,7 +110,8 @@ class _NLTKWordnetWrapper:
         Returns:
         """
         wordnet = self._WORDNET_CLASS[self.wordnet]
-        return wordnet.synsets(word)
+        if wordnet is not None:
+            return wordnet.synsets(word)
 
 
 def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
@@ -466,6 +462,7 @@ def meteor_score(
     Example:
         >>> import nltk
         >>> nltk.download('wordnet')
+        True
         >>> predictions = ['the cat is on the mat']
         >>> references = [['there is a cat on the mat']]
         >>> meteor_score(references, predictions)  # doctest: +SKIP
@@ -483,9 +480,11 @@ def meteor_score(
         "in research papers."
     )
     if not 0 <= alpha <= 1:
-        raise ValueError("Expected `alpha` argument to be between 0 and 1")
+        raise ValueError("Expected `alpha` argument to be between 0 and 1.")
+    if beta < 0:
+        raise ValueError("Expected `beta` argument to be between greater than or equal to 0.")
     if not 0 <= gamma <= 1:
-        raise ValueError("Expected `gamma` argument to be between 0 and 1")
+        raise ValueError("Expected `gamma` argument to be between 0 and 1.")
 
     if not _NLTK_AVAILABLE:
         raise ValueError(
