@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
