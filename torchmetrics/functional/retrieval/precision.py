@@ -56,5 +56,5 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None) 
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:k].sum().float()
+    relevant = target[torch.argsort(preds, dim=-1, descending=True)[:k]].sum().float()
     return relevant / k
