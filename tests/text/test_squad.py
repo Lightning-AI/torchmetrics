@@ -9,8 +9,6 @@ from tests.helpers.testers import _assert_allclose, _assert_tensor
 from torchmetrics.functional.text import squad
 from torchmetrics.text.squad import SQuAD
 
-os.environ["TOKENIZERS_PARALLELISM"] = "1"
-
 SAMPLE_1 = {
     "exact_match": 100.0,
     "f1": 100.0,

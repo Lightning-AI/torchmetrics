@@ -57,15 +57,15 @@ def _normalize_text(s: str) -> str:
     return white_space_fix(remove_articles(remove_punc(lower(s))))
 
 
-def get_tokens(s: str) -> List[str]:
+def _get_tokens(s: str) -> List[str]:
     """Split a sentence into separate tokens."""
     return [] if not s else _normalize_text(s).split()
 
 
-def compute_f1_score(predictied_answer: str, target_answer: str) -> Tensor:
+def _compute_f1_score(predicted_answer: str, target_answer: str) -> Tensor:
     """Compute F1 Score for two sentences."""
-    target_tokens: List[str] = get_tokens(target_answer)
-    predicted_tokens: List[str] = get_tokens(predictied_answer)
+    target_tokens = _get_tokens(target_answer)
+    predicted_tokens = _get_tokens(predicted_answer)
     common = Counter(target_tokens) & Counter(predicted_tokens)
     num_same: Tensor = tensor(sum(common.values()))
     if len(target_tokens) == 0 or len(predicted_tokens) == 0:
@@ -79,12 +79,12 @@ def compute_f1_score(predictied_answer: str, target_answer: str) -> Tensor:
     return f1
 
 
-def compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:
+def _compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:
     """Compute Exact Match for two sentences."""
     return tensor(int(_normalize_text(prediction) == _normalize_text(ground_truth)))
 
 
-def metric_max_over_ground_truths(
+def _metric_max_over_ground_truths(
     metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str]
 ) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
@@ -112,27 +112,16 @@ def _squad_update(
         >>> predictions = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
         >>> targets = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
         >>> preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in predictions}
-        >>> targets_dict = [
-        ...     {
-        ...         "paragraphs": [
-        ...             {
-        ...                 "qas": [
-        ...                     {
-        ...                         "answers": [{"text": answer_text} for answer_text in target["answers"]["text"]],
-        ...                         "id": target["id"],
-        ...                     }
-        ...                     for target in targets
-        ...                 ]
-        ...             }
-        ...         ]
-        ...     }
-        ... ]
+        >>> targets_dict = [dict(paragraphs=[
+        ...             dict(qas=[dict(answers=[{"text": answer_text} for answer_text in target["answers"]["text"]], id=target["id"])
+        ...                     for target in targets]
+        ...             )])]
         >>> _squad_update(preds_dict, targets_dict)
         (tensor(1.), tensor(1.), tensor(1))
     """
-    f1: Tensor = tensor(0.0)
-    exact_match: Tensor = tensor(0.0)
-    total: Tensor = tensor(0)
+    f1 = tensor(0.0)
+    exact_match = tensor(0.0)
+    total = tensor(0)
     for article in targets:
         for paragraph in article["paragraphs"]:
             for qa in paragraph["qas"]:
@@ -142,8 +131,8 @@ def _squad_update(
                     continue
                 ground_truths = list(map(lambda x: x["text"], qa["answers"]))  # type: ignore
                 prediction = preds[qa["id"]]  # type: ignore
-                exact_match += metric_max_over_ground_truths(compute_exact_match_score, prediction, ground_truths)
-                f1 += metric_max_over_ground_truths(compute_f1_score, prediction, ground_truths)
+                exact_match += _metric_max_over_ground_truths(_compute_exact_match_score, prediction, ground_truths)
+                f1 += _metric_max_over_ground_truths(_compute_f1_score, prediction, ground_truths)
 
     return f1, exact_match, total
 
@@ -258,21 +247,16 @@ def squad(
 
     preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
     targets_dict = [
-        {
-            "paragraphs": [
-                {
-                    "qas": [
-                        {
-                            "answers": [
-                                {"text": answer_text} for answer_text in target["answers"]["text"]  # type: ignore
-                            ],
-                            "id": target["id"],
-                        }
+        dict(paragraphs=[
+                dict(qas=[
+                        dict(answers=[
+                                dict(text=answer_text) for answer_text in target["answers"]["text"]  # type: ignore
+                            ], id=target["id"])
                         for target in targets
                     ]
-                }
+                )
             ]
-        }
+        )
     ]
     f1, exact_match, total = _squad_update(preds_dict, targets_dict)
     return _squad_compute(f1, exact_match, total)
