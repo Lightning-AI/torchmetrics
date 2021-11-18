@@ -151,12 +151,15 @@ class SQuAD(Metric):
 
         preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
         targets_dict = [
-            dict(paragraphs=[
-                    dict(qas=[
-                            dict(answers=[
+            dict(
+                paragraphs=[
+                    dict(
+                        qas=[
+                            dict(
+                                answers=[
                                     dict(text=answer_text) for answer_text in target["answers"]["text"]  # type: ignore
                                 ],
-                                id=target["id"]
+                                id=target["id"],
                             )
                             for target in targets
                         ]
