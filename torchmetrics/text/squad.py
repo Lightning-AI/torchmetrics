@@ -134,8 +134,8 @@ class SQuAD(Metric):
             if "answers" not in keys or "id" not in keys:
                 raise KeyError(
                     "Expected keys in a single target are 'answers' and 'id'."
-                    "Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key"
-                    "string.\n"
+                    " Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key"
+                    " string.\n"
                     "SQuAD Format: "
                     f"{SQuAD_FORMAT}"
                 )
