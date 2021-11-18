@@ -150,20 +150,10 @@ class SQuAD(Metric):
                 )
 
         preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
-        _fn_answer = lamda tgt: dict(
-                                answers=[
-                                    dict(text=txt) for txt in tgt["answers"]["text"]  # type: ignore
-                                ], id=tgt["id"]
-                            )
-        targets_dict = [
-            dict(
-                paragraphs=[
-                    dict(
-                        qas=[_fn_answer(target) for target in targets]
-                    )
-                ]
-            )
-        ]
+        _fn_answer = lambda tgt: dict(
+            answers=[dict(text=txt) for txt in tgt["answers"]["text"]], id=tgt["id"]  # type: ignore
+        )
+        targets_dict = [dict(paragraphs=[dict(qas=[_fn_answer(target) for target in targets])])]
         f1_score, exact_match, total = _squad_update(preds_dict, targets_dict)
         self.f1_score += f1_score
         self.exact_match += exact_match

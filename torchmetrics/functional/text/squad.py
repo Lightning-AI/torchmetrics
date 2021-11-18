@@ -112,10 +112,11 @@ def _squad_update(
         >>> predictions = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
         >>> targets = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
         >>> preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in predictions}
-        >>> targets_dict = [dict(paragraphs=[
-        ...             dict(qas=[dict(answers=[{"text": answer_text} for answer_text in target["answers"]["text"]], id=target["id"])
-        ...                     for target in targets]
-        ...             )])]
+        >>> targets_dict = [
+        ...     dict(paragraphs=[dict(qas=[dict(answers=[
+        ...         {"text": txt} for txt in target["answers"]["text"]], id=target["id"]) for target in targets
+        ...     ])])
+        ... ]
         >>> _squad_update(preds_dict, targets_dict)
         (tensor(1.), tensor(1.), tensor(1))
     """
@@ -246,22 +247,9 @@ def squad(
             )
 
     preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
-    targets_dict = [
-        dict(
-            paragraphs=[
-                dict(
-                    qas=[
-                        dict(
-                            answers=[
-                                dict(text=answer_text) for answer_text in target["answers"]["text"]  # type: ignore
-                            ],
-                            id=target["id"],
-                        )
-                        for target in targets
-                    ]
-                )
-            ]
-        )
-    ]
+    _fn_answer = lambda tgt: dict(
+        answers=[dict(text=txt) for txt in tgt["answers"]["text"]], id=tgt["id"]  # type: ignore
+    )
+    targets_dict = [dict(paragraphs=[dict(qas=[_fn_answer(target) for target in targets])])]
     f1, exact_match, total = _squad_update(preds_dict, targets_dict)
     return _squad_compute(f1, exact_match, total)
