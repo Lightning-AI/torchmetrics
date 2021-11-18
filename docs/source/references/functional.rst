@@ -25,7 +25,7 @@ pit [func]
 
 
 sdr [func]
-~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.sdr
     :noindex:

@@ -94,8 +94,7 @@ def sdr(
         tensor(-12.0589)
         >>> # use with pit
         >>> from torchmetrics.functional.audio import pit
-        >>> # [batch, spk, time]
-        >>> preds = torch.randn(4, 2, 8000)
+        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
         >>> best_metric, best_perm = pit(preds, target, sdr, 'max')
         >>> best_metric

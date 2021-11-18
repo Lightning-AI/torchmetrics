@@ -86,7 +86,7 @@ PIT
     :noindex:
 
 SDR
-~~~~~~
+~~~
 
 .. autoclass:: torchmetrics.SDR
     :noindex:

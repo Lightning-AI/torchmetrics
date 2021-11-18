@@ -76,8 +76,7 @@ class SDR(Metric):
         >>> # use with pit
         >>> from torchmetrics.audio import PIT
         >>> from torchmetrics.functional.audio import sdr
-        >>> # [batch, spk, time]
-        >>> preds = torch.randn(4, 2, 8000)
+        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
         >>> pit = PIT(sdr, 'max')
         >>> pit(preds, target)
