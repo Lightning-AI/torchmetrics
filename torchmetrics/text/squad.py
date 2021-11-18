@@ -150,19 +150,16 @@ class SQuAD(Metric):
                 )
 
         preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
+        _fn_answer = lamda tgt: dict(
+                                answers=[
+                                    dict(text=txt) for txt in tgt["answers"]["text"]  # type: ignore
+                                ], id=tgt["id"]
+                            )
         targets_dict = [
             dict(
                 paragraphs=[
                     dict(
-                        qas=[
-                            dict(
-                                answers=[
-                                    dict(text=answer_text) for answer_text in target["answers"]["text"]  # type: ignore
-                                ],
-                                id=target["id"],
-                            )
-                            for target in targets
-                        ]
+                        qas=[_fn_answer(target) for target in targets]
                     )
                 ]
             )
