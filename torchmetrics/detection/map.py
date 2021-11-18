@@ -411,7 +411,7 @@ class MAP(Metric):
         classes = [{"id": i, "name": str(i)} for i in self._get_classes()]
         return {"images": images, "annotations": annotations, "categories": classes}
 
-    def _get_classes(self):
+    def _get_classes(self) -> list:
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
         else:
