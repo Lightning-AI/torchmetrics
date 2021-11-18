@@ -666,6 +666,12 @@ MetricTracker
 .. autoclass:: torchmetrics.MetricTracker
     :noindex:
 
+MinMaxMetric
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MinMaxMetric
+    :noindex:
+
 MultioutputWrapper
 ~~~~~~~~~~~~~~~~~~
 
