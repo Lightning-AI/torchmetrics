@@ -396,6 +396,18 @@ SSIM
 .. autoclass:: torchmetrics.SSIM
     :noindex:
 
+*****************
+Detection Metrics
+*****************
+
+Object detection metrics can be used to evaluate the predicted detections with given groundtruth detections on images.
+
+MAP
+~~~
+
+.. autoclass:: torchmetrics.MAP
+    :noindex:
+
 ******************
 Regression Metrics
 ******************
@@ -610,6 +622,12 @@ CharErrorRate
 .. autoclass:: torchmetrics.CharErrorRate
     :noindex:
 
+MatchErrorRate
+~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MatchErrorRate
+    :noindex:
+
 ROUGEScore
 ~~~~~~~~~~
 
@@ -646,6 +664,12 @@ MetricTracker
 ~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MetricTracker
+    :noindex:
+
+MinMaxMetric
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MinMaxMetric
     :noindex:
 
 MultioutputWrapper
