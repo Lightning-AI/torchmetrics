@@ -68,7 +68,7 @@ class _NLTKStemmerWrapper:
             raise KeyError(f"{stemmer} is not a valid stemmer choice. Please use one of {self._STEMMER_CLASS.keys()}.")
         self.stemmer = stemmer
 
-    def __call__(self, word: str) -> Optional[str]:
+    def __call__(self, word: str) -> str:
         """Return a stemmed word.
 
         Args:
@@ -81,6 +81,8 @@ class _NLTKStemmerWrapper:
         stemmer = self._STEMMER_CLASS[self.stemmer]
         if stemmer is not None:
             return stemmer().stem(word)
+        # To comply with mypy typing on several places
+        return word
 
 
 class _NLTKWordnetWrapper:
@@ -112,6 +114,7 @@ class _NLTKWordnetWrapper:
         wordnet = self._WORDNET_CLASS[self.wordnet]
         if wordnet is not None:
             return wordnet.synsets(word)
+        return None
 
 
 def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
@@ -126,11 +129,15 @@ def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
     Returns:
         A set of found synonyms for the input word.
     """
-    synonyms_set = set(
-        chain.from_iterable(
-            (lemma.name() for lemma in synset.lemmas() if lemma.name().find("_") < 0) for synset in wordnet(word)
-        )
-    ).union({word})
+    synsets = wordnet(word)
+    if synsets is not None:
+        synonyms_set = set(
+            chain.from_iterable(
+                (lemma.name() for lemma in synset.lemmas() if lemma.name().find("_") < 0) for synset in synsets
+            )
+        ).union({word})
+    else:
+        synonyms_set = {word}
     return synonyms_set
 
 
