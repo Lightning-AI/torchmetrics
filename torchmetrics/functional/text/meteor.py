@@ -36,6 +36,9 @@ from typing_extensions import Literal
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 if _NLTK_AVAILABLE:
+    import nltk
+
+    nltk.download("wordnet")
     from nltk.corpus import WordNetCorpusReader, wordnet
     from nltk.stem import PorterStemmer, StemmerI
 else:
@@ -360,8 +363,8 @@ def _calculate_meteor_score(
 
 
 def _meteor_score_update(
-    reference_corpus: List[List[str]],
-    hypothesis_corpus: List[str],
+    reference_corpus: Union[List[str], List[List[str]]],
+    hypothesis_corpus: Union[str, List[str]],
     stemmer: _NLTKStemmerWrapper,
     wordnet: _NLTKWordnetWrapper,
 ) -> List[Tuple[_METEORScoreComponents, ...]]:
@@ -379,6 +382,18 @@ def _meteor_score_update(
     Returns:
         Individual components for sentence-level METEOR score for given reference and hypothesis corpora
     """
+    if isinstance(hypothesis_corpus, str):
+        hypothesis_corpus = [hypothesis_corpus]
+
+    # Check if reference_corpus is a type of List[str]
+    if all(isinstance(ref, str) for ref in reference_corpus):
+        if len(hypothesis_corpus) == 1:
+            reference_corpus = [reference_corpus]  # type: ignore
+        else:
+            reference_corpus = [[reference] for reference in reference_corpus]  # type: ignore
+
+    if len(reference_corpus) != len(hypothesis_corpus):
+        raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
 
     results: List[Tuple[_METEORScoreComponents, ...]] = []
     for references, hypothesis in zip(reference_corpus, hypothesis_corpus):
@@ -409,7 +424,7 @@ def _meteor_score_compute(
     sentence_results: List[Tensor] = []
     for components in meteor_score_components:
         sentence_results.append(
-            max(
+            max(  # type: ignore
                 _calculate_meteor_score(
                     sentence_pair_components.matches_count,
                     sentence_pair_components.reference_len,
@@ -497,21 +512,8 @@ def meteor_score(
         raise ValueError(
             "METEOR metric requires that nltk is installed. Use `pip install nltk` or `pip install torchmetrics[text].`"
         )
-    if isinstance(hypothesis_corpus, str):
-        hypothesis_corpus = [hypothesis_corpus]
-
-    if len(reference_corpus) > 0 and isinstance(reference_corpus[0], str):
-        if len(hypothesis_corpus) == 1:
-            reference_corpus = [reference_corpus]
-        else:
-            reference_corpus = [[reference] for reference in reference_corpus]
-
-    if len(reference_corpus) != len(hypothesis_corpus):
-        raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
 
     stemmer_class = _NLTKStemmerWrapper(stemmer)
     wordnet_class = _NLTKWordnetWrapper(wordnet)
-    print("hypothesis corpus -", hypothesis_corpus)
-    print("reference_corpus -", reference_corpus)
     meteor_score_components = _meteor_score_update(reference_corpus, hypothesis_corpus, stemmer_class, wordnet_class)
     return _meteor_score_compute(meteor_score_components, alpha, beta, gamma)
