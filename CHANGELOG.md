@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added NLP metrics:
+  - `MatchErrorRate` ([#619](https://github.com/PyTorchLightning/metrics/pull/619))
+
+
+- Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
 
 ### Changed
 
