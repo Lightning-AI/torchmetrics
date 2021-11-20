@@ -75,7 +75,6 @@ from torchmetrics.functional.text.wer import wer
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
 
-
 __all__ = [
     "accuracy",
     "auc",

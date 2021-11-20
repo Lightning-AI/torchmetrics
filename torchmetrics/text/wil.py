@@ -30,13 +30,13 @@ class WordInfoLost(Metric):
     Word Information Lost rate can then be computed as:
 
     .. math::
-        wil = 1 - \frac{C}{N} + \frac{C}{P} 
+        wil = 1 - \frac{C}{N} + \frac{C}{P}
 
     where:
-    
+
         - C is the number of correct words,
-        - N is the number of words in the reference 
-        - P is the number of words in the prediction 
+        - N is the number of words in the reference
+        - P is the number of words in the prediction
 
 
     Args:
@@ -97,7 +97,7 @@ class WordInfoLost(Metric):
         self.prediction_total += prediction_total
 
     def compute(self) -> Tensor:
-        """Calculate the Word Information Lost
+        """Calculate the Word Information Lost.
 
         Returns:
             Word Information Lost score

@@ -54,7 +54,6 @@ def _wip_update(
         (Tensor) Number of edit operations to get from the reference to the prediction, summed over all samples
         (Tensor) Number of words over all references
         (Tensor) Number of words over all prediction
-
     """
     if isinstance(predictions, str):
         predictions = [predictions]
@@ -71,8 +70,8 @@ def _wip_update(
         reference_total += len(reference_tokens)
         prediction_total += len(prediction_tokens)
         total += max(len(reference_tokens), len(prediction_tokens))
-        
-    return errors-total, reference_total,prediction_total
+
+    return errors - total, reference_total, prediction_total
 
 
 def _wip_compute(errors: Tensor, reference_total: Tensor, prediction_total: Tensor) -> Tensor:
@@ -106,5 +105,5 @@ def word_information_preserved(
         >>> word_information_preserved(predictions=predictions, references=references)
         tensor(0.3472)
     """
-    errors,reference_total, prediction_total = _wip_update(predictions, references)
-    return _wip_compute(errors, reference_total,prediction_total)
+    errors, reference_total, prediction_total = _wip_update(predictions, references)
+    return _wip_compute(errors, reference_total, prediction_total)
