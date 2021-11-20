@@ -646,6 +646,18 @@ WER
 .. autoclass:: torchmetrics.WER
     :noindex:
 
+WordInfoLost
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoLost
+    :noindex:
+
+WordInfoPreserved
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoPreserved
+    :noindex:
+
 
 ********
 Wrappers

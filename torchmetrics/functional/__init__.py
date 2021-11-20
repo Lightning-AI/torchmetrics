@@ -72,6 +72,9 @@ from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.wer import wer
+from torchmetrics.functional.text.wil import word_information_lost
+from torchmetrics.functional.text.wip import word_information_preserved
+
 
 __all__ = [
     "accuracy",
@@ -139,4 +142,6 @@ __all__ = [
     "wer",
     "char_error_rate",
     "match_error_rate",
+    "word_information_lost",
+    "word_information_preserved",
 ]
