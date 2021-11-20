@@ -39,7 +39,7 @@ def _compute_wip_metric_jiwer(prediction: Union[str, List[str]], reference: Unio
         pytest.param(BATCHES_2["preds"], BATCHES_2["targets"]),
     ],
 )
-class TestWordInfoLost(TextTester):
+class TestWordInfoPreserved(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_wip_class(self, ddp, dist_sync_on_step, preds, targets):
