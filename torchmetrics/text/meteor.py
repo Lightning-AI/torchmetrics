@@ -17,7 +17,7 @@
 # Date: 2021-11-15
 
 import warnings
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -26,10 +26,37 @@ from torchmetrics import Metric
 from torchmetrics.functional.text.meteor import (
     _meteor_score_compute,
     _meteor_score_update,
+    _METEORScoreComponents,
     _NLTKStemmerWrapper,
     _NLTKWordnetWrapper,
 )
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
+
+
+def _meteor_dist_reduce_fx(x: List[Tuple[_METEORScoreComponents, ...]]) -> List[Tuple[_METEORScoreComponents, ...]]:
+    """During DDP, individual components of `_METEORScoreComponents` instances contain the list of tensors.
+
+    We need to unroll these lists to multiple `_METEORScoreComponents` instances.
+    """
+
+    def unroll_meteor_score_components(ms: _METEORScoreComponents) -> List[List[_METEORScoreComponents]]:
+        ms_unrolled = [
+            [_METEORScoreComponents(m, r, h, f)]
+            for m, r, h, f in zip(ms.matches_count, ms.reference_len, ms.hypothesis_len, ms.frag_frac)
+        ]
+        return ms_unrolled
+
+    for i in range(len(x)):
+        ms_unrolled_list: List[List[_METEORScoreComponents]] = []
+        for j in range(len(x[i])):
+            if not ms_unrolled_list:
+                ms_unrolled_list += unroll_meteor_score_components(x[i][j])
+            else:
+                ms_unrolled = unroll_meteor_score_components(x[i][j])
+                for k in range(len(ms_unrolled_list)):
+                    ms_unrolled_list[k] += ms_unrolled[k]
+
+    return [tuple(y) for y in ms_unrolled_list]
 
 
 class METEORScore(Metric):
@@ -59,6 +86,16 @@ class METEORScore(Metric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If `nltk` package is not installed.
+        ValueError:
+            If `alpha` is not between 0 and 1.
+        ValueError:
+            If `beta` is not greater than or equal to 0.
+        ValueError:
+            If `gamma` is not between 0 and 1.
 
     Example:
         >>> import nltk
@@ -117,12 +154,14 @@ class METEORScore(Metric):
         if not 0 <= alpha <= 1:
             raise ValueError("Expected `alpha` argument to be between 0 and 1")
         self.alpha = alpha
+        if beta < 0:
+            raise ValueError("Expected `beta` argument to be greater than or equal to 0.")
         self.beta = beta
         if not 0 <= gamma <= 1:
             raise ValueError("Expected `gamma` argument to be between 0 and 1")
         self.gamma = gamma
 
-        self.add_state("meteor_score_components", [], dist_reduce_fx="cat")
+        self.add_state("meteor_score_components", [], dist_reduce_fx=_meteor_dist_reduce_fx)
 
     def update(  # type: ignore
         self,
@@ -132,8 +171,12 @@ class METEORScore(Metric):
         """Updates state with METEORScore calculated on the input.
 
         Args:
-            reference_corpus: Either an list of reference corpus or an list of lists of reference corpus
-            hypothesis_corpus: Either an single reference corpus or an list of reference corpus
+            reference_corpus:
+                An iterable of iterables of reference corpus. Either a list of reference corpora or a list of lists of
+                reference corpora.
+            hypothesis_corpus:
+                An iterable of machine translated corpus. Either a single hypothesis corpus or a list of hypothesis
+                 corpora.
         """
         self.meteor_score_components.extend(
             _meteor_score_update(reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet)
@@ -143,6 +186,6 @@ class METEORScore(Metric):
         """Calculate METEOR score.
 
         Return:
-            Tensor with METEOR Score
+            Tensor with sentence-level METEOR Score
         """
         return _meteor_score_compute(self.meteor_score_components, self.alpha, self.beta, self.gamma)

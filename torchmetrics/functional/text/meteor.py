@@ -37,12 +37,11 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 if _NLTK_AVAILABLE:
     import nltk
-
-    nltk.download("wordnet")
-    from nltk.corpus import WordNetCorpusReader, wordnet
+    from nltk.corpus import WordNetCorpusReader
+    from nltk.corpus import wordnet as nltk_wordnet
     from nltk.stem import PorterStemmer, StemmerI
 else:
-    PorterStemmer, StemmerI, WordNetCorpusReader, wordnet = None, None, None, None
+    PorterStemmer, StemmerI, WordNetCorpusReader, nltk_wordnet = None, None, None, None
 
 
 class _METEORScoreComponents(NamedTuple):
@@ -91,7 +90,7 @@ class _NLTKStemmerWrapper:
 class _NLTKWordnetWrapper:
     """TorchMetrics wrapper for `nltk` wordnet corpuses."""
 
-    _WORDNET_CLASS: Dict[str, Optional[WordNetCorpusReader]] = {"wordnet": wordnet}
+    _WORDNET_CLASS: Dict[str, Optional[WordNetCorpusReader]] = {"wordnet": nltk_wordnet}
 
     def __init__(self, wordnet: Literal["wordnet"]) -> None:
         """
@@ -107,16 +106,25 @@ class _NLTKWordnetWrapper:
             raise KeyError(f"{wordnet} is not a valid stemmer choice. Please use one of {self._WORDNET_CLASS.keys()}.")
         self.wordnet = wordnet
 
+        # Check if all dependencies are downloaded during init
+        if _NLTK_AVAILABLE:
+            try:
+                self._WORDNET_CLASS[wordnet].synsets("init")  # type: ignore
+            except LookupError:
+                nltk.download("wordnet")
+
     def __call__(self, word: str) -> Optional[Any]:
         """
         Args:
             word:
 
         Returns:
+            A set of synonyms.
         """
         wordnet = self._WORDNET_CLASS[self.wordnet]
         if wordnet is not None:
             return wordnet.synsets(word)
+        # To comply with mypy typing on several places
         return None
 
 
@@ -130,7 +138,7 @@ def _generate_synonyms(word: str, wordnet: _NLTKWordnetWrapper) -> Set[str]:
             `_NLTKWordnetWrapper` object utilizing `nltk` wordnet corpus for looking up for synonyms.
 
     Returns:
-        A set of found synonyms for the input word.
+        A set of synonyms for the input word.
     """
     synsets = wordnet(word)
     if synsets is not None:
@@ -371,9 +379,11 @@ def _meteor_score_update(
     """
     Args:
         reference_corpus:
-            An iterable of iterables of reference corpus.
+            An iterable of iterables of reference corpus. Either a list of reference corpora or a list of lists of
+            reference corpora.
         hypothesis_corpus:
-            An iterable of machine translated corpus.
+            An iterable of machine translated corpus. Either a single hypothesis corpus or a list of hypothesis
+            corpora.
         stemmer:
             `_NLTKStemmerWrapper` object
         wordnet:
@@ -381,6 +391,10 @@ def _meteor_score_update(
 
     Returns:
         Individual components for sentence-level METEOR score for given reference and hypothesis corpora
+
+    Raises:
+        ValueError:
+            If length of reference and hypothesis corpus differs.
     """
     if isinstance(hypothesis_corpus, str):
         hypothesis_corpus = [hypothesis_corpus]
@@ -409,7 +423,8 @@ def _meteor_score_compute(
     """
     Args:
         meteor_score_components:
-
+            A named tuple containing `matches_count`, `reference_len`, `hypothesis_len` and `frag_frac` used for the
+            calculation of the METEOR score.
         alpha:
             A parameter for controlling relative weights of precision and recall.
         beta:
@@ -437,7 +452,7 @@ def _meteor_score_compute(
                 for sentence_pair_components in components
             )
         )
-    # TODO: Add Corpus-level METEOR score in a newer version
+    # TODO: Add Corpus-level METEOR score with an update to METEOR v1.5
 
     return tensor(sentence_results)
 
@@ -458,9 +473,11 @@ def meteor_score(
 
     Args:
         reference_corpus:
-            An iterable of iterables of reference corpus.
+            An iterable of iterables of reference corpus. Either a list of reference corpora or a list of lists of
+            reference corpora.
         hypothesis_corpus:
-            An iterable of machine translated corpus.
+            An iterable of machine translated corpus. Either a single hypothesis corpus or a list of hypothesis
+            corpora.
         stemmer:
             A name of stemmer from `nltk` package to be used.
         wordnet:
@@ -479,7 +496,11 @@ def meteor_score(
         ValueError:
             If `nltk` package is not installed.
         ValueError:
-            If length of reference and hypothesis corpus differs.
+            If `alpha` is not between 0 and 1.
+        ValueError:
+            If `beta` is not greater than or equal to 0.
+        ValueError:
+            If `gamma` is not between 0 and 1.
 
     Example:
         >>> import nltk
@@ -501,17 +522,18 @@ def meteor_score(
         "Current implementation follows the original METEOR metric and thus is not suitable for reporting results "
         "in research papers."
     )
-    if not 0 <= alpha <= 1:
-        raise ValueError("Expected `alpha` argument to be between 0 and 1.")
-    if beta < 0:
-        raise ValueError("Expected `beta` argument to be between greater than or equal to 0.")
-    if not 0 <= gamma <= 1:
-        raise ValueError("Expected `gamma` argument to be between 0 and 1.")
 
     if not _NLTK_AVAILABLE:
         raise ValueError(
             "METEOR metric requires that nltk is installed. Use `pip install nltk` or `pip install torchmetrics[text].`"
         )
+
+    if not 0 <= alpha <= 1:
+        raise ValueError("Expected `alpha` argument to be between 0 and 1.")
+    if beta < 0:
+        raise ValueError("Expected `beta` argument to be greater than or equal to 0.")
+    if not 0 <= gamma <= 1:
+        raise ValueError("Expected `gamma` argument to be between 0 and 1.")
 
     stemmer_class = _NLTKStemmerWrapper(stemmer)
     wordnet_class = _NLTKWordnetWrapper(wordnet)
