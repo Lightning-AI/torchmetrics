@@ -30,13 +30,13 @@ class WordInfoPreserved(Metric):
     word Information Preserved rate can then be computed as:
 
     .. math::
-        wip = \frac{C}{N} + \frac{C}{P} 
+        wip = \frac{C}{N} + \frac{C}{P}
 
     where:
-    
+
         - C is the number of correct words,
-        - N is the number of words in the reference 
-        - P is the number of words in the prediction 
+        - N is the number of words in the reference
+        - P is the number of words in the prediction
 
 
     Args:
@@ -97,7 +97,7 @@ class WordInfoPreserved(Metric):
         self.prediction_total += prediction_total
 
     def compute(self) -> Tensor:
-        """Calculate the word Information Preserved
+        """Calculate the word Information Preserved.
 
         Returns:
             word Information Preserved score

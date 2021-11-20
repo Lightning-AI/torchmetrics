@@ -20,4 +20,3 @@ from torchmetrics.text.sacre_bleu import SacreBLEUScore  # noqa: F401
 from torchmetrics.text.wer import WER  # noqa: F401
 from torchmetrics.text.wil import WordInfoLost  # noqa: F401
 from torchmetrics.text.wip import WordInfoPreserved  # noqa: F401
-

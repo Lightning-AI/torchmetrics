@@ -70,8 +70,8 @@ def _wil_update(
         reference_total += len(reference_tokens)
         prediction_total += len(prediction_tokens)
         total += max(len(reference_tokens), len(prediction_tokens))
-        
-    return errors-total, reference_total,prediction_total
+
+    return errors - total, reference_total, prediction_total
 
 
 def _wil_compute(errors: Tensor, reference_total: Tensor, prediction_total: Tensor) -> Tensor:
@@ -84,7 +84,7 @@ def _wil_compute(errors: Tensor, reference_total: Tensor, prediction_total: Tens
     Returns:
         (Tensor) Word Information Lost score
     """
-    return 1-((errors / reference_total) * (errors / prediction_total))
+    return 1 - ((errors / reference_total) * (errors / prediction_total))
 
 
 def word_information_lost(
@@ -105,5 +105,5 @@ def word_information_lost(
         >>> word_information_lost(predictions=predictions, references=references)
         tensor(0.6528)
     """
-    errors,reference_total, prediction_total = _wil_update(predictions, references)
+    errors, reference_total, prediction_total = _wil_update(predictions, references)
     return _wil_compute(errors, reference_total, prediction_total)
