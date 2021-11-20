@@ -27,3 +27,5 @@ docs: clean
 env:
 	pip install -r requirements.txt
 	pip install -r requirements/test.txt
+	# download nltk dependencies
+	python -c "import nltk; nltk.download('wordnet')"

@@ -36,7 +36,6 @@ from typing_extensions import Literal
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 if _NLTK_AVAILABLE:
-    import nltk
     from nltk.corpus import WordNetCorpusReader
     from nltk.corpus import wordnet as nltk_wordnet
     from nltk.stem import PorterStemmer, StemmerI
@@ -106,17 +105,11 @@ class _NLTKWordnetWrapper:
             raise KeyError(f"{wordnet} is not a valid stemmer choice. Please use one of {self._WORDNET_CLASS.keys()}.")
         self.wordnet = wordnet
 
-        # Check if all dependencies are downloaded during init
-        if _NLTK_AVAILABLE:
-            try:
-                self._WORDNET_CLASS[wordnet].synsets("init")  # type: ignore
-            except LookupError:
-                nltk.download("wordnet")
-
     def __call__(self, word: str) -> Optional[Any]:
         """
         Args:
             word:
+                An input word.
 
         Returns:
             A set of synonyms.
