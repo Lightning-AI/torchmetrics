@@ -17,7 +17,13 @@ import torch
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.squad import PREDS_TYPE, TARGETS_TYPE, SQuAD_FORMAT, _squad_compute, _squad_update
+from torchmetrics.functional.text.squad import (
+    PREDS_TYPE,
+    TARGETS_TYPE,
+    _squad_compute,
+    _squad_input_check,
+    _squad_update,
+)
 
 
 class SQuAD(Metric):
@@ -115,45 +121,7 @@ class SQuAD(Metric):
             KeyError:
                 If the required keys are missing in either predictions or targets.
         """
-        if isinstance(preds, Dict):
-            preds = [preds]
-
-        if isinstance(targets, Dict):
-            targets = [targets]
-
-        for pred in preds:
-            keys = pred.keys()
-            if "prediction_text" not in keys or "id" not in keys:
-                raise KeyError(
-                    "Expected keys in a single prediction are 'prediction_text' and 'id'."
-                    "Please make sure that 'prediction_text' maps to the answer string and 'id' maps to the key string."
-                )
-
-        for target in targets:
-            keys = target.keys()
-            if "answers" not in keys or "id" not in keys:
-                raise KeyError(
-                    "Expected keys in a single target are 'answers' and 'id'."
-                    " Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key"
-                    " string.\n"
-                    "SQuAD Format: "
-                    f"{SQuAD_FORMAT}"
-                )
-
-            answers: Dict[str, Any] = target["answers"]  # type: ignore
-            if "text" not in answers.keys():
-                raise KeyError(
-                    "Expected keys in a 'answers' are 'text'."
-                    "Please make sure that 'answer' maps to a `SQuAD` format dictionary.\n"
-                    "SQuAD Format: "
-                    f"{SQuAD_FORMAT}"
-                )
-
-        preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}
-        _fn_answer = lambda tgt: dict(
-            answers=[dict(text=txt) for txt in tgt["answers"]["text"]], id=tgt["id"]  # type: ignore
-        )
-        targets_dict = [dict(paragraphs=[dict(qas=[_fn_answer(target) for target in targets])])]
+        preds_dict, targets_dict = _squad_input_check(preds, targets)
         f1_score, exact_match, total = _squad_update(preds_dict, targets_dict)
         self.f1_score += f1_score
         self.exact_match += exact_match
