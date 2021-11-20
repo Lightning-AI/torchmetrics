@@ -67,15 +67,15 @@ def _compute_f1_score(predicted_answer: str, target_answer: str) -> Tensor:
     target_tokens = _get_tokens(target_answer)
     predicted_tokens = _get_tokens(predicted_answer)
     common = Counter(target_tokens) & Counter(predicted_tokens)
-    num_same: Tensor = tensor(sum(common.values()))
+    num_same = tensor(sum(common.values()))
     if len(target_tokens) == 0 or len(predicted_tokens) == 0:
         # If either is no-answer, then F1 is 1 if they agree, 0 otherwise
         return tensor(int(target_tokens == predicted_tokens))
     if num_same == 0:
         return tensor(0.0)
-    precision: Tensor = 1.0 * num_same / tensor(len(predicted_tokens))
-    recall: Tensor = 1.0 * num_same / tensor(len(target_tokens))
-    f1: Tensor = (2 * precision * recall) / (precision + recall)
+    precision = 1.0 * num_same / tensor(len(predicted_tokens))
+    recall = 1.0 * num_same / tensor(len(target_tokens))
+    f1 = (2 * precision * recall) / (precision + recall)
     return f1
 
 
