@@ -66,6 +66,18 @@ def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]
     return op(pkg_version, Version(version))
 
 
+def _nltk_corpus_available() -> bool:
+    if not _module_available("nltk"):
+        return False
+    try:
+        from nltk.corpus import wordnet
+
+        wordnet.synsets("wordnet")
+        return True
+    except LookupError:
+        return False
+
+
 _TORCH_LOWER_1_4: Optional[bool] = _compare_version("torch", operator.lt, "1.4.0")
 _TORCH_LOWER_1_5: Optional[bool] = _compare_version("torch", operator.lt, "1.5.0")
 _TORCH_LOWER_1_6: Optional[bool] = _compare_version("torch", operator.lt, "1.6.0")
@@ -89,3 +101,5 @@ _PESQ_AVAILABLE: bool = _module_available("pesq")
 _SACREBLEU_AVAILABLE: bool = _module_available("sacrebleu")
 _REGEX_AVAILABLE: bool = _module_available("regex")
 _PYSTOI_AVAILABLE: bool = _module_available("pystoi")
+
+_NLTK_CORPUS_AVAILABLE: bool = _nltk_corpus_available()

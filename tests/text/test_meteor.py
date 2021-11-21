@@ -68,7 +68,7 @@ def _compute_nltk_meteor_score(
 class TestMETEORScore(TextTester):
     atol = 1e-4
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [False])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_meteor_score_class(self, ddp, dist_sync_on_step, targets, preds, alpha, beta, gamma):
         metric_args = {"alpha": alpha, "beta": beta, "gamma": gamma}

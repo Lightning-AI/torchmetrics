@@ -16,21 +16,21 @@
 # Authors: torchtext authors
 # Date: 2021-11-15
 
-import warnings
 from typing import Any, Callable, List, Optional, Tuple, Union
 
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.meteor import (
+    _SUPPORTED_STEMMER_LANGUAGES_TYPE,
+    _get_function_words,
     _meteor_score_compute,
     _meteor_score_update,
     _METEORScoreComponents,
     _NLTKStemmerWrapper,
     _NLTKWordnetWrapper,
 )
-from torchmetrics.utilities.imports import _NLTK_AVAILABLE
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _NLTK_CORPUS_AVAILABLE
 
 
 def _meteor_dist_reduce_fx(x: List[Tuple[_METEORScoreComponents, ...]]) -> List[Tuple[_METEORScoreComponents, ...]]:
@@ -72,10 +72,20 @@ class METEORScore(Metric):
             A name of wordnet corpus from `nltk` package to be used.
         alpha:
             A parameter for controlling relative weights of precision and recall.
+            Expected `alpha` to be between 0 and 1.
         beta:
             A parameter for controlling shape of penalty as a function of as a function of fragmentation.
+            Expected `beta` be greater than or equal to 0.
         gamma:
             A relative weight assigned to fragmentation penalty.
+            Expected `gamma` to be between 0 and 1.
+        delta:
+            A relative weight to content and function words. Relevant only if `use_function_words = True`.
+            Expected `delta` to be between 0 and 1.
+        use_function_words:
+            An indication whether to discriminate between content and function words. A list of function words is
+            derived on monolingual corpora. All words with relative frequency above 10^{-3} are considered to be
+            function words.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -121,20 +131,17 @@ class METEORScore(Metric):
 
     def __init__(
         self,
-        stemmer: Literal["porter"] = "porter",
-        wordnet: Literal["wordnet"] = "wordnet",
+        lang: _SUPPORTED_STEMMER_LANGUAGES_TYPE = "porter",
         alpha: float = 0.9,
         beta: float = 3.0,
         gamma: float = 0.5,
+        delta: float = 0.75,
+        use_function_words: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable] = None,
     ):
-        warnings.warn(
-            "Current implementation follows the original METEOR metric and thus is not suitable for reporting results "
-            "in research papers."
-        )
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
@@ -147,9 +154,14 @@ class METEORScore(Metric):
                 "METEORScore metric requires that `nltk` is installed. "
                 "Either install with `pip install nltk` or `pip install torchmetrics[text]`"
             )
+        if not _NLTK_CORPUS_AVAILABLE:
+            raise ValueError(
+                "METEOR metric requires that nltk wordnet corpus is downloaded. "
+                "Use `python -m nltk.downloader wordnet`."
+            )
 
-        self.stemmer = _NLTKStemmerWrapper(stemmer)
-        self.wordnet = _NLTKWordnetWrapper(wordnet)
+        self.stemmer = _NLTKStemmerWrapper(lang)
+        self.wordnet = _NLTKWordnetWrapper()
 
         if not 0 <= alpha <= 1:
             raise ValueError("Expected `alpha` argument to be between 0 and 1")
@@ -160,6 +172,14 @@ class METEORScore(Metric):
         if not 0 <= gamma <= 1:
             raise ValueError("Expected `gamma` argument to be between 0 and 1")
         self.gamma = gamma
+        if not 0 <= delta <= 1:
+            raise ValueError("Expected `delta` argument to be between 0 and 1")
+        self.delta = delta
+
+        if use_function_words:
+            self.function_words = _get_function_words(lang)
+        else:
+            self.function_words = ()
 
         self.add_state("meteor_score_components", [], dist_reduce_fx=_meteor_dist_reduce_fx)
 
@@ -179,7 +199,7 @@ class METEORScore(Metric):
                  corpora.
         """
         self.meteor_score_components.extend(
-            _meteor_score_update(reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet)
+            _meteor_score_update(reference_corpus, hypothesis_corpus, self.stemmer, self.wordnet, self.function_words)
         )
 
     def compute(self) -> Tensor:
@@ -188,4 +208,4 @@ class METEORScore(Metric):
         Return:
             Tensor with sentence-level METEOR Score
         """
-        return _meteor_score_compute(self.meteor_score_components, self.alpha, self.beta, self.gamma)
+        return _meteor_score_compute(self.meteor_score_components, self.alpha, self.beta, self.gamma, self.delta)
