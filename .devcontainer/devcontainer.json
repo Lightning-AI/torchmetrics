@@ -50,6 +50,9 @@
 			"--max-line-length=120",
 			"--verbose"
 		],
+		"restructuredtext.confPath": "${workspaceFolder}/docs/source",
+		"restructuredtext.builtDocumentationPath": "${workspaceFolder}/docs/build",
+		"restructuredtext.languageServer.disabled": false
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
@@ -62,11 +65,13 @@
 		"medo64.render-crlf",
 		"shardulm94.trailing-spaces",
 		"njqdev.vscode-python-typehint",
+		"lextudio.restructuredtext",
+		"trond-snekvik.simple-rst",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip3 install --user -r ./requirements/devel.txt && pre-commit install",
+	"postCreateCommand": "pip3 install --user -r ./requirements/devel.txt -r ./requirements/docs.txt && pre-commit install",
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
 }
