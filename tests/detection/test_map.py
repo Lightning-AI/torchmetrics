@@ -59,7 +59,7 @@ _inputs = Input(
             ),  # coco image id 74
             dict(
                 boxes=torch.Tensor([[0.00, 2.87, 601.00, 421.52]]),
-                scores=torch.Tensor([0.699, 0.423]),
+                scores=torch.Tensor([0.699]),
                 labels=torch.IntTensor([5]),
             ),  # coco image id 133
         ],
