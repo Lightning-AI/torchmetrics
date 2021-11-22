@@ -130,11 +130,9 @@ class MAP(Metric):
     <https://github.com/PyTorchLightning/metrics/blob/master/tm_examples/detection_map.py>`_
 
     .. note::
-        This metric is a wrapper for the
+        This metric is following the mAP implementation of
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
-        which is a standard implementation for the mAP metric for object detection. Using this metric
-        therefore requires you to have `pycocotools` installed. Please install with ``pip install pycocotools`` or
-        ``pip install torchmetrics[detection]``.
+        , a standard implementation for the mAP metric for object detection.
 
     .. note::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed (with corresponding
