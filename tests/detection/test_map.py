@@ -18,7 +18,7 @@ import pytest
 import torch
 
 from tests.helpers.testers import MetricTester
-from torchmetrics.detection.map import MAP
+from torchmetrics.detection.map_new import MAP
 from torchmetrics.utilities.imports import (
     _PYCOCOTOOLS_AVAILABLE,
     _TORCHVISION_AVAILABLE,
