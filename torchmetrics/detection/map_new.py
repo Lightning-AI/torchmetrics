@@ -141,10 +141,6 @@ class MAP(Metric):
         version 1.7.0 of torch or newer). Please install with ``pip install torchvision`` or
         ``pip install torchmetrics[detection]``.
 
-    .. note::
-        As the pycocotools library cannot deal with tensors directly, all results have to be transfered
-        to the CPU, this might have an performance impact on your training.
-
     Args:
         num_classes:
             Number of classes to use for evaluation.
