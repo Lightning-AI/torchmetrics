@@ -170,7 +170,6 @@ class MAP(Metric):
     def __init__(
         self,
         box_format: str = "xyxy",
-        num_classes: Optional[int] = None,
         iou_thresholds: Optional[List[float]] = None,
         rec_thresholds: Optional[List[float]] = None,
         max_detection_thresholds: Optional[List[float]] = None,
@@ -194,7 +193,6 @@ class MAP(Metric):
             )
 
         self.box_format = box_format
-        self.num_classes = num_classes
         self.iou_thresholds = torch.Tensor(
             iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1)
         )
@@ -280,7 +278,7 @@ class MAP(Metric):
             )
             self.groundtruth_labels.append(item["labels"])
 
-    def _get_classes(self) -> List:
+    def _num_classes(self) -> List:
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         else:
@@ -410,9 +408,7 @@ class MAP(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
-        classes = self._get_classes()
-        # num_classes = int(self.num_classes or max(classes))
-        # catIds = torch.arange(num_classes).tolist()
+        classes = self._num_classes()
         overall, map, mar = self._calculate(classes)
 
         map_per_class_values: Tensor = torch.Tensor([-1])
@@ -422,7 +418,7 @@ class MAP(Metric):
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
-            for class_id in self._get_classes():
+            for class_id in self._num_classes():
                 _, cls_map, cls_mar = self._calculate([class_id])
 
                 map_per_class_list.append(cls_map.map)
