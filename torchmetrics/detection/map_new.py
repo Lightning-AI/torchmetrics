@@ -169,7 +169,7 @@ class MAP(Metric):
 
     def __init__(
         self,
-        in_fmt: str = "xyxy",
+        box_format: str = "xyxy",
         num_classes: Optional[int] = None,
         iou_thresholds: Optional[List[float]] = None,
         rec_thresholds: Optional[List[float]] = None,
@@ -193,7 +193,7 @@ class MAP(Metric):
                 " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`"
             )
 
-        self.in_fmt = in_fmt
+        self.box_format = box_format
         self.num_classes = num_classes
         self.iou_thresholds = torch.Tensor(
             iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1)
@@ -265,7 +265,7 @@ class MAP(Metric):
 
         for item in preds:
             self.detection_boxes.append(
-                box_convert(item["boxes"], in_fmt=self.in_fmt, out_fmt="xyxy")
+                box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
                 if item["boxes"].size() == torch.Size([1, 4])
                 else item["boxes"]
             )
@@ -274,7 +274,7 @@ class MAP(Metric):
 
         for item in target:
             self.groundtruth_boxes.append(
-                box_convert(item["boxes"], in_fmt=self.in_fmt, out_fmt="xyxy")
+                box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
                 if item["boxes"].size() == torch.Size([1, 4])
                 else item["boxes"]
             )
