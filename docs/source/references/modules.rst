@@ -622,6 +622,12 @@ CharErrorRate
 .. autoclass:: torchmetrics.CharErrorRate
     :noindex:
 
+MatchErrorRate
+~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MatchErrorRate
+    :noindex:
+
 ROUGEScore
 ~~~~~~~~~~
 
@@ -658,6 +664,12 @@ MetricTracker
 ~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MetricTracker
+    :noindex:
+
+MinMaxMetric
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MinMaxMetric
     :noindex:
 
 MultioutputWrapper

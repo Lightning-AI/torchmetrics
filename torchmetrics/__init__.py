@@ -66,8 +66,16 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRecall,
     RetrievalRPrecision,
 )
-from torchmetrics.text import WER, BERTScore, BLEUScore, CharErrorRate, ROUGEScore, SacreBLEUScore  # noqa: E402
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
+from torchmetrics.text import (  # noqa: E402
+    WER,
+    BERTScore,
+    BLEUScore,
+    CharErrorRate,
+    MatchErrorRate,
+    ROUGEScore,
+    SacreBLEUScore,
+)
+from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
 __all__ = [
     "functional",
@@ -109,6 +117,7 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinMaxMetric",
     "MinMetric",
     "MultioutputWrapper",
     "PearsonCorrcoef",
@@ -142,4 +151,5 @@ __all__ = [
     "SymmetricMeanAbsolutePercentageError",
     "WER",
     "CharErrorRate",
+    "MatchErrorRate",
 ]
