@@ -19,6 +19,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
 
+
 def _wip_update(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
