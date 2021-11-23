@@ -81,9 +81,9 @@ class WordInfoPreserved(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("reference_total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("prediction_total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("errors", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("reference_total", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("prediction_total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing word Information Preserved scores.
