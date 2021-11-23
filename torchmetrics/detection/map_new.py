@@ -287,9 +287,13 @@ class MAP(Metric):
     def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
         gt = self.groundtruth_boxes[id]
         dt = self.detection_boxes[id]
-        gt = gt[self.groundtruth_labels[id] == class_id]
-        dt = dt[self.detection_labels[id] == class_id]
-        if len(gt) == 0 and len(dt) == 0:
+        gt_lbl_mask = self.groundtruth_labels[id] == class_id
+        dt_lbl_mask = self.detection_labels[id] == class_id
+        if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
+            return torch.tensor([])
+        gt = gt[gt_lbl_mask]
+        dt = dt[dt_lbl_mask]
+        if len(gt) == 0 or len(dt) == 0:
             return torch.tensor([])
 
         # Sort by scores and use only max detections
@@ -311,8 +315,12 @@ class MAP(Metric):
         """
         gt = self.groundtruth_boxes[id]
         dt = self.detection_boxes[id]
-        gt = gt[self.groundtruth_labels[id] == class_id]
-        dt = dt[self.detection_labels[id] == class_id]
+        gt_lbl_mask = self.groundtruth_labels[id] == class_id
+        dt_lbl_mask = self.detection_labels[id] == class_id
+        if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
+            return None
+        gt = gt[gt_lbl_mask]
+        dt = dt[dt_lbl_mask]
         if len(gt) == 0 and len(dt) == 0:
             return None
 
@@ -408,8 +416,7 @@ class MAP(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
-        classes = self._num_classes()
-        overall, map, mar = self._calculate(classes)
+        overall, map, mar = self._calculate(self._num_classes())
 
         map_per_class_values: Tensor = torch.Tensor([-1])
         mar_100_per_class_values: Tensor = torch.Tensor([-1])
@@ -471,44 +478,41 @@ class MAP(Metric):
 
         return mean_s
 
-    def _calculate(self, classes) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
+    def _calculate(self, class_ids) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
         img_ids = torch.arange(len(self.groundtruth_boxes), dtype=torch.int).tolist()
-        imgIds = img_ids
-        catIds = classes
 
-        maxDets = self.max_detection_thresholds
         maxDet = self.max_detection_thresholds[-1]
-        areaRng = self.object_area_ranges.values()
+        area_ranges = self.object_area_ranges.values()
 
-        ious = {(imgId, catId): self._compute_iou(imgId, catId, maxDet) for imgId in imgIds for catId in catIds}
+        ious = {(imgId, catId): self._compute_iou(imgId, catId, maxDet) for imgId in img_ids for catId in class_ids}
 
         evalImgs = [
             self._evaluate_image(imgId, catId, area, maxDet, ious)
-            for catId in catIds
-            for area in areaRng
-            for imgId in imgIds
+            for catId in class_ids
+            for area in area_ranges
+            for imgId in img_ids
         ]
 
         T = len(self.iou_thresholds)
         R = len(self.rec_thresholds)
-        K = len(catIds)
+        K = len(class_ids)
         A = len(self.object_area_ranges)
         M = len(self.max_detection_thresholds)
         precision = -torch.ones((T, R, K, A, M))
         recall = -torch.ones((T, K, A, M))
         scores = -torch.ones((T, R, K, A, M))
 
-        setK = set(catIds)
+        setK = set(class_ids)
         setA = set(map(tuple, self.object_area_ranges.values()))
         setM = set(self.max_detection_thresholds.tolist())
-        setI = set(imgIds)
+        setI = set(img_ids)
         # get inds to evaluate
-        k_list = [n for n, k in enumerate(catIds) if k in setK]
-        m_list = [m for n, m in enumerate(maxDets.tolist()) if m in setM]
-        a_list = [n for n, a in enumerate(map(lambda x: tuple(x), areaRng)) if a in setA]
-        i_list = [n for n, i in enumerate(imgIds) if i in setI]
-        I0 = len(imgIds)
-        A0 = len(areaRng)
+        k_list = [n for n, k in enumerate(class_ids) if k in setK]
+        m_list = [m for n, m in enumerate(self.max_detection_thresholds.tolist()) if m in setM]
+        a_list = [n for n, a in enumerate(map(lambda x: tuple(x), area_ranges)) if a in setA]
+        i_list = [n for n, i in enumerate(img_ids) if i in setI]
+        I0 = len(img_ids)
+        A0 = len(area_ranges)
         # # retrieve E at each category, area range, and max number of detections
         for k, k0 in enumerate(k_list):
             Nk = k0 * A0 * I0
