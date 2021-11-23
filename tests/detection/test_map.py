@@ -19,11 +19,7 @@ import torch
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.map_new import MAP
-from torchmetrics.utilities.imports import (
-    _PYCOCOTOOLS_AVAILABLE,
-    _TORCHVISION_AVAILABLE,
-    _TORCHVISION_GREATER_EQUAL_0_8,
-)
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
 
@@ -164,10 +160,10 @@ def _compare_fn(preds, target) -> dict:
     }
 
 
-_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
+_pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 class TestMAP(MetricTester):
     """Test the MAP metric for object detection predictions.
 
@@ -195,7 +191,7 @@ class TestMAP(MetricTester):
 
 
 # noinspection PyTypeChecker
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
 
@@ -205,7 +201,7 @@ def test_error_on_wrong_init():
         MAP(class_metrics=0)
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_empty_preds():
     """Test empty predictions."""
 
@@ -231,7 +227,7 @@ def test_empty_preds():
     metric.compute()
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_empty_metric():
     """Test empty metric."""
 
@@ -239,7 +235,7 @@ def test_empty_metric():
     metric.compute()
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_input():
     """Test class input validation."""
 
