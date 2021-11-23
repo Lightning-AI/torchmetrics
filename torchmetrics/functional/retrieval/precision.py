@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
@@ -56,5 +55,5 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None) 
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:k].sum().float()
+    relevant = target[preds.topk(min(k, preds.shape[-1]), dim=-1)[1]].sum().float()
     return relevant / k
