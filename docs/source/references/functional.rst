@@ -463,3 +463,9 @@ wer [func]
 
 .. autofunction:: torchmetrics.functional.wer
     :noindex:
+
+meteor_score [func]
+~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.meteor_score
+    :noindex:

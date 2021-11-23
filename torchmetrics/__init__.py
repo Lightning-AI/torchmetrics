@@ -72,6 +72,7 @@ from torchmetrics.text import (  # noqa: E402
     BLEUScore,
     CharErrorRate,
     MatchErrorRate,
+    METEORScore,
     ROUGEScore,
     SacreBLEUScore,
 )
@@ -114,6 +115,7 @@ __all__ = [
     "MeanMetric",
     "MeanSquaredError",
     "MeanSquaredLogError",
+    "METEORScore",
     "Metric",
     "MetricCollection",
     "MetricTracker",

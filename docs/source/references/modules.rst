@@ -677,3 +677,9 @@ MultioutputWrapper
 
 .. autoclass:: torchmetrics.MultioutputWrapper
     :noindex:
+
+METEORScore
+~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.METEORScore
+    :noindex:
