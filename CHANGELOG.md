@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Use `torch.argsort` instead of `torch.topk` in retrieval precision for speedup ([#627](https://github.com/PyTorchLightning/metrics/pull/627))
+- Use `torch.topk` instead of `torch.argsort` in retrieval precision for speedup ([#627](https://github.com/PyTorchLightning/metrics/pull/627))
 
 ### Deprecated
 
