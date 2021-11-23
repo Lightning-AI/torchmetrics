@@ -14,7 +14,6 @@
 
 from typing import Any, Callable, List, Optional, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wil import _wil_compute, _wil_update
