@@ -412,16 +412,18 @@ class MAP(Metric):
 
         return mean_s
 
-    def _calculate(self, class_ids) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
+    def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
         img_ids = torch.arange(len(self.groundtruth_boxes), dtype=torch.int).tolist()
 
-        maxDet = self.max_detection_thresholds[-1]
+        maxDetections = self.max_detection_thresholds[-1]
         area_ranges = self.object_area_ranges.values()
 
-        ious = {(imgId, catId): self._compute_iou(imgId, catId, maxDet) for imgId in img_ids for catId in class_ids}
+        ious = {
+            (imgId, catId): self._compute_iou(imgId, catId, maxDetections) for imgId in img_ids for catId in class_ids
+        }
 
         evalImgs = [
-            self._evaluate_image(imgId, catId, area, maxDet, ious)
+            self._evaluate_image(imgId, catId, area, maxDetections, ious)
             for catId in class_ids
             for area in area_ranges
             for imgId in img_ids
@@ -432,28 +434,18 @@ class MAP(Metric):
         K = len(class_ids)
         A = len(self.object_area_ranges)
         M = len(self.max_detection_thresholds)
+        I = len(img_ids)  # noqa: E741
         precision = -torch.ones((T, R, K, A, M))
         recall = -torch.ones((T, K, A, M))
         scores = -torch.ones((T, R, K, A, M))
 
-        setK = set(class_ids)
-        setA = set(map(tuple, self.object_area_ranges.values()))
-        setM = set(self.max_detection_thresholds.tolist())
-        setI = set(img_ids)
-        # get inds to evaluate
-        k_list = [n for n, k in enumerate(class_ids) if k in setK]
-        m_list = [m for n, m in enumerate(self.max_detection_thresholds.tolist()) if m in setM]
-        a_list = [n for n, a in enumerate(map(lambda x: tuple(x), area_ranges)) if a in setA]
-        i_list = [n for n, i in enumerate(img_ids) if i in setI]
-        I0 = len(img_ids)
-        A0 = len(area_ranges)
-        # # retrieve E at each category, area range, and max number of detections
-        for k, k0 in enumerate(k_list):
-            Nk = k0 * A0 * I0
-            for a, a0 in enumerate(a_list):
-                Na = a0 * I0
-                for m, maxDet in enumerate(m_list):
-                    E = [evalImgs[Nk + Na + i] for i in i_list]
+        # retrieve E at each category, area range, and max number of detections
+        for k in range(K):
+            Nk = k * A * I
+            for a in range(A):
+                Na = a * I
+                for m, maxDet in enumerate(self.max_detection_thresholds):
+                    E = [evalImgs[Nk + Na + i] for i in range(I)]
                     E = [e for e in E if e is not None]
                     if len(E) == 0:
                         continue
@@ -467,7 +459,7 @@ class MAP(Metric):
                     dtm = torch.cat([e["dtMatches"][:, :maxDet] for e in E], axis=1)[:, inds]
                     dtIg = torch.cat([e["dtIgnore"][:, :maxDet] for e in E], axis=1)[:, inds]
                     gtIg = torch.cat([e["gtIgnore"] for e in E])
-                    npig = torch.count_nonzero(gtIg == 0)
+                    npig = torch.count_nonzero(gtIg == False)  # noqa: E712
                     if npig == 0:
                         continue
                     tps = torch.logical_and(dtm, torch.logical_not(dtIg))
@@ -504,7 +496,7 @@ class MAP(Metric):
                         scores[t, :, k, a, m] = ss
 
         results = {
-            "counts": [T, R, K, A, M],
+            "dimensions": [T, R, K, A, M],
             "precision": precision,
             "recall": recall,
             "scores": scores,
