@@ -70,14 +70,14 @@ def word_information_preserved(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
 ) -> Tensor:
-    """Word Information Lost rate is a metric of the performance of an automatic speech recognition system. This
+    """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
-    performance of the ASR system with a Word Information Lost rate of 0 being a perfect score.
+    performance of the ASR system with a Word Information preserved rate of 0 being a perfect score.
     Args:
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
     Returns:
-        Word Information Lost rate
+        Word Information preserved rate
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
