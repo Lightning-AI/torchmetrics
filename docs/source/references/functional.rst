@@ -14,7 +14,7 @@ Audio Metrics
 pesq [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pesq
+.. autofunction:: torchmetrics.functional.audio.pesq.pesq
 
 
 pit [func]
@@ -48,7 +48,7 @@ snr [func]
 stoi [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.stoi
+.. autofunction:: torchmetrics.functional.audio.stoi.stoi
     :noindex:
 
 
@@ -426,7 +426,7 @@ Text
 bert_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.bert_score
+.. autofunction:: torchmetrics.functional.text.bert.bert_score
 
 bleu_score [func]
 ~~~~~~~~~~~~~~~~~
@@ -449,7 +449,7 @@ match_error_rate [func]
 rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.rouge_score
+.. autofunction:: torchmetrics.functional.text.rouge.rouge_score
     :noindex:
 
 sacre_bleu_score [func]
