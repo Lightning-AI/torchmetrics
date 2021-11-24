@@ -471,7 +471,7 @@ word_information_lost [func]
     :noindex:
 
 word_information_preserved [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.word_information_preserved
     :noindex:

@@ -22,7 +22,7 @@ def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) ->
         prediction_tokens: A tokenized predicted sentence
         reference_tokens: A tokenized reference sentence
     Returns:
-        (int) Edit distance between the predicted sentence and the reference sentence
+        Edit distance between the predicted sentence and the reference sentence
     """
     dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
     for i in range(len(prediction_tokens) + 1):
