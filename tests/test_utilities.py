@@ -95,9 +95,9 @@ def test_to_categorical():
 @pytest.mark.parametrize(
     ["preds", "target", "num_classes", "expected_num_classes"],
     [
-        pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), 10, 10),
-        pytest.param(torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
-        pytest.param(torch.rand(32, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
+        (torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), 10, 10),
+        (torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
+        (torch.rand(32, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
     ],
 )
 def test_get_num_classes(preds, target, num_classes, expected_num_classes):

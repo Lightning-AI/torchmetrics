@@ -123,11 +123,8 @@ def test_pr_curve(pred, target, expected_p, expected_r, expected_t):
 
 
 @pytest.mark.parametrize(
-    ["sample_weight", "pos_label", "exp_shape"],
-    [
-        pytest.param(1, 1.0, 42),
-        pytest.param(None, 1.0, 42),
-    ],
+    "sample_weight, pos_label, exp_shape",
+    [(1, 1.0, 42), (None, 1.0, 42)],
 )
 def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
     # TODO: move back the pred and target to test func arguments
