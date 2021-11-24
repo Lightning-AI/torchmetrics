@@ -71,7 +71,10 @@ from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
+from torchmetrics.functional.text.squad import squad
 from torchmetrics.functional.text.wer import wer
+from torchmetrics.functional.text.wil import word_information_lost
+from torchmetrics.functional.text.wip import word_information_preserved
 
 __all__ = [
     "accuracy",
@@ -95,7 +98,6 @@ __all__ = [
     "image_gradients",
     "iou",
     "kl_divergence",
-    "kldivergence",
     "matthews_corrcoef",
     "mean_absolute_error",
     "mean_absolute_percentage_error",
@@ -114,7 +116,6 @@ __all__ = [
     "precision_recall_curve",
     "psnr",
     "r2_score",
-    "r2score",
     "recall",
     "retrieval_average_precision",
     "retrieval_fall_out",
@@ -132,6 +133,7 @@ __all__ = [
     "snr",
     "spearman_corrcoef",
     "specificity",
+    "squad",
     "ssim",
     "stat_scores",
     "stoi",
@@ -139,4 +141,6 @@ __all__ = [
     "wer",
     "char_error_rate",
     "match_error_rate",
+    "word_information_lost",
+    "word_information_preserved",
 ]
