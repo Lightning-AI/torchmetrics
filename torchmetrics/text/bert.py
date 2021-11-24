@@ -111,6 +111,7 @@ class BERTScore(Metric):
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
 
     Example:
+        >>> from torchmetrics.text.bert import BertScore
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()

@@ -261,6 +261,7 @@ def rouge_score(
         Python dictionary of rouge scores for each input rouge key.
 
     Example:
+        >>> from torchmetrics.functional.text.rouge import rouge_score
         >>> targets = "Is your name John"
         >>> preds = "My name is John"
         >>> from pprint import pprint

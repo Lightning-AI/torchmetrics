@@ -49,7 +49,7 @@ class ROUGEScore(Metric):
             will be used to perform the allgather.
 
     Example:
-
+        >>> from torchmetrics.text.rouge import ROUGEScore
         >>> targets = "Is your name John"
         >>> preds = "My name is John"
         >>> rouge = ROUGEScore()   # doctest: +SKIP
