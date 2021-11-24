@@ -331,7 +331,7 @@ class MAP(Metric):
         gtind = torch.argsort(ignore_area)
         gt = gt[gtind]
         scores = self.detection_scores[id]
-        filtered_scores = scores[self.detection_labels[id] == class_id]
+        filtered_scores = scores[dt_lbl_mask]
         dtind = torch.argsort(filtered_scores, descending=True)
         dt = dt[dtind]
         if len(dt) > max_det:
@@ -342,10 +342,10 @@ class MAP(Metric):
         T = len(self.iou_thresholds)
         G = len(gt)
         D = len(dt)
-        gtm = torch.zeros((T, G))
-        dtm = torch.zeros((T, D))
+        gtm = torch.zeros((T, G), dtype=torch.bool)
+        dtm = torch.zeros((T, D), dtype=torch.bool)
         gtIg = ignore_area
-        dtIg = torch.zeros((T, D))
+        dtIg = torch.zeros((T, D), dtype=torch.bool)
         if len(ious) > 0:
             for tind, t in enumerate(self.iou_thresholds):
                 for dind, d in enumerate(dt):
@@ -370,86 +370,20 @@ class MAP(Metric):
                         continue
 
                     dtIg[tind, dind] = gtIg[m]
-                    dtm[tind, dind] = id
-                    gtm[tind, m] = id
+                    dtm[tind, dind] = True
+                    gtm[tind, m] = True
         # set unmatched detections outside of area range to ignore
         dt_areas = box_area(dt)
         dt_ignore_area = (dt_areas < area_range[0]) | (dt_areas > area_range[1])
         a = dt_ignore_area.reshape((1, len(dt)))
         dtIg = torch.logical_or(dtIg, torch.logical_and(dtm == 0, torch.repeat_interleave(a, T, 0)))
         return {
-            "image_id": id,
-            "category_id": class_id,
-            "aRng": area_range,
-            "maxDet": max_det,
-            "dtIds": [id for d in dt],
-            "gtIds": [id for g in gt],
             "dtMatches": dtm,
             "gtMatches": gtm,
             "dtScores": filtered_scores,
             "gtIgnore": gtIg,
             "dtIgnore": dtIg,
         }
-
-    def compute(self) -> dict:
-        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
-        the `update()` method are included.
-
-        Note:
-            Main `map` score is calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
-
-        Returns:
-            dict containing
-
-            - map: ``torch.Tensor``
-            - map_50: ``torch.Tensor``
-            - map_75: ``torch.Tensor``
-            - map_small: ``torch.Tensor``
-            - map_medium: ``torch.Tensor``
-            - map_large: ``torch.Tensor``
-            - mar_1: ``torch.Tensor``
-            - mar_10: ``torch.Tensor``
-            - mar_100: ``torch.Tensor``
-            - mar_small: ``torch.Tensor``
-            - mar_medium: ``torch.Tensor``
-            - mar_large: ``torch.Tensor``
-            - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
-            - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
-        """
-        overall, map, mar = self._calculate(self._num_classes())
-
-        map_per_class_values: Tensor = torch.Tensor([-1])
-        mar_100_per_class_values: Tensor = torch.Tensor([-1])
-
-        # if class mode is enabled, evaluate metrics per class
-        if self.class_metrics:
-            map_per_class_list = []
-            mar_100_per_class_list = []
-            for class_id in self._num_classes():
-                _, cls_map, cls_mar = self._calculate([class_id])
-
-                map_per_class_list.append(cls_map.map)
-                mar_100_per_class_list.append(cls_mar.mar_100)
-            map_per_class_values = torch.Tensor(map_per_class_list)
-            mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
-
-        metrics = COCOMetricResults(
-            map=map.map,
-            map_50=map.map_50,
-            map_75=map.map_75,
-            map_small=map.map_small,
-            map_medium=map.map_medium,
-            map_large=map.map_large,
-            mar_1=mar.mar_1,
-            mar_10=mar.mar_10,
-            mar_100=mar.mar_100,
-            mar_small=mar.mar_small,
-            mar_medium=mar.mar_medium,
-            mar_large=mar.mar_large,
-            map_per_class=map_per_class_values,
-            mar_100_per_class=mar_100_per_class_values,
-        )
-        return metrics.__dict__
 
     def _summarize(
         self, results: Dict, ap: bool = True, iouThr: Optional[float] = None, areaRng: str = "all", maxDets: int = 100
@@ -553,19 +487,15 @@ class MAP(Metric):
                         else:
                             recall[t, k, a, m] = 0
 
-                        # TODO: optimize
                         for i in range(nd - 1, 0, -1):
                             if pr[i] > pr[i - 1]:
                                 pr[i - 1] = pr[i]
 
-                        # TODO: optimize
                         inds = torch.searchsorted(rc, self.rec_thresholds, right=False)
-                        try:
-                            for ri, pi in enumerate(inds):
-                                q[ri] = pr[pi]
-                                ss[ri] = dtScoresSorted[pi]
-                        except Exception:
-                            pass
+                        for ri in range(min(len(inds), len(pr))):
+                            pi = inds[ri]
+                            q[ri] = pr[pi]
+                            ss[ri] = dtScoresSorted[pi]
                         precision[t, :, k, a, m] = torch.tensor(q)
                         scores[t, :, k, a, m] = torch.tensor(ss)
 
@@ -592,3 +522,63 @@ class MAP(Metric):
             mar_large=self._summarize(results, False, areaRng="large", maxDets=self.max_detection_thresholds[2]),
         )
         return results, map_metrics, mar_metrics
+
+    def compute(self) -> dict:
+        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
+        the `update()` method are included.
+
+        Note:
+            Main `map` score is calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
+
+        Returns:
+            dict containing
+
+            - map: ``torch.Tensor``
+            - map_50: ``torch.Tensor``
+            - map_75: ``torch.Tensor``
+            - map_small: ``torch.Tensor``
+            - map_medium: ``torch.Tensor``
+            - map_large: ``torch.Tensor``
+            - mar_1: ``torch.Tensor``
+            - mar_10: ``torch.Tensor``
+            - mar_100: ``torch.Tensor``
+            - mar_small: ``torch.Tensor``
+            - mar_medium: ``torch.Tensor``
+            - mar_large: ``torch.Tensor``
+            - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
+            - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
+        """
+        overall, map, mar = self._calculate(self._num_classes())
+
+        map_per_class_values: Tensor = torch.Tensor([-1])
+        mar_100_per_class_values: Tensor = torch.Tensor([-1])
+
+        # if class mode is enabled, evaluate metrics per class
+        if self.class_metrics:
+            map_per_class_list = []
+            mar_100_per_class_list = []
+            for class_id in self._num_classes():
+                _, cls_map, cls_mar = self._calculate([class_id])
+
+                map_per_class_list.append(cls_map.map)
+                mar_100_per_class_list.append(cls_mar.mar_100)
+            map_per_class_values = torch.Tensor(map_per_class_list)
+            mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
+
+        metrics = COCOMetricResults(
+            map=map.map,
+            map_50=map.map_50,
+            map_75=map.map_75,
+            map_small=map.map_small,
+            map_medium=map.map_medium,
+            map_large=map.map_large,
+            mar_1=mar.mar_1,
+            mar_10=mar.mar_10,
+            mar_100=mar.mar_100,
+            mar_small=mar.mar_small,
+            mar_medium=mar.mar_medium,
+            mar_large=mar.mar_large,
+            map_per_class=map_per_class_values,
+            mar_100_per_class=mar_100_per_class_values,
+        )
+        return metrics.__dict__
