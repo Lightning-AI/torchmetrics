@@ -51,8 +51,6 @@ class WordInfoPreserved(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    Returns:
-        word Information Preserved score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]

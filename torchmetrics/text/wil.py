@@ -51,8 +51,6 @@ class WordInfoLost(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    Returns:
-        Word Information Lost score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
