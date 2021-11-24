@@ -69,7 +69,7 @@ def match_error_rate(
     """Match error rate is a metric of the performance of an automatic speech recognition system. This value
     indicates the percentage of words that were incorrectly predicted and inserted. The lower the value, the better
     the performance of the ASR system with a MatchErrorRate of 0 being a perfect score.
-    
+
     Args:
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
