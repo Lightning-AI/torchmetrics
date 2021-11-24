@@ -492,12 +492,16 @@ class MAP(Metric):
                                 pr[i - 1] = pr[i]
 
                         inds = torch.searchsorted(rc, self.rec_thresholds, right=False)
-                        for ri in range(min(len(inds), len(pr))):
-                            pi = inds[ri]
-                            q[ri] = pr[pi]
-                            ss[ri] = dtScoresSorted[pi]
-                        precision[t, :, k, a, m] = torch.tensor(q)
-                        scores[t, :, k, a, m] = torch.tensor(ss)
+                        # optimize
+                        try:
+                            for ri, pi in enumerate(inds):  # range(min(len(inds), len(pr))):
+                                # pi = inds[ri]
+                                q[ri] = pr[pi]
+                                ss[ri] = dtScoresSorted[pi]
+                        except Exception:
+                            pass
+                        precision[t, :, k, a, m] = q
+                        scores[t, :, k, a, m] = ss
 
         results = {
             "counts": [T, R, K, A, M],
