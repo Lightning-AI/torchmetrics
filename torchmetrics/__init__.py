@@ -67,11 +67,9 @@ from torchmetrics.retrieval import (  # noqa: E402
 )
 from torchmetrics.text import (  # noqa: E402
     WER,
-    BERTScore,
     BLEUScore,
     CharErrorRate,
     MatchErrorRate,
-    ROUGEScore,
     SacreBLEUScore,
     SQuAD,
     WordInfoLost,
