@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
-from torch import tensor
+from torch import tensor, Tensor
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -25,6 +25,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
+from torchmetrics.functional.classification.precision_recall_curve import _binary_clf_curve
 from torchmetrics.functional import precision_recall_curve
 
 seed_all(42)
@@ -119,3 +120,30 @@ def test_pr_curve(pred, target, expected_p, expected_r, expected_t):
     assert torch.allclose(p, tensor(expected_p).to(p))
     assert torch.allclose(r, tensor(expected_r).to(r))
     assert torch.allclose(t, tensor(expected_t).to(t))
+
+
+@pytest.mark.parametrize(
+    ["sample_weight", "pos_label", "exp_shape"],
+    [
+        pytest.param(1, 1.0, 42),
+        pytest.param(None, 1.0, 42),
+    ],
+)
+def test_binary_clf_curve(sample_weight, pos_label, exp_shape):
+    # TODO: move back the pred and target to test func arguments
+    #  if you fix the array inside the function, you'd also have fix the shape,
+    #  because when the array changes, you also have to fix the shape
+    seed_all(0)
+    pred = torch.randint(low=51, high=99, size=(100,), dtype=torch.float) / 100
+    target = tensor([0, 1] * 50, dtype=torch.int)
+    if sample_weight is not None:
+        sample_weight = torch.ones_like(pred) * sample_weight
+
+    fps, tps, thresh = _binary_clf_curve(preds=pred, target=target, sample_weights=sample_weight, pos_label=pos_label)
+
+    assert isinstance(tps, Tensor)
+    assert isinstance(fps, Tensor)
+    assert isinstance(thresh, Tensor)
+    assert tps.shape == (exp_shape,)
+    assert fps.shape == (exp_shape,)
+    assert thresh.shape == (exp_shape,)
