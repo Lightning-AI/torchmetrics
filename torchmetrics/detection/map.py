@@ -190,7 +190,7 @@ class MAP(Metric):
         >>> preds = [
         ...   dict(
         ...     boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
-        ...     scores=torch.Tensor([0.536]),                   
+        ...     scores=torch.Tensor([0.536]),
         ...     labels=torch.IntTensor([0]),
         ...   )
         ... ]
