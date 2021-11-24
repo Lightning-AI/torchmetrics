@@ -17,27 +17,7 @@ from typing import List, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
-
-def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
-    """Standard dynamic programming algorithm to compute the edit distance.
-
-    Args:
-        prediction_tokens: A tokenized predicted sentence
-        reference_tokens: A tokenized reference sentence
-
-    Returns:
-        Editing distance between the predicted sentence and the reference sentence
-    """
-    dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
-    dp[:][0] = list(range(len(prediction_tokens) + 1))
-    dp[0][:] = list(range(len(reference_tokens) + 1))
-    for i in range(1, len(prediction_tokens) + 1):
-        for j in range(1, len(reference_tokens) + 1):
-            if prediction_tokens[i - 1] == reference_tokens[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]
-            else:
-                dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1
-    return dp[-1][-1]
+from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _mer_update(
@@ -52,7 +32,7 @@ def _mer_update(
 
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
-        Number of words over all references
+        Number of words overall references
     """
     if isinstance(predictions, str):
         predictions = [predictions]
@@ -74,10 +54,10 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
-        total: Number of words over all references
+        total: Number of words overall references
 
     Returns:
-        (Tensor) Match error rate
+        Match error rate score
     """
     return errors / total
 
@@ -93,7 +73,6 @@ def match_error_rate(
     Args:
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
-
 
     Returns:
         Match error rate score
