@@ -15,9 +15,9 @@ import pytest
 import torch
 from torch import tensor
 
-from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import get_num_classes, to_categorical, to_onehot
+from torchmetrics.utilities.distributed import class_reduce, reduce
 
 
 def test_prints():
@@ -48,9 +48,6 @@ def test_class_reduce():
         class_reduce(num, denom, weights, "weighted"), torch.sum(num / denom * (weights / torch.sum(weights)))
     )
     assert torch.allclose(class_reduce(num, denom, weights, "none"), num / denom)
-
-
-
 
 
 def test_onehot():

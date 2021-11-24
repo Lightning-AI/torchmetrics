@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
-from torch import tensor, Tensor
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -25,8 +25,8 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
-from torchmetrics.functional.classification.precision_recall_curve import _binary_clf_curve
 from torchmetrics.functional import precision_recall_curve
+from torchmetrics.functional.classification.precision_recall_curve import _binary_clf_curve
 
 seed_all(42)
 
