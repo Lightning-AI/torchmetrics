@@ -13,6 +13,7 @@
 # limitations under the License.
 import pytest
 import torch
+from torch import tensor
 
 from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn
