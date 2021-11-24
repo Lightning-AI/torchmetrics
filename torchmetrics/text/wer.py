@@ -56,7 +56,7 @@ class WER(Metric):
             will be used to perform the allgather
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
@@ -104,6 +104,6 @@ class WER(Metric):
         """Calculate the word error rate.
 
         Returns:
-            (Tensor) Word error rate
+            Word error rate score
         """
         return _wer_compute(self.errors, self.total)
