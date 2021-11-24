@@ -43,6 +43,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class MAPMetricResults:
     """Dataclass to wrap the final mAP results."""
+
     map: Tensor
     map_50: Tensor
     map_75: Tensor
@@ -65,6 +66,7 @@ class MAPMetricResults:
 # noinspection PyMethodMayBeStatic
 class WriteToLog:
     """Logging class to move logs to log.debug()."""
+
     def write(self, buf: str) -> None:  # skipcq: PY-D0003, PYL-R0201
         for line in buf.rstrip().splitlines():
             log.debug(line.rstrip())
@@ -80,6 +82,7 @@ class WriteToLog:
 
 class _hide_prints:
     """Internal helper context to suppress the default output of the pycocotools package."""
+
     def __init__(self) -> None:
         self._original_stdout = None
 
@@ -188,6 +191,7 @@ class MAP(Metric):
         ValueError:
             If ``class_metrics`` is not a boolean
     """
+
     def __init__(
         self,
         class_metrics: bool = False,
@@ -406,7 +410,7 @@ class MAP(Metric):
         return {"images": images, "annotations": annotations, "categories": classes}
 
     def _get_classes(self) -> list:
-        """Get list of unique classes depending on groundtruth_labels and detection_labels"""
+        """Get list of unique classes depending on groundtruth_labels and detection_labels."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
         return []

@@ -175,6 +175,7 @@ class TestMAP(MetricTester):
     A subset of the first 10 fake predictions of the official repo is used:
     https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
     """
+
     atol = 1e-1
 
     @pytest.mark.parametrize("ddp", [False, True])
