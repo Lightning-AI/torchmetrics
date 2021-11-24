@@ -30,8 +30,8 @@ def _cer_update(
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
     Returns:
-        (Tensor) Number of edit operations to get from the reference to the prediction, summed over all samples
-        (Tensor) Number of character over all references
+        Number of edit operations to get from the reference to the prediction, summed over all samples
+        Number of character overall references
     """
     if isinstance(predictions, str):
         predictions = [predictions]
@@ -54,7 +54,7 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
         total: Number of characters over all references
     Returns:
-        (Tensor) Character error rate
+        Character error rate score
     """
     return errors / total
 
@@ -70,7 +70,7 @@ def char_error_rate(
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
     Returns:
-        (Tensor) Character error rate
+        Character error rate score
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]

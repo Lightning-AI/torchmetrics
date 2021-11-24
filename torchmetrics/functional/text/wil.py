@@ -30,9 +30,9 @@ def _wil_update(
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
     Returns:
-        (Tensor) Number of edit operations to get from the reference to the prediction, summed over all samples
-        (Tensor) Number of words over all references
-        (Tensor) Number of words over all predictions
+        Number of edit operations to get from the reference to the prediction, summed over all samples
+        Number of words overall references
+        Number of words overall predictions
     """
     if isinstance(predictions, str):
         predictions = [predictions]
@@ -58,10 +58,10 @@ def _wil_compute(errors: Tensor, reference_total: Tensor, prediction_total: Tens
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
-        reference_total: Number of words over all references
-        prediction_total: Number of words over all prediction
+        reference_total: Number of words overall references
+        prediction_total: Number of words overall prediction
     Returns:
-        (Tensor) Word Information Lost score
+        Word Information Lost score
     """
     return 1 - ((errors / reference_total) * (errors / prediction_total))
 
@@ -77,7 +77,7 @@ def word_information_lost(
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
     Returns:
-        (Tensor) Word Information Lost rate
+        Word Information Lost rate
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]

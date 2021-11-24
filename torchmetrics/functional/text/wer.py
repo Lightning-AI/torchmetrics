@@ -32,8 +32,8 @@ def _wer_update(
         references: Reference(s) for each speech input as a string or list of strings
 
     Returns:
-        (Tensor) Number of edit operations to get from the reference to the prediction, summed over all samples
-        (Tensor) Number of words over all references
+        Number of edit operations to get from the reference to the prediction, summed over all samples
+        Number of words overall references
     """
     if isinstance(predictions, str):
         predictions = [predictions]
@@ -54,10 +54,10 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
-        total: Number of words over all references
+        total: Number of words overall references
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
     """
     return errors / total
 
@@ -78,7 +78,7 @@ def wer(
             This argument is deprecated in v0.6 and it will be removed in v0.7.
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]

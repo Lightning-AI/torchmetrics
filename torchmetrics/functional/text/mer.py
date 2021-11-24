@@ -32,7 +32,7 @@ def _mer_update(
 
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
-        Number of words over all references
+        Number of words overall references
     """
     if isinstance(predictions, str):
         predictions = [predictions]
@@ -54,10 +54,10 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
-        total: Number of words over all references
+        total: Number of words overall references
 
     Returns:
-        (Tensor) Match error rate
+        Match error rate score
     """
     return errors / total
 
