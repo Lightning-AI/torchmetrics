@@ -186,6 +186,7 @@ class MAP(Metric):
 
     Example:
         >>> from torchmetrics.detection.map import MAP
+        >>> from pprint import pprint
         >>> import torch
         >>> preds = [
         ...   dict(
@@ -202,7 +203,22 @@ class MAP(Metric):
         ... ]
         >>> metric = MAP()
         >>> metric.update(preds, target)
-        >>> metric.compute()
+        >>> pprint(metric.compute())  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        {'map': tensor(0.6000),
+         'map_50': tensor(1.),
+         'map_75': tensor(1.),
+         'map_small': tensor(-1.),
+         'map_medium': tensor(-1.),
+         'map_large': tensor(0.6000),
+         'mar_1': tensor(0.6000),
+         'mar_10': tensor(0.6000),
+         'mar_100': tensor(0.6000),
+         'mar_small': tensor(-1.),
+         'mar_medium': tensor(-1.),
+         'mar_large': tensor(0.6000),
+         'map_per_class': tensor(-1.),
+         'mar_100_per_class': tensor(-1.)
+        }
 
     Raises:
         ImportError:
