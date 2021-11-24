@@ -238,3 +238,11 @@ def get_group_indexes(indexes: Tensor) -> List[Tensor]:
             res[_id] = [i]
 
     return [tensor(x, dtype=torch.long) for x in res.values()]
+
+
+def _squeeze_scalar_element_tensor(x: Tensor) -> Tensor:
+    return x.squeeze() if x.numel() == 1 else x
+
+
+def _squeeze_if_scalar(data: Any) -> Any:
+    return apply_to_collection(data, Tensor, _squeeze_scalar_element_tensor)

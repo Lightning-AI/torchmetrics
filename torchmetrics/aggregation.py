@@ -107,7 +107,7 @@ class BaseAggregator(Metric):
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value.squeeze() if isinstance(self.value, Tensor) else self.value
+        return self.value
 
 
 class MaxMetric(BaseAggregator):
@@ -287,7 +287,7 @@ class SumMetric(BaseAggregator):
         dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            "sum", torch.zeros(1), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
+            "sum", torch.tensor(0.0), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
         )
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
@@ -398,7 +398,7 @@ class MeanMetric(BaseAggregator):
         >>> metric.update(1)
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
-        tensor([2.])
+        tensor(2.)
     """
 
     def __init__(
@@ -410,9 +410,9 @@ class MeanMetric(BaseAggregator):
         dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            "sum", torch.zeros(1), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
+            "sum", torch.tensor(0.0), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
         )
-        self.add_state("weight", default=torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:  # type: ignore
         """Update state with data.
