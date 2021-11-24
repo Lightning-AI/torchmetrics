@@ -50,6 +50,11 @@
 			"--max-line-length=120",
 			"--verbose"
 		],
+		"python.testing.pytestArgs": [
+        		"tests"
+    		],
+    		"python.testing.unittestEnabled": false,
+    		"python.testing.pytestEnabled": true,
 		"restructuredtext.confPath": "${workspaceFolder}/docs/source",
 		"restructuredtext.builtDocumentationPath": "${workspaceFolder}/docs/build",
 		"restructuredtext.languageServer.disabled": false
