@@ -138,7 +138,7 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
             )
 
 
-def _fix_empty_tensors(boxes: torch.Tensor):
+def _fix_empty_tensors(boxes: torch.Tensor) -> torch.Tensor:
     """Empty tensors can cause problems in DDP mode, this methods corrects them."""
     if boxes.numel() == 0 and boxes.ndim == 1:
         return boxes.unsqueeze(0)
