@@ -646,10 +646,29 @@ SacreBLEUScore
 .. autoclass:: torchmetrics.SacreBLEUScore
     :noindex:
 
+
+SQuAD
+~~~~~
+
+.. autoclass:: torchmetrics.SQuAD
+    :noindex:
+
 WER
 ~~~
 
 .. autoclass:: torchmetrics.WER
+    :noindex:
+
+WordInfoLost
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoLost
+    :noindex:
+
+WordInfoPreserved
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoPreserved
     :noindex:
 
 
