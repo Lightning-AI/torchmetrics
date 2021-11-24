@@ -29,10 +29,7 @@ def _compute_wip_metric_jiwer(prediction: Union[str, List[str]], reference: Unio
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [
-        (BATCHES_1["preds"], BATCHES_1["targets"]),
-        (BATCHES_2["preds"], BATCHES_2["targets"])
-    ],
+    [(BATCHES_1["preds"], BATCHES_1["targets"]), (BATCHES_2["preds"], BATCHES_2["targets"])],
 )
 class TestWordInfoPreserved(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
