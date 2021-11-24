@@ -138,12 +138,11 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
             )
 
 
-def _fix_empty_tensors(input):
+def _fix_empty_tensors(boxes: torch.Tensor):
     """Empty tensors can cause problems in DDP mode, this methods corrects them."""
-    for item in input:
-        if item["boxes"].numel() == 0 and item["boxes"].ndim == 1:
-            item["boxes"] = item["boxes"].unsqueeze(0)
-    return input
+    if boxes.numel() == 0 and boxes.ndim == 1:
+        return boxes.unsqueeze(0)
+    return boxes
 
 
 class MAP(Metric):
@@ -279,16 +278,13 @@ class MAP(Metric):
         """
         _input_validator(preds, target)
 
-        preds = _fix_empty_tensors(preds)
-        target = _fix_empty_tensors(target)
-
         for item in preds:
-            self.detection_boxes.append(item["boxes"])
+            self.detection_boxes.append(_fix_empty_tensors(item["boxes"]))
             self.detection_scores.append(item["scores"])
             self.detection_labels.append(item["labels"])
 
         for item in target:
-            self.groundtruth_boxes.append(item["boxes"])
+            self.groundtruth_boxes.append(_fix_empty_tensors(item["boxes"]))
             self.groundtruth_labels.append(item["labels"])
 
     def compute(self) -> dict:
