@@ -184,6 +184,26 @@ class MAP(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
+    Example:
+        >>> from torchmetrics.detection.map import MAP
+        >>> import torch
+        >>> preds = [
+        ...   dict(
+        ...     boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
+        ...     scores=torch.Tensor([0.536]),                   
+        ...     labels=torch.IntTensor([0]),
+        ...   )
+        ... ]
+        >>> target = [
+        ...   dict(
+        ...     boxes=torch.Tensor([[214.0, 41.0, 562.0, 285.0]]),
+        ...     labels=torch.IntTensor([0]),
+        ...   )
+        ... ]
+        >>> metric = MAP()
+        >>> metric.update(preds, target)
+        >>> metric.compute()
+
     Raises:
         ImportError:
             If ``pycocotools`` is not installed
