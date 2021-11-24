@@ -470,3 +470,15 @@ wer [func]
 
 .. autofunction:: torchmetrics.functional.wer
     :noindex:
+
+word_information_lost [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.word_information_lost
+    :noindex:
+
+word_information_preserved [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.word_information_preserved
+    :noindex:

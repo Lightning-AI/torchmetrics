@@ -75,6 +75,8 @@ from torchmetrics.text import (  # noqa: E402
     ROUGEScore,
     SacreBLEUScore,
     SQuAD,
+    WordInfoLost,
+    WordInfoPreserved,
 )
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
@@ -154,4 +156,6 @@ __all__ = [
     "WER",
     "CharErrorRate",
     "MatchErrorRate",
+    "WordInfoLost",
+    "WordInfoPreserved",
 ]
