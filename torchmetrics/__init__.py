@@ -40,7 +40,7 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
-from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
+from torchmetrics.image import PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
@@ -100,14 +100,10 @@ __all__ = [
     "ExplainedVariance",
     "F1",
     "FBeta",
-    "FID",
     "HammingDistance",
     "Hinge",
     "IoU",
-    "IS",
-    "KID",
     "KLDivergence",
-    "LPIPS",
     "MatthewsCorrcoef",
     "MaxMetric",
     "MeanAbsoluteError",
