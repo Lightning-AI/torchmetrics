@@ -74,6 +74,7 @@ from torchmetrics.text import (  # noqa: E402
     MatchErrorRate,
     ROUGEScore,
     SacreBLEUScore,
+    SQuAD,
 )
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
@@ -144,6 +145,7 @@ __all__ = [
     "SNR",
     "SpearmanCorrcoef",
     "Specificity",
+    "SQuAD",
     "SSIM",
     "StatScores",
     "STOI",
