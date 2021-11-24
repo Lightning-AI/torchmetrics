@@ -92,7 +92,7 @@ class KLDivergence(Metric):
         self.reduction = reduction
 
         if self.reduction in ["mean", "sum"]:
-            self.add_state("measures", torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("measures", torch.tensor(0.0), dist_reduce_fx="sum")
         else:
             self.add_state("measures", [], dist_reduce_fx="cat")
         self.add_state("total", torch.tensor(0), dist_reduce_fx="sum")

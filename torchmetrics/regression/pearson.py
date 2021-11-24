@@ -108,12 +108,12 @@ class PearsonCorrcoef(Metric):
             process_group=process_group,
         )
 
-        self.add_state("mean_x", default=torch.tensor(0), dist_reduce_fx=None)
-        self.add_state("mean_y", default=torch.tensor(0), dist_reduce_fx=None)
-        self.add_state("var_x", default=torch.tensor(0), dist_reduce_fx=None)
-        self.add_state("var_y", default=torch.tensor(0), dist_reduce_fx=None)
-        self.add_state("corr_xy", default=torch.tensor(0), dist_reduce_fx=None)
-        self.add_state("n_total", default=torch.tensor(0), dist_reduce_fx=None)
+        self.add_state("mean_x", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("mean_y", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("var_x", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("var_y", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("corr_xy", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("n_total", default=torch.tensor(0.0), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
