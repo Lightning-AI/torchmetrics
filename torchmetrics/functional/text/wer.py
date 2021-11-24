@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple, Union
-from warnings import warn
+from typing import List, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
