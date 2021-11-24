@@ -54,14 +54,14 @@ def _wip_update(
 
 
 def _wip_compute(errors: Tensor, reference_total: Tensor, prediction_total: Tensor) -> Tensor:
-    """Compute the Word Information Lost.
+    """Compute the Word Information Perserved.
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
         reference_total: Number of words overall references
         prediction_total: Number of words overall prediction
     Returns:
-        Word Information Lost score
+        Word Information Perserved score
     """
     return (errors / reference_total) * (errors / prediction_total)
 
