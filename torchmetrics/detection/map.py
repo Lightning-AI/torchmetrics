@@ -138,6 +138,14 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
             )
 
 
+def _fix_empty_tensors(input):
+    """Empty tensors are causing problems in DDP mode, this methods corrects them."""
+    for item in input:
+        if item["boxes"].numel() == 0 and item["boxes"].ndim == 1:
+            item["boxes"] = item["boxes"].unsqueeze(0)
+    return input
+
+
 class MAP(Metric):
     r"""
     Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)\
@@ -270,6 +278,9 @@ class MAP(Metric):
                 If any score is not type float and of length 1
         """
         _input_validator(preds, target)
+
+        preds = _fix_empty_tensors(preds)
+        target = _fix_empty_tensors(target)
 
         for item in preds:
             self.detection_boxes.append(item["boxes"])
