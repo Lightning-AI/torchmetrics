@@ -1,15 +1,12 @@
 from typing import List, Union
 
 import pytest
-
-from tests.text.helpers import INPUT_ORDER, TextTester
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
-
 from jiwer import wil
 
-
+from tests.text.helpers import INPUT_ORDER, TextTester
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.text.wil import WordInfoLost
+from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
 
