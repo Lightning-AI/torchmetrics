@@ -5,10 +5,8 @@ import pytest
 from tests.text.helpers import INPUT_ORDER, TextTester
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
-if _JIWER_AVAILABLE:
-    from jiwer import compute_measures
-else:
-    compute_measures = Callable
+from jiwer import wil
+
 
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.text.wil import WordInfoLost
@@ -28,7 +26,7 @@ BATCHES_2 = {
 
 
 def _compute_wil_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return compute_measures(reference, prediction)["wil"]
+    return wil(reference, prediction)
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
