@@ -640,6 +640,13 @@ SacreBLEUScore
 .. autoclass:: torchmetrics.SacreBLEUScore
     :noindex:
 
+
+SQuAD
+~~~~~
+
+.. autoclass:: torchmetrics.SQuAD
+    :noindex:
+
 WER
 ~~~
 

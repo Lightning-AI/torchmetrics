@@ -74,6 +74,7 @@ from torchmetrics.text import (  # noqa: E402
     MatchErrorRate,
     ROUGEScore,
     SacreBLEUScore,
+    SQuAD,
     WordInfoLost,
     WordInfoPreserved,
 )
@@ -146,6 +147,7 @@ __all__ = [
     "SNR",
     "SpearmanCorrcoef",
     "Specificity",
+    "SQuAD",
     "SSIM",
     "StatScores",
     "STOI",

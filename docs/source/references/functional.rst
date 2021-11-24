@@ -458,6 +458,13 @@ sacre_bleu_score [func]
 .. autofunction:: torchmetrics.functional.sacre_bleu_score
     :noindex:
 
+
+squad [func]
+~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.squad
+    :noindex:
+
 wer [func]
 ~~~~~~~~~~
 
