@@ -374,7 +374,7 @@ class MAP(Metric):
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
         boxes = [
-            box_convert(box, in_fmt="xyxy", out_fmt="xywh") if box.size() == torch.Size([1, 4]) else box
+            box_convert(box, in_fmt="xyxy", out_fmt="xywh") if box.ndim > 1 and box.size(1) == 4 else box
             for box in boxes
         ]
         for image_id, (image_boxes, image_labels) in enumerate(zip(boxes, labels)):
