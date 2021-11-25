@@ -25,9 +25,7 @@ from torchmetrics.text.bleu import BLEUScore
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.corpus_bleu
 # EXAMPLE 1
-HYPOTHESIS_A = tuple(
-    "It is a guide to action which ensures that the military always obeys the commands of the party"
-)
+HYPOTHESIS_A = tuple("It is a guide to action which ensures that the military always obeys the commands of the party")
 REFERENCE_1A = tuple("It is a guide to action that ensures that the military will forever heed Party commands")
 REFERENCE_2A = tuple(
     "It is a guiding principle which makes the military forces always being under the command of the Party"
