@@ -167,7 +167,7 @@ def bleu_score(
     reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
         [line.split() for line in reference] for reference in reference_corpus
     ]
-    translate_corpus_: Sequence[Sequence[str]] = [[line.split() for line in translate_corpus]]
+    translate_corpus_: Sequence[Sequence[str]] = [line.split() for line in translate_corpus]
 
     trans_len, ref_len = _bleu_score_update(
         reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram
