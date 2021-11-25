@@ -122,8 +122,8 @@ def _bleu_score_compute(
 
 
 def bleu_score(
-    reference_corpus: Sequence[Sequence[Sequence[str]]],
-    translate_corpus: Sequence[Sequence[str]],
+    reference_corpus: Sequence[Sequence[str]],
+    translate_corpus: Sequence[str],
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
@@ -144,8 +144,8 @@ def bleu_score(
 
     Example:
         >>> from torchmetrics.functional import bleu_score
-        >>> translate_corpus = ['the cat is on the mat'.split()]
-        >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
+        >>> translate_corpus = ['the cat is on the mat']
+        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> bleu_score(reference_corpus, translate_corpus)
         tensor(0.7598)
 
@@ -164,8 +164,13 @@ def bleu_score(
     trans_len = tensor(0, dtype=torch.float)
     ref_len = tensor(0, dtype=torch.float)
 
+    reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
+        [line.split() for line in reference] for reference in reference_corpus
+    ]
+    translate_corpus_: Sequence[Sequence[str]] = [[line.split() for line in translate_corpus]]
+
     trans_len, ref_len = _bleu_score_update(
-        reference_corpus, translate_corpus, numerator, denominator, trans_len, ref_len, n_gram
+        reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)

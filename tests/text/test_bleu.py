@@ -26,22 +26,22 @@ from torchmetrics.text.bleu import BLEUScore
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.corpus_bleu
 # EXAMPLE 1
 HYPOTHESIS_A = tuple(
-    "It is a guide to action which ensures that the military always obeys the commands of the party".split()
+    "It is a guide to action which ensures that the military always obeys the commands of the party"
 )
-REFERENCE_1A = tuple("It is a guide to action that ensures that the military will forever heed Party commands".split())
+REFERENCE_1A = tuple("It is a guide to action that ensures that the military will forever heed Party commands")
 REFERENCE_2A = tuple(
-    "It is a guiding principle which makes the military forces always being under the command of the Party".split()
+    "It is a guiding principle which makes the military forces always being under the command of the Party"
 )
-REFERENCE_3A = tuple("It is the practical guide for the army always to heed the directions of the party".split())
+REFERENCE_3A = tuple("It is the practical guide for the army always to heed the directions of the party")
 
 # EXAMPLE 2
-HYPOTHESIS_B = tuple("he read the book because he was interested in world history".split())
-REFERENCE_1B = tuple("he was interested in world history because he read the book".split())
+HYPOTHESIS_B = tuple("he read the book because he was interested in world history")
+REFERENCE_1B = tuple("he was interested in world history because he read the book"
 
 # EXAMPLE 3
-HYPOTHESIS_C = tuple("the cat the cat on the mat".split())
-REFERENCE_1C = tuple("the cat is on the mat".split())
-REFERENCE_2C = tuple("there is a cat on the mat".split())
+HYPOTHESIS_C = tuple("the cat the cat on the mat")
+REFERENCE_1C = tuple("the cat is on the mat")
+REFERENCE_2C = tuple("there is a cat on the mat")
 
 TUPLE_OF_REFERENCES = (
     ((REFERENCE_1A, REFERENCE_2A, REFERENCE_3A), tuple([REFERENCE_1B])),
