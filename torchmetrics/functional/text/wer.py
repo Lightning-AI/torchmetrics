@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple, Union
-from warnings import warn
+from typing import List, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -65,7 +64,6 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 def wer(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
-    concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
 ) -> Tensor:
     """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
@@ -74,8 +72,6 @@ def wer(
     Args:
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
-        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
 
     Returns:
         Word error rate score
@@ -86,7 +82,5 @@ def wer(
         >>> wer(predictions=predictions, references=references)
         tensor(0.5000)
     """
-    if concatenate_texts is not None:
-        warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
     errors, total = _wer_update(predictions, references)
     return _wer_compute(errors, total)
