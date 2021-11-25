@@ -25,7 +25,15 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_max, dim_zero_mean, dim_zero_min, dim_zero_sum
+from torchmetrics.utilities.data import (
+    _flatten,
+    _squeeze_if_scalar,
+    dim_zero_cat,
+    dim_zero_max,
+    dim_zero_mean,
+    dim_zero_min,
+    dim_zero_sum,
+)
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
@@ -369,7 +377,8 @@ class Metric(Module, ABC):
             with self.sync_context(
                 dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
             ):
-                self._computed = compute(*args, **kwargs)
+                value = compute(*args, **kwargs)
+                self._computed = _squeeze_if_scalar(value)
 
             return self._computed
 
