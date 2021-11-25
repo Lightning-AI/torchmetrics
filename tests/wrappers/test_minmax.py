@@ -62,7 +62,9 @@ def compare_fn_ddp(preds, target, base_fn):
 )
 class TestMinMaxWrapper(MetricTester):
     """Test the MinMaxMetric wrapper works as expected."""
+
     atol = 1e-6
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_minmax_wrapper(self, preds, target, base_metric, ddp):
         self.run_class_metric_test(
