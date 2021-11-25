@@ -18,8 +18,9 @@
 # Link:
 
 import itertools
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
+import torch
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
@@ -98,6 +99,7 @@ class CHRFScore(Metric):
         n_word_order: int = 2,
         beta: float = 2.0,
         lowercase: bool = False,
+        whitespace: bool = False,
         return_sentence_level_score: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -115,6 +117,7 @@ class CHRFScore(Metric):
         self.n_word_order = n_word_order
         self.beta = beta
         self.lowercase = lowercase
+        self.whitespace = whitespace
         self.return_sentence_level_score = return_sentence_level_score
 
         self.n_order = float(n_char_order + n_word_order)
@@ -125,7 +128,7 @@ class CHRFScore(Metric):
                 state_name = self._get_state_name(text, n_gram_level, n)
                 self.add_state(state_name, tensor(0.0), dist_reduce_fx="sum")
 
-        if return_sentence_level_score:
+        if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
     def update(  # type: ignore
@@ -148,16 +151,24 @@ class CHRFScore(Metric):
             self.n_order,
             self.beta,
             self.lowercase,
-            self.sentence_chrf_score,
+            self.whitespace,
+            self.sentence_chrf_score if self.return_sentence_level_score else None,
         )
-        self._update_states_from_dicts(n_grams_dicts_tuple)
+        self._update_states_from_dicts(n_grams_dicts_tuple[:-1])
+        if self.sentence_chrf_score is not None:
+            self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate ChrF/ChrF++ score.
 
         Return:
             Tensor with ChrF/ChrF++ score
         """
+        if self.sentence_chrf_score is not None:
+            return (
+                _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta),
+                torch.cat(self.sentence_chrf_score),
+            )
         return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:

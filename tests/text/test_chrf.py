@@ -24,10 +24,10 @@ HYPOTHESIS_B = "he read the book because he was interested in world history"
 REFERENCE_1B = "he was interested in world history because he read the book"
 REFERENCE_2B = "It is the practical guide for the army always to heed the directions of the party"
 
-# EXAMPLE 3
-HYPOTHESIS_C = "the cat the cat on the mat"
-REFERENCE_1C = "the cat is on the mat"
-REFERENCE_2C = "there is a cat on the mat"
+# EXAMPLE 3 (add intentionally whitespaces)
+HYPOTHESIS_C = "the cat the   cat on the mat "
+REFERENCE_1C = "the  cat is     on the mat "
+REFERENCE_2C = "there is a   cat on the mat"
 
 TUPLE_OF_REFERENCES = (
     ((REFERENCE_1A, REFERENCE_2A), (REFERENCE_1B, REFERENCE_2B)),
@@ -39,9 +39,16 @@ BATCHES = {"preds": TUPLE_OF_HYPOTHESES, "targets": TUPLE_OF_REFERENCES}
 
 
 def sacrebleu_chrf_fn(
-    targets: Sequence[Sequence[str]], preds: Sequence[str], char_order: int, word_order: int, lowercase: bool
+    targets: Sequence[Sequence[str]],
+    preds: Sequence[str],
+    char_order: int,
+    word_order: int,
+    lowercase: bool,
+    whitespace: bool,
 ) -> Tensor:
-    sacrebleu_chrf = CHRF(char_order=char_order, word_order=word_order, lowercase=lowercase, eps_smoothing=True)
+    sacrebleu_chrf = CHRF(
+        char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace, eps_smoothing=True
+    )
     # Sacrebleu CHRF expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
     sacrebleu_chrf = sacrebleu_chrf.corpus_score(preds, targets).score / 100
@@ -49,8 +56,15 @@ def sacrebleu_chrf_fn(
 
 
 @pytest.mark.parametrize(
-    ["char_order", "word_order", "lowercase"],
-    [pytest.param(6, 2, False), pytest.param(4, 2, True), pytest.param(6, 0, True), pytest.param(4, 0, False)],
+    ["char_order", "word_order", "lowercase", "whitespace"],
+    [
+        pytest.param(6, 2, False, False),
+        pytest.param(6, 2, False, True),
+        pytest.param(4, 2, True, False),
+        pytest.param(6, 0, True, False),
+        pytest.param(6, 0, True, True),
+        pytest.param(4, 0, False, True),
+    ],
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
@@ -62,9 +76,18 @@ def sacrebleu_chrf_fn(
 class TestCHRFScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_chrf_score_class(self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase):
-        metric_args = {"n_char_order": char_order, "n_word_order": word_order, "lowercase": lowercase}
-        nltk_metric = partial(sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase)
+    def test_chrf_score_class(
+        self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace
+    ):
+        metric_args = {
+            "n_char_order": char_order,
+            "n_word_order": word_order,
+            "lowercase": lowercase,
+            "whitespace": whitespace,
+        }
+        nltk_metric = partial(
+            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+        )
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -77,9 +100,16 @@ class TestCHRFScore(TextTester):
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase):
-        metric_args = {"n_char_order": char_order, "n_word_order": word_order, "lowercase": lowercase}
-        nltk_metric = partial(sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase)
+    def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        metric_args = {
+            "n_char_order": char_order,
+            "n_word_order": word_order,
+            "lowercase": lowercase,
+            "whitespace": whitespace,
+        }
+        nltk_metric = partial(
+            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+        )
 
         self.run_functional_metric_test(
             preds,
@@ -90,8 +120,13 @@ class TestCHRFScore(TextTester):
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase):
-        metric_args = {"n_char_order": char_order, "n_word_order": word_order, "lowercase": lowercase}
+    def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        metric_args = {
+            "n_char_order": char_order,
+            "n_word_order": word_order,
+            "lowercase": lowercase,
+            "whitespace": whitespace,
+        }
 
         self.run_differentiability_test(
             preds=preds,
@@ -114,3 +149,18 @@ def test_chrf_empty_class():
     hyp = []
     ref = [[]]
     assert chrf(ref, hyp) == tensor(0.0)
+
+
+def test_chrf_return_sentence_level_score_functional():
+    hyp = [HYPOTHESIS_B]
+    ref = [[REFERENCE_1B, REFERENCE_2B]]
+    _, chrf_sentence_score = chrf_score(ref, hyp, return_sentence_level_score=True)
+    isinstance(chrf_sentence_score, Tensor)
+
+
+def test_chrf_return_sentence_level_class():
+    chrf = CHRFScore(return_sentence_level_score=True)
+    hyp = [HYPOTHESIS_B]
+    ref = [[REFERENCE_1B, REFERENCE_2B]]
+    _, chrf_sentence_score = chrf(ref, hyp)
+    isinstance(chrf_sentence_score, Tensor)

@@ -89,16 +89,20 @@ def _defaultdict_of_tensors_int_keys() -> Dict[int, Tensor]:
     return defaultdict(zero_tensor)
 
 
-def _get_characters(sentence: str) -> List[str]:
+def _get_characters(sentence: str, whitespace: bool) -> List[str]:
     """Split sentence into individual characters.
 
     Args:
         sentence:
             An input sentence to split.
+        whitespace:
+            An indication whether to keep whitespaces during character n-gram extraction.
 
     Return:
         A list of separated characters.
     """
+    if whitespace:
+        return list(sentence)
     return list(sentence.strip().replace(" ", ""))
 
 
@@ -155,7 +159,7 @@ def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, 
 
 
 def _get_n_grams_counts_and_total_ngrams(
-    sentence: str, n_char_order: int, n_word_order: int, lowercase: bool
+    sentence: str, n_char_order: int, n_word_order: int, lowercase: bool, whitespace: bool
 ) -> Tuple[
     Dict[int, Dict[Tuple[str, ...], Tensor]],
     Dict[int, Dict[Tuple[str, ...], Tensor]],
@@ -172,6 +176,8 @@ def _get_n_grams_counts_and_total_ngrams(
             A word n-gram order.
         lowercase:
             An indication whether to enable case-insesitivity.
+        whitespace:
+            An indication whether to keep whitespaces during character n-gram extraction.
 
     Return:
         char_n_grams_counts:
@@ -186,7 +192,7 @@ def _get_n_grams_counts_and_total_ngrams(
         """Get a dictionary of dictionaries with a counts of given n-grams."""
         if lowercase:
             sentence = sentence.lower()
-        char_n_grams_counts = _ngram_counts(_get_characters(sentence), n_char_order)
+        char_n_grams_counts = _ngram_counts(_get_characters(sentence, whitespace), n_char_order)
         word_n_grams_counts = _ngram_counts(_get_words_and_punctiation(sentence), n_word_order)
         return char_n_grams_counts, word_n_grams_counts
 
@@ -318,6 +324,7 @@ def _calculate_sentence_level_chrf_score(
     n_order: float,
     beta: float,
     lowercase: bool,
+    whitespace: bool,
 ) -> Tuple[Tensor, Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]]:
     """Calculate the best sentence-level ChrF/ChrF++ score. For a given pre-processed hypothesis, all references
     are evaluated and score and statistics for the best matching reference is returned.
@@ -343,6 +350,8 @@ def _calculate_sentence_level_chrf_score(
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
         lowercase:
             An indication whether to enable case-insesitivity.
+        whitespace:
+            An indication whether to keep whitespaces during character n-gram extraction.
 
     Return:
         Return ChrF/ChrF++ score and statistics for the best matching hypothesis and reference.
@@ -371,7 +380,7 @@ def _calculate_sentence_level_chrf_score(
             ref_word_n_grams_counts,
             ref_char_n_grams,
             ref_word_n_grams,
-        ) = _get_n_grams_counts_and_total_ngrams(reference, n_char_order, n_word_order, lowercase)
+        ) = _get_n_grams_counts_and_total_ngrams(reference, n_char_order, n_word_order, lowercase, whitespace)
         matching_char_n_grams = _get_ngram_matches(ref_char_n_grams_counts, hyp_char_n_grams_counts)
         matching_word_n_grams = _get_ngram_matches(ref_word_n_grams_counts, hyp_word_n_grams_counts)
 
@@ -416,9 +425,16 @@ def _chrf_score_update(
     n_order: float,
     beta: float,
     lowercase: bool,
+    whitespace: bool,
     sentence_chrf_score: Optional[List[Tensor]] = None,
 ) -> Tuple[
-    Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Optional[List[Tensor]],
 ]:
     """
     Args:
@@ -448,6 +464,8 @@ def _chrf_score_update(
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
         lowercase:
             An indication whether to enable case-insesitivity.
+        whitespace:
+            An indication whether to keep whitespaces during character n-gram extraction.
         sentence_chrf_score:
             A list of sentence-level ChrF/ChrF++ scores.
 
@@ -488,7 +506,7 @@ def _chrf_score_update(
             hyp_word_n_grams_counts,
             hyp_char_n_grams,
             hyp_word_n_grams,
-        ) = _get_n_grams_counts_and_total_ngrams(hypothesis, n_char_order, n_word_order, lowercase)
+        ) = _get_n_grams_counts_and_total_ngrams(hypothesis, n_char_order, n_word_order, lowercase, whitespace)
         total_hyp_char_n_grams = _sum_over_dicts(total_hyp_char_n_grams, hyp_char_n_grams)
         total_hyp_word_n_grams = _sum_over_dicts(total_hyp_word_n_grams, hyp_word_n_grams)
 
@@ -509,7 +527,11 @@ def _chrf_score_update(
             n_order,
             beta,
             lowercase,
+            whitespace,
         )
+
+        if sentence_chrf_score is not None:
+            sentence_chrf_score.append(sentence_level_f_score.unsqueeze(0))
 
         total_ref_char_n_grams = _sum_over_dicts(total_ref_char_n_grams, ref_char_n_grams)
         total_ref_word_n_grams = _sum_over_dicts(total_ref_word_n_grams, ref_word_n_grams)
@@ -523,6 +545,7 @@ def _chrf_score_update(
         total_hyp_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
+        sentence_chrf_score,
     )
 
 
@@ -582,7 +605,7 @@ def chrf_score(
     lowercase: bool = False,
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
-) -> Tensor:
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Calculate `ChrF score`_ [1] of machine translated text with one or more references. This implementation
     supports both ChrF score computation introduced in [1] and ChrF++ score introduced in [2]. This implementation
     follows the implmenetaions from https://github.com/m-popovic/chrF and
@@ -603,13 +626,13 @@ def chrf_score(
         lowercase:
             An indication whether to enable case-insesitivity.
         whitespace:
-            An indication whether keep whitespaces during n-gram extraction.
+            An indication whether to keep whitespaces during character n-gram extraction.
         return_sentence_level_score:
             An indication whether a sentence-level ChrF/ChrF++ score to be returned.
 
     Return:
         A corpus-level ChrF/ChrF++ score.
-        (Optionally) A list of sentence-level ChrF/ChrF++ scores.
+        (Optionally) A list of sentence-level ChrF/ChrF++ scores if `return_sentence_level_score=True`.
 
     Example:
         >>> from torchmetrics.functional import chrf_score
@@ -642,6 +665,7 @@ def chrf_score(
         total_hyp_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
+        sentence_chrf_score,
     ) = _chrf_score_update(
         reference_corpus,
         hypothesis_corpus,
@@ -656,6 +680,7 @@ def chrf_score(
         n_order,
         beta,
         lowercase,
+        whitespace,
         sentence_chrf_score,
     )
 
@@ -670,4 +695,6 @@ def chrf_score(
         beta,
     )
 
+    if sentence_chrf_score:
+        return chrf_f_score, torch.cat(sentence_chrf_score)
     return chrf_f_score
