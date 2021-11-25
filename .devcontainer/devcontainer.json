@@ -18,6 +18,7 @@
 	],
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
+		"editor.formatOnSave": true,
 		"editor.rulers": [
 			120
 		],
@@ -29,9 +30,12 @@
 		"python.analysis.completeFunctionParens": true,
 		"python.analysis.autoSearchPaths": true,
 		"python.analysis.useImportHeuristic": true,
-		"python.linting.enabled": true,
-		"python.linting.pylintEnabled": false,
-		"python.linting.flake8Enabled": true,
+		"python.sortImports": true,
+		"python.sortImports.args": [
+			"--profile",
+			"black",
+			"--atomic"
+		],
 		"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
 		"python.formatting.blackPath": "/usr/local/py-utils/bin/black",
 		"python.formatting.provider": "black",
@@ -44,16 +48,19 @@
 		"python.linting.pycodestylePath": "/usr/local/py-utils/bin/pycodestyle",
 		"python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
 		"python.linting.pylintPath": "/usr/local/py-utils/bin/pylint",
+		"python.linting.enabled": true,
+		"python.linting.pylintEnabled": false,
+		"python.linting.flake8Enabled": true,
 		"python.linting.flake8Args": [
 			"--ignore=E24,W504,F401,E203,W503",
 			"--max-line-length=120",
 			"--verbose"
 		],
 		"python.testing.pytestArgs": [
-        		"tests"
-    		],
-    		"python.testing.unittestEnabled": false,
-    		"python.testing.pytestEnabled": true,
+			"tests"
+		],
+    	"python.testing.unittestEnabled": false,
+    	"python.testing.pytestEnabled": true,
 		"restructuredtext.confPath": "${workspaceFolder}/docs/source",
 		"restructuredtext.builtDocumentationPath": "${workspaceFolder}/docs/build",
 		"restructuredtext.languageServer.disabled": false
