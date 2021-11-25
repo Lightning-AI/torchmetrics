@@ -665,6 +665,12 @@ WordInfoPreserved
 .. autoclass:: torchmetrics.WordInfoPreserved
     :noindex:
 
+CHRFScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.CHRFScore
+    :noindex:
+
 
 ********
 Wrappers

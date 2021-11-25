@@ -482,3 +482,9 @@ word_information_preserved [func]
 
 .. autofunction:: torchmetrics.functional.word_information_preserved
     :noindex:
+
+chrf_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.chrf_score
+    :noindex:
