@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
+
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
 from torch import tensor
@@ -49,6 +51,18 @@ BATCHES = {"preds": TUPLE_OF_HYPOTHESES, "targets": TUPLE_OF_REFERENCES}
 smooth_func = SmoothingFunction().method2
 
 
+def _compute_bleu_metric_nltk(list_of_references, hypotheses, weights, smoothing_function, **kwargs):
+    hypotheses_ = [hypothesis.split() for hypothesis in hypotheses]
+    list_of_references_ = [[line.split() for line in ref] for ref in list_of_references]
+    return corpus_bleu(
+        list_of_references=list_of_references_,
+        hypotheses=hypotheses_,
+        weights=weights,
+        smoothing_function=smoothing_function,
+        **kwargs
+    )
+
+
 @pytest.mark.parametrize(
     ["weights", "n_gram", "smooth_func", "smooth"],
     [
@@ -69,24 +83,14 @@ class TestBLEUScore(TextTester):
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
-
-        def nltk_metric(list_of_references, hypotheses, weights=weights, smoothing_function=smooth_func, **kwargs):
-            hypotheses_ = [hypothesis.split() for hypothesis in hypotheses]
-            list_of_references_ = [[line.split() for line in ref] for ref in list_of_references]
-            return corpus_bleu(
-                list_of_references=list_of_references_,
-                hypotheses=hypotheses_,
-                weights=weights,
-                smoothing_function=smoothing_function,
-                **kwargs
-            )
+        compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             targets=targets,
             metric_class=BLEUScore,
-            sk_metric=nltk_metric,
+            sk_metric=compute_bleu_metric_nltk,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             input_order=INPUT_ORDER.TARGETS_FIRST,
@@ -94,23 +98,13 @@ class TestBLEUScore(TextTester):
 
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
-
-        def nltk_metric(list_of_references, hypotheses, weights=weights, smoothing_function=smooth_func, **kwargs):
-            hypotheses_ = [hypothesis.split() for hypothesis in hypotheses]
-            list_of_references_ = [[line.split() for line in ref] for ref in list_of_references]
-            return corpus_bleu(
-                list_of_references=list_of_references_,
-                hypotheses=hypotheses_,
-                weights=weights,
-                smoothing_function=smoothing_function,
-                **kwargs
-            )
+        compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
         self.run_functional_metric_test(
             preds,
             targets,
             metric_functional=bleu_score,
-            sk_metric=nltk_metric,
+            sk_metric=compute_bleu_metric_nltk,
             metric_args=metric_args,
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
