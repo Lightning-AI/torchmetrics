@@ -36,7 +36,7 @@ REFERENCE_3A = tuple("It is the practical guide for the army always to heed the 
 
 # EXAMPLE 2
 HYPOTHESIS_B = tuple("he read the book because he was interested in world history")
-REFERENCE_1B = tuple("he was interested in world history because he read the book"
+REFERENCE_1B = tuple("he was interested in world history because he read the book")
 
 # EXAMPLE 3
 HYPOTHESIS_C = tuple("the cat the cat on the mat")
@@ -122,8 +122,8 @@ def test_bleu_empty_functional():
 
 
 def test_no_4_gram_functional():
-    hyps = [["My", "full", "pytorch-lightning"]]
-    refs = [[["My", "full", "pytorch-lightning", "test"], ["Completely", "Different"]]]
+    hyps = [["My full pytorch-lightning"]]
+    refs = [[["My full pytorch-lightning test"], ["Completely Different"]]]
     assert bleu_score(refs, hyps) == tensor(0.0)
 
 
@@ -136,6 +136,6 @@ def test_bleu_empty_class():
 
 def test_no_4_gram_class():
     bleu = BLEUScore()
-    hyps = [["My", "full", "pytorch-lightning"]]
-    refs = [[["My", "full", "pytorch-lightning", "test"], ["Completely", "Different"]]]
+    hyps = [["My full pytorch-lightning"]]
+    refs = [[["My full pytorch-lightning test"], ["Completely Different"]]]
     assert bleu(refs, hyps) == tensor(0.0)
