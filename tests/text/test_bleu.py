@@ -120,8 +120,8 @@ def test_bleu_empty_functional():
 
 
 def test_no_4_gram_functional():
-    hyps = [["My full pytorch-lightning"]]
-    refs = [[["My full pytorch-lightning test"], ["Completely Different"]]]
+    hyps = ["My full pytorch-lightning"]
+    refs = [["My full pytorch-lightning test", "Completely Different"]]
     assert bleu_score(refs, hyps) == tensor(0.0)
 
 
@@ -134,6 +134,6 @@ def test_bleu_empty_class():
 
 def test_no_4_gram_class():
     bleu = BLEUScore()
-    hyps = [["My full pytorch-lightning"]]
-    refs = [[["My full pytorch-lightning test"], ["Completely Different"]]]
+    hyps = ["My full pytorch-lightning"]
+    refs = [["My full pytorch-lightning test", "Completely Different"]]
     assert bleu(refs, hyps) == tensor(0.0)
