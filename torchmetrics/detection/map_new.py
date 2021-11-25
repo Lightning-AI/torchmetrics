@@ -348,34 +348,34 @@ class MAP(Metric):
         dtIg = torch.zeros((T, D), dtype=torch.bool)
         if len(ious) > 0:
             for tind, t in enumerate(self.iou_thresholds):
-                for dind, d in enumerate(dt):
+                for d in range(D):
                     # information about best match so far (m=-1 -> unmatched)
                     iou = min([t, 1 - 1e-10])
                     m = -1
-                    for gind, g in enumerate(gt):
+                    for g in range(G):
                         # if this gt already matched, and not a crowd, continue
-                        if gtm[tind, gind] > 0:
+                        if gtm[tind, g] > 0:
                             continue
                         # if dt matched to reg gt, and on ignore gt, stop
-                        if m > -1 and not gtIg[m] and gtIg[gind]:
+                        if m > -1 and not gtIg[m] and gtIg[g]:
                             break
                         # continue to next gt unless better match made
-                        if ious[dind, gind] < iou:
+                        if ious[d, g] < iou:
                             continue
                         # if match successful and best so far, store appropriately
-                        iou = ious[dind, gind]
-                        m = gind
+                        iou = ious[d, g]
+                        m = g
                     # if match made store id of match for both dt and gt
                     if m == -1:
                         continue
 
-                    dtIg[tind, dind] = gtIg[m]
-                    dtm[tind, dind] = True
+                    dtIg[tind, d] = gtIg[m]
+                    dtm[tind, d] = True
                     gtm[tind, m] = True
         # set unmatched detections outside of area range to ignore
         dt_areas = box_area(dt)
         dt_ignore_area = (dt_areas < area_range[0]) | (dt_areas > area_range[1])
-        a = dt_ignore_area.reshape((1, len(dt)))
+        a = dt_ignore_area.reshape((1, D))
         dtIg = torch.logical_or(dtIg, torch.logical_and(dtm == 0, torch.repeat_interleave(a, T, 0)))
         return {
             "dtMatches": dtm,
@@ -445,6 +445,7 @@ class MAP(Metric):
             for a in range(A):
                 Na = a * I
                 for m, maxDet in enumerate(self.max_detection_thresholds):
+                    # Load all image evals for current class_id and area_range
                     E = [evalImgs[Nk + Na + i] for i in range(I)]
                     E = [e for e in E if e is not None]
                     if len(E) == 0:
