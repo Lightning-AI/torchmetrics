@@ -97,7 +97,6 @@ class _hide_prints:
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
-
     if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type List")
     if not isinstance(targets, Sequence):
@@ -137,6 +136,13 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
                 f" different length (expected {item['boxes'].size(0)} labels and scores,"
                 f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
             )
+
+
+def _fix_empty_tensors(boxes: torch.Tensor) -> torch.Tensor:
+    """Empty tensors can cause problems in DDP mode, this methods corrects them."""
+    if boxes.numel() == 0 and boxes.ndim == 1:
+        return boxes.unsqueeze(0)
+    return boxes
 
 
 class MAP(Metric):
@@ -273,12 +279,12 @@ class MAP(Metric):
         _input_validator(preds, target)
 
         for item in preds:
-            self.detection_boxes.append(item["boxes"])
+            self.detection_boxes.append(_fix_empty_tensors(item["boxes"]))
             self.detection_scores.append(item["scores"])
             self.detection_labels.append(item["labels"])
 
         for item in target:
-            self.groundtruth_boxes.append(item["boxes"])
+            self.groundtruth_boxes.append(_fix_empty_tensors(item["boxes"]))
             self.groundtruth_labels.append(item["labels"])
 
     def compute(self) -> dict:
@@ -325,7 +331,7 @@ class MAP(Metric):
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
-            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
+            for class_id in self._get_classes():
                 coco_eval.params.catIds = [class_id]
                 with _hide_prints():
                     coco_eval.evaluate()
@@ -363,12 +369,14 @@ class MAP(Metric):
 
         Format is defined at https://cocodataset.org/#format-data
         """
-
         images = []
         annotations = []
         annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
 
-        boxes = [box_convert(box, in_fmt="xyxy", out_fmt="xywh") if box.size(1) == 4 else box for box in boxes]
+        boxes = [
+            box_convert(box, in_fmt="xyxy", out_fmt="xywh") if box.ndim > 1 and box.size(1) == 4 else box
+            for box in boxes
+        ]
         for image_id, (image_boxes, image_labels) in enumerate(zip(boxes, labels)):
             image_boxes = image_boxes.cpu().tolist()
             image_labels = image_labels.cpu().tolist()
@@ -405,8 +413,11 @@ class MAP(Metric):
                 annotations.append(annotation)
                 annotation_id += 1
 
-        classes = [
-            {"id": i, "name": str(i)}
-            for i in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
-        ]
+        classes = [{"id": i, "name": str(i)} for i in self._get_classes()]
         return {"images": images, "annotations": annotations, "categories": classes}
+
+    def _get_classes(self) -> list:
+        """Get list of unique classes depending on groundtruth_labels and detection_labels."""
+        if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
+            return torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
+        return []
