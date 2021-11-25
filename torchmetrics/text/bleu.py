@@ -99,14 +99,10 @@ class BLEUScore(Metric):
             reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
         """
-        reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
-            [line.split() for line in reference] for reference in reference_corpus
-        ]
-        translate_corpus_: Sequence[Sequence[str]] = [line.split() for line in translate_corpus]
 
         self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus_,
-            translate_corpus_,
+            reference_corpus,
+            translate_corpus,
             self.numerator,
             self.denominator,
             self.trans_len,

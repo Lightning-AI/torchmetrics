@@ -45,8 +45,8 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
 
 
 def _bleu_score_update(
-    reference_corpus: Sequence[Sequence[Sequence[str]]],
-    translate_corpus: Sequence[Sequence[str]],
+    reference_corpus: Sequence[Sequence[str]],
+    translate_corpus: Sequence[str],
     numerator: Tensor,
     denominator: Tensor,
     trans_len: Tensor,
@@ -64,8 +64,12 @@ def _bleu_score_update(
         ref_len: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
     """
+    reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
+        [line.split() if line else [] for line in reference] for reference in reference_corpus
+    ]
+    translate_corpus_: Sequence[Sequence[str]] = [line.split() if line else [] for line in translate_corpus]
 
-    for (translation, references) in zip(translate_corpus, reference_corpus):
+    for (translation, references) in zip(translate_corpus_, reference_corpus_):
         trans_len += len(translation)
         ref_len_list = [len(ref) for ref in references]
         ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
@@ -164,13 +168,8 @@ def bleu_score(
     trans_len = tensor(0, dtype=torch.float)
     ref_len = tensor(0, dtype=torch.float)
 
-    reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
-        [line.split() for line in reference] for reference in reference_corpus
-    ]
-    translate_corpus_: Sequence[Sequence[str]] = [line.split() for line in translate_corpus]
-
     trans_len, ref_len = _bleu_score_update(
-        reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram
+        reference_corpus, translate_corpus, numerator, denominator, trans_len, ref_len, n_gram
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)

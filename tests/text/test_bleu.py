@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import partial
-
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
 from torch import tensor
@@ -25,21 +23,19 @@ from torchmetrics.text.bleu import BLEUScore
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.corpus_bleu
 # EXAMPLE 1
-HYPOTHESIS_A = tuple("It is a guide to action which ensures that the military always obeys the commands of the party")
-REFERENCE_1A = tuple("It is a guide to action that ensures that the military will forever heed Party commands")
-REFERENCE_2A = tuple(
-    "It is a guiding principle which makes the military forces always being under the command of the Party"
-)
-REFERENCE_3A = tuple("It is the practical guide for the army always to heed the directions of the party")
+HYPOTHESIS_A = "It is a guide to action which ensures that the military always obeys the commands of the party"
+REFERENCE_1A = "It is a guide to action that ensures that the military will forever heed Party commands"
+REFERENCE_2A = "It is a guiding principle which makes the military forces always being under the command of the Party"
+REFERENCE_3A = "It is the practical guide for the army always to heed the directions of the party"
 
 # EXAMPLE 2
-HYPOTHESIS_B = tuple("he read the book because he was interested in world history")
-REFERENCE_1B = tuple("he was interested in world history because he read the book")
+HYPOTHESIS_B = "he read the book because he was interested in world history"
+REFERENCE_1B = "he was interested in world history because he read the book"
 
 # EXAMPLE 3
-HYPOTHESIS_C = tuple("the cat the cat on the mat")
-REFERENCE_1C = tuple("the cat is on the mat")
-REFERENCE_2C = tuple("there is a cat on the mat")
+HYPOTHESIS_C = "the cat the cat on the mat"
+REFERENCE_1C = "the cat is on the mat"
+REFERENCE_2C = "there is a cat on the mat"
 
 TUPLE_OF_REFERENCES = (
     ((REFERENCE_1A, REFERENCE_2A, REFERENCE_3A), tuple([REFERENCE_1B])),
@@ -74,7 +70,16 @@ class TestBLEUScore(TextTester):
     def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
 
-        nltk_metric = partial(corpus_bleu, weights=weights, smoothing_function=smooth_func)
+        def nltk_metric(list_of_references, hypotheses, weights=weights, smoothing_function=smooth_func, **kwargs):
+            hypotheses_ = [hypothesis.split() for hypothesis in hypotheses]
+            list_of_references_ = [[line.split() for line in ref] for ref in list_of_references]
+            return corpus_bleu(
+                list_of_references=list_of_references_,
+                hypotheses=hypotheses_,
+                weights=weights,
+                smoothing_function=smoothing_function,
+                **kwargs
+            )
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -89,7 +94,17 @@ class TestBLEUScore(TextTester):
 
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
-        nltk_metric = partial(corpus_bleu, weights=weights, smoothing_function=smooth_func)
+
+        def nltk_metric(list_of_references, hypotheses, weights=weights, smoothing_function=smooth_func, **kwargs):
+            hypotheses_ = [hypothesis.split() for hypothesis in hypotheses]
+            list_of_references_ = [[line.split() for line in ref] for ref in list_of_references]
+            return corpus_bleu(
+                list_of_references=list_of_references_,
+                hypotheses=hypotheses_,
+                weights=weights,
+                smoothing_function=smoothing_function,
+                **kwargs
+            )
 
         self.run_functional_metric_test(
             preds,

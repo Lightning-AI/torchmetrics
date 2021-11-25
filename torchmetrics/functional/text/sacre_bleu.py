@@ -335,12 +335,12 @@ def sacre_bleu_score(
             "torchmetrics[text]`."
         )
 
-    reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
-        [_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in reference]
+    reference_corpus_: Sequence[Sequence[str]] = [
+        [" ".join(_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase)) for line in reference]
         for reference in reference_corpus
     ]
-    translate_corpus_: Sequence[Sequence[str]] = [
-        _SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in translate_corpus
+    translate_corpus_: Sequence[str] = [
+        " ".join(_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase)) for line in translate_corpus
     ]
 
     numerator = torch.zeros(n_gram)
