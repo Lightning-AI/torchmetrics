@@ -115,6 +115,13 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
             )
 
 
+def _fix_empty_tensors(boxes: torch.Tensor) -> torch.Tensor:
+    """Empty tensors can cause problems in DDP mode, this methods corrects them."""
+    if boxes.numel() == 0 and boxes.ndim == 1:
+        return boxes.unsqueeze(0)
+    return boxes
+
+
 class MAP(Metric):
     r"""
     Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)\
@@ -267,18 +274,18 @@ class MAP(Metric):
 
         for item in preds:
             self.detection_boxes.append(
-                box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
+                _fix_empty_tensors(box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy"))
                 if item["boxes"].size() == torch.Size([1, 4])
-                else item["boxes"]
+                else _fix_empty_tensors(item["boxes"])
             )
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
         for item in target:
             self.groundtruth_boxes.append(
-                box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
+                _fix_empty_tensors(box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy"))
                 if item["boxes"].size() == torch.Size([1, 4])
-                else item["boxes"]
+                else _fix_empty_tensors(item["boxes"])
             )
             self.groundtruth_labels.append(item["labels"])
 
