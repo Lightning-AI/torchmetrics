@@ -591,4 +591,3 @@ class MAP(Metric):
             mar_100_per_class=mar_100_per_class_values,
         )
         return metrics.__dict__
-
