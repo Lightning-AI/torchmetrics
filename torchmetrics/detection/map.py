@@ -68,7 +68,6 @@ class COCOMetricResults(MAPMetricResults, MARMetricResults):
 
     map_per_class: Tensor
     mar_100_per_class: Tensor
-    pass
 
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
