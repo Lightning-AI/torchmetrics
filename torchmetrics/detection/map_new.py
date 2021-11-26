@@ -298,8 +298,8 @@ class MAP(Metric):
 
         # Sort by scores and use only max detections
         scores = self.detection_scores[id]
-        filtered_scores = scores[self.detection_labels[id] == class_id]
-        inds = torch.argsort(filtered_scores, descending=True)
+        scores_filtered = scores[self.detection_labels[id] == class_id]
+        inds = torch.argsort(scores_filtered, descending=True)
         dt = dt[inds]
         if len(dt) > max_det:
             dt = dt[:max_det]
@@ -328,11 +328,11 @@ class MAP(Metric):
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
-        sorted_ig_area, gtind = torch.sort(ignore_area)
+        ignore_area_sorted, gtind = torch.sort(ignore_area)
         gt = gt[gtind]
         scores = self.detection_scores[id]
-        filtered_scores = scores[dt_lbl_mask]
-        sorted_scores, dtind = torch.sort(filtered_scores, descending=True)
+        scores_filtered = scores[dt_lbl_mask]
+        scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
         dt = dt[dtind]
         if len(dt) > max_det:
             dt = dt[:max_det]
@@ -342,10 +342,10 @@ class MAP(Metric):
         T = len(self.iou_thresholds)
         G = len(gt)
         D = len(dt)
-        gtm = torch.zeros((T, G), dtype=torch.bool)
-        dtm = torch.zeros((T, D), dtype=torch.bool)
-        gtIg = sorted_ig_area
-        dtIg = torch.zeros((T, D), dtype=torch.bool)
+        gt_matches = torch.zeros((T, G), dtype=torch.bool)
+        dt_matches = torch.zeros((T, D), dtype=torch.bool)
+        gt_ignore = ignore_area_sorted
+        dt_ignore = torch.zeros((T, D), dtype=torch.bool)
         if len(ious) > 0:
             for tind, t in enumerate(self.iou_thresholds):
                 for d in range(D):
@@ -354,10 +354,10 @@ class MAP(Metric):
                     m = -1
                     for g in range(G):
                         # if this gt already matched, and not a crowd, continue
-                        if gtm[tind, g] > 0:
+                        if gt_matches[tind, g] > 0:
                             continue
                         # if dt matched to reg gt, and on ignore gt, stop
-                        if m > -1 and not gtIg[m] and gtIg[g]:
+                        if m > -1 and not gt_ignore[m] and gt_ignore[g]:
                             break
                         # continue to next gt unless better match made
                         if ious[d, g] < iou:
@@ -369,20 +369,20 @@ class MAP(Metric):
                     if m == -1:
                         continue
 
-                    dtIg[tind, d] = gtIg[m]
-                    dtm[tind, d] = True
-                    gtm[tind, m] = True
+                    dt_ignore[tind, d] = gt_ignore[m]
+                    dt_matches[tind, d] = True
+                    gt_matches[tind, m] = True
         # set unmatched detections outside of area range to ignore
         dt_areas = box_area(dt)
         dt_ignore_area = (dt_areas < area_range[0]) | (dt_areas > area_range[1])
         a = dt_ignore_area.reshape((1, D))
-        dtIg = torch.logical_or(dtIg, torch.logical_and(dtm == 0, torch.repeat_interleave(a, T, 0)))
+        dt_ignore = torch.logical_or(dt_ignore, torch.logical_and(dt_matches == 0, torch.repeat_interleave(a, T, 0)))
         return {
-            "dtMatches": dtm,
-            "gtMatches": gtm,
-            "dtScores": sorted_scores,
-            "gtIgnore": gtIg,
-            "dtIgnore": dtIg,
+            "dtMatches": dt_matches,
+            "gtMatches": gt_matches,
+            "dtScores": scores_sorted,
+            "gtIgnore": gt_ignore,
+            "dtIgnore": dt_ignore,
         }
 
     def _summarize(
@@ -419,14 +419,14 @@ class MAP(Metric):
         area_ranges = self.object_area_ranges.values()
 
         ious = {
-            (imgId, catId): self._compute_iou(imgId, catId, maxDetections) for imgId in img_ids for catId in class_ids
+            (id, class_id): self._compute_iou(id, class_id, maxDetections) for id in img_ids for class_id in class_ids
         }
 
         evalImgs = [
-            self._evaluate_image(imgId, catId, area, maxDetections, ious)
-            for catId in class_ids
+            self._evaluate_image(id, class_id, area, maxDetections, ious)
+            for class_id in class_ids
             for area in area_ranges
-            for imgId in img_ids
+            for id in img_ids
         ]
 
         T = len(self.iou_thresholds)
@@ -444,27 +444,27 @@ class MAP(Metric):
             Nk = k * A * I
             for a in range(A):
                 Na = a * I
-                for m, maxDet in enumerate(self.max_detection_thresholds):
+                for m, max_det in enumerate(self.max_detection_thresholds):
                     # Load all image evals for current class_id and area_range
                     E = [evalImgs[Nk + Na + i] for i in range(I)]
                     E = [e for e in E if e is not None]
                     if len(E) == 0:
                         continue
-                    dtScores = torch.cat([e["dtScores"][:maxDet] for e in E])
+                    dt_scores = torch.cat([e["dtScores"][:max_det] for e in E])
 
                     # different sorting method generates slightly different results.
                     # mergesort is used to be consistent as Matlab implementation.
-                    inds = torch.argsort(dtScores, descending=True)
-                    dtScoresSorted = dtScores[inds]
+                    inds = torch.argsort(dt_scores, descending=True)
+                    dt_scores_sorted = dt_scores[inds]
 
-                    dtm = torch.cat([e["dtMatches"][:, :maxDet] for e in E], axis=1)[:, inds]
-                    dtIg = torch.cat([e["dtIgnore"][:, :maxDet] for e in E], axis=1)[:, inds]
-                    gtIg = torch.cat([e["gtIgnore"] for e in E])
-                    npig = torch.count_nonzero(gtIg == False)  # noqa: E712
+                    dt_matches = torch.cat([e["dtMatches"][:, :max_det] for e in E], axis=1)[:, inds]
+                    dt_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in E], axis=1)[:, inds]
+                    gt_ignore = torch.cat([e["gtIgnore"] for e in E])
+                    npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
                     if npig == 0:
                         continue
-                    tps = torch.logical_and(dtm, torch.logical_not(dtIg))
-                    fps = torch.logical_and(torch.logical_not(dtm), torch.logical_not(dtIg))
+                    tps = torch.logical_and(dt_matches, torch.logical_not(dt_ignore))
+                    fps = torch.logical_and(torch.logical_not(dt_matches), torch.logical_not(dt_ignore))
 
                     tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
                     fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
@@ -480,17 +480,18 @@ class MAP(Metric):
                         else:
                             recall[t, k, a, m] = 0
 
+                        # Remove zigzags for AUC
                         for i in range(nd - 1, 0, -1):
                             if pr[i] > pr[i - 1]:
                                 pr[i - 1] = pr[i]
 
                         inds = torch.searchsorted(rc, self.rec_thresholds, right=False)
-                        # optimize
+                        # TODO: optimize
                         try:
                             for ri, pi in enumerate(inds):  # range(min(len(inds), len(pr))):
                                 # pi = inds[ri]
                                 q[ri] = pr[pi]
-                                ss[ri] = dtScoresSorted[pi]
+                                ss[ri] = dt_scores_sorted[pi]
                         except Exception:
                             pass
                         precision[t, :, k, a, m] = q
