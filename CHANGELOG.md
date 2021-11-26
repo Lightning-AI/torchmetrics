@@ -13,11 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added NLP metrics:
   - `MatchErrorRate` ([#619](https://github.com/PyTorchLightning/metrics/pull/619))
+  - `WordInfoLost` and `WordInfoPreserved` ([#630](https://github.com/PyTorchLightning/metrics/pull/630))
+  - `SQuAD` ([#623](https://github.com/PyTorchLightning/metrics/pull/623))
 
 
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
 
+
 ### Changed
+
+- Scalar metrics will now consistently have additional dimensions squeezed ([#622](https://github.com/PyTorchLightning/metrics/pull/622))
+
+
+- Use `torch.topk` instead of `torch.argsort` in retrieval precision for speedup ([#627](https://github.com/PyTorchLightning/metrics/pull/627))
 
 
 ### Deprecated
@@ -25,13 +33,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
+- Removed argument `concatenate_texts` from `wer` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
+- Removed arguments `newline_sep` and `decimal_places` from `rouge` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
 
 ### Fixed
 
-- Fix empty predictions in MAP metric ([#594](https://github.com/PyTorchLightning/metrics/pull/594))
+- Fix empty predictions in MAP metric ([#594](https://github.com/PyTorchLightning/metrics/pull/594), [#624](https://github.com/PyTorchLightning/metrics/pull/624))
 
 
 - Fix edge case of AUROC with `average=weighted` on GPU ([#606](https://github.com/PyTorchLightning/metrics/pull/606))
+
 
 
 ## [0.6.0] - 2021-10-28

@@ -177,7 +177,6 @@ class TestMAP(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
     def test_map(self, ddp):
         """Test modular implementation for correctness."""
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.preds,
@@ -194,7 +193,6 @@ class TestMAP(MetricTester):
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
-
     MAP()  # no error
 
     with pytest.raises(ValueError, match="Expected argument `class_metrics` to be a boolean"):
@@ -204,7 +202,6 @@ def test_error_on_wrong_init():
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_empty_preds():
     """Test empty predictions."""
-
     metric = MAP()
 
     metric.update(
@@ -227,10 +224,9 @@ def test_empty_preds():
     metric.compute()
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 def test_empty_metric():
     """Test empty metric."""
-
     metric = MAP()
     metric.compute()
 
@@ -238,7 +234,6 @@ def test_empty_metric():
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_input():
     """Test class input validation."""
-
     metric = MAP()
 
     metric.update([], [])  # no error

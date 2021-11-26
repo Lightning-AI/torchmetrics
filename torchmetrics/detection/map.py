@@ -73,7 +73,6 @@ class COCOMetricResults(MAPMetricResults, MARMetricResults):
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
-
     if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type List")
     if not isinstance(targets, Sequence):
@@ -566,11 +565,12 @@ class MAP(Metric):
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
+
             for class_id in self._num_classes():
                 _, cls_map, cls_mar = self._calculate([class_id])
-
                 map_per_class_list.append(cls_map.map)
                 mar_100_per_class_list.append(cls_mar.mar_100)
+
             map_per_class_values = torch.Tensor(map_per_class_list)
             mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
 
@@ -591,3 +591,4 @@ class MAP(Metric):
             mar_100_per_class=mar_100_per_class_values,
         )
         return metrics.__dict__
+
