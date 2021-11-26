@@ -44,16 +44,16 @@ _DICT_STATES_TYPES = Tuple[
 
 
 class CHRFScore(Metric):
-    """Calculate `CHRF score`_ of machine translated text with one or more references. This implementation supports
-    both ChrF score computation introduced in [1] and ChrF++ score introduced in [2]. This implementation follows
-    the implmenetaions from https://github.com/m-popovic/chrF and
+    """Calculate `chrf score`_ of machine translated text with one or more references. This implementation supports
+    both ChrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score_`. This
+    implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
         n_char_order:
-            A character n-gram order. If `n_char_order=6`, the metrics refers to the official ChrF/ChrF++.
+            A character n-gram order. If `n_char_order=6`, the metrics refers to the official chrF/chrF++.
         n_word_order:
-            A word n-gram order. If `n_word_order=2`, the metric refers to the official ChrF++. If `n_word_order=0`, the
+            A word n-gram order. If `n_word_order=2`, the metric refers to the official chrF++. If `n_word_order=0`, the
             metric is equivalent to the original ChrF.
         beta:
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
@@ -62,7 +62,7 @@ class CHRFScore(Metric):
         whitespace:
             An indication whether keep whitespaces during n-gram extraction.
         return_sentence_level_score:
-            An indication whether a sentence-level ChrF/ChrF++ score to be returned.
+            An indication whether a sentence-level chrF/chrF++ score to be returned.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
         dist_sync_on_step:
@@ -82,11 +82,8 @@ class CHRFScore(Metric):
         tensor(0.8640)
 
     References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
-
-        [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+        [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
+        [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
 
     is_differentiable = False
@@ -159,10 +156,11 @@ class CHRFScore(Metric):
             self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate ChrF/ChrF++ score.
+        """Calculate chrF/chrF++ score.
 
         Return:
-            Tensor with ChrF/ChrF++ score
+            A corpus-level chrF/chrF++ score.
+            (Optionally) A list of sentence-level chrF/chrF++ scores if `return_sentence_level_score=True`.
         """
         if self.sentence_chrf_score is not None:
             return (

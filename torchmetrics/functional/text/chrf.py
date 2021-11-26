@@ -1,3 +1,24 @@
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# referenced from
+# Library Name: torchtext
+# Authors: torchtext authors
+# Date: 2021-11-25
+# Link:
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Copyright 2017 Maja Popovic
 
 # The program is distributed under the terms
@@ -11,18 +32,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Publications of results obtained through the use of original or
-# modified versions of the software have to cite the authors by refering
-# to the following publication:
-
-# Maja Popović (2015).
-# "chrF: character n-gram F-score for automatic MT evaluation".
-# In Proceedings of the Tenth Workshop on Statistical Machine Translation (WMT15), pages 392–395
-# Lisbon, Portugal, September 2015.
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from collections import defaultdict
 from typing import Dict, List, Optional, Sequence, Tuple, Union
@@ -135,7 +144,7 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
             An input sentence to split
 
     Return:
-        A list of separated words and punctuations..
+        An aggregated list of separated words and punctuations..
     """
     return sum((_separate_word_and_punctiation(word) for word in sentence.strip().split()), [])
 
@@ -181,9 +190,13 @@ def _get_n_grams_counts_and_total_ngrams(
 
     Return:
         char_n_grams_counts:
+            A dictionary of dictionaries with sentence character n-grams.
         word_n_grams_counts:
+            A dictionary of dictionaries with sentence word n-grams.
         total_char_n_grams:
+            A dictionary containing a total number of sentence character n-grams.
         total_word_n_grams:
+            A dictionary containing a total number of sentence word n-grams.
     """
 
     def _char_and_word_ngrams_counts(
@@ -262,8 +275,8 @@ def _calculate_fscore(
     n_order: float,
     beta: float,
 ) -> Tensor:
-    """Calculate sentence-level ChrF/ChrF++ score. For given hypothesis and reference statistics (either sentence-
-    level or corpus-level) the ChrF/ChrF++ score is returned.
+    """Calculate sentence-level chrF/chrF++ score. For given hypothesis and reference statistics (either sentence-
+    level or corpus-level) the chrF/chrF++ score is returned.
 
     Args:
         matching_char_n_grams:
@@ -284,7 +297,7 @@ def _calculate_fscore(
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
 
     Return:
-        A ChrF/ChrF++ score. This function is universal both for sentence-level and corpus-level calucation.
+        A chrF/chrF++ score. This function is universal both for sentence-level and corpus-level calucation.
     """
 
     def _get_n_gram_fscore(
@@ -326,7 +339,7 @@ def _calculate_sentence_level_chrf_score(
     lowercase: bool,
     whitespace: bool,
 ) -> Tuple[Tensor, Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]]:
-    """Calculate the best sentence-level ChrF/ChrF++ score. For a given pre-processed hypothesis, all references
+    """Calculate the best sentence-level chrF/chrF++ score. For a given pre-processed hypothesis, all references
     are evaluated and score and statistics for the best matching reference is returned.
 
     Args:
@@ -354,10 +367,10 @@ def _calculate_sentence_level_chrf_score(
             An indication whether to keep whitespaces during character n-gram extraction.
 
     Return:
-        Return ChrF/ChrF++ score and statistics for the best matching hypothesis and reference.
+        Return chrF/chrF++ score and statistics for the best matching hypothesis and reference.
 
         f_score:
-            A sentence-level ChrF/ChrF++ score.
+            A sentence-level chrF/chrF++ score.
         matching_char_n_grams:
             A total number of matching character n-grams between the best matching reference and hypothesis.
         matching_word_n_grams:
@@ -443,17 +456,17 @@ def _chrf_score_update(
         hypothesis_corpus:
             An iterable of hypothesis corpus.
         total_ref_char_n_grams:
-            A dictionary containing total reference character n-grams.
+            A dictionary containing a total number of reference character n-grams.
         total_ref_word_n_grams:
-            A dictionary containing total reference word n-grams.
+            A dictionary containing a total number of reference word n-grams.
         total_hyp_char_n_grams:
-            A dictionary containing total hypothesis character n-grams.
+            A dictionary containing a total number of hypothesis character n-grams.
         total_hyp_word_n_grams:
-            A dictionary containing total hypothesis word n-grams.
+            A dictionary containing a total number of hypothesis word n-grams.
         total_matching_char_n_grams:
-            A dictionary containing total matching character n-grams between references and hypotheses.
+            A dictionary containing a total number of matching character n-grams between references and hypotheses.
         total_matching_word_n_grams:
-            A dictionary containing total matching word n-grams between references and hypotheses.
+            A dictionary containing a total number of total matching word n-grams between references and hypotheses.
         n_char_order:
             A character n-gram order.
         n_word_order:
@@ -467,21 +480,25 @@ def _chrf_score_update(
         whitespace:
             An indication whether to keep whitespaces during character n-gram extraction.
         sentence_chrf_score:
-            A list of sentence-level ChrF/ChrF++ scores.
+            A list of sentence-level chrF/chrF++ scores.
 
     Return:
         total_ref_char_n_grams:
-            An updated dictionary containing total reference character n-grams.
+            An updated dictionary containing a total number of reference character n-grams.
         total_ref_word_n_grams:
-            An updated dictionary containing total reference word n-grams.
+            An updated dictionary containing a total number of reference word n-grams.
         total_hyp_char_n_grams:
-            An updated dictionary containing total hypothesis character n-grams.
+            An updated dictionary containing a total number of hypothesis character n-grams.
         total_hyp_word_n_grams:
-            An updated dictionary containing total hypothesis word n-grams.
+            An updated dictionary containing a total number of hypothesis word n-grams.
         total_matching_char_n_grams:
-            An updated dictionary containing total matching character n-grams between references and hypotheses.
+            An updated dictionary containing a total number of matching character n-grams between references and
+            hypotheses.
         total_matching_word_n_grams:
-            An updated dictionary containing total matching word n-grams between references and hypotheses.
+            An updated dictionary containing a total number of total matching word n-grams between references and
+            hypotheses.
+        sentence_chrf_score:
+            (Optionally) A list of sentence-level chrF/chrF++ scores.
 
     Raises:
         ValueError:
@@ -559,29 +576,29 @@ def _chrf_score_compute(
     n_order: float,
     beta: float,
 ) -> Tensor:
-    """Compute ChrF/ChrF++ score based on pre-computed reference, hypothesis and matching character and word
+    """Compute chrF/chrF++ score based on pre-computed reference, hypothesis and matching character and word
     n-grams.
 
     Args:
         total_ref_char_n_grams:
-            A dictionary containing total reference character n-grams.
+            A dictionary containing a total number of reference character n-grams.
         total_ref_word_n_grams:
-            A dictionary containing total reference word n-grams.
+            A dictionary containing a total number of reference word n-grams.
         total_hyp_char_n_grams:
-            A dictionary containing total hypothesis character n-grams.
+            A dictionary containing a total number of hypothesis character n-grams.
         total_hyp_word_n_grams:
-            A dictionary containing total hypothesis word n-grams.
+            A dictionary containing a total number of hypothesis word n-grams.
         total_matching_char_n_grams:
-            A dictionary containing total matching character n-grams between references and hypotheses.
+            A dictionary containing a total number of matching character n-grams between references and hypotheses.
         total_matching_word_n_grams:
-            A dictionary containing total matching word n-grams between references and hypotheses.
+            A dictionary containing a total number of total matching word n-grams between references and hypotheses.
         n_order:
             A sum of charachter and word n-gram order.
         beta:
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
 
     Return:
-        A corpus-level ChrF/ChrF++ score.
+        A corpus-level chrF/chrF++ score.
     """
     chrf_f_score = _calculate_fscore(
         total_matching_char_n_grams,
@@ -606,9 +623,9 @@ def chrf_score(
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Calculate `ChrF score`_ [1] of machine translated text with one or more references. This implementation
-    supports both ChrF score computation introduced in [1] and ChrF++ score introduced in [2]. This implementation
-    follows the implmenetaions from https://github.com/m-popovic/chrF and
+    """Calculate `chrF score`_  of machine translated text with one or more references. This implementation
+    supports both chrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score`_. This
+    implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
@@ -617,10 +634,10 @@ def chrf_score(
         hypothesis_corpus:
             An iterable of hypothesis corpus.
         n_char_order:
-            A character n-gram order. If `n_char_order=6`, the metrics refers to the official ChrF/ChrF++.
+            A character n-gram order. If `n_char_order=6`, the metrics refers to the official chrF/chrF++.
         n_word_order:
-            A word n-gram order. If `n_word_order=2`, the metric refers to the official ChrF++. If `n_word_order=0`, the
-            metric is equivalent to the original ChrF.
+            A word n-gram order. If `n_word_order=2`, the metric refers to the official chrF++. If `n_word_order=0`, the
+            metric is equivalent to the original chrF.
         beta:
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
         lowercase:
@@ -628,11 +645,11 @@ def chrf_score(
         whitespace:
             An indication whether to keep whitespaces during character n-gram extraction.
         return_sentence_level_score:
-            An indication whether a sentence-level ChrF/ChrF++ score to be returned.
+            An indication whether a sentence-level chrF/chrF++ score to be returned.
 
     Return:
-        A corpus-level ChrF/ChrF++ score.
-        (Optionally) A list of sentence-level ChrF/ChrF++ scores if `return_sentence_level_score=True`.
+        A corpus-level chrF/chrF++ score.
+        (Optionally) A list of sentence-level chrF/chrF++ scores if `return_sentence_level_score=True`.
 
     Example:
         >>> from torchmetrics.functional import chrf_score
@@ -642,8 +659,8 @@ def chrf_score(
         tensor(0.8640)
 
     References:
-    [1] CHRF: character n-gram F-score for automatic MT evaluation by Maja Popović
-    [2] CHRF++: words helping character n-grams by Maja Popović
+        [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
+        [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
     n_order = float(n_char_order + n_word_order)
 
