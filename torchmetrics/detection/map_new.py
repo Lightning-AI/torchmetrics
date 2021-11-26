@@ -140,10 +140,12 @@ class MAP(Metric):
         ``pip install torchmetrics[detection]``.
 
     Args:
-        num_classes:
-            Number of classes to use for evaluation.
+        box_format:
+            Input format of given boxes. Supported formats are [‘xyxy’, ‘xywh’, ‘cxcywh’].
         iou_thresholds:
             IoU thresholds for evaluation.
+        rec_thresholds:
+            Recall thresholds for evaluation.
         max_detection_thresholds:
             Thresholds on max detections per image.
         class_metrics:
@@ -226,6 +228,7 @@ class MAP(Metric):
             (each dictionary corresponds to a single image):
             - ``boxes``: torch.FloatTensor of shape
                 [num_boxes, 4] containing `num_boxes` detection boxes of the format
+                specified in the contructor. By default, this method expects
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
             - ``scores``: torch.FloatTensor of shape
                 [num_boxes] containing detection scores for the boxes.
@@ -236,6 +239,7 @@ class MAP(Metric):
             (each dictionary corresponds to a single image):
             - ``boxes``: torch.FloatTensor of shape
                 [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
+                specified in the contructor. By default, this method expects
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
             - ``labels``: torch.IntTensor of shape
                 [num_boxes] containing 1-indexed groundtruth classes for the boxes.
