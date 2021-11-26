@@ -199,6 +199,11 @@ class MAP(Metric):
                 " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`"
             )
 
+        allowed_box_formats = (‘xyxy’, ‘xywh’, ‘cxcywh’)
+        if box_format not in allowed_box_formats:
+            raise ValueError(
+              f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}"
+            )
         self.box_format = box_format
         self.iou_thresholds = torch.Tensor(
             iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1)
