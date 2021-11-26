@@ -179,7 +179,7 @@ class MAP(Metric):
         box_format: str = "xyxy",
         iou_thresholds: Optional[List[float]] = None,
         rec_thresholds: Optional[List[float]] = None,
-        max_detection_thresholds: Optional[List[float]] = None,
+        max_detection_thresholds: Optional[List[int]] = None,
         class_metrics: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
