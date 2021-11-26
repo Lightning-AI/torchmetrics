@@ -328,11 +328,11 @@ class MAP(Metric):
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
-        gtind = torch.argsort(ignore_area)
+        sorted_ig_area, gtind = torch.sort(ignore_area)
         gt = gt[gtind]
         scores = self.detection_scores[id]
         filtered_scores = scores[dt_lbl_mask]
-        dtind = torch.argsort(filtered_scores, descending=True)
+        sorted_scores, dtind = torch.sort(filtered_scores, descending=True)
         dt = dt[dtind]
         if len(dt) > max_det:
             dt = dt[:max_det]
@@ -344,7 +344,7 @@ class MAP(Metric):
         D = len(dt)
         gtm = torch.zeros((T, G), dtype=torch.bool)
         dtm = torch.zeros((T, D), dtype=torch.bool)
-        gtIg = ignore_area
+        gtIg = sorted_ig_area
         dtIg = torch.zeros((T, D), dtype=torch.bool)
         if len(ious) > 0:
             for tind, t in enumerate(self.iou_thresholds):
@@ -380,7 +380,7 @@ class MAP(Metric):
         return {
             "dtMatches": dtm,
             "gtMatches": gtm,
-            "dtScores": filtered_scores,
+            "dtScores": sorted_scores,
             "gtIgnore": gtIg,
             "dtIgnore": dtIg,
         }
