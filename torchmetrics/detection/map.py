@@ -12,30 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-import sys
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import (
-    _PYCOCOTOOLS_AVAILABLE,
-    _TORCHVISION_AVAILABLE,
-    _TORCHVISION_GREATER_EQUAL_0_8,
-)
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_convert
+    from torchvision.ops import box_area, box_convert, box_iou, generalized_box_iou
 else:
     box_convert = None
-
-if _PYCOCOTOOLS_AVAILABLE:
-    from pycocotools.coco import COCO
-    from pycocotools.cocoeval import COCOeval
-else:
-    COCO, COCOeval = None, None
+    box_iou = None
+    generalized_box_iou = None
+    box_area = None
 
 log = logging.getLogger(__name__)
 
@@ -50,49 +42,33 @@ class MAPMetricResults:
     map_small: Tensor
     map_medium: Tensor
     map_large: Tensor
+
+    def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
+        return getattr(self, key)
+
+
+@dataclass
+class MARMetricResults:
+    """Dataclass to wrap the final mAR results."""
+
     mar_1: Tensor
     mar_10: Tensor
     mar_100: Tensor
     mar_small: Tensor
     mar_medium: Tensor
     mar_large: Tensor
-    map_per_class: Tensor
-    mar_100_per_class: Tensor
 
     def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
         return getattr(self, key)
 
 
-# noinspection PyMethodMayBeStatic
-class WriteToLog:
-    """Logging class to move logs to log.debug()."""
+@dataclass
+class COCOMetricResults(MAPMetricResults, MARMetricResults):
+    """Dataclass to wrap the final COCO metric results including various mAP/mAR values."""
 
-    def write(self, buf: str) -> None:  # skipcq: PY-D0003, PYL-R0201
-        for line in buf.rstrip().splitlines():
-            log.debug(line.rstrip())
-
-    def flush(self) -> None:  # skipcq: PY-D0003, PYL-R0201
-        for handler in log.handlers:
-            handler.flush()
-
-    def close(self) -> None:  # skipcq: PY-D0003, PYL-R0201
-        for handler in log.handlers:
-            handler.close()
-
-
-class _hide_prints:
-    """Internal helper context to suppress the default output of the pycocotools package."""
-
-    def __init__(self) -> None:
-        self._original_stdout = None
-
-    def __enter__(self) -> None:
-        self._original_stdout = sys.stdout  # type: ignore
-        sys.stdout = WriteToLog()  # type: ignore
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
-        sys.stdout.close()
-        sys.stdout = self._original_stdout  # type: ignore
+    map_per_class: Tensor
+    mar_100_per_class: Tensor
+    pass
 
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
@@ -154,22 +130,24 @@ class MAP(Metric):
     <https://github.com/PyTorchLightning/metrics/blob/master/tm_examples/detection_map.py>`_
 
     .. note::
-        This metric is a wrapper for the
+        This metric is following the mAP implementation of
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
-        which is a standard implementation for the mAP metric for object detection. Using this metric
-        therefore requires you to have `pycocotools` installed. Please install with ``pip install pycocotools`` or
-        ``pip install torchmetrics[detection]``.
+        , a standard implementation for the mAP metric for object detection.
 
     .. note::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed (with corresponding
         version 1.7.0 of torch or newer). Please install with ``pip install torchvision`` or
         ``pip install torchmetrics[detection]``.
 
-    .. note::
-        As the pycocotools library cannot deal with tensors directly, all results have to be transfered
-        to the CPU, this might have an performance impact on your training.
-
     Args:
+        box_format:
+            Input format of given boxes. Supported formats are [‘xyxy’, ‘xywh’, ‘cxcywh’].
+        iou_thresholds:
+            IoU thresholds for evaluation.
+        rec_thresholds:
+            Recall thresholds for evaluation.
+        max_detection_thresholds:
+            Thresholds on max detections per image.
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. default: False
         compute_on_step:
@@ -186,8 +164,6 @@ class MAP(Metric):
 
     Raises:
         ImportError:
-            If ``pycocotools`` is not installed
-        ImportError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ValueError:
             If ``class_metrics`` is not a boolean
@@ -195,6 +171,10 @@ class MAP(Metric):
 
     def __init__(
         self,
+        box_format: str = "xyxy",
+        iou_thresholds: Optional[List[float]] = None,
+        rec_thresholds: Optional[List[float]] = None,
+        max_detection_thresholds: Optional[List[float]] = None,
         class_metrics: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -208,16 +188,27 @@ class MAP(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        if not _PYCOCOTOOLS_AVAILABLE:
-            raise ImportError(
-                "`MAP` metric requires that `pycocotools` installed."
-                " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
-            )
         if not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8):
             raise ImportError(
                 "`MAP` metric requires that `torchvision` version 0.8.0 or newer is installed."
                 " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`"
             )
+
+        self.box_format = box_format
+        self.iou_thresholds = torch.Tensor(
+            iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1)
+        )
+        self.rec_thresholds = torch.Tensor(
+            rec_thresholds or torch.linspace(0.0, 1.00, int(round((1.00 - 0.0) / 0.01)) + 1)
+        )
+        self.max_detection_thresholds = torch.IntTensor(max_detection_thresholds or [1, 10, 100])
+        self.max_detection_thresholds, _ = torch.sort(self.max_detection_thresholds)
+        self.object_area_ranges = {
+            "all": [0 ** 2, 1e5 ** 2],
+            "small": [0 ** 2, 32 ** 2],
+            "medium": [32 ** 2, 96 ** 2],
+            "large": [96 ** 2, 1e5 ** 2],
+        }
 
         if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
@@ -237,6 +228,7 @@ class MAP(Metric):
             (each dictionary corresponds to a single image):
             - ``boxes``: torch.FloatTensor of shape
                 [num_boxes, 4] containing `num_boxes` detection boxes of the format
+                specified in the contructor. By default, this method expects
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
             - ``scores``: torch.FloatTensor of shape
                 [num_boxes] containing detection scores for the boxes.
@@ -247,6 +239,7 @@ class MAP(Metric):
             (each dictionary corresponds to a single image):
             - ``boxes``: torch.FloatTensor of shape
                 [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
+                specified in the contructor. By default, this method expects
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
             - ``labels``: torch.IntTensor of shape
                 [num_boxes] containing 1-indexed groundtruth classes for the boxes.
@@ -273,13 +266,264 @@ class MAP(Metric):
         _input_validator(preds, target)
 
         for item in preds:
-            self.detection_boxes.append(item["boxes"])
-            self.detection_scores.append(item["scores"])
+            self.detection_boxes.append(
+                box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
+                if item["boxes"].size() == torch.Size([1, 4])
+                else item["boxes"]
+            )
             self.detection_labels.append(item["labels"])
+            self.detection_scores.append(item["scores"])
 
         for item in target:
-            self.groundtruth_boxes.append(item["boxes"])
+            self.groundtruth_boxes.append(
+                box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy")
+                if item["boxes"].size() == torch.Size([1, 4])
+                else item["boxes"]
+            )
             self.groundtruth_labels.append(item["labels"])
+
+    def _num_classes(self) -> List:
+        if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
+            return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
+        else:
+            return []
+
+    def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
+        gt = self.groundtruth_boxes[id]
+        dt = self.detection_boxes[id]
+        gt_lbl_mask = self.groundtruth_labels[id] == class_id
+        dt_lbl_mask = self.detection_labels[id] == class_id
+        if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
+            return torch.tensor([])
+        gt = gt[gt_lbl_mask]
+        dt = dt[dt_lbl_mask]
+        if len(gt) == 0 or len(dt) == 0:
+            return torch.tensor([])
+
+        # Sort by scores and use only max detections
+        scores = self.detection_scores[id]
+        scores_filtered = scores[self.detection_labels[id] == class_id]
+        inds = torch.argsort(scores_filtered, descending=True)
+        dt = dt[inds]
+        if len(dt) > max_det:
+            dt = dt[:max_det]
+
+        # generalized_box_iou
+        ious = box_iou(dt, gt)
+        return ious
+
+    def _evaluate_image(self, id: int, class_id: int, area_range: List[int], max_det: int, ious: Tensor) -> Dict:
+        """
+        perform evaluation for single category and image
+        :return: dict (single image results)
+        """
+        gt = self.groundtruth_boxes[id]
+        dt = self.detection_boxes[id]
+        gt_lbl_mask = self.groundtruth_labels[id] == class_id
+        dt_lbl_mask = self.detection_labels[id] == class_id
+        if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
+            return None
+        gt = gt[gt_lbl_mask]
+        dt = dt[dt_lbl_mask]
+        if len(gt) == 0 and len(dt) == 0:
+            return None
+
+        areas = box_area(gt)
+        ignore_area = (areas < area_range[0]) | (areas > area_range[1])
+
+        # sort dt highest score first, sort gt ignore last
+        ignore_area_sorted, gtind = torch.sort(ignore_area)
+        gt = gt[gtind]
+        scores = self.detection_scores[id]
+        scores_filtered = scores[dt_lbl_mask]
+        scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
+        dt = dt[dtind]
+        if len(dt) > max_det:
+            dt = dt[:max_det]
+        # load computed ious
+        ious = ious[id, class_id][:, gtind] if len(ious[id, class_id]) > 0 else ious[id, class_id]
+
+        T = len(self.iou_thresholds)
+        G = len(gt)
+        D = len(dt)
+        gt_matches = torch.zeros((T, G), dtype=torch.bool)
+        dt_matches = torch.zeros((T, D), dtype=torch.bool)
+        gt_ignore = ignore_area_sorted
+        dt_ignore = torch.zeros((T, D), dtype=torch.bool)
+        if len(ious) > 0:
+            for tind, t in enumerate(self.iou_thresholds):
+                for d in range(D):
+                    # information about best match so far (m=-1 -> unmatched)
+                    iou = min([t, 1 - 1e-10])
+                    m = -1
+                    for g in range(G):
+                        # if this gt already matched, and not a crowd, continue
+                        if gt_matches[tind, g] > 0:
+                            continue
+                        # if dt matched to reg gt, and on ignore gt, stop
+                        if m > -1 and not gt_ignore[m] and gt_ignore[g]:
+                            break
+                        # continue to next gt unless better match made
+                        if ious[d, g] < iou:
+                            continue
+                        # if match successful and best so far, store appropriately
+                        iou = ious[d, g]
+                        m = g
+                    # if match made store id of match for both dt and gt
+                    if m == -1:
+                        continue
+
+                    dt_ignore[tind, d] = gt_ignore[m]
+                    dt_matches[tind, d] = True
+                    gt_matches[tind, m] = True
+        # set unmatched detections outside of area range to ignore
+        dt_areas = box_area(dt)
+        dt_ignore_area = (dt_areas < area_range[0]) | (dt_areas > area_range[1])
+        a = dt_ignore_area.reshape((1, D))
+        dt_ignore = torch.logical_or(dt_ignore, torch.logical_and(dt_matches == 0, torch.repeat_interleave(a, T, 0)))
+        return {
+            "dtMatches": dt_matches,
+            "gtMatches": gt_matches,
+            "dtScores": scores_sorted,
+            "gtIgnore": gt_ignore,
+            "dtIgnore": dt_ignore,
+        }
+
+    def _summarize(
+        self, results: Dict, ap: bool = True, iouThr: Optional[float] = None, areaRng: str = "all", maxDets: int = 100
+    ) -> Tensor:
+        aind = [i for i, aRng in enumerate(self.object_area_ranges.keys()) if aRng == areaRng]
+        mind = [i for i, mDet in enumerate(self.max_detection_thresholds) if mDet == maxDets]
+        if ap:
+            # dimension of precision: [TxRxKxAxM]
+            s = results["precision"]
+            # IoU
+            if iouThr is not None:
+                t = torch.where(iouThr == self.iou_thresholds)[0]
+                s = s[t]
+            s = s[:, :, :, aind, mind]
+        else:
+            # dimension of recall: [TxKxAxM]
+            s = results["recall"]
+            if iouThr is not None:
+                t = torch.where(iouThr == self.iou_thresholds)[0]
+                s = s[t]
+            s = s[:, :, aind, mind]
+        if len(s[s > -1]) == 0:
+            mean_s = torch.Tensor([-1])
+        else:
+            mean_s = torch.mean(s[s > -1])
+
+        return mean_s
+
+    def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
+        img_ids = torch.arange(len(self.groundtruth_boxes), dtype=torch.int).tolist()
+
+        maxDetections = self.max_detection_thresholds[-1]
+        area_ranges = self.object_area_ranges.values()
+
+        ious = {
+            (id, class_id): self._compute_iou(id, class_id, maxDetections) for id in img_ids for class_id in class_ids
+        }
+
+        evalImgs = [
+            self._evaluate_image(id, class_id, area, maxDetections, ious)
+            for class_id in class_ids
+            for area in area_ranges
+            for id in img_ids
+        ]
+
+        T = len(self.iou_thresholds)
+        R = len(self.rec_thresholds)
+        K = len(class_ids)
+        A = len(self.object_area_ranges)
+        M = len(self.max_detection_thresholds)
+        I = len(img_ids)  # noqa: E741
+        precision = -torch.ones((T, R, K, A, M))
+        recall = -torch.ones((T, K, A, M))
+        scores = -torch.ones((T, R, K, A, M))
+
+        # retrieve E at each category, area range, and max number of detections
+        for k in range(K):
+            Nk = k * A * I
+            for a in range(A):
+                Na = a * I
+                for m, max_det in enumerate(self.max_detection_thresholds):
+                    # Load all image evals for current class_id and area_range
+                    E = [evalImgs[Nk + Na + i] for i in range(I)]
+                    E = [e for e in E if e is not None]
+                    if len(E) == 0:
+                        continue
+                    dt_scores = torch.cat([e["dtScores"][:max_det] for e in E])
+
+                    # different sorting method generates slightly different results.
+                    # mergesort is used to be consistent as Matlab implementation.
+                    inds = torch.argsort(dt_scores, descending=True)
+                    dt_scores_sorted = dt_scores[inds]
+
+                    dt_matches = torch.cat([e["dtMatches"][:, :max_det] for e in E], axis=1)[:, inds]
+                    dt_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in E], axis=1)[:, inds]
+                    gt_ignore = torch.cat([e["gtIgnore"] for e in E])
+                    npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
+                    if npig == 0:
+                        continue
+                    tps = torch.logical_and(dt_matches, torch.logical_not(dt_ignore))
+                    fps = torch.logical_and(torch.logical_not(dt_matches), torch.logical_not(dt_ignore))
+
+                    tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
+                    fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
+                    for t, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
+                        nd = len(tp)
+                        rc = tp / npig
+                        pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
+                        q = torch.zeros((R,))
+                        ss = torch.zeros((R,))
+
+                        if nd:
+                            recall[t, k, a, m] = rc[-1]
+                        else:
+                            recall[t, k, a, m] = 0
+
+                        # Remove zigzags for AUC
+                        for i in range(nd - 1, 0, -1):
+                            if pr[i] > pr[i - 1]:
+                                pr[i - 1] = pr[i]
+
+                        inds = torch.searchsorted(rc, self.rec_thresholds, right=False)
+                        # TODO: optimize
+                        try:
+                            for ri, pi in enumerate(inds):  # range(min(len(inds), len(pr))):
+                                # pi = inds[ri]
+                                q[ri] = pr[pi]
+                                ss[ri] = dt_scores_sorted[pi]
+                        except Exception:
+                            pass
+                        precision[t, :, k, a, m] = q
+                        scores[t, :, k, a, m] = ss
+
+        results = {
+            "dimensions": [T, R, K, A, M],
+            "precision": precision,
+            "recall": recall,
+            "scores": scores,
+        }
+        map_metrics = MAPMetricResults(
+            map=self._summarize(results, True),
+            map_50=self._summarize(results, True, iouThr=0.5, maxDets=self.max_detection_thresholds[2]),
+            map_75=self._summarize(results, True, iouThr=0.75, maxDets=self.max_detection_thresholds[2]),
+            map_small=self._summarize(results, True, areaRng="small", maxDets=self.max_detection_thresholds[2]),
+            map_medium=self._summarize(results, True, areaRng="medium", maxDets=self.max_detection_thresholds[2]),
+            map_large=self._summarize(results, True, areaRng="large", maxDets=self.max_detection_thresholds[2]),
+        )
+        mar_metrics = MARMetricResults(
+            mar_1=self._summarize(results, False, maxDets=self.max_detection_thresholds[0]),
+            mar_10=self._summarize(results, False, maxDets=self.max_detection_thresholds[1]),
+            mar_100=self._summarize(results, False, maxDets=self.max_detection_thresholds[2]),
+            mar_small=self._summarize(results, False, areaRng="small", maxDets=self.max_detection_thresholds[2]),
+            mar_medium=self._summarize(results, False, areaRng="medium", maxDets=self.max_detection_thresholds[2]),
+            mar_large=self._summarize(results, False, areaRng="large", maxDets=self.max_detection_thresholds[2]),
+        )
+        return results, map_metrics, mar_metrics
 
     def compute(self) -> dict:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
@@ -306,107 +550,37 @@ class MAP(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
-        coco_target, coco_preds = COCO(), COCO()
-        coco_target.dataset = self._get_coco_format(self.groundtruth_boxes, self.groundtruth_labels)
-        coco_preds.dataset = self._get_coco_format(self.detection_boxes, self.detection_labels, self.detection_scores)
-
-        with _hide_prints():
-            coco_target.createIndex()
-            coco_preds.createIndex()
-            coco_eval = COCOeval(coco_target, coco_preds, "bbox")
-            coco_eval.evaluate()
-            coco_eval.accumulate()
-            coco_eval.summarize()
-            stats = coco_eval.stats
+        overall, map, mar = self._calculate(self._num_classes())
 
         map_per_class_values: Tensor = torch.Tensor([-1])
         mar_100_per_class_values: Tensor = torch.Tensor([-1])
+
         # if class mode is enabled, evaluate metrics per class
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
-            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
-                coco_eval.params.catIds = [class_id]
-                with _hide_prints():
-                    coco_eval.evaluate()
-                    coco_eval.accumulate()
-                    coco_eval.summarize()
-                    class_stats = coco_eval.stats
+            for class_id in self._num_classes():
+                _, cls_map, cls_mar = self._calculate([class_id])
 
-                map_per_class_list.append(torch.Tensor([class_stats[0]]))
-                mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
+                map_per_class_list.append(cls_map.map)
+                mar_100_per_class_list.append(cls_mar.mar_100)
             map_per_class_values = torch.Tensor(map_per_class_list)
             mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
 
-        metrics = MAPMetricResults(
-            map=torch.Tensor([stats[0]]),
-            map_50=torch.Tensor([stats[1]]),
-            map_75=torch.Tensor([stats[2]]),
-            map_small=torch.Tensor([stats[3]]),
-            map_medium=torch.Tensor([stats[4]]),
-            map_large=torch.Tensor([stats[5]]),
-            mar_1=torch.Tensor([stats[6]]),
-            mar_10=torch.Tensor([stats[7]]),
-            mar_100=torch.Tensor([stats[8]]),
-            mar_small=torch.Tensor([stats[9]]),
-            mar_medium=torch.Tensor([stats[10]]),
-            mar_large=torch.Tensor([stats[11]]),
+        metrics = COCOMetricResults(
+            map=map.map,
+            map_50=map.map_50,
+            map_75=map.map_75,
+            map_small=map.map_small,
+            map_medium=map.map_medium,
+            map_large=map.map_large,
+            mar_1=mar.mar_1,
+            mar_10=mar.mar_10,
+            mar_100=mar.mar_100,
+            mar_small=mar.mar_small,
+            mar_medium=mar.mar_medium,
+            mar_large=mar.mar_large,
             map_per_class=map_per_class_values,
             mar_100_per_class=mar_100_per_class_values,
         )
         return metrics.__dict__
-
-    def _get_coco_format(
-        self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
-    ) -> Dict:
-        """Transforms and returns all cached targets or predictions in COCO format.
-
-        Format is defined at https://cocodataset.org/#format-data
-        """
-
-        images = []
-        annotations = []
-        annotation_id = 1  # has to start with 1, otherwise COCOEval results are wrong
-
-        boxes = [box_convert(box, in_fmt="xyxy", out_fmt="xywh") if box.size(1) == 4 else box for box in boxes]
-        for image_id, (image_boxes, image_labels) in enumerate(zip(boxes, labels)):
-            image_boxes = image_boxes.cpu().tolist()
-            image_labels = image_labels.cpu().tolist()
-
-            images.append({"id": image_id})
-            for k, (image_box, image_label) in enumerate(zip(image_boxes, image_labels)):
-                if len(image_box) != 4:
-                    raise ValueError(
-                        f"Invalid input box of sample {image_id}, element {k} (expected 4 values, got {len(image_box)})"
-                    )
-
-                if type(image_label) != int:
-                    raise ValueError(
-                        f"Invalid input class of sample {image_id}, element {k}"
-                        f" (expected value of type integer, got type {type(image_label)})"
-                    )
-
-                annotation = {
-                    "id": annotation_id,
-                    "image_id": image_id,
-                    "bbox": image_box,
-                    "category_id": image_label,
-                    "area": image_box[2] * image_box[3],
-                    "iscrowd": 0,
-                }
-                if scores is not None:
-                    score = scores[image_id][k].cpu().tolist()
-                    if type(score) != float:
-                        raise ValueError(
-                            f"Invalid input score of sample {image_id}, element {k}"
-                            f" (expected value of type float, got type {type(score)})"
-                        )
-                    annotation["score"] = score
-                annotations.append(annotation)
-                annotation_id += 1
-
-        classes = [
-            {"id": i, "name": str(i)}
-            for i in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
-        ]
-        return {"images": images, "annotations": annotations, "categories": classes}
