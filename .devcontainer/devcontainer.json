@@ -13,7 +13,7 @@
 		}
 	},
 	"runArgs": [
-        // Enable GPU passthrough, requires WSL2 on Windows
+		// Enable GPU passthrough, requires WSL2 on Windows
 		//"--gpus=all",
 	],
 	// Set *default* container specific settings.json values on container create.
@@ -32,15 +32,13 @@
 		"python.analysis.useImportHeuristic": true,
 		"python.sortImports": true,
 		"python.sortImports.args": [
-			"--profile",
-			"black",
-			"--atomic"
+			"--settings-path=${workspaceFolder}/pyproject.toml",
 		],
 		"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
 		"python.formatting.blackPath": "/usr/local/py-utils/bin/black",
 		"python.formatting.provider": "black",
 		"python.formatting.blackArgs": [
-			"--line-length=120"
+			"--config=${workspaceFolder}/pyproject.toml"
 		],
 		"python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
 		"python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
@@ -52,18 +50,22 @@
 		"python.linting.pylintEnabled": false,
 		"python.linting.flake8Enabled": true,
 		"python.linting.flake8Args": [
-			"--ignore=E24,W504,F401,E203,W503",
-			"--max-line-length=120",
+			"--config=${workspaceFolder}/setup.cfg",
 			"--verbose"
 		],
 		"python.testing.pytestArgs": [
 			"tests"
 		],
-    	"python.testing.unittestEnabled": false,
-    	"python.testing.pytestEnabled": true,
+		"python.testing.unittestEnabled": false,
+		"python.testing.pytestEnabled": true,
 		"restructuredtext.confPath": "${workspaceFolder}/docs/source",
 		"restructuredtext.builtDocumentationPath": "${workspaceFolder}/docs/build",
-		"restructuredtext.languageServer.disabled": false
+		"restructuredtext.languageServer.disabled": false,
+		"[python]": {
+			"editor.codeActionsOnSave": {
+				"source.organizeImports": true,
+			}
+		}
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
