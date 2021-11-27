@@ -303,9 +303,8 @@ class MAP(Metric):
             return []
 
     def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
-        """
-        Computes the Intersection over Union (IoU) for groundtruth and detection bounding boxes
-        for the given image and class.
+        """Computes the Intersection over Union (IoU) for groundtruth and detection bounding boxes for the given
+        image and class.
 
         Args:
             id:
@@ -339,8 +338,7 @@ class MAP(Metric):
         return ious
 
     def _evaluate_image(self, id: int, class_id: int, area_range: List[int], max_det: int, ious: Tensor) -> Dict:
-        """
-        Perform evaluation for single class and image
+        """Perform evaluation for single class and image.
 
         Args:
             id:
@@ -434,8 +432,7 @@ class MAP(Metric):
         area_range: str = "all",
         max_dets: int = 100,
     ) -> Tensor:
-        """
-        Perform evaluation for single class and image
+        """Perform evaluation for single class and image.
 
         Args:
             results:
