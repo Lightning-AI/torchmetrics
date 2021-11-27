@@ -428,7 +428,7 @@ class MAP(Metric):
         self,
         results: Dict,
         ap: bool = True,
-        iouThr: Optional[float] = None,
+        iou_threshold: Optional[float] = None,
         area_range: str = "all",
         max_dets: int = 100,
     ) -> Tensor:
@@ -440,7 +440,7 @@ class MAP(Metric):
             ap:
                 Calculate average precision. Else calculate average recall.
                 default: `True`
-            iouThr:
+            iou_threshold:
                 IoU threshold. If set to `None` it all values are used. Else results are filtered.
             area_range:
                 Bounding box area range key.
@@ -455,15 +455,15 @@ class MAP(Metric):
             # dimension of precision: [TxRxKxAxM]
             s = results["precision"]
             # IoU
-            if iouThr is not None:
-                t = torch.where(iouThr == self.iou_thresholds)[0]
+            if iou_threshold is not None:
+                t = torch.where(iou_threshold == self.iou_thresholds)[0]
                 s = s[t]
             s = s[:, :, :, aind, mind]
         else:
             # dimension of recall: [TxKxAxM]
             s = results["recall"]
-            if iouThr is not None:
-                t = torch.where(iouThr == self.iou_thresholds)[0]
+            if iou_threshold is not None:
+                t = torch.where(iou_threshold == self.iou_thresholds)[0]
                 s = s[t]
             s = s[:, :, aind, mind]
         if len(s[s > -1]) == 0:
@@ -566,25 +566,24 @@ class MAP(Metric):
         }
         map_metrics = MAPMetricResults(
             map=self._summarize(results, True),
-            map_50=self._summarize(results, True, iouThr=0.5, maxDets=self.max_detection_thresholds[-1]),
-            map_75=self._summarize(results, True, iouThr=0.75, maxDets=self.max_detection_thresholds[-1]),
-            map_small=self._summarize(results, True, areaRng="small", maxDets=self.max_detection_thresholds[-1]),
-            map_medium=self._summarize(results, True, areaRng="medium", maxDets=self.max_detection_thresholds[-1]),
-            map_large=self._summarize(results, True, areaRng="large", maxDets=self.max_detection_thresholds[-1]),
+            map_50=self._summarize(results, True, iou_threshold=0.5, max_dets=self.max_detection_thresholds[-1]),
+            map_75=self._summarize(results, True, iou_threshold=0.75, max_dets=self.max_detection_thresholds[-1]),
+            map_small=self._summarize(results, True, area_range="small", max_dets=self.max_detection_thresholds[-1]),
+            map_medium=self._summarize(results, True, area_range="medium", max_dets=self.max_detection_thresholds[-1]),
+            map_large=self._summarize(results, True, area_range="large", max_dets=self.max_detection_thresholds[-1]),
         )
         mar_metrics = MARMetricResults(
-            mar_1=self._summarize(results, False, maxDets=self.max_detection_thresholds[0]),
-            mar_10=self._summarize(results, False, maxDets=self.max_detection_thresholds[1]),
-            mar_100=self._summarize(results, False, maxDets=self.max_detection_thresholds[2]),
-            mar_small=self._summarize(results, False, areaRng="small", maxDets=self.max_detection_thresholds[-1]),
-            mar_medium=self._summarize(results, False, areaRng="medium", maxDets=self.max_detection_thresholds[-1]),
-            mar_large=self._summarize(results, False, areaRng="large", maxDets=self.max_detection_thresholds[-1]),
+            mar_1=self._summarize(results, False, max_dets=self.max_detection_thresholds[0]),
+            mar_10=self._summarize(results, False, max_dets=self.max_detection_thresholds[1]),
+            mar_100=self._summarize(results, False, max_dets=self.max_detection_thresholds[2]),
+            mar_small=self._summarize(results, False, area_range="small", max_dets=self.max_detection_thresholds[-1]),
+            mar_medium=self._summarize(results, False, area_range="medium", max_dets=self.max_detection_thresholds[-1]),
+            mar_large=self._summarize(results, False, area_range="large", max_dets=self.max_detection_thresholds[-1]),
         )
         return results, map_metrics, mar_metrics
 
     def compute(self) -> dict:
-        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores. All detections added in
-        the `update()` method are included.
+        """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
 
         Note:
             Main `map` score is calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
