@@ -79,25 +79,6 @@ def _prepare_n_grams_dicts(
     )
 
 
-def _defaultdict_of_tensors_tuple_keys() -> Dict[Tuple[str, ...], Tensor]:
-    """A wrapper for creating `defaultdict` with key type of `Tuple[str, ...]` and initialized with a zero
-    tensor."""
-
-    def zero_tensor() -> Tensor:
-        return tensor(0.0)
-
-    return defaultdict(zero_tensor)
-
-
-def _defaultdict_of_tensors_int_keys() -> Dict[int, Tensor]:
-    """A wrapper for creating `defaultdict` with key type of `int` and initialized with a zero tensor."""
-
-    def zero_tensor() -> Tensor:
-        return tensor(0.0)
-
-    return defaultdict(zero_tensor)
-
-
 def _get_characters(sentence: str, whitespace: bool) -> List[str]:
     """Split sentence into individual characters.
 
@@ -160,7 +141,7 @@ def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, 
     Return:
         A dictionary of dictionaries with a counts of given n-grams.
     """
-    ngrams: Dict[int, Dict[Tuple[str, ...], Tensor]] = defaultdict(_defaultdict_of_tensors_tuple_keys)
+    ngrams: Dict[int, Dict[Tuple[str, ...], Tensor]] = defaultdict(lambda: defaultdict(lambda: tensor(0.0)))
     for n in range(1, n_gram_order + 1):
         for ngram in (tuple(char_or_word_list[i : i + n]) for i in range(len(char_or_word_list) - n + 1)):
             ngrams[n][ngram] += tensor(1)
@@ -211,7 +192,7 @@ def _get_n_grams_counts_and_total_ngrams(
 
     def _get_total_ngrams(n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]]) -> Dict[int, Tensor]:
         """Get total sum of n-grams over n-grams w.r.t n."""
-        total_n_grams: Dict[int, Tensor] = _defaultdict_of_tensors_int_keys()
+        total_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
         for n in n_grams_counts:
             total_n_grams[n] = tensor(sum(n_grams_counts[n].values()))
         return total_n_grams
@@ -237,7 +218,7 @@ def _get_ngram_matches(
 
     Return:
     """
-    matching_n_grams = _defaultdict_of_tensors_int_keys()
+    matching_n_grams = defaultdict(lambda: tensor(0.0))
     for n in hyp_n_grams_counts:
         matching_n_grams[n] = tensor(
             sum(
@@ -382,10 +363,10 @@ def _calculate_sentence_level_chrf_score(
     """
 
     best_f_score = tensor(0.0)
-    best_matching_char_n_grams: Dict[int, Tensor] = _defaultdict_of_tensors_int_keys()
-    best_matching_word_n_grams: Dict[int, Tensor] = _defaultdict_of_tensors_int_keys()
-    best_ref_char_n_grams: Dict[int, Tensor] = _defaultdict_of_tensors_int_keys()
-    best_ref_word_n_grams: Dict[int, Tensor] = _defaultdict_of_tensors_int_keys()
+    best_matching_char_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
+    best_matching_word_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
+    best_ref_char_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
+    best_ref_word_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
 
     for reference in references:
         (
@@ -651,6 +632,14 @@ def chrf_score(
         A corpus-level chrF/chrF++ score.
         (Optionally) A list of sentence-level chrF/chrF++ scores if `return_sentence_level_score=True`.
 
+    Raises:
+        ValueError:
+            If ``n_char_order`` is not an integer greater than or equal to 1.
+        ValueError:
+            If ``n_word_order`` is not an integer greater than or equal to 0.
+        ValueError:
+            If ``beta`` is smaller than 0.
+
     Example:
         >>> from torchmetrics.functional import chrf_score
         >>> hypothesis_corpus = ['the cat is on the mat']
@@ -662,6 +651,13 @@ def chrf_score(
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
+    if not isinstance(n_char_order, int) or n_char_order < 1:
+        raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
+    if not isinstance(n_word_order, int) or n_word_order < 0:
+        raise ValueError("Expected argument `n_word_order` to be an integer greater than or equal to 0.")
+    if beta < 0:
+        raise ValueError("Expected argument `beta` to be greater than 0.")
+
     n_order = float(n_char_order + n_word_order)
 
     (

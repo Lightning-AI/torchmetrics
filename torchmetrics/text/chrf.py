@@ -74,6 +74,14 @@ class CHRFScore(Metric):
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
 
+    Raises:
+        ValueError:
+            If ``n_char_order`` is not an integer greater than or equal to 1.
+        ValueError:
+            If ``n_word_order`` is not an integer greater than or equal to 0.
+        ValueError:
+            If ``beta`` is smaller than 0.
+
     Example:
         >>> hypothesis_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
@@ -110,8 +118,14 @@ class CHRFScore(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
+        if not isinstance(n_char_order, int) or n_char_order < 1:
+            raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
         self.n_char_order = n_char_order
+        if not isinstance(n_word_order, int) or n_word_order < 0:
+            raise ValueError("Expected argument `n_word_order` to be an integer greater than or equal to 0.")
         self.n_word_order = n_word_order
+        if beta < 0:
+            raise ValueError("Expected argument `beta` to be greater than 0.")
         self.beta = beta
         self.lowercase = lowercase
         self.whitespace = whitespace
@@ -170,6 +184,7 @@ class CHRFScore(Metric):
         return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
+        """Convert global metric states to the n-gram dictionaries to be passed in `_chrf_score_update`."""
         n_grams_dicts: Dict[str, Dict[int, Tensor]] = {
             name: n_gram_dict
             for name, n_gram_dict in zip(
@@ -187,6 +202,7 @@ class CHRFScore(Metric):
         return tuple(n_grams_dicts.values())  # type: ignore
 
     def _update_states_from_dicts(self, n_grams_dicts_tuple: _DICT_STATES_TYPES) -> None:
+        """Update global metric states based on the n-gram dictionaries calculated on the current batch."""
         n_grams_dicts = {name: n_gram_dict for name, n_gram_dict, in zip(_DICT_STATES_NAMES, n_grams_dicts_tuple)}
         for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
             for n in range(1, n_gram_order + 1):
