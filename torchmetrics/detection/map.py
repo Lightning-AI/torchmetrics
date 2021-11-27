@@ -105,7 +105,7 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
                 f" different length (expected {item['boxes'].size(0)} labels, got {item['labels'].size(0)})"
             )
     for i, item in enumerate(preds):
-        if item["boxes"].size(0) != item["labels"].size(0) != item["scores"].size(0):
+        if not (item["boxes"].size(0) == item["labels"].size(0) == item["scores"].size(0)):
             raise ValueError(
                 f"Input boxes, labels and scores of sample {i} in preds have a"
                 f" different length (expected {item['boxes'].size(0)} labels and scores,"
@@ -474,7 +474,7 @@ class MAP(Metric):
         return mean_s
 
     def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
-        """Calculate the precision, recall and scores for all supplied label classes.
+        """Calculate the precision, recall and scores for all supplied label classes to calculate mAP/mAR.
 
         Args:
             class_ids:
