@@ -147,12 +147,19 @@ class MAP(Metric):
     Args:
         box_format:
             Input format of given boxes. Supported formats are [‘xyxy’, ‘xywh’, ‘cxcywh’].
+            default: ``xyxy``
         iou_thresholds:
-            IoU thresholds for evaluation.
+            IoU thresholds for evaluation. If set to `None` it corresponds to the stepped range `[0.5,...,0.95]`
+            with step `0.05`. Else provide a list of floats.
+            default: ``None``
         rec_thresholds:
-            Recall thresholds for evaluation.
+            Recall thresholds for evaluation. If set to `None` it corresponds to the stepped range `[0,...,1]`
+            with step `0.01`. Else provide a list of floats.
+            default: ``None``
         max_detection_thresholds:
-            Thresholds on max detections per image.
+            Thresholds on max detections per image. If set to `None` will use thresholds `[1, 10, 100]`.
+            Else please provide a list of ints.
+            default: ``None``
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. default: False
         compute_on_step:
@@ -199,21 +206,17 @@ class MAP(Metric):
                 " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`"
             )
 
-        allowed_box_formats = (‘xyxy’, ‘xywh’, ‘cxcywh’)
+        allowed_box_formats = ("xyxy", "xywh", "cxcywh")
         if box_format not in allowed_box_formats:
-            raise ValueError(
-              f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}"
-            )
+            raise ValueError(f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}")
         self.box_format = box_format
         self.iou_thresholds = torch.Tensor(
             iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1)
         )
-        self.rec_thresholds = torch.Tensor(
-            rec_thresholds or torch.linspace(0.0, 1.00, int(round((1.00 - 0.0) / 0.01)) + 1)
-        )
+        self.rec_thresholds = torch.Tensor(rec_thresholds or torch.linspace(0.0, 1.00, int(round((1.00) / 0.01)) + 1))
         self.max_detection_thresholds = torch.IntTensor(max_detection_thresholds or [1, 10, 100])
         self.max_detection_thresholds, _ = torch.sort(self.max_detection_thresholds)
-        self.object_area_ranges = {
+        self.bbox_area_ranges = {
             "all": [0 ** 2, 1e5 ** 2],
             "small": [0 ** 2, 32 ** 2],
             "medium": [32 ** 2, 96 ** 2],
@@ -292,13 +295,26 @@ class MAP(Metric):
             )
             self.groundtruth_labels.append(item["labels"])
 
-    def _num_classes(self) -> List:
+    def _get_classes(self) -> List:
+        """Returns a list of unique classes found in groundtruth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         else:
             return []
 
     def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
+        """
+        Computes the Intersection over Union (IoU) for groundtruth and detection bounding boxes
+        for the given image and class.
+
+        Args:
+            id:
+                Image Id, equivalent to the index of supplied samples
+            class_id:
+                Class Id of the supplied groundtruth and detection labels
+            max_det:
+                Maximum number of evaluated detection bounding boxes
+        """
         gt = self.groundtruth_boxes[id]
         dt = self.detection_boxes[id]
         gt_lbl_mask = self.groundtruth_labels[id] == class_id
@@ -324,8 +340,19 @@ class MAP(Metric):
 
     def _evaluate_image(self, id: int, class_id: int, area_range: List[int], max_det: int, ious: Tensor) -> Dict:
         """
-        perform evaluation for single category and image
-        :return: dict (single image results)
+        Perform evaluation for single class and image
+
+        Args:
+            id:
+                Image Id, equivalent to the index of supplied samples.
+            class_id:
+                Class Id of the supplied groundtruth and detection labels.
+            area_range:
+                List of lower and upper bounding box area threshold.
+            max_det:
+                Maximum number of evaluated detection bounding boxes.
+            ious:
+                IoU reults for image and class.
         """
         gt = self.groundtruth_boxes[id]
         dt = self.detection_boxes[id]
@@ -400,10 +427,33 @@ class MAP(Metric):
         }
 
     def _summarize(
-        self, results: Dict, ap: bool = True, iouThr: Optional[float] = None, areaRng: str = "all", maxDets: int = 100
+        self,
+        results: Dict,
+        ap: bool = True,
+        iouThr: Optional[float] = None,
+        area_range: str = "all",
+        max_dets: int = 100,
     ) -> Tensor:
-        aind = [i for i, aRng in enumerate(self.object_area_ranges.keys()) if aRng == areaRng]
-        mind = [i for i, mDet in enumerate(self.max_detection_thresholds) if mDet == maxDets]
+        """
+        Perform evaluation for single class and image
+
+        Args:
+            results:
+                Dictionary including precision, recall and scores for all combinations.
+            ap:
+                Calculate average precision. Else calculate average recall.
+                default: `True`
+            iouThr:
+                IoU threshold. If set to `None` it all values are used. Else results are filtered.
+            area_range:
+                Bounding box area range key.
+                default: ``all``
+            max_dets:
+                Maximum detections.
+                default: ``100``
+        """
+        aind = [i for i, aRng in enumerate(self.bbox_area_ranges.keys()) if aRng == area_range]
+        mind = [i for i, mDet in enumerate(self.max_detection_thresholds) if mDet == max_dets]
         if ap:
             # dimension of precision: [TxRxKxAxM]
             s = results["precision"]
@@ -430,7 +480,7 @@ class MAP(Metric):
         img_ids = torch.arange(len(self.groundtruth_boxes), dtype=torch.int).tolist()
 
         maxDetections = self.max_detection_thresholds[-1]
-        area_ranges = self.object_area_ranges.values()
+        area_ranges = self.bbox_area_ranges.values()
 
         ious = {
             (id, class_id): self._compute_iou(id, class_id, maxDetections) for id in img_ids for class_id in class_ids
@@ -446,7 +496,7 @@ class MAP(Metric):
         T = len(self.iou_thresholds)
         R = len(self.rec_thresholds)
         K = len(class_ids)
-        A = len(self.object_area_ranges)
+        A = len(self.bbox_area_ranges)
         M = len(self.max_detection_thresholds)
         I = len(img_ids)  # noqa: E741
         precision = -torch.ones((T, R, K, A, M))
@@ -519,19 +569,19 @@ class MAP(Metric):
         }
         map_metrics = MAPMetricResults(
             map=self._summarize(results, True),
-            map_50=self._summarize(results, True, iouThr=0.5, maxDets=self.max_detection_thresholds[2]),
-            map_75=self._summarize(results, True, iouThr=0.75, maxDets=self.max_detection_thresholds[2]),
-            map_small=self._summarize(results, True, areaRng="small", maxDets=self.max_detection_thresholds[2]),
-            map_medium=self._summarize(results, True, areaRng="medium", maxDets=self.max_detection_thresholds[2]),
-            map_large=self._summarize(results, True, areaRng="large", maxDets=self.max_detection_thresholds[2]),
+            map_50=self._summarize(results, True, iouThr=0.5, maxDets=self.max_detection_thresholds[-1]),
+            map_75=self._summarize(results, True, iouThr=0.75, maxDets=self.max_detection_thresholds[-1]),
+            map_small=self._summarize(results, True, areaRng="small", maxDets=self.max_detection_thresholds[-1]),
+            map_medium=self._summarize(results, True, areaRng="medium", maxDets=self.max_detection_thresholds[-1]),
+            map_large=self._summarize(results, True, areaRng="large", maxDets=self.max_detection_thresholds[-1]),
         )
         mar_metrics = MARMetricResults(
             mar_1=self._summarize(results, False, maxDets=self.max_detection_thresholds[0]),
             mar_10=self._summarize(results, False, maxDets=self.max_detection_thresholds[1]),
             mar_100=self._summarize(results, False, maxDets=self.max_detection_thresholds[2]),
-            mar_small=self._summarize(results, False, areaRng="small", maxDets=self.max_detection_thresholds[2]),
-            mar_medium=self._summarize(results, False, areaRng="medium", maxDets=self.max_detection_thresholds[2]),
-            mar_large=self._summarize(results, False, areaRng="large", maxDets=self.max_detection_thresholds[2]),
+            mar_small=self._summarize(results, False, areaRng="small", maxDets=self.max_detection_thresholds[-1]),
+            mar_medium=self._summarize(results, False, areaRng="medium", maxDets=self.max_detection_thresholds[-1]),
+            mar_large=self._summarize(results, False, areaRng="large", maxDets=self.max_detection_thresholds[-1]),
         )
         return results, map_metrics, mar_metrics
 
@@ -560,7 +610,7 @@ class MAP(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
-        overall, map, mar = self._calculate(self._num_classes())
+        overall, map, mar = self._calculate(self._get_classes())
 
         map_per_class_values: Tensor = torch.Tensor([-1])
         mar_100_per_class_values: Tensor = torch.Tensor([-1])
@@ -570,7 +620,7 @@ class MAP(Metric):
             map_per_class_list = []
             mar_100_per_class_list = []
 
-            for class_id in self._num_classes():
+            for class_id in self._get_classes():
                 _, cls_map, cls_mar = self._calculate([class_id])
                 map_per_class_list.append(cls_map.map)
                 mar_100_per_class_list.append(cls_mar.mar_100)
