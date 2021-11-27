@@ -474,6 +474,12 @@ class MAP(Metric):
         return mean_s
 
     def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
+        """Calculate the precision, recall and scores for all supplied label classes.
+
+        Args:
+            class_ids:
+                List of label class Ids.
+        """
         img_ids = torch.arange(len(self.groundtruth_boxes), dtype=torch.int).tolist()
 
         maxDetections = self.max_detection_thresholds[-1]
