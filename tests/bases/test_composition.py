@@ -24,7 +24,7 @@ from torchmetrics.metric import CompositionalMetric, Metric
 class DummyMetric(Metric):
     def __init__(self, val_to_return):
         super().__init__()
-        self._num_updates = 0
+        self.add_state("_num_updates", tensor(0), dist_reduce_fx="sum")
         self._val_to_return = val_to_return
         self._update_called = True
 
@@ -33,10 +33,6 @@ class DummyMetric(Metric):
 
     def compute(self):
         return tensor(self._val_to_return)
-
-    def reset(self):
-        self._num_updates = 0
-        return super().reset()
 
 
 @pytest.mark.parametrize(
@@ -551,6 +547,22 @@ def test_compositional_metrics_update():
     compos.update()
     compos.update()
     compos.update()
+
+    assert isinstance(compos.metric_a, DummyMetric)
+    assert isinstance(compos.metric_b, DummyMetric)
+
+    assert compos.metric_a._num_updates == 3
+    assert compos.metric_b._num_updates == 3
+
+
+def test_compositional_metrics_forward():
+
+    compos = DummyMetric(5) + DummyMetric(4)
+
+    assert isinstance(compos, CompositionalMetric)
+    compos()
+    compos()
+    compos()
 
     assert isinstance(compos.metric_a, DummyMetric)
     assert isinstance(compos.metric_b, DummyMetric)
