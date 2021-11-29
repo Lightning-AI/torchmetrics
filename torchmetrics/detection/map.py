@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import torch
 from torch import Tensor
@@ -22,52 +21,65 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_area, box_convert, box_iou, generalized_box_iou
+    from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = None
     box_iou = None
-    generalized_box_iou = None
     box_area = None
 
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class MAPMetricResults:
-    """Dataclass to wrap the final mAP results."""
+class BaseMetricResults(dict):
+    """Base metric class, that allows fields for pre-defined metrics."""
 
-    map: Tensor
-    map_50: Tensor
-    map_75: Tensor
-    map_small: Tensor
-    map_medium: Tensor
-    map_large: Tensor
+    def __getattr__(self, key: str) -> Tensor:
+        if key in self:
+            return self[key]
+        else:
+            raise AttributeError(f"No such attribute: {key}")
 
-    def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
-        return getattr(self, key)
+    def __setattr__(self, key: str, value: Tensor):
+        self[key] = value
 
-
-@dataclass
-class MARMetricResults:
-    """Dataclass to wrap the final mAR results."""
-
-    mar_1: Tensor
-    mar_10: Tensor
-    mar_100: Tensor
-    mar_small: Tensor
-    mar_medium: Tensor
-    mar_large: Tensor
-
-    def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
-        return getattr(self, key)
+    def __delattr__(self, key: str):
+        if key in self:
+            del self[key]
+        else:
+            raise AttributeError(f"No such attribute: {key}")
 
 
-@dataclass
-class COCOMetricResults(MAPMetricResults, MARMetricResults):
-    """Dataclass to wrap the final COCO metric results including various mAP/mAR values."""
+class MAPMetricResults(BaseMetricResults):
+    """Class to wrap the final mAP results."""
 
-    map_per_class: Tensor
-    mar_100_per_class: Tensor
+    __slots__ = ("map", "map_50", "map_75", "map_small", "map_medium", "map_large")
+
+
+class MARMetricResults(BaseMetricResults):
+    """Class to wrap the final mAR results."""
+
+    __slots__ = ("mar_1", "mar_10", "mar_100", "mar_small", "mar_medium", "mar_large")
+
+
+class COCOMetricResults(BaseMetricResults):
+    """Class to wrap the final COCO metric results including various mAP/mAR values."""
+
+    __slots__ = (
+        "map",
+        "map_50",
+        "map_75",
+        "map_small",
+        "map_medium",
+        "map_large",
+        "mar_1",
+        "mar_10",
+        "mar_100",
+        "mar_small",
+        "mar_medium",
+        "mar_large",
+        "map_per_class",
+        "mar_100_per_class",
+    )
 
 
 def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
@@ -570,29 +582,48 @@ class MAP(Metric):
             "recall": recall,
             "scores": scores,
         }
-        map_metrics = MAPMetricResults(
-            map=self._summarize(results, True),
-            map_50=self._summarize(results, True, iou_threshold=0.5, max_dets=self.max_detection_thresholds[-1]),
-            map_75=self._summarize(results, True, iou_threshold=0.75, max_dets=self.max_detection_thresholds[-1]),
-            map_small=self._summarize(results, True, area_range="small", max_dets=self.max_detection_thresholds[-1]),
-            map_medium=self._summarize(results, True, area_range="medium", max_dets=self.max_detection_thresholds[-1]),
-            map_large=self._summarize(results, True, area_range="large", max_dets=self.max_detection_thresholds[-1]),
+
+        map_metrics = MAPMetricResults()
+        map_metrics.map = self._summarize(results, True)
+        map_metrics.map_50 = self._summarize(
+            results, True, iou_threshold=0.5, max_dets=self.max_detection_thresholds[-1]
         )
-        mar_metrics = MARMetricResults(
-            mar_1=self._summarize(results, False, max_dets=self.max_detection_thresholds[0]),
-            mar_10=self._summarize(results, False, max_dets=self.max_detection_thresholds[1]),
-            mar_100=self._summarize(results, False, max_dets=self.max_detection_thresholds[2]),
-            mar_small=self._summarize(results, False, area_range="small", max_dets=self.max_detection_thresholds[-1]),
-            mar_medium=self._summarize(results, False, area_range="medium", max_dets=self.max_detection_thresholds[-1]),
-            mar_large=self._summarize(results, False, area_range="large", max_dets=self.max_detection_thresholds[-1]),
+        map_metrics.map_75 = self._summarize(
+            results, True, iou_threshold=0.75, max_dets=self.max_detection_thresholds[-1]
         )
+        map_metrics.map_small = self._summarize(
+            results, True, area_range="small", max_dets=self.max_detection_thresholds[-1]
+        )
+        map_metrics.map_medium = self._summarize(
+            results, True, area_range="medium", max_dets=self.max_detection_thresholds[-1]
+        )
+        map_metrics.map_large = self._summarize(
+            results, True, area_range="large", max_dets=self.max_detection_thresholds[-1]
+        )
+
+        mar_metrics = MARMetricResults()
+        for max_det in self.max_detection_thresholds:
+            mar_metrics[f"mar_{max_det}"] = self._summarize(results, False, max_dets=max_det)
+        mar_metrics.mar_small = self._summarize(
+            results, False, area_range="small", max_dets=self.max_detection_thresholds[-1]
+        )
+        mar_metrics.mar_medium = self._summarize(
+            results, False, area_range="medium", max_dets=self.max_detection_thresholds[-1]
+        )
+        mar_metrics.mar_large = self._summarize(
+            results, False, area_range="large", max_dets=self.max_detection_thresholds[-1]
+        )
+
         return results, map_metrics, mar_metrics
 
     def compute(self) -> dict:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
 
         Note:
-            Main `map` score is calculated with @[ IoU=0.50:0.95 | area=all | maxDets=100 ]
+            `map` score is calculated with @[ IoU=self.iou_thresholds | area=all | maxDets=max_detection_thresholds ]
+
+            Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
+            The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
         Returns:
             dict containing
@@ -615,35 +646,26 @@ class MAP(Metric):
         overall, map, mar = self._calculate(self._get_classes())
 
         map_per_class_values: Tensor = torch.Tensor([-1])
-        mar_100_per_class_values: Tensor = torch.Tensor([-1])
+        mar_max_dets_per_class_values: Tensor = torch.Tensor([-1])
 
         # if class mode is enabled, evaluate metrics per class
         if self.class_metrics:
             map_per_class_list = []
-            mar_100_per_class_list = []
+            mar_max_dets_per_class_list = []
 
             for class_id in self._get_classes():
                 _, cls_map, cls_mar = self._calculate([class_id])
                 map_per_class_list.append(cls_map.map)
-                mar_100_per_class_list.append(cls_mar.mar_100)
+                mar_max_dets_per_class_list.append(cls_mar[f"mar_{self.max_detection_thresholds[-1]}"])
 
             map_per_class_values = torch.Tensor(map_per_class_list)
-            mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
+            mar_max_dets_per_class_values = torch.Tensor(mar_max_dets_per_class_list)
 
-        metrics = COCOMetricResults(
-            map=map.map,
-            map_50=map.map_50,
-            map_75=map.map_75,
-            map_small=map.map_small,
-            map_medium=map.map_medium,
-            map_large=map.map_large,
-            mar_1=mar.mar_1,
-            mar_10=mar.mar_10,
-            mar_100=mar.mar_100,
-            mar_small=mar.mar_small,
-            mar_medium=mar.mar_medium,
-            mar_large=mar.mar_large,
-            map_per_class=map_per_class_values,
-            mar_100_per_class=mar_100_per_class_values,
-        )
-        return metrics.__dict__
+        metrics = COCOMetricResults()
+        for key in map.keys():
+            metrics[key] = map[key]
+        for key in mar.keys():
+            metrics[key] = mar[key]
+        metrics.map_per_class = map_per_class_values
+        metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
+        return metrics
