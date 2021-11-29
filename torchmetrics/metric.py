@@ -772,16 +772,17 @@ class CompositionalMetric(Metric):
         if val_a is None:
             # compute_on_step of metric_a is False
             return None
-        elif val_b is None:
+
+        if val_b is None:
             if isinstance(self.metric_b, Metric):
                 # compute_on_step of metric_b is False
                 return None
-            else:
-                # Unary op
-                return self.op(val_a)
-        else:
-            # Binary op
-            return self.op(val_a, val_b)
+
+            # Unary op
+            return self.op(val_a)
+
+        # Binary op
+        return self.op(val_a, val_b)
 
     def reset(self) -> None:
         if isinstance(self.metric_a, Metric):
