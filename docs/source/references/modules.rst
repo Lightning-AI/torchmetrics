@@ -622,6 +622,12 @@ CharErrorRate
 .. autoclass:: torchmetrics.CharErrorRate
     :noindex:
 
+CHRFScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.CHRFScore
+    :noindex:
+
 MatchErrorRate
 ~~~~~~~~~~~~~~
 
