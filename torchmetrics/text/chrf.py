@@ -18,7 +18,7 @@
 # Link:
 
 import itertools
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -221,6 +221,6 @@ class CHRFScore(Metric):
         """Return a metric state name w.r.t input args."""
         return f"total_{text}_{n_gram_level}_{n}_grams"
 
-    def _get_text_n_gram_iterator(self) -> itertools.product:
+    def _get_text_n_gram_iterator(self) -> Iterator[Tuple[Tuple[str, int], str]]:
         """Get iterator over char/word and reference/hypothesis/matching n-gram level."""
         return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)

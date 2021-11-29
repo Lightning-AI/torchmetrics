@@ -218,7 +218,7 @@ def _get_ngram_matches(
 
     Return:
     """
-    matching_n_grams = defaultdict(lambda: tensor(0.0))
+    matching_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     for n in hyp_n_grams_counts:
         matching_n_grams[n] = tensor(
             sum(
