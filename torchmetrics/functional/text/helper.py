@@ -249,15 +249,15 @@ class _LevenshteinEditDistance:
 
         # Jump through the cache to the current position
         for i in range(skip_num):
-            node = node[prediction_tokens[i]][0]
+            node = node[prediction_tokens[i]][0]  # type: ignore
 
         # Update cache with newly computed rows
         for word, row in zip(prediction_tokens[skip_num:], edit_distance):
             if word not in node:
-                node[word] = ({}, tuple(row))
+                node[word] = ({}, tuple(row))  # type: ignore
                 self.cache_size += 1
             value = node[word]
-            node = value[0]
+            node = value[0]  # type: ignore
 
     def _find_cache(self, prediction_tokens: List[str]) -> Tuple[int, List[List[Tuple[int, _EDIT_OPERATIONS]]]]:
         """Find the already calculated rows of the Levenshtein edit distance matric.
@@ -280,8 +280,8 @@ class _LevenshteinEditDistance:
         for word in prediction_tokens:
             if word in node:
                 start_position += 1
-                node, row = node[word]
-                edit_distance.append(row)
+                node, row = node[word]  # type: ignore
+                edit_distance.append(row)  # type: ignore
             else:
                 break
 

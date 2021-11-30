@@ -233,18 +233,16 @@ def _find_shifted_pairs(reference_words: List[str], hypothesis_words: List[str])
                 continue
 
             length = 0
-            while (
-                hypothesis_words[hypothesis_start + length] == reference_words[reference_start + length]
-                and length < _MAX_SHIFT_SIZE
+            while (hypothesis_words[hypothesis_start + length] == reference_words[reference_start + length]) and (
+                length < _MAX_SHIFT_SIZE
             ):
                 length += 1
 
                 yield reference_start, hypothesis_start, length
 
                 # If one sequence is consumed, stop processing
-                if (
-                    len(hypothesis_words) == hypothesis_start + length
-                    or len(reference_words) == reference_start + length
+                if (len(hypothesis_words) == hypothesis_start + length) or (
+                    len(reference_words) == reference_start + length
                 ):
                     break
 
