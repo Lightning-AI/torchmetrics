@@ -764,7 +764,6 @@ class CompositionalMetric(Metric):
             if isinstance(self.metric_a, Metric)
             else self.metric_a
         )
-
         val_b = (
             self.metric_b(*args, **self.metric_b._filter_kwargs(**kwargs))
             if isinstance(self.metric_b, Metric)
