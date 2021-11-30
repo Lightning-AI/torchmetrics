@@ -155,7 +155,7 @@ def test_bleu_string_input_class():
     assert bleu(refs, hyp) == tensor(0.0)
 
 
-def test_bleu_string_input_functionals():
+def test_bleu_string_input_functional():
     hyp = "My full torchmetric"
     ref = ["Completely Different"]
     assert bleu_score(ref, hyp) == tensor(0.0)
