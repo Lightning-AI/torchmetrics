@@ -42,8 +42,9 @@ REFERENCE_2C = "there is a cat on the mat"
 TUPLE_OF_REFERENCES = (
     ((REFERENCE_1A, REFERENCE_2A, REFERENCE_3A), tuple([REFERENCE_1B])),
     (tuple([REFERENCE_1B]), (REFERENCE_1C, REFERENCE_2C)),
+    (REFERENCE_1B),
 )
-TUPLE_OF_HYPOTHESES = ((HYPOTHESIS_A, HYPOTHESIS_B), (HYPOTHESIS_B, HYPOTHESIS_C))
+TUPLE_OF_HYPOTHESES = ((HYPOTHESIS_A, HYPOTHESIS_B), (HYPOTHESIS_B, HYPOTHESIS_C), (HYPOTHESIS_B))
 
 BATCHES = {"preds": TUPLE_OF_HYPOTHESES, "targets": TUPLE_OF_REFERENCES}
 
@@ -146,16 +147,3 @@ def test_no_4_gram_class():
     hyps = ["My full pytorch-lightning"]
     refs = [["My full pytorch-lightning test", "Completely Different"]]
     assert bleu(refs, hyps) == tensor(0.0)
-
-
-def test_bleu_string_input_class():
-    bleu = BLEUScore()
-    hyp = "My full torchmetric"
-    refs = ["Completely Different"]
-    assert bleu(refs, hyp) == tensor(0.0)
-
-
-def test_bleu_string_input_functional():
-    hyp = "My full torchmetric"
-    ref = ["Completely Different"]
-    assert bleu_score(ref, hyp) == tensor(0.0)
