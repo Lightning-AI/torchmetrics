@@ -249,8 +249,8 @@ def _find_shifted_pairs(reference_words: List[str], hypothesis_words: List[str])
 
 def _handle_corner_cases_during_shifting(
     alignments: Dict[int, int],
-    reference_errors: List[str],
-    hypothesis_errors: List[str],
+    reference_errors: List[int],
+    hypothesis_errors: List[int],
     reference_start: int,
     hypothesis_start: int,
     length: int,
