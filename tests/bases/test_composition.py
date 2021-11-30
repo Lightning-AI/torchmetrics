@@ -24,7 +24,7 @@ from torchmetrics.metric import CompositionalMetric, Metric
 class DummyMetric(Metric):
     def __init__(self, val_to_return):
         super().__init__()
-        self._num_updates = 0
+        self.add_state("_num_updates", tensor(0), dist_reduce_fx="sum")
         self._val_to_return = val_to_return
         self._update_called = True
 
@@ -33,10 +33,6 @@ class DummyMetric(Metric):
 
     def compute(self):
         return tensor(self._val_to_return)
-
-    def reset(self):
-        self._num_updates = 0
-        return super().reset()
 
 
 @pytest.mark.parametrize(
@@ -544,7 +540,7 @@ def test_metrics_getitem(value, idx, expected_result):
 
 
 def test_compositional_metrics_update():
-
+    """test update method for compositional metrics."""
     compos = DummyMetric(5) + DummyMetric(4)
 
     assert isinstance(compos, CompositionalMetric)
@@ -557,3 +553,26 @@ def test_compositional_metrics_update():
 
     assert compos.metric_a._num_updates == 3
     assert compos.metric_b._num_updates == 3
+
+
+@pytest.mark.parametrize("compute_on_step", [True, False])
+@pytest.mark.parametrize("metric_b", [4, DummyMetric(4)])
+def test_compositional_metrics_forward(compute_on_step, metric_b):
+    """test forward method of compositional metrics."""
+    metric_a = DummyMetric(5)
+    metric_a.compute_on_step = compute_on_step
+    compos = metric_a + metric_b
+
+    assert isinstance(compos, CompositionalMetric)
+    for _ in range(3):
+        val = compos()
+        assert val == 9 if compute_on_step else val is None
+
+    assert isinstance(compos.metric_a, DummyMetric)
+    assert compos.metric_a._num_updates == 3
+
+    if isinstance(metric_b, DummyMetric):
+        assert isinstance(compos.metric_b, DummyMetric)
+        assert compos.metric_b._num_updates == 3
+
+    compos.reset()

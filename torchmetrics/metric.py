@@ -747,6 +747,35 @@ class CompositionalMetric(Metric):
 
         return self.op(val_a, val_b)
 
+    @torch.jit.unused
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+
+        val_a = (
+            self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
+            if isinstance(self.metric_a, Metric)
+            else self.metric_a
+        )
+        val_b = (
+            self.metric_b(*args, **self.metric_b._filter_kwargs(**kwargs))
+            if isinstance(self.metric_b, Metric)
+            else self.metric_b
+        )
+
+        if val_a is None:
+            # compute_on_step of metric_a is False
+            return None
+
+        if val_b is None:
+            if isinstance(self.metric_b, Metric):
+                # compute_on_step of metric_b is False
+                return None
+
+            # Unary op
+            return self.op(val_a)
+
+        # Binary op
+        return self.op(val_a, val_b)
+
     def reset(self) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.reset()
@@ -765,3 +794,6 @@ class CompositionalMetric(Metric):
         repr_str = self.__class__.__name__ + _op_metrics
 
         return repr_str
+
+    def _wrap_compute(self, compute: Callable) -> Callable:
+        return compute
