@@ -488,7 +488,12 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, ref_length: Tensor) ->
     Return:
         A corpus-level TER score or 1 if reference_length == 0.
     """
-    score = num_edits / ref_length if ref_length > 0 else tensor(1.0)
+    if ref_length > 0 and num_edits > 0:
+        score = num_edits / ref_length
+    elif ref_length == 0 and num_edits > 0:
+        score = tensor(1.0)
+    else:
+        score = tensor(0.0)
     return score
 
 
@@ -536,7 +541,7 @@ def _ter_update(
         total_num_edits += num_edits
         total_ref_length += ref_length
         if sentence_ter is not None:
-            sentence_ter.append(_compute_ter_score_from_statistics(num_edits, ref_length))
+            sentence_ter.append(_compute_ter_score_from_statistics(num_edits, ref_length).unsqueeze(0))
     return total_num_edits, total_ref_length, sentence_ter
 
 

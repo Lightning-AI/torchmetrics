@@ -146,29 +146,42 @@ class TestTER(TextTester):
         )
 
 
-# def test_chrf_empty_functional():
-#     hyp = []
-#     ref = [[]]
-#     assert chrf_score(ref, hyp) == tensor(0.0)
+def test_ter_empty_functional():
+    hyp = []
+    ref = [[]]
+    assert ter(ref, hyp) == tensor(0.0)
 
 
-# def test_chrf_empty_class():
-#     chrf = CHRFScore()
-#     hyp = []
-#     ref = [[]]
-#     assert chrf(ref, hyp) == tensor(0.0)
+def test_ter_empty_class():
+    ter_metric = TER()
+    hyp = []
+    ref = [[]]
+    assert ter_metric(ref, hyp) == tensor(0.0)
 
 
-# def test_chrf_return_sentence_level_score_functional():
-#     hyp = [HYPOTHESIS_B]
-#     ref = [[REFERENCE_1B, REFERENCE_2B]]
-#     _, chrf_sentence_score = chrf_score(ref, hyp, return_sentence_level_score=True)
-#     isinstance(chrf_sentence_score, Tensor)
+def test_ter_empty_with_non_empty_hyp_functional():
+    hyp = ["python"]
+    ref = [[]]
+    assert ter(ref, hyp) == tensor(0.0)
 
 
-# def test_chrf_return_sentence_level_class():
-#     chrf = CHRFScore(return_sentence_level_score=True)
-#     hyp = [HYPOTHESIS_B]
-#     ref = [[REFERENCE_1B, REFERENCE_2B]]
-#     _, chrf_sentence_score = chrf(ref, hyp)
-#     isinstance(chrf_sentence_score, Tensor)
+def test_ter_empty_with_non_empty_hyp_class():
+    ter_metric = TER()
+    hyp = ["python"]
+    ref = [[]]
+    assert ter_metric(ref, hyp) == tensor(0.0)
+
+
+def test_ter_return_sentence_level_score_functional():
+    hyp = [HYPOTHESIS_B]
+    ref = [[REFERENCE_1B, REFERENCE_2B]]
+    _, sentence_ter = ter(ref, hyp, return_sentence_level_score=True)
+    isinstance(sentence_ter, Tensor)
+
+
+def test_ter_return_sentence_level_class():
+    ter_metric = TER(return_sentence_level_score=True)
+    hyp = [HYPOTHESIS_B]
+    ref = [[REFERENCE_1B, REFERENCE_2B]]
+    _, sentence_ter = ter_metric(ref, hyp)
+    isinstance(sentence_ter, Tensor)
