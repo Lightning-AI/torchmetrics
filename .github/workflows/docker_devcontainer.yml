@@ -1,15 +1,6 @@
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
-    paths:
-      - ".devcontainer/*"
-      - "requirements/*"
-      - "environment.yml"
-      - "requirements.txt"
-      - ".github/workflows/*docker*.yml"
-      - "setup.py"
 
 jobs:
   build-devcontainer:
@@ -29,6 +20,6 @@ jobs:
           build-args: |
             VARIANT=${{ matrix.python_version }}
           file: .devcontainer/Dockerfile
-          push: false
+          push: true
           tags: pytorchlightning/metrics-dev
         timeout-minutes: 50
