@@ -28,7 +28,7 @@ jobs:
         with:
           build-args: |
             VARIANT=${{ matrix.python_version }}
-          file: dockers/release/Dockerfile
+          file: .devcontainer/Dockerfile
           push: false
           tags: pytorchlightning/metrics-dev
         timeout-minutes: 50
