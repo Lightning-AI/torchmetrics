@@ -540,7 +540,7 @@ def test_metrics_getitem(value, idx, expected_result):
 
 
 def test_compositional_metrics_update():
-    """ test update method for compositional metrics."""
+    """test update method for compositional metrics."""
     compos = DummyMetric(5) + DummyMetric(4)
 
     assert isinstance(compos, CompositionalMetric)
