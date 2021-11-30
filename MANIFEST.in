@@ -39,6 +39,7 @@ exclude *.yml
 exclude *.yaml
 exclude Makefile
 
+prune .devcontainer
 prune .git
 prune .github
 prune .circleci
