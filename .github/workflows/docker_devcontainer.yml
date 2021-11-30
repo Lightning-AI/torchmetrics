@@ -1,3 +1,5 @@
+name: "Build & Push Docker Devcontainer"
+
 on:
   push:
     branches: [master]
