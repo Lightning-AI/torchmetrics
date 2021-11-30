@@ -2,6 +2,7 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.194.0/containers/python-3
 {
     "name": "Python 3",
+    "image": "pytorchlightning/metrics-dev"
     "build": {
         "dockerfile": "Dockerfile",
         "context": "..",
