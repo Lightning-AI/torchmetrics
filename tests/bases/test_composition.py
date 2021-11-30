@@ -566,7 +566,8 @@ def test_compositional_metrics_forward(metric_b):
     assert compos() == 9
 
     assert isinstance(compos.metric_a, DummyMetric)
-    assert isinstance(compos.metric_b, DummyMetric)
-
     assert compos.metric_a._num_updates == 3
-    assert compos.metric_b._num_updates == 3
+
+    if isinstance(metric_b, Metric):
+        assert isinstance(compos.metric_b, DummyMetric)
+        assert compos.metric_b._num_updates == 3
