@@ -555,14 +555,15 @@ def test_compositional_metrics_update():
     assert compos.metric_b._num_updates == 3
 
 
-def test_compositional_metrics_forward():
-
-    compos = DummyMetric(5) + DummyMetric(4)
+@pytest.mark.parametrize("metric_b", [4, DummyMetric(4)])
+def test_compositional_metrics_forward(metric_b):
+    """ test forward method of compositional metric """
+    compos = DummyMetric(5) + metric_b
 
     assert isinstance(compos, CompositionalMetric)
-    compos()
-    compos()
-    compos()
+    assert compos() == 9
+    assert compos() == 9
+    assert compos() == 9
 
     assert isinstance(compos.metric_a, DummyMetric)
     assert isinstance(compos.metric_b, DummyMetric)
