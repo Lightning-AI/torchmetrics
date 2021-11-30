@@ -557,7 +557,7 @@ def test_compositional_metrics_update():
 
 @pytest.mark.parametrize("metric_b", [4, DummyMetric(4)])
 def test_compositional_metrics_forward(metric_b):
-    """ test forward method of compositional metric """
+    """test forward method of compositional metric."""
     compos = DummyMetric(5) + metric_b
 
     assert isinstance(compos, CompositionalMetric)
