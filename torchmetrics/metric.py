@@ -759,9 +759,17 @@ class CompositionalMetric(Metric):
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
 
-        val_a = self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs)) if isinstance(self.metric_a, Metric) else self.metric_a
+        val_a = (
+            self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
+            if isinstance(self.metric_a, Metric)
+            else self.metric_a
+        )
 
-        val_b = self.metric_b(*args, **self.metric_b._filter_kwargs(**kwargs)) if isinstance(self.metric_b, Metric) else self.metric_b
+        val_b = (
+            self.metric_b(*args, **self.metric_b._filter_kwargs(**kwargs))
+            if isinstance(self.metric_b, Metric)
+            else self.metric_b
+        )
 
         if val_a is None:
             # compute_on_step of metric_a is False
