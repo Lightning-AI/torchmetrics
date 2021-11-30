@@ -159,19 +159,15 @@ class MAP(Metric):
     Args:
         box_format:
             Input format of given boxes. Supported formats are [‘xyxy’, ‘xywh’, ‘cxcywh’].
-            default: ``xyxy``
         iou_thresholds:
             IoU thresholds for evaluation. If set to `None` it corresponds to the stepped range `[0.5,...,0.95]`
             with step `0.05`. Else provide a list of floats.
-            default: ``None``
         rec_thresholds:
             Recall thresholds for evaluation. If set to `None` it corresponds to the stepped range `[0,...,1]`
             with step `0.01`. Else provide a list of floats.
-            default: ``None``
         max_detection_thresholds:
             Thresholds on max detections per image. If set to `None` will use thresholds `[1, 10, 100]`.
             Else please provide a list of ints.
-            default: ``None``
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. default: False
         compute_on_step:
