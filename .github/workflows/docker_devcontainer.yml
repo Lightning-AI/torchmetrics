@@ -1,0 +1,34 @@
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+    paths:
+      - ".devcontainer/*"
+      - "requirements/*"
+      - "environment.yml"
+      - "requirements.txt"
+      - ".github/workflows/*docker*.yml"
+      - "setup.py"
+
+jobs:
+  build-devcontainer:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ["3.9"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build PL Docker
+        # publish master/release
+        uses: docker/build-push-action@v2
+        with:
+          build-args: |
+            VARIANT=${{ matrix.python_version }}
+          file: dockers/release/Dockerfile
+          push: false
+          tags: pytorchlightning/metrics-dev
+        timeout-minutes: 50
