@@ -1,5 +1,5 @@
 pull_request:
-    branches: [master, "release/*"]
+    branches: [master]
     paths:
       - "requirements/*"
       - ".devcontainer/*"
