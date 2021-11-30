@@ -23,7 +23,7 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
-    box_convert = None
+    box_convert = box_iou = box_area = None
     box_iou = None
     box_area = None
 
