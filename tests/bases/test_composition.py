@@ -576,4 +576,3 @@ def test_compositional_metrics_forward(compute_on_step, metric_b):
         assert compos.metric_b._num_updates == 3
 
     compos.reset()
-
