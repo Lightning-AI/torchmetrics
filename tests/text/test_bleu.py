@@ -146,3 +146,16 @@ def test_no_4_gram_class():
     hyps = ["My full pytorch-lightning"]
     refs = [["My full pytorch-lightning test", "Completely Different"]]
     assert bleu(refs, hyps) == tensor(0.0)
+
+
+def test_bleu_string_input_class():
+    bleu = BLEUScore()
+    hyp = "My full torchmetric"
+    refs = ["Completely Different"]
+    assert bleu(refs, hyp) == tensor(0.0)
+
+
+def test_bleu_string_input_functionals():
+    hyp = "My full torchmetric"
+    ref = ["Completely Different"]
+    assert bleu_score(ref, hyp) == tensor(0.0)

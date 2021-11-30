@@ -17,7 +17,7 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -126,8 +126,8 @@ def _bleu_score_compute(
 
 
 def bleu_score(
-    reference_corpus: Sequence[Sequence[str]],
-    translate_corpus: Sequence[str],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
+    translate_corpus: Union[str, Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
@@ -160,16 +160,21 @@ def bleu_score(
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+    translate_corpus_ = [translate_corpus] if isinstance(translate_corpus, str) else translate_corpus
+    reference_corpus_ = [
+        [reference_text] if isinstance(reference_text, str) else reference_text for reference_text in reference_corpus
+    ]
 
-    if len(translate_corpus) != len(reference_corpus):
-        raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
+    if len(translate_corpus_) != len(reference_corpus_):
+        raise ValueError(f"Corpus has different size {len(translate_corpus_)} != {len(reference_corpus_)}")
+
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
     trans_len = tensor(0, dtype=torch.float)
     ref_len = tensor(0, dtype=torch.float)
 
     trans_len, ref_len = _bleu_score_update(
-        reference_corpus, translate_corpus, numerator, denominator, trans_len, ref_len, n_gram
+        reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)
