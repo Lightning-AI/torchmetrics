@@ -447,15 +447,12 @@ class MAP(Metric):
                 Dictionary including precision, recall and scores for all combinations.
             ap:
                 Calculate average precision. Else calculate average recall.
-                default: `True`
             iou_threshold:
                 IoU threshold. If set to `None` it all values are used. Else results are filtered.
             area_range:
                 Bounding box area range key.
-                default: ``all``
             max_dets:
                 Maximum detections.
-                default: ``100``
         """
         aind = [i for i, aRng in enumerate(self.bbox_area_ranges.keys()) if aRng == area_range]
         mind = [i for i, mDet in enumerate(self.max_detection_thresholds) if mDet == max_dets]
