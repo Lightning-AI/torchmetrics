@@ -566,7 +566,7 @@ def test_compositional_metrics_forward(compute_on_step, metric_b):
     assert isinstance(compos, CompositionalMetric)
     for _ in range(3):
         val = compos()
-        assert val == 9 if compute_on_step else val == None
+        assert val == 9 if compute_on_step else val is None
 
     assert isinstance(compos.metric_a, DummyMetric)
     assert compos.metric_a._num_updates == 3
