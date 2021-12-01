@@ -2,16 +2,18 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.194.0/containers/python-3
 {
     "name": "PyTorch Lightning Metrics",
-    "build": {
-        "dockerfile": "Dockerfile",
-        "context": "..",
-        "args": {
-            // Update 'VARIANT' to pick a Python version: 3, 3.6, 3.7, 3.8, 3.9
-            "VARIANT": "3.9",
-            // Options
-            "NODE_VERSION": "none"
-        }
-    },
+    "image": "pytorchlightning/metrics-dev",
+    // If you want to use a different Python version, uncomment the build object below
+    // "build": {
+    //     "dockerfile": "Dockerfile",
+    //     "context": "..",
+    //     "args": {
+    //         // Update 'VARIANT' to pick a Python version: 3, 3.6, 3.7, 3.8, 3.9
+    //         "VARIANT": "3.9",
+    //         // Options
+    //         "NODE_VERSION": "none"
+    //     }
+    // },
     "runArgs": [
         // Enable GPU passthrough, requires WSL2 on Windows
         //"--gpus=all",
