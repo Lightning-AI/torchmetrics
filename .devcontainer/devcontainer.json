@@ -17,6 +17,9 @@
     "runArgs": [
         // Enable GPU passthrough, requires WSL2 on Windows
         //"--gpus=all",
+        // One of the following options is required for torch multiprocessing
+        //"--ipc=host",
+        //"--shm-size=4gb",
     ],
     // Set *default* container specific settings.json values on container create.
     "settings": {
