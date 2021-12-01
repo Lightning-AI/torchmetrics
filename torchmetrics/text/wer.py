@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from typing import Any, Callable, List, Optional, Union
-from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -42,8 +40,6 @@ class WER(Metric):
     Compute WER score of transcribed segments against references.
 
     Args:
-        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
         dist_sync_on_step:
@@ -72,7 +68,6 @@ class WER(Metric):
 
     def __init__(
         self,
-        concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -84,8 +79,6 @@ class WER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        if concatenate_texts is not None:
-            warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
