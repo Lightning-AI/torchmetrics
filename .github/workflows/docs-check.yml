@@ -76,7 +76,7 @@ jobs:
           # First run the same pipeline as Read-The-Docs
           cd docs
           make clean
-          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going"
+          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going" -b linkcheck
 
       - name: Upload built docs
         uses: actions/upload-artifact@v2
@@ -84,13 +84,3 @@ jobs:
           name: docs-build
           path: docs/build/html/
         if: success()
-
-  check_html_links:
-    runs-on: ubuntu-latest
-    name: A job to test check-html-links-action
-    steps:
-      - uses: actions/checkout@v2
-      - name: check dead link links
-        uses: modernweb-dev/check-html-links-action@v1
-        with:
-          doc-folder: 'docs'
