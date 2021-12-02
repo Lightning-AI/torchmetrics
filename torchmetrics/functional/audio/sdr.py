@@ -24,13 +24,15 @@ if _FAST_BSS_EVAL_AVAILABLE:
         from fast_bss_eval.torch.helpers import _normalize
         from fast_bss_eval.torch.linalg import toeplitz
         from fast_bss_eval.torch.metrics import compute_stats
+
         solve = torch.linalg.solve
     else:
+        import numpy
         from fast_bss_eval.numpy.cgd import toeplitz_conjugate_gradient
         from fast_bss_eval.numpy.helpers import _normalize
         from fast_bss_eval.numpy.linalg import toeplitz
         from fast_bss_eval.numpy.metrics import compute_stats
-        import numpy
+
         solve = numpy.linalg.solve
 else:
     toeplitz = None
