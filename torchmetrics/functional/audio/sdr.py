@@ -109,7 +109,7 @@ def sdr(
        1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
 
        2. using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install fast-bss-eval``
+          torchmetrics[audio]`` or ``pip install fast-bss-eval``
 
        3. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
 
