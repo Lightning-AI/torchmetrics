@@ -42,8 +42,9 @@ else:
 
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.checks import _check_same_shape
+
 
 def sdr(
     preds: Tensor,
