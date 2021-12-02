@@ -33,12 +33,12 @@ seed_all(42)
 Input = namedtuple("Input", ["preds", "target"])
 
 inputs_1spk = Input(
-    preds=torch.rand(4, 2, 1, 8000),
-    target=torch.rand(4, 2, 1, 8000),
+    preds=torch.rand(4, 2, 1, 1000),
+    target=torch.rand(4, 2, 1, 1000),
 )
 inputs_2spk = Input(
-    preds=torch.rand(4, 2, 2, 8000),
-    target=torch.rand(4, 2, 2, 8000),
+    preds=torch.rand(4, 2, 2, 1000),
+    target=torch.rand(4, 2, 2, 1000),
 )
 
 
