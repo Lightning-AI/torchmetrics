@@ -55,12 +55,13 @@ def sdr(
 ) -> Tensor:
     r"""Signal to Distortion Ratio (SDR) [1,2,3]
 
-    .. note:: using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
+    .. note::
+        1) using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install fast-bss-eval``
 
-    .. note:: preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+        2) preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
 
-    .. note:: when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
+        3) when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
 
     Args:
         preds:
