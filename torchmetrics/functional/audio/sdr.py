@@ -43,7 +43,7 @@ else:
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
-
+from torchmetrics.utilities import rank_zero_warn
 
 def sdr(
     preds: Tensor,
@@ -106,7 +106,8 @@ def sdr(
                 [0, 1]])
 
     .. note::
-       1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
+       1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` to be
+            non-differentiable and slower to calculate
 
        2. using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
           torchmetrics[audio]`` or ``pip install fast-bss-eval``
