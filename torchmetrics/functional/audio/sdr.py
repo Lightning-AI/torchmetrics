@@ -145,9 +145,9 @@ def sdr(
     # normalize along time-axis
     if not _TORCH_GREATER_EQUAL_1_8:
         # use numpy if torch<1.8
-        warnings.warn(
-            "pytorch is under 1.8, thus SDR numpy version is used."
-            "For better performance and differentiability, you should change to pytorch 1.8+"
+        rank_zero_warn(
+            "Pytorch is under 1.8, thus SDR numpy version is used."
+            "For better performance and differentiability, you should change to Pytorch v1.8 or above."
         )
         device = preds.device
         preds = preds.detach().cpu().numpy()
