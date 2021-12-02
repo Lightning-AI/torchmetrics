@@ -55,14 +55,6 @@ def sdr(
 ) -> Tensor:
     r"""Signal to Distortion Ratio (SDR) [1,2,3]
 
-    .. note::
-        1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
-
-        2. using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install fast-bss-eval``
-
-        3. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
-
     Args:
         preds:
             shape ``[..., time]``
@@ -112,6 +104,15 @@ def sdr(
                 [0, 1],
                 [1, 0],
                 [0, 1]])
+
+    .. note::
+       1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
+
+       2. using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
+        torchmetrics[audio]`` or ``pip install fast-bss-eval``
+
+       3. preds and target need to have the same dtype, otherwise target will be converted to preds' dtype
+
 
     References:
         [1] Vincent, E., Gribonval, R., & Fevotte, C. (2006). Performance measurement in blind audio source separation.
