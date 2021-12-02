@@ -82,7 +82,7 @@ def sdr(
             If ``fast-bss-eval`` package is not installed
 
     Returns:
-        sdr value of shape ``[...]`` if compute_permutation is False, else ``[..., spk]``
+        sdr value of shape ``[...]``
 
     Example:
         >>> from torchmetrics.functional.audio import sdr
