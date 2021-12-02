@@ -66,7 +66,6 @@ class SDR(Metric):
 
     Example:
         >>> from torchmetrics.audio import SDR
-        >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
