@@ -24,11 +24,14 @@ if _FAST_BSS_EVAL_AVAILABLE:
         from fast_bss_eval.torch.helpers import _normalize
         from fast_bss_eval.torch.linalg import toeplitz
         from fast_bss_eval.torch.metrics import compute_stats
+        solve = torch.linalg.solve
     else:
         from fast_bss_eval.numpy.cgd import toeplitz_conjugate_gradient
         from fast_bss_eval.numpy.helpers import _normalize
         from fast_bss_eval.numpy.linalg import toeplitz
         from fast_bss_eval.numpy.metrics import compute_stats
+        import numpy
+        solve = numpy.linalg.solve
 else:
     toeplitz = None
     toeplitz_conjugate_gradient = None
@@ -122,6 +125,10 @@ def sdr(
     if not preds.dtype.is_floating_point:
         preds = preds.float()  # for torch.norm
 
+    # half precision support
+    if preds.dtype == torch.float16:
+        preds = preds.to(torch.float32)
+
     if preds.dtype != target.dtype:  # for torch.linalg.solve
         target = target.to(preds.dtype)
 
@@ -129,8 +136,9 @@ def sdr(
         preds = preds - preds.mean(dim=-1, keepdim=True)
         target = target - target.mean(dim=-1, keepdim=True)
 
-    # use numpy if torch<1.8
+    # normalize along time-axis
     if not _TORCH_GREATER_EQUAL_1_8:
+        # use numpy if torch<1.8
         warnings.warn(
             "pytorch is under 1.8, thus SDR numpy version is used."
             "For better performance and differentiability, you should change to pytorch 1.8+"
@@ -138,13 +146,11 @@ def sdr(
         preds = preds.detach().cpu().numpy()
         target = target.detach().cpu().numpy()
 
-    # normalize along time-axis
-    if _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
-        preds = _normalize(preds, dim=-1)
-        target = _normalize(target, dim=-1)
-    else:
         preds = _normalize(preds, axis=-1)
         target = _normalize(target, axis=-1)
+    else:
+        preds = _normalize(preds, dim=-1)
+        target = _normalize(target, dim=-1)
 
     # solve for the optimal filter
     # compute auto-correlation and cross-correlation
@@ -161,7 +167,7 @@ def sdr(
     else:
         # regular matrix solver
         R_mat = toeplitz(acf)
-        sol = torch.linalg.solve(R_mat, xcorr)
+        sol = solve(R_mat, xcorr)
 
     # to tensor if torch<1.8
     if not _TORCH_GREATER_EQUAL_1_8:

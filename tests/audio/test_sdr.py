@@ -112,7 +112,15 @@ class TestSDR(MetricTester):
         not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
     )
     def test_sdr_half_cpu(self, preds, target, sk_metric):
-        pytest.xfail("SDR metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=SDR,
+            metric_functional=partial(
+                sdr,
+            ),
+            metric_args=dict(),
+        )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sdr_half_gpu(self, preds, target, sk_metric):
