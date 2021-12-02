@@ -124,28 +124,30 @@ class _TercomTokenizer:
     @staticmethod
     def _normalize_general_and_western(sentence: str) -> str:
         """Apply a language-independent (general) tokenization."""
-        # strip end-of-line hyphenation and join lines
-        sentence = re.sub(r"\n-", "", sentence)
-        # join lines
-        sentence = re.sub(r"\n", " ", sentence)
-        # handle XML escaped symbols
-        sentence = re.sub(r"&quot;", '"', sentence)
-        sentence = re.sub(r"&amp;", "&", sentence)
-        sentence = re.sub(r"&lt;", "<", sentence)
-        sentence = re.sub(r"&gt;", ">", sentence)
-        # language-dependent (Western) part
         sentence = f" {sentence} "
-        # tokenize punctuation
-        sentence = re.sub(r"([{-~[-` -&(-+:-@/])", r" \1 ", sentence)
-        # handle possesives
-        sentence = re.sub(r"'s ", r" 's ", sentence)
-        sentence = re.sub(r"'s$", r" 's", sentence)
-        # tokenize period and comma unless preceded by a digit
-        sentence = re.sub(r"([^0-9])([\.,])", r"\1 \2 ", sentence)
-        # tokenize period and comma unless followed by a digit
-        sentence = re.sub(r"([\.,])([^0-9])", r" \1 \2", sentence)
-        # tokenize dash when preceded by a digit
-        sentence = re.sub(r"([0-9])(-)", r"\1 \2 ", sentence)
+        rules = [
+            (r"\n-", ""),
+            # join lines
+            (r"\n", " "),
+            # handle XML escaped symbols
+            (r"&quot;", '"'),
+            (r"&amp;", "&"),
+            (r"&lt;", "<"),
+            (r"&gt;", ">"),
+            # tokenize punctuation
+            (r"([{-~[-` -&(-+:-@/])", r" \1 "),
+            # handle possesives
+            (r"'s ", r" 's "),
+            (r"'s$", r" 's"),
+            # tokenize period and comma unless preceded by a digit
+            (r"([^0-9])([\.,])", r"\1 \2 "),
+            # tokenize period and comma unless followed by a digit
+            (r"([\.,])([^0-9])", r" \1 \2"),
+            # tokenize dash when preceded by a digit
+            (r"([0-9])(-)", r"\1 \2 "),
+        ]
+        for pattern, replacement in rules:
+            sentence = re.sub(pattern, replacement, sentence)
 
         return sentence
 
@@ -232,18 +234,16 @@ def _find_shifted_pairs(reference_words: List[str], hypothesis_words: List[str])
             if abs(reference_start - hypothesis_start) > _MAX_SHIFT_DIST:
                 continue
 
-            length = 0
-            while (hypothesis_words[hypothesis_start + length] == reference_words[reference_start + length]) and (
-                length < _MAX_SHIFT_SIZE
-            ):
-                length += 1
-
+            for length in range(1, _MAX_SHIFT_SIZE):
+                # Check if hypothesis and reference are equal so far
+                if hypothesis_words[hypothesis_start + length - 1] != reference_words[reference_start + length - 1]:
+                    break
                 yield reference_start, hypothesis_start, length
 
-                # If one sequence is consumed, stop processing
-                if (len(hypothesis_words) == hypothesis_start + length) or (
-                    len(reference_words) == reference_start + length
-                ):
+                # Stop processing once a sequence is consumed.
+                _hyp = len(hypothesis_words) == hypothesis_start + length
+                _ref = len(reference_words) == reference_start + length
+                if _hyp or _ref:
                     break
 
 
@@ -305,21 +305,25 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
     Return:
         A list of shifted words.
     """
-    # Shift before previous position
-    if target < start:
-        shifted_words = words[:target] + words[start : start + length] + words[target:start] + words[start + length :]
-        return shifted_words
-    # Shift after previous position
-    elif target > start + length:
-        shifted_words = words[:start] + words[start + length : target] + words[start : start + length] + words[target:]
-        return shifted_words
-    # Shift within the shifted string
-    else:
+
+    def _shift_word_before_previous_position(words, start, target, length):
+        return words[:target] + words[start : start + length] + words[target:start] + words[start + length :]
+
+    def _shift_word_after_previous_position(words, start, target, length):
+        return words[:start] + words[start + length : target] + words[start : start + length] + words[target:]
+
+    def _shift_word_within_shifted_string(words, start, target, length):
         shifted_words = words[:start]
         shifted_words += words[start + length : length + target]
         shifted_words += words[start : start + length]
         shifted_words += words[length + target :]
         return shifted_words
+
+    if target < start:
+        return _shift_word_before_previous_position(words, start, target, length)
+    if target > start + length:
+        return _shift_word_after_previous_position(words, start, target, length)
+    return _shift_word_within_shifted_string(words, start, target, length)
 
 
 def _shift_words(
@@ -401,9 +405,8 @@ def _shift_words(
 
     if not best:
         return 0, hypothesis_words, checked_candidates
-    else:
-        best_score, _, _, _, shifted_words = best
-        return best_score, shifted_words, checked_candidates
+    best_score, _, _, _, shifted_words = best
+    return best_score, shifted_words, checked_candidates
 
 
 def _translation_edit_rate(reference_words: List[str], hypothesis_words: List[str]) -> Tensor:
@@ -419,23 +422,20 @@ def _translation_edit_rate(reference_words: List[str], hypothesis_words: List[st
         A number of required edits to match hypothesis and reference sentences.
     """
     if len(reference_words) == 0:
-        return tensor(len(reference_words))
+        return tensor(0.0)
 
     cached_edit_distance = _LevenshteinEditDistance(reference_words)
     num_shifts = 0
-    input_words = hypothesis_words
     checked_candidates = 0
+    input_words = hypothesis_words
 
     while True:
         # do shifts until they stop reducing the edit distance
         delta, new_input_words, checked_candidates = _shift_words(
             reference_words, input_words, cached_edit_distance, checked_candidates
         )
-        if checked_candidates >= _MAX_SHIFT_CANDIDATES:
+        if checked_candidates >= _MAX_SHIFT_CANDIDATES or delta <= 0:
             break
-        if delta <= 0:
-            break
-
         num_shifts += 1
         input_words = new_input_words
 

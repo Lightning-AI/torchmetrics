@@ -58,24 +58,24 @@ def sacrebleu_ter_fn(
 @pytest.mark.parametrize(
     ["normalize", "no_punctuation", "asian_support", "lowercase"],
     [
-        pytest.param(False, False, False, False),
-        pytest.param(True, False, False, False),
-        pytest.param(False, True, False, False),
-        pytest.param(False, False, True, False),
-        pytest.param(False, False, False, True),
-        pytest.param(True, True, True, True),
+        (False, False, False, False),
+        (True, False, False, False),
+        (False, True, False, False),
+        (False, False, True, False),
+        (False, False, False, True),
+        (True, True, True, True),
     ],
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        pytest.param(BATCHES["preds"], BATCHES["targets"]),
+        (BATCHES["preds"], BATCHES["targets"]),
     ],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestTER(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @pytest.mark.parametrize("ddp", [False])
+    @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_chrf_score_class(
         self, ddp, dist_sync_on_step, preds, targets, normalize, no_punctuation, asian_support, lowercase
     ):

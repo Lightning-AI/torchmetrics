@@ -58,6 +58,7 @@ class _EDIT_OPERATIONS_COST(IntEnum):
     OP_DELETE = 1
     OP_SUBSTITUTE = 1
     OP_NOTHING = 0
+    OP_UNDEFINED = _INT_INFINITY
 
 
 class _LevenshteinEditDistance:
@@ -79,10 +80,8 @@ class _LevenshteinEditDistance:
         self.reference_tokens = reference_tokens
         self.reference_len = len(reference_tokens)
 
-        self.initial_row = self._get_initial_row(self.reference_len)
         self.cache: Dict[str, Tuple[int, str]] = {}
         self.cache_size = 0
-        self.empty_row = self._get_empty_row(self.reference_len)
 
     def __call__(self, prediction_tokens: List[str]) -> Tuple[int, Tuple[_EDIT_OPERATIONS, ...]]:
         """Calculate edit distance between self._words_ref and the hypothesis. Uses cache to skip some of the
@@ -96,16 +95,13 @@ class _LevenshteinEditDistance:
             A tuple of a calculated edit distance and a trace of executed operations.
         """
 
-        # skip initial words in the hypothesis for which we already know the
-        # edit distance
+        # Use cached edit distance for already computed words
         start_position, cached_edit_distance = self._find_cache(prediction_tokens)
-
-        # calculate the rest of the edit distance matrix
+        # Calculate the rest of the edit distance matrix
         edit_distance_int, edit_distance, trace = self._levenshtein_edit_distance(
             prediction_tokens, start_position, cached_edit_distance
         )
-
-        # update our cache with the newly calculated rows
+        # Update our cache with the newly calculated rows
         self._add_cache(prediction_tokens, edit_distance)
 
         return edit_distance_int, trace
@@ -134,26 +130,18 @@ class _LevenshteinEditDistance:
             list(self._get_empty_row(self.reference_len)) for _ in range(prediction_len - prediction_start)
         ]
         edit_distance: List[List[Tuple[int, _EDIT_OPERATIONS]]] = cache + empty_rows
+        length_ratio = self.reference_len / prediction_len if prediction_tokens else 1.0
 
-        assert len(edit_distance) == len(prediction_tokens) + 1
-
-        length_ratio = self.reference_len / prediction_len if prediction_tokens else 1
-
-        # in some crazy sentences, the difference in length is so large that
-        # we may end up with zero overlap with previous row
-        if _BEAM_WIDTH < length_ratio / 2:
-            beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH)
-        else:
-            beam_width = _BEAM_WIDTH
+        # Ensure to not end up with zero overlaip with previous role
+        beam_width = math.ceil(length_ratio / 2 + _BEAM_WIDTH) if _BEAM_WIDTH < length_ratio / 2 else _BEAM_WIDTH
 
         # Calculate the Levenshtein distance
         for i in range(prediction_start + 1, prediction_len + 1):
             pseudo_diag = math.floor(i * length_ratio)
             min_j = max(0, pseudo_diag - beam_width)
-            max_j = min(self.reference_len + 1, pseudo_diag + beam_width)
-
-            if i == prediction_len:
-                max_j = self.reference_len + 1
+            max_j = (
+                self.reference_len + 1 if i == prediction_len else min(self.reference_len + 1, pseudo_diag + beam_width)
+            )
 
             for j in range(min_j, max_j):
                 if j == 0:
@@ -298,7 +286,7 @@ class _LevenshteinEditDistance:
         Return:
             A list of tuples containing infinite edit operation costs and yet undefined edit operations.
         """
-        empty_row = [(_INT_INFINITY, _EDIT_OPERATIONS.OP_UNDEFINED)] * (length + 1)
+        empty_row = [(_EDIT_OPERATIONS_COST.OP_UNDEFINED, _EDIT_OPERATIONS.OP_UNDEFINED)] * (length + 1)
         return empty_row
 
     @staticmethod
