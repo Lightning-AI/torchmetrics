@@ -114,7 +114,7 @@ def _stat_scores_update(
     )
 
     if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
-        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[0]} classes")
+        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[1]} classes")
 
     if ignore_index is not None and preds.shape[1] == 1:
         raise ValueError("You can not use `ignore_index` with binary data.")
