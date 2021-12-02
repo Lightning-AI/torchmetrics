@@ -85,6 +85,15 @@ class TER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if not isinstance(normalize, bool):
+            raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")
+        if not isinstance(no_punctuation, bool):
+            raise ValueError(f"Expected argument `no_punctuation` to be of type boolean but got {no_punctuation}.")
+        if not isinstance(lowercase, bool):
+            raise ValueError(f"Expected argument `lowercase` to be of type boolean but got {lowercase}.")
+        if not isinstance(asian_support, bool):
+            raise ValueError(f"Expected argument `asian_support` to be of type boolean but got {asian_support}.")
+
         self.tokenizer = _TercomTokenizer(normalize, no_punctuation, lowercase, asian_support)
         self.return_sentence_level_score = return_sentence_level_score
 

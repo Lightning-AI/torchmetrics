@@ -601,6 +601,15 @@ def ter(
     [1] A Study of Translation Edit Rate with Targeted Human Annotation by Mathew Snover, Bonnie Dorr, Richard Schwartz,
     Linnea Micciulla and John Makhoul `TER`_
     """
+    if not isinstance(normalize, bool):
+        raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")
+    if not isinstance(no_punctuation, bool):
+        raise ValueError(f"Expected argument `no_punctuation` to be of type boolean but got {no_punctuation}.")
+    if not isinstance(lowercase, bool):
+        raise ValueError(f"Expected argument `lowercase` to be of type boolean but got {lowercase}.")
+    if not isinstance(asian_support, bool):
+        raise ValueError(f"Expected argument `asian_support` to be of type boolean but got {asian_support}.")
+
     tokenizer: _TercomTokenizer = _TercomTokenizer(normalize, no_punctuation, lowercase, asian_support)
 
     total_num_edits = tensor(0.0)
