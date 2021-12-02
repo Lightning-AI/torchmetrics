@@ -139,8 +139,12 @@ def sdr(
         target = target.detach().cpu().numpy()
 
     # normalize along time-axis
-    preds = _normalize(preds, dim=-1)
-    target = _normalize(target, dim=-1)
+    if _FAST_BSS_EVAL_AVAILABLE and _TORCH_GREATER_EQUAL_1_8:
+        preds = _normalize(preds, dim=-1)
+        target = _normalize(target, dim=-1)
+    else:
+        preds = _normalize(preds, axis=-1)
+        target = _normalize(target, axis=-1)
 
     # solve for the optimal filter
     # compute auto-correlation and cross-correlation
