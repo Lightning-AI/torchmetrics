@@ -42,6 +42,7 @@ else:
 
 from torch import Tensor
 
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -82,7 +83,7 @@ def sdr(
             If ``fast-bss-eval`` package is not installed
 
     Returns:
-        sdr value of shape ``[...]`` if compute_permutation is False, else ``[..., spk]``
+        sdr value of shape ``[...]``
 
     Example:
         >>> from torchmetrics.functional.audio import sdr
@@ -106,7 +107,8 @@ def sdr(
                 [0, 1]])
 
     .. note::
-       1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` non-differentiable
+       1. when pytorch<1.8.0, numpy will be used to calculate this metric, which causes ``sdr`` to be
+            non-differentiable and slower to calculate
 
        2. using this metrics requires you to have ``fast-bss-eval`` install. Either install as ``pip install
           torchmetrics[audio]`` or ``pip install fast-bss-eval``
@@ -147,9 +149,9 @@ def sdr(
     # normalize along time-axis
     if not _TORCH_GREATER_EQUAL_1_8:
         # use numpy if torch<1.8
-        warnings.warn(
-            "pytorch is under 1.8, thus SDR numpy version is used."
-            "For better performance and differentiability, you should change to pytorch 1.8+"
+        rank_zero_warn(
+            "Pytorch is under 1.8, thus SDR numpy version is used."
+            "For better performance and differentiability, you should change to Pytorch v1.8 or above."
         )
         device = preds.device
         preds = preds.detach().cpu().numpy()
