@@ -143,6 +143,7 @@ def sdr(
             "pytorch is under 1.8, thus SDR numpy version is used."
             "For better performance and differentiability, you should change to pytorch 1.8+"
         )
+        device = preds.device
         preds = preds.detach().cpu().numpy()
         target = target.detach().cpu().numpy()
 
@@ -171,7 +172,8 @@ def sdr(
 
     # to tensor if torch<1.8
     if not _TORCH_GREATER_EQUAL_1_8:
-        sol = torch.tensor(sol, device=preds.device)
+        sol = torch.tensor(sol, device=device)
+        xcorr = torch.tensor(xcorr, device=device)
 
     # compute the coherence
     coh = torch.einsum("...l,...l->...", xcorr, sol)
