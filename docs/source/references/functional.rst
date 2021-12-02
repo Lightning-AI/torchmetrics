@@ -447,6 +447,12 @@ char_error_rate [func]
 .. autofunction:: torchmetrics.functional.char_error_rate
     :noindex:
 
+chrf_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.chrf_score
+    :noindex:
+
 match_error_rate [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
