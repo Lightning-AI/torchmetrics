@@ -45,9 +45,9 @@ class SDR(Metric):
         zero_mean:
             When set to True, the mean of all signals is subtracted prior to computation of the metrics
         load_diag:
-            If provided, this small value is added to the diagonal coefficients of \
-            the system metrics when solving for the filter coefficients. \
-            This can help stabilize the metric in the case where some of the reference \
+            If provided, this small value is added to the diagonal coefficients of
+            the system metrics when solving for the filter coefficients.
+            This can help stabilize the metric in the case where some of the reference
             signals may sometimes be zero
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False. default: True
