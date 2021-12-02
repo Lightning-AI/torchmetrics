@@ -34,11 +34,11 @@ class SDR(Metric):
 
     Args:
         use_cg_iter:
-            If provided, an iterative method is used to solve for the distortion \
-            filter coefficients instead of direct Gaussian elimination. \
-            This can speed up the computation of the metrics in case the filters \
-            are long. Using a value of 10 here has been shown to provide \
-            good accuracy in most cases and is sufficient when using this \
+            If provided, an iterative method is used to solve for the distortion
+            filter coefficients instead of direct Gaussian elimination.
+            This can speed up the computation of the metrics in case the filters
+            are long. Using a value of 10 here has been shown to provide
+            good accuracy in most cases and is sufficient when using this
             loss to train neural separation networks.
         filter_length:
             The length of the distortion filter allowed
