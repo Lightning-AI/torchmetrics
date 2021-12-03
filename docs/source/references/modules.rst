@@ -502,7 +502,7 @@ For the purposes of retrieval metrics, inputs (indexes, predictions and targets)
     :header: "indexes shape", "indexes dtype", "preds shape", "preds dtype", "target shape", "target dtype"
     :widths: 10, 10, 10, 10, 10, 10
 
-    "``long``", "(N,...)", "``float``", "(N,...)", "``long`` or ``bool``", "(N,...)"
+    "(N,...)", "``long``", "(N,...)", "``float``", "(N,...)", "``long`` or ``bool``"
 
 .. note::
     All dimensions are flattened at the beginning, so
@@ -620,6 +620,12 @@ CharErrorRate
 ~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.CharErrorRate
+    :noindex:
+
+CHRFScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.CHRFScore
     :noindex:
 
 MatchErrorRate

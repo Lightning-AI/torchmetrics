@@ -15,7 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `MatchErrorRate` ([#619](https://github.com/PyTorchLightning/metrics/pull/619))
   - `WordInfoLost` and `WordInfoPreserved` ([#630](https://github.com/PyTorchLightning/metrics/pull/630))
   - `SQuAD` ([#623](https://github.com/PyTorchLightning/metrics/pull/623))
+  - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
 
+- Add a default VS Code devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
 
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
 
@@ -33,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
+- Removed argument `concatenate_texts` from `wer` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
+- Removed arguments `newline_sep` and `decimal_places` from `rouge` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
 
 ### Fixed
 
@@ -41,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix edge case of AUROC with `average=weighted` on GPU ([#606](https://github.com/PyTorchLightning/metrics/pull/606))
 
+
+- Fixed `forward` in compositional metrics ([#645](https://github.com/PyTorchLightning/metrics/pull/645))
 
 
 ## [0.6.0] - 2021-10-28
