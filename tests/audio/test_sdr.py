@@ -116,9 +116,7 @@ class TestSDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=SDR,
-            metric_functional=partial(
-                sdr,
-            ),
+            metric_functional=sdr,
             metric_args=dict(),
         )
 
@@ -128,9 +126,7 @@ class TestSDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=SDR,
-            metric_functional=partial(
-                sdr,
-            ),
+            metric_functional=sdr,
             metric_args=dict(),
         )
 
