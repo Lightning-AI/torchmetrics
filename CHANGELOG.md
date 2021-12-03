@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add a default VS Code devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
 
+- Added Signal to Distortion Ratio (`SDR`) to `audio` package ([#565](https://github.com/PyTorchLightning/metrics/pull/565))
+
+
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
 
 

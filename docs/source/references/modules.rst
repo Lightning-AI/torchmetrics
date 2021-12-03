@@ -85,6 +85,12 @@ PIT
 .. autoclass:: torchmetrics.PIT
     :noindex:
 
+SDR
+~~~
+
+.. autoclass:: torchmetrics.SDR
+    :noindex:
+
 SI_SDR
 ~~~~~~
 
