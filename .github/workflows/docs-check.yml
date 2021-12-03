@@ -76,7 +76,7 @@ jobs:
           # First run the same pipeline as Read-The-Docs
           cd docs
           make clean
-          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going"
+          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going" -b linkcheck
 
       - name: Upload built docs
         uses: actions/upload-artifact@v2
