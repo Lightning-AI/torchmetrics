@@ -22,7 +22,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
+from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update, _tokenize_fn
 
 
 class BLEUScore(Metric):
@@ -108,6 +108,7 @@ class BLEUScore(Metric):
             self.trans_len,
             self.ref_len,
             self.n_gram,
+            _tokenize_fn,
         )
 
     def compute(self) -> Tensor:

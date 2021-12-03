@@ -39,6 +39,7 @@
 
 
 import re
+from functools import partial
 from typing import Sequence
 
 import torch
@@ -335,21 +336,21 @@ def sacre_bleu_score(
             "torchmetrics[text]`."
         )
 
-    reference_corpus_: Sequence[Sequence[str]] = [
-        [" ".join(_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase)) for line in reference]
-        for reference in reference_corpus
-    ]
-    translate_corpus_: Sequence[str] = [
-        " ".join(_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase)) for line in translate_corpus
-    ]
-
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
     trans_len = tensor(0, dtype=torch.float)
     ref_len = tensor(0, dtype=torch.float)
 
+    tokenizer = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
     trans_len, ref_len = _bleu_score_update(
-        reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram
+        reference_corpus,
+        translate_corpus,
+        numerator,
+        denominator,
+        trans_len,
+        ref_len,
+        n_gram,
+        tokenizer,
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)
