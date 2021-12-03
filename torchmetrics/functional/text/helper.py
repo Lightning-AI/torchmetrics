@@ -286,7 +286,7 @@ class _LevenshteinEditDistance:
         Return:
             A list of tuples containing infinite edit operation costs and yet undefined edit operations.
         """
-        empty_row = [(_EDIT_OPERATIONS_COST.OP_UNDEFINED, _EDIT_OPERATIONS.OP_UNDEFINED)] * (length + 1)
+        empty_row = [(int(_EDIT_OPERATIONS_COST.OP_UNDEFINED), _EDIT_OPERATIONS.OP_UNDEFINED)] * (length + 1)
         return empty_row
 
     @staticmethod

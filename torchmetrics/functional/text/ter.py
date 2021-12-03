@@ -306,13 +306,13 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
         A list of shifted words.
     """
 
-    def _shift_word_before_previous_position(words, start, target, length):
+    def _shift_word_before_previous_position(words: List[str], start: int, target: int, length: int) -> List[str]:
         return words[:target] + words[start : start + length] + words[target:start] + words[start + length :]
 
-    def _shift_word_after_previous_position(words, start, target, length):
+    def _shift_word_after_previous_position(words: List[str], start: int, target: int, length: int) -> List[str]:
         return words[:start] + words[start + length : target] + words[start : start + length] + words[target:]
 
-    def _shift_word_within_shifted_string(words, start, target, length):
+    def _shift_word_within_shifted_string(words: List[str], start: int, target: int, length: int) -> List[str]:
         shifted_words = words[:start]
         shifted_words += words[start + length : length + target]
         shifted_words += words[start : start + length]
