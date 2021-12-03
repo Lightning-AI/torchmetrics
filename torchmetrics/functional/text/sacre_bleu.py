@@ -341,7 +341,7 @@ def sacre_bleu_score(
     trans_len = tensor(0, dtype=torch.float)
     ref_len = tensor(0, dtype=torch.float)
 
-    tokenizer = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
+    tokenize_fn = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
     trans_len, ref_len = _bleu_score_update(
         reference_corpus,
         translate_corpus,
@@ -350,7 +350,7 @@ def sacre_bleu_score(
         trans_len,
         ref_len,
         n_gram,
-        tokenizer,
+        tokenize_fn,
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)

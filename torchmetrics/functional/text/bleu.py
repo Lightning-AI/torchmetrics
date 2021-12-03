@@ -76,7 +76,7 @@ def _bleu_score_update(
         trans_len: count of words in a candidate translation
         ref_len: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
-        tokenizer: A function that turns corpus into individual words
+        tokenizer: A function that turns sentence into list of words
     """
     reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
         [tokenizer(line) if line else [] for line in reference] for reference in reference_corpus
