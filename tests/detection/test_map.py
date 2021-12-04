@@ -277,31 +277,31 @@ def test_error_on_wrong_input():
             [dict(boxes=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type Tensor"):
         metric.update(
             [dict(boxes=[], scores=torch.Tensor(), labels=torch.IntTensor())],
             [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=[], labels=torch.IntTensor())],
             [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=[])],
             [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=torch.IntTensor())],
             [dict(boxes=[], labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all labels in `target` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all labels in `target` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=torch.IntTensor())],
             [dict(boxes=torch.Tensor(), labels=[])],
