@@ -104,7 +104,7 @@ class TER(Metric):
 
     def update(  # type: ignore
         self,
-        reference_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
+        reference_corpus: Sequence[Union[str, Sequence[str]]],
         hypothesis_corpus: Union[str, Sequence[str]],
     ) -> None:
         """Update TER statistics.

@@ -496,7 +496,7 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, ref_length: Tensor) ->
 
 
 def _ter_update(
-    reference_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
     tokenizer: _TercomTokenizer,
     total_num_edits: Tensor,
@@ -531,11 +531,11 @@ def _ter_update(
     reference_corpus, hypothesis_corpus = _validate_inputs(reference_corpus, hypothesis_corpus)
 
     for (references, hypothesis) in zip(reference_corpus, hypothesis_corpus):
-        references_words: List[List[str]] = [
+        references_words_: List[List[str]] = [
             [word for word in _preprocess_sentence(ref, tokenizer).split()] for ref in references
         ]
-        hypothesis_words: List[str] = [word for word in _preprocess_sentence(hypothesis, tokenizer).split()]
-        num_edits, ref_length = _compute_sentence_statistics(references_words, hypothesis_words)
+        hypothesis_words_: List[str] = [word for word in _preprocess_sentence(hypothesis, tokenizer).split()]
+        num_edits, ref_length = _compute_sentence_statistics(references_words_, hypothesis_words_)
         total_num_edits += num_edits
         total_ref_length += ref_length
         if sentence_ter is not None:
@@ -558,7 +558,7 @@ def _ter_compute(total_num_edits: Tensor, total_ref_length: Tensor) -> Tensor:
 
 
 def ter(
-    reference_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
     normalize: bool = False,
     no_punctuation: bool = False,
@@ -619,8 +619,8 @@ def ter(
     total_num_edits, total_ref_length, sentence_ter = _ter_update(
         reference_corpus, hypothesis_corpus, tokenizer, total_num_edits, total_ref_length, sentence_ter
     )
-    ter = _ter_compute(total_num_edits, total_ref_length)
+    ter_score = _ter_compute(total_num_edits, total_ref_length)
 
     if sentence_ter:
-        return ter, sentence_ter
-    return ter
+        return ter_score, sentence_ter
+    return ter_score
