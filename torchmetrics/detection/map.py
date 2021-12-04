@@ -391,7 +391,7 @@ class MAP(Metric):
         dt_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
         gt_ignore = ignore_area_sorted
         dt_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
-        if ious:
+        if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
                     # information about best match so far (m=-1 -> unmatched)
