@@ -394,29 +394,11 @@ class MAP(Metric):
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
-                    # information about best match so far (m=-1 -> unmatched)
-                    iou = min([t, 1 - 1e-10])
-                    m = -1
-                    for idx_gt in range(nb_gt):
-                        # if this gt already matched, and not a crowd, continue
-                        if gt_matches[idx_iou, idx_gt]:
-                            continue
-                        # if dt matched to reg gt, and on ignore gt, stop
-                        if m > -1 and not gt_ignore[m] and gt_ignore[idx_gt]:
-                            break
-                        # continue to next gt unless better match made
-                        if ious[idx_det, idx_gt] < iou:
-                            continue
-                        # if match successful and best so far, store appropriately
-                        iou = ious[idx_det, idx_gt]
-                        m = idx_gt
-                    # if match made store id of match for both dt and gt
-                    if m == -1:
-                        continue
-
-                    dt_ignore[idx_iou, idx_det] = gt_ignore[m]
-                    dt_matches[idx_iou, idx_det] = True
-                    gt_matches[idx_iou, m] = True
+                    m = MAP._find_best_gt_match(t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det)
+                    if m is not -1:
+                        dt_ignore[idx_iou, idx_det] = gt_ignore[m]
+                        dt_matches[idx_iou, idx_det] = True
+                        gt_matches[idx_iou, m] = True
         # set unmatched detections outside of area range to ignore
         dt_areas = box_area(det)
         dt_ignore_area = (dt_areas < area_range[0]) | (dt_areas > area_range[1])
@@ -431,6 +413,45 @@ class MAP(Metric):
             "gtIgnore": gt_ignore,
             "dtIgnore": dt_ignore,
         }
+
+    def _find_best_gt_match(
+        t: int, nb_gt: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
+    ) -> int:
+        """Return id of best ground truth match with current detection.
+
+        Args:
+            t:
+                Current threshold value.
+            nb_gt:
+                Number of ground truth elements.
+            gt_matches:
+                Tensor showing if a ground truth matches for threshold `t` exists.
+            idx_iou:
+                Id of threshold `t`.
+            gt_ignore:
+                Tensor showing if ground truth should be ignored.
+            ious:
+                IoUs for all combinations of detection and ground truth.
+            idx_det:
+                Id of current detection.
+        """
+        # information about best match so far (m=-1 -> unmatched)
+        iou = min([t, 1 - 1e-10])
+        m = -1
+        for idx_gt in range(nb_gt):
+            # if this gt already matched, and not a crowd, continue
+            if gt_matches[idx_iou, idx_gt]:
+                continue
+            # if dt matched to reg gt, and on ignore gt, stop
+            if m > -1 and not gt_ignore[m] and gt_ignore[idx_gt]:
+                break
+            # continue to next gt unless better match made
+            if ious[idx_det, idx_gt] < iou:
+                continue
+            # if match successful and best so far, store appropriately
+            iou = ious[idx_det, idx_gt]
+            m = idx_gt
+        return m
 
     def _summarize(
         self,
