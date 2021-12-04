@@ -24,8 +24,6 @@ if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
-    box_iou = None
-    box_area = None
 
 log = logging.getLogger(__name__)
 
@@ -37,8 +35,7 @@ class BaseMetricResults(dict):
         # Using this you get the correct error message, an AttributeError instead of a KeyError
         if key in self:
             return self[key]
-        else:
-            raise AttributeError(f"No such attribute: {key}")
+        raise AttributeError(f"No such attribute: {key}")
 
     def __setattr__(self, key: str, value: Tensor) -> None:
         self[key] = value
@@ -46,8 +43,7 @@ class BaseMetricResults(dict):
     def __delattr__(self, key: str) -> None:
         if key in self:
             del self[key]
-        else:
-            raise AttributeError(f"No such attribute: {key}")
+        raise AttributeError(f"No such attribute: {key}")
 
 
 class MAPMetricResults(BaseMetricResults):
@@ -86,9 +82,9 @@ class COCOMetricResults(BaseMetricResults):
 def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]]) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
     if not isinstance(preds, Sequence):
-        raise ValueError("Expected argument `preds` to be of type List")
+        raise ValueError("Expected argument `preds` to be of type Sequence")
     if not isinstance(targets, Sequence):
-        raise ValueError("Expected argument `target` to be of type List")
+        raise ValueError("Expected argument `target` to be of type Sequence")
     if len(preds) != len(targets):
         raise ValueError("Expected argument `preds` and `target` to have the same length")
 
@@ -120,7 +116,7 @@ def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[
     for i, item in enumerate(preds):
         if not (item["boxes"].size(0) == item["labels"].size(0) == item["scores"].size(0)):
             raise ValueError(
-                f"Input boxes, labels and scores of sample {i} in preds have a"
+                f"Input boxes, labels and scores of sample {i} in predictions have a"
                 f" different length (expected {item['boxes'].size(0)} labels and scores,"
                 f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
             )
@@ -219,8 +215,8 @@ class MAP(Metric):
         if box_format not in allowed_box_formats:
             raise ValueError(f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}")
         self.box_format = box_format
-        self.iou_thresholds = Tensor(iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1))
-        self.rec_thresholds = Tensor(rec_thresholds or torch.linspace(0.0, 1.00, int(round((1.00) / 0.01)) + 1))
+        self.iou_thresholds = Tensor(iou_thresholds or torch.linspace(0.5, 0.95, round((0.95 - 0.5) / 0.05) + 1))
+        self.rec_thresholds = Tensor(rec_thresholds or torch.linspace(0.0, 1.00, round(1.00 / 0.01) + 1))
         self.max_detection_thresholds = IntTensor(max_detection_thresholds or [1, 10, 100])
         self.max_detection_thresholds, _ = torch.sort(self.max_detection_thresholds)
         self.bbox_area_ranges = {
@@ -232,8 +228,8 @@ class MAP(Metric):
 
         if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
-        self.class_metrics = class_metrics
 
+        self.class_metrics = class_metrics
         self.add_state("detection_boxes", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
@@ -688,10 +684,8 @@ class MAP(Metric):
             mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list)
 
         metrics = COCOMetricResults()
-        for key in map.keys():
-            metrics[key] = map[key]
-        for key in mar.keys():
-            metrics[key] = mar[key]
+        metrics.update(map)
+        metrics.update(mar)
         metrics.map_per_class = map_per_class_values
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
         return metrics
