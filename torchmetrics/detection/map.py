@@ -363,11 +363,11 @@ class MAP(Metric):
         gt_lbl_mask = self.groundtruth_labels[id] == class_id
         dt_lbl_mask = self.detection_labels[id] == class_id
         if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
-            return None
+            return
         gt = gt[gt_lbl_mask]
         det = det[dt_lbl_mask]
         if len(gt) == 0 and len(det) == 0:
-            return None
+            return
 
         areas = box_area(gt)
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
@@ -483,16 +483,15 @@ class MAP(Metric):
                 List of label class Ids.
         """
         img_ids = torch.arange(len(self.groundtruth_boxes), dtype=torch.int).tolist()
-
-        maxDetections = self.max_detection_thresholds[-1]
+        max_detections = self.max_detection_thresholds[-1]
         area_ranges = self.bbox_area_ranges.values()
 
         ious = {
-            (id, class_id): self._compute_iou(id, class_id, maxDetections) for id in img_ids for class_id in class_ids
+            (id, class_id): self._compute_iou(id, class_id, max_detections) for id in img_ids for class_id in class_ids
         }
 
         eval_imgs = [
-            self._evaluate_image(id, class_id, area, maxDetections, ious)
+            self._evaluate_image(id, class_id, area, max_detections, ious)
             for class_id in class_ids
             for area in area_ranges
             for id in img_ids
@@ -510,58 +509,21 @@ class MAP(Metric):
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls in range(nb_classes):
-            idx_cls_pointer = idx_cls * nb_bbox_areas * nb_imgs
             for idx_bbox_area in range(nb_bbox_areas):
-                idx_bbox_area_pointer = idx_bbox_area * nb_imgs
                 for idx_max_det_thrs, max_det in enumerate(self.max_detection_thresholds):
-                    # Load all image evals for current class_id and area_range
-                    img_eval_cls_bbox = [eval_imgs[idx_cls_pointer + idx_bbox_area_pointer + i] for i in range(nb_imgs)]
-                    img_eval_cls_bbox = [e for e in img_eval_cls_bbox if e is not None]
-                    if not img_eval_cls_bbox:
-                        continue
-                    dt_scores = torch.cat([e["dtScores"][:max_det] for e in img_eval_cls_bbox])
-
-                    # different sorting method generates slightly different results.
-                    # mergesort is used to be consistent as Matlab implementation.
-                    inds = torch.argsort(dt_scores, descending=True)
-                    dt_scores_sorted = dt_scores[inds]
-
-                    dt_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
-                    dt_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
-                    gt_ignore = torch.cat([e["gtIgnore"] for e in img_eval_cls_bbox])
-                    npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
-                    if npig == 0:
-                        continue
-                    tps = torch.logical_and(dt_matches, torch.logical_not(dt_ignore))
-                    fps = torch.logical_and(torch.logical_not(dt_matches), torch.logical_not(dt_ignore))
-
-                    tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
-                    fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
-                    for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
-                        nd = len(tp)
-                        rc = tp / npig
-                        pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
-                        q = torch.zeros((nb_rec_thrs,))
-                        ss = torch.zeros((nb_rec_thrs,))
-
-                        recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
-
-                        # Remove zigzags for AUC
-                        for i in range(nd - 1, 0, -1):
-                            if pr[i] > pr[i - 1]:
-                                pr[i - 1] = pr[i]
-
-                        inds = torch.searchsorted(rc, self.rec_thresholds, right=False)
-                        # TODO: optimize
-                        try:
-                            for ri, pi in enumerate(inds):  # range(min(len(inds), len(pr))):
-                                # pi = inds[ri]
-                                q[ri] = pr[pi]
-                                ss[ri] = dt_scores_sorted[pi]
-                        except Exception:
-                            pass
-                        precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = q
-                        scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = ss
+                    recall, precision, scores = MAP.__calculate_recall_precision_scores(
+                        recall,
+                        precision,
+                        scores,
+                        idx_cls=idx_cls,
+                        idx_bbox_area=idx_bbox_area,
+                        idx_max_det_thrs=idx_max_det_thrs,
+                        eval_imgs=eval_imgs,
+                        rec_thresholds=self.rec_thresholds,
+                        max_det=max_det,
+                        nb_imgs=nb_imgs,
+                        nb_bbox_areas=nb_bbox_areas,
+                    )
 
         results = {
             "dimensions": [nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs],
@@ -587,6 +549,74 @@ class MAP(Metric):
         mar_metrics.mar_large = self._summarize(results, False, area_range="large", max_dets=last_max_det_thr)
 
         return results, map_metrics, mar_metrics
+
+    @staticmethod
+    def __calculate_recall_precision_scores(
+        recall: Tensor,
+        precision: Tensor,
+        scores: Tensor,
+        idx_cls: int,
+        idx_bbox_area: int,
+        idx_max_det_thrs: int,
+        eval_imgs: list,
+        rec_thresholds: Tensor,
+        max_det: int,
+        nb_imgs: int,
+        nb_bbox_areas: int,
+    ) -> Tuple[Tensor, Tensor, Tensor]:
+        nb_rec_thrs = len(rec_thresholds)
+        idx_cls_pointer = idx_cls * nb_bbox_areas * nb_imgs
+        idx_bbox_area_pointer = idx_bbox_area * nb_imgs
+        # Load all image evals for current class_id and area_range
+        img_eval_cls_bbox = [eval_imgs[idx_cls_pointer + idx_bbox_area_pointer + i] for i in range(nb_imgs)]
+        img_eval_cls_bbox = [e for e in img_eval_cls_bbox if e is not None]
+        if not img_eval_cls_bbox:
+            return recall, precision, scores
+        dt_scores = torch.cat([e["dtScores"][:max_det] for e in img_eval_cls_bbox])
+
+        # different sorting method generates slightly different results.
+        # mergesort is used to be consistent as Matlab implementation.
+        inds = torch.argsort(dt_scores, descending=True)
+        dt_scores_sorted = dt_scores[inds]
+
+        dt_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
+        dt_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
+        gt_ignore = torch.cat([e["gtIgnore"] for e in img_eval_cls_bbox])
+        npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
+        if npig == 0:
+            return recall, precision, scores
+        tps = torch.logical_and(dt_matches, torch.logical_not(dt_ignore))
+        fps = torch.logical_and(torch.logical_not(dt_matches), torch.logical_not(dt_ignore))
+
+        tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
+        fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
+        for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
+            nd = len(tp)
+            rc = tp / npig
+            pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
+            q = torch.zeros((nb_rec_thrs,))
+            ss = torch.zeros((nb_rec_thrs,))
+
+            recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
+
+            # Remove zigzags for AUC
+            for i in range(nd - 1, 0, -1):
+                if pr[i] > pr[i - 1]:
+                    pr[i - 1] = pr[i]
+
+            inds = torch.searchsorted(rc, rec_thresholds, right=False)
+            # TODO: optimize
+            try:
+                for ri, pi in enumerate(inds):  # range(min(len(inds), len(pr))):
+                    # pi = inds[ri]
+                    q[ri] = pr[pi]
+                    ss[ri] = dt_scores_sorted[pi]
+            except Exception:
+                pass
+            precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = q
+            scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = ss
+
+        return recall, precision, scores
 
     def compute(self) -> dict:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
