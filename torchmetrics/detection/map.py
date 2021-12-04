@@ -304,45 +304,45 @@ class MAP(Metric):
             self.groundtruth_labels.append(item["labels"])
 
     def _get_classes(self) -> List:
-        """Returns a list of unique classes found in groundtruth and detection data."""
+        """Returns a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         else:
             return []
 
     def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
-        """Computes the Intersection over Union (IoU) for groundtruth and detection bounding boxes for the given
+        """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
         Args:
             id:
                 Image Id, equivalent to the index of supplied samples
             class_id:
-                Class Id of the supplied groundtruth and detection labels
+                Class Id of the supplied ground truth and detection labels
             max_det:
                 Maximum number of evaluated detection bounding boxes
         """
         gt = self.groundtruth_boxes[id]
-        dt = self.detection_boxes[id]
+        det = self.detection_boxes[id]
         gt_lbl_mask = self.groundtruth_labels[id] == class_id
         dt_lbl_mask = self.detection_labels[id] == class_id
         if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
             return torch.tensor([])
         gt = gt[gt_lbl_mask]
-        dt = dt[dt_lbl_mask]
-        if len(gt) == 0 or len(dt) == 0:
+        det = det[dt_lbl_mask]
+        if len(gt) == 0 or len(det) == 0:
             return torch.tensor([])
 
         # Sort by scores and use only max detections
         scores = self.detection_scores[id]
         scores_filtered = scores[self.detection_labels[id] == class_id]
         inds = torch.argsort(scores_filtered, descending=True)
-        dt = dt[inds]
-        if len(dt) > max_det:
-            dt = dt[:max_det]
+        det = det[inds]
+        if len(det) > max_det:
+            det = det[:max_det]
 
         # generalized_box_iou
-        ious = box_iou(dt, gt)
+        ious = box_iou(det, gt)
         return ious
 
     def _evaluate_image(self, id: int, class_id: int, area_range: List[int], max_det: int, ious: Tensor) -> Dict:
@@ -361,14 +361,14 @@ class MAP(Metric):
                 IoU reults for image and class.
         """
         gt = self.groundtruth_boxes[id]
-        dt = self.detection_boxes[id]
+        det = self.detection_boxes[id]
         gt_lbl_mask = self.groundtruth_labels[id] == class_id
         dt_lbl_mask = self.detection_labels[id] == class_id
         if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
             return None
         gt = gt[gt_lbl_mask]
-        dt = dt[dt_lbl_mask]
-        if len(gt) == 0 and len(dt) == 0:
+        det = det[dt_lbl_mask]
+        if len(gt) == 0 and len(det) == 0:
             return None
 
         areas = box_area(gt)
@@ -380,50 +380,52 @@ class MAP(Metric):
         scores = self.detection_scores[id]
         scores_filtered = scores[dt_lbl_mask]
         scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
-        dt = dt[dtind]
-        if len(dt) > max_det:
-            dt = dt[:max_det]
+        det = det[dtind]
+        if len(det) > max_det:
+            det = det[:max_det]
         # load computed ious
         ious = ious[id, class_id][:, gtind] if len(ious[id, class_id]) > 0 else ious[id, class_id]
 
-        T = len(self.iou_thresholds)
-        G = len(gt)
-        D = len(dt)
-        gt_matches = torch.zeros((T, G), dtype=torch.bool)
-        dt_matches = torch.zeros((T, D), dtype=torch.bool)
+        nb_iou_thrs = len(self.iou_thresholds)
+        nb_gt = len(gt)
+        nb_det = len(det)
+        gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool)
+        dt_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
         gt_ignore = ignore_area_sorted
-        dt_ignore = torch.zeros((T, D), dtype=torch.bool)
-        if len(ious) > 0:
-            for tind, t in enumerate(self.iou_thresholds):
-                for d in range(D):
+        dt_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        if ious:
+            for idx_iou, t in enumerate(self.iou_thresholds):
+                for idx_det in range(nb_det):
                     # information about best match so far (m=-1 -> unmatched)
                     iou = min([t, 1 - 1e-10])
                     m = -1
-                    for g in range(G):
+                    for idx_gt in range(nb_gt):
                         # if this gt already matched, and not a crowd, continue
-                        if gt_matches[tind, g] > 0:
+                        if gt_matches[idx_iou, idx_gt] > 0:
                             continue
                         # if dt matched to reg gt, and on ignore gt, stop
-                        if m > -1 and not gt_ignore[m] and gt_ignore[g]:
+                        if m > -1 and not gt_ignore[m] and gt_ignore[idx_gt]:
                             break
                         # continue to next gt unless better match made
-                        if ious[d, g] < iou:
+                        if ious[idx_det, idx_gt] < iou:
                             continue
                         # if match successful and best so far, store appropriately
-                        iou = ious[d, g]
-                        m = g
+                        iou = ious[idx_det, idx_gt]
+                        m = idx_gt
                     # if match made store id of match for both dt and gt
                     if m == -1:
                         continue
 
-                    dt_ignore[tind, d] = gt_ignore[m]
-                    dt_matches[tind, d] = True
-                    gt_matches[tind, m] = True
+                    dt_ignore[idx_iou, idx_det] = gt_ignore[m]
+                    dt_matches[idx_iou, idx_det] = True
+                    gt_matches[idx_iou, m] = True
         # set unmatched detections outside of area range to ignore
-        dt_areas = box_area(dt)
+        dt_areas = box_area(det)
         dt_ignore_area = (dt_areas < area_range[0]) | (dt_areas > area_range[1])
-        a = dt_ignore_area.reshape((1, D))
-        dt_ignore = torch.logical_or(dt_ignore, torch.logical_and(dt_matches == 0, torch.repeat_interleave(a, T, 0)))
+        a = dt_ignore_area.reshape((1, nb_det))
+        dt_ignore = torch.logical_or(
+            dt_ignore, torch.logical_and(dt_matches == 0, torch.repeat_interleave(a, nb_iou_thrs, 0))
+        )
         return {
             "dtMatches": dt_matches,
             "gtMatches": gt_matches,
@@ -471,11 +473,8 @@ class MAP(Metric):
                 t = torch.where(iou_threshold == self.iou_thresholds)[0]
                 s = s[t]
             s = s[:, :, aind, mind]
-        if len(s[s > -1]) == 0:
-            mean_s = torch.Tensor([-1])
-        else:
-            mean_s = torch.mean(s[s > -1])
 
+        mean_s = torch.Tensor([-1]) if len(s[s > -1]) == 0 else torch.mean(s[s > -1])
         return mean_s
 
     def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
@@ -575,34 +574,19 @@ class MAP(Metric):
 
         map_metrics = MAPMetricResults()
         map_metrics.map = self._summarize(results, True)
-        map_metrics.map_50 = self._summarize(
-            results, True, iou_threshold=0.5, max_dets=self.max_detection_thresholds[-1]
-        )
-        map_metrics.map_75 = self._summarize(
-            results, True, iou_threshold=0.75, max_dets=self.max_detection_thresholds[-1]
-        )
-        map_metrics.map_small = self._summarize(
-            results, True, area_range="small", max_dets=self.max_detection_thresholds[-1]
-        )
-        map_metrics.map_medium = self._summarize(
-            results, True, area_range="medium", max_dets=self.max_detection_thresholds[-1]
-        )
-        map_metrics.map_large = self._summarize(
-            results, True, area_range="large", max_dets=self.max_detection_thresholds[-1]
-        )
+        last_max_det_thr = self.max_detection_thresholds[-1]
+        map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_thr)
+        map_metrics.map_75 = self._summarize(results, True, iou_threshold=0.75, max_dets=last_max_det_thr)
+        map_metrics.map_small = self._summarize(results, True, area_range="small", max_dets=last_max_det_thr)
+        map_metrics.map_medium = self._summarize(results, True, area_range="medium", max_dets=last_max_det_thr)
+        map_metrics.map_large = self._summarize(results, True, area_range="large", max_dets=last_max_det_thr)
 
         mar_metrics = MARMetricResults()
         for max_det in self.max_detection_thresholds:
             mar_metrics[f"mar_{max_det}"] = self._summarize(results, False, max_dets=max_det)
-        mar_metrics.mar_small = self._summarize(
-            results, False, area_range="small", max_dets=self.max_detection_thresholds[-1]
-        )
-        mar_metrics.mar_medium = self._summarize(
-            results, False, area_range="medium", max_dets=self.max_detection_thresholds[-1]
-        )
-        mar_metrics.mar_large = self._summarize(
-            results, False, area_range="large", max_dets=self.max_detection_thresholds[-1]
-        )
+        mar_metrics.mar_small = self._summarize(results, False, area_range="small", max_dets=last_max_det_thr)
+        mar_metrics.mar_medium = self._summarize(results, False, area_range="medium", max_dets=last_max_det_thr)
+        mar_metrics.mar_large = self._summarize(results, False, area_range="large", max_dets=last_max_det_thr)
 
         return results, map_metrics, mar_metrics
 
