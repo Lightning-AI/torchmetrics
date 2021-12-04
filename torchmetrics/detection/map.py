@@ -40,10 +40,10 @@ class BaseMetricResults(dict):
         else:
             raise AttributeError(f"No such attribute: {key}")
 
-    def __setattr__(self, key: str, value: Tensor):
+    def __setattr__(self, key: str, value: Tensor) -> None:
         self[key] = value
 
-    def __delattr__(self, key: str):
+    def __delattr__(self, key: str) -> None:
         if key in self:
             del self[key]
         else:
@@ -83,7 +83,7 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def _input_validator(preds: List[Dict[str, Tensor]], targets: List[Dict[str, Tensor]]) -> None:
+def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]]) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
     if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type List")
@@ -135,8 +135,8 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 class MAP(Metric):
     r"""
-    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)\
-    <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_\
+    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
+    <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_
     for object detection predictions.
     Optionally, the mAP and mAR values can be calculated per class.
 
@@ -144,7 +144,7 @@ class MAP(Metric):
     (xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right).
     See the :meth:`update` method for more information about the input format to this metric.
 
-    For an example on how to use this metric check the `torchmetrics examples\
+    For an example on how to use this metric check the `torchmetrics examples
     <https://github.com/PyTorchLightning/metrics/blob/master/tm_examples/detection_map.py>`_
 
     .. note::
@@ -170,7 +170,7 @@ class MAP(Metric):
             Thresholds on max detections per image. If set to `None` will use thresholds `[1, 10, 100]`.
             Else please provide a list of ints.
         class_metrics:
-            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact. default: False
+            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact.
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
@@ -241,10 +241,10 @@ class MAP(Metric):
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
-        """Add detections and groundtruth to the metric.
+        """Add detections and ground truth to the metric.
 
         Args:
-            preds: A list consisting of dictionaries each containing the key-values\
+            preds: A list consisting of dictionaries each containing the key-values
             (each dictionary corresponds to a single image):
             - ``boxes``: ``torch.FloatTensor`` of shape
                 [num_boxes, 4] containing `num_boxes` detection boxes of the format
@@ -255,14 +255,14 @@ class MAP(Metric):
             - ``labels``: ``torch.IntTensor`` of shape
                 [num_boxes] containing 0-indexed detection classes for the boxes.
 
-            target: A list consisting of dictionaries each containing the key-values\
+            target: A list consisting of dictionaries each containing the key-values
             (each dictionary corresponds to a single image):
             - ``boxes``: ``torch.FloatTensor`` of shape
-                [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
+                [num_boxes, 4] containing `num_boxes` ground truth boxes of the format
                 specified in the contructor. By default, this method expects
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
             - ``labels``: ``torch.IntTensor`` of shape
-                [num_boxes] containing 1-indexed groundtruth classes for the boxes.
+                [num_boxes] containing 1-indexed ground truth classes for the boxes.
 
         Raises:
             ValueError:
@@ -343,20 +343,22 @@ class MAP(Metric):
         ious = box_iou(det, gt)
         return ious
 
-    def _evaluate_image(self, id: int, class_id: int, area_range: List[int], max_det: int, ious: Tensor) -> Dict:
+    def _evaluate_image(
+        self, id: int, class_id: int, area_range: List[int], max_det: int, ious: dict
+    ) -> Optional[dict]:
         """Perform evaluation for single class and image.
 
         Args:
             id:
                 Image Id, equivalent to the index of supplied samples.
             class_id:
-                Class Id of the supplied groundtruth and detection labels.
+                Class Id of the supplied ground truth and detection labels.
             area_range:
                 List of lower and upper bounding box area threshold.
             max_det:
                 Maximum number of evaluated detection bounding boxes.
             ious:
-                IoU reults for image and class.
+                IoU results for image and class.
         """
         gt = self.groundtruth_boxes[id]
         det = self.detection_boxes[id]
@@ -414,20 +416,21 @@ class MAP(Metric):
             "dtIgnore": dt_ignore,
         }
 
+    @staticmethod
     def _find_best_gt_match(
-        t: int, nb_gt: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
+        thr: int, nb_gt: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
     ) -> int:
         """Return id of best ground truth match with current detection.
 
         Args:
-            t:
+            thr:
                 Current threshold value.
             nb_gt:
                 Number of ground truth elements.
             gt_matches:
-                Tensor showing if a ground truth matches for threshold `t` exists.
+                Tensor showing if a ground truth matches for threshold ``t`` exists.
             idx_iou:
-                Id of threshold `t`.
+                Id of threshold ``t``.
             gt_ignore:
                 Tensor showing if ground truth should be ignored.
             ious:
@@ -436,22 +439,22 @@ class MAP(Metric):
                 Id of current detection.
         """
         # information about best match so far (m=-1 -> unmatched)
-        iou = min([t, 1 - 1e-10])
-        m = -1
+        iou = min([thr, 1 - 1e-10])
+        match_id = -1
         for idx_gt in range(nb_gt):
             # if this gt already matched, and not a crowd, continue
             if gt_matches[idx_iou, idx_gt]:
                 continue
             # if dt matched to reg gt, and on ignore gt, stop
-            if m > -1 and not gt_ignore[m] and gt_ignore[idx_gt]:
+            if match_id > -1 and not gt_ignore[match_id] and gt_ignore[idx_gt]:
                 break
             # continue to next gt unless better match made
             if ious[idx_det, idx_gt] < iou:
                 continue
             # if match successful and best so far, store appropriately
             iou = ious[idx_det, idx_gt]
-            m = idx_gt
-        return m
+            match_id = idx_gt
+        return match_id
 
     def _summarize(
         self,
@@ -479,22 +482,22 @@ class MAP(Metric):
         mind = [i for i, mDet in enumerate(self.max_detection_thresholds) if mDet == max_dets]
         if ap:
             # dimension of precision: [TxRxKxAxM]
-            s = results["precision"]
+            prec = results["precision"]
             # IoU
             if iou_threshold is not None:
-                t = torch.where(iou_threshold == self.iou_thresholds)[0]
-                s = s[t]
-            s = s[:, :, :, aind, mind]
+                thr = torch.where(iou_threshold == self.iou_thresholds)[0]
+                prec = prec[thr]
+            prec = prec[:, :, :, aind, mind]
         else:
             # dimension of recall: [TxKxAxM]
-            s = results["recall"]
+            prec = results["recall"]
             if iou_threshold is not None:
-                t = torch.where(iou_threshold == self.iou_thresholds)[0]
-                s = s[t]
-            s = s[:, :, aind, mind]
+                thr = torch.where(iou_threshold == self.iou_thresholds)[0]
+                prec = prec[thr]
+            prec = prec[:, :, aind, mind]
 
-        mean_s = Tensor([-1]) if len(s[s > -1]) == 0 else torch.mean(s[s > -1])
-        return mean_s
+        mean_prec = Tensor([-1]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
+        return mean_prec
 
     def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
         """Calculate the precision, recall and scores for all supplied label classes to calculate mAP/mAR.
@@ -643,7 +646,7 @@ class MAP(Metric):
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
 
         Note:
-            `map` score is calculated with @[ IoU=self.iou_thresholds | area=all | maxDets=max_detection_thresholds ]
+            `map` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
 
             Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
             The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
