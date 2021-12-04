@@ -399,7 +399,7 @@ class MAP(Metric):
                     m = -1
                     for idx_gt in range(nb_gt):
                         # if this gt already matched, and not a crowd, continue
-                        if gt_matches[idx_iou, idx_gt] > 0:
+                        if gt_matches[idx_iou, idx_gt]:
                             continue
                         # if dt matched to reg gt, and on ignore gt, stop
                         if m > -1 and not gt_ignore[m] and gt_ignore[idx_gt]:
