@@ -13,7 +13,7 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
-from torchmetrics.audio import PESQ, PIT, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
+from torchmetrics.audio import PESQ, PIT, SDR, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402
     AUC,
     AUROC,
@@ -144,6 +144,7 @@ __all__ = [
     "ROC",
     "ROUGEScore",
     "SacreBLEUScore",
+    "SDR",
     "SI_SDR",
     "SI_SNR",
     "SNR",
