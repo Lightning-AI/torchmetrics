@@ -15,7 +15,7 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import torch
-from torch import Tensor
+from torch import IntTensor, Size, Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
@@ -82,7 +82,7 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[str, torch.Tensor]]) -> None:
+def _input_validator(preds: List[Dict[str, Tensor]], targets: List[Dict[str, Tensor]]) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
     if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type List")
@@ -99,16 +99,16 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
         if any(k not in p for p in targets):
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
-    if any(type(pred["boxes"]) is not torch.Tensor for pred in preds):
-        raise ValueError("Expected all boxes in `preds` to be of type torch.Tensor")
-    if any(type(pred["scores"]) is not torch.Tensor for pred in preds):
-        raise ValueError("Expected all scores in `preds` to be of type torch.Tensor")
-    if any(type(pred["labels"]) is not torch.Tensor for pred in preds):
-        raise ValueError("Expected all labels in `preds` to be of type torch.Tensor")
-    if any(type(target["boxes"]) is not torch.Tensor for target in targets):
-        raise ValueError("Expected all boxes in `target` to be of type torch.Tensor")
-    if any(type(target["labels"]) is not torch.Tensor for target in targets):
-        raise ValueError("Expected all labels in `target` to be of type torch.Tensor")
+    if any(type(pred["boxes"]) is not Tensor for pred in preds):
+        raise ValueError("Expected all boxes in `preds` to be of type Tensor")
+    if any(type(pred["scores"]) is not Tensor for pred in preds):
+        raise ValueError("Expected all scores in `preds` to be of type Tensor")
+    if any(type(pred["labels"]) is not Tensor for pred in preds):
+        raise ValueError("Expected all labels in `preds` to be of type Tensor")
+    if any(type(target["boxes"]) is not Tensor for target in targets):
+        raise ValueError("Expected all boxes in `target` to be of type Tensor")
+    if any(type(target["labels"]) is not Tensor for target in targets):
+        raise ValueError("Expected all labels in `target` to be of type Tensor")
 
     for i, item in enumerate(targets):
         if item["boxes"].size(0) != item["labels"].size(0):
@@ -125,7 +125,7 @@ def _input_validator(preds: List[Dict[str, torch.Tensor]], targets: List[Dict[st
             )
 
 
-def _fix_empty_tensors(boxes: torch.Tensor) -> torch.Tensor:
+def _fix_empty_tensors(boxes: Tensor) -> Tensor:
     """Empty tensors can cause problems in DDP mode, this methods corrects them."""
     if boxes.numel() == 0 and boxes.ndim == 1:
         return boxes.unsqueeze(0)
@@ -218,11 +218,9 @@ class MAP(Metric):
         if box_format not in allowed_box_formats:
             raise ValueError(f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}")
         self.box_format = box_format
-        self.iou_thresholds = torch.Tensor(
-            iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1)
-        )
-        self.rec_thresholds = torch.Tensor(rec_thresholds or torch.linspace(0.0, 1.00, int(round((1.00) / 0.01)) + 1))
-        self.max_detection_thresholds = torch.IntTensor(max_detection_thresholds or [1, 10, 100])
+        self.iou_thresholds = Tensor(iou_thresholds or torch.linspace(0.5, 0.95, int(round((0.95 - 0.5) / 0.05)) + 1))
+        self.rec_thresholds = Tensor(rec_thresholds or torch.linspace(0.0, 1.00, int(round((1.00) / 0.01)) + 1))
+        self.max_detection_thresholds = IntTensor(max_detection_thresholds or [1, 10, 100])
         self.max_detection_thresholds, _ = torch.sort(self.max_detection_thresholds)
         self.bbox_area_ranges = {
             "all": [0 ** 2, 1e5 ** 2],
@@ -247,29 +245,29 @@ class MAP(Metric):
         Args:
             preds: A list consisting of dictionaries each containing the key-values\
             (each dictionary corresponds to a single image):
-            - ``boxes``: torch.FloatTensor of shape
+            - ``boxes``: ``torch.FloatTensor`` of shape
                 [num_boxes, 4] containing `num_boxes` detection boxes of the format
                 specified in the contructor. By default, this method expects
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
-            - ``scores``: torch.FloatTensor of shape
+            - ``scores``: ``torch.FloatTensor`` of shape
                 [num_boxes] containing detection scores for the boxes.
-            - ``labels``: torch.IntTensor of shape
+            - ``labels``: ``torch.IntTensor`` of shape
                 [num_boxes] containing 0-indexed detection classes for the boxes.
 
             target: A list consisting of dictionaries each containing the key-values\
             (each dictionary corresponds to a single image):
-            - ``boxes``: torch.FloatTensor of shape
+            - ``boxes``: ``torch.FloatTensor`` of shape
                 [num_boxes, 4] containing `num_boxes` groundtruth boxes of the format
                 specified in the contructor. By default, this method expects
                 [xmin, ymin, xmax, ymax] in absolute image coordinates.
-            - ``labels``: torch.IntTensor of shape
+            - ``labels``: ``torch.IntTensor`` of shape
                 [num_boxes] containing 1-indexed groundtruth classes for the boxes.
 
         Raises:
             ValueError:
-                If ``preds`` is not of type List[Dict[str, torch.Tensor]]
+                If ``preds`` is not of type List[Dict[str, Tensor]]
             ValueError:
-                If ``target`` is not of type List[Dict[str, torch.Tensor]]
+                If ``target`` is not of type List[Dict[str, Tensor]]
             ValueError:
                 If ``preds`` and ``target`` are not of the same length
             ValueError:
@@ -289,7 +287,7 @@ class MAP(Metric):
         for item in preds:
             self.detection_boxes.append(
                 _fix_empty_tensors(box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy"))
-                if item["boxes"].size() == torch.Size([1, 4])
+                if item["boxes"].size() == Size([1, 4])
                 else _fix_empty_tensors(item["boxes"])
             )
             self.detection_labels.append(item["labels"])
@@ -298,7 +296,7 @@ class MAP(Metric):
         for item in target:
             self.groundtruth_boxes.append(
                 _fix_empty_tensors(box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy"))
-                if item["boxes"].size() == torch.Size([1, 4])
+                if item["boxes"].size() == Size([1, 4])
                 else _fix_empty_tensors(item["boxes"])
             )
             self.groundtruth_labels.append(item["labels"])
@@ -327,11 +325,11 @@ class MAP(Metric):
         gt_lbl_mask = self.groundtruth_labels[id] == class_id
         dt_lbl_mask = self.detection_labels[id] == class_id
         if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
-            return torch.tensor([])
+            return Tensor([])
         gt = gt[gt_lbl_mask]
         det = det[dt_lbl_mask]
         if len(gt) == 0 or len(det) == 0:
-            return torch.tensor([])
+            return Tensor([])
 
         # Sort by scores and use only max detections
         scores = self.detection_scores[id]
@@ -474,7 +472,7 @@ class MAP(Metric):
                 s = s[t]
             s = s[:, :, aind, mind]
 
-        mean_s = torch.Tensor([-1]) if len(s[s > -1]) == 0 else torch.mean(s[s > -1])
+        mean_s = Tensor([-1]) if len(s[s > -1]) == 0 else torch.mean(s[s > -1])
         return mean_s
 
     def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
@@ -619,8 +617,8 @@ class MAP(Metric):
         """
         overall, map, mar = self._calculate(self._get_classes())
 
-        map_per_class_values: Tensor = torch.Tensor([-1])
-        mar_max_dets_per_class_values: Tensor = torch.Tensor([-1])
+        map_per_class_values: Tensor = Tensor([-1])
+        mar_max_dets_per_class_values: Tensor = Tensor([-1])
 
         # if class mode is enabled, evaluate metrics per class
         if self.class_metrics:
@@ -632,8 +630,8 @@ class MAP(Metric):
                 map_per_class_list.append(cls_map.map)
                 mar_max_dets_per_class_list.append(cls_mar[f"mar_{self.max_detection_thresholds[-1]}"])
 
-            map_per_class_values = torch.Tensor(map_per_class_list)
-            mar_max_dets_per_class_values = torch.Tensor(mar_max_dets_per_class_list)
+            map_per_class_values = Tensor(map_per_class_list)
+            mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list)
 
         metrics = COCOMetricResults()
         for key in map.keys():
