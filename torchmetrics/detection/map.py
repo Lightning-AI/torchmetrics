@@ -224,10 +224,10 @@ class MAP(Metric):
         self.max_detection_thresholds = IntTensor(max_detection_thresholds or [1, 10, 100])
         self.max_detection_thresholds, _ = torch.sort(self.max_detection_thresholds)
         self.bbox_area_ranges = {
-            "all": (0 ** 2, 1e5 ** 2),
+            "all": (0 ** 2, int(1e5 ** 2)),
             "small": (0 ** 2, 32 ** 2),
             "medium": (32 ** 2, 96 ** 2),
-            "large": (96 ** 2, 1e5 ** 2),
+            "large": (96 ** 2, int(1e5 ** 2)),
         }
 
         if not isinstance(class_metrics, bool):
