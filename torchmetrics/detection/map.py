@@ -224,10 +224,10 @@ class MAP(Metric):
         self.max_detection_thresholds = IntTensor(max_detection_thresholds or [1, 10, 100])
         self.max_detection_thresholds, _ = torch.sort(self.max_detection_thresholds)
         self.bbox_area_ranges = {
-            "all": [0 ** 2, 1e5 ** 2],
-            "small": [0 ** 2, 32 ** 2],
-            "medium": [32 ** 2, 96 ** 2],
-            "large": [96 ** 2, 1e5 ** 2],
+            "all": (0 ** 2, 1e5 ** 2),
+            "small": (0 ** 2, 32 ** 2),
+            "medium": (32 ** 2, 96 ** 2),
+            "large": (96 ** 2, 1e5 ** 2),
         }
 
         if not isinstance(class_metrics, bool):
@@ -344,7 +344,7 @@ class MAP(Metric):
         return ious
 
     def _evaluate_image(
-        self, id: int, class_id: int, area_range: List[int], max_det: int, ious: dict
+        self, id: int, class_id: int, area_range: Tuple[int, int], max_det: int, ious: dict
     ) -> Optional[dict]:
         """Perform evaluation for single class and image.
 
@@ -459,7 +459,7 @@ class MAP(Metric):
     def _summarize(
         self,
         results: Dict,
-        ap: bool = True,
+        avg_prec: bool = True,
         iou_threshold: Optional[float] = None,
         area_range: str = "all",
         max_dets: int = 100,
@@ -469,7 +469,7 @@ class MAP(Metric):
         Args:
             results:
                 Dictionary including precision, recall and scores for all combinations.
-            ap:
+            avg_prec:
                 Calculate average precision. Else calculate average recall.
             iou_threshold:
                 IoU threshold. If set to `None` it all values are used. Else results are filtered.
@@ -478,23 +478,23 @@ class MAP(Metric):
             max_dets:
                 Maximum detections.
         """
-        aind = [i for i, aRng in enumerate(self.bbox_area_ranges.keys()) if aRng == area_range]
-        mind = [i for i, mDet in enumerate(self.max_detection_thresholds) if mDet == max_dets]
-        if ap:
+        area_inds = [i for i, k in enumerate(self.bbox_area_ranges.keys()) if k == area_range]
+        mdet_inds = [i for i, k in enumerate(self.max_detection_thresholds) if k == max_dets]
+        if avg_prec:
             # dimension of precision: [TxRxKxAxM]
             prec = results["precision"]
             # IoU
             if iou_threshold is not None:
                 thr = torch.where(iou_threshold == self.iou_thresholds)[0]
                 prec = prec[thr]
-            prec = prec[:, :, :, aind, mind]
+            prec = prec[:, :, :, area_inds, mdet_inds]
         else:
             # dimension of recall: [TxKxAxM]
             prec = results["recall"]
             if iou_threshold is not None:
                 thr = torch.where(iou_threshold == self.iou_thresholds)[0]
                 prec = prec[thr]
-            prec = prec[:, :, aind, mind]
+            prec = prec[:, :, area_inds, mdet_inds]
 
         mean_prec = Tensor([-1]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
         return mean_prec
