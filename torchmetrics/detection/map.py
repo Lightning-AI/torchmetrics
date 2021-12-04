@@ -365,11 +365,11 @@ class MAP(Metric):
         gt_lbl_mask = self.groundtruth_labels[id] == class_id
         dt_lbl_mask = self.detection_labels[id] == class_id
         if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
-            return
+            return None
         gt = gt[gt_lbl_mask]
         det = det[dt_lbl_mask]
         if len(gt) == 0 and len(det) == 0:
-            return
+            return None
 
         areas = box_area(gt)
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
@@ -515,10 +515,10 @@ class MAP(Metric):
         }
 
         eval_imgs = [
-            self._evaluate_image(id, class_id, area, max_detections, ious)
+            self._evaluate_image(img_id, class_id, area, max_detections, ious)
             for class_id in class_ids
             for area in area_ranges
-            for id in img_ids
+            for img_id in img_ids
         ]
 
         nb_iou_thrs = len(self.iou_thresholds)
