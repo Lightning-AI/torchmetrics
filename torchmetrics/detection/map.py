@@ -34,6 +34,7 @@ class BaseMetricResults(dict):
     """Base metric class, that allows fields for pre-defined metrics."""
 
     def __getattr__(self, key: str) -> Tensor:
+        # Using this you get the correct error message, an AttributeError instead of a KeyError
         if key in self:
             return self[key]
         else:
@@ -305,8 +306,7 @@ class MAP(Metric):
         """Returns a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
-        else:
-            return []
+        return []
 
     def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
         """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
