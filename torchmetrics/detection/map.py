@@ -318,12 +318,12 @@ class MAP(Metric):
         """
         gt = self.groundtruth_boxes[id]
         det = self.detection_boxes[id]
-        gt_lbl_mask = self.groundtruth_labels[id] == class_id
-        dt_lbl_mask = self.detection_labels[id] == class_id
-        if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
+        gt_label_mask = self.groundtruth_labels[id] == class_id
+        det_label_mask = self.detection_labels[id] == class_id
+        if len(det_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
-        gt = gt[gt_lbl_mask]
-        det = det[dt_lbl_mask]
+        gt = gt[gt_label_mask]
+        det = det[det_label_mask]
         if len(gt) == 0 or len(det) == 0:
             return Tensor([])
 
@@ -358,12 +358,12 @@ class MAP(Metric):
         """
         gt = self.groundtruth_boxes[id]
         det = self.detection_boxes[id]
-        gt_lbl_mask = self.groundtruth_labels[id] == class_id
-        dt_lbl_mask = self.detection_labels[id] == class_id
-        if len(dt_lbl_mask) == 0 or len(dt_lbl_mask) == 0:
+        gt_label_mask = self.groundtruth_labels[id] == class_id
+        det_label_mask = self.detection_labels[id] == class_id
+        if len(det_label_mask) == 0 or len(det_label_mask) == 0:
             return None
-        gt = gt[gt_lbl_mask]
-        det = det[dt_lbl_mask]
+        gt = gt[gt_label_mask]
+        det = det[det_label_mask]
         if len(gt) == 0 and len(det) == 0:
             return None
 
@@ -374,7 +374,7 @@ class MAP(Metric):
         ignore_area_sorted, gtind = torch.sort(ignore_area)
         gt = gt[gtind]
         scores = self.detection_scores[id]
-        scores_filtered = scores[dt_lbl_mask]
+        scores_filtered = scores[det_label_mask]
         scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
         det = det[dtind]
         if len(det) > max_det:
@@ -386,30 +386,30 @@ class MAP(Metric):
         nb_gt = len(gt)
         nb_det = len(det)
         gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool)
-        dt_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
         gt_ignore = ignore_area_sorted
-        dt_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
                     m = MAP._find_best_gt_match(t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det)
                     if m is not -1:
-                        dt_ignore[idx_iou, idx_det] = gt_ignore[m]
-                        dt_matches[idx_iou, idx_det] = True
+                        det_ignore[idx_iou, idx_det] = gt_ignore[m]
+                        det_matches[idx_iou, idx_det] = True
                         gt_matches[idx_iou, m] = True
         # set unmatched detections outside of area range to ignore
-        dt_areas = box_area(det)
-        dt_ignore_area = (dt_areas < area_range[0]) | (dt_areas > area_range[1])
-        a = dt_ignore_area.reshape((1, nb_det))
-        dt_ignore = torch.logical_or(
-            dt_ignore, torch.logical_and(dt_matches == 0, torch.repeat_interleave(a, nb_iou_thrs, 0))
+        det_areas = box_area(det)
+        det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
+        ar = det_ignore_area.reshape((1, nb_det))
+        det_ignore = torch.logical_or(
+            det_ignore, torch.logical_and(det_matches == 0, torch.repeat_interleave(ar, nb_iou_thrs, 0))
         )
         return {
-            "dtMatches": dt_matches,
+            "dtMatches": det_matches,
             "gtMatches": gt_matches,
             "dtScores": scores_sorted,
             "gtIgnore": gt_ignore,
-            "dtIgnore": dt_ignore,
+            "dtIgnore": det_ignore,
         }
 
     @staticmethod
@@ -592,21 +592,21 @@ class MAP(Metric):
         img_eval_cls_bbox = [e for e in img_eval_cls_bbox if e is not None]
         if not img_eval_cls_bbox:
             return recall, precision, scores
-        dt_scores = torch.cat([e["dtScores"][:max_det] for e in img_eval_cls_bbox])
+        det_scores = torch.cat([e["dtScores"][:max_det] for e in img_eval_cls_bbox])
 
         # different sorting method generates slightly different results.
         # mergesort is used to be consistent as Matlab implementation.
-        inds = torch.argsort(dt_scores, descending=True)
-        dt_scores_sorted = dt_scores[inds]
+        inds = torch.argsort(det_scores, descending=True)
+        det_scores_sorted = det_scores[inds]
 
-        dt_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
-        dt_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
+        det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
+        det_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
         gt_ignore = torch.cat([e["gtIgnore"] for e in img_eval_cls_bbox])
         npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
         if npig == 0:
             return recall, precision, scores
-        tps = torch.logical_and(dt_matches, torch.logical_not(dt_ignore))
-        fps = torch.logical_and(torch.logical_not(dt_matches), torch.logical_not(dt_ignore))
+        tps = torch.logical_and(det_matches, torch.logical_not(det_ignore))
+        fps = torch.logical_and(torch.logical_not(det_matches), torch.logical_not(det_ignore))
 
         tp_sum = torch.cumsum(tps, axis=1, dtype=torch.float)
         fp_sum = torch.cumsum(fps, axis=1, dtype=torch.float)
@@ -614,8 +614,8 @@ class MAP(Metric):
             nd = len(tp)
             rc = tp / npig
             pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
-            q = torch.zeros((nb_rec_thrs,))
-            ss = torch.zeros((nb_rec_thrs,))
+            prec = torch.zeros((nb_rec_thrs,))
+            score = torch.zeros((nb_rec_thrs,))
 
             recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
 
@@ -629,12 +629,12 @@ class MAP(Metric):
             try:
                 for ri, pi in enumerate(inds):  # range(min(len(inds), len(pr))):
                     # pi = inds[ri]
-                    q[ri] = pr[pi]
-                    ss[ri] = dt_scores_sorted[pi]
+                    prec[ri] = pr[pi]
+                    score[ri] = det_scores_sorted[pi]
             except Exception:
                 pass
-            precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = q
-            scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = ss
+            precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = prec
+            scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = score
 
         return recall, precision, scores
 
