@@ -197,6 +197,7 @@ class MAP(Metric):
         ... ]
         >>> metric = MAP()  # doctest: +SKIP
         >>> metric.update(preds, target)  # doctest: +SKIP
+        >>> from pprint import pprint
         >>> pprint(metric.compute())  # doctest: +SKIP
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
