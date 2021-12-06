@@ -180,9 +180,8 @@ class MAP(Metric):
             will be used to perform the allgather
 
     Example:
-        >>> from torchmetrics.detection.map import MAP
-        >>> from pprint import pprint
         >>> import torch
+        >>> from torchmetrics.detection.map import MAP
         >>> preds = [
         ...   dict(
         ...     boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -196,9 +195,9 @@ class MAP(Metric):
         ...     labels=torch.IntTensor([0]),
         ...   )
         ... ]
-        >>> metric = MAP()
-        >>> metric.update(preds, target)
-        >>> pprint(metric.compute())  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> metric = MAP()  # doctest: +SKIP
+        >>> metric.update(preds, target)  # doctest: +SKIP
+        >>> pprint(metric.compute())  # doctest: +SKIP
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),

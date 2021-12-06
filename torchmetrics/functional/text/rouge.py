@@ -180,7 +180,7 @@ def _rouge_score_update(
         >>> preds = "My name is John".split()
         >>> from pprint import pprint
         >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
-        >>> pprint(score)  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> pprint(score)  # doctest: +SKIP
         {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
@@ -265,7 +265,7 @@ def rouge_score(
         >>> targets = "Is your name John"
         >>> preds = "My name is John"
         >>> from pprint import pprint
-        >>> pprint(rouge_score(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> pprint(rouge_score(preds, targets))  # doctest: +SKIP
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,
