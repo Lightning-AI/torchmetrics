@@ -68,9 +68,7 @@ def sacrebleu_ter_fn(
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [
-        (BATCHES["preds"], BATCHES["targets"])
-    ],
+    [(BATCHES["preds"], BATCHES["targets"])],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestTER(TextTester):
