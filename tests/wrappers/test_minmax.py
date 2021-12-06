@@ -64,6 +64,7 @@ class TestMinMaxWrapper(MetricTester):
     """Test the MinMaxMetric wrapper works as expected."""
 
     atol = 1e-6
+
     # TODO: fix ddp=True case, difference in how compare function works and wrapper metric
     @pytest.mark.parametrize("ddp", [False])
     def test_minmax_wrapper(self, preds, target, base_metric, ddp):
