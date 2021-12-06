@@ -17,7 +17,7 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.functional import jaccard_index
+from torchmetrics.functional.classification.jaccard import jaccard_index
 
 
 def iou(

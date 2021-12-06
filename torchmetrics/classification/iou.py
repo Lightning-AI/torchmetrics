@@ -16,7 +16,7 @@ from warnings import warn
 
 import torch
 
-from torchmetrics import JaccardIndex
+from torchmetrics.classification.jaccard import JaccardIndex
 
 
 class IoU(JaccardIndex):
