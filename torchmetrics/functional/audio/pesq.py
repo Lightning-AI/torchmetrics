@@ -58,7 +58,7 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.functional.audio import pesq
+        >>> from torchmetrics.functional.audio.pesq import pesq
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
