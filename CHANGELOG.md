@@ -7,33 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [unreleased] - 2021-MM-DD
-
-### Added
-
+## [0.6.1] - 2021-12-06
 
 ### Changed
 
 - Migrate MAP metrics from pycocotools to PyTorch ([#632](https://github.com/PyTorchLightning/metrics/pull/632))
-
-
 - Use `torch.topk` instead of `torch.argsort` in retrieval precision for speedup ([#627](https://github.com/PyTorchLightning/metrics/pull/627))
-
-
-### Deprecated
-
-
-### Removed
-
 
 ### Fixed
 
-- Fix empty predictions in MAP metric ([#594](https://github.com/PyTorchLightning/metrics/pull/594), [#624](https://github.com/PyTorchLightning/metrics/pull/624))
-
-
+- Fix empty predictions in MAP metric ([#594](https://github.com/PyTorchLightning/metrics/pull/594), [#610](https://github.com/PyTorchLightning/metrics/pull/610), [#624](https://github.com/PyTorchLightning/metrics/pull/624))
 - Fix edge case of AUROC with `average=weighted` on GPU ([#606](https://github.com/PyTorchLightning/metrics/pull/606))
-
-
 - Fixed `forward` in compositional metrics ([#645](https://github.com/PyTorchLightning/metrics/pull/645))
 
 
