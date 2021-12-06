@@ -27,60 +27,60 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics.classification.iou import IoU
-from torchmetrics.functional import iou
+from torchmetrics.classification.jaccard import JaccardIndex
+from torchmetrics.functional import jaccard_index
 
 
-def _sk_iou_binary_prob(preds, target, average=None):
+def _sk_jaccard_binary_prob(preds, target, average=None):
     sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
     sk_target = target.view(-1).numpy()
 
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-def _sk_iou_binary(preds, target, average=None):
+def _sk_jaccard_binary(preds, target, average=None):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-def _sk_iou_multilabel_prob(preds, target, average=None):
+def _sk_jaccard_multilabel_prob(preds, target, average=None):
     sk_preds = (preds.view(-1).numpy() >= THRESHOLD).astype(np.uint8)
     sk_target = target.view(-1).numpy()
 
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-def _sk_iou_multilabel(preds, target, average=None):
+def _sk_jaccard_multilabel(preds, target, average=None):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-def _sk_iou_multiclass_prob(preds, target, average=None):
+def _sk_jaccard_multiclass_prob(preds, target, average=None):
     sk_preds = torch.argmax(preds, dim=len(preds.shape) - 1).view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-def _sk_iou_multiclass(preds, target, average=None):
+def _sk_jaccard_multiclass(preds, target, average=None):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-def _sk_iou_multidim_multiclass_prob(preds, target, average=None):
+def _sk_jaccard_multidim_multiclass_prob(preds, target, average=None):
     sk_preds = torch.argmax(preds, dim=len(preds.shape) - 2).view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-def _sk_iou_multidim_multiclass(preds, target, average=None):
+def _sk_jaccard_multidim_multiclass(preds, target, average=None):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
@@ -91,47 +91,47 @@ def _sk_iou_multidim_multiclass(preds, target, average=None):
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
     [
-        (_input_binary_prob.preds, _input_binary_prob.target, _sk_iou_binary_prob, 2),
-        (_input_binary.preds, _input_binary.target, _sk_iou_binary, 2),
-        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_iou_multilabel_prob, 2),
-        (_input_mlb.preds, _input_mlb.target, _sk_iou_multilabel, 2),
-        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_iou_multiclass_prob, NUM_CLASSES),
-        (_input_mcls.preds, _input_mcls.target, _sk_iou_multiclass, NUM_CLASSES),
-        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_iou_multidim_multiclass_prob, NUM_CLASSES),
-        (_input_mdmc.preds, _input_mdmc.target, _sk_iou_multidim_multiclass, NUM_CLASSES),
+        (_input_binary_prob.preds, _input_binary_prob.target, _sk_jaccard_binary_prob, 2),
+        (_input_binary.preds, _input_binary.target, _sk_jaccard_binary, 2),
+        (_input_mlb_prob.preds, _input_mlb_prob.target, _sk_jaccard_multilabel_prob, 2),
+        (_input_mlb.preds, _input_mlb.target, _sk_jaccard_multilabel, 2),
+        (_input_mcls_prob.preds, _input_mcls_prob.target, _sk_jaccard_multiclass_prob, NUM_CLASSES),
+        (_input_mcls.preds, _input_mcls.target, _sk_jaccard_multiclass, NUM_CLASSES),
+        (_input_mdmc_prob.preds, _input_mdmc_prob.target, _sk_jaccard_multidim_multiclass_prob, NUM_CLASSES),
+        (_input_mdmc.preds, _input_mdmc.target, _sk_jaccard_multidim_multiclass, NUM_CLASSES),
     ],
 )
-class TestIoU(MetricTester):
+class TestJaccardIndex(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_iou(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+    def test_jaccard(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
         average = "macro" if reduction == "elementwise_mean" else None  # convert tags
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=IoU,
+            metric_class=JaccardIndex,
             sk_metric=partial(sk_metric, average=average),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
         )
 
-    def test_iou_functional(self, reduction, preds, target, sk_metric, num_classes):
+    def test_jaccard_functional(self, reduction, preds, target, sk_metric, num_classes):
         average = "macro" if reduction == "elementwise_mean" else None  # convert tags
         self.run_functional_metric_test(
             preds,
             target,
-            metric_functional=iou,
+            metric_functional=jaccard_index,
             sk_metric=partial(sk_metric, average=average),
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
         )
 
-    def test_iou_differentiability(self, reduction, preds, target, sk_metric, num_classes):
+    def test_jaccard_differentiability(self, reduction, preds, target, sk_metric, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=IoU,
-            metric_functional=iou,
+            metric_module=JaccardIndex,
+            metric_functional=jaccard_index,
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
         )
 
@@ -147,18 +147,18 @@ class TestIoU(MetricTester):
         (True, "none", 0, Tensor([2 / 3, 1 / 2])),
     ],
 )
-def test_iou(half_ones, reduction, ignore_index, expected):
+def test_jaccard(half_ones, reduction, ignore_index, expected):
     preds = (torch.arange(120) % 3).view(-1, 1)
     target = (torch.arange(120) % 3).view(-1, 1)
     if half_ones:
         preds[:60] = 1
-    iou_val = iou(
+    jaccard_val = jaccard_index(
         preds=preds,
         target=target,
         ignore_index=ignore_index,
         reduction=reduction,
     )
-    assert torch.allclose(iou_val, expected, atol=1e-9)
+    assert torch.allclose(jaccard_val, expected, atol=1e-9)
 
 
 # test `absent_score`
@@ -194,8 +194,8 @@ def test_iou(half_ones, reduction, ignore_index, expected):
         ([0, 2], [0, 2], 0, 1.0, 3, [1.0, 1.0]),
     ],
 )
-def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes, expected):
-    iou_val = iou(
+def test_jaccard_absent_score(pred, target, ignore_index, absent_score, num_classes, expected):
+    jaccard_val = jaccard_index(
         preds=tensor(pred),
         target=tensor(target),
         ignore_index=ignore_index,
@@ -203,7 +203,7 @@ def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes,
         num_classes=num_classes,
         reduction="none",
     )
-    assert torch.allclose(iou_val, tensor(expected).to(iou_val))
+    assert torch.allclose(jaccard_val, tensor(expected).to(jaccard_val))
 
 
 # example data taken from
@@ -224,12 +224,12 @@ def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes,
         ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "sum", [7 / 6]),
     ],
 )
-def test_iou_ignore_index(pred, target, ignore_index, num_classes, reduction, expected):
-    iou_val = iou(
+def test_jaccard_ignore_index(pred, target, ignore_index, num_classes, reduction, expected):
+    jaccard_val = jaccard_index(
         preds=tensor(pred),
         target=tensor(target),
         ignore_index=ignore_index,
         num_classes=num_classes,
         reduction=reduction,
     )
-    assert torch.allclose(iou_val, tensor(expected).to(iou_val))
+    assert torch.allclose(jaccard_val, tensor(expected).to(jaccard_val))

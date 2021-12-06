@@ -302,10 +302,10 @@ Hinge
 .. autoclass:: torchmetrics.Hinge
     :noindex:
 
-IoU
-~~~
+JaccardIndex
+~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.IoU
+.. autoclass:: torchmetrics.JaccardIndex
     :noindex:
 
 KLDivergence

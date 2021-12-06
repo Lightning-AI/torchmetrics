@@ -27,7 +27,8 @@ from torchmetrics.functional.classification.dice import dice_score
 from torchmetrics.functional.classification.f_beta import f1, fbeta
 from torchmetrics.functional.classification.hamming_distance import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge
-from torchmetrics.functional.classification.iou import iou
+from torchmetrics.functional.classification.iou import iou  # noqa: F401
+from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
@@ -95,7 +96,7 @@ __all__ = [
     "hamming_distance",
     "hinge",
     "image_gradients",
-    "iou",
+    "jaccard_index",
     "kl_divergence",
     "matthews_corrcoef",
     "mean_absolute_error",
