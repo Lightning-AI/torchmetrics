@@ -21,7 +21,7 @@ from torchmetrics.utilities.data import get_num_classes
 from torchmetrics.utilities.distributed import reduce
 
 
-def _iou_from_confmat(
+def _jaccard_from_confmat(
     confmat: Tensor,
     num_classes: int,
     ignore_index: Optional[int] = None,
@@ -66,7 +66,7 @@ def _iou_from_confmat(
     return reduce(scores, reduction=reduction)
 
 
-def iou(
+def jaccard_index(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
@@ -120,14 +120,14 @@ def iou(
         'elementwise_mean', or number of classes if reduction is 'none'
 
     Example:
-        >>> from torchmetrics.functional import iou
+        >>> from torchmetrics.functional import jaccard_index
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> iou(pred, target)
+        >>> jaccard_index(pred, target)
         tensor(0.9660)
     """
 
     num_classes = get_num_classes(preds=preds, target=target, num_classes=num_classes)
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
-    return _iou_from_confmat(confmat, num_classes, ignore_index, absent_score, reduction)
+    return _jaccard_from_confmat(confmat, num_classes, ignore_index, absent_score, reduction)

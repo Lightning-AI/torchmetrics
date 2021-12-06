@@ -17,10 +17,10 @@ import torch
 from torch import Tensor
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.classification.iou import _iou_from_confmat
+from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
 
 
-class IoU(ConfusionMatrix):
+class JaccardIndex(ConfusionMatrix):
     r"""
     Computes Intersection over union, or `Jaccard index`_:
 
@@ -68,11 +68,11 @@ class IoU(ConfusionMatrix):
             Specify the process group on which synchronization is called. default: None (which selects the entire world)
 
     Example:
-        >>> from torchmetrics import IoU
+        >>> from torchmetrics import JaccardIndex
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> iou = IoU(num_classes=2)
+        >>> iou = JaccardIndex(num_classes=2)
         >>> iou(pred, target)
         tensor(0.9660)
 
@@ -105,4 +105,4 @@ class IoU(ConfusionMatrix):
 
     def compute(self) -> Tensor:
         """Computes intersection over union (IoU)"""
-        return _iou_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
+        return _jaccard_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
