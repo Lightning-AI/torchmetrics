@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.functional.audio.pit import pit, pit_permutate
+from torchmetrics.functional.audio.sdr import sdr
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.functional.audio.snr import snr
-from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
@@ -28,7 +27,8 @@ from torchmetrics.functional.classification.dice import dice_score
 from torchmetrics.functional.classification.f_beta import f1, fbeta
 from torchmetrics.functional.classification.hamming_distance import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge
-from torchmetrics.functional.classification.iou import iou
+from torchmetrics.functional.classification.iou import iou  # noqa: F401
+from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
@@ -64,14 +64,17 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
-from torchmetrics.functional.self_supervised import embedding_similarity
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
+from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
+from torchmetrics.functional.text.squad import squad
 from torchmetrics.functional.text.wer import wer
+from torchmetrics.functional.text.wil import word_information_lost
+from torchmetrics.functional.text.wip import word_information_preserved
 
 __all__ = [
     "accuracy",
@@ -81,21 +84,20 @@ __all__ = [
     "bert_score",
     "bleu_score",
     "calibration_error",
+    "chrf_score",
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
     "tweedie_deviance_score",
     "dice_score",
-    "embedding_similarity",
     "explained_variance",
     "f1",
     "fbeta",
     "hamming_distance",
     "hinge",
     "image_gradients",
-    "iou",
+    "jaccard_index",
     "kl_divergence",
-    "kldivergence",
     "matthews_corrcoef",
     "mean_absolute_error",
     "mean_absolute_percentage_error",
@@ -106,7 +108,6 @@ __all__ = [
     "pairwise_linear_similarity",
     "pairwise_manhatten_distance",
     "pearson_corrcoef",
-    "pesq",
     "pit",
     "pit_permutate",
     "precision",
@@ -114,7 +115,6 @@ __all__ = [
     "precision_recall_curve",
     "psnr",
     "r2_score",
-    "r2score",
     "recall",
     "retrieval_average_precision",
     "retrieval_fall_out",
@@ -127,16 +127,19 @@ __all__ = [
     "roc",
     "rouge_score",
     "sacre_bleu_score",
+    "sdr",
     "si_sdr",
     "si_snr",
     "snr",
     "spearman_corrcoef",
     "specificity",
+    "squad",
     "ssim",
     "stat_scores",
-    "stoi",
     "symmetric_mean_absolute_percentage_error",
     "wer",
     "char_error_rate",
     "match_error_rate",
+    "word_information_lost",
+    "word_information_preserved",
 ]

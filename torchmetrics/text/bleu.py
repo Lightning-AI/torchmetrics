@@ -22,7 +22,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
+from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update, _tokenize_fn
 
 
 class BLEUScore(Metric):
@@ -45,8 +45,8 @@ class BLEUScore(Metric):
             will be used to perform the allgather.
 
     Example:
-        >>> translate_corpus = ['the cat is on the mat'.split()]
-        >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
+        >>> translate_corpus = ['the cat is on the mat']
+        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = BLEUScore()
         >>> metric(reference_corpus, translate_corpus)
         tensor(0.7598)
@@ -91,7 +91,7 @@ class BLEUScore(Metric):
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
     def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[Sequence[str]]], translate_corpus: Sequence[Sequence[str]]
+        self, reference_corpus: Sequence[Sequence[str]], translate_corpus: Sequence[str]
     ) -> None:
         """Compute Precision Scores.
 
@@ -99,6 +99,7 @@ class BLEUScore(Metric):
             reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
         """
+
         self.trans_len, self.ref_len = _bleu_score_update(
             reference_corpus,
             translate_corpus,
@@ -107,6 +108,7 @@ class BLEUScore(Metric):
             self.trans_len,
             self.ref_len,
             self.n_gram,
+            _tokenize_fn,
         )
 
     def compute(self) -> Tensor:

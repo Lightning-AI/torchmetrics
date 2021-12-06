@@ -14,13 +14,20 @@ Audio Metrics
 pesq [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pesq
+.. autofunction:: torchmetrics.functional.audio.pesq.pesq
 
 
 pit [func]
 ~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.pit
+    :noindex:
+
+
+sdr [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.sdr
     :noindex:
 
 
@@ -48,7 +55,7 @@ snr [func]
 stoi [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.stoi
+.. autofunction:: torchmetrics.functional.audio.stoi.stoi
     :noindex:
 
 
@@ -137,10 +144,10 @@ hinge [func]
 .. autofunction:: torchmetrics.functional.hinge
     :noindex:
 
-iou [func]
-~~~~~~~~~~
+jaccard_index [func]
+~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.iou
+.. autofunction:: torchmetrics.functional.jaccard_index
     :noindex:
 
 kl_divergence [func]
@@ -426,7 +433,7 @@ Text
 bert_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.bert_score
+.. autofunction:: torchmetrics.functional.text.bert.bert_score
 
 bleu_score [func]
 ~~~~~~~~~~~~~~~~~
@@ -440,6 +447,12 @@ char_error_rate [func]
 .. autofunction:: torchmetrics.functional.char_error_rate
     :noindex:
 
+chrf_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.chrf_score
+    :noindex:
+
 match_error_rate [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -449,7 +462,7 @@ match_error_rate [func]
 rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.rouge_score
+.. autofunction:: torchmetrics.functional.text.rouge.rouge_score
     :noindex:
 
 sacre_bleu_score [func]
@@ -458,8 +471,27 @@ sacre_bleu_score [func]
 .. autofunction:: torchmetrics.functional.sacre_bleu_score
     :noindex:
 
+
+squad [func]
+~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.squad
+    :noindex:
+
 wer [func]
 ~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.wer
+    :noindex:
+
+word_information_lost [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.word_information_lost
+    :noindex:
+
+word_information_preserved [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.word_information_preserved
     :noindex:

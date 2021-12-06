@@ -77,12 +77,18 @@ the metric will be computed over the ``time`` dimension.
 PESQ
 ~~~~
 
-.. autoclass:: torchmetrics.PESQ
+.. autoclass:: torchmetrics.audio.pesq.PESQ
 
 PIT
 ~~~
 
 .. autoclass:: torchmetrics.PIT
+    :noindex:
+
+SDR
+~~~
+
+.. autoclass:: torchmetrics.SDR
     :noindex:
 
 SI_SDR
@@ -106,7 +112,7 @@ SNR
 STOI
 ~~~~
 
-.. autoclass:: torchmetrics.STOI
+.. autoclass:: torchmetrics.audio.stoi.STOI
     :noindex:
 
 
@@ -296,10 +302,10 @@ Hinge
 .. autoclass:: torchmetrics.Hinge
     :noindex:
 
-IoU
-~~~
+JaccardIndex
+~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.IoU
+.. autoclass:: torchmetrics.JaccardIndex
     :noindex:
 
 KLDivergence
@@ -363,25 +369,25 @@ learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.
 FID
 ~~~
 
-.. autoclass:: torchmetrics.FID
+.. autoclass:: torchmetrics.image.fid.FID
     :noindex:
 
 IS
 ~~
 
-.. autoclass:: torchmetrics.IS
+.. autoclass:: torchmetrics.image.inception.IS
     :noindex:
 
 KID
 ~~~
 
-.. autoclass:: torchmetrics.KID
+.. autoclass:: torchmetrics.image.kid.KID
     :noindex:
 
 LPIPS
 ~~~~~
 
-.. autoclass:: torchmetrics.LPIPS
+.. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
     :noindex:
 
 PSNR
@@ -405,7 +411,7 @@ Object detection metrics can be used to evaluate the predicted detections with g
 MAP
 ~~~
 
-.. autoclass:: torchmetrics.MAP
+.. autoclass:: torchmetrics.detection.map.MAP
     :noindex:
 
 ******************
@@ -502,7 +508,7 @@ For the purposes of retrieval metrics, inputs (indexes, predictions and targets)
     :header: "indexes shape", "indexes dtype", "preds shape", "preds dtype", "target shape", "target dtype"
     :widths: 10, 10, 10, 10, 10, 10
 
-    "``long``", "(N,...)", "``float``", "(N,...)", "``long`` or ``bool``", "(N,...)"
+    "(N,...)", "``long``", "(N,...)", "``float``", "(N,...)", "``long`` or ``bool``"
 
 .. note::
     All dimensions are flattened at the beginning, so
@@ -607,7 +613,7 @@ Text
 BERTScore
 ~~~~~~~~~~
 
-.. autoclass:: torchmetrics.BERTScore
+.. autoclass:: torchmetrics.text.bert.BERTScore
     :noindex:
 
 BLEUScore
@@ -622,6 +628,12 @@ CharErrorRate
 .. autoclass:: torchmetrics.CharErrorRate
     :noindex:
 
+CHRFScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.CHRFScore
+    :noindex:
+
 MatchErrorRate
 ~~~~~~~~~~~~~~
 
@@ -631,7 +643,7 @@ MatchErrorRate
 ROUGEScore
 ~~~~~~~~~~
 
-.. autoclass:: torchmetrics.ROUGEScore
+.. autoclass:: torchmetrics.text.rouge.ROUGEScore
     :noindex:
 
 SacreBLEUScore
@@ -640,10 +652,29 @@ SacreBLEUScore
 .. autoclass:: torchmetrics.SacreBLEUScore
     :noindex:
 
+
+SQuAD
+~~~~~
+
+.. autoclass:: torchmetrics.SQuAD
+    :noindex:
+
 WER
 ~~~
 
 .. autoclass:: torchmetrics.WER
+    :noindex:
+
+WordInfoLost
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoLost
+    :noindex:
+
+WordInfoPreserved
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoPreserved
     :noindex:
 
 

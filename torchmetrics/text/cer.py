@@ -54,7 +54,7 @@ class CharErrorRate(Metric):
             will be used to perform the allgather
 
     Returns:
-        (Tensor) Character error rate
+        Character error rate score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
@@ -99,6 +99,6 @@ class CharErrorRate(Metric):
         """Calculate the character error rate.
 
         Returns:
-            (Tensor) Character error rate
+           Character error rate score
         """
         return _cer_compute(self.errors, self.total)
