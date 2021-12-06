@@ -67,25 +67,25 @@ def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "use_stemmer"],
     [
-        pytest.param("rouge1_precision", True),
-        pytest.param("rouge1_recall", True),
-        pytest.param("rouge1_fmeasure", False),
-        pytest.param("rouge2_precision", False),
-        pytest.param("rouge2_recall", True),
-        pytest.param("rouge2_fmeasure", True),
-        pytest.param("rougeL_precision", False),
-        pytest.param("rougeL_recall", False),
-        pytest.param("rougeL_fmeasure", True),
-        pytest.param("rougeLsum_precision", True),
-        pytest.param("rougeLsum_recall", False),
-        pytest.param("rougeLsum_fmeasure", False),
+        ("rouge1_precision", True),
+        ("rouge1_recall", True),
+        ("rouge1_fmeasure", False),
+        ("rouge2_precision", False),
+        ("rouge2_recall", True),
+        ("rouge2_fmeasure", True),
+        ("rougeL_precision", False),
+        ("rougeL_recall", False),
+        ("rougeL_fmeasure", True),
+        ("rougeLsum_precision", True),
+        ("rougeLsum_recall", False),
+        ("rougeLsum_fmeasure", False),
     ],
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        pytest.param(BATCHES_1["preds"], BATCHES_1["targets"]),
-        pytest.param(BATCHES_2["preds"], BATCHES_2["targets"]),
+        (BATCHES_1["preds"], BATCHES_1["targets"]),
+        (BATCHES_2["preds"], BATCHES_2["targets"]),
     ],
 )
 class TestROUGEScore(TextTester):

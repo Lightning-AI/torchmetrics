@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.audio.pit import pit, pit_permutate
+from torchmetrics.functional.audio.sdr import sdr
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.functional.audio.snr import snr
@@ -125,6 +126,7 @@ __all__ = [
     "roc",
     "rouge_score",
     "sacre_bleu_score",
+    "sdr",
     "si_sdr",
     "si_snr",
     "snr",
