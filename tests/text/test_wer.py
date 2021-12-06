@@ -35,8 +35,8 @@ def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Unio
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        pytest.param(BATCHES_1["preds"], BATCHES_1["targets"]),
-        pytest.param(BATCHES_2["preds"], BATCHES_2["targets"]),
+        (BATCHES_1["preds"], BATCHES_1["targets"]),
+        (BATCHES_2["preds"], BATCHES_2["targets"]),
     ],
 )
 class TestWER(TextTester):
