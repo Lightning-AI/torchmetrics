@@ -17,7 +17,7 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
-from typing import Sequence, Tuple
+from typing import Callable, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -44,14 +44,27 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
     return ngram_counter
 
 
+def _tokenize_fn(sentence: str) -> Sequence[str]:
+    """Tokenizes sentence into list of words.
+
+    Args:
+        sentence: A sentence separated by white space.
+
+    Return:
+        List of words
+    """
+    return sentence.split()
+
+
 def _bleu_score_update(
-    reference_corpus: Sequence[Sequence[Sequence[str]]],
-    translate_corpus: Sequence[Sequence[str]],
+    reference_corpus: Sequence[Sequence[str]],
+    translate_corpus: Sequence[str],
     numerator: Tensor,
     denominator: Tensor,
     trans_len: Tensor,
     ref_len: Tensor,
     n_gram: int = 4,
+    tokenizer: Callable[[str], Sequence[str]] = _tokenize_fn,
 ) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute the BLEU score.
 
@@ -63,9 +76,14 @@ def _bleu_score_update(
         trans_len: count of words in a candidate translation
         ref_len: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
+        tokenizer: A function that turns sentence into list of words
     """
+    reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
+        [tokenizer(line) if line else [] for line in reference] for reference in reference_corpus
+    ]
+    translate_corpus_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in translate_corpus]
 
-    for (translation, references) in zip(translate_corpus, reference_corpus):
+    for (translation, references) in zip(translate_corpus_, reference_corpus_):
         trans_len += len(translation)
         ref_len_list = [len(ref) for ref in references]
         ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
@@ -122,8 +140,8 @@ def _bleu_score_compute(
 
 
 def bleu_score(
-    reference_corpus: Sequence[Sequence[Sequence[str]]],
-    translate_corpus: Sequence[Sequence[str]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
+    translate_corpus: Union[str, Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
@@ -144,8 +162,8 @@ def bleu_score(
 
     Example:
         >>> from torchmetrics.functional import bleu_score
-        >>> translate_corpus = ['the cat is on the mat'.split()]
-        >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
+        >>> translate_corpus = ['the cat is on the mat']
+        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> bleu_score(reference_corpus, translate_corpus)
         tensor(0.7598)
 
@@ -156,16 +174,21 @@ def bleu_score(
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+    translate_corpus_ = [translate_corpus] if isinstance(translate_corpus, str) else translate_corpus
+    reference_corpus_ = [
+        [reference_text] if isinstance(reference_text, str) else reference_text for reference_text in reference_corpus
+    ]
 
-    if len(translate_corpus) != len(reference_corpus):
-        raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
+    if len(translate_corpus_) != len(reference_corpus_):
+        raise ValueError(f"Corpus has different size {len(translate_corpus_)} != {len(reference_corpus_)}")
+
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
     trans_len = tensor(0, dtype=torch.float)
     ref_len = tensor(0, dtype=torch.float)
 
     trans_len, ref_len = _bleu_score_update(
-        reference_corpus, translate_corpus, numerator, denominator, trans_len, ref_len, n_gram
+        reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram, _tokenize_fn
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)
