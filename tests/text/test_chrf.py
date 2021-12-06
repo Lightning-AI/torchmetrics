@@ -58,19 +58,17 @@ def sacrebleu_chrf_fn(
 @pytest.mark.parametrize(
     ["char_order", "word_order", "lowercase", "whitespace"],
     [
-        pytest.param(6, 2, False, False),
-        pytest.param(6, 2, False, True),
-        pytest.param(4, 2, True, False),
-        pytest.param(6, 0, True, False),
-        pytest.param(6, 0, True, True),
-        pytest.param(4, 0, False, True),
+        (6, 2, False, False),
+        (6, 2, False, True),
+        (4, 2, True, False),
+        (6, 0, True, False),
+        (6, 0, True, True),
+        (4, 0, False, True),
     ],
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [
-        pytest.param(BATCHES["preds"], BATCHES["targets"]),
-    ],
+    [(BATCHES["preds"], BATCHES["targets"])],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):

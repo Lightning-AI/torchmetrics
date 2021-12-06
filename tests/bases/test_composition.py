@@ -310,10 +310,10 @@ def test_metrics_or(second_operand, expected_result):
 @pytest.mark.parametrize(
     ["second_operand", "expected_result"],
     [
-        pytest.param(DummyMetric(2), tensor(4)),
-        pytest.param(2, tensor(4)),
+        (DummyMetric(2), tensor(4)),
+        (2, tensor(4)),
         pytest.param(2.0, tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_6)),
-        pytest.param(tensor(2), tensor(4)),
+        (tensor(2), tensor(4)),
     ],
 )
 def test_metrics_pow(second_operand, expected_result):
@@ -376,8 +376,8 @@ def test_metrics_rmod(first_operand, expected_result):
 @pytest.mark.parametrize(
     "first_operand,expected_result",
     [
-        pytest.param(DummyMetric(2), tensor(4)),
-        pytest.param(2, tensor(4)),
+        (DummyMetric(2), tensor(4)),
+        (2, tensor(4)),
         pytest.param(2.0, tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_6)),
     ],
 )
