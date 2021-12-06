@@ -144,10 +144,10 @@ hinge [func]
 .. autofunction:: torchmetrics.functional.hinge
     :noindex:
 
-iou [func]
-~~~~~~~~~~
+jaccard_index [func]
+~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.iou
+.. autofunction:: torchmetrics.functional.jaccard_index
     :noindex:
 
 kl_divergence [func]

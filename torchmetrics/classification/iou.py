@@ -12,60 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional
+from warnings import warn
 
 import torch
-from torch import Tensor
 
-from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional.classification.iou import _iou_from_confmat
+from torchmetrics.classification.jaccard import JaccardIndex
 
 
-class IoU(ConfusionMatrix):
+class IoU(JaccardIndex):
     r"""
     Computes Intersection over union, or `Jaccard index`_:
 
-    .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
-
-    Where: :math:`A` and :math:`B` are both tensors of the same size, containing integer class values.
-    They may be subject to conversion from input data (see description below). Note that it is different from box IoU.
-
-    Works with binary, multiclass and multi-label data.
-    Accepts probabilities from a model output or integer class values in prediction.
-    Works with multi-dimensional preds and target.
-
-    Forward accepts
-
-    - ``preds`` (float or long tensor): ``(N, ...)`` or ``(N, C, ...)`` where C is the number of classes
-    - ``target`` (long tensor): ``(N, ...)``
-
-    If preds and target are the same shape and preds is a float tensor, we use the ``self.threshold`` argument
-    to convert into integer labels. This is the case for binary and multi-label probabilities.
-
-    If preds has an extra dimension as in the case of multi-class scores we perform an argmax on ``dim=1``.
-
-    Args:
-        num_classes: Number of classes in the dataset.
-        ignore_index: optional int specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. Has no effect if given an int that is not in the
-            range [0, num_classes-1]. By default, no index is ignored, and all classes are used.
-        absent_score: score to use for an individual class, if no instances of the class index were present in
-            `pred` AND no instances of the class index were present in `target`. For example, if we have 3 classes,
-            [0, 0] for `pred`, and [0, 2] for `target`, then class 1 would be assigned the `absent_score`.
-        threshold:
-            Threshold value for binary or multi-label probabilities.
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
-        compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.JaccardIndex`. Will be removed in v0.8.
 
     Example:
         >>> from torchmetrics import IoU
@@ -77,8 +36,6 @@ class IoU(ConfusionMatrix):
         tensor(0.9660)
 
     """
-    is_differentiable = False
-    higher_is_better = True
 
     def __init__(
         self,
@@ -91,18 +48,14 @@ class IoU(ConfusionMatrix):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
+        warn("`IoU` was renamed to `JaccardIndex` in v0.7 and it will be removed in v0.8", DeprecationWarning)
         super().__init__(
             num_classes=num_classes,
-            normalize=None,
+            ignore_index=ignore_index,
+            absent_score=absent_score,
             threshold=threshold,
+            reduction=reduction,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
         )
-        self.reduction = reduction
-        self.ignore_index = ignore_index
-        self.absent_score = absent_score
-
-    def compute(self) -> Tensor:
-        """Computes intersection over union (IoU)"""
-        return _iou_from_confmat(self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction)
