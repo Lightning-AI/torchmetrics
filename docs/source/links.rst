@@ -75,3 +75,4 @@
 .. _SQuAD Metric: https://arxiv.org/pdf/1606.05250.pdf
 .. _chrF score: https://aclanthology.org/W15-3049.pdf
 .. _chrF++ score: https://aclanthology.org/W17-4770.pdf
+.. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
