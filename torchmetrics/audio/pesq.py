@@ -62,7 +62,7 @@ class PESQ(Metric):
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.audio import PESQ
+        >>> from torchmetrics.audio.pesq import PESQ
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)

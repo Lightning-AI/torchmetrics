@@ -179,6 +179,42 @@ class MAP(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
+    Example:
+        >>> import torch
+        >>> from torchmetrics.detection.map import MAP
+        >>> preds = [
+        ...   dict(
+        ...     boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
+        ...     scores=torch.Tensor([0.536]),
+        ...     labels=torch.IntTensor([0]),
+        ...   )
+        ... ]
+        >>> target = [
+        ...   dict(
+        ...     boxes=torch.Tensor([[214.0, 41.0, 562.0, 285.0]]),
+        ...     labels=torch.IntTensor([0]),
+        ...   )
+        ... ]
+        >>> metric = MAP()  # doctest: +SKIP
+        >>> metric.update(preds, target)  # doctest: +SKIP
+        >>> from pprint import pprint
+        >>> pprint(metric.compute())  # doctest: +SKIP
+        {'map': tensor(0.6000),
+         'map_50': tensor(1.),
+         'map_75': tensor(1.),
+         'map_small': tensor(-1.),
+         'map_medium': tensor(-1.),
+         'map_large': tensor(0.6000),
+         'mar_1': tensor(0.6000),
+         'mar_10': tensor(0.6000),
+         'mar_100': tensor(0.6000),
+         'mar_small': tensor(-1.),
+         'mar_medium': tensor(-1.),
+         'mar_large': tensor(0.6000),
+         'map_per_class': tensor(-1.),
+         'mar_100_per_class': tensor(-1.)
+        }
+
     Raises:
         ImportError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0

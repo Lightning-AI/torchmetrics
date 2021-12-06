@@ -21,8 +21,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from torchmetrics.audio import PESQ
-from torchmetrics.functional import pesq
+from torchmetrics.audio.pesq import PESQ
+from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)

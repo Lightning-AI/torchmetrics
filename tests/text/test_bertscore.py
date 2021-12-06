@@ -7,8 +7,8 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
-from torchmetrics.functional import bert_score as metrics_bert_score
-from torchmetrics.text import BERTScore
+from torchmetrics.functional.text.bert import bert_score as metrics_bert_score
+from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE
 
 if _BERTSCORE_AVAILABLE:
