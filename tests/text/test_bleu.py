@@ -58,17 +58,15 @@ smooth_func = SmoothingFunction().method2
 @pytest.mark.parametrize(
     ["weights", "n_gram", "smooth_func", "smooth"],
     [
-        pytest.param([1], 1, None, False),
-        pytest.param([0.5, 0.5], 2, smooth_func, True),
-        pytest.param([0.333333, 0.333333, 0.333333], 3, None, False),
-        pytest.param([0.25, 0.25, 0.25, 0.25], 4, smooth_func, True),
+        ([1], 1, None, False),
+        ([0.5, 0.5], 2, smooth_func, True),
+        ([0.333333, 0.333333, 0.333333], 3, None, False),
+        ([0.25, 0.25, 0.25, 0.25], 4, smooth_func, True),
     ],
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [
-        pytest.param(BATCHES["preds"], BATCHES["targets"]),
-    ],
+    [(BATCHES["preds"], BATCHES["targets"])],
 )
 class TestBLEUScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])

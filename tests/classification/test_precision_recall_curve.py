@@ -110,7 +110,7 @@ class TestPrecisionRecallCurve(MetricTester):
 
 @pytest.mark.parametrize(
     ["pred", "target", "expected_p", "expected_r", "expected_t"],
-    [pytest.param([1, 2, 3, 4], [1, 0, 0, 1], [0.5, 1 / 3, 0.5, 1.0, 1.0], [1, 0.5, 0.5, 0.5, 0.0], [1, 2, 3, 4])],
+    [([1, 2, 3, 4], [1, 0, 0, 1], [0.5, 1 / 3, 0.5, 1.0, 1.0], [1, 0.5, 0.5, 0.5, 0.0], [1, 2, 3, 4])],
 )
 def test_pr_curve(pred, target, expected_p, expected_r, expected_t):
     p, r, t = precision_recall_curve(tensor(pred), tensor(target))

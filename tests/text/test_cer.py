@@ -35,8 +35,8 @@ def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        pytest.param(BATCHES_1["preds"], BATCHES_1["targets"]),
-        pytest.param(BATCHES_2["preds"], BATCHES_2["targets"]),
+        (BATCHES_1["preds"], BATCHES_1["targets"]),
+        (BATCHES_2["preds"], BATCHES_2["targets"]),
     ],
 )
 class TestCharErrorRate(TextTester):
