@@ -63,7 +63,7 @@ class STOI(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio import STOI
+        >>> from torchmetrics.audio.stoi import STOI
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)

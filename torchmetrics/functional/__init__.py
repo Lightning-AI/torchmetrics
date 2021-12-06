@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.functional.audio.pit import pit, pit_permutate
 from torchmetrics.functional.audio.sdr import sdr
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.functional.audio.snr import snr
-from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
@@ -110,7 +108,6 @@ __all__ = [
     "pairwise_linear_similarity",
     "pairwise_manhatten_distance",
     "pearson_corrcoef",
-    "pesq",
     "pit",
     "pit_permutate",
     "precision",
@@ -139,7 +136,6 @@ __all__ = [
     "squad",
     "ssim",
     "stat_scores",
-    "stoi",
     "symmetric_mean_absolute_percentage_error",
     "ter",
     "wer",

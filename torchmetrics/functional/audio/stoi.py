@@ -59,7 +59,7 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.functional.audio import stoi
+        >>> from torchmetrics.functional.audio.stoi import stoi
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
