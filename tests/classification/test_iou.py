@@ -139,12 +139,12 @@ class TestIoU(MetricTester):
 @pytest.mark.parametrize(
     ["half_ones", "reduction", "ignore_index", "expected"],
     [
-        pytest.param(False, "none", None, Tensor([1, 1, 1])),
-        pytest.param(False, "elementwise_mean", None, Tensor([1])),
-        pytest.param(False, "none", 0, Tensor([1, 1])),
-        pytest.param(True, "none", None, Tensor([0.5, 0.5, 0.5])),
-        pytest.param(True, "elementwise_mean", None, Tensor([0.5])),
-        pytest.param(True, "none", 0, Tensor([2 / 3, 1 / 2])),
+        (False, "none", None, Tensor([1, 1, 1])),
+        (False, "elementwise_mean", None, Tensor([1])),
+        (False, "none", 0, Tensor([1, 1])),
+        (True, "none", None, Tensor([0.5, 0.5, 0.5])),
+        (True, "elementwise_mean", None, Tensor([0.5])),
+        (True, "none", 0, Tensor([2 / 3, 1 / 2])),
     ],
 )
 def test_iou(half_ones, reduction, ignore_index, expected):
@@ -168,30 +168,30 @@ def test_iou(half_ones, reduction, ignore_index, expected):
         # Note that -1 is used as the absent_score in almost all tests here to distinguish it from the range of valid
         # scores the function can return ([0., 1.] range, inclusive).
         # 2 classes, class 0 is correct everywhere, class 1 is absent.
-        pytest.param([0], [0], None, -1.0, 2, [1.0, -1.0]),
-        pytest.param([0, 0], [0, 0], None, -1.0, 2, [1.0, -1.0]),
+        ([0], [0], None, -1.0, 2, [1.0, -1.0]),
+        ([0, 0], [0, 0], None, -1.0, 2, [1.0, -1.0]),
         # absent_score not applied if only class 0 is present and it's the only class.
-        pytest.param([0], [0], None, -1.0, 1, [1.0]),
+        ([0], [0], None, -1.0, 1, [1.0]),
         # 2 classes, class 1 is correct everywhere, class 0 is absent.
-        pytest.param([1], [1], None, -1.0, 2, [-1.0, 1.0]),
-        pytest.param([1, 1], [1, 1], None, -1.0, 2, [-1.0, 1.0]),
+        ([1], [1], None, -1.0, 2, [-1.0, 1.0]),
+        ([1, 1], [1, 1], None, -1.0, 2, [-1.0, 1.0]),
         # When 0 index ignored, class 0 does not get a score (not even the absent_score).
-        pytest.param([1], [1], 0, -1.0, 2, [1.0]),
+        ([1], [1], 0, -1.0, 2, [1.0]),
         # 3 classes. Only 0 and 2 are present, and are perfectly predicted. 1 should get absent_score.
-        pytest.param([0, 2], [0, 2], None, -1.0, 3, [1.0, -1.0, 1.0]),
-        pytest.param([2, 0], [2, 0], None, -1.0, 3, [1.0, -1.0, 1.0]),
+        ([0, 2], [0, 2], None, -1.0, 3, [1.0, -1.0, 1.0]),
+        ([2, 0], [2, 0], None, -1.0, 3, [1.0, -1.0, 1.0]),
         # 3 classes. Only 0 and 1 are present, and are perfectly predicted. 2 should get absent_score.
-        pytest.param([0, 1], [0, 1], None, -1.0, 3, [1.0, 1.0, -1.0]),
-        pytest.param([1, 0], [1, 0], None, -1.0, 3, [1.0, 1.0, -1.0]),
+        ([0, 1], [0, 1], None, -1.0, 3, [1.0, 1.0, -1.0]),
+        ([1, 0], [1, 0], None, -1.0, 3, [1.0, 1.0, -1.0]),
         # 3 classes, class 0 is 0.5 IoU, class 1 is 0 IoU (in pred but not target; should not get absent_score), class
         # 2 is absent.
-        pytest.param([0, 1], [0, 0], None, -1.0, 3, [0.5, 0.0, -1.0]),
+        ([0, 1], [0, 0], None, -1.0, 3, [0.5, 0.0, -1.0]),
         # 3 classes, class 0 is 0.5 IoU, class 1 is 0 IoU (in target but not pred; should not get absent_score), class
         # 2 is absent.
-        pytest.param([0, 0], [0, 1], None, -1.0, 3, [0.5, 0.0, -1.0]),
+        ([0, 0], [0, 1], None, -1.0, 3, [0.5, 0.0, -1.0]),
         # Sanity checks with absent_score of 1.0.
-        pytest.param([0, 2], [0, 2], None, 1.0, 3, [1.0, 1.0, 1.0]),
-        pytest.param([0, 2], [0, 2], 0, 1.0, 3, [1.0, 1.0]),
+        ([0, 2], [0, 2], None, 1.0, 3, [1.0, 1.0, 1.0]),
+        ([0, 2], [0, 2], 0, 1.0, 3, [1.0, 1.0]),
     ],
 )
 def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes, expected):
@@ -212,16 +212,16 @@ def test_iou_absent_score(pred, target, ignore_index, absent_score, num_classes,
     ["pred", "target", "ignore_index", "num_classes", "reduction", "expected"],
     [
         # Ignoring an index outside of [0, num_classes-1] should have no effect.
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], None, 3, "none", [1, 1 / 2, 2 / 3]),
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], -1, 3, "none", [1, 1 / 2, 2 / 3]),
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 255, 3, "none", [1, 1 / 2, 2 / 3]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], None, 3, "none", [1, 1 / 2, 2 / 3]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], -1, 3, "none", [1, 1 / 2, 2 / 3]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 255, 3, "none", [1, 1 / 2, 2 / 3]),
         # Ignoring a valid index drops only that index from the result.
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "none", [1 / 2, 2 / 3]),
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 1, 3, "none", [1, 2 / 3]),
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 2, 3, "none", [1, 1]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "none", [1 / 2, 2 / 3]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 1, 3, "none", [1, 2 / 3]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 2, 3, "none", [1, 1]),
         # When reducing to mean or sum, the ignored index does not contribute to the output.
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "elementwise_mean", [7 / 12]),
-        pytest.param([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "sum", [7 / 6]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "elementwise_mean", [7 / 12]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "sum", [7 / 6]),
     ],
 )
 def test_iou_ignore_index(pred, target, ignore_index, num_classes, reduction, expected):
