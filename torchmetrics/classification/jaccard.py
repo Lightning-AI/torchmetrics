@@ -72,8 +72,8 @@ class JaccardIndex(ConfusionMatrix):
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> iou = JaccardIndex(num_classes=2)
-        >>> iou(pred, target)
+        >>> jaccard = JaccardIndex(num_classes=2)
+        >>> jaccard(pred, target)
         tensor(0.9660)
 
     """
