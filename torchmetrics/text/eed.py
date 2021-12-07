@@ -35,7 +35,7 @@ class EED(Metric):
         >>> references = ["this is the reference", "here is another one"]
         >>> metric = EED()
         >>> metric(hypotheses=hypotheses, references=references)
-        tensor([0.3078])
+        tensor(0.3078)
 
     References:
         [1] EED: Extended Edit Distance Measure for Machine Translation by Peter Stanchev, Weiyue Wang, and Hermann Ney `EED`_
