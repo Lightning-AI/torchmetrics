@@ -77,11 +77,10 @@ def distance(refWord: str, hypWord: str) -> int:
     """
     if refWord == hypWord:
         return 0
-    else:
-        return 1
+    return 1
 
 
-def _eed_function(hyp: str, ref: str) -> float:
+def _eed_function(hyp: List[str], ref: List[str]) -> float:
     """Computes extended edit distance score for two strings: hypotheses and references
     Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py
 
@@ -140,8 +139,7 @@ def _eed_function(hyp: str, ref: str) -> float:
 
 def preprocess_en(s: str) -> str:
     """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py"""
-
-    if isinstance(s, str) != True:
+    if isinstance(s, str) is not True:
         raise RuntimeError(f"Only strings allowed during preprocessing step, found {type(s)} instead")
 
     s = s.rstrip()  # trailing space, tab, or newline
@@ -162,8 +160,7 @@ def preprocess_en(s: str) -> str:
 
 def preprocess_ja(s: str) -> str:
     """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py"""
-
-    if isinstance(s, str) != True:
+    if isinstance(s, str) is not True:
         raise RuntimeError(f"Only strings allowed during preprocessing step, found {type(s)} instead")
 
     s = s.rstrip()  # trailing space, tab, newline
@@ -272,7 +269,7 @@ def eed(
     Example:
         >>> hypotheses = ["this is the prediction", "here is an other sample"]
         >>> references = ["this is the reference", "here is another one"]
-        >>> extended_edit_distance(hypotheses=hypotheses, references=references)
+        >>> eed(hypotheses=hypotheses, references=references)
         tensor([0.3078])
 
     References:

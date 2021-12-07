@@ -33,13 +33,13 @@ class EED(Metric):
     Example:
         >>> hypotheses = ["this is the prediction", "here is an other sample"]
         >>> references = ["this is the reference", "here is another one"]
-        >>> extended_edit_distance(hypotheses=hypotheses, references=references)
+        >>> metric = EED()
+        >>> metric(hypotheses=hypotheses, references=references)
         tensor([0.3078])
 
     References:
         [1] EED: Extended Edit Distance Measure for Machine Translation by Peter Stanchev, Weiyue Wang, and Hermann Ney `EED`_
     """
-
     scores: tensor
     total: tensor
 
@@ -66,7 +66,6 @@ class EED(Metric):
         Returns:
             None
         """
-
         scores, total = _eed_update(hypotheses=hypotheses, references=references, language=self.language)
         self.scores += scores
         self.total += total

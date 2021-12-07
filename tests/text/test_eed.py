@@ -30,14 +30,14 @@ BATCH_1 = {"hypotheses": [HYPOTHESES_1, HYPOTHESES_2], "references": [REFERENCES
 
 # test blank edge cases
 def test_eed_empty_functional():
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(RuntimeError):
         hyp = []
         ref = [[]]
         eed(ref, hyp)
 
 
 def test_eed_empty_class():
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(RuntimeError):
         eed_metric = EED()
         hyp = []
         ref = [[]]
@@ -52,7 +52,7 @@ def test_eed_empty_with_non_empty_hyp_functional():
 
 
 def test_eed_empty_with_non_empty_hyp_class():
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(RuntimeError):
         eed_metric = EED()
         hyp = ["python"]
         ref = [[]]
