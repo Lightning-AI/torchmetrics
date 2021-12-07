@@ -16,10 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `WordInfoLost` and `WordInfoPreserved` ([#630](https://github.com/PyTorchLightning/metrics/pull/630))
   - `SQuAD` ([#623](https://github.com/PyTorchLightning/metrics/pull/623))
   - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
+  - `TER` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
 
-- Add a default VS Code devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
 
-- Added Signal to Distortion Ratio (`SDR`) to `audio` package ([#565](https://github.com/PyTorchLightning/metrics/pull/565))
+- Add a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
+
+
+- Added Signal to Distortion Ratio (`SDR`) to audio package ([#565](https://github.com/PyTorchLightning/metrics/pull/565))
 
 
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
@@ -30,10 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scalar metrics will now consistently have additional dimensions squeezed ([#622](https://github.com/PyTorchLightning/metrics/pull/622))
 
 
-- Use `torch.topk` instead of `torch.argsort` in retrieval precision for speedup ([#627](https://github.com/PyTorchLightning/metrics/pull/627))
+- Metrics having third party dependencies removed from global import ([#463](https://github.com/PyTorchLightning/metrics/pull/463))
+
+
+- `BLEUScore` now expects untokenized input to stay consistent with all the other text metrics ([#640](https://github.com/PyTorchLightning/metrics/pull/640))
 
 
 ### Deprecated
+
+- Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
 
 
 ### Removed
@@ -44,12 +52,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix empty predictions in MAP metric ([#594](https://github.com/PyTorchLightning/metrics/pull/594), [#624](https://github.com/PyTorchLightning/metrics/pull/624))
 
 
+## [0.6.1] - 2021-12-06
+
+### Changed
+
+- Migrate MAP metrics from pycocotools to PyTorch ([#632](https://github.com/PyTorchLightning/metrics/pull/632))
+- Use `torch.topk` instead of `torch.argsort` in retrieval precision for speedup ([#627](https://github.com/PyTorchLightning/metrics/pull/627))
+
+### Fixed
+
+- Fix empty predictions in MAP metric ([#594](https://github.com/PyTorchLightning/metrics/pull/594), [#610](https://github.com/PyTorchLightning/metrics/pull/610), [#624](https://github.com/PyTorchLightning/metrics/pull/624))
 - Fix edge case of AUROC with `average=weighted` on GPU ([#606](https://github.com/PyTorchLightning/metrics/pull/606))
-
-
 - Fixed `forward` in compositional metrics ([#645](https://github.com/PyTorchLightning/metrics/pull/645))
 
 

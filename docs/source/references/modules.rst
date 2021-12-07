@@ -77,7 +77,7 @@ the metric will be computed over the ``time`` dimension.
 PESQ
 ~~~~
 
-.. autoclass:: torchmetrics.PESQ
+.. autoclass:: torchmetrics.audio.pesq.PESQ
 
 PIT
 ~~~
@@ -112,7 +112,7 @@ SNR
 STOI
 ~~~~
 
-.. autoclass:: torchmetrics.STOI
+.. autoclass:: torchmetrics.audio.stoi.STOI
     :noindex:
 
 
@@ -302,10 +302,10 @@ Hinge
 .. autoclass:: torchmetrics.Hinge
     :noindex:
 
-IoU
-~~~
+JaccardIndex
+~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.IoU
+.. autoclass:: torchmetrics.JaccardIndex
     :noindex:
 
 KLDivergence
@@ -369,25 +369,25 @@ learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.
 FID
 ~~~
 
-.. autoclass:: torchmetrics.FID
+.. autoclass:: torchmetrics.image.fid.FID
     :noindex:
 
 IS
 ~~
 
-.. autoclass:: torchmetrics.IS
+.. autoclass:: torchmetrics.image.inception.IS
     :noindex:
 
 KID
 ~~~
 
-.. autoclass:: torchmetrics.KID
+.. autoclass:: torchmetrics.image.kid.KID
     :noindex:
 
 LPIPS
 ~~~~~
 
-.. autoclass:: torchmetrics.LPIPS
+.. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
     :noindex:
 
 PSNR
@@ -411,7 +411,7 @@ Object detection metrics can be used to evaluate the predicted detections with g
 MAP
 ~~~
 
-.. autoclass:: torchmetrics.MAP
+.. autoclass:: torchmetrics.detection.map.MAP
     :noindex:
 
 ******************
@@ -613,7 +613,7 @@ Text
 BERTScore
 ~~~~~~~~~~
 
-.. autoclass:: torchmetrics.BERTScore
+.. autoclass:: torchmetrics.text.bert.BERTScore
     :noindex:
 
 BLEUScore
@@ -643,7 +643,7 @@ MatchErrorRate
 ROUGEScore
 ~~~~~~~~~~
 
-.. autoclass:: torchmetrics.ROUGEScore
+.. autoclass:: torchmetrics.text.rouge.ROUGEScore
     :noindex:
 
 SacreBLEUScore
@@ -652,11 +652,16 @@ SacreBLEUScore
 .. autoclass:: torchmetrics.SacreBLEUScore
     :noindex:
 
-
 SQuAD
 ~~~~~
 
 .. autoclass:: torchmetrics.SQuAD
+    :noindex:
+
+TER
+~~~
+
+.. autoclass:: torchmetrics.TER
     :noindex:
 
 WER

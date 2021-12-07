@@ -14,7 +14,7 @@ Audio Metrics
 pesq [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pesq
+.. autofunction:: torchmetrics.functional.audio.pesq.pesq
 
 
 pit [func]
@@ -55,7 +55,7 @@ snr [func]
 stoi [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.stoi
+.. autofunction:: torchmetrics.functional.audio.stoi.stoi
     :noindex:
 
 
@@ -144,10 +144,10 @@ hinge [func]
 .. autofunction:: torchmetrics.functional.hinge
     :noindex:
 
-iou [func]
-~~~~~~~~~~
+jaccard_index [func]
+~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.iou
+.. autofunction:: torchmetrics.functional.jaccard_index
     :noindex:
 
 kl_divergence [func]
@@ -433,7 +433,7 @@ Text
 bert_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.bert_score
+.. autofunction:: torchmetrics.functional.text.bert.bert_score
 
 bleu_score [func]
 ~~~~~~~~~~~~~~~~~
@@ -462,7 +462,7 @@ match_error_rate [func]
 rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.rouge_score
+.. autofunction:: torchmetrics.functional.text.rouge.rouge_score
     :noindex:
 
 sacre_bleu_score [func]
@@ -471,11 +471,16 @@ sacre_bleu_score [func]
 .. autofunction:: torchmetrics.functional.sacre_bleu_score
     :noindex:
 
-
 squad [func]
 ~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.squad
+    :noindex:
+
+ter [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ter
     :noindex:
 
 wer [func]

@@ -130,11 +130,11 @@ class TestROC(MetricTester):
 @pytest.mark.parametrize(
     ["pred", "target", "expected_tpr", "expected_fpr"],
     [
-        pytest.param([0, 1], [0, 1], [0, 1, 1], [0, 0, 1]),
-        pytest.param([1, 0], [0, 1], [0, 0, 1], [0, 1, 1]),
-        pytest.param([1, 1], [1, 0], [0, 1], [0, 1]),
-        pytest.param([1, 0], [1, 0], [0, 1, 1], [0, 0, 1]),
-        pytest.param([0.5, 0.5], [0, 1], [0, 1], [0, 1]),
+        ([0, 1], [0, 1], [0, 1, 1], [0, 0, 1]),
+        ([1, 0], [0, 1], [0, 0, 1], [0, 1, 1]),
+        ([1, 1], [1, 0], [0, 1], [0, 1]),
+        ([1, 0], [1, 0], [0, 1, 1], [0, 0, 1]),
+        ([0.5, 0.5], [0, 1], [0, 1], [0, 1]),
     ],
 )
 def test_roc_curve(pred, target, expected_tpr, expected_fpr):

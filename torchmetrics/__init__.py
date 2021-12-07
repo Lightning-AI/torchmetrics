@@ -13,8 +13,8 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
-from torchmetrics.audio import PESQ, PIT, SDR, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
-from torchmetrics.classification import (  # noqa: E402
+from torchmetrics.audio import PIT, SDR, SI_SDR, SI_SNR, SNR  # noqa: E402
+from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
     F1,
@@ -31,6 +31,7 @@ from torchmetrics.classification import (  # noqa: E402
     HammingDistance,
     Hinge,
     IoU,
+    JaccardIndex,
     KLDivergence,
     MatthewsCorrcoef,
     Precision,
@@ -40,8 +41,7 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
-from torchmetrics.detection import MAP  # noqa: E402
-from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
+from torchmetrics.image import PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
@@ -67,13 +67,12 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
+    TER,
     WER,
-    BERTScore,
     BLEUScore,
     CharErrorRate,
     CHRFScore,
     MatchErrorRate,
-    ROUGEScore,
     SacreBLEUScore,
     SQuAD,
     WordInfoLost,
@@ -90,7 +89,6 @@ __all__ = [
     "BinnedAveragePrecision",
     "BinnedPrecisionRecallCurve",
     "BinnedRecallAtFixedPrecision",
-    "BERTScore",
     "BLEUScore",
     "BootStrapper",
     "CalibrationError",
@@ -103,15 +101,10 @@ __all__ = [
     "ExplainedVariance",
     "F1",
     "FBeta",
-    "FID",
     "HammingDistance",
     "Hinge",
-    "IoU",
-    "IS",
-    "KID",
+    "JaccardIndex",
     "KLDivergence",
-    "LPIPS",
-    "MAP",
     "MatthewsCorrcoef",
     "MaxMetric",
     "MeanAbsoluteError",
@@ -126,7 +119,6 @@ __all__ = [
     "MinMetric",
     "MultioutputWrapper",
     "PearsonCorrcoef",
-    "PESQ",
     "PIT",
     "Precision",
     "PrecisionRecallCurve",
@@ -142,7 +134,6 @@ __all__ = [
     "RetrievalRecall",
     "RetrievalRPrecision",
     "ROC",
-    "ROUGEScore",
     "SacreBLEUScore",
     "SDR",
     "SI_SDR",
@@ -153,9 +144,9 @@ __all__ = [
     "SQuAD",
     "SSIM",
     "StatScores",
-    "STOI",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
+    "TER",
     "WER",
     "CharErrorRate",
     "MatchErrorRate",

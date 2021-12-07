@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.functional.audio.pit import pit, pit_permutate
 from torchmetrics.functional.audio.sdr import sdr
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.functional.audio.snr import snr
-from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
@@ -29,7 +27,8 @@ from torchmetrics.functional.classification.dice import dice_score
 from torchmetrics.functional.classification.f_beta import f1, fbeta
 from torchmetrics.functional.classification.hamming_distance import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge
-from torchmetrics.functional.classification.iou import iou
+from torchmetrics.functional.classification.iou import iou  # noqa: F401
+from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
@@ -73,6 +72,7 @@ from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.squad import squad
+from torchmetrics.functional.text.ter import ter
 from torchmetrics.functional.text.wer import wer
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
@@ -97,7 +97,7 @@ __all__ = [
     "hamming_distance",
     "hinge",
     "image_gradients",
-    "iou",
+    "jaccard_index",
     "kl_divergence",
     "matthews_corrcoef",
     "mean_absolute_error",
@@ -109,7 +109,6 @@ __all__ = [
     "pairwise_linear_similarity",
     "pairwise_manhatten_distance",
     "pearson_corrcoef",
-    "pesq",
     "pit",
     "pit_permutate",
     "precision",
@@ -138,8 +137,8 @@ __all__ = [
     "squad",
     "ssim",
     "stat_scores",
-    "stoi",
     "symmetric_mean_absolute_percentage_error",
+    "ter",
     "wer",
     "char_error_rate",
     "match_error_rate",
