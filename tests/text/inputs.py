@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections import namedtuple
 
-Input = namedtuple("Input", ["preds", "target"])
+Input = namedtuple("Input", ["preds", "targets"])
 
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.corpus_bleu and adjusted
@@ -38,10 +38,26 @@ TUPLE_OF_REFERENCES = (
 )
 TUPLE_OF_HYPOTHESES = ((HYPOTHESIS_A, HYPOTHESIS_B), (HYPOTHESIS_B, HYPOTHESIS_C))
 
-_inputs_single_sentence_multiple_references = Input(preds=[HYPOTHESIS_B], target=[[REFERENCE_1B, REFERENCE_2B]])
+_inputs_single_sentence_multiple_references = Input(preds=[HYPOTHESIS_B], targets=[[REFERENCE_1B, REFERENCE_2B]])
 
-_input_multiple_references = Input(preds=TUPLE_OF_HYPOTHESES, target=TUPLE_OF_REFERENCES)
+_inputs_multiple_references = Input(preds=TUPLE_OF_HYPOTHESES, targets=TUPLE_OF_REFERENCES)
 
-_input_single_reference_batch_size_1 = Input()
+ERROR_RATES_BATCHES_1 = {
+    "preds": [["hello world"], ["what a day"]],
+    "targets": [["hello world"], ["what a wonderful day"]],
+}
 
-_input_single_reference_batch_size_2 = Input()
+ERROR_RATES_BATCHES_2 = {
+    "preds": [
+        ["i like python", "what you mean or swallow"],
+        ["hello duck", "i like python"],
+    ],
+    "targets": [
+        ["i like monthy python", "what do you mean, african or european swallow"],
+        ["hello world", "i like monthy python"],
+    ],
+}
+
+_inputs_error_rate_batch_size_1 = Input(**ERROR_RATES_BATCHES_1)
+
+_inputs_error_rate_batch_size_2 = Input(**ERROR_RATES_BATCHES_2)

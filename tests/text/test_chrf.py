@@ -5,14 +5,13 @@ import pytest
 from torch import Tensor, tensor
 
 from tests.text.helpers import INPUT_ORDER, TextTester
-from tests.text.inputs import _input_multiple_references, _inputs_single_sentence_multiple_references
+from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
 if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
-
 
 
 def sacrebleu_chrf_fn(
@@ -45,13 +44,7 @@ def sacrebleu_chrf_fn(
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-<<<<<<< HEAD
-    [
-        pytest.param(_input_multiple_references.preds, _input_multiple_references.target),
-    ],
-=======
-    [(BATCHES["preds"], BATCHES["targets"])],
->>>>>>> master
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
@@ -134,7 +127,7 @@ def test_chrf_empty_class():
 
 def test_chrf_return_sentence_level_score_functional():
     hyp = _inputs_single_sentence_multiple_references.preds
-    ref =_inputs_single_sentence_multiple_references.target
+    ref = _inputs_single_sentence_multiple_references.targets
     _, chrf_sentence_score = chrf_score(ref, hyp, return_sentence_level_score=True)
     isinstance(chrf_sentence_score, Tensor)
 
@@ -142,6 +135,6 @@ def test_chrf_return_sentence_level_score_functional():
 def test_chrf_return_sentence_level_class():
     chrf = CHRFScore(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
-    ref =_inputs_single_sentence_multiple_references.target
+    ref = _inputs_single_sentence_multiple_references.targets
     _, chrf_sentence_score = chrf(ref, hyp)
     isinstance(chrf_sentence_score, Tensor)
