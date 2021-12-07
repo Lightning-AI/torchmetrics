@@ -30,7 +30,7 @@
 # obtained through the use of modified and unmodified versions of the SOFTWARE. However, RWTH remain the authors of the
 # SOFTWARE and so retain property rights and the use of all ancillary rights. The SOFTWARE is defined as all successive
 # versions of EED software and their documentation that have been developed by RWTH.
-# 
+#
 # When you access and use the SOFTWARE, you are presumed to be aware of and to have accepted all the rights and
 # obligations of the present license:
 #
