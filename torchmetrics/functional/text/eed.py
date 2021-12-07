@@ -137,7 +137,7 @@ def _eed_function(hyp: str, ref: str) -> float:
 
 
 def preprocess_en(s: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py"""
+    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py."""
     if isinstance(s, str) is not True:
         raise RuntimeError(f"Only strings allowed during preprocessing step, found {type(s)} instead")
 
@@ -158,7 +158,7 @@ def preprocess_en(s: str) -> str:
 
 
 def preprocess_ja(s: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py"""
+    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py."""
     if isinstance(s, str) is not True:
         raise RuntimeError(f"Only strings allowed during preprocessing step, found {type(s)} instead")
 

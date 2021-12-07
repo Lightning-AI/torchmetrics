@@ -40,6 +40,7 @@ class EED(Metric):
     References:
         [1] EED: Extended Edit Distance Measure for Machine Translation by Peter Stanchev, Weiyue Wang, and Hermann Ney `EED`_
     """
+
     scores: tensor
     total: tensor
 
