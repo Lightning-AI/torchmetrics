@@ -55,18 +55,17 @@
 #  10. This license has the binding value of a contract.
 #  11. The present license and its effects are subject to German law and the competent German Courts.
 
-from torch import tensor
-
-from math import inf
-import unicodedata
 import re
+import unicodedata
+from math import inf
+from typing import List, Tuple, Union
 
-from typing import List, Union, Tuple
+from torch import tensor
 
 
 def distance(refWord: str, hypWord: str) -> int:
-    """Distance measure used for substitutions/identity operation
-    Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py
+    """Distance measure used for substitutions/identity operation Copied from
+    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
         refWord: reference word string
@@ -80,9 +79,9 @@ def distance(refWord: str, hypWord: str) -> int:
     return 1
 
 
-def _eed_function(hyp: List[str], ref: List[str]) -> float:
-    """Computes extended edit distance score for two strings: hypotheses and references
-    Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py
+def _eed_function(hyp: str, ref: str) -> float:
+    """Computes extended edit distance score for two strings: hypotheses and references. Copied from
+    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
         hyp: Transcription to score as a string
@@ -132,7 +131,7 @@ def _eed_function(hyp: List[str], ref: List[str]) -> float:
         row = nextRow
         nextRow = [inf] * (len(hyp) + 1)
 
-    coverage = rho * sum([x if x >= 0 else 1 for x in lj])
+    coverage = rho * sum(x if x >= 0 else 1 for x in lj)
 
     return min(1, (row[-1] + coverage) / (float(len(ref)) + coverage))
 
@@ -169,7 +168,7 @@ def preprocess_ja(s: str) -> str:
 
 
 def _eed_compute(scores: tensor, total: tensor) -> tensor:
-    """Final step in extended edit distance
+    """Final step in extended edit distance.
 
     Args:
         scores: sum of individual sentence scores as a tensor
@@ -187,7 +186,7 @@ def _preprocess_sentences(
     references: Union[str, List[str]],
     language: str,
 ) -> Tuple[List[str], List[str]]:
-    """Proprocess strings according to language requirements
+    """Proprocess strings according to language requirements.
 
     Args:
         hypotheses: Transcription(s) to score as a string or list of strings
@@ -225,7 +224,7 @@ def _eed_update(
     references: Union[str, List[str]],
     language: str,
 ) -> Tuple[tensor, tensor]:
-    """Compute scores for EED
+    """Compute scores for EED.
 
     Args:
         hypotheses: Transcription(s) to score as a string or list of strings
@@ -255,8 +254,8 @@ def eed(
     references: Union[str, List[str]],
     language: str = "en",
 ) -> tensor:
-    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings
-    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings The metric utilises the
+    Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         hypotheses: Transcription(s) to score as a string or list of strings

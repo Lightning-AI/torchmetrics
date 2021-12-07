@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any, Callable, Optional
+
 from torch import tensor
 
-from torchmetrics.metric import Metric
 from torchmetrics.functional.text.eed import _eed_compute, _eed_update
-
-from typing import Optional, Any, Callable
+from torchmetrics.metric import Metric
 
 
 class EED(Metric):
-    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings
-    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings The metric utilises the
+    Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
@@ -57,7 +57,7 @@ class EED(Metric):
         self.add_state("total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, hypotheses, references) -> None:
-        """Update EED statistics
+        """Update EED statistics.
 
         Args:
             hypotheses: Transcription(s) to score as a string or list of strings
@@ -71,7 +71,7 @@ class EED(Metric):
         self.total += total
 
     def compute(self) -> tensor:
-        """Calculate extended edit distance score
+        """Calculate extended edit distance score.
 
         Returns:
             Extended edit distance score as tensor

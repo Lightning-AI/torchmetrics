@@ -67,15 +67,15 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
+    EED,
+    TER,
+    WER,
     BLEUScore,
     CharErrorRate,
     CHRFScore,
-    EED,
     MatchErrorRate,
     SacreBLEUScore,
     SQuAD,
-    TER,
-    WER,
     WordInfoLost,
     WordInfoPreserved,
 )
