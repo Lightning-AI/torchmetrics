@@ -14,6 +14,7 @@
 from torchmetrics.text.bleu import BLEUScore  # noqa: F401
 from torchmetrics.text.cer import CharErrorRate  # noqa: F401
 from torchmetrics.text.chrf import CHRFScore  # noqa: F401
+from torchmetrics.text.eed import EED  # noqa: F401
 from torchmetrics.text.mer import MatchErrorRate  # noqa: F401
 from torchmetrics.text.sacre_bleu import SacreBLEUScore  # noqa: F401
 from torchmetrics.text.squad import SQuAD  # noqa: F401

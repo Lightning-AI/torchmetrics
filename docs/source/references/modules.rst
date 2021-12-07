@@ -634,6 +634,12 @@ CHRFScore
 .. autoclass:: torchmetrics.CHRFScore
     :noindex:
 
+EED
+~~~
+
+.. autoclass:: torchmetrics.EED
+    :noindex:
+
 MatchErrorRate
 ~~~~~~~~~~~~~~
 

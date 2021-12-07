@@ -1,0 +1,81 @@
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from torch import tensor
+
+from torchmetrics.metric import Metric
+from torchmetrics.functional.text.eed import _eed_compute, _eed_update
+
+from typing import Optional, Any, Callable
+
+
+class EED(Metric):
+    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings
+    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
+
+    Args:
+        language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
+
+    Returns:
+        Extended edit distance score as a tensor
+
+    Example:
+        >>> hypotheses = ["this is the prediction", "here is an other sample"]
+        >>> references = ["this is the reference", "here is another one"]
+        >>> extended_edit_distance(hypotheses=hypotheses, references=references)
+        tensor([0.3078])
+
+    References:
+        [1] EED: Extended Edit Distance Measure for Machine Translation by Peter Stanchev, Weiyue Wang, and Hermann Ney `EED`_
+    """
+
+    scores: tensor
+    total: tensor
+
+    def __init__(
+        self,
+        language: str = "en",
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+    ):
+        super().__init__()
+        self.language = language
+        self.add_state("scores", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", tensor(0.0), dist_reduce_fx="sum")
+
+    def update(self, hypotheses, references) -> None:
+        """Update EED statistics
+
+        Args:
+            hypotheses: Transcription(s) to score as a string or list of strings
+            references: Reference(s) for each input as a string or list of strings
+
+        Returns:
+            None
+        """
+
+        scores, total = _eed_update(hypotheses=hypotheses, references=references, language=self.language)
+        self.scores += scores
+        self.total += total
+
+    def compute(self) -> tensor:
+        """Calculate extended edit distance score
+
+        Returns:
+            Extended edit distance score as tensor
+        """
+        eed = _eed_compute(self.scores, self.total)
+        return eed

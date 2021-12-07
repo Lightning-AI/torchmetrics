@@ -453,6 +453,12 @@ chrf_score [func]
 .. autofunction:: torchmetrics.functional.chrf_score
     :noindex:
 
+eed [func]
+~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.eed
+    :noindex:
+
 match_error_rate [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
