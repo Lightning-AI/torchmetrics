@@ -13,9 +13,15 @@
 # limitations under the License.
 
 import pytest
+import numpy as np
 
-from torchmetrics.functional.text.eed import eed
-from torchmetrics.text.eed import EED
+# from torchmetrics.functional.text.eed import eed
+# from torchmetrics.text.eed import EED
+import builtins, pathed
+
+builtins.__import__ = pathed.new_import
+from ...torchmetrics.functional.text.eed import eed
+from ...torchmetrics.text.eed import EED
 
 HYPOTHESES_1 = "perfect match"
 REFERENCES_1 = "perfect match"
@@ -29,14 +35,14 @@ BATCH_1 = {"hypotheses": [HYPOTHESES_1, HYPOTHESES_2], "references": [REFERENCES
 
 # test blank edge cases
 def test_eed_empty_functional():
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         hyp = []
         ref = [[]]
         eed(ref, hyp)
 
 
 def test_eed_empty_class():
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         eed_metric = EED()
         hyp = []
         ref = [[]]
@@ -44,14 +50,14 @@ def test_eed_empty_class():
 
 
 def test_eed_empty_with_non_empty_hyp_functional():
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         hyp = ["python"]
         ref = [[]]
         eed(ref, hyp)
 
 
 def test_eed_empty_with_non_empty_hyp_class():
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         eed_metric = EED()
         hyp = ["python"]
         ref = [[]]
@@ -76,4 +82,4 @@ def test_parallelisation_eed():
 
     parallel_score = metric.compute()
 
-    assert sequential_score == parallel_score
+    assert np.isclose(sequential_score, parallel_score)
