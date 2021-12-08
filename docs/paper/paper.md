@@ -17,7 +17,8 @@ authors:
     affiliation: "1"
   - Luca Di Liello
     affiliation: "3"
-  - Stancld
+  - Daniel Stancl
+    affiliation: "4"
   - Quancs
   - William Falcon
     affiliation: "1"
