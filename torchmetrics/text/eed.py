@@ -16,8 +16,8 @@ from typing import Any, Callable, Literal, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.metric import Metric
 from torchmetrics.functional.text.eed import _eed_compute, _eed_update
+from torchmetrics.metric import Metric
 
 
 class EED(Metric):
