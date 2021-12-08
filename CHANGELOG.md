@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [0.6.2] - 2021-12-DD
+
+### Fixed
+
+- Fixed `torch.sort` currently does not support bool dtype on CUDA ([#665](https://github.com/PyTorchLightning/metrics/pull/665))
+
+
 ## [0.6.1] - 2021-12-06
 
 ### Changed
