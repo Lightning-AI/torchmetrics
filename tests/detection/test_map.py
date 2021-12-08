@@ -220,7 +220,7 @@ _gpu_test_condition = not torch.cuda.is_available()
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
-def test_gpu():
+def test_map_gpu():
     """Test predictions on single gpu."""
     metric = MAP()
     metric = metric.to("cuda")
