@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pytest
-import numpy as np
 
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
