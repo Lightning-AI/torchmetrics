@@ -89,7 +89,8 @@
 import re
 import unicodedata
 from math import inf
-from typing import List, Literal, Tuple, Union
+from typing_extensions import Literal
+from typing import List, Tuple, Union
 
 from torch import Tensor, tensor
 
