@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import pytest
+import numpy as np
 
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
@@ -76,4 +77,6 @@ def test_parallelisation_eed():
 
     parallel_score = metric.compute()
 
-    assert sequential_score == parallel_score
+    score_comparison = np.isclose(sequential_score, parallel_score)
+
+    assert score_comparison is True
