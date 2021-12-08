@@ -35,7 +35,7 @@ class EED(Metric):
         >>> hypotheses = ["this is the prediction", "here is an other sample"]
         >>> references = ["this is the reference", "here is another one"]
         >>> metric = EED()
-        >>> metric(hypotheses=hypotheses, references=references)
+        >>> metric(hypothesis_corpus=hypotheses, reference_corpus=references)
         tensor(0.3204)
 
     References:
