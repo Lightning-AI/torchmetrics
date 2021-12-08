@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing_extensions import Literal
 from typing import Any, Callable, Optional, Sequence, Union
 
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.text.eed import _eed_compute, _eed_update
 from torchmetrics.metric import Metric
