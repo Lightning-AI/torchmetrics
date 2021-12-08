@@ -28,7 +28,6 @@ exclude tests
 # Exclude the documentation files
 recursive-exclude docs *
 exclude docs
-exclude paper
 
 # Include the Requirements
 include requirements.txt
