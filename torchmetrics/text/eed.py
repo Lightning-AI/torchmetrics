@@ -42,8 +42,8 @@ class EED(Metric):
         to WMT 2019. `EED`_
     """
 
-    scores: tensor
-    total: tensor
+    scores: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -72,7 +72,7 @@ class EED(Metric):
         self.scores += scores
         self.total += total
 
-    def compute(self) -> tensor:
+    def compute(self) -> Tensor:
         """Calculate extended edit distance score.
 
         Returns:
