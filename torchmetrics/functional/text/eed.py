@@ -89,10 +89,10 @@
 import re
 import unicodedata
 from math import inf
-from typing_extensions import Literal
 from typing import List, Tuple, Union
 
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 
 def _distance_between_words(reference_word: str, hypothesis_word: str) -> int:
