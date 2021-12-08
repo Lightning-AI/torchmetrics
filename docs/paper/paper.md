@@ -26,6 +26,8 @@ affiliations:
    index: 1
  - name: Technical University of Denmark
    index: 2
+ - name: University of Trento
+   index: 3
 date: 08 Dec 2021
 bibliography: paper.bib
 ---
