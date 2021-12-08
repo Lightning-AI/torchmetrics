@@ -68,7 +68,7 @@ class Accuracy(Metric):
         self.correct += torch.sum(preds == target)
         self.total += target.numel()
 
-    def compute(self) -> Tensor:
+    def compute(self) -> torch.Tensor:
         # compute takes the accumulated states and returns the final metric value
         return self.correct / self.total
 ```
@@ -77,7 +77,7 @@ Another core feature of TorchMetrics is its ability to scale to multiple devices
 
 In addition to stateful metrics (called modular metrics in TorchMetrics), we also support a functional interface that works similar to Scikit-learn. They are simple python functions that, as input, take PyTorch Tensors and return the corresponding metric as a PyTorch Tensor. These can be used when metrics are evaluated on single devices, and no accumulation is needed, making them very fast to compute.
 
-TorchMetrics exhibits high test coverage on the various configurations, including all three major OS platforms (Linux, macOS and Windows), Python, CUDA and PyTorch versions. We test both minimum and latest package requirements for all combinations of OS and Python versions and include additional tests for each PyTorch version from 1.3 up to future development versions. As the development cycle, we run a full test suite for each merge to master branch and a significant portion of these tests for each open PR by any contributor. All standard tests are running on CPU, but as Deep Learning is mainly focused on GPU computing, we are running all tests also in a multi-GPU setting in the cloud. For usability, we have auto-generated HTML documentation at https://torchmetrics.readthedocs.io/en/latest/ from the source code to keep it tied with all API changes.
+TorchMetrics exhibits high test coverage on the various configurations, including all three major OS platforms (Linux, macOS and Windows), Python, CUDA and PyTorch versions. We test both minimum and latest package requirements for all combinations of OS and Python versions and include additional tests for each PyTorch version from 1.3 up to future development versions. As the development cycle, we run a full test suite for each merge to master branch and a significant portion of these tests for each open PR by any contributor. All standard tests are running on CPU, but as Deep Learning is mainly focused on GPU computing, we are running all tests also in a multi-GPU setting in the cloud. For usability, we have auto-generated HTML documentation at https://torchmetrics.readthedocs.io/en/stable/ from the source code to keep it tied with all API changes.
 
 TorchMetrics is released under the Apache 2.0 license, and the source code can be found at https://github.com/PytorchLightning/metrics.
 
