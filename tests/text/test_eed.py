@@ -15,13 +15,8 @@
 import pytest
 import numpy as np
 
-# from torchmetrics.functional.text.eed import eed
-# from torchmetrics.text.eed import EED
-import builtins, pathed
-
-builtins.__import__ = pathed.new_import
-from ...torchmetrics.functional.text.eed import eed
-from ...torchmetrics.text.eed import EED
+from torchmetrics.functional.text.eed import eed
+from torchmetrics.text.eed import EED
 
 HYPOTHESES_1 = "perfect match"
 REFERENCES_1 = "perfect match"
