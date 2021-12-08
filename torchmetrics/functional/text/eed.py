@@ -329,7 +329,7 @@ def eed(
         >>> hypotheses = ["this is the prediction", "here is an other sample"]
         >>> references = ["this is the reference", "here is another one"]
         >>> eed(hypotheses=hypotheses, references=references)
-        tensor(0.3078)
+        tensor(0.3204)
 
     References:
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”, submitted
