@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Sequence, Union, Literal
 
-from torch import tensor
+from torch import tensor, Tensor
 
 from torchmetrics.functional.text.eed import _eed_compute, _eed_update
-from torchmetrics.metric import Metric
 
 
 class EED(Metric):
@@ -47,18 +46,22 @@ class EED(Metric):
 
     def __init__(
         self,
-        language: str = "en",
+        language: Literal["en", "ja"] = "en",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ):
         super().__init__()
-        self.language = language
+        self.language: Literal["en", "ja"] = language
         self.add_state("scores", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, hypotheses, references) -> None:
+    def update(
+        self,
+        reference_corpus: Sequence[Union[str, Sequence[str]]],
+        hypothesis_corpus: Union[str, Sequence[str]],
+    ) -> None:
         """Update EED statistics.
 
         Args:
@@ -68,7 +71,7 @@ class EED(Metric):
         Returns:
             None
         """
-        scores, total = _eed_update(hypotheses=hypotheses, references=references, language=self.language)
+        scores, total = _eed_update(hypotheses=reference_corpus, references=hypothesis_corpus, language=self.language)
         self.scores += scores
         self.total += total
 

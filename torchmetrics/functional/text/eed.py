@@ -109,12 +109,12 @@ def _distance_between_words(reference_word: str, hypothesis_word: str) -> int:
 
 
 def _eed_function(
-    hyp: List[str], 
-    ref: List[str], 
+    hyp: List[str],
+    ref: List[str],
     alpha: float = 2.0,  # optimal jump penalty
     deletion: float = 0.2,
     insertion: float = 1.0,
-    rho: float = 0.3,  #coverage cost
+    rho: float = 0.3,  # coverage cost
 ) -> float:
     """Computes extended edit distance score for two strings: hypotheses and references. Copied from
     https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
@@ -126,12 +126,12 @@ def _eed_function(
     Returns:
         Extended edit distance score as float
     """
-
     lj = [-1] * (len(hyp) + 1)
 
-    row = [1] * (len(hyp) + 1)  # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER aligment grid.
+    # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER aligment grid.
+    row = [1.0] * (len(hyp) + 1)
 
-    row[0] = 0  # CDER initialisation 0,0 = 0 rest 1
+    row[0] = 0.0  # CDER initialisation 0,0 = 0, rest 1
     next_row = [inf] * (len(hyp) + 1)
 
     for w in range(1, len(ref) + 1):
@@ -164,12 +164,12 @@ def _eed_function(
 
 def _preprocess_en(sentence: str) -> str:
     """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
-    
+
     Raises:
         ValueError: If input sentence is not of a type `str`.
     """
     if not isinstance(sentence, str):
-        raise ValueError(f"Only strings allowed during preprocessing step, found {type(s)} instead")
+        raise ValueError(f"Only strings allowed during preprocessing step, found {type(sentence)} instead")
 
     sentence = sentence.rstrip()  # trailing space, tab, or newline
 
@@ -182,7 +182,7 @@ def _preprocess_en(sentence: str) -> str:
     ]
     for pattern, replacement in rules_interpunction:
         sentence = sentence.replace(pattern, replacement)
-    
+
     rules_re = [
         (r"\s+", r" "),  # get rid of extra spaces
         (r"(\d) ([.,]) (\d)", r"\1\2\3"),  # 0 . 1 -> 0.1
@@ -199,25 +199,26 @@ def _preprocess_en(sentence: str) -> str:
     ]
     for pattern, replacement in rules_interpunction:
         sentence = sentence.replace(pattern, replacement)
-    
+
     # add space to beginning of string
     sentence = " " + sentence
 
     return sentence
 
 
-def _preprocess_ja(s: str) -> str:
+def _preprocess_ja(sentence: str) -> str:
     """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
-    
+
     Raises:
         ValueError: If input sentence is not of a type `str`.
     """
-    if not isinstance(s, str):
-        raise ValueError(f"Only strings allowed during preprocessing step, found {type(s)} instead")
+    if not isinstance(sentence, str):
+        raise ValueError(f"Only strings allowed during preprocessing step, found {type(sentence)} instead")
 
-    s = s.rstrip()  # trailing space, tab, newline
-    s = unicodedata.normalize("NFKC", s)  # まず正規化
-    return s
+    sentence = sentence.rstrip()  # trailing space, tab, newline
+    # characters which look identical actually are identical
+    sentence = unicodedata.normalize("NFKC", sentence)
+    return sentence
 
 
 def _eed_compute(scores: Tensor, total: Tensor) -> Tensor:
@@ -237,7 +238,7 @@ def _eed_compute(scores: Tensor, total: Tensor) -> Tensor:
 def _preprocess_sentences(
     hypotheses: Union[str, List[str]],
     references: Union[str, List[str]],
-    language: Literal["en", "ja"],
+    language: Union[Literal["en"], Literal["ja"]],
 ) -> Tuple[List[str], List[str]]:
     """Proprocess strings according to language requirements.
 
@@ -248,7 +249,7 @@ def _preprocess_sentences(
 
     Returns:
         Tuple of lists that contain the cleaned strings for hypotheses and references
-    
+
     Raises:
         ValueError: If a different language than 'en" or 'ja' is used
         ValueError: If lenght of hypotheses is not equal to length of references
@@ -297,9 +298,9 @@ def _eed_update(
     scores = 0.0
     total = 0.0
 
-    for hyp, ref in zip(hypotheses, references):
-        hyp = list(hyp) # type: Union[str, List[str]]
-        ref = list(ref) # type: Union[str, List[str]]
+    for hypothesis, reference in zip(hypotheses, references):
+        hyp: List[str] = list(hypothesis)
+        ref: List[str] = list(reference)
         score = _eed_function(hyp, ref)
         scores += score
         total += 1.0
@@ -310,7 +311,7 @@ def _eed_update(
 def eed(
     hypotheses: Union[str, List[str]],
     references: Union[str, List[str]],
-    language: str = "en",
+    language: Literal["en", "ja"] = "en",
 ) -> Tensor:
     """Computes extended edit distance score (`EED`_) [1] for strings or list of strings The metric utilises the
     Levenshtein distance and extends it by adding an additional jump operation.

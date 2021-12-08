@@ -77,4 +77,4 @@ def test_parallelisation_eed():
 
     parallel_score = metric.compute()
 
-    assert np.isclose(sequential_score, parallel_score)
+    assert sequential_score == parallel_score
