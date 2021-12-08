@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-import torch
+from functools import partial
+from typing import Sequence
 
-from tests.text.helpers import TextTester
+import pytest
+from torch import Tensor, tensor
+
+from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.inputs import _inputs_multiple_references
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
@@ -23,51 +27,64 @@ from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import BLEU
 
-# example taken from https://github.com/mjpost/sacrebleu
-REFERENCES = (
-    # First set of references
-    ("The dog bit the man.", "It was not unexpected.", "The man bit him first."),
-    # Second set of references
-    ("The dog had bit the man.", "No one was surprised.", "The man had bitten the dog."),
-)
-
-HYPOTHESES = ("The dog bit the man.", "It wasn't surprising.", "The man had just bitten him.")
 
 TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
-ROUND_N_DIGITS = 4
 
-
-def metrics_score_fn(targets, preds, tokenize):
-    metrics_score = sacre_bleu_score(targets, preds, tokenize=tokenize)
-    # rescale to 0-100 and round to 4 decimals to match blue
-    metrics_score_normed = torch.round(100 * metrics_score * 10 ** ROUND_N_DIGITS) / 10 ** ROUND_N_DIGITS
-    return metrics_score_normed
+def sacrebleu_fn(targets: Sequence[Sequence[str]], preds: Sequence[str], tokenize: str, lowercase: bool) -> Tensor:
+    sacrebleu_fn = BLEU(tokenize=tokenize, lowercase=lowercase)
+    # Sacrebleu expects different format of input
+    targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
+    sacrebleu_score = sacrebleu_fn.corpus_score(preds, targets).score / 100
+    return tensor(sacrebleu_score)
 
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [
-        (HYPOTHESES, REFERENCES),
-    ],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
+@pytest.mark.parametrize(["lowercase"], [(False,), (True,)])
 @pytest.mark.parametrize("tokenize", TOKENIZERS)
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestSacreBLEUScore(TextTester):
-    def test_sacrebleu_score_functional(self, preds, targets, tokenize):
-        sacrebleu_metrics = BLEU(tokenize=tokenize)
-        original_score = torch.tensor(round(sacrebleu_metrics.corpus_score(preds, targets).score, ROUND_N_DIGITS))
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, tokenize, lowercase):
+        metric_args = {"tokenize": tokenize, "lowercase": lowercase}
+        original_sacrebleu = partial(sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
-        metrics_targets = [[ref[i] for ref in targets] for i in range(len(targets[0]))]
-        metrics_score = metrics_score_fn(metrics_targets, preds, tokenize)
-        assert metrics_score == original_score
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            targets=targets,
+            metric_class=SacreBLEUScore,
+            sk_metric=original_sacrebleu,
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args=metric_args,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
+        )
 
-    def test_sacrebleu_score_metrics(self, preds, targets, tokenize):
-        sacrebleu_metrics = BLEU(tokenize=tokenize)
-        original_score = torch.tensor(round(sacrebleu_metrics.corpus_score(preds, targets).score, ROUND_N_DIGITS))
+    def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
+        metric_args = {"tokenize": tokenize, "lowercase": lowercase}
+        original_sacrebleu = partial(sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
-        metrics_targets = [[ref[i] for ref in targets] for i in range(len(targets[0]))]
-        tm_metrics = SacreBLEUScore(tokenize=tokenize)
-        tm_metrics.update(metrics_targets, preds)
-        metrics_score = metrics_score_fn(metrics_targets, preds, tokenize)
-        assert metrics_score == original_score
+        self.run_functional_metric_test(
+            preds,
+            targets,
+            metric_functional=sacre_bleu_score,
+            sk_metric=original_sacrebleu,
+            metric_args=metric_args,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
+        )
+
+    def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
+        metric_args = {"tokenize": tokenize, "lowercase": lowercase}
+
+        self.run_differentiability_test(
+            preds=preds,
+            targets=targets,
+            metric_module=SacreBLEUScore,
+            metric_functional=sacre_bleu_score,
+            metric_args=metric_args,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
+        )

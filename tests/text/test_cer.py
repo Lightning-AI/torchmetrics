@@ -3,6 +3,7 @@ from typing import Callable, List, Union
 import pytest
 
 from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
@@ -13,19 +14,6 @@ if _JIWER_AVAILABLE:
 else:
     compute_measures = Callable
 
-BATCHES_1 = {"preds": [["hello world"], ["what a day"]], "targets": [["hello world"], ["what a wonderful day"]]}
-
-BATCHES_2 = {
-    "preds": [
-        ["i like python", "what you mean or swallow"],
-        ["hello duck", "i like python"],
-    ],
-    "targets": [
-        ["i like monthy python", "what do you mean, african or european swallow"],
-        ["hello world", "i like monthy python"],
-    ],
-}
-
 
 def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
     return cer(reference, prediction)
@@ -35,8 +23,8 @@ def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        (BATCHES_1["preds"], BATCHES_1["targets"]),
-        (BATCHES_2["preds"], BATCHES_2["targets"]),
+        (_inputs_error_rate_batch_size_1.preds, _inputs_error_rate_batch_size_1.targets),
+        (_inputs_error_rate_batch_size_2.preds, _inputs_error_rate_batch_size_2.targets),
     ],
 )
 class TestCharErrorRate(TextTester):
