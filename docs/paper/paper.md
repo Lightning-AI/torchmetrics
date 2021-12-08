@@ -7,7 +7,7 @@ tags:
 authors:
   - Nicki Skafte Detlefsen
     affiliation: "1,2"
-  - Jirka Borovec
+  - Jiri Borovec
     affiliation: "1"
   - Justus Schock
     affiliation: "1"
