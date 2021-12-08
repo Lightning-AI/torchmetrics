@@ -15,7 +15,8 @@ authors:
     affiliation: "1"
   - Teddy Koker
     affiliation: "1"
-  - Lucadiliello
+  - Luca Di Liello
+    affiliation: "3"
   - Stancld
   - Quancs
   - William Falcon
