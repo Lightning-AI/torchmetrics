@@ -70,7 +70,11 @@ repos:
           - mdformat-gfm
           - mdformat-black
           - mdformat_frontmatter
-        exclude: CHANGELOG.md
+        exclude: |
+            (?x)^(
+                CHANGELOG.md|
+                docs/paper/
+            )$
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.2.3
