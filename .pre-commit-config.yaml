@@ -73,7 +73,7 @@ repos:
         exclude: |
             (?x)^(
                 CHANGELOG.md|
-                docs/paper/
+                docs/paper/paper.md
             )$
 
   - repo: https://github.com/asottile/yesqa
