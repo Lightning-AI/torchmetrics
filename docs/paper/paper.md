@@ -23,7 +23,6 @@ authors:
     affiliation: "6"
   - William Falcon
     affiliation: "1,7"
-
 affiliations:
  - name: Grid AI
    index: 1
