@@ -66,23 +66,24 @@ TorchMetrics solves this problem by introducing stateful metrics that can calcul
 import torch
 from torchmetrics import Metric  # base class all modular metrics inherit from
 
+
 class Accuracy(Metric):
-  def __init__(self):
-    super().__init__()
-    # self.add_state defines the states of the metric that should be accumulated
-    # and will automatically be synchronized between devices
-    self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
-    self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+    def __init__(self):
+        super().__init__()
+        # self.add_state defines the states of the metric that should be accumulated
+        # and will automatically be synchronized between devices
+        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-  def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
-    # update takes preds and target and accumulate the current stream
-    # of data into the global states for later
-    self.correct += torch.sum(preds == target)
-    self.total += target.numel()
+    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+        # update takes preds and target and accumulate the current stream
+        # of data into the global states for later
+        self.correct += torch.sum(preds == target)
+        self.total += target.numel()
 
-  def compute(self) -> torch.Tensor:
-    # compute takes the accumulated states and returns the final metric
-    return self.correct / self.total
+    def compute(self) -> torch.Tensor:
+        # compute takes the accumulated states and returns the final metric
+        return self.correct / self.total
 ```
 
 Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices GPUs or TPUs (see \[@large_example1\] \[@large_example2\] for examples), and the corresponding metrics calculated during training and evaluation, therefore, need to be synchronized to get the correct value. TorchMetrics completely takes care of this in the background, automatically detecting if a metric is being updated on multiple devices and accumulating the states from different devices before reporting the calculated metric to the user.
