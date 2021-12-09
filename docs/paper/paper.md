@@ -6,11 +6,11 @@ tags:
   - pytorch
 authors:
   - name: Nicki Skafte Detlefsen
-    affiliation: 1,2
+    affiliation: '1,2'
   - name: Jiri Borovec
     affiliation: '1'
   - name: Justus Schock
-    affiliation: 1,3
+    affiliation: '1,3'
     orcid: 0000-0003-0512-3053
   - name: Ananya Harsh Jha
     affiliation: '1'
