@@ -215,6 +215,19 @@ def test_empty_preds():
     metric.compute()
 
 
+_gpu_test_condition = not torch.cuda.is_available()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
+def test_map_gpu():
+    """Test predictions on single gpu."""
+    metric = MAP()
+    metric = metric.to("cuda")
+    metric.update(_inputs.preds[0], _inputs.target[0])
+    metric.compute()
+
+
 @pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 def test_empty_metric():
     """Test empty metric."""
