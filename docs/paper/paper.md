@@ -5,24 +5,24 @@ tags:
   - deep learning
   - pytorch
 authors:
-  - Nicki Skafte Detlefsen
-    affiliation: "1,2"
-  - Jiri Borovec
-    affiliation: "1"
-  - Justus Schock
-    affiliation: "1,3"
-  - Ananya Harsh Jha
-    affiliation: "1"
-  - Teddy Koker
-    affiliation: "1"
-  - Luca Di Liello
-    affiliation: "4"
-  - Daniel Stancl
-    affiliation: "5"
-  - Changsheng Quan
-    affiliation: "6"
-  - William Falcon
-    affiliation: "1,7"
+ - Nicki Skafte Detlefsen
+   affiliation: "1,2"
+ - Jiri Borovec
+   affiliation: "1"
+ - Justus Schock
+   affiliation: "1,3"
+ - Ananya Harsh Jha
+   affiliation: "1"
+ - Teddy Koker
+   affiliation: "1"
+ - Luca Di Liello
+   affiliation: "4"
+ - Daniel Stancl
+   affiliation: "5"
+ - Changsheng Quan
+   affiliation: "6"
+ - William Falcon
+   affiliation: "1,7"
 affiliations:
  - name: Grid AI
    index: 1
@@ -44,21 +44,21 @@ bibliography: paper.bib
 
 # Summary
 
-Among recent machine learning publications, many cannot be reproduced \[@reproducibility\]. This is often due to different metrics implementations, which may lead to important training mechanisms like checkpointing, learning rate schedules, or early stopping to behave differently. For example, complex metrics like Fréchet inception distance (FID) for synthetic image quality evaluation \[@fid\] may differ widely based on the specific interpolation method used.
+Among recent machine learning publications, many cannot be reproduced [@reproducibility]. This is often due to different metrics implementations, which may lead to important training mechanisms like checkpointing, learning rate schedules, or early stopping to behave differently. For example, complex metrics like Fréchet inception distance (FID) for synthetic image quality evaluation [@fid] may differ widely based on the specific interpolation method used.
 
-A metric\[^1\] hereby is an objective quantitative measure of the model’s performance. To tackle the problem of reproducibility, there are initiatives such as Papers With Code \[@papers_with_code\], which link the research code with the corresponding papers. However, not all authors provide their code openly accessible. Therefore, we aim to tackle the problem another way - We believe that unified implementations of the relevant metrics can help overcome reproducibility by providing a de-facto reference implementation.
+A metric[^1] hereby is an objective quantitative measure of the model’s performance. To tackle the problem of reproducibility, there are initiatives such as Papers With Code [@papers_with_code], which link the research code with the corresponding papers. However, not all authors provide their code openly accessible. Therefore, we aim to tackle the problem another way - We believe that unified implementations of the relevant metrics can help overcome reproducibility by providing a de-facto reference implementation.
 
-\[^1\]: Not to be confused with mathematical definitions of metrics as per https://en.wikipedia.org/wiki/Metric_(mathematics) whose properties do not have to hold for the machine learning understanding of the same word.
+[^1]: Not to be confused with mathematical definitions of metrics as per https://en.wikipedia.org/wiki/Metric_(mathematics) whose properties do not have to hold for the machine learning understanding of the same word.
 
-TorchMetrics is a general-purpose metrics package covering a wide variety of tasks and domains. It includes standard classification and regression metrics and some domain-specific, for example, audio, computer vision, natural language processing, and information retrieval. In the case of particular metrics, we integrate with a well-tested and established third-party package as a starter, and later on, we re-implement them as PyTorch \[@pytorch\] native to keep minimal dependencies, make use of available hardware accelerators (mainly GPUs), avoid inter-device transfers whenever possible and maintain full control over each metric implementation.
+TorchMetrics is a general-purpose metrics package covering a wide variety of tasks and domains. It includes standard classification and regression metrics and some domain-specific, for example, audio, computer vision, natural language processing, and information retrieval. In the case of particular metrics, we integrate with a well-tested and established third-party package as a starter, and later on, we re-implement them as PyTorch [@pytorch] native to keep minimal dependencies, make use of available hardware accelerators (mainly GPUs), avoid inter-device transfers whenever possible and maintain full control over each metric implementation.
 
 # Statement of need
 
-Currently, there exists no native package in PyTorch that implements commonly-used metrics within machine learning that is commonly adopted. Some native PyTorch libraries support domain-specific metrics such as Transformers \[@transformers\] for calculating NLP-specific metrics. However, no library exists that covers multiple domains. PyTorch users, therefore, often rely on non-PyTorch packages such as Scikit-learn \[@scikit_learn\] for computing even simple metrics such as accuracy, F1, or AUROC metrics.
+Currently, there exists no native package in PyTorch that implements commonly-used metrics within machine learning that is commonly adopted. Some native PyTorch libraries support domain-specific metrics such as Transformers [@transformers] for calculating NLP-specific metrics. However, no library exists that covers multiple domains. PyTorch users, therefore, often rely on non-PyTorch packages such as Scikit-learn [@scikit_learn] for computing even simple metrics such as accuracy, F1, or AUROC metrics.
 
 However, while Scikit-learn is considered the gold standard for computing metrics in regression and classification, it relies on the core assumption that all predictions and targets are available simultaneously. This contradicts the typical workflow in a modern deep learning training/evaluation loop where data comes in batches. Therefore, the metric needs to be calculated in an online fashion. It is important to note that, in general, it is not possible to calculate a global metric as its average or sum of the metric calculated per batch.
 
-TorchMetrics solves this problem by introducing stateful metrics that can calculate metric values on a stream of data alongside the classical functional and stateless metrics provided by other packages like Scikit-learn. We do this with an effortless `update` and `compute` interface, well known from packages such as Keras \[@keras\]. The `update` function takes in a batch of predictions and targets and updates the internal state. For example, for a metric such as accuracy, the internal states are simply the number of correctly classified samples and the total observed number of samples. When all batches have been passed to the `update` method, the `compute` method can get the accumulated accuracy over all the batches. In addition to `update` and `compute`, each metric also has a `forward` method (as any other `torch.nn.Module`) that can be used to both get the metric on the current batch of data and accumulate global state. This enables the user to get fine-grained info about the metric on the individual batch and the global metric of how well their model is doing.
+TorchMetrics solves this problem by introducing stateful metrics that can calculate metric values on a stream of data alongside the classical functional and stateless metrics provided by other packages like Scikit-learn. We do this with an effortless `update` and `compute` interface, well known from packages such as Keras [@keras]. The `update` function takes in a batch of predictions and targets and updates the internal state. For example, for a metric such as accuracy, the internal states are simply the number of correctly classified samples and the total observed number of samples. When all batches have been passed to the `update` method, the `compute` method can get the accumulated accuracy over all the batches. In addition to `update` and `compute`, each metric also has a `forward` method (as any other `torch.nn.Module`) that can be used to both get the metric on the current batch of data and accumulate global state. This enables the user to get fine-grained info about the metric on the individual batch and the global metric of how well their model is doing.
 
 ```python
 # Minimal example showcasing the Torchmetrics interface
@@ -85,7 +85,7 @@ class Accuracy(Metric):
         return self.correct / self.total
 ```
 
-Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices GPUs or TPUs (see \[@large_example1\] \[@large_example2\] for examples), and the corresponding metrics calculated during training and evaluation, therefore, need to be synchronized to get the correct value. TorchMetrics completely takes care of this in the background, automatically detecting if a metric is being updated on multiple devices and accumulating the states from different devices before reporting the calculated metric to the user.
+Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices GPUs or TPUs (see [@large_example1] [@large_example2] for examples), and the corresponding metrics calculated during training and evaluation, therefore, need to be synchronized to get the correct value. TorchMetrics completely takes care of this in the background, automatically detecting if a metric is being updated on multiple devices and accumulating the states from different devices before reporting the calculated metric to the user.
 
 In addition to stateful metrics (called modular metrics in TorchMetrics), we also support a functional interface that works similar to Scikit-learn. They are simple python functions that, as input, take PyTorch Tensors and return the corresponding metric as a PyTorch Tensor. These can be used when metrics are evaluated on single devices, and no accumulation is needed, making them very fast to compute.
 
