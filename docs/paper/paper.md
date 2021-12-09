@@ -84,7 +84,7 @@ class Accuracy(Metric):
         return self.correct / self.total
 ```
 
-Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices GPUs or TPUs (see [@large_example1][@large_example2] for examples), and the corresponding metrics calculated during training and evaluation, therefore, need to be synchronized to get the correct value. TorchMetrics completely takes care of this in the background, automatically detecting if a metric is being updated on multiple devices and accumulating the states from different devices before reporting the calculated metric to the user.
+Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices GPUs or TPUs (see [@large_example1; @large_example2] for examples), and the corresponding metrics calculated during training and evaluation, therefore, need to be synchronized to get the correct value. TorchMetrics completely takes care of this in the background, automatically detecting if a metric is being updated on multiple devices and accumulating the states from different devices before reporting the calculated metric to the user.
 
 In addition to stateful metrics (called modular metrics in TorchMetrics), we also support a functional interface that works similar to Scikit-learn. They are simple python functions that, as input, take PyTorch Tensors and return the corresponding metric as a PyTorch Tensor. These can be used when metrics are evaluated on single devices, and no accumulation is needed, making them very fast to compute.
 
