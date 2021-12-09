@@ -60,28 +60,43 @@ However, while Scikit-learn is considered the gold standard for computing metric
 TorchMetrics solves this problem by introducing stateful metrics that can calculate metric values on a stream of data alongside the classical functional and stateless metrics provided by other packages like Scikit-learn. We do this with an effortless `update` and `compute` interface, well known from packages such as Keras [@keras]. The `update` function takes in a batch of predictions and targets and updates the internal state. For example, for a metric such as accuracy, the internal states are simply the number of correctly classified samples and the total observed number of samples. When all batches have been passed to the `update` method, the `compute` method can get the accumulated accuracy over all the batches. In addition to `update` and `compute`, each metric also has a `forward` method (as any other `torch.nn.Module`) that can be used to both get the metric on the current batch of data and accumulate global state. This enables the user to get fine-grained info about the metric on the individual batch and the global metric of how well their model is doing.
 
 ```python
-# Minimal example showcasing the Torchmetrics interface
+# Minimal example showcasing the TorchMetrics interface
 import torch
-from torchmetrics import Metric  # base class all modular metrics inherit from
+
+# base class all modular metrics inherit from
+from torchmetrics import Metric
 
 
 class Accuracy(Metric):
     def __init__(self):
         super().__init__()
-        # self.add_state defines the states of the metric that should be accumulated
-        # and will automatically be synchronized between devices
-        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        # `self.add_state` defines the states of the metric
+        #  that should be accumulated and will automatically
+        #  be synchronized between devices
+        self.add_state(
+            "correct",
+            default=torch.tensor(0),
+            dist_reduce_fx="sum",
+        )
+        self.add_state(
+            "total",
+            default=torch.tensor(0),
+            dist_reduce_fx="sum",
+        )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
-        # update takes preds and target and accumulate the current stream
-        # of data into the global states for later
+    def update(
+        self, preds: torch.Tensor, target: torch.Tensor
+    ) -> None:
+        # update takes preds and target and accumulate the current
+        # stream of data into the global states for later
         self.correct += torch.sum(preds == target)
         self.total += target.numel()
 
     def compute(self) -> torch.Tensor:
-        # compute takes the accumulated states and returns the final metric value
+        # compute takes the accumulated states
+        # and returns the final metric value
         return self.correct / self.total
+
 ```
 
 Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices GPUs or TPUs (see [@large_example1][@large_example2] for examples), and the corresponding metrics calculated during training and evaluation, therefore, need to be synchronized to get the correct value. TorchMetrics completely takes care of this in the background, automatically detecting if a metric is being updated on multiple devices and accumulating the states from different devices before reporting the calculated metric to the user.
