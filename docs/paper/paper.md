@@ -25,7 +25,7 @@ authors:
   - name: William Falcon
     affiliation: '1'
 affiliations:
-  - name: Grid AI
+  - name: Grid AI labs
     index: 1
   - name: Technical University of Denmark
     index: 2
