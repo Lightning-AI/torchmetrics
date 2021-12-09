@@ -89,8 +89,8 @@ class Accuracy(Metric):
     def update(
         self, preds: torch.Tensor, target: torch.Tensor
     ) -> None:
-        # update takes preds and target and accumulate the current
-        # stream of data into the global states for later
+        # update takes `preds` and `target` and accumulate
+        # the current stream of data into the global states for later
         self.correct += torch.sum(preds == target)
         self.total += target.numel()
 
