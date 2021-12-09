@@ -10,15 +10,15 @@ authors:
   - Jiri Borovec
     affiliation: "1"
   - Justus Schock
-    affiliation: "1"
+    affiliation: "1,3"
   - Ananya Harsh Jha
     affiliation: "1"
   - Teddy Koker
     affiliation: "1"
   - Luca Di Liello
-    affiliation: "3"
-  - Daniel Stancl
     affiliation: "4"
+  - Daniel Stancl
+    affiliation: "5"
   - Quancs
   - William Falcon
     affiliation: "1"
@@ -28,10 +28,12 @@ affiliations:
    index: 1
  - name: Technical University of Denmark
    index: 2
- - name: University of Trento
+ - name: University Hospital Düsseldorf
    index: 3
- - name: Charles University
+ - name: University of Trento
    index: 4
+ - name: Charles University
+   index: 5
 date: 08 Dec 2021
 bibliography: paper.bib
 ---
