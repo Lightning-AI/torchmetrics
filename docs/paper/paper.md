@@ -23,9 +23,9 @@ authors:
   - name: Changsheng Quan
     affiliation: '6'
   - name: William Falcon
-    affiliation: '1'
+    affiliation: '1,7'
 affiliations:
-  - name: Grid AI labs
+  - name: Grid AI Labs
     index: 1
   - name: Technical University of Denmark
     index: 2
@@ -37,6 +37,8 @@ affiliations:
     index: 5
   - name: Zhejiang University
     index: 6
+  - name: New York University
+    index: 7
 date: 08 Dec 2021
 bibliography: paper.bib
 ---
