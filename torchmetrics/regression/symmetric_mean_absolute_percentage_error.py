@@ -37,7 +37,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()`` before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Note:
         The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.

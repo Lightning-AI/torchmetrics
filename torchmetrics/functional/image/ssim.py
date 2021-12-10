@@ -114,8 +114,8 @@ def _ssim_compute(
             - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of SSIM. Default: 0.01
-        k2: Parameter of SSIM. Default: 0.03
+        k1: Parameter of SSIM.
+        k2: Parameter of SSIM.
 
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
@@ -197,8 +197,8 @@ def ssim(
             - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of SSIM. Default: 0.01
-        k2: Parameter of SSIM. Default: 0.03
+        k1: Parameter of SSIM.
+        k2: Parameter of SSIM.
 
     Return:
         Tensor with SSIM score

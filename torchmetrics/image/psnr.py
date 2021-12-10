@@ -33,7 +33,7 @@ class PSNR(Metric):
         data_range:
             the range of the data. If None, it is determined from the data (max - min).
             The ``data_range`` must be given when ``dim`` is not None.
-        base: a base of a logarithm to use (default: 10)
+        base: a base of a logarithm to use.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -44,12 +44,12 @@ class PSNR(Metric):
             Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions and all batches.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:

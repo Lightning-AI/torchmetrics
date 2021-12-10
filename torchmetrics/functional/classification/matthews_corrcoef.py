@@ -64,7 +64,7 @@ def matthews_corrcoef(
         target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
         num_classes: Number of classes in the dataset.
         threshold:
-            Threshold value for binary or multi-label probabilities. default: 0.5
+            Threshold value for binary or multi-label probabilities.
 
     Example:
         >>> from torchmetrics.functional import matthews_corrcoef
