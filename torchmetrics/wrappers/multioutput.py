@@ -61,7 +61,7 @@ class MultioutputWrapper(Metric):
             Required for distributed training support.
         process_group:
             Specify the process group on which synchronization is called.
-            The default: None (which selects the entire world)
+            The
         dist_sync_fn:
             Required for distributed training support.
 

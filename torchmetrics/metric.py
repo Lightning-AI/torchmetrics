@@ -64,12 +64,13 @@ class Metric(Module, ABC):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
+            default: `None` (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -277,7 +278,7 @@ class Metric(Module, ABC):
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
                 Specify the process group on which synchronization is called.
-                default: None (which selects the entire world)
+                default: `None` (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
@@ -338,7 +339,7 @@ class Metric(Module, ABC):
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
                 Specify the process group on which synchronization is called.
-                default: None (which selects the entire world)
+                default: `None` (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             should_unsync: Whether to restore the cache state so that the metrics can

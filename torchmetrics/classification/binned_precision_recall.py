@@ -62,12 +62,12 @@ class BinnedPrecisionRecallCurve(Metric):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:
@@ -210,9 +210,9 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:
@@ -262,9 +262,9 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:
