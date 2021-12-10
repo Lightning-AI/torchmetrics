@@ -47,7 +47,7 @@ class RetrievalFallOut(RetrievalMetric):
             - ``'error'``: raise a ``ValueError``
 
         ignore_index:
-            Ignore predictions where the target is equal to this number: default: None
+            Ignore predictions where the target is equal to this number.
         k: consider only the top k elements for each query (default: None, which considers them all)
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
@@ -59,7 +59,7 @@ class RetrievalFallOut(RetrievalMetric):
             the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather. default: None
+            will be used to perform the allgather.
 
     Raises:
         ValueError:
