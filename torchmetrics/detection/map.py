@@ -423,10 +423,10 @@ class MAP(Metric):
         nb_iou_thrs = len(self.iou_thresholds)
         nb_gt = len(gt)
         nb_det = len(det)
-        gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool)
-        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device)
+        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
         gt_ignore = ignore_area_sorted
-        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
@@ -564,6 +564,12 @@ class MAP(Metric):
         precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
         recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
         scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
+
+        # move tensors if necessary
+        if self.max_detection_thresholds.device != self.device:
+            self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
+        if self.rec_thresholds.device != self.device:
+            self.rec_thresholds = self.rec_thresholds.to(self.device)
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls in range(nb_classes):
