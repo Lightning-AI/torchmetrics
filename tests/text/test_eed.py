@@ -18,62 +18,62 @@ import pytest
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
 
-HYPOTHESES_1 = "perfect match"
 REFERENCES_1 = "perfect match"
+HYPOTHESES_1 = "perfect match"
 
-HYPOTHESES_2 = "imperfect match"
 REFERENCES_2 = "blue orange"
+HYPOTHESES_2 = "imperfect match"
 
 # test batches
-BATCH_1 = {"hypotheses": [HYPOTHESES_1, HYPOTHESES_2], "references": [REFERENCES_1, REFERENCES_2]}
+BATCH_1 = {"references": [REFERENCES_1, REFERENCES_2], "hypotheses": [HYPOTHESES_1, HYPOTHESES_2]}
 
 
 # test blank edge cases
 def test_eed_empty_functional():
     with pytest.raises(ValueError):
-        hyp = []
         ref = [[]]
+        hyp = []
         eed(ref, hyp)
 
 
 def test_eed_empty_class():
     with pytest.raises(ValueError):
         eed_metric = EED()
-        hyp = []
         ref = [[]]
+        hyp = []
         eed_metric(ref, hyp)
 
 
 def test_eed_empty_with_non_empty_hyp_functional():
     with pytest.raises(ValueError):
-        hyp = ["python"]
         ref = [[]]
+        hyp = ["python"]
         eed(ref, hyp)
 
 
 def test_eed_empty_with_non_empty_hyp_class():
     with pytest.raises(ValueError):
         eed_metric = EED()
-        hyp = ["python"]
         ref = [[]]
+        hyp = ["python"]
         eed_metric(ref, hyp)
 
 
 # test ability to parallelize
 def test_parallelisation_eed():
-    hypotheses = BATCH_1["hypotheses"]
     references = BATCH_1["references"]
+    hypotheses = BATCH_1["hypotheses"]
 
     # batch_size == length of data
     metric = EED()
 
-    sequential_score = metric(hypotheses, references)
+    sequential_score = metric(references, hypotheses)
 
     # batch of 1 with compute_on_step == False
     metric = EED(compute_on_step=False)
 
-    for hypothesis, reference in zip(hypotheses, references):
-        metric(hypothesis, reference)
+    for reference, hypothesis in zip(references, hypotheses):
+        metric(reference, hypothesis)
 
     parallel_score = metric.compute()
 
