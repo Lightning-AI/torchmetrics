@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
+from itertools import repeat
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
@@ -200,23 +201,40 @@ def _rouge_score_update(
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
     for pred_raw, target_raw in zip(preds, targets):
-        pred = _normalize_and_tokenize_text(pred_raw, stemmer)
-        target = _normalize_and_tokenize_text(target_raw, stemmer)
+        result_inner: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: None for rouge_key in rouge_keys_values}
+        list_results = []
+        for pred_raw_inner, target_raw_inner in zip(repeat(pred_raw), target_raw):
+            pred = _normalize_and_tokenize_text(pred_raw_inner, stemmer)
+            target = _normalize_and_tokenize_text(target_raw_inner, stemmer)
 
-        if "Lsum" in rouge_keys_values:
-            # rougeLsum expects "\n" separated sentences within a summary
-            pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
-            target_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(target_raw), stemmer)
+            if "Lsum" in rouge_keys_values:
+                # rougeLsum expects "\n" separated sentences within a summary
+                pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw_inner), stemmer)
+                target_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(target_raw_inner), stemmer)
+
+            for rouge_key in rouge_keys_values:
+                if isinstance(rouge_key, int):
+                    score = _rouge_n_score(pred, target, rouge_key)
+                else:
+                    score = _rouge_l_score(
+                        pred if rouge_key != "Lsum" else pred_Lsum,
+                        target if rouge_key != "Lsum" else target_Lsum,
+                    )          
+                result_inner[rouge_key] = score
+            list_results.append(result_inner.copy())
+
+        key_curr = rouge_keys_values[0]
+        highest_fmeasure = -1.
+        highest_idx = -1
+
+        for it, list_results_raw in enumerate(list_results):
+            if list_results_raw[key_curr]['fmeasure'].item() > highest_fmeasure:
+                highest_idx = it
+                highest_fmeasure = list_results_raw[key_curr]['fmeasure']
 
         for rouge_key in rouge_keys_values:
-            if isinstance(rouge_key, int):
-                score = _rouge_n_score(pred, target, rouge_key)
-            else:
-                score = _rouge_l_score(
-                    pred if rouge_key != "Lsum" else pred_Lsum,
-                    target if rouge_key != "Lsum" else target_Lsum,
-                )
-            results[rouge_key].append(score)
+            results[rouge_key].append(list_results[highest_idx][rouge_key])
+
     return results
 
 
