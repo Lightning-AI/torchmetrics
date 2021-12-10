@@ -26,11 +26,18 @@ class EED(Metric):
     Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
-        language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
-        alpha: optimal jump penalty, penalty for jumps between characters
-        rho: coverage cost, penalty for repetition of characters
-        deletion: penalty for deletion of character
-        insertion: penalty for insertion or substitution of character
+        language:
+            Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
+        return_sentence_level_score:
+            An indication of whether sentence-level EED is to be returned
+        alpha:
+            optimal jump penalty, penalty for jumps between characters
+        rho:
+            coverage cost, penalty for repetition of characters
+        deletion:
+            penalty for deletion of character
+        insertion:
+            penalty for insertion or substitution of character
 
     Returns:
         Extended edit distance score as a tensor
@@ -48,11 +55,12 @@ class EED(Metric):
     """
 
     scores: Tensor
-    total: Tensor
+    total_num_sentences: Tensor
 
     def __init__(
         self,
         language: Literal["en", "ja"] = "en",
+        return_sentence_level_score: bool = False,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -67,6 +75,8 @@ class EED(Metric):
         self.language: Literal["en", "ja"] = language
         if language not in ["en", "ja"]:
             raise ValueError(f"Language {language} not supported, supported languages are 'en' and 'ja'")
+        self.return_sentence_level_score = return_sentence_level_score
+        self.sentence_eed = []
 
         self.alpha = alpha
         self.rho = rho
@@ -74,9 +84,11 @@ class EED(Metric):
         self.insertion = insertion
 
         self.add_state("scores", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total_num_sentences", tensor(0.0), dist_reduce_fx="sum")
+        if self.return_sentence_level_score:
+            self.add_state("sentence_eed", [], dist_reduce_fx="cat")
 
-    def update(
+    def update(  # type: ignore
         self,
         reference_corpus: Sequence[Union[str, Sequence[str]]],
         hypothesis_corpus: Union[str, Sequence[str]],
@@ -84,23 +96,27 @@ class EED(Metric):
         """Update EED statistics.
 
         Args:
-            reference_corpus: An iterable of iterables of reference corpus.
-            hypothesis_corpus: An iterable of hypothesis corpus.
+            reference_corpus: An iterable of iterables of reference corpus
+            hypothesis_corpus: An iterable of hypothesis corpus
 
         Returns:
             None
         """
-        scores, total = _eed_update(
+        scores, total_num_sentences, sentence_eed = _eed_update(
             reference_corpus,
             hypothesis_corpus,
             self.language,
+            self.return_sentence_level_score,
             self.alpha,
             self.rho,
-            self.insertion,
             self.deletion,
+            self.insertion,
         )
+
         self.scores += scores
-        self.total += total
+        self.total_num_sentences += total_num_sentences
+        if self.return_sentence_level_score is True:
+            self.sentence_eed.extend(sentence_eed)
 
     def compute(self) -> Tensor:
         """Calculate extended edit distance score.
@@ -108,5 +124,5 @@ class EED(Metric):
         Returns:
             Extended edit distance score as tensor
         """
-        eed = _eed_compute(self.scores, self.total)
+        eed = _eed_compute(self.scores, self.total_num_sentences)
         return eed

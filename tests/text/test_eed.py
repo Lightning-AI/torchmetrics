@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from torch import tensor
 import numpy as np
-import pytest
 
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
@@ -30,33 +30,29 @@ BATCH_1 = {"references": [REFERENCES_1, REFERENCES_2], "hypotheses": [HYPOTHESES
 
 # test blank edge cases
 def test_eed_empty_functional():
-    with pytest.raises(ValueError):
-        ref = [[]]
-        hyp = []
-        eed(ref, hyp)
+    ref = [[]]
+    hyp = []
+    assert eed(ref, hyp) == tensor(0.0)
 
 
 def test_eed_empty_class():
-    with pytest.raises(ValueError):
-        eed_metric = EED()
-        ref = [[]]
-        hyp = []
-        eed_metric(ref, hyp)
+    eed_metric = EED()
+    ref = [[]]
+    hyp = []
+    assert eed_metric(ref, hyp) == tensor(0.0)
 
 
 def test_eed_empty_with_non_empty_hyp_functional():
-    with pytest.raises(ValueError):
-        ref = [[]]
-        hyp = ["python"]
-        eed(ref, hyp)
+    ref = [[]]
+    hyp = ["python"]
+    assert eed(ref, hyp) == tensor(0.0)
 
 
 def test_eed_empty_with_non_empty_hyp_class():
-    with pytest.raises(ValueError):
-        eed_metric = EED()
-        ref = [[]]
-        hyp = ["python"]
-        eed_metric(ref, hyp)
+    eed_metric = EED()
+    ref = [[]]
+    hyp = ["python"]
+    assert eed_metric(ref, hyp) == tensor(0.0)
 
 
 # test ability to parallelize
