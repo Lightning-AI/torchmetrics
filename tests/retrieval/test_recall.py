@@ -87,7 +87,7 @@ class TestRecall(RetrievalMetricTester):
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    @pytest.mark.parametrize(**_default_metric_class_input_arguments)
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
         self,
         ddp: bool,
