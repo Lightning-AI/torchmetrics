@@ -32,10 +32,10 @@ class EED(Metric):
         Extended edit distance score as a tensor
 
     Example:
-        >>> hypotheses = ["this is the prediction", "here is an other sample"]
-        >>> references = ["this is the reference", "here is another one"]
+        >>> reference_corpus = ["this is the reference", "here is another one"]
+        >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
         >>> metric = EED()
-        >>> metric(hypothesis_corpus=hypotheses, reference_corpus=references)
+        >>> metric(reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus)
         tensor(0.3204)
 
     References:
@@ -61,19 +61,21 @@ class EED(Metric):
 
     def update(
         self,
-        hypothesis_corpus: Union[str, Sequence[str]],
         reference_corpus: Sequence[Union[str, Sequence[str]]],
+        hypothesis_corpus: Union[str, Sequence[str]],
     ) -> None:
         """Update EED statistics.
 
         Args:
-            hypotheses: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each input as a string or list of strings
+            reference_corpus: An iterable of iterables of reference corpus.
+            hypothesis_corpus: An iterable of hypothesis corpus.
 
         Returns:
             None
         """
-        scores, total = _eed_update(hypotheses=hypothesis_corpus, references=reference_corpus, language=self.language)
+        scores, total = _eed_update(
+            reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus, language=self.language
+        )
         self.scores += scores
         self.total += total
 

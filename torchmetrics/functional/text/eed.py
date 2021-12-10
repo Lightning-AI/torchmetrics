@@ -110,24 +110,24 @@ def _distance_between_words(reference_word: str, hypothesis_word: str) -> int:
 
 
 def _eed_function(
-    hyp: List[str],
     ref: List[str],
+    hyp: List[str],
     alpha: float = 2.0,  # optimal jump penalty
     deletion: float = 0.2,
     insertion: float = 1.0,
     rho: float = 0.3,  # coverage cost
 ) -> float:
-    """Computes extended edit distance score for two strings: hypotheses and references. Copied from
-    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
+    """Computes extended edit distance score for two lists of strings: hyp and ref.
+    Code adapted from: https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
-        hyp: Transcription to score as a string
         ref: Reference for input as a string
+        hyp: Transcription to score as a string
 
     Returns:
         Extended edit distance score as float
     """
-    lj = [-1] * (len(hyp) + 1)
+    number_of_visits = [-1] * (len(hyp) + 1)
 
     # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER aligment grid.
     row = [1.0] * (len(hyp) + 1)
@@ -147,18 +147,18 @@ def _eed_function(
             else:
                 next_row[i] = row[i] + 1.0
 
-        minInd = next_row.index(min(next_row))
-        lj[minInd] += 1
+        min_index = next_row.index(min(next_row))
+        number_of_visits[min_index] += 1
 
         # Long Jumps
         if ref[w - 1] == " ":
-            jump = alpha + next_row[minInd]
+            jump = alpha + next_row[min_index]
             next_row = [min(x, jump) for x in next_row]
 
         row = next_row
         next_row = [inf] * (len(hyp) + 1)
 
-    coverage = rho * sum(x if x >= 0 else 1 for x in lj)
+    coverage = rho * sum(x if x >= 0 else 1 for x in number_of_visits)
 
     return min(1, (row[-1] + coverage) / (float(len(ref)) + coverage))
 
@@ -237,32 +237,32 @@ def _eed_compute(scores: Tensor, total: Tensor) -> Tensor:
 
 
 def _preprocess_sentences(
-    hypotheses: Union[str, List[str]],
-    references: Union[str, List[str]],
+    reference_corpus: Union[str, List[str]],
+    hypothesis_corpus: Union[str, List[str]],
     language: Union[Literal["en"], Literal["ja"]],
 ) -> Tuple[List[str], List[str]]:
     """Proprocess strings according to language requirements.
 
     Args:
-        hypotheses: Transcription(s) to score as a string or list of strings
-        references: Reference(s) for each input as a string or list of strings
+        reference_corpus: An iterable of iterables of reference corpus.
+        hypothesis_corpus: An iterable of hypothesis corpus.
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
 
     Returns:
-        Tuple of lists that contain the cleaned strings for hypotheses and references
+        Tuple of lists that contain the cleaned strings for reference_corpus and hypothesis_corpus
 
     Raises:
         ValueError: If a different language than 'en" or 'ja' is used
-        ValueError: If lenght of hypotheses is not equal to length of references
+        ValueError: If lenght of reference_corpus is not equal to length of hypothesis_corpus
     """
     # sanity checks
-    if isinstance(hypotheses, str):
-        hypotheses = [hypotheses]
-    if isinstance(references, str):
-        references = [references]
+    if isinstance(reference_corpus, str):
+        reference_corpus = [reference_corpus]
+    if isinstance(hypothesis_corpus, str):
+        hypothesis_corpus = [hypothesis_corpus]
 
-    if len(hypotheses) != len(references):
-        raise ValueError("Length of hypotheses must equal length of references")
+    if len(reference_corpus) != len(hypothesis_corpus):
+        raise ValueError("Length of reference_corpus must equal length of hypothesis_corpus")
 
     # preprocess string
     if language == "en":
@@ -272,37 +272,37 @@ def _preprocess_sentences(
     else:
         raise ValueError(f"Language {language} not supported, supported languages are 'en' and 'ja'")
 
-    hypotheses = [preprocess_function(hyp) for hyp in hypotheses]
-    references = [preprocess_function(ref) for ref in references]
+    reference_corpus = [preprocess_function(ref) for ref in reference_corpus]
+    hypothesis_corpus = [preprocess_function(hyp) for hyp in hypothesis_corpus]
 
-    return hypotheses, references
+    return reference_corpus, hypothesis_corpus
 
 
 def _eed_update(
-    hypotheses: Union[str, List[str]],
-    references: Union[str, List[str]],
+    reference_corpus: Union[str, List[str]],
+    hypothesis_corpus: Union[str, List[str]],
     language: Literal["en", "ja"] = "en",
 ) -> Tuple[Tensor, Tensor]:
     """Compute scores for EED.
 
     Args:
-        hypotheses: Transcription(s) to score as a string or list of strings
-        references: Reference(s) for each input as a string or list of strings
+        reference_corpus: An iterable of iterables of reference corpus.
+        hypothesis_corpus: An iterable of hypothesis corpus.
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
 
     Returns:
         Tuple of scores and total sentences as floats
     """
-    hypotheses, references = _preprocess_sentences(hypotheses, references, language)
+    reference_corpus, hypothesis_corpus = _preprocess_sentences(hypothesis_corpus, reference_corpus, language)
 
     # calculate score
     scores = 0.0
     total = 0.0
 
-    for hypothesis, reference in zip(hypotheses, references):
-        hyp: List[str] = list(hypothesis)
+    for reference, hypothesis in zip(reference_corpus, hypothesis_corpus):
         ref: List[str] = list(reference)
-        score = _eed_function(hyp, ref)
+        hyp: List[str] = list(hypothesis)
+        score = _eed_function(ref, hyp)
         scores += score
         total += 1.0
 
@@ -310,32 +310,32 @@ def _eed_update(
 
 
 def eed(
-    hypotheses: Union[str, List[str]],
-    references: Union[str, List[str]],
+    reference_corpus: Union[str, List[str]],
+    hypothesis_corpus: Union[str, List[str]],
     language: Literal["en", "ja"] = "en",
 ) -> Tensor:
     """Computes extended edit distance score (`EED`_) [1] for strings or list of strings The metric utilises the
     Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
-        hypotheses: Transcription(s) to score as a string or list of strings
-        references: Reference(s) for each input as a string or list of strings
+        reference_corpus: An iterable of iterables of reference corpus.
+        hypothesis_corpus: An iterable of hypothesis corpus.
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
 
     Returns:
         Extended edit distance score as a tensor
 
     Example:
-        >>> hypotheses = ["this is the prediction", "here is an other sample"]
-        >>> references = ["this is the reference", "here is another one"]
-        >>> eed(hypotheses=hypotheses, references=references)
+        >>> reference_corpus = ["this is the reference", "here is another one"]
+        >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
+        >>> eed(reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus)
         tensor(0.3204)
 
     References:
-        [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”, submitted
-        to WMT 2019. `EED`_
+        [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”,
+        submitted to WMT 2019. `EED`_
     """
-    scores, total = _eed_update(hypotheses, references, language)
+    scores, total = _eed_update(reference_corpus, hypothesis_corpus, language)
     average = _eed_compute(scores, total)
 
     return average
