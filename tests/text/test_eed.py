@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from torch import tensor
 import numpy as np
+from torch import tensor
 
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
