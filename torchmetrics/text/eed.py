@@ -22,8 +22,8 @@ from torchmetrics.metric import Metric
 
 
 class EED(Metric):
-    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings.
-    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings. The metric utilises the
+    Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         language:
