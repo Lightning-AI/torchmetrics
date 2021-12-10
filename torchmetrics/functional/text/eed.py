@@ -89,7 +89,7 @@
 import re
 import unicodedata
 from math import inf
-from typing import List, Tuple, Union, Sequence, Optional
+from typing import List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
@@ -119,8 +119,8 @@ def _eed_function(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> float:
-    """Computes extended edit distance score for two lists of strings: hyp and ref.
-    Code adapted from: https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
+    """Computes extended edit distance score for two lists of strings: hyp and ref. Code adapted from:
+    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
         ref:
@@ -296,8 +296,7 @@ def _compute_sentence_statistics(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Tuple[Tensor, Tensor]:
-    """
-    Compute scores for EED.
+    """Compute scores for EED.
 
     Args:
         reference_words:
