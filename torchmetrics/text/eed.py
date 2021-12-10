@@ -22,14 +22,24 @@ from torchmetrics.metric import Metric
 
 
 class EED(Metric):
-    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings The metric utilises the
-    Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings.
+    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         language:
             Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
         return_sentence_level_score:
             An indication of whether sentence-level EED is to be returned
+        compute_on_step:
+            Forward only calls ``update()`` and return None if this is set to False.
+        dist_sync_on_step:
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
+        process_group:
+            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+        dist_sync_fn:
+            Callback that performs the allgather operation on the metric state. When ``None``, DDP
+            will be used to perform the allgather
         alpha:
             optimal jump penalty, penalty for jumps between characters
         rho:
@@ -43,6 +53,7 @@ class EED(Metric):
         Extended edit distance score as a tensor
 
     Example:
+        >>> from torchmetrics.text import EED
         >>> reference_corpus = ["this is the reference", "here is another one"]
         >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
         >>> metric = EED()
@@ -56,6 +67,8 @@ class EED(Metric):
 
     scores: Tensor
     total_num_sentences: Tensor
+    higher_is_better: False
+    is_differentiable: False
 
     def __init__(
         self,
@@ -70,11 +83,16 @@ class EED(Metric):
         deletion: float = 0.2,
         insertion: float = 1.0,
     ):
-        super().__init__()
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
 
+        if language not in ("en", "ja"):
+            raise ValueError(f"Expected argument `language` to either be `en` or `ja` but got {language}")
         self.language: Literal["en", "ja"] = language
-        if language not in ["en", "ja"]:
-            raise ValueError(f"Language {language} not supported, supported languages are 'en' and 'ja'")
         self.return_sentence_level_score = return_sentence_level_score
         self.sentence_eed = []
 
@@ -98,9 +116,6 @@ class EED(Metric):
         Args:
             reference_corpus: An iterable of iterables of reference corpus
             hypothesis_corpus: An iterable of hypothesis corpus
-
-        Returns:
-            None
         """
         scores, total_num_sentences, sentence_eed = _eed_update(
             reference_corpus,

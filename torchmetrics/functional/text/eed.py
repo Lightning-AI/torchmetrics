@@ -280,7 +280,7 @@ def _preprocess_sentences(
     elif language == "ja":
         preprocess_function = _preprocess_ja
     else:
-        raise ValueError(f"Language {language} not supported, supported languages are 'en' and 'ja'")
+        raise ValueError(f"Expected argument `language` to either be `en` or `ja` but got {language}")
 
     reference_corpus = [[preprocess_function(ref) for ref in reference] for reference in reference_corpus]
     hypothesis_corpus = [preprocess_function(hyp) for hyp in hypothesis_corpus]
@@ -363,7 +363,7 @@ def _eed_update(
     reference_corpus, hypothesis_corpus = _preprocess_sentences(reference_corpus, hypothesis_corpus, language)
 
     # check if reference_corpus or hypothesis_corpus is empty
-    if (len(hypothesis_corpus) == 0) or (len(reference_corpus[0]) == 0):
+    if 0 in (len(hypothesis_corpus), len(reference_corpus[0])):
         scores = tensor(0.0)
         total_num_sentences = tensor(0.0)
         sentence_eed = []
@@ -401,8 +401,8 @@ def eed(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Tensor:
-    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings The metric utilises the
-    Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings.
+    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         reference_corpus:
@@ -426,6 +426,7 @@ def eed(
         Extended edit distance score as a tensor
 
     Example:
+        >>> from torchmetrics.functional import eed
         >>> reference_corpus = ["this is the reference", "here is another one"]
         >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
         >>> eed(reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus)
@@ -438,6 +439,9 @@ def eed(
     scores, total_num_sentences, sentence_eed = _eed_update(
         reference_corpus, hypothesis_corpus, language, return_sentence_level_score, alpha, rho, deletion, insertion
     )
+
+    if return_sentence_level_score:
+        return sentence_eed
 
     average = _eed_compute(scores, total_num_sentences)
     return average
