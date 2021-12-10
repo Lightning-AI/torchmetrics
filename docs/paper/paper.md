@@ -7,8 +7,10 @@ tags:
 authors:
   - name: Nicki Skafte Detlefsen
     affiliation: '1,2'
+    orcid: 0000-0002-8133-682X
   - name: Jiri Borovec
     affiliation: '1'
+    orcid: 0000-0001-7437-824X
   - name: Justus Schock
     affiliation: '1,3'
     orcid: 0000-0003-0512-3053
