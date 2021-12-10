@@ -516,6 +516,7 @@ def _check_retrieval_inputs(
     preds: Tensor,
     target: Tensor,
     allow_non_binary_target: bool = False,
+    ignore_index: int = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
@@ -523,6 +524,7 @@ def _check_retrieval_inputs(
         indexes: tensor with queries indexes
         preds: tensor with scores/logits
         target: tensor with ground true labels
+        ignore_index: ignore predictions where targets are equal to this number
 
     Raises:
         ValueError:
@@ -537,13 +539,18 @@ def _check_retrieval_inputs(
     if indexes.shape != preds.shape or preds.shape != target.shape:
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
 
+    if indexes.dtype is not torch.long:
+        raise ValueError("`indexes` must be a tensor of long integers")
+
+    # remove predictions where target is equal to `ignore_index`
+    if ignore_index is not None:
+        valid_positions = (target != ignore_index)
+        indexes, preds, target = indexes[valid_positions], preds[valid_positions], target[valid_positions]
+
     if not indexes.numel() or not indexes.size():
         raise ValueError(
             "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
         )
-
-    if indexes.dtype is not torch.long:
-        raise ValueError("`indexes` must be a tensor of long integers")
 
     preds, target = _check_retrieval_target_and_prediction_types(
         preds, target, allow_non_binary_target=allow_non_binary_target
@@ -578,5 +585,7 @@ def _check_retrieval_target_and_prediction_types(
     if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
         raise ValueError("`target` must contain `binary` values")
 
-    target = target.float().flatten() if target.is_floating_point() else target.long().flatten()
-    return preds.float().flatten(), target
+    target = target.float() if target.is_floating_point() else target.long()
+    preds = preds.float()
+
+    return preds.flatten(), target.flatten()

@@ -44,6 +44,8 @@ class RetrievalRecall(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
+        ignore_index:
+            Ignore predictions where the target is equal to this number: default: None
         k: consider only the top k elements for each query (default: None, which considers them all)
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False. default: True
@@ -76,6 +78,7 @@ class RetrievalRecall(RetrievalMetric):
     def __init__(
         self,
         empty_target_action: str = "neg",
+        ignore_index: int = None,
         k: int = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -84,6 +87,7 @@ class RetrievalRecall(RetrievalMetric):
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
+            ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
