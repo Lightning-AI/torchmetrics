@@ -12,22 +12,27 @@ Leads
 -----
 - Nicki Skafte (`skaftenicki <https://github.com/SkafteNicki>`_)
 - Jirka Borovec (`Borda <https://github.com/Borda>`_)
+- Justus Schock (`justusschock <https://github.com/justusschock>`_)
 
 
 Core Maintainers
 ----------------
--
+- Luca Di Liello (`lucadiliello <https://github.com/lucadiliello>`_)
+- Daniel Stancl (`stancld <https://github.com/stancld>`_)
+- Maxim Grechkin (`maximsch2 <https://github.com/maximsch2>`_)
+- Changsheng Quan (`quancs <https://github.com/quancs>`_)
 
 
 Alumni
 ------
-- Teddy Koler (`ydcjeff <https://github.com/>`_)
+- Ananya Harsh Jha (`ananyahjha93 <https://github.com/ananyahjha93>`_)
+- Teddy Koker (`teddykoker <https://github.com/teddykoker>`_)
 
 
 Releases
 ********
 
-We release a new minor version (e.g., 1.5.0) every three months and bugfix releases every week.
+We release a new minor version (e.g., 0.5.0) every few months and bugfix releases if needed.
 The minor versions contain new features, API changes, deprecations, removals, potential backward-incompatible
 changes and also all previous bugfixes included in any bugfix release. With every release, we publish a changelog
 where we list additions, removals, changed functionality and fixes.
@@ -57,6 +62,6 @@ For API removal, renaming or other forms of backward-incompatible changes, the p
 
 #. A deprecation process is initiated at version X, producing warning messages at runtime and in the documentation.
 #. Calls to the deprecated API remain unchanged in their function during the deprecation phase.
-#. One minor versions in the future at version X+2 the breaking change takes effect.
+#. One minor versions in the future at version X+1 the breaking change takes effect.
 
 The "X+1" rule is a recommendation and not a strict requirement. Longer deprecation cycles may apply for some cases.
