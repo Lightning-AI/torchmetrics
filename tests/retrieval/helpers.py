@@ -93,7 +93,7 @@ def _compute_sklearn_metric(
     assert isinstance(target, np.ndarray)
 
     if ignore_index is not None:
-        valid_positions = (target != ignore_index)
+        valid_positions = target != ignore_index
         indexes, preds, target = indexes[valid_positions], preds[valid_positions], target[valid_positions]
 
     indexes = indexes.flatten()

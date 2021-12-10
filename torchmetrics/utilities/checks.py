@@ -544,7 +544,7 @@ def _check_retrieval_inputs(
 
     # remove predictions where target is equal to `ignore_index`
     if ignore_index is not None:
-        valid_positions = (target != ignore_index)
+        valid_positions = target != ignore_index
         indexes, preds, target = indexes[valid_positions], preds[valid_positions], target[valid_positions]
 
     if not indexes.numel() or not indexes.size():
