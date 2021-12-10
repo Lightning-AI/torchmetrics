@@ -57,7 +57,6 @@ class CalibrationError(Metric):
         dist_sync_on_step: Synchronize metric state across processes at each ``forward()``
             before returning the value at the step
         process_group: Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
     """
     DISTANCES = {"l1", "l2", "max"}
     higher_is_better = False

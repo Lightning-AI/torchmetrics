@@ -26,8 +26,8 @@ class SSIM(Metric):
     """Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
+        kernel_size: size of the gaussian kernel
+        sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -35,8 +35,8 @@ class SSIM(Metric):
             - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of SSIM. Default: 0.01
-        k2: Parameter of SSIM. Default: 0.03
+        k1: Parameter of SSIM.
+        k2: Parameter of SSIM.
 
     Return:
         Tensor with SSIM score

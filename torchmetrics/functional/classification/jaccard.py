@@ -106,7 +106,7 @@ def jaccard_index(
             [0, 0] for `pred`, and [0, 2] for `target`, then class 1 would be
             assigned the `absent_score`.
         threshold:
-            Threshold value for binary or multi-label probabilities. default: 0.5
+            Threshold value for binary or multi-label probabilities.
         num_classes:
             Optionally specify the number of classes
         reduction: a method to reduce metric score over labels.
