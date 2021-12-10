@@ -27,6 +27,10 @@ class EED(Metric):
 
     Args:
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
 
     Returns:
         Extended edit distance score as a tensor
@@ -53,9 +57,22 @@ class EED(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        alpha: float = 2.0,
+        rho: float = 0.3,
+        deletion: float = 0.2,
+        insertion: float = 1.0,
     ):
         super().__init__()
+
         self.language: Literal["en", "ja"] = language
+        if language not in ["en", "ja"]:
+            raise ValueError(f"Language {language} not supported, supported languages are 'en' and 'ja'")
+
+        self.alpha = alpha
+        self.rho = rho
+        self.deletion = deletion
+        self.insertion = insertion
+
         self.add_state("scores", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", tensor(0.0), dist_reduce_fx="sum")
 
@@ -74,7 +91,13 @@ class EED(Metric):
             None
         """
         scores, total = _eed_update(
-            reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus, language=self.language
+            reference_corpus,
+            hypothesis_corpus,
+            self.language,
+            self.alpha,
+            self.rho,
+            self.insertion,
+            self.deletion,
         )
         self.scores += scores
         self.total += total

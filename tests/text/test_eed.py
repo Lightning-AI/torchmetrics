@@ -73,7 +73,7 @@ def test_parallelisation_eed():
     metric = EED(compute_on_step=False)
 
     for reference, hypothesis in zip(references, hypotheses):
-        metric(reference, hypothesis)
+        metric([reference], [hypothesis])
 
     parallel_score = metric.compute()
 

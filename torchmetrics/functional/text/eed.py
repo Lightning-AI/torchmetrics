@@ -89,14 +89,16 @@
 import re
 import unicodedata
 from math import inf
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Sequence
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.text.helper import _validate_inputs
+
 
 def _distance_between_words(reference_word: str, hypothesis_word: str) -> int:
-    """Distance measure used for substitutions/identity operation Copied from
+    """Distance measure used for substitutions/identity operation. Code adapted from
     https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
@@ -112,17 +114,21 @@ def _distance_between_words(reference_word: str, hypothesis_word: str) -> int:
 def _eed_function(
     ref: List[str],
     hyp: List[str],
-    alpha: float = 2.0,  # optimal jump penalty
+    alpha: float = 2.0,
+    rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-    rho: float = 0.3,  # coverage cost
 ) -> float:
     """Computes extended edit distance score for two lists of strings: hyp and ref.
     Code adapted from: https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
-        ref: Reference for input as a string
-        hyp: Transcription to score as a string
+        ref: reference string
+        hyp: hypothesis string
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
 
     Returns:
         Extended edit distance score as float
@@ -132,7 +138,7 @@ def _eed_function(
     # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER aligment grid.
     row = [1.0] * (len(hyp) + 1)
 
-    row[0] = 0.0  # CDER initialisation 0,0 = 0, rest 1
+    row[0] = 0.0  # CDER initialisation 0,0 = 0.0, rest 1.0
     next_row = [inf] * (len(hyp) + 1)
 
     for w in range(1, len(ref) + 1):
@@ -237,8 +243,8 @@ def _eed_compute(scores: Tensor, total: Tensor) -> Tensor:
 
 
 def _preprocess_sentences(
-    reference_corpus: Union[str, List[str]],
-    hypothesis_corpus: Union[str, List[str]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
+    hypothesis_corpus: Union[str, Sequence[str]],
     language: Union[Literal["en"], Literal["ja"]],
 ) -> Tuple[List[str], List[str]]:
     """Proprocess strings according to language requirements.
@@ -253,13 +259,11 @@ def _preprocess_sentences(
 
     Raises:
         ValueError: If a different language than 'en" or 'ja' is used
-        ValueError: If lenght of reference_corpus is not equal to length of hypothesis_corpus
+        ValueError: If length of reference_corpus not equal to length of hypothesis_corpus
+        ValueError: If objects in reference and hypothesis corpus are not strings
     """
     # sanity checks
-    if isinstance(reference_corpus, str):
-        reference_corpus = [reference_corpus]
-    if isinstance(hypothesis_corpus, str):
-        hypothesis_corpus = [hypothesis_corpus]
+    reference_corpus, hypothesis_corpus = _validate_inputs(reference_corpus, hypothesis_corpus)
 
     if len(reference_corpus) != len(hypothesis_corpus):
         raise ValueError("Length of reference_corpus must equal length of hypothesis_corpus")
@@ -279,9 +283,13 @@ def _preprocess_sentences(
 
 
 def _eed_update(
-    reference_corpus: Union[str, List[str]],
-    hypothesis_corpus: Union[str, List[str]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
+    hypothesis_corpus: Union[str, Sequence[str]],
     language: Literal["en", "ja"] = "en",
+    alpha: float = 2.0,
+    rho: float = 0.3,
+    deletion: float = 0.2,
+    insertion: float = 1.0,
 ) -> Tuple[Tensor, Tensor]:
     """Compute scores for EED.
 
@@ -289,6 +297,10 @@ def _eed_update(
         reference_corpus: An iterable of iterables of reference corpus.
         hypothesis_corpus: An iterable of hypothesis corpus.
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
 
     Returns:
         Tuple of scores and total sentences as floats
@@ -302,7 +314,7 @@ def _eed_update(
     for reference, hypothesis in zip(reference_corpus, hypothesis_corpus):
         ref: List[str] = list(reference)
         hyp: List[str] = list(hypothesis)
-        score = _eed_function(ref, hyp)
+        score = _eed_function(ref, hyp, alpha, rho, deletion, insertion)
         scores += score
         total += 1.0
 
@@ -310,9 +322,13 @@ def _eed_update(
 
 
 def eed(
-    reference_corpus: Union[str, List[str]],
-    hypothesis_corpus: Union[str, List[str]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
+    hypothesis_corpus: Union[str, Sequence[str]],
     language: Literal["en", "ja"] = "en",
+    alpha: float = 2.0,
+    rho: float = 0.3,
+    deletion: float = 0.2,
+    insertion: float = 1.0,
 ) -> Tensor:
     """Computes extended edit distance score (`EED`_) [1] for strings or list of strings The metric utilises the
     Levenshtein distance and extends it by adding an additional jump operation.
@@ -321,6 +337,10 @@ def eed(
         reference_corpus: An iterable of iterables of reference corpus.
         hypothesis_corpus: An iterable of hypothesis corpus.
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
+        alpha: optimal jump penalty, penalty for jumps between characters
+        rho: coverage cost, penalty for repetition of characters
+        deletion: penalty for deletion of character
+        insertion: penalty for insertion or substitution of character
 
     Returns:
         Extended edit distance score as a tensor
@@ -335,7 +355,7 @@ def eed(
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”,
         submitted to WMT 2019. `EED`_
     """
-    scores, total = _eed_update(reference_corpus, hypothesis_corpus, language)
+    scores, total = _eed_update(reference_corpus, hypothesis_corpus, language, alpha, rho, deletion, insertion)
     average = _eed_compute(scores, total)
 
     return average
