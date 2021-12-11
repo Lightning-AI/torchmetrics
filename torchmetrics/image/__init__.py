@@ -11,5 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.image.ms_ssim import MS_SSIM  # noqa: F401
 from torchmetrics.image.psnr import PSNR  # noqa: F401
 from torchmetrics.image.ssim import SSIM  # noqa: F401

@@ -1,0 +1,144 @@
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from typing import Any, List, Optional, Sequence, Tuple, Union
+
+import torch
+from torch import Tensor
+from typing_extensions import Literal
+
+from torchmetrics.functional.image.ms_ssim import _ms_ssim_compute
+from torchmetrics.functional.image.ssim import _ssim_update
+from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import dim_zero_cat
+
+
+class MS_SSIM(Metric):
+    """Computes `MS-SSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of Structual
+    Similarity Index Measure by incorporating image details at different resolution scores.
+
+    Args:
+        kernel_size: size of the gaussian kernel
+        sigma: Standard deviation of the gaussian kernel
+        reduction: a method to reduce metric score over labels.
+
+            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
+            - ``'none'``: no reduction will be applied
+
+        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
+        k1: Parameter of SSIM.
+        k2: Parameter of SSIM.
+        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+        resolutions.
+        normalize: When MS-SSIM loss is used for training, it is desirable to use normalizes to improve the training
+        stability. This `normalize` argument is out of scope of the original implementation [1], and it is adapted from
+        https://github.com/jorge-pessoa/pytorch-msssim instead.
+
+    Return:
+        Tensor with SSIM score
+
+    Example:
+        >>> from torchmetrics import MS_SSIM
+        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> target = preds * 0.75
+        >>> ssim = MS_SSIM()
+        >>> ssim(preds, target)
+        tensor(0.9269)
+
+    References:
+    [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
+    Bovik `MS-SSIM`_
+    """
+
+    preds: List[Tensor]
+    target: List[Tensor]
+    higher_is_better = True
+    is_differentiable = True
+
+    def __init__(
+        self,
+        kernel_size: Sequence[int] = (11, 11),
+        sigma: Sequence[float] = (1.5, 1.5),
+        reduction: str = "elementwise_mean",
+        data_range: Optional[float] = None,
+        k1: float = 0.01,
+        k2: float = 0.03,
+        betas: Union[Tuple[float, float, float, float, float], Tuple[float, ...]] = (
+            0.0448,
+            0.2856,
+            0.3001,
+            0.2363,
+            0.1333,
+        ),
+        normalize: Optional[Literal["relu", "simple"]] = None,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+    ) -> None:
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+        )
+        rank_zero_warn(
+            "Metric `MS_SSIM` will save all targets and"
+            " predictions in buffer. For large datasets this may lead"
+            " to large memory footprint."
+        )
+
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
+        self.kernel_size = kernel_size
+        self.sigma = sigma
+        self.data_range = data_range
+        self.k1 = k1
+        self.k2 = k2
+        self.reduction = reduction
+        if not isinstance(betas, tuple):
+            raise ValueError("Argument `betas` is expected to be of a type tuple.")
+        if isinstance(betas, tuple) and not all(isinstance(beta, float) for beta in betas):
+            raise ValueError("Argument `betas` is expected to be a tuple of floats.")
+        self.betas = betas
+        if normalize and normalize not in ("relu", "simple"):
+            raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
+        self.normalize = normalize
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update state with predictions and targets.
+
+        Args:
+            preds: Predictions from model
+            target: Ground truth values
+        """
+        preds, target = _ssim_update(preds, target)
+        self.preds.append(preds)
+        self.target.append(target)
+
+    def compute(self) -> Tensor:
+        """Computes explained variance over state."""
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+        return _ms_ssim_compute(
+            preds,
+            target,
+            self.kernel_size,
+            self.sigma,
+            self.reduction,
+            self.data_range,
+            self.k1,
+            self.k2,
+            self.betas,
+            self.normalize,
+        )

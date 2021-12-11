@@ -41,7 +41,7 @@ from torchmetrics.classification import (  # noqa: E402, F401
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
-from torchmetrics.image import PSNR, SSIM  # noqa: E402
+from torchmetrics.image import MS_SSIM, PSNR, SSIM  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
@@ -117,6 +117,7 @@ __all__ = [
     "MetricTracker",
     "MinMaxMetric",
     "MinMetric",
+    "MS_SSIM",
     "MultioutputWrapper",
     "PearsonCorrcoef",
     "PIT",

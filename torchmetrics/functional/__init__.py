@@ -37,6 +37,7 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
+from torchmetrics.functional.image.ms_ssim import ms_ssim
 from torchmetrics.functional.image.psnr import psnr
 from torchmetrics.functional.image.ssim import ssim
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
@@ -104,6 +105,7 @@ __all__ = [
     "mean_absolute_percentage_error",
     "mean_squared_error",
     "mean_squared_log_error",
+    "ms_ssim",
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",

@@ -390,6 +390,12 @@ LPIPS
 .. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
     :noindex:
 
+MS_SSIM
+~~~~
+
+.. autoclass:: torchmetrics.MS_SSIM
+    :noindex:
+
 PSNR
 ~~~~
 

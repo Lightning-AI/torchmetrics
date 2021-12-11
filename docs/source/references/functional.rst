@@ -241,6 +241,13 @@ image_gradients [func]
     :noindex:
 
 
+ms_ssim [func]
+~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.ms_ssim
+    :noindex:
+
+
 psnr [func]
 ~~~~~~~~~~~
 
