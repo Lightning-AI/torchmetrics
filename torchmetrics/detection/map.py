@@ -566,10 +566,8 @@ class MAP(Metric):
         scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
 
         # move tensors if necessary
-        if self.max_detection_thresholds.device != self.device:
-            self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
-        if self.rec_thresholds.device != self.device:
-            self.rec_thresholds = self.rec_thresholds.to(self.device)
+        self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
+        self.rec_thresholds = self.rec_thresholds.to(self.device)
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls in range(nb_classes):
