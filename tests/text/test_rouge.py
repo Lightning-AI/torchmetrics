@@ -14,6 +14,9 @@
 
 from functools import partial
 from typing import List
+from itertools import repeat
+
+import torch
 
 import pytest
 
@@ -48,16 +51,39 @@ BATCHES_2 = {
     "targets": [["The quick brown dog jumps on the log."], ["Is your name John"]],
 }
 
+BATCHES_3 = {
+    "preds": [["The quick brown fox jumps over the lazy dog"], ["My name is John"]],
+    "targets": [[["The quick brown dog jumps on the log.", "The quick brown dog jumps over the lazy fox"]], [["Is your name John", "Thy name is John"]]],
+}
 
-def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool, rouge_level: str, metric: str):
+
+def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str):    
+    if isinstance(targets, list):
+        if len(targets) > 0 and isinstance(targets[0], str):
+            if isinstance(preds, str):
+                targets = [targets]
+            else:
+                targets = [[x] for x in targets]
+
     if isinstance(preds, str):
         preds = [preds]
+
     if isinstance(targets, str):
-        targets = [targets]
+        targets = [[targets]]
+
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
     aggregator = BootstrapAggregator()
-    for pred, target in zip(preds, targets):
-        aggregator.add_scores(scorer.score(target, pred))
+    
+    for target_raw, pred_raw in zip(targets, preds):
+        list_results = []
+        for target, pred in zip(target_raw, repeat(pred_raw)):
+            list_results.append(scorer.score(target, pred))
+
+        key_curr = list(list_results[0].keys())[0]
+        all_fmeasure = torch.tensor([v[key_curr].fmeasure for v in list_results])
+        highest_idx = torch.argmax(all_fmeasure).item()
+        aggregator.add_scores(list_results[highest_idx])
+        
     rs_scores = aggregator.aggregate()
     rs_result = getattr(rs_scores[rouge_level].mid, metric)
     return rs_result
@@ -86,6 +112,7 @@ def _compute_rouge_score(preds: List[str], targets: List[str], use_stemmer: bool
     [
         (BATCHES_1["preds"], BATCHES_1["targets"]),
         (BATCHES_2["preds"], BATCHES_2["targets"]),
+        (BATCHES_3["preds"], BATCHES_3["targets"]),
     ],
 )
 class TestROUGEScore(TextTester):
@@ -96,7 +123,6 @@ class TestROUGEScore(TextTester):
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(_compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric)
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -114,7 +140,6 @@ class TestROUGEScore(TextTester):
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(_compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric)
-
         self.run_functional_metric_test(
             preds,
             targets,

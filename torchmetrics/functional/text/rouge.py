@@ -160,7 +160,7 @@ def _rouge_l_score(pred: List[str], target: List[str]) -> Dict[str, Tensor]:
 
 def _rouge_score_update(
     preds: List[str],
-    targets: List[str],
+    targets: List[List[str]],
     rouge_keys_values: List[Union[int, str]],
     stemmer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
@@ -200,6 +200,7 @@ def _rouge_score_update(
             {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}]}
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
+    
     for pred_raw, target_raw in zip(preds, targets):
         result_inner: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: None for rouge_key in rouge_keys_values}
         list_results = []
@@ -224,17 +225,11 @@ def _rouge_score_update(
             list_results.append(result_inner.copy())
 
         key_curr = rouge_keys_values[0]
-        highest_fmeasure = -1.
-        highest_idx = -1
-
-        for it, list_results_raw in enumerate(list_results):
-            if list_results_raw[key_curr]['fmeasure'].item() > highest_fmeasure:
-                highest_idx = it
-                highest_fmeasure = list_results_raw[key_curr]['fmeasure']
+        all_fmeasure = torch.tensor([v[key_curr]['fmeasure'] for v in list_results])
+        highest_idx =  torch.argmax(all_fmeasure).item()
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(list_results[highest_idx][rouge_key])
-
     return results
 
 
@@ -258,7 +253,7 @@ def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str,
 
 def rouge_score(
     preds: Union[str, List[str]],
-    targets: Union[str, List[str]],
+    targets: Union[str, List[str], List[List[str]]],
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
@@ -321,11 +316,18 @@ def rouge_score(
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
+    if isinstance(targets, list):
+        if len(targets) > 0 and isinstance(targets[0], str):
+            if isinstance(preds, str):
+                targets = [targets]
+            else:
+                targets = [[x] for x in targets]
+
     if isinstance(preds, str):
         preds = [preds]
 
     if isinstance(targets, str):
-        targets = [targets]
+        targets = [[targets]]
 
     sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
         preds, targets, rouge_keys_values, stemmer=stemmer
