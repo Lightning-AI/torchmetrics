@@ -65,7 +65,7 @@ class JaccardIndex(ConfusionMatrix):
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Example:
         >>> from torchmetrics import JaccardIndex

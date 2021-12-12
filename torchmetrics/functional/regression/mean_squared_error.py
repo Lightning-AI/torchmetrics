@@ -40,7 +40,7 @@ def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: int, squared: 
     Args:
         sum_squared_error: Sum of square of errors over all observations
         n_obs: Number of predictions or observations
-        squared: Returns RMSE value if set to False. default: True
+        squared: Returns RMSE value if set to False.
 
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])

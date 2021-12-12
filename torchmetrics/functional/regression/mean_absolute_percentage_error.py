@@ -31,7 +31,7 @@ def _mean_absolute_percentage_error_update(
         preds: Predicted tensor
         target: Ground truth tensor
         epsilon: Specifies the lower bound for target values. Any target value below epsilon
-            is set to epsilon (avoids ZeroDivisionError). default: 1.17e-06
+            is set to epsilon (avoids ZeroDivisionError).
     """
 
     _check_same_shape(preds, target)

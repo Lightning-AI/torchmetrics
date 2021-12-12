@@ -30,7 +30,7 @@ def _symmetric_mean_absolute_percentage_error_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        epsilon: Avoids ZeroDivisionError. default: 1.17e-06
+        epsilon: Avoids ZeroDivisionError.
     """
 
     _check_same_shape(preds, target)
