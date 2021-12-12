@@ -182,7 +182,7 @@ def _rouge_score_update(
         >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
         >>> from pprint import pprint
-        >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
+        >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
         >>> pprint(score)  # doctest: +SKIP
         {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
@@ -272,7 +272,7 @@ def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str,
 def rouge_score(
     preds: Union[str, List[str]],
     targets: Union[str, List[str], List[List[str]]],
-    accumulate: str,
+    accumulate: str = "best",
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
