@@ -60,12 +60,12 @@ BATCHES_3 = {
 
 
 def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str):
-    if isinstance(targets, list):
-        if len(targets) > 0 and isinstance(targets[0], str):
-            if isinstance(preds, str):
-                targets = [targets]
-            else:
-                targets = [[x] for x in targets]
+    """Evaluates rouge scores from rouge-score package for baseline evaluation."""
+    if isinstance(targets, list) and len(targets) > 0 and isinstance(targets[0], str):
+        if isinstance(preds, str):
+            targets = [targets]
+        else:
+            targets = [[x] for x in targets]
 
     if isinstance(preds, str):
         preds = [preds]

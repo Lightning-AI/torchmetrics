@@ -320,12 +320,11 @@ def rouge_score(
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
-    if isinstance(targets, list):
-        if len(targets) > 0 and isinstance(targets[0], str):
-            if isinstance(preds, str):
-                targets = [targets]
-            else:
-                targets = [[x] for x in targets]
+    if isinstance(targets, list) and len(targets) > 0 and isinstance(targets[0], str):
+        if isinstance(preds, str):
+            targets = [targets]
+        else:
+            targets = [[x] for x in targets]
 
     if isinstance(preds, str):
         preds = [preds]
