@@ -108,7 +108,9 @@ class ROUGEScore(Metric):
             for score in ["fmeasure", "precision", "recall"]:
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
-    def update(self, preds: Union[str, List[str]], targets: Union[str, List[str], List[List[str]]]) -> None:  # type: ignore
+    def update(
+        self, preds: Union[str, List[str]], targets: Union[str, List[str], List[List[str]]]
+    ) -> None:  # type: ignore
         """Compute rouge scores.
 
         Args:
@@ -128,7 +130,7 @@ class ROUGEScore(Metric):
 
         if isinstance(targets, str):
             targets = [[targets]]
-            
+
         output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
             preds, targets, self.rouge_keys_values, stemmer=self.stemmer
         )

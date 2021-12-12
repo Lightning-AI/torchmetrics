@@ -13,12 +13,12 @@
 # limitations under the License.
 import re
 from collections import Counter
+from itertools import repeat
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
 
-from itertools import repeat
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
@@ -200,9 +200,11 @@ def _rouge_score_update(
             {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}]}
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
-    
+
     for pred_raw, target_raw in zip(preds, targets):
-        result_inner: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: None for rouge_key in rouge_keys_values}
+        result_inner: Dict[Union[int, str], List[Dict[str, Tensor]]] = {
+            rouge_key: None for rouge_key in rouge_keys_values
+        }
         list_results = []
         for pred_raw_inner, target_raw_inner in zip(repeat(pred_raw), target_raw):
             pred = _normalize_and_tokenize_text(pred_raw_inner, stemmer)
@@ -211,7 +213,9 @@ def _rouge_score_update(
             if "Lsum" in rouge_keys_values:
                 # rougeLsum expects "\n" separated sentences within a summary
                 pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw_inner), stemmer)
-                target_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(target_raw_inner), stemmer)
+                target_Lsum = _normalize_and_tokenize_text(
+                    _add_newline_to_end_of_each_sentence(target_raw_inner), stemmer
+                )
 
             for rouge_key in rouge_keys_values:
                 if isinstance(rouge_key, int):
@@ -220,13 +224,13 @@ def _rouge_score_update(
                     score = _rouge_l_score(
                         pred if rouge_key != "Lsum" else pred_Lsum,
                         target if rouge_key != "Lsum" else target_Lsum,
-                    )          
+                    )
                 result_inner[rouge_key] = score
             list_results.append(result_inner.copy())
 
         key_curr = rouge_keys_values[0]
-        all_fmeasure = torch.tensor([v[key_curr]['fmeasure'] for v in list_results])
-        highest_idx =  torch.argmax(all_fmeasure).item()
+        all_fmeasure = torch.tensor([v[key_curr]["fmeasure"] for v in list_results])
+        highest_idx = torch.argmax(all_fmeasure).item()
 
         for rouge_key in rouge_keys_values:
             results[rouge_key].append(list_results[highest_idx][rouge_key])
