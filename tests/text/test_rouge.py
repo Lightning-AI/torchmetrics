@@ -13,12 +13,11 @@
 # limitations under the License.
 
 from functools import partial
-from typing import List
 from itertools import repeat
-
-import torch
+from typing import List
 
 import pytest
+import torch
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 from torchmetrics.functional.text.rouge import rouge_score
@@ -53,11 +52,14 @@ BATCHES_2 = {
 
 BATCHES_3 = {
     "preds": [["The quick brown fox jumps over the lazy dog"], ["My name is John"]],
-    "targets": [[["The quick brown dog jumps on the log.", "The quick brown dog jumps over the lazy fox"]], [["Is your name John", "Thy name is John"]]],
+    "targets": [
+        [["The quick brown dog jumps on the log.", "The quick brown dog jumps over the lazy fox"]],
+        [["Is your name John", "Thy name is John"]],
+    ],
 }
 
 
-def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str):    
+def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str):
     if isinstance(targets, list):
         if len(targets) > 0 and isinstance(targets[0], str):
             if isinstance(preds, str):
@@ -73,7 +75,7 @@ def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer
 
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
     aggregator = BootstrapAggregator()
-    
+
     for target_raw, pred_raw in zip(targets, preds):
         list_results = []
         for target, pred in zip(target_raw, repeat(pred_raw)):
@@ -83,7 +85,7 @@ def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer
         all_fmeasure = torch.tensor([v[key_curr].fmeasure for v in list_results])
         highest_idx = torch.argmax(all_fmeasure).item()
         aggregator.add_scores(list_results[highest_idx])
-        
+
     rs_scores = aggregator.aggregate()
     rs_result = getattr(rs_scores[rouge_level].mid, metric)
     return rs_result
