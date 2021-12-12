@@ -372,9 +372,7 @@ def _eed_update(
     scores = 0.0
     total_num_sentences = 0.0
 
-    sentence_eed: Optional[List[Tensor]] = None
-    if return_sentence_level_score:
-        sentence_eed = []
+    sentence_eed: Optional[List[Tensor]] = [] if return_sentence_level_score else None 
 
     for reference_words, hypothesis in zip(reference_corpus, hypothesis_corpus):
         score, num_sentences = _compute_sentence_statistics(

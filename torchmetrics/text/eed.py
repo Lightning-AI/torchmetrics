@@ -67,6 +67,7 @@ class EED(Metric):
 
     scores: Tensor
     total_num_sentences: Tensor
+    sentence_eed: Optional[List[Tensor]] = None
     higher_is_better: False
     is_differentiable: False
 
