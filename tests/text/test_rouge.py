@@ -59,7 +59,9 @@ BATCHES_3 = {
 }
 
 
-def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str):
+def _compute_rouge_score(
+    preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str, accumulate: str
+):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(targets, list) and len(targets) > 0 and isinstance(targets[0], str):
         if isinstance(preds, str):
@@ -81,10 +83,16 @@ def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer
         for target, pred in zip(target_raw, repeat(pred_raw)):
             list_results.append(scorer.score(target, pred))
 
-        key_curr = list(list_results[0].keys())[0]
-        all_fmeasure = torch.tensor([v[key_curr].fmeasure for v in list_results])
-        highest_idx = torch.argmax(all_fmeasure).item()
-        aggregator.add_scores(list_results[highest_idx])
+        if accumulate == "best":
+            key_curr = list(list_results[0].keys())[0]
+            all_fmeasure = torch.tensor([v[key_curr].fmeasure for v in list_results])
+            highest_idx = torch.argmax(all_fmeasure).item()
+            aggregator.add_scores(list_results[highest_idx])
+        elif accumulate == "avg":
+            for score in list_results:
+                aggregator.add_scores(score)
+        else:
+            raise ValueError(f"Got unknown accumulate value {accumulate}. Expected to be one of ['best', 'avg']")
 
     rs_scores = aggregator.aggregate()
     rs_result = getattr(rs_scores[rouge_level].mid, metric)
@@ -117,14 +125,18 @@ def _compute_rouge_score(preds: List[str], targets: List[List[str]], use_stemmer
         (BATCHES_3["preds"], BATCHES_3["targets"]),
     ],
 )
+@pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_rouge_score_class(self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer):
-        metric_args = {"use_stemmer": use_stemmer}
-
+    def test_rouge_score_class(
+        self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate
+    ):
+        metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
         rouge_level, metric = pl_rouge_metric_key.split("_")
-        rouge_metric = partial(_compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric)
+        rouge_metric = partial(
+            _compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric, accumulate=accumulate
+        )
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -137,11 +149,13 @@ class TestROUGEScore(TextTester):
             key=pl_rouge_metric_key,
         )
 
-    def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer):
-        metric_args = {"use_stemmer": use_stemmer}
+    def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
+        metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
-        rouge_metric = partial(_compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric)
+        rouge_metric = partial(
+            _compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric, accumulate=accumulate
+        )
         self.run_functional_metric_test(
             preds,
             targets,
@@ -171,4 +185,4 @@ def test_rouge_metric_wrong_key_value_error():
         ROUGEScore(rouge_keys=key)
 
     with pytest.raises(ValueError):
-        rouge_score(PREDS, TARGETS, rouge_keys=key)
+        rouge_score(PREDS, TARGETS, rouge_keys=key, accumulate="best")

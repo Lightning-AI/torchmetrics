@@ -34,6 +34,7 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
     "rougeL": "L",
     "rougeLsum": "Lsum",
 }
+ALLOWED_ACCUMULATE_VALUES: List[str] = ["avg", "best"]
 
 
 def _add_newline_to_end_of_each_sentence(x: str) -> str:
@@ -162,6 +163,7 @@ def _rouge_score_update(
     preds: List[str],
     targets: List[List[str]],
     rouge_keys_values: List[Union[int, str]],
+    accumulate: str,
     stemmer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
@@ -228,12 +230,24 @@ def _rouge_score_update(
                 result_inner[rouge_key] = score
             list_results.append(result_inner.copy())
 
-        key_curr = rouge_keys_values[0]
-        all_fmeasure = torch.tensor([v[key_curr]["fmeasure"] for v in list_results])
-        highest_idx = torch.argmax(all_fmeasure).item()
+        if accumulate == "best":
+            key_curr = rouge_keys_values[0]
+            all_fmeasure = torch.tensor([v[key_curr]["fmeasure"] for v in list_results])
+            highest_idx = torch.argmax(all_fmeasure).item()
 
-        for rouge_key in rouge_keys_values:
-            results[rouge_key].append(list_results[highest_idx][rouge_key])
+            for rouge_key in rouge_keys_values:
+                results[rouge_key].append(list_results[highest_idx][rouge_key])
+
+        elif accumulate == "avg":
+            for score in list_results:
+                for rouge_key in rouge_keys_values:
+                    results[rouge_key].append(score[rouge_key])
+
+        else:
+            raise ValueError(
+                f"Got unknown accumulate value {accumulate}. Expected to be on of {ALLOWED_ACCUMULATE_VALUES}"
+            )
+
     return results
 
 
@@ -258,6 +272,7 @@ def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str,
 def rouge_score(
     preds: Union[str, List[str]],
     targets: Union[str, List[str], List[List[str]]],
+    accumulate: str,
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
@@ -333,7 +348,7 @@ def rouge_score(
         targets = [[targets]]
 
     sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-        preds, targets, rouge_keys_values, stemmer=stemmer
+        preds, targets, rouge_keys_values, stemmer=stemmer, accumulate=accumulate
     )
 
     output: Dict[str, List[Tensor]] = {}

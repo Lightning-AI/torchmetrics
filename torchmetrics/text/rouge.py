@@ -16,7 +16,12 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.rouge import ALLOWED_ROUGE_KEYS, _rouge_score_compute, _rouge_score_update
+from torchmetrics.functional.text.rouge import (
+    ALLOWED_ACCUMULATE_VALUES,
+    ALLOWED_ROUGE_KEYS,
+    _rouge_score_compute,
+    _rouge_score_update,
+)
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
@@ -27,6 +32,11 @@ class ROUGEScore(Metric):
     Args:
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
+        accumulate:
+            Useful incase of multi-reference rouge score.
+            ``avg`` takes the avg of all references with respect to predictions
+            ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
+            Allowed values are ``avg`` and ``best``. default: ``best``
         rouge_keys:
             A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
@@ -76,6 +86,7 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
+        accumulate: str = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -99,9 +110,15 @@ class ROUGEScore(Metric):
             if key not in ALLOWED_ROUGE_KEYS:
                 raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")
 
+        if accumulate not in ALLOWED_ACCUMULATE_VALUES:
+            raise ValueError(
+                f"Got unknown accumulate value {accumulate}. Expected to be on of {ALLOWED_ACCUMULATE_VALUES}"
+            )
+
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
+        self.accumulate = accumulate
 
         # Adding stated dynamically to prevent IndexError during sync function as some lists can be empty.
         for rouge_key in self.rouge_keys:
@@ -131,7 +148,7 @@ class ROUGEScore(Metric):
             targets = [[targets]]
 
         output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, stemmer=self.stemmer
+            preds, targets, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
         )
         for rouge_key, metrics in output.items():
             for metric in metrics:
