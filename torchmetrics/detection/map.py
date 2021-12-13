@@ -356,7 +356,7 @@ class MAP(Metric):
         det = self.detection_boxes[id]
         gt_label_mask = self.groundtruth_labels[id] == class_id
         det_label_mask = self.detection_labels[id] == class_id
-        if len(det_label_mask) == 0 or len(det_label_mask) == 0:
+        if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
@@ -396,7 +396,7 @@ class MAP(Metric):
         det = self.detection_boxes[id]
         gt_label_mask = self.groundtruth_labels[id] == class_id
         det_label_mask = self.detection_labels[id] == class_id
-        if len(det_label_mask) == 0 or len(det_label_mask) == 0:
+        if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return None
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
