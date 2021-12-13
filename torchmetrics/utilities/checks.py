@@ -516,7 +516,7 @@ def _check_retrieval_inputs(
     preds: Tensor,
     target: Tensor,
     allow_non_binary_target: bool = False,
-    ignore_index: int = None,
+    ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct dtype.
 
