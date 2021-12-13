@@ -77,7 +77,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
     def __init__(
         self,
         empty_target_action: str = "neg",
-        ignore_index: int = None,
+        ignore_index: Optional[int] = None,
         k: int = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
