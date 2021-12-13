@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed `torch.sort` currently does not support bool dtype on CUDA ([#665](https://github.com/PyTorchLightning/metrics/pull/665))
+- Fixed `torch.sort` currently does not support bool `dtype` on CUDA ([#665](https://github.com/PyTorchLightning/metrics/pull/665))
+
+- Fixed mAP properly checks if ground truths are empty ([#684](https://github.com/PyTorchLightning/metrics/pull/684))
 
 
 ## [0.6.1] - 2021-12-06
