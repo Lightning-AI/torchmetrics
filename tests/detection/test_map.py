@@ -214,6 +214,7 @@ def test_empty_preds():
     )
     metric.compute()
 
+
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_empty_ground_truths():
     """Test empty ground truths."""
@@ -221,7 +222,11 @@ def test_empty_ground_truths():
 
     metric.update(
         [
-            dict(boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), scores=torch.Tensor([0.5]), labels=torch.IntTensor([4])),
+            dict(
+                boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                scores=torch.Tensor([0.5]),
+                labels=torch.IntTensor([4]),
+            ),
         ],
         [
             dict(boxes=torch.Tensor([]), labels=torch.IntTensor([])),
