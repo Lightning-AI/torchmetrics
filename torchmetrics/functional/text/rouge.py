@@ -204,9 +204,7 @@ def _rouge_score_update(
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
 
     for pred_raw, target_raw in zip(preds, targets):
-        result_inner: Dict[Union[int, str], List[Dict[str, Tensor]]] = {
-            rouge_key: None for rouge_key in rouge_keys_values
-        }
+        result_inner: Dict[Union[int, str], Dict[str, Tensor]] = {rouge_key: {} for rouge_key in rouge_keys_values}
         list_results = []
         for pred_raw_inner, target_raw_inner in zip(repeat(pred_raw), target_raw):
             pred = _normalize_and_tokenize_text(pred_raw_inner, stemmer)
@@ -233,15 +231,15 @@ def _rouge_score_update(
         if accumulate == "best":
             key_curr = rouge_keys_values[0]
             all_fmeasure = torch.tensor([v[key_curr]["fmeasure"] for v in list_results])
-            highest_idx = torch.argmax(all_fmeasure).item()
+            highest_idx = int(torch.argmax(all_fmeasure).item())
 
             for rouge_key in rouge_keys_values:
                 results[rouge_key].append(list_results[highest_idx][rouge_key])
 
         elif accumulate == "avg":
-            for score in list_results:
+            for _score in list_results:
                 for rouge_key in rouge_keys_values:
-                    results[rouge_key].append(score[rouge_key])
+                    results[rouge_key].append(_score[rouge_key])
 
         else:
             raise ValueError(
@@ -335,11 +333,11 @@ def rouge_score(
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
-    if isinstance(targets, list) and len(targets) > 0 and isinstance(targets[0], str):
+    if isinstance(targets, list) and bool(targets) and all(isinstance(elem, str) for elem in targets):
         if isinstance(preds, str):
-            targets = [targets]
+            targets = [str(x) for x in targets]
         else:
-            targets = [[x] for x in targets]
+            targets = [[str(x)] for x in targets]
 
     if isinstance(preds, str):
         preds = [preds]

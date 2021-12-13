@@ -63,11 +63,11 @@ def _compute_rouge_score(
     preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str, accumulate: str
 ):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
-    if isinstance(targets, list) and len(targets) > 0 and isinstance(targets[0], str):
+    if isinstance(targets, list) and bool(targets) and all(isinstance(elem, str) for elem in targets):
         if isinstance(preds, str):
-            targets = [targets]
+            targets = [str(x) for x in targets]
         else:
-            targets = [[x] for x in targets]
+            targets = [[str(x)] for x in targets]
 
     if isinstance(preds, str):
         preds = [preds]

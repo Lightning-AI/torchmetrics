@@ -135,11 +135,11 @@ class ROUGEScore(Metric):
             targets: An iterable of target sentences or a single target sentence.
         """
 
-        if isinstance(targets, list) and len(targets) > 0 and isinstance(targets[0], str):
+        if isinstance(targets, list) and bool(targets) and all(isinstance(elem, str) for elem in targets):
             if isinstance(preds, str):
-                targets = [targets]
+                targets = [str(x) for x in targets]
             else:
-                targets = [[x] for x in targets]
+                targets = [[str(x)] for x in targets]
 
         if isinstance(preds, str):
             preds = [preds]
