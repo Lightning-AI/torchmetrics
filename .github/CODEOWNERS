@@ -28,4 +28,4 @@
 /.github/*.md                   @edenlightning @SkafteNicki @borda
 /.github/ISSUE_TEMPLATE/*.md    @edenlightning @borda @SkafteNicki
 /docs/source/conf.py            @borda @awaelchli @ethanwharris
-/docs/paper/                    @SkafteNicki @borda @justusschock @williamFalcon
+/docs/paper_JOSS/               @SkafteNicki @borda @justusschock @williamFalcon
