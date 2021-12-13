@@ -55,6 +55,12 @@ class RetrievalMAP(RetrievalMetric):
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
 
+    Raises:
+        ValueError:
+            If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
+        ValueError:
+            If ``ignore_index`` is not `None` or an integer.
+
     Example:
         >>> from torchmetrics import RetrievalMAP
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])

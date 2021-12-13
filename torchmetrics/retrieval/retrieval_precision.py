@@ -60,7 +60,11 @@ class RetrievalPrecision(RetrievalMetric):
 
     Raises:
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+            If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
+        ValueError:
+            If ``ignore_index`` is not `None` or an integer.
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0.
 
     Example:
         >>> from torchmetrics import RetrievalPrecision
