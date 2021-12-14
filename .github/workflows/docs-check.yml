@@ -34,10 +34,10 @@ jobs:
       - name: Test Documentation
         env:
           SPHINX_MOCK_REQUIREMENTS: 0
+        working-directory: ./docs
         run: |
           # First run the same pipeline as Read-The-Docs
           apt-get update && sudo apt-get install -y cmake
-          cd docs
           make doctest
           make coverage
 
@@ -72,9 +72,9 @@ jobs:
         shell: bash
 
       - name: Make Documentation
+        # First run the same pipeline as Read-The-Docs
+        working-directory: ./docs
         run: |
-          # First run the same pipeline as Read-The-Docs
-          cd docs
           make clean
           make html --debug --jobs 2 SPHINXOPTS="-W --keep-going" -b linkcheck
 
@@ -87,7 +87,6 @@ jobs:
 
   paper-JOSS:
     runs-on: ubuntu-latest
-    name: Paper Draft
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -96,11 +95,11 @@ jobs:
         with:
           journal: joss
           # This should be the path to the paper within your repo.
-          paper-path: paper.md
+          paper-path: ./docs/paper_JOSS/paper.md
       - name: Upload
         uses: actions/upload-artifact@v1
         with:
-          name: paper
+          name: JOSS paper
           # This is the output path where Pandoc will write the compiled
           # PDF. Note, this should be the same directory as the input paper.md
-          path: paper.pdf
+          path: ./docs/paper_JOSS/paper.pdf
