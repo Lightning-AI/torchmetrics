@@ -46,6 +46,8 @@ class RetrievalFallOut(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
+        ignore_index:
+            Ignore predictions where the target is equal to this number.
         k: consider only the top k elements for each query (default: `None`, which considers them all)
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False.
@@ -60,7 +62,11 @@ class RetrievalFallOut(RetrievalMetric):
 
     Raises:
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+            If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
+        ValueError:
+            If ``ignore_index`` is not `None` or an integer.
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0.
 
     Example:
         >>> from torchmetrics import RetrievalFallOut
@@ -77,7 +83,8 @@ class RetrievalFallOut(RetrievalMetric):
     def __init__(
         self,
         empty_target_action: str = "pos",
-        k: int = None,
+        ignore_index: Optional[int] = None,
+        k: Optional[int] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -85,6 +92,7 @@ class RetrievalFallOut(RetrievalMetric):
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
+            ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
