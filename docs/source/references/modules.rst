@@ -391,7 +391,7 @@ LPIPS
     :noindex:
 
 MS_SSIM
-~~~~
+~~~~~~~
 
 .. autoclass:: torchmetrics.MS_SSIM
     :noindex:

@@ -58,7 +58,7 @@ def _ms_ssim_compute(
         0.1333,
     ),
     normalize: Optional[Literal["relu", "simple"]] = None,
-):
+) -> Tensor:
     """Computes Multi-Scale Structual Similarity Index Measure. Adapted from: https://github.com/jorge-
     pessoa/pytorch-msssim/blob/master/pytorch_msssim/__init__.py.
 
