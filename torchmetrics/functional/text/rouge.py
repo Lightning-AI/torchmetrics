@@ -248,16 +248,16 @@ def _rouge_score_update(
                 rouge_key: {} for rouge_key in rouge_keys_values
             }
             for rouge_key, metrics in result_avg.items():
-                _rouge_key_metric_type = {}
+                _dict_metric_score_batch = {}
                 for metric in metrics:
-                    for type, value in metric.items():
-                        if type not in _rouge_key_metric_type:
-                            _rouge_key_metric_type[type] = [value]
+                    for _type, value in metric.items():
+                        if _type not in _dict_metric_score_batch:
+                            _dict_metric_score_batch[_type] = [value]
                         else:
-                            _rouge_key_metric_type[type].append(value)
+                            _dict_metric_score_batch[_type].append(value)
 
                 new_result_avg[rouge_key] = {
-                    type: torch.tensor(_rouge_key_metric_type[type]).mean() for type in _rouge_key_metric_type
+                    _type: torch.tensor(_dict_metric_score_batch[_type]).mean() for _type in _dict_metric_score_batch
                 }
 
             for rouge_key in rouge_keys_values:
