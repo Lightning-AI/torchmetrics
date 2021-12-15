@@ -436,7 +436,7 @@ class MAP(Metric):
                         det_matches[idx_iou, idx_det] = True
                         gt_matches[idx_iou, m] = True
         # set unmatched detections outside of area range to ignore
-        det_areas = box_area(det)
+        det_areas = box_area(det).to(self.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.logical_or(
