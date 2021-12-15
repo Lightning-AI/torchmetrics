@@ -53,7 +53,7 @@ class MultiScaleSSIM(Metric):
         >>> from torchmetrics import MS_SSIM
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> ssim = MS_SSIM()
+        >>> ssim = MultiScaleSSIM()
         >>> ssim(preds, target)
         tensor(0.9269)
 
