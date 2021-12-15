@@ -68,7 +68,7 @@ def _compute_rouge_score(
 ):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
-        targets = [[x] for x in targets]
+        targets = [[target] for target in targets]
 
     if isinstance(preds, str):
         preds = [preds]
@@ -81,6 +81,7 @@ def _compute_rouge_score(
 
     for target_raw, pred_raw in zip(targets, preds):
         list_results = []
+        aggregator_avg = BootstrapAggregator()
         for target in target_raw:
             list_results.append(scorer.score(target, pred_raw))
 
@@ -90,8 +91,12 @@ def _compute_rouge_score(
             highest_idx = torch.argmax(all_fmeasure).item()
             aggregator.add_scores(list_results[highest_idx])
         elif accumulate == "avg":
-            for score in list_results:
-                aggregator.add_scores(score)
+            for _score in list_results:
+                aggregator_avg.add_scores(_score)
+            _score = {}
+            for rouge_key, scores in aggregator_avg.aggregate().items():
+                _score[rouge_key] = scores.mid
+            aggregator.add_scores(_score)
         else:
             raise ValueError(f"Got unknown accumulate value {accumulate}. Expected to be one of ['best', 'avg']")
 

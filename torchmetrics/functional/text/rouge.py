@@ -209,6 +209,7 @@ def _rouge_score_update(
 
     for pred_raw, target_raw in zip(preds, targets):
         result_inner: Dict[Union[int, str], Dict[str, Tensor]] = {rouge_key: {} for rouge_key in rouge_keys_values}
+        result_avg: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
         list_results = []
         pred = _normalize_and_tokenize_text(pred_raw, stemmer)
         pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
@@ -231,6 +232,7 @@ def _rouge_score_update(
                         target if rouge_key != "Lsum" else target_Lsum,
                     )
                 result_inner[rouge_key] = score
+                result_avg[rouge_key].append(score)
             list_results.append(result_inner.copy())
 
         if accumulate == "best":
@@ -242,9 +244,24 @@ def _rouge_score_update(
                 results[rouge_key].append(list_results[highest_idx][rouge_key])
 
         elif accumulate == "avg":
-            for _score in list_results:
-                for rouge_key in rouge_keys_values:
-                    results[rouge_key].append(_score[rouge_key])
+            new_result_avg: Dict[Union[int, str], Dict[str, Tensor]] = {
+                rouge_key: {} for rouge_key in rouge_keys_values
+            }
+            for rouge_key, metrics in result_avg.items():
+                _rouge_key_metric_type = {}
+                for metric in metrics:
+                    for type, value in metric.items():
+                        if type not in _rouge_key_metric_type:
+                            _rouge_key_metric_type[type] = [value]
+                        else:
+                            _rouge_key_metric_type[type].append(value)
+
+                new_result_avg[rouge_key] = {
+                    type: torch.tensor(_rouge_key_metric_type[type]).mean() for type in _rouge_key_metric_type
+                }
+
+            for rouge_key in rouge_keys_values:
+                results[rouge_key].append(new_result_avg[rouge_key])
 
     return results
 
@@ -339,7 +356,7 @@ def rouge_score(
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
     if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
-        targets = [[x] for x in targets]
+        targets = [[target] for target in targets]
 
     if isinstance(preds, str):
         preds = [preds]

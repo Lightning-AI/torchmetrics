@@ -138,7 +138,7 @@ class ROUGEScore(Metric):
                 of target sentences or a single target sentence.
         """
         if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
-            targets = [[x] for x in targets]
+            targets = [[target] for target in targets]
 
         if isinstance(preds, str):
             preds = [preds]
