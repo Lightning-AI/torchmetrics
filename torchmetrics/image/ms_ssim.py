@@ -50,7 +50,7 @@ class MultiScaleSSIM(Metric):
         Tensor with Multi-Scale SSIM score
 
     Example:
-        >>> from torchmetrics import MS_SSIM
+        >>> from torchmetrics import MultiScaleSSIM
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ssim = MultiScaleSSIM()
