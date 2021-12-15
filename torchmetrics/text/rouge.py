@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 
@@ -86,7 +86,7 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
-        accumulate: str = "best",
+        accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -126,20 +126,19 @@ class ROUGEScore(Metric):
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
     def update(
-        self, preds: Union[str, List[str]], targets: Union[str, List[str], List[List[str]]]
+        self, preds: Union[str, Sequence[str]], targets: Union[str, Sequence[str], Sequence[Sequence[str]]]
     ) -> None:  # type: ignore
         """Compute rouge scores.
 
         Args:
-            preds: An iterable of predicted sentences or a single predicted sentence.
-            targets: An iterable of target sentences or a single target sentence.
+            preds:
+                An iterable of predicted sentences or a single predicted sentence.
+            targets:
+                An iterable of iterable of target sentences or an iterable
+                of target sentences or a single target sentence.
         """
-
-        if isinstance(targets, list) and bool(targets) and all(isinstance(elem, str) for elem in targets):
-            if isinstance(preds, str):
-                targets = [str(x) for x in targets]
-            else:
-                targets = [[str(x)] for x in targets]
+        if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
+            targets = [[x] for x in targets]
 
         if isinstance(preds, str):
             preds = [preds]

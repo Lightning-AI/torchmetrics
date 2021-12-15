@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from functools import partial
-from itertools import repeat
-from typing import List
+from typing import Sequence
 
 import pytest
 import torch
@@ -60,14 +59,16 @@ BATCHES_3 = {
 
 
 def _compute_rouge_score(
-    preds: List[str], targets: List[List[str]], use_stemmer: bool, rouge_level: str, metric: str, accumulate: str
+    preds: Sequence[str],
+    targets: Sequence[Sequence[str]],
+    use_stemmer: bool,
+    rouge_level: str,
+    metric: str,
+    accumulate: str,
 ):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
-    if isinstance(targets, list) and bool(targets) and all(isinstance(elem, str) for elem in targets):
-        if isinstance(preds, str):
-            targets = [str(x) for x in targets]
-        else:
-            targets = [[str(x)] for x in targets]
+    if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
+        targets = [[x] for x in targets]
 
     if isinstance(preds, str):
         preds = [preds]
@@ -80,8 +81,8 @@ def _compute_rouge_score(
 
     for target_raw, pred_raw in zip(targets, preds):
         list_results = []
-        for target, pred in zip(target_raw, repeat(pred_raw)):
-            list_results.append(scorer.score(target, pred))
+        for target in target_raw:
+            list_results.append(scorer.score(target, pred_raw))
 
         if accumulate == "best":
             key_curr = list(list_results[0].keys())[0]
