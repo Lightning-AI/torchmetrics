@@ -24,9 +24,9 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class MS_SSIM(Metric):
-    """Computes `MS-SSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of Structual
-    Similarity Index Measure by incorporating image details at different resolution scores.
+class MultiScaleSSIM(Metric):
+    """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
+    Structual Similarity Index Measure by incorporating image details at different resolution scores.
 
     Args:
         kernel_size: size of the gaussian kernel
@@ -42,12 +42,12 @@ class MS_SSIM(Metric):
         k2: Parameter of SSIM.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
         resolutions.
-        normalize: When MS-SSIM loss is used for training, it is desirable to use normalizes to improve the training
-        stability. This `normalize` argument is out of scope of the original implementation [1], and it is adapted from
-        https://github.com/jorge-pessoa/pytorch-msssim instead.
+        normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
+        training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
+        adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
 
     Return:
-        Tensor with SSIM score
+        Tensor with Multi-Scale SSIM score
 
     Example:
         >>> from torchmetrics import MS_SSIM
@@ -59,7 +59,7 @@ class MS_SSIM(Metric):
 
     References:
     [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
-    Bovik `MS-SSIM`_
+    Bovik `MultiScaleSSIM`_
     """
 
     preds: List[Tensor]
@@ -100,6 +100,16 @@ class MS_SSIM(Metric):
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
+
+        if (
+            not isinstance(kernel_size, Sequence)
+            or len(kernel_size) != 2
+            or not all(isinstance(ks, int) for ks in kernel_size)
+        ):
+            raise ValueError(
+                "Argument `kernel_size` expected to be an sequence of size 2 where each element is an int"
+                f" but got {kernel_size}"
+            )
         self.kernel_size = kernel_size
         self.sigma = sigma
         self.data_range = data_range
@@ -119,8 +129,8 @@ class MS_SSIM(Metric):
         """Update state with predictions and targets.
 
         Args:
-            preds: Predictions from model
-            target: Ground truth values
+            preds: Predictions from model of shape `[N, C, H, W]`
+            target: Ground truth values of shape `[N, C, H, W]`
         """
         preds, target = _ssim_update(preds, target)
         self.preds.append(preds)

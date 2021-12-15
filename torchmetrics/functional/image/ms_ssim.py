@@ -35,7 +35,7 @@ def _get_normalized_sim_and_cs(
     sim, contrast_sensitivity = _ssim_compute(
         preds, target, kernel_size, sigma, reduction, data_range, k1, k2, return_contrast_sensitivity=True
     )
-    if normalize:
+    if normalize == "relu":
         sim = torch.relu(sim)
         contrast_sensitivity = torch.relu(contrast_sensitivity)
     return sim, contrast_sensitivity
@@ -120,12 +120,12 @@ def ms_ssim(
     betas: Tuple[float, float, float, float, float] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
-    """Computes `MS-SSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of Structual
-    Similarity Index Measure by incorporating image details at different resolution scores.
+    """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
+    Structual Similarity Index Measure by incorporating image details at different resolution scores.
 
     Args:
-        preds: estimated image
-        target: ground truth image
+        preds: Predictions from model of shape `[N, C, H, W]`
+        target: Ground truth values of shape `[N, C, H, W]`
         kernel_size: size of the gaussian kernel (default: (11, 11))
         sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
         reduction: a method to reduce metric score over labels.
@@ -144,7 +144,7 @@ def ms_ssim(
         https://github.com/jorge-pessoa/pytorch-msssim instead.
 
     Return:
-        Tensor with SSIM score
+        Tensor with Multi-Scale SSIM score
 
     Raises:
         TypeError:
@@ -167,7 +167,7 @@ def ms_ssim(
 
     References:
     [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
-    Bovik `MS-SSIM`_
+    Bovik `MultiScaleSSIM`_
     """
     if not isinstance(betas, tuple):
         raise ValueError("Argument `betas` is expected to be of a type tuple.")
