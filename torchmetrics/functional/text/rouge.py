@@ -357,7 +357,10 @@ def rouge_score(
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
     if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
-        targets = [[target] for target in targets]
+        if isinstance(preds, str):
+            targets = [targets]
+        else:
+            targets = [[target] for target in targets]
 
     if isinstance(preds, str):
         preds = [preds]

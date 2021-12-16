@@ -19,6 +19,7 @@ import pytest
 import torch
 
 from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_single_reference
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
@@ -31,32 +32,6 @@ else:
 
 ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
-SINGLE_SENTENCE_EXAMPLE_PREDS = "The quick brown fox jumps over the lazy dog"
-SINGLE_SENTENCE_EXAMPLE_TARGET = "The quick brown dog jumps on the log."
-
-PREDS = "My name is John"
-TARGETS = "Is your name John"
-
-
-BATCHES_1 = {
-    "preds": [["the cat was under the bed"], ["the cat was found under the bed"]],
-    "targets": [["the cat was found under the bed"], ["the tiny little cat was found under the big funny bed "]],
-}
-
-
-BATCHES_2 = {
-    "preds": [["The quick brown fox jumps over the lazy dog"], ["My name is John"]],
-    "targets": [["The quick brown dog jumps on the log."], ["Is your name John"]],
-}
-
-BATCHES_3 = {
-    "preds": [["The quick brown fox jumps over the lazy dog"], ["My name is John"]],
-    "targets": [
-        [["The quick brown dog jumps on the log.", "The quick brown dog jumps over the lazy fox"]],
-        [["Is your name John", "Thy name is John"]],
-    ],
-}
-
 
 def _compute_rouge_score(
     preds: Sequence[str],
@@ -68,7 +43,10 @@ def _compute_rouge_score(
 ):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
-        targets = [[target] for target in targets]
+        if isinstance(preds, str):
+            targets = [targets]
+        else:
+            targets = [[target] for target in targets]
 
     if isinstance(preds, str):
         preds = [preds]
@@ -126,9 +104,7 @@ def _compute_rouge_score(
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        (BATCHES_1["preds"], BATCHES_1["targets"]),
-        (BATCHES_2["preds"], BATCHES_2["targets"]),
-        (BATCHES_3["preds"], BATCHES_3["targets"]),
+        (_inputs_multiple_references.preds, _inputs_multiple_references.targets),
     ],
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
@@ -191,4 +167,9 @@ def test_rouge_metric_wrong_key_value_error():
         ROUGEScore(rouge_keys=key)
 
     with pytest.raises(ValueError):
-        rouge_score(PREDS, TARGETS, rouge_keys=key, accumulate="best")
+        rouge_score(
+            _inputs_single_sentence_single_reference.preds,
+            _inputs_single_sentence_single_reference.targets,
+            rouge_keys=key,
+            accumulate="best",
+        )
