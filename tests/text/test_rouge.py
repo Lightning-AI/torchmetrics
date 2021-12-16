@@ -58,10 +58,8 @@ def _compute_rouge_score(
     aggregator = BootstrapAggregator()
 
     for target_raw, pred_raw in zip(targets, preds):
-        list_results = []
+        list_results = [scorer.score(target, pred_raw) for target in target_raw]
         aggregator_avg = BootstrapAggregator()
-        for target in target_raw:
-            list_results.append(scorer.score(target, pred_raw))
 
         if accumulate == "best":
             key_curr = list(list_results[0].keys())[0]
@@ -71,9 +69,7 @@ def _compute_rouge_score(
         elif accumulate == "avg":
             for _score in list_results:
                 aggregator_avg.add_scores(_score)
-            _score = {}
-            for rouge_key, scores in aggregator_avg.aggregate().items():
-                _score[rouge_key] = scores.mid
+            _score = {rouge_key: scores.mid for rouge_key, scores in aggregator_avg.aggregate().items()}
             aggregator.add_scores(_score)
         else:
             raise ValueError(f"Got unknown accumulate value {accumulate}. Expected to be one of ['best', 'avg']")

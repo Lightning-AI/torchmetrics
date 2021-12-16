@@ -253,9 +253,8 @@ def _rouge_score_update(
                 for metric in metrics:
                     for _type, value in metric.items():
                         if _type not in _dict_metric_score_batch:
-                            _dict_metric_score_batch[_type] = [value]
-                        else:
-                            _dict_metric_score_batch[_type].append(value)
+                            _dict_metric_score_batch[_type] = []
+                        _dict_metric_score_batch[_type].append(value)
 
                 new_result_avg[rouge_key] = {
                     _type: torch.tensor(_dict_metric_score_batch[_type]).mean() for _type in _dict_metric_score_batch
@@ -357,10 +356,7 @@ def rouge_score(
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
     if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
-        if isinstance(preds, str):
-            targets = [targets]
-        else:
-            targets = [[target] for target in targets]
+        targets = [targets] if isinstance(preds, str) else [[target] for target in targets]
 
     if isinstance(preds, str):
         preds = [preds]
