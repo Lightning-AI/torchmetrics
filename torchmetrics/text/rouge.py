@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.rouge import (
@@ -125,9 +126,9 @@ class ROUGEScore(Metric):
             for score in ["fmeasure", "precision", "recall"]:
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
-    def update(
+    def update(  # type: ignore
         self, preds: Union[str, Sequence[str]], targets: Union[str, Sequence[str], Sequence[Sequence[str]]]
-    ) -> None:  # type: ignore
+    ) -> None:
         """Compute rouge scores.
 
         Args:

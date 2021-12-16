@@ -13,10 +13,11 @@
 # limitations under the License.
 import re
 from collections import Counter
-from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
