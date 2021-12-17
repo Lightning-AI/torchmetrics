@@ -42,6 +42,8 @@ _inputs_single_sentence_multiple_references = Input(preds=[HYPOTHESIS_B], target
 
 _inputs_multiple_references = Input(preds=TUPLE_OF_HYPOTHESES, targets=TUPLE_OF_REFERENCES)
 
+_inputs_single_sentence_single_reference = Input(preds=HYPOTHESIS_B, targets=REFERENCE_1B)
+
 ERROR_RATES_BATCHES_1 = {
     "preds": [["hello world"], ["what a day"]],
     "targets": [["hello world"], ["what a wonderful day"]],

@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ignore_index` to to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
 
 
+- Added support for multi references in `ROUGEScore` ([#680](https://github.com/PyTorchLightning/metrics/pull/680))
+
+
 ### Changed
 
 - Scalar metrics will now consistently have additional dimensions squeezed ([#622](https://github.com/PyTorchLightning/metrics/pull/622))
@@ -52,15 +55,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
+
+
 - Removed argument `concatenate_texts` from `wer` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
+
+
 - Removed arguments `newline_sep` and `decimal_places` from `rouge` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
 
 ### Fixed
 
 
-- Fixed `torch.sort` currently does not support bool dtype on CUDA ([#665](https://github.com/PyTorchLightning/metrics/pull/665))
 
+## [0.6.2] - 2021-12-15
 
+### Fixed
+
+- Fixed `torch.sort` currently does not support bool `dtype` on CUDA ([#665](https://github.com/PyTorchLightning/metrics/pull/665))
+- Fixed mAP properly checks if ground truths are empty ([#684](https://github.com/PyTorchLightning/metrics/pull/684))
 - Fixed initialization of tensors to be on correct device for `MAP` metric ([#673](https://github.com/PyTorchLightning/metrics/pull/673))
 
 
