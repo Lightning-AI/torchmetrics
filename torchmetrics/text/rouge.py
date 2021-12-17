@@ -35,9 +35,8 @@ class ROUGEScore(Metric):
             Use Porter stemmer to strip word suffixes to improve matching.
         accumulate:
             Useful incase of multi-reference rouge score.
-            ``avg`` takes the avg of all references with respect to predictions
-            ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
-            Allowed values are ``avg`` and ``best``. default: ``best``
+            - ``avg`` takes the avg of all references with respect to predictions
+            - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
         rouge_keys:
             A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
@@ -113,7 +112,7 @@ class ROUGEScore(Metric):
 
         if accumulate not in ALLOWED_ACCUMULATE_VALUES:
             raise ValueError(
-                f"Got unknown accumulate value {accumulate}. Expected to be on of {ALLOWED_ACCUMULATE_VALUES}"
+                f"Got unknown accumulate value {accumulate}. Expected to be one of {ALLOWED_ACCUMULATE_VALUES}"
             )
 
         self.rouge_keys = rouge_keys

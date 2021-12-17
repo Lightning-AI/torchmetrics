@@ -300,9 +300,8 @@ def rouge_score(
             An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
         accumulate:
             Useful incase of multi-reference rouge score.
-            ``avg`` takes the avg of all references with respect to predictions
-            ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
-            Allowed values are ``avg`` and ``best``. default: ``best``
+            - ``avg`` takes the avg of all references with respect to predictions
+            - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
