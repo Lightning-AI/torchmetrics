@@ -91,7 +91,7 @@ import unicodedata
 from math import inf
 from typing import List, Optional, Sequence, Tuple, Union
 
-from torch import Tensor, tensor, stack
+from torch import Tensor, stack, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.helper import _validate_inputs

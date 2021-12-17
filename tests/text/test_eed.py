@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import numpy as np
-from torch import tensor, Tensor
+import pytest
+from torch import Tensor, tensor
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references

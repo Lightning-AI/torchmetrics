@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Optional, Sequence, Union, List, Tuple
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor, stack
 from typing_extensions import Literal
