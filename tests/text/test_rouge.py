@@ -42,11 +42,8 @@ def _compute_rouge_score(
     accumulate: str,
 ):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
-    if isinstance(targets, list) and bool(targets) and all(isinstance(target, str) for target in targets):
-        if isinstance(preds, str):
-            targets = [targets]
-        else:
-            targets = [[target] for target in targets]
+    if isinstance(targets, list) and all(isinstance(target, str) for target in targets):
+        targets = [targets] if isinstance(preds, str) else [[target] for target in targets]
 
     if isinstance(preds, str):
         preds = [preds]
