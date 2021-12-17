@@ -12,20 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 import numpy as np
-from torch import tensor
+from torch import tensor, Tensor
 
+from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
 
-REFERENCES_1 = "perfect match"
-HYPOTHESES_1 = "perfect match"
 
-REFERENCES_2 = "blue orange"
-HYPOTHESES_2 = "imperfect match"
-
-# test batches
-BATCH_1 = {"references": [REFERENCES_1, REFERENCES_2], "hypotheses": [HYPOTHESES_1, HYPOTHESES_2]}
+@pytest.mark.parametrize(
+    ["preds", "targets"],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+)
+class TestEED(TextTester):
+    def test_chrf_score_differentiability(self, preds, targets):
+        self.run_differentiability_test(
+            preds=preds,
+            targets=targets,
+            metric_module=EED,
+            metric_functional=eed,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
+        )
 
 
 # test blank edge cases
@@ -55,10 +64,25 @@ def test_eed_empty_with_non_empty_hyp_class():
     assert eed_metric(ref, hyp) == tensor(0.0)
 
 
-# test ability to parallelize
+def test_eed_return_sentence_level_score_functional():
+    ref = _inputs_single_sentence_multiple_references.targets
+    hyp = _inputs_single_sentence_multiple_references.preds
+    _, sentence_eed = eed(ref, hyp, return_sentence_level_score=True)
+    isinstance(sentence_eed, Tensor)
+
+
+def test_eed_return_sentence_level_class():
+    metric = EED(return_sentence_level_score=True)
+    ref = _inputs_single_sentence_multiple_references.targets
+    hyp = _inputs_single_sentence_multiple_references.preds
+    _, sentence_eed = metric(ref, hyp)
+    isinstance(sentence_eed, Tensor)
+
+
+# test parallel vs sequential computations
 def test_parallelisation_eed():
-    references = BATCH_1["references"]
-    hypotheses = BATCH_1["hypotheses"]
+    references = _inputs_multiple_references.targets
+    hypotheses = _inputs_multiple_references.preds
 
     # batch_size == length of data
     metric = EED()

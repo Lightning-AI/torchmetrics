@@ -91,7 +91,7 @@ import unicodedata
 from math import inf
 from typing import List, Optional, Sequence, Tuple, Union
 
-from torch import Tensor, tensor
+from torch import Tensor, tensor, stack
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.helper import _validate_inputs
@@ -105,7 +105,7 @@ def _distance_between_words(reference_word: str, hypothesis_word: str) -> int:
         reference_word: reference word string
         hypothesis_word: hypothesis word string
 
-    Returns:
+    Return:
         0 for match, 1 for no match
     """
     return int(reference_word != hypothesis_word)
@@ -136,7 +136,7 @@ def _eed_function(
         insertion:
             penalty for insertion or substitution of character
 
-    Returns:
+    Return:
         Extended edit distance score as float
     """
     number_of_visits = [-1] * (len(hyp) + 1)
@@ -234,20 +234,20 @@ def _preprocess_ja(sentence: str) -> str:
     return sentence
 
 
-def _eed_compute(scores: Tensor, total_num_sentences: Tensor) -> Tensor:
+def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
     """Final step in extended edit distance.
 
     Args:
-        scores: sum of individual sentence scores as a tensor
-        total_num_sentences: number of sentences as a tensor
+        sentence_level_scores:
+            list of sentence-level scores as floats
 
-    Returns:
+    Return:
         average of scores as a tensor
     """
-    if scores == tensor(0.0):
-        return scores
+    if sentence_level_scores == []:
+        return tensor(0.0)
 
-    average = scores / total_num_sentences
+    average = sum(sentence_level_scores) / len(sentence_level_scores)
     return average
 
 
@@ -263,7 +263,7 @@ def _preprocess_sentences(
         hypothesis_corpus: An iterable of hypothesis corpus.
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
 
-    Returns:
+    Return:
         Tuple of lists that contain the cleaned strings for reference_corpus and hypothesis_corpus
 
     Raises:
@@ -295,7 +295,7 @@ def _compute_sentence_statistics(
     rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-) -> Tuple[Tensor, Tensor]:
+) -> Tensor:
     """Compute scores for EED.
 
     Args:
@@ -311,31 +311,33 @@ def _compute_sentence_statistics(
             penalty for deletion of character
         insertion:
             penalty for insertion or substitution of character
+        decide_score_fn:
+            decides which score
 
-    Returns:
-        Tuple of scores and number of sentences as floats
+    Return:
+        best_score:
+            best (lowest) sentence-level score as a Tensor
     """
-    scores = 0.0
-    num_sentences = 0.0
+    best_score = inf
 
     for reference in reference_words:
         score = _eed_function(reference, hypothesis, alpha, rho, deletion, insertion)
-        scores += score
-        num_sentences += 1.0
+        if score < best_score:
+            best_score = score
 
-    return scores, num_sentences
+    return tensor(best_score)
 
 
 def _eed_update(
     reference_corpus: Sequence[Union[str, Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
     language: Literal["en", "ja"] = "en",
-    return_sentence_level_score: bool = False,
     alpha: float = 2.0,
     rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-) -> Tuple[Tensor, Tensor]:
+    sentence_eed: Optional[List[Tensor]] = None,
+) -> List[Tensor]:
     """Compute scores for EED.
 
     Args:
@@ -345,8 +347,6 @@ def _eed_update(
             An iterable of hypothesis corpus
         language:
             Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
-        return_sentence_level_score:
-            An indication of whether sentence-level EED is to be returned
         alpha:
             optimal jump penalty, penalty for jumps between characters
         rho:
@@ -355,42 +355,26 @@ def _eed_update(
             penalty for deletion of character
         insertion:
             penalty for insertion or substitution of character
+        sentence_eed:
+            list of sentence-level scores
 
-    Returns:
-        Tuple of scores, total sentences as floats, and individual sentence scores
+    Return:
+        individual sentence scores as a list of Tensors
     """
-    # input validation for parameters
-    for parameter in (alpha, rho, deletion, insertion):
-        assert parameter >= 0
-        assert isinstance(parameter, float)
-
     reference_corpus, hypothesis_corpus = _preprocess_sentences(reference_corpus, hypothesis_corpus, language)
 
-    # check if reference_corpus or hypothesis_corpus is empty
-    if 0 in (len(hypothesis_corpus), len(reference_corpus[0])):
-        scores = tensor(0.0)
-        total_num_sentences = tensor(0.0)
+    if sentence_eed is None:
         sentence_eed = []
-        return scores, total_num_sentences, sentence_eed
 
-    # calculate score
-    scores = 0.0
-    total_num_sentences = 0.0
-
-    sentence_eed: Optional[List[Tensor]] = [] if return_sentence_level_score else None
+    # return tensor(0.0) if reference_corpus or hypothesis_corpus is empty
+    if 0 in (len(hypothesis_corpus), len(reference_corpus[0])):
+        return sentence_eed
 
     for reference_words, hypothesis in zip(reference_corpus, hypothesis_corpus):
-        score, num_sentences = _compute_sentence_statistics(
-            reference_words, hypothesis, alpha, rho, deletion, insertion
-        )
+        score = _compute_sentence_statistics(reference_words, hypothesis, alpha, rho, deletion, insertion)
+        sentence_eed.append(score)
 
-        if sentence_eed is not None:
-            sentence_eed.append(_eed_compute(tensor(scores), tensor(total_num_sentences)).unsqueeze(0))
-
-        scores += score
-        total_num_sentences += num_sentences
-
-    return tensor(scores), tensor(total_num_sentences), sentence_eed
+    return sentence_eed
 
 
 def eed(
@@ -402,7 +386,7 @@ def eed(
     rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-) -> Tensor:
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Computes extended edit distance score (`EED`_) [1] for strings or list of strings. The metric utilises the
     Levenshtein distance and extends it by adding an additional jump operation.
 
@@ -424,7 +408,7 @@ def eed(
         insertion:
             penalty for insertion or substitution of character
 
-    Returns:
+    Return:
         Extended edit distance score as a tensor
 
     Example:
@@ -438,12 +422,15 @@ def eed(
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”,
         submitted to WMT 2019. `EED`_
     """
-    scores, total_num_sentences, sentence_eed = _eed_update(
-        reference_corpus, hypothesis_corpus, language, return_sentence_level_score, alpha, rho, deletion, insertion
-    )
+    # input validation for parameters
+    for parameter in (alpha, rho, deletion, insertion):
+        assert parameter >= 0
+        assert isinstance(parameter, float)
+
+    sentence_level_scores = _eed_update(reference_corpus, hypothesis_corpus, language, alpha, rho, deletion, insertion)
+
+    average = _eed_compute(sentence_level_scores)
 
     if return_sentence_level_score:
-        return sentence_eed
-
-    average = _eed_compute(scores, total_num_sentences)
+        return average, stack(sentence_level_scores)
     return average

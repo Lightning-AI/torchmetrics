@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Optional, Sequence, Union, List
+from typing import Any, Callable, Optional, Sequence, Union, List, Tuple
 
-from torch import Tensor, tensor
+from torch import Tensor, stack
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.eed import _eed_compute, _eed_update
@@ -49,7 +49,7 @@ class EED(Metric):
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
-    Returns:
+    Return:
         Extended edit distance score as a tensor
 
     Example:
@@ -65,9 +65,7 @@ class EED(Metric):
         to WMT 2019. `EED`_
     """
 
-    scores: Tensor
-    total_num_sentences: Tensor
-    sentence_eed: Optional[List[Tensor]] = None
+    sentence_eed: List[Tensor] = []
     higher_is_better: False
     is_differentiable: False
 
@@ -96,15 +94,17 @@ class EED(Metric):
         self.language: Literal["en", "ja"] = language
         self.return_sentence_level_score = return_sentence_level_score
 
+        # input validation for parameters
+        for parameter in (alpha, rho, deletion, insertion):
+            assert parameter >= 0
+            assert isinstance(parameter, float)
+
         self.alpha = alpha
         self.rho = rho
         self.deletion = deletion
         self.insertion = insertion
 
-        self.add_state("scores", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total_num_sentences", tensor(0.0), dist_reduce_fx="sum")
-        if self.return_sentence_level_score:
-            self.add_state("sentence_eed", [], dist_reduce_fx="cat")
+        self.add_state("sentence_eed", [], dist_reduce_fx="cat")
 
     def update(  # type: ignore
         self,
@@ -117,28 +117,25 @@ class EED(Metric):
             reference_corpus: An iterable of iterables of reference corpus
             hypothesis_corpus: An iterable of hypothesis corpus
         """
-        scores, total_num_sentences, sentence_eed = _eed_update(
+        self.sentence_eed = _eed_update(
             reference_corpus,
             hypothesis_corpus,
             self.language,
-            self.return_sentence_level_score,
             self.alpha,
             self.rho,
             self.deletion,
             self.insertion,
+            self.sentence_eed,
         )
 
-        self.scores += scores
-        self.total_num_sentences += total_num_sentences
-        if self.return_sentence_level_score is True:
-            self.sentence_eed.extend(sentence_eed)
-
-    def compute(self) -> Tensor:
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate extended edit distance score.
 
-        Returns:
+        Return:
             Extended edit distance score as tensor
         """
-        if self.return_sentence_level_score is True:
-            return self.sentence_eed
-        return _eed_compute(self.scores, self.total_num_sentences)
+        average = _eed_compute(self.sentence_eed)
+
+        if self.return_sentence_level_score:
+            return average, stack(self.sentence_eed)
+        return average
