@@ -101,11 +101,8 @@ class MultiScaleSSIM(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-        if (
-            not isinstance(kernel_size, Sequence)
-            or len(kernel_size) != 2
-            or not all(isinstance(ks, int) for ks in kernel_size)
-        ):
+        all_kernel_ints = all(isinstance(ks, int) for ks in kernel_size)
+        if not isinstance(kernel_size, Sequence) or len(kernel_size) != 2 or not all_kernel_ints:
             raise ValueError(
                 "Argument `kernel_size` expected to be an sequence of size 2 where each element is an int"
                 f" but got {kernel_size}"
