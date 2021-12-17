@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Callable, Optional, Sequence, Union, List
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
@@ -30,6 +30,14 @@ class EED(Metric):
             Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
         return_sentence_level_score:
             An indication of whether sentence-level EED is to be returned
+        alpha:
+            optimal jump penalty, penalty for jumps between characters
+        rho:
+            coverage cost, penalty for repetition of characters
+        deletion:
+            penalty for deletion of character
+        insertion:
+            penalty for insertion or substitution of character
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
@@ -40,14 +48,6 @@ class EED(Metric):
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
-        alpha:
-            optimal jump penalty, penalty for jumps between characters
-        rho:
-            coverage cost, penalty for repetition of characters
-        deletion:
-            penalty for deletion of character
-        insertion:
-            penalty for insertion or substitution of character
 
     Returns:
         Extended edit distance score as a tensor
@@ -75,14 +75,14 @@ class EED(Metric):
         self,
         language: Literal["en", "ja"] = "en",
         return_sentence_level_score: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
         alpha: float = 2.0,
         rho: float = 0.3,
         deletion: float = 0.2,
         insertion: float = 1.0,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
     ):
         super().__init__(
             compute_on_step=compute_on_step,
@@ -95,7 +95,6 @@ class EED(Metric):
             raise ValueError(f"Expected argument `language` to either be `en` or `ja` but got {language}")
         self.language: Literal["en", "ja"] = language
         self.return_sentence_level_score = return_sentence_level_score
-        self.sentence_eed = []
 
         self.alpha = alpha
         self.rho = rho
@@ -140,5 +139,6 @@ class EED(Metric):
         Returns:
             Extended edit distance score as tensor
         """
-        eed = _eed_compute(self.scores, self.total_num_sentences)
-        return eed
+        if self.return_sentence_level_score is True:
+            return self.sentence_eed
+        return _eed_compute(self.scores, self.total_num_sentences)

@@ -359,6 +359,11 @@ def _eed_update(
     Returns:
         Tuple of scores, total sentences as floats, and individual sentence scores
     """
+    # input validation for parameters
+    for parameter in (alpha, rho, deletion, insertion):
+        assert parameter >= 0
+        assert isinstance(parameter, float)
+
     reference_corpus, hypothesis_corpus = _preprocess_sentences(reference_corpus, hypothesis_corpus, language)
 
     # check if reference_corpus or hypothesis_corpus is empty
