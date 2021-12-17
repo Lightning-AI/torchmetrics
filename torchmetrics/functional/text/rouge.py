@@ -249,7 +249,7 @@ def _rouge_score_update(
                 rouge_key: {} for rouge_key in rouge_keys_values
             }
             for rouge_key, metrics in result_avg.items():
-                _dict_metric_score_batch = {}
+                _dict_metric_score_batch: Dict[str, List[Tensor]] = {}
                 for metric in metrics:
                     for _type, value in metric.items():
                         if _type not in _dict_metric_score_batch:
