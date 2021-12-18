@@ -192,8 +192,6 @@ def ms_ssim(
         raise ValueError("Argument `betas` is expected to be a tuple of floats.")
     if normalize and normalize not in ("relu", "simple"):
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
-    target = target.type(preds.type())
-    print(preds.type())
+
     preds, target = _ssim_update(preds, target)
-    print(preds.type())
     return _ms_ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
