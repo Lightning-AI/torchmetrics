@@ -17,8 +17,6 @@ if _BERTSCORE_AVAILABLE:
 
 os.environ["TOKENIZERS_PARALLELISM"] = "1"
 
-# Examples and expected values taken from:
-# https://github.com/Tiiiger/bert_score/blob/master/tests/test_scorer.py
 preds = _inputs_multiple_sentences_multiple_reference.preds
 refs = _inputs_multiple_sentences_multiple_reference.targets
 

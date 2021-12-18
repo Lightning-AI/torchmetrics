@@ -60,6 +60,8 @@ ERROR_RATES_BATCHES_2 = {
     ],
 }
 
+# Examples and expected values taken from:
+# https://github.com/Tiiiger/bert_score/blob/master/tests/test_scorer.py
 ARTICLES_INPUT = {
     "preds": [
         "28-year-old chef found dead in San Francisco mall",
