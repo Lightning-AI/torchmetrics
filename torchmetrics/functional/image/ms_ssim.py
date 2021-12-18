@@ -176,10 +176,10 @@ def ms_ssim(
 
     Example:
         >>> from torchmetrics.functional import ms_ssim
-        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> preds = torch.rand([1, 1, 256, 256])
         >>> target = preds * 0.75
         >>> ms_ssim(preds, target)
-        tensor(0.9269)
+        tensor(0.9557)
 
     References:
     [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
