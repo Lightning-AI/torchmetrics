@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BLEUScore` now expects untokenized input to stay consistent with all the other text metrics ([#640](https://github.com/PyTorchLightning/metrics/pull/640))
 
 
+- `BERTScore` and `ROUGEScore` now expect references to be the first argument and predictions to be the second. Consistent with other NLG metrics ([#687](https://github.com/PyTorchLightning/metrics/pull/687))
+
+
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
