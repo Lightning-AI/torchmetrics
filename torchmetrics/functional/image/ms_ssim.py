@@ -87,14 +87,30 @@ def _ms_ssim_compute(
     sim_list: List[Tensor] = []
     cs_list: List[Tensor] = []
 
+    if preds.size()[-1] < 2 ** len(betas) or preds.size()[-2] < 2 ** len(betas):
+        raise ValueError(
+            f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be "
+            f"larger than or equal to {2 ** len(betas)}."
+        )
+    if preds.size()[-2] // (len(betas) - 1) ** 2 <= kernel_size[0] - 1:
+        raise ValueError(
+            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[0]}, the image height "
+            f"must be larger than {(kernel_size[0] - 1) * (len(betas) - 1) ** 2}."
+        )
+    if preds.size()[-1] // (len(betas) - 1) ** 2 <= kernel_size[1] - 1:
+        raise ValueError(
+            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]}, the image width "
+            f"must be larger than {(kernel_size[1] - 1) * (len(betas) - 1) ** 2}."
+        )
+
     for _ in range(len(betas)):
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
             preds, target, kernel_size, sigma, reduction, data_range, k1, k2, normalize
         )
         sim_list.append(sim)
         cs_list.append(contrast_sensitivity)
-        for img in [preds, target]:
-            img = F.avg_pool2d(img, (2, 2))
+        preds = F.avg_pool2d(preds, (2, 2))
+        target = F.avg_pool2d(target, (2, 2))
 
     sim_stack = torch.stack(sim_list)
     cs_stack = torch.stack(cs_list)
@@ -105,7 +121,7 @@ def _ms_ssim_compute(
 
     sim_stack = sim_stack ** torch.tensor(betas)
     cs_stack = cs_stack ** torch.tensor(betas)
-    return torch.prod(sim_stack[:-1]) * cs_stack[-1]
+    return torch.prod(cs_stack[:-1]) * sim_stack[-1]
 
 
 def ms_ssim(
