@@ -60,6 +60,28 @@ ERROR_RATES_BATCHES_2 = {
     ],
 }
 
+ARTICLES_INPUT = {
+    "preds": [
+        "28-year-old chef found dead in San Francisco mall",
+        "A 28-year-old chef who recently moved to San Francisco was "
+        "found dead in the staircase of a local shopping center.",
+        "The victim's brother said he cannot imagine anyone who \
+        would want to harm him,\"Finally, it went uphill again at "
+        'him."',
+    ],
+    "targets": [
+        "28-Year-Old Chef Found Dead at San Francisco Mall",
+        "A 28-year-old chef who had recently moved to San Francisco \
+        was found dead in the stairwell of a local mall this "
+        "week.",
+        "But the victim's brother says he can't think of anyone who would \
+        want to hurt him, saying, \"Things were finally "
+        'going well for him."',
+    ],
+}
+
 _inputs_error_rate_batch_size_1 = Input(**ERROR_RATES_BATCHES_1)
 
 _inputs_error_rate_batch_size_2 = Input(**ERROR_RATES_BATCHES_2)
+
+_inputs_multiple_sentences_multiple_reference = Input(**ARTICLES_INPUT)

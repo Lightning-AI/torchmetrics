@@ -57,7 +57,7 @@ class ROUGEScore(Metric):
         >>> preds = "My name is John"
         >>> rouge = ROUGEScore()   # doctest: +SKIP
         >>> from pprint import pprint
-        >>> pprint(rouge(preds, targets))  # doctest: +SKIP
+        >>> pprint(rouge(targets, preds))  # doctest: +SKIP
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,
@@ -126,7 +126,7 @@ class ROUGEScore(Metric):
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
     def update(  # type: ignore
-        self, preds: Union[str, Sequence[str]], targets: Union[str, Sequence[str], Sequence[Sequence[str]]]
+        self, targets: Union[str, Sequence[str], Sequence[Sequence[str]]], preds: Union[str, Sequence[str]]
     ) -> None:
         """Compute rouge scores.
 
@@ -147,7 +147,7 @@ class ROUGEScore(Metric):
             targets = [[targets]]
 
         output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
+            targets, preds, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
         )
         for rouge_key, metrics in output.items():
             for metric in metrics:

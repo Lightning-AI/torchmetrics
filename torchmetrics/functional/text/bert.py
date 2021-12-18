@@ -450,8 +450,8 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    predictions: Union[List[str], Dict[str, Tensor]],
     references: Union[List[str], Dict[str, Tensor]],
+    predictions: Union[List[str], Dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -478,11 +478,11 @@ def bert_score(
     This implemenation follows the original implementation from `BERT_score`_
 
     Args:
-        predictions:
-            Either an iterable of predicted sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
-            `attention_mask` `torch.Tensor`.
         references:
             Either an iterable of target sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
+            `attention_mask` `torch.Tensor`.
+        predictions:
+            Either an iterable of predicted sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
             `attention_mask` `torch.Tensor`.
         model_name_or_path:
             A name or a model path used to load `transformers` pretrained model.
@@ -548,9 +548,9 @@ def bert_score(
 
     Example:
         >>> from torchmetrics.functional.text.bert import bert_score
-        >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "master kenobi"]
-        >>> bert_score(predictions=predictions, references=references, lang="en")  # doctest: +SKIP
+        >>> predictions = ["hello there", "general kenobi"]
+        >>> bert_score(references=references, predictions=predictions, lang="en")  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}

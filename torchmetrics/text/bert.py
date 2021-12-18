@@ -46,10 +46,10 @@ class BERTScore(Metric):
     This implemenation follows the original implementation from `BERT_score`_.
 
     Args:
-        predictions:
-            An iterable of predicted sentences.
         references:
             An iterable of target sentences.
+        predictions:
+            An iterable of predicted sentences.
         model_type:
             A name or a model path used to load `transformers` pretrained model.
         num_layers:
@@ -112,10 +112,10 @@ class BERTScore(Metric):
 
     Example:
         >>> from torchmetrics.text.bert import BERTScore
-        >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "master kenobi"]
+        >>> predictions = ["hello there", "general kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore.update(predictions=predictions,references=references)
+        >>> bertscore.update(references=references,predictions=predictions)
         >>> bertscore.compute()  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
@@ -192,14 +192,14 @@ class BERTScore(Metric):
             self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
             self.user_tokenizer = False
 
-    def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
+    def update(self, references: List[str], predictions: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 
         Args:
-            predictions:
-                An iterable of predicted sentences.
             references:
+                An iterable of predicted sentences.
+            predictions:
                 An iterable of predicted sentences.
         """
         predictions_dict = _preprocess_text(
@@ -230,8 +230,8 @@ class BERTScore(Metric):
             Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
         """
         return bert_score(
-            predictions=_concatenate(self.predictions),
             references=_concatenate(self.references),
+            predictions=_concatenate(self.predictions),
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,

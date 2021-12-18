@@ -160,8 +160,8 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
 
 
 def _rouge_score_update(
-    preds: Sequence[str],
     targets: Sequence[Sequence[str]],
+    preds: Sequence[str],
     rouge_keys_values: List[Union[int, str]],
     accumulate: str,
     stemmer: Optional[Any] = None,
@@ -169,10 +169,10 @@ def _rouge_score_update(
     """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
-        preds:
-            An iterable of predicted sentences.
         targets:
             An iterable of iterable of target sentences.
+        preds:
+            An iterable of predicted sentences.
         rouge_keys_values:
             List of N-grams/'L'/'Lsum' arguments.
         accumulate:
@@ -187,7 +187,7 @@ def _rouge_score_update(
         >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
         >>> from pprint import pprint
-        >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
+        >>> score = _rouge_score_update(targets, preds, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
         >>> pprint(score)  # doctest: +SKIP
         {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
@@ -285,8 +285,8 @@ def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str,
 
 
 def rouge_score(
-    preds: Union[str, Sequence[str]],
     targets: Union[str, Sequence[str], Sequence[Sequence[str]]],
+    preds: Union[str, Sequence[str]],
     accumulate: Literal["avg", "best"] = "best",
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
@@ -294,10 +294,10 @@ def rouge_score(
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
 
     Args:
-        preds:
-            An iterable of predicted sentences or a single predicted sentence.
         targets:
             An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
+        preds:
+            An iterable of predicted sentences or a single predicted sentence.
         accumulate:
             Useful incase of multi-reference rouge score.
             - ``avg`` takes the avg of all references with respect to predictions
@@ -316,7 +316,7 @@ def rouge_score(
         >>> targets = "Is your name John"
         >>> preds = "My name is John"
         >>> from pprint import pprint
-        >>> pprint(rouge_score(preds, targets))  # doctest: +SKIP
+        >>> pprint(rouge_score(targets, preds))  # doctest: +SKIP
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,
@@ -364,7 +364,7 @@ def rouge_score(
         targets = [[targets]]
 
     sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-        preds, targets, rouge_keys_values, stemmer=stemmer, accumulate=accumulate
+        targets, preds, rouge_keys_values, stemmer=stemmer, accumulate=accumulate
     )
 
     output: Dict[str, List[Tensor]] = {}

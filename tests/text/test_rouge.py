@@ -34,8 +34,8 @@ ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
 
 def _compute_rouge_score(
-    preds: Sequence[str],
     targets: Sequence[Sequence[str]],
+    preds: Sequence[str],
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
@@ -95,9 +95,9 @@ def _compute_rouge_score(
     ],
 )
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ["targets", "preds"],
     [
-        (_inputs_multiple_references.preds, _inputs_multiple_references.targets),
+        (_inputs_multiple_references.targets, _inputs_multiple_references.preds),
     ],
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
@@ -120,7 +120,7 @@ class TestROUGEScore(TextTester):
             sk_metric=rouge_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
             key=pl_rouge_metric_key,
         )
 
@@ -137,7 +137,7 @@ class TestROUGEScore(TextTester):
             metric_functional=rouge_score,
             sk_metric=rouge_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
             key=pl_rouge_metric_key,
         )
 
@@ -161,8 +161,8 @@ def test_rouge_metric_wrong_key_value_error():
 
     with pytest.raises(ValueError):
         rouge_score(
-            _inputs_single_sentence_single_reference.preds,
             _inputs_single_sentence_single_reference.targets,
+            _inputs_single_sentence_single_reference.preds,
             rouge_keys=key,
             accumulate="best",
         )
