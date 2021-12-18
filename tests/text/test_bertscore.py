@@ -20,8 +20,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "1"
 preds = _inputs_multiple_sentences_multiple_reference.preds
 refs = _inputs_multiple_sentences_multiple_reference.targets
 
-preds_batched = [preds[0:2], preds[2:]]
-refs_batched = [refs[0:2], refs[2:]]
+preds_batched = [preds[:2], preds[2:]]
+refs_batched = [refs[:2], refs[2:]]
 
 
 _METRICS = ["precision", "recall", "f1"]

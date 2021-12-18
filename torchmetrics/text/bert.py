@@ -115,7 +115,7 @@ class BERTScore(Metric):
         >>> references = ["hello there", "master kenobi"]
         >>> predictions = ["hello there", "general kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore.update(references=references,predictions=predictions)
+        >>> bertscore.update(references=references, predictions=predictions)
         >>> bertscore.compute()  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
