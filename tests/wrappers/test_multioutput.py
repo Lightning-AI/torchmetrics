@@ -4,11 +4,12 @@ from typing import Any, Callable, Optional
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score as sk_r2score
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics import Metric
 from torchmetrics.classification import Accuracy
 from torchmetrics.regression import R2Score
@@ -124,10 +125,19 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 class TestMultioutputWrapper(MetricTester):
     """Test the MultioutputWrapper class with regression and classification inner metrics."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_multioutput_wrapper(
-        self, base_metric_class, compare_metric, preds, target, num_outputs, metric_kwargs, ddp, dist_sync_on_step
+        self,
+        base_metric_class,
+        compare_metric,
+        preds,
+        target,
+        num_outputs,
+        metric_kwargs,
+        ddp,
+        dist_sync_on_step,
+        device,
     ):
         """Test that the multioutput wrapper properly slices and computes outputs along the output dimension for
         both classification and regression metrics."""
@@ -138,5 +148,6 @@ class TestMultioutputWrapper(MetricTester):
             _MultioutputMetric,
             compare_metric,
             dist_sync_on_step,
+            device=device,
             metric_args=dict(num_outputs=num_outputs, base_metric_class=base_metric_class, **metric_kwargs),
         )
