@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, windows-2019, macOS-10.15]
-        python-version: [3.7]
+        python-version: [3.8]
     env:
       PYTEST_ARTEFACT: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
