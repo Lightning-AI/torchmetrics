@@ -171,9 +171,7 @@ def ms_ssim(
 
     Example:
         >>> from torchmetrics.functional import ms_ssim
-        <torch._C.Generator object at 0x7fb9f3db8b50>
-        >>> torch.manual_seed(42)
-        >>> preds = torch.rand([1, 1, 256, 256])
+        >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ms_ssim(preds, target)
         tensor(0.9558)

@@ -82,7 +82,7 @@ class TestMultiScaleSSIM(MetricTester):
 
     def test_ms_ssim_differentiability(self, preds, target, kernel_size, normalize):
         # We need to minimize this example to make the test tractable
-        single_beta = (1.00,)
+        single_beta = (1.0,)
         _preds = preds[:, :, :, :16, :16]
         _target = target[:, :, :, :16, :16]
 

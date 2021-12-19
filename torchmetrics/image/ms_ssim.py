@@ -51,9 +51,7 @@ class MultiScaleSSIM(Metric):
 
     Example:
         >>> from torchmetrics import MultiScaleSSIM
-        >>> torch.manual_seed(42)
-        <torch._C.Generator object at 0x7fb9f3db8b50>
-        >>> preds = torch.rand([1, 1, 256, 256])
+        >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ssim = MultiScaleSSIM()
         >>> ssim(preds, target)
