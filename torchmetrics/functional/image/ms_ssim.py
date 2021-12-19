@@ -151,8 +151,8 @@ def ms_ssim(
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
         resolutions.
         normalize: When MS-SSIM loss is used for training, it is desirable to use normalizes to improve the training
-        stability. This `normalize` argument is out of scope of the original implementation [1], and it is adapted from
-        https://github.com/jorge-pessoa/pytorch-msssim instead.
+            stability. This `normalize` argument is out of scope of the original implementation [1], and it is adapted from
+            https://github.com/jorge-pessoa/pytorch-msssim instead.
 
     Return:
         Tensor with Multi-Scale SSIM score
