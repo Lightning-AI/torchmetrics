@@ -349,8 +349,7 @@ class MetricTesterDDPCases:
     def case_ddp_false_device_cpu(self):
         return False, "cpu"
 
-    # @pytest.mark.skipif(os.cpu_count() < 2, reason="More than one CPU Core required")
-    @case(tags="strategy")  # order is important, @case after @pytest.mark or markers as argument for @case
+    @case(tags="strategy")
     def case_ddp_true_device_cpu(self):
         return True, "cpu"
 
