@@ -417,6 +417,7 @@ class RetrievalMetricTester(MetricTester):
         metric_class: Metric,
         sk_metric: Callable,
         dist_sync_on_step: bool,
+        device: str,
         metric_args: dict,
         reverse: bool = False,
     ):
@@ -429,6 +430,7 @@ class RetrievalMetricTester(MetricTester):
             metric_class=metric_class,
             sk_metric=_sk_metric_adapted,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
             fragment_kwargs=True,
             indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
@@ -440,6 +442,7 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_functional: Callable,
         sk_metric: Callable,
+        device: str,
         metric_args: dict,
         reverse: bool = False,
         **kwargs,
@@ -451,6 +454,7 @@ class RetrievalMetricTester(MetricTester):
             target=target,
             metric_functional=metric_functional,
             sk_metric=_sk_metric_adapted,
+            device=device,
             metric_args=metric_args,
             fragment_kwargs=True,
             **kwargs,

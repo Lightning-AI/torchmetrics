@@ -13,9 +13,11 @@
 # limitations under the License.
 import numpy as np
 import pytest
+from pytest_cases import parametrize_with_cases
 from torch import Tensor
 
 from tests.helpers import seed_all
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,
@@ -54,7 +56,7 @@ def _precision_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
 
 
 class TestPrecision(RetrievalMetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
@@ -70,6 +72,7 @@ class TestPrecision(RetrievalMetricTester):
         empty_target_action: str,
         ignore_index: int,
         k: int,
+        device: str,
     ):
         metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=ignore_index)
 
@@ -81,10 +84,11 @@ class TestPrecision(RetrievalMetricTester):
             metric_class=RetrievalPrecision,
             sk_metric=_precision_at_k,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
@@ -98,6 +102,7 @@ class TestPrecision(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
         k: int,
+        device: str,
     ):
         metric_args = dict(empty_target_action=empty_target_action, k=k, ignore_index=-100)
 
@@ -109,17 +114,20 @@ class TestPrecision(RetrievalMetricTester):
             metric_class=RetrievalPrecision,
             sk_metric=_precision_at_k,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
         )
 
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
+    def test_functional_metric(self, preds: Tensor, target: Tensor, k: int, device: str):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=retrieval_precision,
             sk_metric=_precision_at_k,
+            device=device,
             metric_args={},
             k=k,
         )

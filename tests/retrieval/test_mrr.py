@@ -13,10 +13,12 @@
 # limitations under the License.
 import numpy as np
 import pytest
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import label_ranking_average_precision_score
 from torch import Tensor
 
 from tests.helpers import seed_all
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,
@@ -55,7 +57,7 @@ def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
 
 
 class TestMRR(RetrievalMetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
@@ -69,6 +71,7 @@ class TestMRR(RetrievalMetricTester):
         dist_sync_on_step: bool,
         empty_target_action: str,
         ignore_index: int,
+        device: str,
     ):
         metric_args = dict(empty_target_action=empty_target_action, ignore_index=ignore_index)
 
@@ -80,10 +83,11 @@ class TestMRR(RetrievalMetricTester):
             metric_class=RetrievalMRR,
             sk_metric=_reciprocal_rank,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
@@ -95,6 +99,7 @@ class TestMRR(RetrievalMetricTester):
         target: Tensor,
         dist_sync_on_step: bool,
         empty_target_action: str,
+        device: str,
     ):
         metric_args = dict(empty_target_action=empty_target_action, ignore_index=-100)
 
@@ -106,16 +111,19 @@ class TestMRR(RetrievalMetricTester):
             metric_class=RetrievalMRR,
             sk_metric=_reciprocal_rank,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
         )
 
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
-    def test_functional_metric(self, preds: Tensor, target: Tensor):
+    def test_functional_metric(self, preds: Tensor, target: Tensor, device: str):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=retrieval_reciprocal_rank,
             sk_metric=_reciprocal_rank,
+            device=device,
             metric_args={},
         )
 
