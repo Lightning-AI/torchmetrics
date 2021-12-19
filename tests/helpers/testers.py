@@ -343,7 +343,7 @@ class MetricTesterDDPCases:
 
     @case(tags="device")
     def case_device_gpu(self):
-        return "gpu"
+        return "cuda"
 
     @case(tags="strategy")
     def case_ddp_false_device_cpu(self):
@@ -355,7 +355,7 @@ class MetricTesterDDPCases:
 
     @case(tags="strategy", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU required"))
     def case_ddp_false_device_gpu(self):
-        return False, "gpu"
+        return False, "cuda"
 
     @case(
         tags="strategy",
@@ -365,7 +365,7 @@ class MetricTesterDDPCases:
         ),
     )
     def case_ddp_true_device_gpu(self):
-        return True, "gpu"
+        return True, "cuda"
 
 
 class MetricTester:
