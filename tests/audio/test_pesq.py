@@ -17,10 +17,11 @@ from functools import partial
 import pytest
 import torch
 from pesq import pesq as pesq_backend
+from pytest_cases import parametrize_with_cases
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import MetricTester
+from tests.helpers.testers import MetricTester, MetricTesterDDPCases
 from torchmetrics.audio.pesq import PESQ
 from torchmetrics.functional.audio.pesq import pesq
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -75,9 +76,9 @@ pesq_original_batch_16k_wb = partial(pesq_original_batch, fs=16000, mode="wb")
 class TestPESQ(MetricTester):
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pesq(self, preds, target, sk_metric, fs, mode, ddp, dist_sync_on_step):
+    def test_pesq(self, preds, target, sk_metric, fs, mode, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -85,15 +86,18 @@ class TestPESQ(MetricTester):
             PESQ,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=dict(fs=fs, mode=mode),
         )
 
-    def test_pesq_functional(self, preds, target, sk_metric, fs, mode):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_pesq_functional(self, preds, target, sk_metric, fs, mode, device):
         self.run_functional_metric_test(
             preds,
             target,
             pesq,
             sk_metric,
+            device=device,
             metric_args=dict(fs=fs, mode=mode),
         )
 

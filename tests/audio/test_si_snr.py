@@ -17,10 +17,11 @@ from functools import partial
 import pytest
 import speechmetrics
 import torch
+from pytest_cases import parametrize_with_cases
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.audio import SI_SNR
 from torchmetrics.functional import si_snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -72,9 +73,9 @@ def average_metric(preds, target, metric_func):
 class TestSISNR(MetricTester):
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_si_snr(self, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_si_snr(self, preds, target, sk_metric, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -82,14 +83,17 @@ class TestSISNR(MetricTester):
             SI_SNR,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
         )
 
-    def test_si_snr_functional(self, preds, target, sk_metric):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_si_snr_functional(self, preds, target, sk_metric, device):
         self.run_functional_metric_test(
             preds,
             target,
             si_snr,
             sk_metric,
+            device=device,
         )
 
     def test_si_snr_differentiability(self, preds, target, sk_metric):

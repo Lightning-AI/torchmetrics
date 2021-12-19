@@ -18,11 +18,12 @@ from typing import Callable, Tuple
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.audio import PIT
 from torchmetrics.functional import pit, si_sdr, snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -112,9 +113,9 @@ si_sdr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=si_sdr, e
 class TestPIT(MetricTester):
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pit(self, preds, target, sk_metric, metric_func, eval_func, ddp, dist_sync_on_step):
+    def test_pit(self, preds, target, sk_metric, metric_func, eval_func, ddp, device, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -122,15 +123,18 @@ class TestPIT(MetricTester):
             PIT,
             sk_metric=partial(_average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
 
-    def test_pit_functional(self, preds, target, sk_metric, metric_func, eval_func):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_pit_functional(self, preds, target, sk_metric, device, metric_func, eval_func):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=pit,
             sk_metric=sk_metric,
+            device=device,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
 
