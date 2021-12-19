@@ -20,6 +20,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 import numpy as np
 import pytest
 import torch
+from pytest_cases import case
 from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
@@ -326,6 +327,48 @@ def _assert_half_support(
         _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
+# https://github.com/pytest-dev/pytest/issues/349
+class MetricTesterDDPCases:
+    @case(tags="ddp")
+    def case_ddp_false(self):
+        return False
+
+    @case(tags="ddp")
+    def case_ddp_true(self):
+        return True
+
+    @case(tags="device")
+    def case_device_cpu(self):
+        return "cpu"
+
+    @case(tags="device")
+    def case_device_gpu(self):
+        return "gpu"
+
+    @case(tags="strategy")
+    def case_ddp_false_device_cpu(self):
+        return False, "cpu"
+
+    # @pytest.mark.skipif(os.cpu_count() < 2, reason="More than one CPU Core required")
+    @case(tags="strategy")  # order is important, @case after @pytest.mark or markers as argument for @case
+    def case_ddp_true_device_cpu(self):
+        return True, "cpu"
+
+    @case(tags="strategy", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU required"))
+    def case_ddp_false_device_gpu(self):
+        return False, "gpu"
+
+    @case(
+        tags="strategy",
+        marks=pytest.mark.skipif(
+            not torch.cuda.is_available() or torch.cuda.device_count() < 2,
+            reason="More than one GPU required for DDP",
+        ),
+    )
+    def case_ddp_true_device_gpu(self):
+        return True, "gpu"
+
+
 class MetricTester:
     """Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup
     once and that pool of processes are used for all tests.
@@ -359,6 +402,7 @@ class MetricTester:
         sk_metric: Callable,
         metric_args: dict = None,
         fragment_kwargs: bool = False,
+        device: str = "cpu",
         **kwargs_update,
     ):
         """Main method that should be used for testing functions. Call this inside testing method.
@@ -373,8 +417,6 @@ class MetricTester:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
-        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
-
         _functional_test(
             preds=preds,
             target=target,
@@ -398,6 +440,7 @@ class MetricTester:
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
+        device: str = "cpu",
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
         **kwargs_update,
@@ -439,6 +482,7 @@ class MetricTester:
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
                     atol=self.atol,
+                    device=device,
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     **kwargs_update,
@@ -446,8 +490,6 @@ class MetricTester:
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
         else:
-            device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
-
             _class_test(
                 rank=0,
                 worldsize=1,
