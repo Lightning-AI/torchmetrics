@@ -15,10 +15,11 @@ from collections import namedtuple
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from scipy.stats import rankdata, spearmanr
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrcoef
 
@@ -76,9 +77,9 @@ def _sk_metric(preds, target):
 class TestSpearmanCorrcoef(MetricTester):
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_spearman_corrcoef(self, preds, target, ddp, dist_sync_on_step):
+    def test_spearman_corrcoef(self, preds, target, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -86,10 +87,12 @@ class TestSpearmanCorrcoef(MetricTester):
             SpearmanCorrcoef,
             _sk_metric,
             dist_sync_on_step,
+            device=device,
         )
 
-    def test_spearman_corrcoef_functional(self, preds, target):
-        self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric)
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_spearman_corrcoef_functional(self, preds, target, device):
+        self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric, device=device)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
         self.run_differentiability_test(

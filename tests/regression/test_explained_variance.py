@@ -16,10 +16,11 @@ from functools import partial
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import explained_variance_score
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional import explained_variance
 from torchmetrics.regression import ExplainedVariance
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -62,9 +63,9 @@ def _multi_target_sk_metric(preds, target, sk_fn=explained_variance_score):
     ],
 )
 class TestExplainedVariance(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_explained_variance(self, multioutput, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_explained_variance(self, multioutput, preds, target, sk_metric, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -72,15 +73,18 @@ class TestExplainedVariance(MetricTester):
             ExplainedVariance,
             partial(sk_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
             dist_sync_on_step,
+            device=device,
             metric_args=dict(multioutput=multioutput),
         )
 
-    def test_explained_variance_functional(self, multioutput, preds, target, sk_metric):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_explained_variance_functional(self, multioutput, preds, target, sk_metric, device):
         self.run_functional_metric_test(
             preds,
             target,
             explained_variance,
             partial(sk_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
+            device=device,
             metric_args=dict(multioutput=multioutput),
         )
 

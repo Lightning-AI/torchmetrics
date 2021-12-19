@@ -17,6 +17,7 @@ from functools import partial
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
@@ -26,7 +27,7 @@ from tests.helpers import seed_all
 from tests.helpers.non_sklearn_metrics import (
     symmetric_mean_absolute_percentage_error as sk_sym_mean_abs_percentage_error,
 )
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional import (
     mean_absolute_error,
     mean_absolute_percentage_error,
@@ -108,10 +109,20 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     ],
 )
 class TestMeanError(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_mean_error_class(
-        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, ddp, dist_sync_on_step
+        self,
+        preds,
+        target,
+        sk_metric,
+        metric_class,
+        metric_functional,
+        sk_fn,
+        metric_args,
+        ddp,
+        dist_sync_on_step,
+        device,
     ):
         # todo: `metric_functional` is unused
         self.run_class_metric_test(
@@ -121,16 +132,21 @@ class TestMeanError(MetricTester):
             metric_class=metric_class,
             sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
         )
 
-    def test_mean_error_functional(self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_mean_error_functional(
+        self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, device
+    ):
         # todo: `metric_class` is unused
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=metric_functional,
             sk_metric=partial(sk_metric, sk_fn=sk_fn, metric_args=metric_args),
+            device=device,
             metric_args=metric_args,
         )
 

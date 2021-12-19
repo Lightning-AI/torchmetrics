@@ -15,10 +15,11 @@ from collections import namedtuple
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from scipy.stats import pearsonr
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrcoef
 
@@ -53,8 +54,8 @@ def _sk_pearsonr(preds, target):
 class TestPearsonCorrcoef(MetricTester):
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
-    def test_pearson_corrcoef(self, preds, target, ddp):
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    def test_pearson_corrcoef(self, preds, target, ddp, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -62,11 +63,13 @@ class TestPearsonCorrcoef(MetricTester):
             metric_class=PearsonCorrcoef,
             sk_metric=_sk_pearsonr,
             dist_sync_on_step=False,
+            device=device,
         )
 
-    def test_pearson_corrcoef_functional(self, preds, target):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_pearson_corrcoef_functional(self, preds, target, device):
         self.run_functional_metric_test(
-            preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr
+            preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr, device=device
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):

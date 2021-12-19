@@ -17,10 +17,11 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.regression.cosine_similarity import CosineSimilarity
 
@@ -82,9 +83,9 @@ def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
     ],
 )
 class TestCosineSimilarity(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_cosine_similarity(self, reduction, preds, target, sk_metric, ddp, dist_sync_on_step):
+    def test_cosine_similarity(self, reduction, preds, target, sk_metric, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -92,15 +93,18 @@ class TestCosineSimilarity(MetricTester):
             CosineSimilarity,
             partial(sk_metric, reduction=reduction),
             dist_sync_on_step,
+            device=device,
             metric_args=dict(reduction=reduction),
         )
 
-    def test_cosine_similarity_functional(self, reduction, preds, target, sk_metric):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_cosine_similarity_functional(self, reduction, preds, target, sk_metric, device):
         self.run_functional_metric_test(
             preds,
             target,
             cosine_similarity,
             partial(sk_metric, reduction=reduction),
+            device=device,
             metric_args=dict(reduction=reduction),
         )
 

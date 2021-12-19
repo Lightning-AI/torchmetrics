@@ -16,11 +16,12 @@ from functools import partial
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import mean_tweedie_deviance
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
 
@@ -60,9 +61,9 @@ def _sk_deviance(preds: Tensor, targets: Tensor, power: float):
     ],
 )
 class TestDevianceScore(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_deviance_scores_class(self, ddp, dist_sync_on_step, preds, targets, power):
+    def test_deviance_scores_class(self, ddp, dist_sync_on_step, preds, targets, power, device):
         self.run_class_metric_test(
             ddp,
             preds,
@@ -70,15 +71,18 @@ class TestDevianceScore(MetricTester):
             TweedieDevianceScore,
             partial(_sk_deviance, power=power),
             dist_sync_on_step,
+            device=device,
             metric_args=dict(power=power),
         )
 
-    def test_deviance_scores_functional(self, preds, targets, power):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_deviance_scores_functional(self, preds, targets, power, device):
         self.run_functional_metric_test(
             preds,
             targets,
             tweedie_deviance_score,
             partial(_sk_deviance, power=power),
+            device=device,
             metric_args=dict(power=power),
         )
 
