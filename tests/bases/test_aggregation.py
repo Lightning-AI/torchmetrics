@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
 
 
@@ -80,15 +81,16 @@ class WrappedCatMetric(CatMetric):
 class TestAggregation(MetricTester):
     """Test aggregation metrics."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_aggreagation(self, ddp, dist_sync_on_step, metric_class, compare_fn, values, weights):
+    def test_aggreagation(self, ddp, dist_sync_on_step, metric_class, compare_fn, values, weights, device):
         """test modular implementation."""
         self.run_class_metric_test(
             ddp=ddp,
             dist_sync_on_step=dist_sync_on_step,
             metric_class=metric_class,
             sk_metric=compare_fn,
+            device=device,
             check_scriptable=True,
             # Abuse of names here
             preds=values,
