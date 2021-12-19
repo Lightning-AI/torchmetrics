@@ -16,6 +16,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import jaccard_score as sk_jaccard_score
 from torch import Tensor, tensor
 
@@ -26,7 +27,7 @@ from tests.classification.inputs import _input_multidim_multiclass as _input_mdm
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.jaccard import JaccardIndex
 from torchmetrics.functional import jaccard_index
 
@@ -102,9 +103,9 @@ def _sk_jaccard_multidim_multiclass(preds, target, average=None):
     ],
 )
 class TestJaccardIndex(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_jaccard(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+    def test_jaccard(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, device):
         average = "macro" if reduction == "elementwise_mean" else None  # convert tags
         self.run_class_metric_test(
             ddp=ddp,
@@ -113,16 +114,19 @@ class TestJaccardIndex(MetricTester):
             metric_class=JaccardIndex,
             sk_metric=partial(sk_metric, average=average),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
         )
 
-    def test_jaccard_functional(self, reduction, preds, target, sk_metric, num_classes):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_jaccard_functional(self, reduction, preds, target, sk_metric, num_classes, device):
         average = "macro" if reduction == "elementwise_mean" else None  # convert tags
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=jaccard_index,
             sk_metric=partial(sk_metric, average=average),
+            device=device,
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
         )
 

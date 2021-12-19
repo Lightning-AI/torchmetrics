@@ -17,6 +17,7 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import multilabel_confusion_matrix
 from torch import Tensor, tensor
 
@@ -29,7 +30,7 @@ from tests.classification.inputs import _input_multilabel as _input_mcls
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics import StatScores
 from torchmetrics.functional import stat_scores
 from torchmetrics.utilities.checks import _input_format_classification
@@ -172,6 +173,8 @@ def test_wrong_params(reduce, mdmc_reduce, num_classes, inputs, ignore_index):
 class TestStatScores(MetricTester):
     # DDP tests temporarily disabled due to hanging issues
     @pytest.mark.parametrize("ddp", [False])
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    # @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_stat_scores_class(
         self,
@@ -187,6 +190,7 @@ class TestStatScores(MetricTester):
         ignore_index: Optional[int],
         top_k: Optional[int],
         threshold: Optional[float],
+        device: str,
     ):
         if ignore_index is not None and preds.ndim == 2:
             pytest.skip("Skipping ignore_index test with binary inputs.")
@@ -207,6 +211,7 @@ class TestStatScores(MetricTester):
                 threshold=threshold,
             ),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "reduce": reduce,
@@ -220,6 +225,7 @@ class TestStatScores(MetricTester):
             check_batch=True,
         )
 
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
     def test_stat_scores_fn(
         self,
         sk_fn: Callable,
@@ -232,6 +238,7 @@ class TestStatScores(MetricTester):
         ignore_index: Optional[int],
         top_k: Optional[int],
         threshold: Optional[float],
+        device: str,
     ):
         if ignore_index is not None and preds.ndim == 2:
             pytest.skip("Skipping ignore_index test with binary inputs.")
@@ -250,6 +257,7 @@ class TestStatScores(MetricTester):
                 top_k=top_k,
                 threshold=threshold,
             ),
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "reduce": reduce,

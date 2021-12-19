@@ -16,11 +16,12 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import hinge_loss as sk_hinge
 from sklearn.preprocessing import OneHotEncoder
 
 from tests.classification.inputs import Input
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics import Hinge
 from torchmetrics.functional import hinge
 from torchmetrics.functional.classification.hinge import MulticlassMode
@@ -88,9 +89,9 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
     ],
 )
 class TestHinge(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_hinge_class(self, ddp, dist_sync_on_step, preds, target, squared, multiclass_mode):
+    def test_hinge_class(self, ddp, dist_sync_on_step, preds, target, squared, multiclass_mode, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -98,18 +99,21 @@ class TestHinge(MetricTester):
             metric_class=Hinge,
             sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={
                 "squared": squared,
                 "multiclass_mode": multiclass_mode,
             },
         )
 
-    def test_hinge_fn(self, preds, target, squared, multiclass_mode):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_hinge_fn(self, preds, target, squared, multiclass_mode, device):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode),
             sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
+            device=device,
         )
 
     def test_hinge_differentiability(self, preds, target, squared, multiclass_mode):

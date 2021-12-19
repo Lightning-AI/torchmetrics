@@ -15,6 +15,7 @@ from functools import partial
 
 import numpy as np
 import pytest
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torch import tensor
 
@@ -23,7 +24,7 @@ from tests.classification.inputs import _input_multiclass_prob as _input_mcls_pr
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.classification.inputs import _input_multilabel
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.avg_precision import AveragePrecision
 from torchmetrics.functional import average_precision
 
@@ -87,9 +88,9 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1, average=
 )
 @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
 class TestAveragePrecision(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_average_precision(self, preds, target, sk_metric, num_classes, average, ddp, dist_sync_on_step):
+    def test_average_precision(self, preds, target, sk_metric, num_classes, average, ddp, dist_sync_on_step, device):
         if target.max() > 1 and average == "micro":
             pytest.skip("average=micro and multiclass input cannot be used together")
 
@@ -100,10 +101,12 @@ class TestAveragePrecision(MetricTester):
             metric_class=AveragePrecision,
             sk_metric=partial(sk_metric, num_classes=num_classes, average=average),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"num_classes": num_classes, "average": average},
         )
 
-    def test_average_precision_functional(self, preds, target, sk_metric, num_classes, average):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_average_precision_functional(self, preds, target, sk_metric, num_classes, average, device):
         if target.max() > 1 and average == "micro":
             pytest.skip("average=micro and multiclass input cannot be used together")
 
@@ -112,6 +115,7 @@ class TestAveragePrecision(MetricTester):
             target=target,
             metric_functional=average_precision,
             sk_metric=partial(sk_metric, num_classes=num_classes, average=average),
+            device=device,
             metric_args={"num_classes": num_classes, "average": average},
         )
 

@@ -16,6 +16,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import roc_curve as sk_roc_curve
 from torch import tensor
 
@@ -25,7 +26,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.roc import ROC
 from torchmetrics.functional import roc
 
@@ -95,9 +96,9 @@ def _sk_roc_multilabel_multidim_prob(preds, target, num_classes=1):
     ],
 )
 class TestROC(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_roc(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+    def test_roc(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -105,15 +106,18 @@ class TestROC(MetricTester):
             metric_class=ROC,
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"num_classes": num_classes},
         )
 
-    def test_roc_functional(self, preds, target, sk_metric, num_classes):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_roc_functional(self, preds, target, sk_metric, num_classes, device):
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=roc,
             sk_metric=partial(sk_metric, num_classes=num_classes),
+            device=device,
             metric_args={"num_classes": num_classes},
         )
 

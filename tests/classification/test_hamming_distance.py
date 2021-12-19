@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pytest
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import hamming_loss as sk_hamming_loss
 
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
@@ -26,7 +27,7 @@ from tests.classification.inputs import _input_multilabel_multidim as _input_mlm
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import THRESHOLD, MetricTester
+from tests.helpers.testers import THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics import HammingDistance
 from torchmetrics.functional import hamming_distance
 from torchmetrics.utilities.checks import _input_format_classification
@@ -61,9 +62,9 @@ def _sk_hamming_loss(preds, target):
     ],
 )
 class TestHammingDistance(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_hamming_distance_class(self, ddp, dist_sync_on_step, preds, target):
+    def test_hamming_distance_class(self, ddp, dist_sync_on_step, preds, target, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -71,15 +72,18 @@ class TestHammingDistance(MetricTester):
             metric_class=HammingDistance,
             sk_metric=_sk_hamming_loss,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"threshold": THRESHOLD},
         )
 
-    def test_hamming_distance_fn(self, preds, target):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_hamming_distance_fn(self, preds, target, device):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=hamming_distance,
             sk_metric=_sk_hamming_loss,
+            device=device,
             metric_args={"threshold": THRESHOLD},
         )
 

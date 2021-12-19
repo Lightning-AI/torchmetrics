@@ -16,6 +16,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
 
@@ -32,7 +33,7 @@ from tests.classification.inputs import _input_multilabel_multidim as _input_mlm
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics import Accuracy
 from torchmetrics.functional import accuracy
 from torchmetrics.utilities.checks import _input_format_classification
@@ -81,9 +82,9 @@ def _sk_accuracy(preds, target, subset_accuracy):
     ],
 )
 class TestAccuracies(MetricTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_accuracy_class(self, ddp, dist_sync_on_step, preds, target, subset_accuracy):
+    def test_accuracy_class(self, ddp, dist_sync_on_step, preds, target, subset_accuracy, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -91,15 +92,18 @@ class TestAccuracies(MetricTester):
             metric_class=Accuracy,
             sk_metric=partial(_sk_accuracy, subset_accuracy=subset_accuracy),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
 
-    def test_accuracy_fn(self, preds, target, subset_accuracy):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_accuracy_fn(self, preds, target, subset_accuracy, device):
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=accuracy,
             sk_metric=partial(_sk_accuracy, subset_accuracy=subset_accuracy),
+            device=device,
             metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
 

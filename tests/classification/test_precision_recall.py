@@ -17,6 +17,7 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import precision_score, recall_score
 from torch import Tensor, tensor
 
@@ -31,7 +32,7 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics import Metric, Precision, Recall
 from torchmetrics.functional import precision, precision_recall, recall
 from torchmetrics.utilities.checks import _input_format_classification
@@ -210,7 +211,7 @@ def test_no_support(metric_class, metric_fn):
     ],
 )
 class TestPrecisionRecall(MetricTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_precision_recall_class(
         self,
@@ -227,6 +228,7 @@ class TestPrecisionRecall(MetricTester):
         average: str,
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
+        device: str,
     ):
         # todo: `metric_fn` is unused
         if num_classes == 1 and average != "micro":
@@ -253,6 +255,7 @@ class TestPrecisionRecall(MetricTester):
                 mdmc_average=mdmc_average,
             ),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "average": average,
@@ -265,6 +268,7 @@ class TestPrecisionRecall(MetricTester):
             check_batch=True,
         )
 
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
     def test_precision_recall_fn(
         self,
         preds: Tensor,
@@ -278,6 +282,7 @@ class TestPrecisionRecall(MetricTester):
         average: str,
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
+        device: str,
     ):
         # todo: `metric_class` is unused
         if num_classes == 1 and average != "micro":
@@ -302,6 +307,7 @@ class TestPrecisionRecall(MetricTester):
                 ignore_index=ignore_index,
                 mdmc_average=mdmc_average,
             ),
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "average": average,

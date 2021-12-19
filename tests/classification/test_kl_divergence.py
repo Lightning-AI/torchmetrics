@@ -18,11 +18,12 @@ from typing import Optional
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from scipy.stats import entropy
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification import KLDivergence
 from torchmetrics.functional import kl_divergence
 
@@ -60,9 +61,9 @@ def _sk_metric(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = 
 class TestKLDivergence(MetricTester):
     atol = 1e-6
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_kldivergence(self, reduction, p, q, log_prob, ddp, dist_sync_on_step):
+    def test_kldivergence(self, reduction, p, q, log_prob, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp,
             p,
@@ -70,16 +71,19 @@ class TestKLDivergence(MetricTester):
             KLDivergence,
             partial(_sk_metric, log_prob=log_prob, reduction=reduction),
             dist_sync_on_step,
+            device=device,
             metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
 
-    def test_kldivergence_functional(self, reduction, p, q, log_prob):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_kldivergence_functional(self, reduction, p, q, log_prob, device):
         # todo: `num_outputs` is unused
         self.run_functional_metric_test(
             p,
             q,
             kl_divergence,
             partial(_sk_metric, log_prob=log_prob, reduction=reduction),
+            device=device,
             metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
 

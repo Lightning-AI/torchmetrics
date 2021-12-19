@@ -16,6 +16,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
 from torch import Tensor, tensor
 
@@ -23,7 +24,7 @@ from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
 from tests.classification.inputs import _input_multidim_multiclass_prob as _input_mdmc_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve
 from torchmetrics.functional import precision_recall_curve
 from torchmetrics.functional.classification.precision_recall_curve import _binary_clf_curve
@@ -76,9 +77,9 @@ def _sk_prec_rc_multidim_multiclass_prob(preds, target, num_classes=1):
     ],
 )
 class TestPrecisionRecallCurve(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_precision_recall_curve(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+    def test_precision_recall_curve(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -86,15 +87,18 @@ class TestPrecisionRecallCurve(MetricTester):
             metric_class=PrecisionRecallCurve,
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"num_classes": num_classes},
         )
 
-    def test_precision_recall_curve_functional(self, preds, target, sk_metric, num_classes):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_precision_recall_curve_functional(self, preds, target, sk_metric, num_classes, device):
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=precision_recall_curve,
             sk_metric=partial(sk_metric, num_classes=num_classes),
+            device=device,
             metric_args={"num_classes": num_classes},
         )
 

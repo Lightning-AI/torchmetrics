@@ -16,6 +16,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import multilabel_confusion_matrix as sk_multilabel_confusion_matrix
 
@@ -29,7 +30,7 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional import confusion_matrix
 
@@ -128,10 +129,10 @@ def _sk_cm_multidim_multiclass(preds, target, normalize=None):
     ],
 )
 class TestConfusionMatrix(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_confusion_matrix(
-        self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step
+        self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step, device
     ):
         self.run_class_metric_test(
             ddp=ddp,
@@ -140,6 +141,7 @@ class TestConfusionMatrix(MetricTester):
             metric_class=ConfusionMatrix,
             sk_metric=partial(sk_metric, normalize=normalize),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,
@@ -148,12 +150,14 @@ class TestConfusionMatrix(MetricTester):
             },
         )
 
-    def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel, device):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=confusion_matrix,
             sk_metric=partial(sk_metric, normalize=normalize),
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "threshold": THRESHOLD,

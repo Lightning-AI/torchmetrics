@@ -3,6 +3,7 @@ import re
 
 import numpy as np
 import pytest
+from pytest_cases import parametrize_with_cases
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -12,7 +13,7 @@ from tests.helpers import seed_all
 
 # TODO: replace this with official sklearn implementation after next sklearn release
 from tests.helpers.non_sklearn_metrics import calibration_error as sk_calib
-from tests.helpers.testers import THRESHOLD, MetricTester
+from tests.helpers.testers import THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics import CalibrationError
 from torchmetrics.functional import calibration_error
 from torchmetrics.utilities.checks import _input_format_classification
@@ -51,9 +52,9 @@ def _sk_calibration(preds, target, n_bins, norm, debias=False):
     ],
 )
 class TestCE(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm):
+    def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -61,15 +62,18 @@ class TestCE(MetricTester):
             metric_class=CalibrationError,
             sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"n_bins": n_bins, "norm": norm},
         )
 
-    def test_ce_functional(self, preds, target, n_bins, norm):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_ce_functional(self, preds, target, n_bins, norm, device):
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=calibration_error,
             sk_metric=functools.partial(_sk_calibration, n_bins=n_bins, norm=norm),
+            device=device,
             metric_args={"n_bins": n_bins, "norm": norm},
         )
 

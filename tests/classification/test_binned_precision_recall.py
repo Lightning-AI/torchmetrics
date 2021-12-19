@@ -18,6 +18,7 @@ from typing import Tuple
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import average_precision_score as _sk_average_precision_score
 from sklearn.metrics import precision_recall_curve as _sk_precision_recall_curve
 from torch import Tensor
@@ -27,7 +28,7 @@ from tests.classification.inputs import _input_binary_prob_plausible as _input_b
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.classification.inputs import _input_multilabel_prob_plausible as _input_mlb_prob_ok
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.binned_precision_recall import BinnedAveragePrecision, BinnedRecallAtFixedPrecision
 
 seed_all(42)
@@ -77,11 +78,11 @@ def _sk_avg_prec_multiclass(predictions, targets, num_classes):
 class TestBinnedRecallAtPrecision(MetricTester):
     atol = 0.02
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
     def test_binned_recall_at_precision(
-        self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision
+        self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, min_precision, device
     ):
         # rounding will simulate binning for both implementations
         preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
@@ -93,6 +94,7 @@ class TestBinnedRecallAtPrecision(MetricTester):
             metric_class=BinnedRecallAtFixedPrecision,
             sk_metric=partial(sk_metric, num_classes=num_classes, min_precision=min_precision),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "min_precision": min_precision,
@@ -111,10 +113,12 @@ class TestBinnedRecallAtPrecision(MetricTester):
     ],
 )
 class TestBinnedAveragePrecision(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("thresholds", (301, torch.linspace(0.0, 1.0, 101)))
-    def test_binned_average_precision(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, thresholds):
+    def test_binned_average_precision(
+        self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, thresholds, device
+    ):
         # rounding will simulate binning for both implementations
         preds = Tensor(np.round(preds.numpy(), 2)) + 1e-6
 
@@ -125,5 +129,6 @@ class TestBinnedAveragePrecision(MetricTester):
             metric_class=BinnedAveragePrecision,
             sk_metric=partial(sk_metric, num_classes=num_classes),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"num_classes": num_classes, "thresholds": thresholds},
         )

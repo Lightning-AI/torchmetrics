@@ -15,6 +15,7 @@ from functools import partial
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import roc_auc_score as sk_roc_auc_score
 
 from tests.classification.inputs import _input_binary_prob
@@ -23,7 +24,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, MetricTester
+from tests.helpers.testers import NUM_CLASSES, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.auroc import AUROC
 from torchmetrics.functional import auroc
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
@@ -99,9 +100,9 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average="macr
     ],
 )
 class TestAUROC(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_auroc(self, preds, target, sk_metric, num_classes, average, max_fpr, ddp, dist_sync_on_step):
+    def test_auroc(self, preds, target, sk_metric, num_classes, average, max_fpr, ddp, dist_sync_on_step, device):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:
             pytest.skip("max_fpr parameter not support for multi class or multi label")
@@ -121,10 +122,12 @@ class TestAUROC(MetricTester):
             metric_class=AUROC,
             sk_metric=partial(sk_metric, num_classes=num_classes, average=average, max_fpr=max_fpr),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"num_classes": num_classes, "average": average, "max_fpr": max_fpr},
         )
 
-    def test_auroc_functional(self, preds, target, sk_metric, num_classes, average, max_fpr):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_auroc_functional(self, preds, target, sk_metric, num_classes, average, max_fpr, device):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:
             pytest.skip("max_fpr parameter not support for multi class or multi label")
@@ -142,6 +145,7 @@ class TestAUROC(MetricTester):
             target,
             metric_functional=auroc,
             sk_metric=partial(sk_metric, num_classes=num_classes, average=average, max_fpr=max_fpr),
+            device=device,
             metric_args={"num_classes": num_classes, "average": average, "max_fpr": max_fpr},
         )
 

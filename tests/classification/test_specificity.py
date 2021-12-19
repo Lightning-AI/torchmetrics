@@ -18,6 +18,7 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import multilabel_confusion_matrix
 from torch import Tensor, tensor
 
@@ -29,7 +30,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics import Metric, Specificity
 from torchmetrics.functional import specificity
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores
@@ -218,7 +219,7 @@ def test_no_support(metric_class, metric_fn):
     ],
 )
 class TestSpecificity(MetricTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_specificity_class(
         self,
@@ -234,6 +235,7 @@ class TestSpecificity(MetricTester):
         average: str,
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
+        device: str,
     ):
         # todo: `metric_fn` is unused
         if num_classes == 1 and average != "micro":
@@ -259,6 +261,7 @@ class TestSpecificity(MetricTester):
                 mdmc_reduce=mdmc_average,
             ),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "average": average,
@@ -271,6 +274,7 @@ class TestSpecificity(MetricTester):
             check_batch=True,
         )
 
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
     def test_specificity_fn(
         self,
         preds: Tensor,
@@ -283,6 +287,7 @@ class TestSpecificity(MetricTester):
         average: str,
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
+        device: str,
     ):
         # todo: `metric_class` is unused
         if num_classes == 1 and average != "micro":
@@ -306,6 +311,7 @@ class TestSpecificity(MetricTester):
                 ignore_index=ignore_index,
                 mdmc_reduce=mdmc_average,
             ),
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "average": average,

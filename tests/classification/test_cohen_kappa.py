@@ -3,6 +3,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
@@ -13,7 +14,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics.classification.cohen_kappa import CohenKappa
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 
@@ -93,9 +94,9 @@ def _sk_cohen_kappa_multidim_multiclass(preds, target, weights=None):
 class TestCohenKappa(MetricTester):
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_cohen_kappa(self, weights, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+    def test_cohen_kappa(self, weights, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -103,15 +104,18 @@ class TestCohenKappa(MetricTester):
             metric_class=CohenKappa,
             sk_metric=partial(sk_metric, weights=weights),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "weights": weights},
         )
 
-    def test_cohen_kappa_functional(self, weights, preds, target, sk_metric, num_classes):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_cohen_kappa_functional(self, weights, preds, target, sk_metric, num_classes, device):
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=cohen_kappa,
             sk_metric=partial(sk_metric, weights=weights),
+            device=device,
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "weights": weights},
         )
 

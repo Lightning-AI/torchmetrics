@@ -17,6 +17,7 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from sklearn.metrics import f1_score, fbeta_score
 from torch import Tensor
 
@@ -31,7 +32,7 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
-from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
+from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester, MetricTesterDDPCases
 from torchmetrics import F1, FBeta, Metric
 from torchmetrics.functional import f1, fbeta
 from torchmetrics.utilities.checks import _input_format_classification
@@ -239,7 +240,7 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     ],
 )
 class TestFBeta(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_fbeta_f1(
         self,
@@ -256,6 +257,7 @@ class TestFBeta(MetricTester):
         average: str,
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
+        device: str,
     ):
         if num_classes == 1 and average != "micro":
             pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
@@ -281,6 +283,7 @@ class TestFBeta(MetricTester):
                 mdmc_average=mdmc_average,
             ),
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "average": average,
@@ -293,6 +296,7 @@ class TestFBeta(MetricTester):
             check_batch=True,
         )
 
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
     def test_fbeta_f1_functional(
         self,
         preds: Tensor,
@@ -306,6 +310,7 @@ class TestFBeta(MetricTester):
         average: str,
         mdmc_average: Optional[str],
         ignore_index: Optional[int],
+        device: str,
     ):
         if num_classes == 1 and average != "micro":
             pytest.skip("Only test binary data for 'micro' avg (equivalent of 'binary' in sklearn)")
@@ -329,6 +334,7 @@ class TestFBeta(MetricTester):
                 ignore_index=ignore_index,
                 mdmc_average=mdmc_average,
             ),
+            device=device,
             metric_args={
                 "num_classes": num_classes,
                 "average": average,
