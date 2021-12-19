@@ -76,13 +76,6 @@ def _ms_ssim_compute(
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
-
-    Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> preds, target = _ssim_update(preds, target)
-        >>> _ssim_compute(preds, target)
-        tensor(0.9219)
     """
     sim_list: List[Tensor] = []
     cs_list: List[Tensor] = []
@@ -92,15 +85,17 @@ def _ms_ssim_compute(
             f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be "
             f"larger than or equal to {2 ** len(betas)}."
         )
-    if preds.size()[-2] // (len(betas) - 1) ** 2 <= kernel_size[0] - 1:
+
+    _betas_div = max(1, (len(betas) - 1)) ** 2
+    if preds.size()[-2] // _betas_div <= kernel_size[0] - 1:
         raise ValueError(
             f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[0]}, the image height "
-            f"must be larger than {(kernel_size[0] - 1) * (len(betas) - 1) ** 2}."
+            f"must be larger than {(kernel_size[0] - 1) * _betas_div}."
         )
-    if preds.size()[-1] // (len(betas) - 1) ** 2 <= kernel_size[1] - 1:
+    if preds.size()[-1] // _betas_div <= kernel_size[1] - 1:
         raise ValueError(
             f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]}, the image width "
-            f"must be larger than {(kernel_size[1] - 1) * (len(betas) - 1) ** 2}."
+            f"must be larger than {(kernel_size[1] - 1) * _betas_div}."
         )
 
     for _ in range(len(betas)):
@@ -176,6 +171,7 @@ def ms_ssim(
 
     Example:
         >>> from torchmetrics.functional import ms_ssim
+        <torch._C.Generator object at 0x7fb9f3db8b50>
         >>> torch.manual_seed(42)
         >>> preds = torch.rand([1, 1, 256, 256])
         >>> target = preds * 0.75

@@ -80,18 +80,28 @@ class TestMultiScaleSSIM(MetricTester):
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size), "normalize": normalize},
         )
 
-    def test_ms_sim_differentiability(self, preds, target, kernel_size, normalize):
+    def test_ms_ssim_differentiability(self, preds, target, kernel_size, normalize):
+        # We need to minimize this example to make the test tractable
+        single_beta = (1.00,)
+        _preds = preds[:, :, :, :16, :16]
+        _target = target[:, :, :, :16, :16]
+
         self.run_differentiability_test(
-            preds.type(torch.float64),
-            target.type(torch.float64),
+            _preds.type(torch.float64),
+            _target.type(torch.float64),
             metric_functional=ms_ssim,
             metric_module=MultiScaleSSIM,
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size), "normalize": normalize},
+            metric_args={
+                "data_range": 1.0,
+                "kernel_size": (kernel_size, kernel_size),
+                "normalize": normalize,
+                "betas": single_beta,
+            },
         )
 
     # SSIM half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
-    def test_ssim_half_cpu(self, preds, target, kernel_size, normalize):
+    def test_ms_ssim_half_cpu(self, preds, target, kernel_size, normalize):
         self.run_precision_test_cpu(
             preds,
             target,
@@ -101,7 +111,7 @@ class TestMultiScaleSSIM(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_ssim_half_gpu(self, preds, target, kernel_size, normalize):
+    def test_ms_ssim_half_gpu(self, preds, target, kernel_size, normalize):
         self.run_precision_test_gpu(
             preds,
             target,
