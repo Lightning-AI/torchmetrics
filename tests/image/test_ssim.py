@@ -16,10 +16,11 @@ from functools import partial
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from skimage.metrics import structural_similarity
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional import ssim
 from torchmetrics.image import SSIM
 
@@ -72,25 +73,28 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
 class TestSSIM(MetricTester):
     atol = 6e-3
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim(self, preds, target, multichannel, kernel_size, ddp, dist_sync_on_step):
+    def test_ssim(self, preds, target, multichannel, kernel_size, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SSIM,
             partial(_sk_ssim, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
+            device=device,
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_ssim_functional(self, preds, target, multichannel, kernel_size):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_ssim_functional(self, preds, target, multichannel, kernel_size, device):
         self.run_functional_metric_test(
             preds,
             target,
             ssim,
             partial(_sk_ssim, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
+            device=device,
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
         )
 

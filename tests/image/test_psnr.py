@@ -18,10 +18,11 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 from skimage.metrics import peak_signal_noise_ratio
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.functional import psnr
 from torchmetrics.image import PSNR
 
@@ -93,9 +94,9 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
     ],
 )
 class TestPSNR(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_psnr(self, preds, target, data_range, base, reduction, dim, sk_metric, ddp, dist_sync_on_step):
+    def test_psnr(self, preds, target, data_range, base, reduction, dim, sk_metric, ddp, dist_sync_on_step, device):
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_class_metric_test(
             ddp,
@@ -103,17 +104,20 @@ class TestPSNR(MetricTester):
             target,
             PSNR,
             partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
+            device=device,
             metric_args=_args,
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_psnr_functional(self, preds, target, sk_metric, data_range, base, reduction, dim):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_psnr_functional(self, preds, target, sk_metric, data_range, base, reduction, dim, device):
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_functional_metric_test(
             preds,
             target,
             psnr,
             partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
+            device=device,
             metric_args=_args,
         )
 

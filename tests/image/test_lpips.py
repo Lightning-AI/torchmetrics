@@ -17,10 +17,11 @@ from functools import partial
 import pytest
 import torch
 from lpips import LPIPS as reference_LPIPS
+from pytest_cases import parametrize_with_cases
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester, MetricTesterDDPCases
 from torchmetrics.image.lpip_similarity import LPIPS
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
@@ -46,8 +47,8 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = "mea
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
 class TestLPIPS(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    def test_lpips(self, net_type, ddp):
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    def test_lpips(self, net_type, ddp, device):
         """test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -56,6 +57,7 @@ class TestLPIPS(MetricTester):
             metric_class=LPIPS,
             sk_metric=partial(_compare_fn, net_type=net_type),
             dist_sync_on_step=False,
+            device=device,
             check_scriptable=False,
             metric_args={"net_type": net_type},
         )
