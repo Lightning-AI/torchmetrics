@@ -16,8 +16,10 @@ from functools import partial
 from typing import Sequence
 
 import pytest
+from pytest_cases import parametrize_with_cases
 from torch import Tensor, tensor
 
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_multiple_references
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
@@ -47,9 +49,9 @@ def sacrebleu_fn(targets: Sequence[Sequence[str]], preds: Sequence[str], tokeniz
 @pytest.mark.parametrize("tokenize", TOKENIZERS)
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestSacreBLEUScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, tokenize, lowercase):
+    def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, tokenize, lowercase, device):
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
@@ -60,11 +62,13 @@ class TestSacreBLEUScore(TextTester):
             metric_class=SacreBLEUScore,
             sk_metric=original_sacrebleu,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_bleu_score_functional(self, preds, targets, tokenize, lowercase, device):
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
@@ -73,6 +77,7 @@ class TestSacreBLEUScore(TextTester):
             targets,
             metric_functional=sacre_bleu_score,
             sk_metric=original_sacrebleu,
+            device=device,
             metric_args=metric_args,
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )

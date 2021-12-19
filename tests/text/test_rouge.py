@@ -17,7 +17,9 @@ from typing import Sequence
 
 import pytest
 import torch
+from pytest_cases import parametrize_with_cases
 
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_single_reference
 from torchmetrics.functional.text.rouge import rouge_score
@@ -102,10 +104,10 @@ def _compute_rouge_score(
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_rouge_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate
+        self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate, device
     ):
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
         rouge_level, metric = pl_rouge_metric_key.split("_")
@@ -119,12 +121,14 @@ class TestROUGEScore(TextTester):
             metric_class=ROUGEScore,
             sk_metric=rouge_metric,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
             input_order=INPUT_ORDER.PREDS_FIRST,
             key=pl_rouge_metric_key,
         )
 
-    def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate, device):
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
@@ -136,6 +140,7 @@ class TestROUGEScore(TextTester):
             targets,
             metric_functional=rouge_score,
             sk_metric=rouge_metric,
+            device=device,
             metric_args=metric_args,
             input_order=INPUT_ORDER.PREDS_FIRST,
             key=pl_rouge_metric_key,

@@ -269,6 +269,7 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_functional: Callable,
         sk_metric: Callable,
+        device: str = "cpu",
         metric_args: dict = None,
         fragment_kwargs: bool = False,
         input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
@@ -290,8 +291,6 @@ class TextTester(MetricTester):
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
         """
-        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
-
         _functional_test(
             preds=preds,
             targets=targets,
@@ -314,6 +313,7 @@ class TextTester(MetricTester):
         metric_class: Metric,
         sk_metric: Callable,
         dist_sync_on_step: bool,
+        device: str = "cpu",
         metric_args: dict = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
@@ -363,6 +363,7 @@ class TextTester(MetricTester):
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
                     atol=self.atol,
+                    device=device,
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     input_order=input_order,
@@ -372,8 +373,6 @@ class TextTester(MetricTester):
                 [(rank, self.poolSize) for rank in range(self.poolSize)],
             )
         else:
-            device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
-
             _class_test(
                 rank=0,
                 worldsize=1,

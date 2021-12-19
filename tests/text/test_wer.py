@@ -1,7 +1,9 @@
 from typing import Callable, List, Union
 
 import pytest
+from pytest_cases import parametrize_with_cases
 
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
@@ -28,9 +30,9 @@ def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Unio
     ],
 )
 class TestWER(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_wer_class(self, ddp, dist_sync_on_step, preds, targets):
+    def test_wer_class(self, ddp, dist_sync_on_step, preds, targets, device):
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -39,16 +41,19 @@ class TestWER(TextTester):
             metric_class=WER,
             sk_metric=_compute_wer_metric_jiwer,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    def test_wer_functional(self, preds, targets):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_wer_functional(self, preds, targets, device):
 
         self.run_functional_metric_test(
             preds,
             targets,
             metric_functional=wer,
             sk_metric=_compute_wer_metric_jiwer,
+            device=device,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 

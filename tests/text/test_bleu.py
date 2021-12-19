@@ -16,8 +16,10 @@ from functools import partial
 
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
+from pytest_cases import parametrize_with_cases
 from torch import tensor
 
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_multiple_references
 from torchmetrics.functional.text.bleu import bleu_score
@@ -53,9 +55,11 @@ def _compute_bleu_metric_nltk(list_of_references, hypotheses, weights, smoothing
     [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
 class TestBLEUScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_bleu_score_class(self, ddp, dist_sync_on_step, preds, targets, weights, n_gram, smooth_func, smooth):
+    def test_bleu_score_class(
+        self, ddp, dist_sync_on_step, preds, targets, weights, n_gram, smooth_func, smooth, device
+    ):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
@@ -66,11 +70,13 @@ class TestBLEUScore(TextTester):
             metric_class=BLEUScore,
             sk_metric=compute_bleu_metric_nltk,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth, device):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
@@ -79,6 +85,7 @@ class TestBLEUScore(TextTester):
             targets,
             metric_functional=bleu_score,
             sk_metric=compute_bleu_metric_nltk,
+            device=device,
             metric_args=metric_args,
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )

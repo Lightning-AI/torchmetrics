@@ -1,7 +1,9 @@
 from typing import Callable, List, Union
 
 import pytest
+from pytest_cases import parametrize_with_cases
 
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from torchmetrics.functional.text.cer import char_error_rate
@@ -30,9 +32,9 @@ def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str
 class TestCharErrorRate(TextTester):
     """test class for character error rate."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_cer_class(self, ddp, dist_sync_on_step, preds, targets):
+    def test_cer_class(self, ddp, dist_sync_on_step, preds, targets, device):
         """test modular version of cer."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -41,16 +43,19 @@ class TestCharErrorRate(TextTester):
             metric_class=CharErrorRate,
             sk_metric=compare_fn,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    def test_cer_functional(self, preds, targets):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_cer_functional(self, preds, targets, device):
         """test functional version of cer."""
         self.run_functional_metric_test(
             preds,
             targets,
             metric_functional=char_error_rate,
             sk_metric=compare_fn,
+            device=device,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 

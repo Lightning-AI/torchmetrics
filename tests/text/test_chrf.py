@@ -2,8 +2,10 @@ from functools import partial
 from typing import Sequence
 
 import pytest
+from pytest_cases import parametrize_with_cases
 from torch import Tensor, tensor
 
+from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from torchmetrics.functional.text.chrf import chrf_score
@@ -48,10 +50,10 @@ def sacrebleu_chrf_fn(
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
+    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace
+        self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace, device
     ):
         metric_args = {
             "n_char_order": char_order,
@@ -70,11 +72,13 @@ class TestCHRFScore(TextTester):
             metric_class=CHRFScore,
             sk_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
+            device=device,
             metric_args=metric_args,
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
+    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace, device):
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -91,6 +95,7 @@ class TestCHRFScore(TextTester):
             metric_functional=chrf_score,
             sk_metric=nltk_metric,
             metric_args=metric_args,
+            device=device,
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
