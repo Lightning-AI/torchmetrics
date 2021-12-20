@@ -76,6 +76,19 @@ def _ms_ssim_compute(
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
+        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+            resolutions.
+        normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
+            training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
+            adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
+
+    Raises:
+        ValueError:
+            If the image height or width is smaller then ``2 ** len(betas)``.
+        ValueError:
+            If the image height is smaller than ``(kernel_size[0] - 1) * max(1, (len(betas) - 1)) ** 2``.
+        ValueError:
+            If the image width is smaller than ``(kernel_size[0] - 1) * max(1, (len(betas) - 1)) ** 2``.
     """
     sim_list: List[Tensor] = []
     cs_list: List[Tensor] = []
@@ -149,10 +162,10 @@ def ms_ssim(
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
-        resolutions.
-        normalize: When MS-SSIM loss is used for training, it is desirable to use normalizes to improve the training
-            stability. This `normalize` argument is out of scope of the original implementation [1], and it is adapted from
-            https://github.com/jorge-pessoa/pytorch-msssim instead.
+            resolutions.
+        normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
+            training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
+            adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
 
     Return:
         Tensor with Multi-Scale SSIM score

@@ -41,7 +41,7 @@ class MultiScaleSSIM(Metric):
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
-        resolutions.
+            resolutions.
         normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
             training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
             adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
