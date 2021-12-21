@@ -24,6 +24,9 @@ jobs:
             requires: 'latest'
           - python-version: 3.9
             requires: 'oldest'
+    env:
+      PYTEST_ARTEFACT: test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
+      PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 75
@@ -80,10 +83,10 @@ jobs:
     - name: Install dependencies
       run: |
         pip --version
-        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
-        pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         pip list
       shell: bash
@@ -91,13 +94,13 @@ jobs:
     - name: Tests
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
-        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}
-        path: junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        name: $PYTEST_ARTEFACT
+        path: "junit/$PYTEST_ARTEFACT"
       if: failure()
 
     - name: Statistics
