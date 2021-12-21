@@ -94,7 +94,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: $TRANSFORMERS_CACHE
-        key: cache-transformaers
+        key: cache-transformers
 
     - name: Tests
       run: |
