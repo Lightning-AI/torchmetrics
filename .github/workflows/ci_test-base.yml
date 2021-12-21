@@ -17,7 +17,7 @@ jobs:
         os: [ubuntu-20.04, windows-2019, macOS-10.15]
         python-version: [3.7]
     env:
-      PYTEST_ARTEFACT: pytest-results-${{ runner.os }}-${{ matrix.python-version }}
+      PYTEST_ARTEFACT: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
