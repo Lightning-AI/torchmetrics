@@ -18,6 +18,8 @@ jobs:
         include:
           - python-version: 3.7
             pytorch-version: '1.3'
+    env:
+      TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 55
@@ -59,6 +61,12 @@ jobs:
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
       # prevent hanging Conda creations
       timeout-minutes: 10
+
+    - name: HF cache
+      uses: actions/cache@v2
+      with:
+        path: $TRANSFORMERS_CACHE
+        key: cache-transformaers
 
     - name: Temp COCO env. fix
       if: matrix.pytorch-version == '1.4'
