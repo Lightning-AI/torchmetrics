@@ -27,6 +27,7 @@ jobs:
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
+      TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 75
@@ -90,6 +91,12 @@ jobs:
         pip uninstall -y torchmetrics
         pip list
       shell: bash
+
+    - name: HF cache
+      uses: actions/cache@v2
+      with:
+        path: $TRANSFORMERS_CACHE
+        key: cache-transformers
 
     - name: Tests
       run: |
