@@ -65,9 +65,9 @@ class EED(Metric):
         to WMT 2019. `EED`_
     """
 
-    sentence_eed: List[Tensor] = []
-    higher_is_better: False
-    is_differentiable: False
+    sentence_eed: List[Tensor]
+    higher_is_better = False
+    is_differentiable = False
 
     def __init__(
         self,
@@ -95,9 +95,9 @@ class EED(Metric):
         self.return_sentence_level_score = return_sentence_level_score
 
         # input validation for parameters
-        for parameter in (alpha, rho, deletion, insertion):
-            assert parameter >= 0
-            assert isinstance(parameter, float)
+        for param_name, param in zip(["alpha", "rho", "deletion", "insertion"], [alpha, rho, deletion, insertion]):
+            if not isinstance(param, float) or isinstance(param, float) and param < 0:
+                raise ValueError(f"Parameter `{param_name}` is expected to be a non-negative float.")
 
         self.alpha = alpha
         self.rho = rho

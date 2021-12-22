@@ -423,9 +423,9 @@ def eed(
         submitted to WMT 2019. `EED`_
     """
     # input validation for parameters
-    for parameter in (alpha, rho, deletion, insertion):
-        assert parameter >= 0
-        assert isinstance(parameter, float)
+    for param_name, param in zip(["alpha", "rho", "deletion", "insertion"], [alpha, rho, deletion, insertion]):
+        if not isinstance(param, float) or isinstance(param, float) and param < 0:
+            raise ValueError(f"Parameter `{param_name}` is expected to be a non-negative float.")
 
     sentence_level_scores = _eed_update(reference_corpus, hypothesis_corpus, language, alpha, rho, deletion, insertion)
 
