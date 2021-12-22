@@ -27,10 +27,11 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      # - id: check-json
       - id: check-yaml
+      - id: check-toml
       - id: check-docstring-first
       - id: check-executables-have-shebangs
-      - id: check-toml
       - id: check-case-conflict
       - id: check-added-large-files
         args: ['--maxkb=250', '--enforce-all']
@@ -70,7 +71,11 @@ repos:
           - mdformat-gfm
           - mdformat-black
           - mdformat_frontmatter
-        exclude: CHANGELOG.md
+        exclude: |
+            (?x)^(
+                CHANGELOG.md|
+                docs/paper_JOSS/paper.md
+            )$
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.2.3

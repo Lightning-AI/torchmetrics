@@ -56,12 +56,12 @@ class ConfusionMatrix(Metric):
         multilabel:
             determines if data is multilabel or not.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Example (binary data):
         >>> from torchmetrics import ConfusionMatrix

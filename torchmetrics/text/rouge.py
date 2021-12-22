@@ -11,12 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.rouge import ALLOWED_ROUGE_KEYS, _rouge_score_compute, _rouge_score_update
+from torchmetrics.functional.text.rouge import (
+    ALLOWED_ACCUMULATE_VALUES,
+    ALLOWED_ROUGE_KEYS,
+    _rouge_score_compute,
+    _rouge_score_update,
+)
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 
@@ -27,16 +33,20 @@ class ROUGEScore(Metric):
     Args:
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
+        accumulate:
+            Useful incase of multi-reference rouge score.
+            - ``avg`` takes the avg of all references with respect to predictions
+            - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
         rouge_keys:
             A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -76,6 +86,7 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
+        accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -99,31 +110,44 @@ class ROUGEScore(Metric):
             if key not in ALLOWED_ROUGE_KEYS:
                 raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {ALLOWED_ROUGE_KEYS}")
 
+        if accumulate not in ALLOWED_ACCUMULATE_VALUES:
+            raise ValueError(
+                f"Got unknown accumulate value {accumulate}. Expected to be one of {ALLOWED_ACCUMULATE_VALUES}"
+            )
+
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
+        self.accumulate = accumulate
 
         # Adding stated dynamically to prevent IndexError during sync function as some lists can be empty.
         for rouge_key in self.rouge_keys:
             for score in ["fmeasure", "precision", "recall"]:
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
-    def update(self, preds: Union[str, List[str]], targets: Union[str, List[str]]) -> None:  # type: ignore
+    def update(  # type: ignore
+        self, preds: Union[str, Sequence[str]], targets: Union[str, Sequence[str], Sequence[Sequence[str]]]
+    ) -> None:
         """Compute rouge scores.
 
         Args:
-            preds: An iterable of predicted sentences or a single predicted sentence.
-            targets: An iterable of target sentences or a single target sentence.
+            preds:
+                An iterable of predicted sentences or a single predicted sentence.
+            targets:
+                An iterable of iterable of target sentences or an iterable
+                of target sentences or a single target sentence.
         """
+        if isinstance(targets, list) and all(isinstance(target, str) for target in targets):
+            targets = [targets] if isinstance(preds, str) else [[target] for target in targets]
 
         if isinstance(preds, str):
             preds = [preds]
 
         if isinstance(targets, str):
-            targets = [targets]
+            targets = [[targets]]
 
         output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, stemmer=self.stemmer
+            preds, targets, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
         )
         for rouge_key, metrics in output.items():
             for metric in metrics:
@@ -147,7 +171,6 @@ class ROUGEScore(Metric):
         # override to hash list objects.
         # this is a bug in the upstream pytorch release.
         hash_vals = [self.__class__.__name__]
-
         for key in self._defaults:
             value = getattr(self, key)
             if isinstance(value, list):

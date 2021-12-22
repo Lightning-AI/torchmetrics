@@ -42,17 +42,24 @@ class RetrievalMAP(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
+        ignore_index:
+            Ignore predictions where the target is equal to this number.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects
-            the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather. default: None
+            will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
+        ValueError:
+            If ``ignore_index`` is not `None` or an integer.
 
     Example:
         >>> from torchmetrics import RetrievalMAP

@@ -39,6 +39,8 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
+from torchmetrics.functional.text.helper import _validate_inputs
+
 _EPS_SMOOTHING = tensor(1e-16)
 # Taken from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py
 _PUNCTUATIONS = set("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
@@ -485,18 +487,7 @@ def _chrf_score_update(
         ValueError:
             If length of `reference_corpus` and `hypothesis_corpus` differs.
     """
-    if isinstance(hypothesis_corpus, str):
-        hypothesis_corpus = [hypothesis_corpus]
-
-    # Ensure reference corpus is properly of a type Sequence[Sequence[str]]
-    if all(isinstance(ref, str) for ref in reference_corpus):
-        if len(hypothesis_corpus) == 1:
-            reference_corpus = [reference_corpus]  # type: ignore
-        else:
-            reference_corpus = [[ref] for ref in reference_corpus]  # type: ignore
-
-    if hypothesis_corpus and all(ref for ref in reference_corpus) and len(reference_corpus) != len(hypothesis_corpus):
-        raise ValueError(f"Corpus has different size {len(reference_corpus)} != {len(hypothesis_corpus)}")
+    reference_corpus, hypothesis_corpus = _validate_inputs(reference_corpus, hypothesis_corpus)
 
     for (references, hypothesis) in zip(reference_corpus, hypothesis_corpus):
         (

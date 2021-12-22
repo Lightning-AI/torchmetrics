@@ -356,7 +356,7 @@ class MAP(Metric):
         det = self.detection_boxes[id]
         gt_label_mask = self.groundtruth_labels[id] == class_id
         det_label_mask = self.detection_labels[id] == class_id
-        if len(det_label_mask) == 0 or len(det_label_mask) == 0:
+        if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
@@ -396,7 +396,7 @@ class MAP(Metric):
         det = self.detection_boxes[id]
         gt_label_mask = self.groundtruth_labels[id] == class_id
         det_label_mask = self.detection_labels[id] == class_id
-        if len(det_label_mask) == 0 or len(det_label_mask) == 0:
+        if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return None
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
@@ -407,7 +407,9 @@ class MAP(Metric):
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
-        ignore_area_sorted, gtind = torch.sort(ignore_area)
+        ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8))
+        # Convert to uint8 temporarily and back to bool, because "Sort currently does not support bool dtype on CUDA"
+        ignore_area_sorted = ignore_area_sorted.to(torch.bool)
         gt = gt[gtind]
         scores = self.detection_scores[id]
         scores_filtered = scores[det_label_mask]
@@ -421,20 +423,20 @@ class MAP(Metric):
         nb_iou_thrs = len(self.iou_thresholds)
         nb_gt = len(gt)
         nb_det = len(det)
-        gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool)
-        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device)
+        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
         gt_ignore = ignore_area_sorted
-        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
                     m = MAP._find_best_gt_match(t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det)
-                    if m is not -1:
+                    if m != -1:
                         det_ignore[idx_iou, idx_det] = gt_ignore[m]
                         det_matches[idx_iou, idx_det] = True
                         gt_matches[idx_iou, m] = True
         # set unmatched detections outside of area range to ignore
-        det_areas = box_area(det)
+        det_areas = box_area(det).to(self.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.logical_or(
@@ -562,6 +564,10 @@ class MAP(Metric):
         precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
         recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
         scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
+
+        # move tensors if necessary
+        self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
+        self.rec_thresholds = self.rec_thresholds.to(self.device)
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls in range(nb_classes):

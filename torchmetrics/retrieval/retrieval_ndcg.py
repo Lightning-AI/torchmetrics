@@ -44,22 +44,27 @@ class RetrievalNormalizedDCG(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
-        k: consider only the top k elements for each query (default: None, which considers them all)
+        ignore_index:
+            Ignore predictions where the target is equal to this number.
+        k: consider only the top k elements for each query (default: `None`, which considers them all)
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects
-            the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather. default: None
+            will be used to perform the allgather.
 
     Raises:
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+            If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
+        ValueError:
+            If ``ignore_index`` is not `None` or an integer.
+        ValueError:
+            If ``k`` parameter is not `None` or an integer larger than 0.
 
     Example:
         >>> from torchmetrics import RetrievalNormalizedDCG
@@ -76,7 +81,8 @@ class RetrievalNormalizedDCG(RetrievalMetric):
     def __init__(
         self,
         empty_target_action: str = "neg",
-        k: int = None,
+        ignore_index: Optional[int] = None,
+        k: Optional[int] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -84,6 +90,7 @@ class RetrievalNormalizedDCG(RetrievalMetric):
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
+            ignore_index=ignore_index,
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,

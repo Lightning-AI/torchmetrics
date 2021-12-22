@@ -51,17 +51,24 @@ class RetrievalMetric(Metric, ABC):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
+        ignore_index:
+            Ignore predictions where the target is equal to this number.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects
-            the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather. default: None
+            will be used to perform the allgather.
+
+    Raises:
+        ValueError:
+            If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
+        ValueError:
+            If ``ignore_index`` is not `None` or an integer.
     """
 
     indexes: List[Tensor]
@@ -72,6 +79,7 @@ class RetrievalMetric(Metric, ABC):
     def __init__(
         self,
         empty_target_action: str = "neg",
+        ignore_index: Optional[int] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -91,6 +99,11 @@ class RetrievalMetric(Metric, ABC):
 
         self.empty_target_action = empty_target_action
 
+        if ignore_index is not None and not isinstance(ignore_index, int):
+            raise ValueError("Argument `ignore_index` must be an integer or None.")
+
+        self.ignore_index = ignore_index
+
         self.add_state("indexes", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
@@ -101,7 +114,7 @@ class RetrievalMetric(Metric, ABC):
             raise ValueError("Argument `indexes` cannot be None")
 
         indexes, preds, target = _check_retrieval_inputs(
-            indexes, preds, target, allow_non_binary_target=self.allow_non_binary_target
+            indexes, preds, target, allow_non_binary_target=self.allow_non_binary_target, ignore_index=self.ignore_index
         )
 
         self.indexes.append(indexes)
