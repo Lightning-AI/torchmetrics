@@ -13,11 +13,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      # max-parallel: 6
       matrix:
         os: [ubuntu-20.04, windows-2019, macOS-10.15]
         python-version: [3.7]
     env:
+      PYTEST_ARTEFACT: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
+      PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
       TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -59,9 +60,9 @@ jobs:
       run: |
         python --version
         pip --version
-        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
         python ./requirements/adjust-versions.py requirements/image.txt
-        pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         pip list
       shell: bash
@@ -75,13 +76,13 @@ jobs:
     - name: Test Package [only]
       run: |
         # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics -v --cov=torchmetrics --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        python -m pytest torchmetrics -v --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT"
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}
-        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        name: $PYTEST_ARTEFACT
+        path: "junit/$PYTEST_ARTEFACT"
       if: failure()
 
     - name: Statistics
