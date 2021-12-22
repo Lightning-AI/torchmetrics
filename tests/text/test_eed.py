@@ -12,22 +12,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
 import numpy as np
 import pytest
+
 from torch import Tensor, tensor
 
 from tests.text.helpers import INPUT_ORDER, TextTester
-from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
+from tests.text.inputs import (
+    _inputs_single_reference,
+    _inputs_single_sentence_multiple_references,
+    _inputs_multiple_references,
+)
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
 
 
+def rwth_manual_metric(targets, preds) -> Tensor:
+    """
+    The results were obtained w.r.t. to the examples defined in `tests.text.inputs`
+    with the script from https://github.com/rwth-i6/ExtendedEditDistance.
+    """
+    HYPOTHESIS_A = "It is a guide to action which ensures that the military always obeys the commands of the party"
+    if HYPOTHESIS_A in preds:
+        return tensor(0.2425)
+    return tensor(0.1979)
+
+
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
 )
 class TestEED(TextTester):
-    def test_chrf_score_differentiability(self, preds, targets):
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    def test_eed_class(self, ddp, dist_sync_on_step, preds, targets):
+        rwth_metric = partial(rwth_manual_metric)
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            targets=targets,
+            metric_class=EED,
+            sk_metric=rwth_metric,
+            dist_sync_on_step=dist_sync_on_step,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
+        )
+
+    def test_eed_functional(self, preds, targets):
+        rwth_metric = partial(rwth_manual_metric)
+        self.run_functional_metric_test(
+            preds,
+            targets,
+            metric_functional=eed,
+            sk_metric=rwth_metric,
+            input_order=INPUT_ORDER.TARGETS_FIRST,
+        )
+
+    def test_eed_differentiability(self, preds, targets):
         self.run_differentiability_test(
             preds=preds,
             targets=targets,
