@@ -61,3 +61,7 @@ ERROR_RATES_BATCHES_2 = {
 _inputs_error_rate_batch_size_1 = Input(**ERROR_RATES_BATCHES_1)
 
 _inputs_error_rate_batch_size_2 = Input(**ERROR_RATES_BATCHES_2)
+
+# single reference
+TUPLE_OF_SINGLE_REFERENCES = (((REFERENCE_1A), (REFERENCE_1B)), ((REFERENCE_1B), (REFERENCE_1C)))
+_inputs_single_reference = Input(preds=TUPLE_OF_HYPOTHESES, targets=TUPLE_OF_SINGLE_REFERENCES)
