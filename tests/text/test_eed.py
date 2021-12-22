@@ -13,25 +13,25 @@
 # limitations under the License.
 
 from functools import partial
+
 import numpy as np
 import pytest
-
 from torch import Tensor, tensor
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import (
+    _inputs_multiple_references,
     _inputs_single_reference,
     _inputs_single_sentence_multiple_references,
-    _inputs_multiple_references,
 )
 from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
 
 
 def rwth_manual_metric(targets, preds) -> Tensor:
-    """
-    The results were obtained w.r.t. to the examples defined in `tests.text.inputs`
-    with the script from https://github.com/rwth-i6/ExtendedEditDistance.
+    """The results were obtained w.r.t.
+
+    to the examples defined in `tests.text.inputs` with the script from https://github.com/rwth-i6/ExtendedEditDistance.
     """
     HYPOTHESIS_A = "It is a guide to action which ensures that the military always obeys the commands of the party"
     if HYPOTHESIS_A in preds:
