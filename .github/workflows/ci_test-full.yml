@@ -20,7 +20,7 @@ jobs:
         python-version: [3.6, 3.8, 3.9]
         requires: ['oldest', 'latest']
         exclude:
-          - {python-version: 3.6, requires: 'latest')
+          - {python-version: 3.6, requires: 'latest'}
           - {python-version: 3.9, requires: 'oldest'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
