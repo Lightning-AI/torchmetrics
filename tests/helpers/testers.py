@@ -349,20 +349,31 @@ class MetricTesterDDPCases:
     def case_ddp_false_device_cpu(self):
         return False, "cpu"
 
-    @case(tags="strategy")
+    @case(
+        tags="strategy",
+        marks=[
+            pytest.mark.skipif(not torch.distributed.is_available(), reason="Distributed mode is not available."),
+        ],
+    )
     def case_ddp_true_device_cpu(self):
         return True, "cpu"
 
-    @case(tags="strategy", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU required"))
+    @case(
+        tags="strategy",
+        marks=[pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU required")],
+    )
     def case_ddp_false_device_gpu(self):
         return False, "cuda"
 
     @case(
         tags="strategy",
-        marks=pytest.mark.skipif(
-            not torch.cuda.is_available() or torch.cuda.device_count() < 2,
-            reason="More than one GPU required for DDP",
-        ),
+        marks=[
+            pytest.mark.skipif(
+                not torch.cuda.is_available() or torch.cuda.device_count() < 2,
+                reason="More than one GPU required for DDP",
+            ),
+            pytest.mark.skipif(not torch.distributed.is_available(), reason="Distributed mode is not available."),
+        ],
     )
     def case_ddp_true_device_gpu(self):
         return True, "cuda"
