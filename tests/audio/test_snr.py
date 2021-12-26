@@ -18,7 +18,6 @@ from typing import Callable
 import pytest
 import torch
 from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
-from pytest_cases import parametrize_with_cases
 from torch import Tensor
 
 from tests.helpers import seed_all
@@ -80,7 +79,7 @@ mireval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_e
 class TestSNR(MetricTester):
     atol = 1e-2
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_snr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -94,7 +93,7 @@ class TestSNR(MetricTester):
             metric_args=dict(zero_mean=zero_mean),
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_snr_functional(self, preds, target, sk_metric, zero_mean, device):
         self.run_functional_metric_test(
             preds,

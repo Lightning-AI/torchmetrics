@@ -15,7 +15,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torch import tensor
 
@@ -88,7 +87,7 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1, average=
 )
 @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
 class TestAveragePrecision(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_average_precision(self, preds, target, sk_metric, num_classes, average, ddp, dist_sync_on_step, device):
         if target.max() > 1 and average == "micro":
@@ -105,7 +104,7 @@ class TestAveragePrecision(MetricTester):
             metric_args={"num_classes": num_classes, "average": average},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_average_precision_functional(self, preds, target, sk_metric, num_classes, average, device):
         if target.max() > 1 and average == "micro":
             pytest.skip("average=micro and multiclass input cannot be used together")

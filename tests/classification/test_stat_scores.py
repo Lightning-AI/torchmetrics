@@ -17,7 +17,6 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import multilabel_confusion_matrix
 from torch import Tensor, tensor
 
@@ -173,8 +172,8 @@ def test_wrong_params(reduce, mdmc_reduce, num_classes, inputs, ignore_index):
 class TestStatScores(MetricTester):
     # DDP tests temporarily disabled due to hanging issues
     @pytest.mark.parametrize("ddp", [False])
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
-    # @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
+    # @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_stat_scores_class(
         self,
@@ -225,7 +224,7 @@ class TestStatScores(MetricTester):
             check_batch=True,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_stat_scores_fn(
         self,
         sk_fn: Callable,

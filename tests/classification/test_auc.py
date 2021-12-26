@@ -16,7 +16,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import auc as _sk_auc
 from torch import tensor
 
@@ -56,7 +55,7 @@ for batch_size in (8, 4049):
 
 @pytest.mark.parametrize("x, y", _examples)
 class TestAUC(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_auc(self, x, y, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -69,7 +68,7 @@ class TestAUC(MetricTester):
             device=device,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder, device):
         self.run_functional_metric_test(

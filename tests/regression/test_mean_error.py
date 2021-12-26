@@ -17,7 +17,6 @@ from functools import partial
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
@@ -109,7 +108,7 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     ],
 )
 class TestMeanError(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_mean_error_class(
         self,
@@ -136,7 +135,7 @@ class TestMeanError(MetricTester):
             metric_args=metric_args,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_mean_error_functional(
         self, preds, target, sk_metric, metric_class, metric_functional, sk_fn, metric_args, device
     ):

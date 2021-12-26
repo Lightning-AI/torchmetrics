@@ -13,7 +13,6 @@
 # limitations under the License.
 import numpy as np
 import pytest
-from pytest_cases import parametrize_with_cases
 from torch import Tensor
 
 from tests.helpers import seed_all
@@ -51,7 +50,7 @@ def _r_precision(target: np.ndarray, preds: np.ndarray):
 
 
 class TestRPrecision(RetrievalMetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
@@ -81,7 +80,7 @@ class TestRPrecision(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
@@ -109,7 +108,7 @@ class TestRPrecision(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     def test_functional_metric(self, preds: Tensor, target: Tensor, device: str):
         self.run_functional_metric_test(

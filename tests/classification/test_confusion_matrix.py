@@ -16,7 +16,6 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import multilabel_confusion_matrix as sk_multilabel_confusion_matrix
 
@@ -129,7 +128,7 @@ def _sk_cm_multidim_multiclass(preds, target, normalize=None):
     ],
 )
 class TestConfusionMatrix(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_confusion_matrix(
         self, normalize, preds, target, sk_metric, num_classes, multilabel, ddp, dist_sync_on_step, device
@@ -150,7 +149,7 @@ class TestConfusionMatrix(MetricTester):
             },
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_confusion_matrix_functional(self, normalize, preds, target, sk_metric, num_classes, multilabel, device):
         self.run_functional_metric_test(
             preds=preds,

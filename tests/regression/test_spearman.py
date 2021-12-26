@@ -15,7 +15,6 @@ from collections import namedtuple
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from scipy.stats import rankdata, spearmanr
 
 from tests.helpers import seed_all
@@ -77,7 +76,7 @@ def _sk_metric(preds, target):
 class TestSpearmanCorrcoef(MetricTester):
     atol = 1e-2
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_spearman_corrcoef(self, preds, target, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -90,7 +89,7 @@ class TestSpearmanCorrcoef(MetricTester):
             device=device,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_spearman_corrcoef_functional(self, preds, target, device):
         self.run_functional_metric_test(preds, target, spearman_corrcoef, _sk_metric, device=device)
 

@@ -2,7 +2,6 @@ from functools import partial
 from typing import Sequence
 
 import pytest
-from pytest_cases import parametrize_with_cases
 from torch import Tensor, tensor
 
 from tests.helpers.testers import MetricTesterDDPCases
@@ -50,7 +49,7 @@ def sacrebleu_chrf_fn(
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_chrf_score_class(
         self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace, device
@@ -77,7 +76,7 @@ class TestCHRFScore(TextTester):
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace, device):
         metric_args = {
             "n_char_order": char_order,

@@ -18,7 +18,6 @@ from typing import Tuple
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import average_precision_score as _sk_average_precision_score
 from sklearn.metrics import precision_recall_curve as _sk_precision_recall_curve
 from torch import Tensor
@@ -78,7 +77,7 @@ def _sk_avg_prec_multiclass(predictions, targets, num_classes):
 class TestBinnedRecallAtPrecision(MetricTester):
     atol = 0.02
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.8, 0.95])
     def test_binned_recall_at_precision(
@@ -113,7 +112,7 @@ class TestBinnedRecallAtPrecision(MetricTester):
     ],
 )
 class TestBinnedAveragePrecision(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("thresholds", (301, torch.linspace(0.0, 1.0, 101)))
     def test_binned_average_precision(

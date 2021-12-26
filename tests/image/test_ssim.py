@@ -16,7 +16,6 @@ from functools import partial
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from skimage.metrics import structural_similarity
 
 from tests.helpers import seed_all
@@ -73,7 +72,7 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
 class TestSSIM(MetricTester):
     atol = 6e-3
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_ssim(self, preds, target, multichannel, kernel_size, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -87,7 +86,7 @@ class TestSSIM(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_ssim_functional(self, preds, target, multichannel, kernel_size, device):
         self.run_functional_metric_test(
             preds,

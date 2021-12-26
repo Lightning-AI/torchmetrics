@@ -16,7 +16,6 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
 from torch import Tensor, tensor
 
@@ -77,7 +76,7 @@ def _sk_prec_rc_multidim_multiclass_prob(preds, target, num_classes=1):
     ],
 )
 class TestPrecisionRecallCurve(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_precision_recall_curve(self, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -91,7 +90,7 @@ class TestPrecisionRecallCurve(MetricTester):
             metric_args={"num_classes": num_classes},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_precision_recall_curve_functional(self, preds, target, sk_metric, num_classes, device):
         self.run_functional_metric_test(
             preds,

@@ -16,7 +16,6 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import accuracy_score as sk_accuracy
 from torch import tensor
 
@@ -82,7 +81,7 @@ def _sk_accuracy(preds, target, subset_accuracy):
     ],
 )
 class TestAccuracies(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_accuracy_class(self, ddp, dist_sync_on_step, preds, target, subset_accuracy, device):
         self.run_class_metric_test(
@@ -96,7 +95,7 @@ class TestAccuracies(MetricTester):
             metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_accuracy_fn(self, preds, target, subset_accuracy, device):
         self.run_functional_metric_test(
             preds,

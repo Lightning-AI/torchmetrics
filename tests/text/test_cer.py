@@ -1,7 +1,6 @@
 from typing import Callable, List, Union
 
 import pytest
-from pytest_cases import parametrize_with_cases
 
 from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
@@ -32,7 +31,7 @@ def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str
 class TestCharErrorRate(TextTester):
     """test class for character error rate."""
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_cer_class(self, ddp, dist_sync_on_step, preds, targets, device):
         """test modular version of cer."""
@@ -47,7 +46,7 @@ class TestCharErrorRate(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_cer_functional(self, preds, targets, device):
         """test functional version of cer."""
         self.run_functional_metric_test(

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pytest
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import hamming_loss as sk_hamming_loss
 
 from tests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
@@ -62,7 +61,7 @@ def _sk_hamming_loss(preds, target):
     ],
 )
 class TestHammingDistance(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_hamming_distance_class(self, ddp, dist_sync_on_step, preds, target, device):
         self.run_class_metric_test(
@@ -76,7 +75,7 @@ class TestHammingDistance(MetricTester):
             metric_args={"threshold": THRESHOLD},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_hamming_distance_fn(self, preds, target, device):
         self.run_functional_metric_test(
             preds=preds,

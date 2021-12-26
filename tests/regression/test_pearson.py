@@ -15,7 +15,6 @@ from collections import namedtuple
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from scipy.stats import pearsonr
 
 from tests.helpers import seed_all
@@ -54,7 +53,7 @@ def _sk_pearsonr(preds, target):
 class TestPearsonCorrcoef(MetricTester):
     atol = 1e-2
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     def test_pearson_corrcoef(self, preds, target, ddp, device):
         self.run_class_metric_test(
             ddp=ddp,
@@ -66,7 +65,7 @@ class TestPearsonCorrcoef(MetricTester):
             device=device,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_pearson_corrcoef_functional(self, preds, target, device):
         self.run_functional_metric_test(
             preds=preds, target=target, metric_functional=pearson_corrcoef, sk_metric=_sk_pearsonr, device=device

@@ -16,7 +16,6 @@ from functools import partial
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances, linear_kernel, manhattan_distances
 
 from tests.helpers import seed_all
@@ -82,7 +81,7 @@ class TestPairwise(MetricTester):
 
     atol = 1e-4
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_pairwise_functional(self, x, y, metric_functional, sk_fn, reduction, device):
         """test functional pairwise implementations."""
         self.run_functional_metric_test(

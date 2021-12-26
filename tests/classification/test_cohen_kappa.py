@@ -3,7 +3,6 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
 
 from tests.classification.inputs import _input_binary, _input_binary_prob
@@ -94,7 +93,7 @@ def _sk_cohen_kappa_multidim_multiclass(preds, target, weights=None):
 class TestCohenKappa(MetricTester):
     atol = 1e-5
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_cohen_kappa(self, weights, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -108,7 +107,7 @@ class TestCohenKappa(MetricTester):
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "weights": weights},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_cohen_kappa_functional(self, weights, preds, target, sk_metric, num_classes, device):
         self.run_functional_metric_test(
             preds,

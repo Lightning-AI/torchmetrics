@@ -16,7 +16,6 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import jaccard_score as sk_jaccard_score
 from torch import Tensor, tensor
 
@@ -103,7 +102,7 @@ def _sk_jaccard_multidim_multiclass(preds, target, average=None):
     ],
 )
 class TestJaccardIndex(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_jaccard(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step, device):
         average = "macro" if reduction == "elementwise_mean" else None  # convert tags
@@ -118,7 +117,7 @@ class TestJaccardIndex(MetricTester):
             metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_jaccard_functional(self, reduction, preds, target, sk_metric, num_classes, device):
         average = "macro" if reduction == "elementwise_mean" else None  # convert tags
         self.run_functional_metric_test(

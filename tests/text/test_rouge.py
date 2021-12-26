@@ -17,7 +17,6 @@ from typing import Sequence
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 
 from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
@@ -104,7 +103,7 @@ def _compute_rouge_score(
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
 class TestROUGEScore(TextTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_rouge_score_class(
         self, ddp, dist_sync_on_step, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate, device
@@ -127,7 +126,7 @@ class TestROUGEScore(TextTester):
             key=pl_rouge_metric_key,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_rouge_score_functional(self, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate, device):
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
 

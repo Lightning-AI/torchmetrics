@@ -15,7 +15,6 @@ from functools import partial
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import roc_auc_score as sk_roc_auc_score
 
 from tests.classification.inputs import _input_binary_prob
@@ -100,7 +99,7 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average="macr
     ],
 )
 class TestAUROC(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_auroc(self, preds, target, sk_metric, num_classes, average, max_fpr, ddp, dist_sync_on_step, device):
         # max_fpr different from None is not support in multi class
@@ -126,7 +125,7 @@ class TestAUROC(MetricTester):
             metric_args={"num_classes": num_classes, "average": average, "max_fpr": max_fpr},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_auroc_functional(self, preds, target, sk_metric, num_classes, average, max_fpr, device):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:

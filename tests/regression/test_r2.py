@@ -16,7 +16,6 @@ from functools import partial
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import r2_score as sk_r2score
 
 from tests.helpers import seed_all
@@ -70,7 +69,7 @@ def _multi_target_sk_metric(preds, target, adjusted, multioutput):
     ],
 )
 class TestR2Score(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_r2(self, adjusted, multioutput, preds, target, sk_metric, num_outputs, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -84,7 +83,7 @@ class TestR2Score(MetricTester):
             metric_args=dict(adjusted=adjusted, multioutput=multioutput, num_outputs=num_outputs),
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_r2_functional(self, adjusted, multioutput, preds, target, sk_metric, num_outputs, device):
         # todo: `num_outputs` is unused
         self.run_functional_metric_test(

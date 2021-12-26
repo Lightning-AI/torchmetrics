@@ -16,7 +16,6 @@ from collections import namedtuple
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 
 from tests.helpers.testers import MetricTester, MetricTesterDDPCases
 from torchmetrics.detection.map import MAP
@@ -175,7 +174,7 @@ class TestMAP(MetricTester):
 
     atol = 1e-1
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     def test_map(self, ddp, device):
         """Test modular implementation for correctness."""
         self.run_class_metric_test(

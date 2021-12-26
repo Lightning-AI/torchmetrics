@@ -17,7 +17,6 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import precision_score, recall_score
 from torch import Tensor, tensor
 
@@ -211,7 +210,7 @@ def test_no_support(metric_class, metric_fn):
     ],
 )
 class TestPrecisionRecall(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_precision_recall_class(
         self,
@@ -268,7 +267,7 @@ class TestPrecisionRecall(MetricTester):
             check_batch=True,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_precision_recall_fn(
         self,
         preds: Tensor,

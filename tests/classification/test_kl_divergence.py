@@ -18,7 +18,6 @@ from typing import Optional
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from scipy.stats import entropy
 from torch import Tensor
 
@@ -61,7 +60,7 @@ def _sk_metric(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[str] = 
 class TestKLDivergence(MetricTester):
     atol = 1e-6
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_kldivergence(self, reduction, p, q, log_prob, ddp, dist_sync_on_step, device):
         self.run_class_metric_test(
@@ -75,7 +74,7 @@ class TestKLDivergence(MetricTester):
             metric_args=dict(log_prob=log_prob, reduction=reduction),
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_kldivergence_functional(self, reduction, p, q, log_prob, device):
         # todo: `num_outputs` is unused
         self.run_functional_metric_test(

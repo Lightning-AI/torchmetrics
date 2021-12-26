@@ -16,7 +16,6 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import hinge_loss as sk_hinge
 from sklearn.preprocessing import OneHotEncoder
 
@@ -89,7 +88,7 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
     ],
 )
 class TestHinge(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_hinge_class(self, ddp, dist_sync_on_step, preds, target, squared, multiclass_mode, device):
         self.run_class_metric_test(
@@ -106,7 +105,7 @@ class TestHinge(MetricTester):
             },
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_hinge_fn(self, preds, target, squared, multiclass_mode, device):
         self.run_functional_metric_test(
             preds=preds,

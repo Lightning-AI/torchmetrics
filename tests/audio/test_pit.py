@@ -18,7 +18,6 @@ from typing import Callable, Tuple
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor
 
@@ -113,7 +112,7 @@ si_sdr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=si_sdr, e
 class TestPIT(MetricTester):
     atol = 1e-2
 
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_pit(self, preds, target, sk_metric, metric_func, eval_func, ddp, device, dist_sync_on_step):
         self.run_class_metric_test(
@@ -127,7 +126,7 @@ class TestPIT(MetricTester):
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_pit_functional(self, preds, target, sk_metric, device, metric_func, eval_func):
         self.run_functional_metric_test(
             preds=preds,

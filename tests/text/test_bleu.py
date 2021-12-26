@@ -16,7 +16,6 @@ from functools import partial
 
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
-from pytest_cases import parametrize_with_cases
 from torch import tensor
 
 from tests.helpers.testers import MetricTesterDDPCases
@@ -55,7 +54,7 @@ def _compute_bleu_metric_nltk(list_of_references, hypotheses, weights, smoothing
     [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
 class TestBLEUScore(TextTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_bleu_score_class(
         self, ddp, dist_sync_on_step, preds, targets, weights, n_gram, smooth_func, smooth, device
@@ -75,7 +74,7 @@ class TestBLEUScore(TextTester):
             input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth, device):
         metric_args = {"n_gram": n_gram, "smooth": smooth}
         compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)

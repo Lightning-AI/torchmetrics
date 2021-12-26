@@ -17,7 +17,6 @@ from typing import Callable, Optional
 import numpy as np
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import f1_score, fbeta_score
 from torch import Tensor
 
@@ -240,7 +239,7 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
     ],
 )
 class TestFBeta(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_fbeta_f1(
         self,
@@ -296,7 +295,7 @@ class TestFBeta(MetricTester):
             check_batch=True,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_fbeta_f1_functional(
         self,
         preds: Tensor,

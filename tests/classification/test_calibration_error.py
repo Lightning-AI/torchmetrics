@@ -3,7 +3,6 @@ import re
 
 import numpy as np
 import pytest
-from pytest_cases import parametrize_with_cases
 
 from tests.classification.inputs import _input_binary_prob
 from tests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
@@ -52,7 +51,7 @@ def _sk_calibration(preds, target, n_bins, norm, debias=False):
     ],
 )
 class TestCE(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_ce(self, preds, target, n_bins, ddp, dist_sync_on_step, norm, device):
         self.run_class_metric_test(
@@ -66,7 +65,7 @@ class TestCE(MetricTester):
             metric_args={"n_bins": n_bins, "norm": norm},
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_ce_functional(self, preds, target, n_bins, norm, device):
         self.run_functional_metric_test(
             preds,

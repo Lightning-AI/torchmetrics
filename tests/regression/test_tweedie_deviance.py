@@ -16,7 +16,6 @@ from functools import partial
 
 import pytest
 import torch
-from pytest_cases import parametrize_with_cases
 from sklearn.metrics import mean_tweedie_deviance
 from torch import Tensor
 
@@ -61,7 +60,7 @@ def _sk_deviance(preds: Tensor, targets: Tensor, power: float):
     ],
 )
 class TestDevianceScore(MetricTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_deviance_scores_class(self, ddp, dist_sync_on_step, preds, targets, power, device):
         self.run_class_metric_test(
@@ -75,7 +74,7 @@ class TestDevianceScore(MetricTester):
             metric_args=dict(power=power),
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_deviance_scores_functional(self, preds, targets, power, device):
         self.run_functional_metric_test(
             preds,

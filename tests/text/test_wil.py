@@ -2,7 +2,6 @@ from typing import List, Union
 
 import pytest
 from jiwer import wil
-from pytest_cases import parametrize_with_cases
 
 from tests.helpers.testers import MetricTesterDDPCases
 from tests.text.helpers import INPUT_ORDER, TextTester
@@ -25,7 +24,7 @@ def _compute_wil_metric_jiwer(prediction: Union[str, List[str]], reference: Unio
     ],
 )
 class TestWordInfoLost(TextTester):
-    @parametrize_with_cases("ddp,device", cases=MetricTesterDDPCases, has_tag="strategy")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_strategy(), MetricTesterDDPCases.cases_strategy())
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_wil_class(self, ddp, dist_sync_on_step, preds, targets, device):
 
@@ -40,7 +39,7 @@ class TestWordInfoLost(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    @parametrize_with_cases("device", cases=MetricTesterDDPCases, has_tag="device")
+    @pytest.mark.parametrize(MetricTesterDDPCases.name_device(), MetricTesterDDPCases.cases_device())
     def test_wil_functional(self, preds, targets, device):
 
         self.run_functional_metric_test(
