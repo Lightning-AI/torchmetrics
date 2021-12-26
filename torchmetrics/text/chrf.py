@@ -27,13 +27,13 @@ from torchmetrics import Metric
 from torchmetrics.functional.text.chrf import _chrf_score_compute, _chrf_score_update, _prepare_n_grams_dicts
 
 _N_GRAM_LEVELS = ("char", "word")
-_TEXT_LEVELS = ("ref", "hyp", "matching")
+_TEXT_LEVELS = ("target", "prediction", "matching")
 
 _DICT_STATES_NAMES = (
-    "total_ref_char_n_grams",
-    "total_ref_word_n_grams",
-    "total_hyp_char_n_grams",
-    "total_hyp_word_n_grams",
+    "total_prediction_char_n_grams",
+    "total_prediction_word_n_grams",
+    "total_target_char_n_grams",
+    "total_target_word_n_grams",
     "total_matching_char_n_grams",
     "total_matching_word_n_grams",
 )
@@ -83,10 +83,10 @@ class CHRFScore(Metric):
             If ``beta`` is smaller than 0.
 
     Example:
-        >>> hypothesis_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> prediction_corpus = ['the cat is on the mat']
+        >>> target_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = CHRFScore()
-        >>> metric(reference_corpus, hypothesis_corpus)
+        >>> metric(prediction_corpus, target_corpus)
         tensor(0.8640)
 
     References:
@@ -143,19 +143,20 @@ class CHRFScore(Metric):
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
     def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[str]], hypothesis_corpus: Sequence[str]
+        self, prediction_corpus: Sequence[str], target_corpus: Sequence[Sequence[str]]
     ) -> None:
         """Compute Precision Scores.
 
         Args:
-            reference_corpus:
-                An iterable of iterables of reference corpus.
-            hypothesis_corpus:
-                An iterable of hypothesis corpus.
+            prediction_corpus:
+                An iterable of prediction corpus.
+            target_corpus:
+                An iterable of iterables of target corpus.
+
         """
         n_grams_dicts_tuple = _chrf_score_update(
-            reference_corpus,
-            hypothesis_corpus,
+            prediction_corpus,
+            target_corpus,
             *self._convert_states_to_dicts(),
             self.n_char_order,
             self.n_word_order,
@@ -222,5 +223,5 @@ class CHRFScore(Metric):
         return f"total_{text}_{n_gram_level}_{n}_grams"
 
     def _get_text_n_gram_iterator(self) -> Iterator[Tuple[Tuple[str, int], str]]:
-        """Get iterator over char/word and reference/hypothesis/matching n-gram level."""
+        """Get iterator over char/word and target/prediction/matching n-gram level."""
         return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
