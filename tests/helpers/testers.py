@@ -332,7 +332,15 @@ class MetricTesterDDPCases:
         return "ddp"
 
     def cases_ddp():
-        return [False, True]
+        return [
+            False,
+            pytest.param(
+                True,
+                marks=pytest.mark.skipif(
+                    not torch.distributed.is_available(), reason="Distributed mode is not available."
+                ),
+            ),
+        ]
 
     def name_device():
         return "device"
