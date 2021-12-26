@@ -338,7 +338,10 @@ class MetricTesterDDPCases:
         return "device"
 
     def cases_device():
-        return ["cpu", "cuda"]
+        return [
+            "cpu",
+            pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="GPU required")),
+        ]
 
     def name_strategy():
         return ",".join([MetricTesterDDPCases.name_ddp(), MetricTesterDDPCases.name_device()])
