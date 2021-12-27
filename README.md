@@ -70,6 +70,7 @@ pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 Extra dependencies for specialized metrics:
 
 ```bash
+pip install torchmetrics[audio]
 pip install torchmetrics[image]
 pip install torchmetrics[text]
 pip install torchmetrics[all]  # install all of the above
