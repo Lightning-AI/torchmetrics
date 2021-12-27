@@ -540,7 +540,7 @@ class MAP(Metric):
             class_ids:
                 List of label class Ids.
         """
-        img_ids = torch.arange(len(self.groundtruth_boxes), dtype=torch.int).tolist()
+        img_ids = range(len(self.groundtruth_boxes))
         max_detections = self.max_detection_thresholds[-1]
         area_ranges = self.bbox_area_ranges.values()
 
