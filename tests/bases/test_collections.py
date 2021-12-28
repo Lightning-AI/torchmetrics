@@ -18,7 +18,7 @@ import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
-from torchmetrics.collections import MetricCollection
+from torchmetrics.metric_collections import MetricCollection
 
 seed_all(42)
 
