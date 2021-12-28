@@ -16,6 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
+import warnings
 from typing import Any, Callable, Optional, Sequence
 
 import torch
@@ -81,7 +82,10 @@ class BLEUScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-
+        warnings.warn(
+            "Input order of preds and targets were changed to target firsts and predictions \
+                       second in v0.7. Warning will be removed in v0.8"
+        )
         self.n_gram = n_gram
         self.smooth = smooth
 

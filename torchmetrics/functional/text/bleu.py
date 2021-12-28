@@ -16,6 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
+import warnings
 from collections import Counter
 from typing import Callable, Sequence, Tuple, Union
 
@@ -181,6 +182,11 @@ def bleu_score(
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+    warnings.warn(
+        "Input order of preds and targets were changed to target firsts and predictions \
+                   second in v0.7. Warning will be removed in v0.8"
+    )
+
     prediction_corpus_ = [prediction_corpus] if isinstance(prediction_corpus, str) else prediction_corpus
     target_corpus_ = [[target_text] if isinstance(target_text, str) else target_text for target_text in target_corpus]
 

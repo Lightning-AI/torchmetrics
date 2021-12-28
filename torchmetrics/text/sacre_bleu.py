@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 # referenced from
 # Library Name: torchtext
 # Authors: torchtext authors and @sluks
@@ -98,6 +100,10 @@ class SacreBLEUScore(BLEUScore):
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
+        )
+        warnings.warn(
+            "Input order of preds and targets were changed to target firsts and predictions \
+                       second in v0.7. Warning will be removed in v0.8"
         )
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
