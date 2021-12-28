@@ -430,7 +430,7 @@ class MAP(Metric):
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
-                    m = MAP._find_best_gt_match(t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det)
+                    m = MAP._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
                     if m != -1:
                         det_ignore[idx_iou, idx_det] = gt_ignore[m]
                         det_matches[idx_iou, idx_det] = True
@@ -452,43 +452,16 @@ class MAP(Metric):
 
     @staticmethod
     def _find_best_gt_match(
-        thr: int, nb_gt: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
+        thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
     ) -> int:
-        """Return id of best ground truth match with current detection.
-
-        Args:
-            thr:
-                Current threshold value.
-            nb_gt:
-                Number of ground truth elements.
-            gt_matches:
-                Tensor showing if a ground truth matches for threshold ``t`` exists.
-            idx_iou:
-                Id of threshold ``t``.
-            gt_ignore:
-                Tensor showing if ground truth should be ignored.
-            ious:
-                IoUs for all combinations of detection and ground truth.
-            idx_det:
-                Id of current detection.
-        """
-        # information about best match so far (m=-1 -> unmatched)
-        iou = min([thr, 1 - 1e-10])
-        match_id = -1
-        for idx_gt in range(nb_gt):
-            # if this gt already matched, and not a crowd, continue
-            if gt_matches[idx_iou, idx_gt]:
-                continue
-            # if dt matched to reg gt, and on ignore gt, stop
-            if match_id > -1 and not gt_ignore[match_id] and gt_ignore[idx_gt]:
-                break
-            # continue to next gt unless better match made
-            if ious[idx_det, idx_gt] < iou:
-                continue
-            # if match successful and best so far, store appropriately
-            iou = ious[idx_det, idx_gt]
-            match_id = idx_gt
-        return match_id
+        previously_matched = gt_matches[idx_iou]
+        # Remove previously matched or ignored gts
+        remove_mask = previously_matched | gt_ignore
+        gt_ious = ious[idx_det] * ~remove_mask
+        match_idx = gt_ious.argmax().item()
+        if gt_ious[match_idx] > thr:
+            return match_idx
+        return -1
 
     def _summarize(
         self,
