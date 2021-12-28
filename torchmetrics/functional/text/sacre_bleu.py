@@ -277,8 +277,8 @@ class _SacreBLEUTokenizer:
 
 
 def sacre_bleu_score(
-    reference_corpus: Sequence[Sequence[str]],
-    translate_corpus: Sequence[str],
+    prediction_corpus: Sequence[str],
+    target_corpus: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
@@ -288,10 +288,10 @@ def sacre_bleu_score(
     follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus
-        translate_corpus:
+        prediction_corpus:
             An iterable of machine translated corpus
+        target_corpus:
+            An iterable of iterables of reference corpus
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
@@ -307,9 +307,9 @@ def sacre_bleu_score(
 
     Example:
         >>> from torchmetrics.functional import sacre_bleu_score
-        >>> translate_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> sacre_bleu_score(reference_corpus, translate_corpus)
+        >>> prediction_corpus = ['the cat is on the mat']
+        >>> target_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> sacre_bleu_score(prediction_corpus, target_corpus)
         tensor(0.7598)
 
     References:
@@ -328,8 +328,8 @@ def sacre_bleu_score(
         raise ValueError(
             f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
         )
-    if len(translate_corpus) != len(reference_corpus):
-        raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
+    if len(prediction_corpus) != len(target_corpus):
+        raise ValueError(f"Corpus has different size {len(prediction_corpus)} != {len(target_corpus)}")
     if tokenize == "intl" and not _REGEX_AVAILABLE:
         raise ValueError(
             "`'intl'` tokenization requires `regex` installed. Use `pip install regex` or `pip install "
@@ -338,19 +338,19 @@ def sacre_bleu_score(
 
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
-    trans_len = tensor(0, dtype=torch.float)
-    ref_len = tensor(0, dtype=torch.float)
+    prediction_len = tensor(0, dtype=torch.float)
+    target_len = tensor(0, dtype=torch.float)
 
     tokenize_fn = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
-    trans_len, ref_len = _bleu_score_update(
-        reference_corpus,
-        translate_corpus,
+    prediction_len, target_len = _bleu_score_update(
+        prediction_corpus,
+        target_corpus,
         numerator,
         denominator,
-        trans_len,
-        ref_len,
+        prediction_len,
+        target_len,
         n_gram,
         tokenize_fn,
     )
 
-    return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)
+    return _bleu_score_compute(prediction_len, target_len, numerator, denominator, n_gram, smooth)
