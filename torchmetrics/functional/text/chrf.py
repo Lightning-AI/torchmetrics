@@ -215,10 +215,11 @@ def _get_ngram_matches(
     """Get a number of n-gram matches between target and prediction n-grams.
 
     Args:
-        target_n_grams_counts:
         prediction_n_grams_counts:
+        target_n_grams_counts:
 
     Return:
+        matching_n_grams
     """
     matching_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     for n in prediction_n_grams_counts:
@@ -266,14 +267,14 @@ def _calculate_fscore(
             A total number of matching character n-grams between the best matching target and prediction.
         matching_word_n_grams:
             A total number of matching word n-grams between the best matching target and prediction.
-        target_char_n_grams:
-            A total number of target character n-grams.
-        target_word_n_grams:
-            A total number of target word n-grams.
         prediction_char_n_grams:
             A total number of prediction character n-grams.
         prediction_word_n_grams:
             A total number of prediction word n-grams.
+        target_char_n_grams:
+            A total number of target character n-grams.
+        target_word_n_grams:
+            A total number of target word n-grams.
         n_order:
             A sum of character and word n-gram order.
         beta:
@@ -438,14 +439,14 @@ def _chrf_score_update(
             An iterable of prediction corpus.
         target_corpus:
             An iterable of iterables of target corpus.
-        total_target_char_n_grams:
-            A dictionary containing a total number of target character n-grams.
-        total_target_word_n_grams:
-            A dictionary containing a total number of target word n-grams.
         total_prediction_char_n_grams:
             A dictionary containing a total number of prediction character n-grams.
         total_prediction_word_n_grams:
             A dictionary containing a total number of prediction word n-grams.
+        total_target_char_n_grams:
+            A dictionary containing a total number of target character n-grams.
+        total_target_word_n_grams:
+            A dictionary containing a total number of target word n-grams.
         total_matching_char_n_grams:
             A dictionary containing a total number of matching character n-grams between targets and hypotheses.
         total_matching_word_n_grams:
@@ -466,14 +467,14 @@ def _chrf_score_update(
             A list of sentence-level chrF/chrF++ scores.
 
     Return:
-        total_target_char_n_grams:
-            An updated dictionary containing a total number of target character n-grams.
-        total_target_word_n_grams:
-            An updated dictionary containing a total number of target word n-grams.
         total_prediction_char_n_grams:
             An updated dictionary containing a total number of prediction character n-grams.
         total_prediction_word_n_grams:
             An updated dictionary containing a total number of prediction word n-grams.
+        total_target_char_n_grams:
+            An updated dictionary containing a total number of target character n-grams.
+        total_target_word_n_grams:
+            An updated dictionary containing a total number of target word n-grams.
         total_matching_char_n_grams:
             An updated dictionary containing a total number of matching character n-grams between targets and
             hypotheses.

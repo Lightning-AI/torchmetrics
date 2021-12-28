@@ -70,8 +70,8 @@ def _bleu_score_update(
     """Updates and returns variables required to compute the BLEU score.
 
     Args:
-        target_corpus: An iterable of iterables of reference corpus
         prediction_corpus: An iterable of machine translated corpus
+        target_corpus: An iterable of iterables of reference corpus
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
         prediction_len: count of words in a candidate prediction

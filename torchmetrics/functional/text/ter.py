@@ -217,14 +217,14 @@ def _find_shifted_pairs(prediction_words: List[str], target_words: List[str]) ->
 
 
     Return:
-        Yields tuples of `(target_start, prediction_start, length` such that:
+        Yields tuples of `(prediction_start, target_start, length` such that:
         target_words[target_start : target_start + length] ==\
             prediction_words[prediction_start : prediction_start + length]
 
-        target_start:
-            A list of target start indices.
         prediction_start:
             A list of prediction start indices.
+        target_start:
+            A list of target start indices.
         length:
             A length of a word span to be considered.
     """
