@@ -106,7 +106,12 @@ def _bleu_score_update(
 
 
 def _bleu_score_compute(
-    prediction_len: Tensor, target_len: Tensor, numerator: Tensor, denominator: Tensor, n_gram: int = 4, smooth: bool = False
+    prediction_len: Tensor,
+    target_len: Tensor,
+    numerator: Tensor,
+    denominator: Tensor,
+    n_gram: int = 4,
+    smooth: bool = False,
 ) -> Tensor:
     """Computes the BLEU score.
 
@@ -133,7 +138,9 @@ def _bleu_score_compute(
 
     log_precision_scores = tensor([1.0 / n_gram] * n_gram, device=device) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = tensor(1.0, device=device) if prediction_len > target_len else torch.exp(1 - (target_len / prediction_len))
+    brevity_penalty = (
+        tensor(1.0, device=device) if prediction_len > target_len else torch.exp(1 - (target_len / prediction_len))
+    )
     bleu = brevity_penalty * geometric_mean
 
     return bleu
@@ -175,9 +182,7 @@ def bleu_score(
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
     prediction_corpus_ = [prediction_corpus] if isinstance(prediction_corpus, str) else prediction_corpus
-    target_corpus_ = [
-        [target_text] if isinstance(target_text, str) else target_text for target_text in target_corpus
-    ]
+    target_corpus_ = [[target_text] if isinstance(target_text, str) else target_text for target_text in target_corpus]
 
     if len(prediction_corpus_) != len(target_corpus_):
         raise ValueError(f"Corpus has different size {len(prediction_corpus_)} != {len(target_corpus_)}")

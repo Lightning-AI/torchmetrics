@@ -90,9 +90,7 @@ class BLEUScore(Metric):
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    def update(  # type: ignore
-        self,  prediction_corpus: Sequence[str], target_corpus: Sequence[Sequence[str]]
-    ) -> None:
+    def update(self, prediction_corpus: Sequence[str], target_corpus: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:

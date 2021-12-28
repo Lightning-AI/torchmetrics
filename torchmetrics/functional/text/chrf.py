@@ -322,8 +322,8 @@ def _calculate_sentence_level_chrf_score(
     lowercase: bool,
     whitespace: bool,
 ) -> Tuple[Tensor, Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]]:
-    """Calculate the best sentence-level chrF/chrF++ score. For a given pre-processed prediction, all targets
-    are evaluated and score and statistics for the best matching target is returned.
+    """Calculate the best sentence-level chrF/chrF++ score. For a given pre-processed prediction, all targets are
+    evaluated and score and statistics for the best matching target is returned.
 
     Args:
         targets:
@@ -548,8 +548,7 @@ def _chrf_score_compute(
     n_order: float,
     beta: float,
 ) -> Tensor:
-    """Compute chrF/chrF++ score based on pre-computed target, prediction and matching character and word
-    n-grams.
+    """Compute chrF/chrF++ score based on pre-computed target, prediction and matching character and word n-grams.
 
     Args:
         total_prediction_char_n_grams:
@@ -595,8 +594,8 @@ def chrf_score(
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Calculate `chrF score`_  of machine translated text with one or more targets. This implementation
-    supports both chrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score`_. This
+    """Calculate `chrF score`_  of machine translated text with one or more targets. This implementation supports
+    both chrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score`_. This
     implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 

@@ -142,9 +142,7 @@ class CHRFScore(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
-    def update(  # type: ignore
-        self, prediction_corpus: Sequence[str], target_corpus: Sequence[Sequence[str]]
-    ) -> None:
+    def update(self, prediction_corpus: Sequence[str], target_corpus: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
@@ -152,7 +150,6 @@ class CHRFScore(Metric):
                 An iterable of prediction corpus.
             target_corpus:
                 An iterable of iterables of target corpus.
-
         """
         n_grams_dicts_tuple = _chrf_score_update(
             prediction_corpus,

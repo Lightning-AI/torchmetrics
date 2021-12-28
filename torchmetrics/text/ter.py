@@ -50,10 +50,10 @@ class TER(Metric):
             will be used to perform the allgather
 
     Example:
-        >>> hypothesis_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> prediction_corpus = ['the cat is on the mat']
+        >>> target_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = TER()
-        >>> metric(reference_corpus, hypothesis_corpus)
+        >>> metric(prediction_corpus, target_corpus)
         tensor(0.1538)
 
     References:
@@ -64,7 +64,7 @@ class TER(Metric):
     is_differentiable = False
     higher_is_better = False
     total_num_edits: Tensor
-    total_ref_len: Tensor
+    total_target_len: Tensor
     sentence_ter: Optional[List[Tensor]] = None
 
     def __init__(
@@ -98,29 +98,29 @@ class TER(Metric):
         self.return_sentence_level_score = return_sentence_level_score
 
         self.add_state("total_num_edits", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total_ref_len", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total_target_len", tensor(0.0), dist_reduce_fx="sum")
         if self.return_sentence_level_score:
             self.add_state("sentence_ter", [], dist_reduce_fx="cat")
 
     def update(  # type: ignore
         self,
-        reference_corpus: Sequence[Union[str, Sequence[str]]],
-        hypothesis_corpus: Union[str, Sequence[str]],
+        prediction_corpus: Union[str, Sequence[str]],
+        target_corpus: Sequence[Union[str, Sequence[str]]],
     ) -> None:
         """Update TER statistics.
 
         Args:
-            reference_corpus:
-                An iterable of iterables of reference corpus.
-            hypothesis_corpus:
-                An iterable of hypothesis corpus.
+            prediction_corpus:
+                An iterable of prediction corpus.
+            target_corpus:
+                An iterable of iterables of target corpus.
         """
-        self.total_num_edits, self.total_ref_len, self.sentence_ter = _ter_update(
-            reference_corpus,
-            hypothesis_corpus,
+        self.total_num_edits, self.total_target_len, self.sentence_ter = _ter_update(
+            prediction_corpus,
+            target_corpus,
             self.tokenizer,
             self.total_num_edits,
-            self.total_ref_len,
+            self.total_target_len,
             self.sentence_ter,
         )
 
@@ -131,7 +131,7 @@ class TER(Metric):
             A corpus-level translation edit rate (TER).
             (Optionally) A list of sentence-level translation_edit_rate (TER) if `return_sentence_level_score=True`.
         """
-        ter = _ter_compute(self.total_num_edits, self.total_ref_len)
+        ter = _ter_compute(self.total_num_edits, self.total_target_len)
         if self.sentence_ter is not None:
             return ter, torch.cat(self.sentence_ter)
         return ter
