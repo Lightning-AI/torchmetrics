@@ -29,9 +29,8 @@ from torchmetrics.text.eed import EED
 
 
 def rwth_manual_metric(targets, preds) -> Tensor:
-    """The results were obtained w.r.t.
-
-    to the examples defined in `tests.text.inputs` with the script from https://github.com/rwth-i6/ExtendedEditDistance.
+    """The results were obtained w.r.t. to the examples defined in `tests.text.inputs`
+    with the script from https://github.com/rwth-i6/ExtendedEditDistance.
     """
     HYPOTHESIS_A = "It is a guide to action which ensures that the military always obeys the commands of the party"
     if HYPOTHESIS_A in preds:
@@ -122,8 +121,8 @@ def test_eed_return_sentence_level_class():
 
 # test parallel vs sequential computations
 def test_parallelisation_eed():
-    references = _inputs_multiple_references.targets
-    hypotheses = _inputs_multiple_references.preds
+    references = _inputs_multiple_references.targets[0]
+    hypotheses = _inputs_multiple_references.preds[0]
 
     # batch_size == length of data
     metric = EED()
