@@ -29,8 +29,9 @@ from torchmetrics.text.eed import EED
 
 
 def rwth_manual_metric(targets, preds) -> Tensor:
-    """The results were obtained w.r.t. to the examples defined in `tests.text.inputs`
-    with the script from https://github.com/rwth-i6/ExtendedEditDistance.
+    """The results were obtained w.r.t.
+
+    to the examples defined in `tests.text.inputs` with the script from https://github.com/rwth-i6/ExtendedEditDistance.
     """
     HYPOTHESIS_A = "It is a guide to action which ensures that the military always obeys the commands of the party"
     if HYPOTHESIS_A in preds:
