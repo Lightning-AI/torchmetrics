@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `TER` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
 
 
-- Add a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
+- Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
 
 
 - Added Signal to Distortion Ratio (`SDR`) to audio package ([#565](https://github.com/PyTorchLightning/metrics/pull/565))
@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Removed arguments `newline_sep` and `decimal_places` from `rouge` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
+
 
 ### Fixed
 
