@@ -213,8 +213,8 @@ def _preprocess_en(sentence: str) -> str:
     for pattern, replacement in rules_interpunction:
         sentence = sentence.replace(pattern, replacement)
 
-    # add space to beginning of string
-    sentence = " " + sentence
+    # add space to beginning and end of string
+    sentence = " " + sentence + " "
 
     return sentence
 
@@ -416,7 +416,7 @@ def eed(
         >>> reference_corpus = ["this is the reference", "here is another one"]
         >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
         >>> eed(reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus)
-        tensor(0.3204)
+        tensor(0.3078)
 
     References:
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”,

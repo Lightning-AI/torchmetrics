@@ -58,7 +58,7 @@ class EED(Metric):
         >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
         >>> metric = EED()
         >>> metric(reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus)
-        tensor(0.3204)
+        tensor(0.3078)
 
     References:
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”, submitted
