@@ -247,7 +247,7 @@ def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
     if sentence_level_scores == []:
         return tensor(0.0)
 
-    average = sum(sentence_level_scores) / len(sentence_level_scores)
+    average = sum(sentence_level_scores) / tensor(len(sentence_level_scores))
     return average
 
 
