@@ -255,7 +255,7 @@ def _preprocess_sentences(
     reference_corpus: Sequence[Union[str, Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
     language: Union[Literal["en"], Literal["ja"]],
-) -> Tuple[List[str], List[str]]:
+) -> Tuple[Sequence[Union[str, Sequence[str]]], Union[str, Sequence[str]]]:
     """Proprocess strings according to language requirements.
 
     Args:
@@ -289,8 +289,8 @@ def _preprocess_sentences(
 
 
 def _compute_sentence_statistics(
-    reference_words: List[List[str]],
-    hypothesis: List[str],
+    reference_words: Union[str, Sequence[str]],
+    hypothesis: str,
     alpha: float = 2.0,
     rho: float = 0.3,
     deletion: float = 0.2,
