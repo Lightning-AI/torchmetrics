@@ -54,10 +54,10 @@ class EED(Metric):
 
     Example:
         >>> from torchmetrics.text import EED
-        >>> reference_corpus = ["this is the reference", "here is another one"]
-        >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
+        >>> targets = ["this is the reference", "here is another one"]
+        >>> preds = ["this is the prediction", "here is an other sample"]
         >>> metric = EED()
-        >>> metric(reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus)
+        >>> metric(targets=targets, preds=preds)
         tensor(0.3078)
 
     References:
