@@ -34,8 +34,8 @@ def rwth_manual_metric(targets, preds) -> Tensor:
     """
     HYPOTHESIS_A = "It is a guide to action which ensures that the military always obeys the commands of the party"
     if HYPOTHESIS_A in preds:
-        return tensor(0.2425)
-    return tensor(0.1979)
+        return tensor(0.24248056001808083)
+    return tensor(0.19152276295133436)
 
 
 @pytest.mark.parametrize(
