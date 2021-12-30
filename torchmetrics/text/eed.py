@@ -108,18 +108,18 @@ class EED(Metric):
 
     def update(  # type: ignore
         self,
-        reference_corpus: Sequence[Union[str, Sequence[str]]],
-        hypothesis_corpus: Union[str, Sequence[str]],
+        targets: Sequence[Union[str, Sequence[str]]],
+        preds: Union[str, Sequence[str]],
     ) -> None:
         """Update EED statistics.
 
         Args:
-            reference_corpus: An iterable of iterables of reference corpus
-            hypothesis_corpus: An iterable of hypothesis corpus
+            targets: An iterable of iterables of reference corpus
+            preds: An iterable of hypothesis corpus
         """
         self.sentence_eed = _eed_update(
-            reference_corpus,
-            hypothesis_corpus,
+            targets,
+            preds,
             self.language,
             self.alpha,
             self.rho,
