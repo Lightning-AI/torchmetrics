@@ -67,7 +67,7 @@ class AveragePrecision(Metric):
 
     Example (binary case):
         >>> from torchmetrics import AveragePrecision
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> average_precision = AveragePrecision(pos_label=1)
         >>> average_precision(pred, target)
