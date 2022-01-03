@@ -318,20 +318,16 @@ class MAP(Metric):
         _input_validator(preds, target)
 
         for item in preds:
-            self.detection_boxes.append(
-                _fix_empty_tensors(box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy"))
-                if item["boxes"].size() == Size([1, 4])
-                else _fix_empty_tensors(item["boxes"])
-            )
+            boxes = _fix_empty_tensors(item["boxes"])
+            boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            self.detection_boxes.append(boxes)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
         for item in target:
-            self.groundtruth_boxes.append(
-                _fix_empty_tensors(box_convert(item["boxes"], in_fmt=self.box_format, out_fmt="xyxy"))
-                if item["boxes"].size() == Size([1, 4])
-                else _fix_empty_tensors(item["boxes"])
-            )
+            boxes = _fix_empty_tensors(item["boxes"])
+            boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            self.groundtruth_boxes.append(boxes)
             self.groundtruth_labels.append(item["labels"])
 
     def _get_classes(self) -> List:
@@ -427,6 +423,7 @@ class MAP(Metric):
         det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
         gt_ignore = ignore_area_sorted
         det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
+
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
@@ -435,6 +432,7 @@ class MAP(Metric):
                         det_ignore[idx_iou, idx_det] = gt_ignore[m]
                         det_matches[idx_iou, idx_det] = True
                         gt_matches[idx_iou, m] = True
+                        
         # set unmatched detections outside of area range to ignore
         det_areas = box_area(det).to(self.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
