@@ -46,10 +46,10 @@ class BLEUScore(Metric):
             will be used to perform the allgather.
 
     Example:
-        >>> prediction_corpus = ['the cat is on the mat']
-        >>> target_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> translate_corpus = ['the cat is on the mat']
+        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = BLEUScore()
-        >>> metric(prediction_corpus, target_corpus)
+        >>> metric(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -62,8 +62,8 @@ class BLEUScore(Metric):
 
     is_differentiable = False
     higher_is_better = True
-    prediction_len: Tensor
-    target_len: Tensor
+    trans_len: Tensor
+    ref_len: Tensor
     numerator: Tensor
     denominator: Tensor
 
@@ -89,26 +89,28 @@ class BLEUScore(Metric):
         self.n_gram = n_gram
         self.smooth = smooth
 
-        self.add_state("prediction_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("target_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("trans_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("ref_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    def update(self, prediction_corpus: Sequence[str], target_corpus: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def update(  # type: ignore
+        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
+    ) -> None:
         """Compute Precision Scores.
 
         Args:
-            prediction_corpus: An iterable of machine translated corpus
-            target_corpus: An iterable of iterables of reference corpus
+            translate_corpus: An iterable of machine translated corpus
+            reference_corpus: An iterable of iterables of reference corpus
         """
 
-        self.prediction_len, self.target_len = _bleu_score_update(
-            prediction_corpus,
-            target_corpus,
+        self.trans_len, self.ref_len = _bleu_score_update(
+            translate_corpus,
+            reference_corpus,
             self.numerator,
             self.denominator,
-            self.prediction_len,
-            self.target_len,
+            self.trans_len,
+            self.ref_len,
             self.n_gram,
             _tokenize_fn,
         )
@@ -120,5 +122,5 @@ class BLEUScore(Metric):
             Tensor with BLEU Score
         """
         return _bleu_score_compute(
-            self.prediction_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.smooth
+            self.trans_len, self.ref_len, self.numerator, self.denominator, self.n_gram, self.smooth
         )

@@ -66,10 +66,10 @@ class SacreBLEUScore(BLEUScore):
 
 
     Example:
-        >>> prediction_corpus = ['the cat is on the mat']
-        >>> target_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> translate_corpus = ['the cat is on the mat']
+        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = SacreBLEUScore()
-        >>> metric(prediction_corpus, target_corpus)
+        >>> metric(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -115,20 +115,22 @@ class SacreBLEUScore(BLEUScore):
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    def update(self, prediction_corpus: Sequence[str], target_corpus: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def update(  # type: ignore
+        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
+    ) -> None:
         """Compute Precision Scores.
 
         Args:
-            prediction_corpus: An iterable of machine translated corpus
-            target_corpus: An iterable of iterables of reference corpus
+            translate_corpus: An iterable of machine translated corpus
+            reference_corpus: An iterable of iterables of reference corpus
         """
-        self.prediction_len, self.target_len = _bleu_score_update(
-            prediction_corpus,
-            target_corpus,
+        self.trans_len, self.ref_len = _bleu_score_update(
+            translate_corpus,
+            reference_corpus,
             self.numerator,
             self.denominator,
-            self.prediction_len,
-            self.target_len,
+            self.trans_len,
+            self.ref_len,
             self.n_gram,
             self.tokenizer,
         )

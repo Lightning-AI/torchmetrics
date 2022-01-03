@@ -15,7 +15,7 @@ if _SACREBLEU_AVAILABLE:
 
 
 def sacrebleu_ter_fn(
-    predictions: Sequence[str],
+    preds: Sequence[str],
     targets: Sequence[Sequence[str]],
     normalized: bool,
     no_punct: bool,
@@ -27,7 +27,7 @@ def sacrebleu_ter_fn(
     )
     # Sacrebleu CHRF expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
-    sacrebleu_ter = sacrebleu_ter.corpus_score(predictions, targets).score / 100
+    sacrebleu_ter = sacrebleu_ter.corpus_score(preds, targets).score / 100
     return tensor(sacrebleu_ter)
 
 
@@ -43,7 +43,7 @@ def sacrebleu_ter_fn(
     ],
 )
 @pytest.mark.parametrize(
-    ["predictions", "targets"],
+    ["preds", "targets"],
     [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
@@ -51,7 +51,7 @@ class TestTER(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, predictions, targets, normalize, no_punctuation, asian_support, lowercase
+        self, ddp, dist_sync_on_step, preds, targets, normalize, no_punctuation, asian_support, lowercase
     ):
         metric_args = {
             "normalize": normalize,
@@ -69,7 +69,7 @@ class TestTER(TextTester):
 
         self.run_class_metric_test(
             ddp=ddp,
-            preds=predictions,
+            preds=preds,
             targets=targets,
             metric_class=TER,
             sk_metric=nltk_metric,
@@ -78,7 +78,7 @@ class TestTER(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    def test_ter_score_functional(self, predictions, targets, normalize, no_punctuation, asian_support, lowercase):
+    def test_ter_score_functional(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -94,7 +94,7 @@ class TestTER(TextTester):
         )
 
         self.run_functional_metric_test(
-            predictions,
+            preds,
             targets,
             metric_functional=ter,
             sk_metric=nltk_metric,
@@ -102,9 +102,7 @@ class TestTER(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    def test_chrf_score_differentiability(
-        self, predictions, targets, normalize, no_punctuation, asian_support, lowercase
-    ):
+    def test_chrf_score_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -113,7 +111,7 @@ class TestTER(TextTester):
         }
 
         self.run_differentiability_test(
-            preds=predictions,
+            preds=preds,
             targets=targets,
             metric_module=TER,
             metric_functional=ter,
@@ -123,41 +121,41 @@ class TestTER(TextTester):
 
 
 def test_ter_empty_functional():
-    prediction = []
-    target = [[]]
-    assert ter(prediction, target) == tensor(0.0)
+    hyp = []
+    ref = [[]]
+    assert ter(hyp, ref) == tensor(0.0)
 
 
 def test_ter_empty_class():
     ter_metric = TER()
-    prediction = []
-    target = [[]]
-    assert ter_metric(prediction, target) == tensor(0.0)
+    hyp = []
+    ref = [[]]
+    assert ter_metric(hyp, ref) == tensor(0.0)
 
 
-def test_ter_empty_with_non_empty_prediction_functional():
-    prediction = ["python"]
-    target = [[]]
-    assert ter(prediction, target) == tensor(0.0)
+def test_ter_empty_with_non_empty_hyp_functional():
+    hyp = ["python"]
+    ref = [[]]
+    assert ter(hyp, ref) == tensor(0.0)
 
 
-def test_ter_empty_with_non_empty_prediction_class():
+def test_ter_empty_with_non_empty_hyp_class():
     ter_metric = TER()
-    prediction = ["python"]
-    target = [[]]
-    assert ter_metric(prediction, target) == tensor(0.0)
+    hyp = ["python"]
+    ref = [[]]
+    assert ter_metric(hyp, ref) == tensor(0.0)
 
 
 def test_ter_return_sentence_level_score_functional():
-    prediction = _inputs_single_sentence_multiple_references.preds
-    target = _inputs_single_sentence_multiple_references.targets
-    _, sentence_ter = ter(prediction, target, return_sentence_level_score=True)
+    hyp = _inputs_single_sentence_multiple_references.preds
+    ref = _inputs_single_sentence_multiple_references.targets
+    _, sentence_ter = ter(hyp, ref, return_sentence_level_score=True)
     isinstance(sentence_ter, Tensor)
 
 
 def test_ter_return_sentence_level_class():
     ter_metric = TER(return_sentence_level_score=True)
-    prediction = _inputs_single_sentence_multiple_references.preds
-    target = _inputs_single_sentence_multiple_references.targets
-    _, sentence_ter = ter_metric(prediction, target)
+    hyp = _inputs_single_sentence_multiple_references.preds
+    ref = _inputs_single_sentence_multiple_references.targets
+    _, sentence_ter = ter_metric(hyp, ref)
     isinstance(sentence_ter, Tensor)

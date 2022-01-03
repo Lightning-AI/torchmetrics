@@ -43,7 +43,7 @@ def sacrebleu_chrf_fn(
     ],
 )
 @pytest.mark.parametrize(
-    ["predictions", "targets"],
+    ["preds", "targets"],
     [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
@@ -51,7 +51,7 @@ class TestCHRFScore(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, predictions, targets, char_order, word_order, lowercase, whitespace
+        self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace
     ):
         metric_args = {
             "n_char_order": char_order,
@@ -65,7 +65,7 @@ class TestCHRFScore(TextTester):
 
         self.run_class_metric_test(
             ddp=ddp,
-            preds=predictions,
+            preds=preds,
             targets=targets,
             metric_class=CHRFScore,
             sk_metric=nltk_metric,
@@ -74,7 +74,7 @@ class TestCHRFScore(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    def test_chrf_score_functional(self, predictions, targets, char_order, word_order, lowercase, whitespace):
+    def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -86,7 +86,7 @@ class TestCHRFScore(TextTester):
         )
 
         self.run_functional_metric_test(
-            predictions,
+            preds,
             targets,
             metric_functional=chrf_score,
             sk_metric=nltk_metric,
@@ -94,7 +94,7 @@ class TestCHRFScore(TextTester):
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
-    def test_chrf_score_differentiability(self, predictions, targets, char_order, word_order, lowercase, whitespace):
+    def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase, whitespace):
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -103,7 +103,7 @@ class TestCHRFScore(TextTester):
         }
 
         self.run_differentiability_test(
-            preds=predictions,
+            preds=preds,
             targets=targets,
             metric_module=CHRFScore,
             metric_functional=chrf_score,
@@ -113,28 +113,28 @@ class TestCHRFScore(TextTester):
 
 
 def test_chrf_empty_functional():
-    prediction = []
-    target = [[]]
-    assert chrf_score(prediction, target) == tensor(0.0)
+    hyp = []
+    ref = [[]]
+    assert chrf_score(hyp, ref) == tensor(0.0)
 
 
 def test_chrf_empty_class():
     chrf = CHRFScore()
-    prediction = []
-    target = [[]]
-    assert chrf(prediction, target) == tensor(0.0)
+    hyp = []
+    ref = [[]]
+    assert chrf(hyp, ref) == tensor(0.0)
 
 
 def test_chrf_return_sentence_level_score_functional():
-    prediction = _inputs_single_sentence_multiple_references.preds
-    target = _inputs_single_sentence_multiple_references.targets
-    _, chrf_sentence_score = chrf_score(prediction, target, return_sentence_level_score=True)
+    hyp = _inputs_single_sentence_multiple_references.preds
+    ref = _inputs_single_sentence_multiple_references.targets
+    _, chrf_sentence_score = chrf_score(hyp, ref, return_sentence_level_score=True)
     isinstance(chrf_sentence_score, Tensor)
 
 
 def test_chrf_return_sentence_level_class():
     chrf = CHRFScore(return_sentence_level_score=True)
-    prediction = _inputs_single_sentence_multiple_references.preds
-    target = _inputs_single_sentence_multiple_references.targets
-    _, chrf_sentence_score = chrf(prediction, target)
+    hyp = _inputs_single_sentence_multiple_references.preds
+    ref = _inputs_single_sentence_multiple_references.targets
+    _, chrf_sentence_score = chrf(hyp, ref)
     isinstance(chrf_sentence_score, Tensor)
