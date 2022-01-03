@@ -132,7 +132,7 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
 
     Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`,
     :math:`c_i` is the average confidence of predictions in bin :math:`i`, and
-    :math: `b_i` is the fraction of data points in bin :math:`i`.
+    :math:`b_i` is the fraction of data points in bin :math:`i`.
 
     .. note:
         L2-norm debiasing is not yet supported.
