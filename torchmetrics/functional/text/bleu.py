@@ -181,8 +181,8 @@ def bleu_score(
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
     warnings.warn(
-        "Input order of targets and preds were changed to predictions firsts and targets \
-                   second in v0.7. Warning will be removed in v0.8"
+        "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
+        " Warning will be removed in v0.8."
     )
     translate_corpus_ = [translate_corpus] if isinstance(translate_corpus, str) else translate_corpus
     reference_corpus_ = [

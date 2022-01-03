@@ -83,8 +83,8 @@ class BLEUScore(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         warnings.warn(
-            "Input order of targets and preds were changed to predictions firsts and targets \
-                    second in v0.7. Warning will be removed in v0.8"
+            "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
+            " Warning will be removed in v0.8."
         )
         self.n_gram = n_gram
         self.smooth = smooth

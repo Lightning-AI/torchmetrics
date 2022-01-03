@@ -323,8 +323,8 @@ def sacre_bleu_score(
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
     warnings.warn(
-        "Input order of targets and preds were changed to predictions firsts and targets \
-                   second in v0.7. Warning will be removed in v0.8"
+        "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
+        " Warning will be removed in v0.8."
     )
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
