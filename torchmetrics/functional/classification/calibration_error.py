@@ -130,9 +130,9 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
     .. math::
         \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}
 
-    Where :math:`p_i` is the top-1 prediction accuracy in bin i, 
+    Where :math:`p_i` is the top-1 prediction accuracy in bin i,
     :math:`c_i` is the average confidence of predictions in bin i, and
-    :math: `b_i` is the fraction of data points in bin i. 
+    :math: `b_i` is the fraction of data points in bin i.
 
     .. note:
         L2-norm debiasing is not yet supported.
