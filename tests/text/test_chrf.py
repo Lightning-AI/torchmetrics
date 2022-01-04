@@ -15,8 +15,8 @@ if _SACREBLEU_AVAILABLE:
 
 
 def sacrebleu_chrf_fn(
-    targets: Sequence[Sequence[str]],
     preds: Sequence[str],
+    targets: Sequence[Sequence[str]],
     char_order: int,
     word_order: int,
     lowercase: bool,
@@ -71,7 +71,7 @@ class TestCHRFScore(TextTester):
             sk_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
+            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
@@ -91,7 +91,7 @@ class TestCHRFScore(TextTester):
             metric_functional=chrf_score,
             sk_metric=nltk_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
+            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase, whitespace):
@@ -108,27 +108,27 @@ class TestCHRFScore(TextTester):
             metric_module=CHRFScore,
             metric_functional=chrf_score,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
+            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
 
 def test_chrf_empty_functional():
     hyp = []
     ref = [[]]
-    assert chrf_score(ref, hyp) == tensor(0.0)
+    assert chrf_score(hyp, ref) == tensor(0.0)
 
 
 def test_chrf_empty_class():
     chrf = CHRFScore()
     hyp = []
     ref = [[]]
-    assert chrf(ref, hyp) == tensor(0.0)
+    assert chrf(hyp, ref) == tensor(0.0)
 
 
 def test_chrf_return_sentence_level_score_functional():
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
-    _, chrf_sentence_score = chrf_score(ref, hyp, return_sentence_level_score=True)
+    _, chrf_sentence_score = chrf_score(hyp, ref, return_sentence_level_score=True)
     isinstance(chrf_sentence_score, Tensor)
 
 
@@ -136,5 +136,5 @@ def test_chrf_return_sentence_level_class():
     chrf = CHRFScore(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
-    _, chrf_sentence_score = chrf(ref, hyp)
+    _, chrf_sentence_score = chrf(hyp, ref)
     isinstance(chrf_sentence_score, Tensor)

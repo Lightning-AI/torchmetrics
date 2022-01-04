@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 # referenced from
 # Library Name: torchtext
 # Authors: torchtext authors and @sluks
@@ -67,7 +69,7 @@ class SacreBLEUScore(BLEUScore):
         >>> translate_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = SacreBLEUScore()
-        >>> metric(reference_corpus, translate_corpus)
+        >>> metric(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -99,6 +101,10 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        warnings.warn(
+            "Input order of targets and preds were changed to predictions firsts and targets \
+                    second in v0.7. Warning will be removed in v0.8"
+        )
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
@@ -110,17 +116,17 @@ class SacreBLEUScore(BLEUScore):
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[str]], translate_corpus: Sequence[str]
+        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
     ) -> None:
         """Compute Precision Scores.
 
         Args:
-            reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
+            reference_corpus: An iterable of iterables of reference corpus
         """
         self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus,
             translate_corpus,
+            reference_corpus,
             self.numerator,
             self.denominator,
             self.trans_len,

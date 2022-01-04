@@ -31,7 +31,7 @@ if _SACREBLEU_AVAILABLE:
 TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
-def sacrebleu_fn(targets: Sequence[Sequence[str]], preds: Sequence[str], tokenize: str, lowercase: bool) -> Tensor:
+def sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool) -> Tensor:
     sacrebleu_fn = BLEU(tokenize=tokenize, lowercase=lowercase)
     # Sacrebleu expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
@@ -61,7 +61,7 @@ class TestSacreBLEUScore(TextTester):
             sk_metric=original_sacrebleu,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
+            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
@@ -74,7 +74,7 @@ class TestSacreBLEUScore(TextTester):
             metric_functional=sacre_bleu_score,
             sk_metric=original_sacrebleu,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
+            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
@@ -86,5 +86,5 @@ class TestSacreBLEUScore(TextTester):
             metric_module=SacreBLEUScore,
             metric_functional=sacre_bleu_score,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
+            input_order=INPUT_ORDER.PREDS_FIRST,
         )
