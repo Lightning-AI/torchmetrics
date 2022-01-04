@@ -38,8 +38,10 @@ def rwth_manual_metric(targets, preds) -> Tensor:
 
     HYPOTHESIS_A = "It is a guide to action which ensures that the military always obeys the commands of the party"
 
+    # If hypothesis A and B are in preds, the average of ans_1 and ans_2 is given
     if len(preds) == 4:
         return (ans_1 + ans_2) / 2
+    # If only hypothesis A or B are given, ans_1 and ans_2 are given, respectively
     if HYPOTHESIS_A in preds:
         return ans_1
     return ans_2
