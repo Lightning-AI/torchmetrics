@@ -69,6 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed MetricCollection kwargs filtering when no `kwargs` are present in update signature ([#707](https://github.com/PyTorchLightning/metrics/pull/707))
+
 
 
 ## [0.6.2] - 2021-12-15
