@@ -206,24 +206,24 @@ def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
     return tokenizer(sentence.rstrip())
 
 
-def _find_shifted_pairs(reference_words: List[str], hypothesis_words: List[str]) -> Iterator[Tuple[int, int, int]]:
+def _find_shifted_pairs(hypothesis_words: List[str], reference_words: List[str]) -> Iterator[Tuple[int, int, int]]:
     """Find matching word sub-sequences in two lists of words. Ignores sub-sequences starting at the same position.
 
     Args:
-        reference_words:
-            A list of a tokenized reference sentence.
         hypothesis_words:
             A list of a tokenized hypothesis sentence.
+        reference_words:
+            A list of a tokenized reference sentence.
 
     Return:
         Yields tuples of `(reference_start, hypothesis_start, length` such that:
         reference_words[reference_start : reference_start + length] ==\
             hypothesis_words[hypothesis_start : hypothesis_start + length]
 
-        reference_start:
-            A list of reference start indices.
         hypothesis_start:
             A list of hypothesis start indices.
+        reference_start:
+            A list of reference start indices.
         length:
             A length of a word span to be considered.
     """
@@ -238,7 +238,7 @@ def _find_shifted_pairs(reference_words: List[str], hypothesis_words: List[str])
                 # Check if hypothesis and reference are equal so far
                 if hypothesis_words[hypothesis_start + length - 1] != reference_words[reference_start + length - 1]:
                     break
-                yield reference_start, hypothesis_start, length
+                yield hypothesis_start, reference_start, length
 
                 # Stop processing once a sequence is consumed.
                 _hyp = len(hypothesis_words) == hypothesis_start + length
@@ -249,10 +249,10 @@ def _find_shifted_pairs(reference_words: List[str], hypothesis_words: List[str])
 
 def _handle_corner_cases_during_shifting(
     alignments: Dict[int, int],
-    reference_errors: List[int],
     hypothesis_errors: List[int],
-    reference_start: int,
+    reference_errors: List[int],
     hypothesis_start: int,
+    reference_start: int,
     length: int,
 ) -> bool:
     """A helper function which returns `True` if any of corner cases has been met. Otherwise, `False` is returned.
@@ -260,14 +260,14 @@ def _handle_corner_cases_during_shifting(
     Args:
         alignments:
             A dictionary mapping aligned positions between a reference and a hypothesis.
-        reference_errors:
-            A list of error positions in a reference.
         hypothesis_errors:
             A list of error positions in a hypothesis.
-        reference_start:
-            A reference start index.
+        reference_errors:
+            A list of error positions in a reference.
         hypothesis_start:
             A hypothesis start index.
+        reference_start:
+            A reference start index.
         length:
             A length of a word span to be considered.
 
@@ -327,8 +327,8 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
 
 
 def _shift_words(
-    reference_words: List[str],
     hypothesis_words: List[str],
+    reference_words: List[str],
     cached_edit_distance: _LevenshteinEditDistance,
     checked_candidates: int,
 ) -> Tuple[int, List[str], int]:
@@ -340,10 +340,10 @@ def _shift_words(
     choices. (The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py)
 
     Args:
-        reference_words:
-            A list of lists of tokenized reference sentences.
         hypothesis_words:
             A list of tokenized hypothesis sentence.
+        reference_words:
+            A list of lists of tokenized reference sentences.
         cached_edit_distance:
             A pre-computed edit distance between a hypothesis and a reference.
         checked_candidates:
@@ -363,9 +363,9 @@ def _shift_words(
 
     best: Optional[Tuple[int, int, int, int, List[str]]] = None
 
-    for reference_start, hypothesis_start, length in _find_shifted_pairs(reference_words, hypothesis_words):
+    for hypothesis_start, reference_start, length in _find_shifted_pairs(hypothesis_words, reference_words):
         if _handle_corner_cases_during_shifting(
-            alignments, reference_errors, hypothesis_errors, reference_start, hypothesis_start, length
+            alignments, hypothesis_errors, reference_errors, hypothesis_start, reference_start, length
         ):
             continue
 
@@ -409,14 +409,14 @@ def _shift_words(
     return best_score, shifted_words, checked_candidates
 
 
-def _translation_edit_rate(reference_words: List[str], hypothesis_words: List[str]) -> Tensor:
-    """Compute translation edit rate between reference and hypothesis sentences.
+def _translation_edit_rate(hypothesis_words: List[str], reference_words: List[str]) -> Tensor:
+    """Compute translation edit rate between hypothesis and reference sentences.
 
     Args:
-        reference_words:
-            A list of lists of tokenized reference sentences.
         hypothesis_words:
             A list of a tokenized hypothesis sentence.
+        reference_words:
+            A list of lists of tokenized reference sentences.
 
     Return:
         A number of required edits to match hypothesis and reference sentences.
@@ -432,7 +432,7 @@ def _translation_edit_rate(reference_words: List[str], hypothesis_words: List[st
     while True:
         # do shifts until they stop reducing the edit distance
         delta, new_input_words, checked_candidates = _shift_words(
-            reference_words, input_words, cached_edit_distance, checked_candidates
+            input_words, reference_words, cached_edit_distance, checked_candidates
         )
         if checked_candidates >= _MAX_SHIFT_CANDIDATES or delta <= 0:
             break
@@ -446,15 +446,15 @@ def _translation_edit_rate(reference_words: List[str], hypothesis_words: List[st
 
 
 def _compute_sentence_statistics(
-    references_words: List[List[str]], hypothesis_words: List[str]
+    hypothesis_words: List[str], references_words: List[List[str]]
 ) -> Tuple[Tensor, Tensor]:
     """Compute sentence TER statistics between hypothesis and provided references.
 
     Args:
-        reference_words:
-            A list of lists of tokenized reference sentences.
         hypothesis_words:
             A list of tokenized hypothesis sentence.
+        reference_words:
+            A list of lists of tokenized reference sentences.
 
     Return:
         best_num_edits:
@@ -496,8 +496,8 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, ref_length: Tensor) ->
 
 
 def _ter_update(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
     tokenizer: _TercomTokenizer,
     total_num_edits: Tensor,
     total_ref_length: Tensor,
@@ -506,10 +506,10 @@ def _ter_update(
     """Update TER statistics.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus.
         hypothesis_corpus:
             An iterable of hypothesis corpus.
+        reference_corpus:
+            An iterable of iterables of reference corpus.
         tokenizer:
         total_num_edits:
             A total number of required edits to match hypothesis and reference sentences.
@@ -530,12 +530,12 @@ def _ter_update(
     """
     reference_corpus, hypothesis_corpus = _validate_inputs(reference_corpus, hypothesis_corpus)
 
-    for (references, hypothesis) in zip(reference_corpus, hypothesis_corpus):
+    for (hypothesis, references) in zip(hypothesis_corpus, reference_corpus):
         references_words_: List[List[str]] = [
             [word for word in _preprocess_sentence(ref, tokenizer).split()] for ref in references
         ]
         hypothesis_words_: List[str] = [word for word in _preprocess_sentence(hypothesis, tokenizer).split()]
-        num_edits, ref_length = _compute_sentence_statistics(references_words_, hypothesis_words_)
+        num_edits, ref_length = _compute_sentence_statistics(hypothesis_words_, references_words_)
         total_num_edits += num_edits
         total_ref_length += ref_length
         if sentence_ter is not None:
@@ -558,8 +558,8 @@ def _ter_compute(total_num_edits: Tensor, total_ref_length: Tensor) -> Tensor:
 
 
 def ter(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
     normalize: bool = False,
     no_punctuation: bool = False,
     lowercase: bool = True,
@@ -572,10 +572,10 @@ def ter(
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus.
         hypothesis_corpus:
             An iterable of hypothesis corpus.
+        reference_corpus:
+            An iterable of iterables of reference corpus.
         normalize:
             An indication whether a general tokenization to be applied.
         no_punctuation:
@@ -594,7 +594,7 @@ def ter(
     Example:
         >>> hypothesis_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> ter(reference_corpus, hypothesis_corpus)
+        >>> ter(hypothesis_corpus, reference_corpus)
         tensor(0.1538)
 
     References:
@@ -617,7 +617,7 @@ def ter(
     sentence_ter: Optional[List[Tensor]] = [] if return_sentence_level_score else None
 
     total_num_edits, total_ref_length, sentence_ter = _ter_update(
-        reference_corpus, hypothesis_corpus, tokenizer, total_num_edits, total_ref_length, sentence_ter
+        hypothesis_corpus, reference_corpus, tokenizer, total_num_edits, total_ref_length, sentence_ter
     )
     ter_score = _ter_compute(total_num_edits, total_ref_length)
 
