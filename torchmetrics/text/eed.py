@@ -54,10 +54,10 @@ class EED(Metric):
 
     Example:
         >>> from torchmetrics.text import EED
-        >>> targets = ["this is the reference", "here is another one"]
         >>> preds = ["this is the prediction", "here is an other sample"]
+        >>> target = ["this is the reference", "here is another one"]
         >>> metric = EED()
-        >>> metric(targets=targets, preds=preds)
+        >>> metric(preds=preds, target=target)
         tensor(0.3078)
 
     References:
@@ -108,18 +108,18 @@ class EED(Metric):
 
     def update(  # type: ignore
         self,
-        targets: Sequence[Union[str, Sequence[str]]],
         preds: Union[str, Sequence[str]],
+        target: Sequence[Union[str, Sequence[str]]],
     ) -> None:
         """Update EED statistics.
 
         Args:
-            targets: An iterable of iterables of reference corpus
             preds: An iterable of hypothesis corpus
+            target: An iterable of iterables of reference corpus
         """
         self.sentence_eed = _eed_update(
-            targets,
             preds,
+            target,
             self.language,
             self.alpha,
             self.rho,

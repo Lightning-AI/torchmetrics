@@ -97,23 +97,23 @@ from typing_extensions import Literal
 from torchmetrics.functional.text.helper import _validate_inputs
 
 
-def _distance_between_words(reference_word: str, hypothesis_word: str) -> int:
+def _distance_between_words(preds_word: str, target_word: str) -> int:
     """Distance measure used for substitutions/identity operation. Code adapted from
     https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
-        reference_word: reference word string
-        hypothesis_word: hypothesis word string
+        preds_word: hypothesis word string
+        target_word: reference word string
 
     Return:
         0 for match, 1 for no match
     """
-    return int(reference_word != hypothesis_word)
+    return int(preds_word != target_word)
 
 
 def _eed_function(
-    ref: str,
     hyp: str,
+    ref: str,
     alpha: float = 2.0,
     rho: float = 0.3,
     deletion: float = 0.2,
@@ -123,10 +123,10 @@ def _eed_function(
     https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
-        ref:
-            reference string
         hyp:
             hypothesis string
+        ref:
+            reference string
         alpha:
             optimal jump penalty, penalty for jumps between characters
         rho:
@@ -153,7 +153,7 @@ def _eed_function(
             if i > 0:
                 next_row[i] = min(
                     next_row[i - 1] + deletion,
-                    row[i - 1] + _distance_between_words(ref[w - 1], hyp[i - 1]),
+                    row[i - 1] + _distance_between_words(hyp[i - 1], ref[w - 1]),
                     row[i] + insertion,
                 )
             else:
@@ -252,27 +252,27 @@ def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
 
 
 def _preprocess_sentences(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
-    hypothesis_corpus: Union[str, Sequence[str]],
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     language: Union[Literal["en"], Literal["ja"]],
-) -> Tuple[Sequence[Union[str, Sequence[str]]], Union[str, Sequence[str]]]:
+) -> Tuple[Union[str, Sequence[str]], Sequence[Union[str, Sequence[str]]]]:
     """Proprocess strings according to language requirements.
 
     Args:
-        reference_corpus: An iterable of iterables of reference corpus.
-        hypothesis_corpus: An iterable of hypothesis corpus.
+        preds: An iterable of hypothesis corpus.
+        target: An iterable of iterables of reference corpus.
         language: Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
 
     Return:
-        Tuple of lists that contain the cleaned strings for reference_corpus and hypothesis_corpus
+        Tuple of lists that contain the cleaned strings for target and preds
 
     Raises:
         ValueError: If a different language than 'en" or 'ja' is used
-        ValueError: If length of reference_corpus not equal to length of hypothesis_corpus
+        ValueError: If length of target not equal to length of preds
         ValueError: If objects in reference and hypothesis corpus are not strings
     """
     # sanity checks
-    reference_corpus, hypothesis_corpus = _validate_inputs(reference_corpus, hypothesis_corpus)
+    target, preds = _validate_inputs(hypothesis_corpus=preds, reference_corpus=target)
 
     # preprocess string
     if language == "en":
@@ -282,15 +282,15 @@ def _preprocess_sentences(
     else:
         raise ValueError(f"Expected argument `language` to either be `en` or `ja` but got {language}")
 
-    reference_corpus = [[preprocess_function(ref) for ref in reference] for reference in reference_corpus]
-    hypothesis_corpus = [preprocess_function(hyp) for hyp in hypothesis_corpus]
+    preds = [preprocess_function(hyp) for hyp in preds]
+    target = [[preprocess_function(ref) for ref in reference] for reference in target]
 
-    return reference_corpus, hypothesis_corpus
+    return preds, target
 
 
 def _compute_sentence_statistics(
-    reference_words: Union[str, Sequence[str]],
-    hypothesis: str,
+    preds_word: str,
+    target_words: Union[str, Sequence[str]],
     alpha: float = 2.0,
     rho: float = 0.3,
     deletion: float = 0.2,
@@ -299,10 +299,10 @@ def _compute_sentence_statistics(
     """Compute scores for EED.
 
     Args:
-        reference_words:
+        target_words:
             An iterable of reference words
-        hypothesis:
-            A sentence
+        preds_word:
+            A hypothesis word
         alpha:
             optimal jump penalty, penalty for jumps between characters
         rho:
@@ -320,8 +320,8 @@ def _compute_sentence_statistics(
     """
     best_score = inf
 
-    for reference in reference_words:
-        score = _eed_function(reference, hypothesis, alpha, rho, deletion, insertion)
+    for reference in target_words:
+        score = _eed_function(preds_word, reference, alpha, rho, deletion, insertion)
         if score < best_score:
             best_score = score
 
@@ -329,8 +329,8 @@ def _compute_sentence_statistics(
 
 
 def _eed_update(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
-    hypothesis_corpus: Union[str, Sequence[str]],
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     language: Literal["en", "ja"] = "en",
     alpha: float = 2.0,
     rho: float = 0.3,
@@ -341,10 +341,10 @@ def _eed_update(
     """Compute scores for EED.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus
-        hypothesis_corpus:
+        preds:
             An iterable of hypothesis corpus
+        target:
+            An iterable of iterables of reference corpus
         language:
             Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
         alpha:
@@ -361,25 +361,25 @@ def _eed_update(
     Return:
         individual sentence scores as a list of Tensors
     """
-    reference_corpus, hypothesis_corpus = _preprocess_sentences(reference_corpus, hypothesis_corpus, language)
+    preds, target = _preprocess_sentences(preds, target, language)
 
     if sentence_eed is None:
         sentence_eed = []
 
-    # return tensor(0.0) if reference_corpus or hypothesis_corpus is empty
-    if 0 in (len(hypothesis_corpus), len(reference_corpus[0])):
+    # return tensor(0.0) if target or preds is empty
+    if 0 in (len(preds), len(target[0])):
         return sentence_eed
 
-    for reference_words, hypothesis in zip(reference_corpus, hypothesis_corpus):
-        score = _compute_sentence_statistics(reference_words, hypothesis, alpha, rho, deletion, insertion)
+    for hypothesis, target_words in zip(preds, target):
+        score = _compute_sentence_statistics(hypothesis, target_words, alpha, rho, deletion, insertion)
         sentence_eed.append(score)
 
     return sentence_eed
 
 
 def eed(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
-    hypothesis_corpus: Union[str, Sequence[str]],
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     language: Literal["en", "ja"] = "en",
     return_sentence_level_score: bool = False,
     alpha: float = 2.0,
@@ -391,10 +391,10 @@ def eed(
     Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus.
-        hypothesis_corpus:
+        preds:
             An iterable of hypothesis corpus.
+        target:
+            An iterable of iterables of reference corpus.
         language:
             Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
         return_sentence_level_score:
@@ -413,9 +413,9 @@ def eed(
 
     Example:
         >>> from torchmetrics.functional import eed
-        >>> reference_corpus = ["this is the reference", "here is another one"]
-        >>> hypothesis_corpus = ["this is the prediction", "here is an other sample"]
-        >>> eed(reference_corpus=reference_corpus, hypothesis_corpus=hypothesis_corpus)
+        >>> preds = ["this is the prediction", "here is an other sample"]
+        >>> target = ["this is the reference", "here is another one"]
+        >>> eed(preds=preds, target=target)
         tensor(0.3078)
 
     References:
@@ -427,7 +427,7 @@ def eed(
         if not isinstance(param, float) or isinstance(param, float) and param < 0:
             raise ValueError(f"Parameter `{param_name}` is expected to be a non-negative float.")
 
-    sentence_level_scores = _eed_update(reference_corpus, hypothesis_corpus, language, alpha, rho, deletion, insertion)
+    sentence_level_scores = _eed_update(preds, target, language, alpha, rho, deletion, insertion)
 
     average = _eed_compute(sentence_level_scores)
 

@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from torch import Tensor, tensor
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import (
     _inputs_multiple_references,
     _inputs_single_reference,
@@ -28,7 +28,7 @@ from torchmetrics.functional.text.eed import eed
 from torchmetrics.text.eed import EED
 
 
-def rwth_manual_metric(targets, preds) -> Tensor:
+def rwth_manual_metric(preds, targets) -> Tensor:
     """The results were obtained w.r.t.
 
     the examples defined in `tests.text.inputs` with the script from https://github.com/rwth-i6/ExtendedEditDistance.
@@ -54,16 +54,15 @@ def rwth_manual_metric(targets, preds) -> Tensor:
 class TestEED(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_eed_class(self, preds, targets):
+    def test_eed_class(self, preds, targets, ddp, dist_sync_on_step):
         rwth_metric = partial(rwth_manual_metric)
         self.run_class_metric_test(
-            ddp=False,
+            ddp=ddp,
             preds=preds,
             targets=targets,
             metric_class=EED,
             sk_metric=rwth_metric,
-            dist_sync_on_step=True,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
+            dist_sync_on_step=dist_sync_on_step,
         )
 
     def test_eed_functional(self, preds, targets):
@@ -73,7 +72,6 @@ class TestEED(TextTester):
             targets,
             metric_functional=eed,
             sk_metric=rwth_metric,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
     def test_eed_differentiability(self, preds, targets):
@@ -82,67 +80,66 @@ class TestEED(TextTester):
             targets=targets,
             metric_module=EED,
             metric_functional=eed,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
 
 # test blank edge cases
 def test_eed_empty_functional():
-    ref = [[]]
     hyp = []
-    assert eed(ref, hyp) == tensor(0.0)
+    ref = [[]]
+    assert eed(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_class():
     eed_metric = EED()
-    ref = [[]]
     hyp = []
-    assert eed_metric(ref, hyp) == tensor(0.0)
+    ref = [[]]
+    assert eed_metric(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_with_non_empty_hyp_functional():
-    ref = [[]]
     hyp = ["python"]
-    assert eed(ref, hyp) == tensor(0.0)
+    ref = [[]]
+    assert eed(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_with_non_empty_hyp_class():
     eed_metric = EED()
-    ref = [[]]
     hyp = ["python"]
-    assert eed_metric(ref, hyp) == tensor(0.0)
+    ref = [[]]
+    assert eed_metric(hyp, ref) == tensor(0.0)
 
 
 def test_eed_return_sentence_level_score_functional():
-    ref = _inputs_single_sentence_multiple_references.targets
     hyp = _inputs_single_sentence_multiple_references.preds
-    _, sentence_eed = eed(ref, hyp, return_sentence_level_score=True)
+    ref = _inputs_single_sentence_multiple_references.targets
+    _, sentence_eed = eed(hyp, ref, return_sentence_level_score=True)
     isinstance(sentence_eed, Tensor)
 
 
 def test_eed_return_sentence_level_class():
     metric = EED(return_sentence_level_score=True)
-    ref = _inputs_single_sentence_multiple_references.targets
     hyp = _inputs_single_sentence_multiple_references.preds
-    _, sentence_eed = metric(ref, hyp)
+    ref = _inputs_single_sentence_multiple_references.targets
+    _, sentence_eed = metric(hyp, ref)
     isinstance(sentence_eed, Tensor)
 
 
 # test parallel vs sequential computations
 def test_parallelisation_eed():
-    references = _inputs_multiple_references.targets[0]
     hypotheses = _inputs_multiple_references.preds[0]
+    references = _inputs_multiple_references.targets[0]
 
     # batch_size == length of data
     metric = EED()
 
-    sequential_score = metric(references, hypotheses)
+    sequential_score = metric(hypotheses, references)
 
     # batch of 1 with compute_on_step == False
     metric = EED(compute_on_step=False)
 
-    for reference, hypothesis in zip(references, hypotheses):
-        metric([reference], [hypothesis])
+    for hypothesis, reference in zip(hypotheses, references):
+        metric([hypothesis], [reference])
 
     parallel_score = metric.compute()
 
