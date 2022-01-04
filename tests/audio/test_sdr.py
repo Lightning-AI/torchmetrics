@@ -25,7 +25,7 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SDR
-from torchmetrics.functional import sdr
+from torchmetrics.functional import signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
 
 seed_all(42)
@@ -93,7 +93,7 @@ class TestSDR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            sdr,
+            signal_distortion_ratio,
             sk_metric,
             metric_args=dict(),
         )
@@ -104,7 +104,7 @@ class TestSDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=SDR,
-            metric_functional=sdr,
+            metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
 
@@ -116,7 +116,7 @@ class TestSDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=SDR,
-            metric_functional=sdr,
+            metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
 
@@ -126,7 +126,7 @@ class TestSDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=SDR,
-            metric_functional=sdr,
+            metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
 
@@ -143,7 +143,7 @@ def test_on_real_audio():
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
     assert torch.allclose(
-        sdr(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
+        signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
         torch.tensor(0.2211),
         rtol=0.0001,
         atol=1e-4,

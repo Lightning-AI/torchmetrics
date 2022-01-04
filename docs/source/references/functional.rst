@@ -24,10 +24,10 @@ pit [func]
     :noindex:
 
 
-sdr [func]
-~~~~~~~~~~
+signal_distortion_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.sdr
+.. autofunction:: torchmetrics.functional.signal_distortion_ratio
     :noindex:
 
 

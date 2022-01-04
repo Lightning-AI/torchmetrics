@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.sdr import sdr
+from torchmetrics.functional.audio.sdr import signal_distortion_ratio
 from torchmetrics.metric import Metric
 
 
@@ -70,10 +70,10 @@ class SDR(Metric):
         tensor(-12.0589)
         >>> # use with pit
         >>> from torchmetrics.audio import PIT
-        >>> from torchmetrics.functional.audio import sdr
+        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> pit = PIT(sdr, 'max')
+        >>> pit = PIT(signal_distortion_ratio, 'max')
         >>> pit(preds, target)
         tensor(-11.6051)
 
@@ -134,7 +134,7 @@ class SDR(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sdr_batch = sdr(preds, target, self.use_cg_iter, self.filter_length, self.zero_mean, self.load_diag)
+        sdr_batch = signal_distortion_ratio(preds, target, self.use_cg_iter, self.filter_length, self.zero_mean, self.load_diag)
 
         self.sum_sdr += sdr_batch.sum()
         self.total += sdr_batch.numel()
