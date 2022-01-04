@@ -249,3 +249,31 @@ def test_collection_check_arg():
 
     with pytest.raises(ValueError, match="Expected input `postfix` to be a string, but got"):
         MetricCollection._check_arg(1, "postfix")
+
+def test_collection_filtering():
+ 
+    class DummyMetric(Metric):
+        def __init__(self):
+            super(DummyMetric, self).__init__()
+
+        def update(self, *args, kwarg):
+            print("Entered DummyMetric")
+
+        def compute(self):
+            return
+
+
+    class MyAccuracy(Metric):
+        def __init__(self):
+            super(MyAccuracy, self).__init__()
+
+        def update(self, preds, target, kwarg2):
+            print("Entered MyAccuracy")
+
+        def compute(self):
+            return
+
+    mc = MetricCollection([Accuracy(), DummyMetric()])
+    mc2 = MetricCollection([MyAccuracy(), DummyMetric()])
+    mc(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg")
+    mc2(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg", kwarg2="kwarg2")
