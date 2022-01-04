@@ -50,8 +50,8 @@ def rwth_manual_metric(targets, preds) -> Tensor:
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
 )
 class TestEED(TextTester):
-    # @pytest.mark.parametrize("ddp", [False, True])
-    # @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_eed_class(self, preds, targets):
         rwth_metric = partial(rwth_manual_metric)
         self.run_class_metric_test(
