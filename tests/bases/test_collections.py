@@ -18,9 +18,9 @@ import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
-from torchmetrics.metric_collections import MetricCollection
 from torchmetrics import Metric
 from torchmetrics.classification import Accuracy
+from torchmetrics.metric_collections import MetricCollection
 
 seed_all(42)
 
