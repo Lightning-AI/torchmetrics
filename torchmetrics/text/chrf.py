@@ -30,10 +30,10 @@ _N_GRAM_LEVELS = ("char", "word")
 _TEXT_LEVELS = ("ref", "hyp", "matching")
 
 _DICT_STATES_NAMES = (
-    "total_ref_char_n_grams",
-    "total_ref_word_n_grams",
     "total_hyp_char_n_grams",
     "total_hyp_word_n_grams",
+    "total_ref_char_n_grams",
+    "total_ref_word_n_grams",
     "total_matching_char_n_grams",
     "total_matching_word_n_grams",
 )
@@ -86,7 +86,7 @@ class CHRFScore(Metric):
         >>> hypothesis_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = CHRFScore()
-        >>> metric(reference_corpus, hypothesis_corpus)
+        >>> metric(hypothesis_corpus, reference_corpus)
         tensor(0.8640)
 
     References:
@@ -143,19 +143,19 @@ class CHRFScore(Metric):
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
     def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[str]], hypothesis_corpus: Sequence[str]
+        self, hypothesis_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
     ) -> None:
         """Compute Precision Scores.
 
         Args:
-            reference_corpus:
-                An iterable of iterables of reference corpus.
             hypothesis_corpus:
                 An iterable of hypothesis corpus.
+            reference_corpus:
+                An iterable of iterables of reference corpus.
         """
         n_grams_dicts_tuple = _chrf_score_update(
-            reference_corpus,
             hypothesis_corpus,
+            reference_corpus,
             *self._convert_states_to_dicts(),
             self.n_char_order,
             self.n_word_order,
