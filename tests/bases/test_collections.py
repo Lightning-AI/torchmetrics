@@ -250,11 +250,11 @@ def test_collection_check_arg():
     with pytest.raises(ValueError, match="Expected input `postfix` to be a string, but got"):
         MetricCollection._check_arg(1, "postfix")
 
+
 def test_collection_filtering():
- 
     class DummyMetric(Metric):
         def __init__(self):
-            super(DummyMetric, self).__init__()
+            super().__init__()
 
         def update(self, *args, kwarg):
             print("Entered DummyMetric")
@@ -262,10 +262,9 @@ def test_collection_filtering():
         def compute(self):
             return
 
-
     class MyAccuracy(Metric):
         def __init__(self):
-            super(MyAccuracy, self).__init__()
+            super().__init__()
 
         def update(self, preds, target, kwarg2):
             print("Entered MyAccuracy")
