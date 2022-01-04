@@ -22,9 +22,10 @@ from torchmetrics.collections import MetricCollection
 
 
 class MetricTracker(nn.ModuleList):
-    """A wrapper class that can help keeping track of a metric over time and implement useful methods. The wrapper
-    implements the standard `update`, `compute`, `reset` methods that just calls corresponding method of the
-    currently tracked metric. However, the following additional methods are provided:
+    """A wrapper class that can help keeping track of a metric or metric collection over time and implement 
+    useful methods. The wrapper implements the standard `update`, `compute`, `reset` methods that just calls 
+    corresponding method of the currently tracked metric. 
+    However, the following additional methods are provided:
 
         -``MetricTracker.n_steps``: number of metrics being tracked
 
@@ -63,28 +64,28 @@ class MetricTracker(nn.ModuleList):
         tensor([0.1120, 0.0880, 0.1260, 0.0800, 0.1020])
         
     Example (multiple metrics using MetricCollection):
-        >>> from torchmetrics import MetricTracker, MetricCollection, MeanSquaredError, R2Score
+        >>> from torchmetrics import MetricTracker, MetricCollection, MeanSquaredError, ExplainedVariance
         >>> _ = torch.manual_seed(42)
-        >>> tracker = MetricTracker(MetricCollection([MeanSquaredError(), R2Score()]), maximize=[False, True])
+        >>> tracker = MetricTracker(MetricCollection([MeanSquaredError(), ExplainedVariance()]), maximize=[False, True])
         >>> for epoch in range(5):
         ...     tracker.increment()
         ...     for batch_idx in range(5):
         ...         preds, target = torch.randn(100), torch.randn(100)
         ...         tracker.update(preds, target)
         ...     print(f"current stats={tracker.compute()}")  # doctest: +NORMALIZE_WHITESPACE
-        current stats={'MeanSquaredError': tensor(1.8218), 'MeanAbsoluteError': tensor(1.0769)}
-        current stats={'MeanSquaredError': tensor(2.0268), 'MeanAbsoluteError': tensor(1.1410)}
-        current stats={'MeanSquaredError': tensor(1.9491), 'MeanAbsoluteError': tensor(1.1089)}
-        current stats={'MeanSquaredError': tensor(1.9800), 'MeanAbsoluteError': tensor(1.1353)}
-        current stats={'MeanSquaredError': tensor(2.2481), 'MeanAbsoluteError': tensor(1.2001)}
+        current stats={'MeanSquaredError': tensor(1.8218), 'ExplainedVariance': tensor(-0.8969)}
+        current stats={'MeanSquaredError': tensor(2.0268), 'ExplainedVariance': tensor(-1.0206)}
+        current stats={'MeanSquaredError': tensor(1.9491), 'ExplainedVariance': tensor(-0.8298)}
+        current stats={'MeanSquaredError': tensor(1.9800), 'ExplainedVariance': tensor(-0.9199)}
+        current stats={'MeanSquaredError': tensor(2.2481), 'ExplainedVariance': tensor(-1.1622)}
         >>> best_res, which_epoch = tracker.best_metric(return_step=True)
         >>> best_res
-        {'MeanSquaredError': 1.8218141794204712, 'MeanAbsoluteError': 1.07692551612854}
+        {'MeanSquaredError': 1.8218144178390503, 'ExplainedVariance': -0.8297995328903198}
         >>> which_epoch
-        {'MeanSquaredError': 0, 'MeanAbsoluteError': 0}
+        {'MeanSquaredError': 0, 'ExplainedVariance': 2}
         >>> tracker.compute_all()  # doctest: +NORMALIZE_WHITESPACE
         {'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481]), 
-        'MeanAbsoluteError': tensor([1.0769, 1.1410, 1.1089, 1.1353, 1.2001])}
+        'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622])}
     """
 
     def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
@@ -133,7 +134,7 @@ class MetricTracker(nn.ModuleList):
         res = [metric.compute() for i, metric in enumerate(self) if i != 0]
         if isinstance(self._base_metric, MetricCollection):
             keys = res[0].keys()
-            return {k:torch.stack([r[k] for r in res], dim=0) for k in keys}
+            return {k : torch.stack([r[k] for r in res], dim=0) for k in keys}
         else:
             return torch.stack(res, dim=0)
 
@@ -160,7 +161,7 @@ class MetricTracker(nn.ModuleList):
             idx, best = fn(self.compute_all(), 0)
             if return_step:
                 return idx.item(), best.item()
-            return best.item()   # doctest: +NORMALIZE_WHITESPACE
+            return best.item()
         else:
             res = self.compute_all()
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
@@ -169,7 +170,7 @@ class MetricTracker(nn.ModuleList):
                 fn = torch.max if maximize[i] else torch.min
                 out = fn(v, 0)
                 idx[k], best[k] = out[0].item(), out[1].item()
-                
+
             if return_step:
                 return idx, best
             return best
