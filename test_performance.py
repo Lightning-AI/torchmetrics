@@ -11,8 +11,8 @@ from torchmetrics.detection.map import MAP
 limit_samples = 10
 # device = "cuda:0"
 device = "cpu"
-# profile_functions = False
-profile_functions = True
+profile_functions = False
+# profile_functions = True
 
 
 class WrappedLineProfiler(line_profiler.LineProfiler):
@@ -36,6 +36,7 @@ profiling_functions = [
     MAP._calculate,
     MAP._evaluate_image,
     MAP._find_best_gt_match,
+    MAP._MAP__calculate_recall_precision_scores,
 ]
 profiler = WrappedLineProfiler(profiling_functions)
 

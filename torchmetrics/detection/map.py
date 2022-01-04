@@ -432,7 +432,7 @@ class MAP(Metric):
                         det_ignore[idx_iou, idx_det] = gt_ignore[m]
                         det_matches[idx_iou, idx_det] = True
                         gt_matches[idx_iou, m] = True
-                        
+
         # set unmatched detections outside of area range to ignore
         det_areas = box_area(det).to(self.device)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
@@ -504,8 +504,8 @@ class MAP(Metric):
         mean_prec = Tensor([-1]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
         return mean_prec
 
-    def _calculate(self, class_ids: List) -> Tuple[Dict, MAPMetricResults, MARMetricResults]:
-        """Calculate the precision, recall and scores for all supplied label classes to calculate mAP/mAR.
+    def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
+        """Calculate the precision and recall for all supplied classes to calculate mAP/mAR.
 
         Args:
             class_ids:
@@ -558,13 +558,18 @@ class MAP(Metric):
                         nb_bbox_areas=nb_bbox_areas,
                     )
 
-        results = {
-            "dimensions": [nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs],
-            "precision": precision,
-            "recall": recall,
-            "scores": scores,
-        }
+        return precision, recall
 
+    def _summarize_results(self, precisions: Tensor, recalls: Tensor) -> Tuple[MAPMetricResults, MARMetricResults]:
+        """Summarizes the precision and recall values to calculate mAP/mAR.
+
+        Args:
+            precisions:
+                Precision values for different thresholds
+            recalls:
+                Recall values for different thresholds
+        """
+        results = dict(precision=precisions, recall=recalls)
         map_metrics = MAPMetricResults()
         map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]
@@ -581,7 +586,7 @@ class MAP(Metric):
         mar_metrics.mar_medium = self._summarize(results, False, area_range="medium", max_dets=last_max_det_thr)
         mar_metrics.mar_large = self._summarize(results, False, area_range="large", max_dets=last_max_det_thr)
 
-        return results, map_metrics, mar_metrics
+        return map_metrics, mar_metrics
 
     @staticmethod
     def __calculate_recall_precision_scores(
@@ -678,18 +683,22 @@ class MAP(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
-        overall, map, mar = self._calculate(self._get_classes())
 
-        map_per_class_values: Tensor = Tensor([-1])
-        mar_max_dets_per_class_values: Tensor = Tensor([-1])
+        classes = self._get_classes()
+        precisions, recalls = self._calculate(classes)
+        map, mar = self._summarize_results(precisions, recalls)
 
         # if class mode is enabled, evaluate metrics per class
+        map_per_class_values: Tensor = Tensor([-1])
+        mar_max_dets_per_class_values: Tensor = Tensor([-1])
         if self.class_metrics:
             map_per_class_list = []
             mar_max_dets_per_class_list = []
 
-            for class_id in self._get_classes():
-                _, cls_map, cls_mar = self._calculate([class_id])
+            for class_idx in range(len(classes)):
+                cls_precisions = precisions[:, :, class_idx].unsqueeze(dim=2)
+                cls_recalls = recalls[:, class_idx].unsqueeze(dim=1)
+                cls_map, cls_mar = self._summarize_results(cls_precisions, cls_recalls)
                 map_per_class_list.append(cls_map.map)
                 mar_max_dets_per_class_list.append(cls_mar[f"mar_{self.max_detection_thresholds[-1]}"])
 
