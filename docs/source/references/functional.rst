@@ -453,10 +453,10 @@ chrf_score [func]
 .. autofunction:: torchmetrics.functional.chrf_score
     :noindex:
 
-eed [func]
+extended_edit_distance [func]
 ~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.eed
+.. autofunction:: torchmetrics.functional.extended_edit_distance
     :noindex:
 
 match_error_rate [func]
