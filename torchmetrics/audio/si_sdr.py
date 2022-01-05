@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.si_sdr import si_sdr
+from torchmetrics.functional import scale_invariant_signal_distortion_ratio
 from torchmetrics.metric import Metric
 
 
@@ -55,8 +55,7 @@ class SI_SDR(Metric):
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_sdr = SI_SDR()
-        >>> si_sdr_val = si_sdr(preds, target)
-        >>> si_sdr_val
+        >>> si_sdr(preds, target)
         tensor(18.4030)
 
     References:
@@ -95,7 +94,7 @@ class SI_SDR(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        si_sdr_batch = si_sdr(preds=preds, target=target, zero_mean=self.zero_mean)
+        si_sdr_batch = scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=self.zero_mean)
 
         self.sum_si_sdr += si_sdr_batch.sum()
         self.total += si_sdr_batch.numel()

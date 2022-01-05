@@ -31,10 +31,10 @@ signal_distortion_ratio [func]
     :noindex:
 
 
-si_sdr [func]
-~~~~~~~~~~~~~
+scale_invariant_signal_distortion_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.si_sdr
+.. autofunction:: torchmetrics.functional.scale_invariant_signal_distortion_ratio
     :noindex:
 
 
