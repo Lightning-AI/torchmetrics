@@ -91,10 +91,10 @@ SDR
 .. autoclass:: torchmetrics.SDR
     :noindex:
 
-SI_SDR
-~~~~~~
+ScaleInvariantSDR
+~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SI_SDR
+.. autoclass:: torchmetrics.ScaleInvariantSDR
     :noindex:
 
 SI_SNR
