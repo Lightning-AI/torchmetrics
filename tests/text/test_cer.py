@@ -2,7 +2,7 @@ from typing import Callable, List, Union
 
 import pytest
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
@@ -41,7 +41,6 @@ class TestCharErrorRate(TextTester):
             metric_class=CharErrorRate,
             sk_metric=compare_fn,
             dist_sync_on_step=dist_sync_on_step,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_cer_functional(self, preds, targets):
@@ -51,7 +50,6 @@ class TestCharErrorRate(TextTester):
             targets,
             metric_functional=char_error_rate,
             sk_metric=compare_fn,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_cer_differentiability(self, preds, targets):
@@ -61,5 +59,4 @@ class TestCharErrorRate(TextTester):
             targets=targets,
             metric_module=CharErrorRate,
             metric_functional=char_error_rate,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
