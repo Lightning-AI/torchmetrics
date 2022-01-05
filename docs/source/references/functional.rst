@@ -477,10 +477,10 @@ squad [func]
 .. autofunction:: torchmetrics.functional.squad
     :noindex:
 
-ter [func]
-~~~~~~~~~~
+translation_edit_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.ter
+.. autofunction:: torchmetrics.functional.translation_edit_rate
     :noindex:
 
 wer [func]
