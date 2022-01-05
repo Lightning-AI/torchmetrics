@@ -16,6 +16,7 @@ from warnings import warn
 import torch
 from torch import Tensor
 
+from torchmetrics.functional import si_sdr
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -80,3 +81,31 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """
     warn("`snr` was renamed to `signal_noise_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
     return signal_noise_ratio(preds, target, zero_mean)
+
+
+def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
+    """Scale-invariant signal-to-noise ratio (SI-SNR).
+
+    Args:
+        preds:
+            shape ``[...,time]``
+        target:
+            shape ``[...,time]``
+
+    Returns:
+        si-snr value of shape [...]
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
+        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> scale_invariant_signal_noise_ratio(preds, target)
+        tensor(15.0918)
+
+    References:
+        [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech
+        Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
+        696-700, doi: 10.1109/ICASSP.2018.8462116.
+    """
+    return si_sdr(target=target, preds=preds, zero_mean=True)

@@ -38,8 +38,8 @@ si_sdr [func]
     :noindex:
 
 
-si_snr [func]
-~~~~~~~~~~~~~
+scale_invariant_signal_noise_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.si_snr
     :noindex:

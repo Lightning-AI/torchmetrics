@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.si_snr import si_snr
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio
 from torchmetrics.metric import Metric
 
 
@@ -91,7 +91,7 @@ class SI_SNR(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        si_snr_batch = si_snr(preds=preds, target=target)
+        si_snr_batch = scale_invariant_signal_noise_ratio(preds=preds, target=target)
 
         self.sum_si_snr += si_snr_batch.sum()
         self.total += si_snr_batch.numel()
