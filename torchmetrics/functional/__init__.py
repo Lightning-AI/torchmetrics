@@ -73,7 +73,7 @@ from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.squad import squad
 from torchmetrics.functional.text.ter import ter
-from torchmetrics.functional.text.wer import wer
+from torchmetrics.functional.text.wer import web, word_error_rate
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
 
@@ -139,7 +139,8 @@ __all__ = [
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "ter",
-    "wer",
+    "web",
+    "word_error_rate",
     "char_error_rate",
     "match_error_rate",
     "word_information_lost",
