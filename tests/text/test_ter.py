@@ -6,7 +6,7 @@ from torch import Tensor, tensor
 
 from tests.text.helpers import INPUT_ORDER, TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
-from torchmetrics.functional.text.ter import ter
+from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.text.ter import TER
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
@@ -96,7 +96,7 @@ class TestTER(TextTester):
         self.run_functional_metric_test(
             preds,
             targets,
-            metric_functional=ter,
+            metric_functional=translation_edit_rate,
             sk_metric=nltk_metric,
             metric_args=metric_args,
             input_order=INPUT_ORDER.PREDS_FIRST,
@@ -114,7 +114,7 @@ class TestTER(TextTester):
             preds=preds,
             targets=targets,
             metric_module=TER,
-            metric_functional=ter,
+            metric_functional=translation_edit_rate,
             metric_args=metric_args,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )
@@ -123,7 +123,7 @@ class TestTER(TextTester):
 def test_ter_empty_functional():
     hyp = []
     ref = [[]]
-    assert ter(hyp, ref) == tensor(0.0)
+    assert translation_edit_rate(hyp, ref) == tensor(0.0)
 
 
 def test_ter_empty_class():
@@ -136,7 +136,7 @@ def test_ter_empty_class():
 def test_ter_empty_with_non_empty_hyp_functional():
     hyp = ["python"]
     ref = [[]]
-    assert ter(hyp, ref) == tensor(0.0)
+    assert translation_edit_rate(hyp, ref) == tensor(0.0)
 
 
 def test_ter_empty_with_non_empty_hyp_class():
@@ -149,7 +149,7 @@ def test_ter_empty_with_non_empty_hyp_class():
 def test_ter_return_sentence_level_score_functional():
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
-    _, sentence_ter = ter(hyp, ref, return_sentence_level_score=True)
+    _, sentence_ter = translation_edit_rate(hyp, ref, return_sentence_level_score=True)
     isinstance(sentence_ter, Tensor)
 
 
