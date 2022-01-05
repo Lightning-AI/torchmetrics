@@ -15,7 +15,7 @@ from warnings import warn
 
 from torch import Tensor
 
-from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio
 
 
 def si_snr(preds: Tensor, target: Tensor) -> Tensor:
