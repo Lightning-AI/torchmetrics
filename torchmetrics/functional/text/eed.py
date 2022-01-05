@@ -296,7 +296,7 @@ def _compute_sentence_statistics(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Tensor:
-    """Compute scores for EED.
+    """Compute scores for ExtendedEditDistance.
 
     Args:
         target_words:
@@ -338,7 +338,7 @@ def _eed_update(
     insertion: float = 1.0,
     sentence_eed: Optional[List[Tensor]] = None,
 ) -> List[Tensor]:
-    """Compute scores for EED.
+    """Compute scores for ExtendedEditDistance.
 
     Args:
         preds:
@@ -377,7 +377,7 @@ def _eed_update(
     return sentence_eed
 
 
-def eed(
+def extended_edit_distance(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
     language: Literal["en", "ja"] = "en",
@@ -387,8 +387,8 @@ def eed(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings. The metric utilises the
-    Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         preds:
@@ -398,7 +398,7 @@ def eed(
         language:
             Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
         return_sentence_level_score:
-            An indication of whether sentence-level EED is to be returned.
+            An indication of whether sentence-level EED score is to be returned.
         alpha:
             optimal jump penalty, penalty for jumps between characters
         rho:
@@ -412,15 +412,15 @@ def eed(
         Extended edit distance score as a tensor
 
     Example:
-        >>> from torchmetrics.functional import eed
+        >>> from torchmetrics.functional import extended_edit_distance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
-        >>> eed(preds=preds, target=target)
+        >>> extended_edit_distance(preds=preds, target=target)
         tensor(0.3078)
 
     References:
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”,
-        submitted to WMT 2019. `EED`_
+        submitted to WMT 2019. `ExtendedEditDistance`_
     """
     # input validation for parameters
     for param_name, param in zip(["alpha", "rho", "deletion", "insertion"], [alpha, rho, deletion, insertion]):

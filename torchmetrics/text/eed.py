@@ -21,15 +21,15 @@ from torchmetrics.functional.text.eed import _eed_compute, _eed_update
 from torchmetrics.metric import Metric
 
 
-class EED(Metric):
-    """Computes extended edit distance score (`EED`_) [1] for strings or list of strings. The metric utilises the
-    Levenshtein distance and extends it by adding an additional jump operation.
+class ExtendedEditDistance(Metric):
+    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         language:
             Language used in sentences. Only supports English (en) and Japanese (ja) for now. Defaults to en
         return_sentence_level_score:
-            An indication of whether sentence-level EED is to be returned
+            An indication of whether sentence-level EED score is to be returned
         alpha:
             optimal jump penalty, penalty for jumps between characters
         rho:
@@ -53,16 +53,16 @@ class EED(Metric):
         Extended edit distance score as a tensor
 
     Example:
-        >>> from torchmetrics.text import EED
+        >>> from torchmetrics.text import ExtendedEditDistance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
-        >>> metric = EED()
+        >>> metric = ExtendedEditDistance()
         >>> metric(preds=preds, target=target)
         tensor(0.3078)
 
     References:
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”, submitted
-        to WMT 2019. `EED`_
+        to WMT 2019. `ExtendedEditDistance`_
     """
 
     sentence_eed: List[Tensor]
@@ -111,7 +111,7 @@ class EED(Metric):
         preds: Union[str, Sequence[str]],
         target: Sequence[Union[str, Sequence[str]]],
     ) -> None:
-        """Update EED statistics.
+        """Update ExtendedEditDistance statistics.
 
         Args:
             preds: An iterable of hypothesis corpus

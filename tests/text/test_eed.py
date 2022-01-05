@@ -24,8 +24,8 @@ from tests.text.inputs import (
     _inputs_single_reference,
     _inputs_single_sentence_multiple_references,
 )
-from torchmetrics.functional.text.eed import eed
-from torchmetrics.text.eed import EED
+from torchmetrics.functional.text.eed import extended_edit_distance
+from torchmetrics.text.eed import ExtendedEditDistance
 
 
 def rwth_manual_metric(preds, targets) -> Tensor:
@@ -51,7 +51,7 @@ def rwth_manual_metric(preds, targets) -> Tensor:
     ["preds", "targets"],
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
 )
-class TestEED(TextTester):
+class TestExtendedEditDistance(TextTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_eed_class(self, preds, targets, ddp, dist_sync_on_step):
@@ -60,7 +60,7 @@ class TestEED(TextTester):
             ddp=ddp,
             preds=preds,
             targets=targets,
-            metric_class=EED,
+            metric_class=ExtendedEditDistance,
             sk_metric=rwth_metric,
             dist_sync_on_step=dist_sync_on_step,
         )
@@ -70,7 +70,7 @@ class TestEED(TextTester):
         self.run_functional_metric_test(
             preds,
             targets,
-            metric_functional=eed,
+            metric_functional=extended_edit_distance,
             sk_metric=rwth_metric,
         )
 
@@ -78,8 +78,8 @@ class TestEED(TextTester):
         self.run_differentiability_test(
             preds=preds,
             targets=targets,
-            metric_module=EED,
-            metric_functional=eed,
+            metric_module=ExtendedEditDistance,
+            metric_functional=extended_edit_distance,
         )
 
 
@@ -87,11 +87,11 @@ class TestEED(TextTester):
 def test_eed_empty_functional():
     hyp = []
     ref = [[]]
-    assert eed(hyp, ref) == tensor(0.0)
+    assert extended_edit_distance(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_class():
-    eed_metric = EED()
+    eed_metric = ExtendedEditDistance()
     hyp = []
     ref = [[]]
     assert eed_metric(hyp, ref) == tensor(0.0)
@@ -100,11 +100,11 @@ def test_eed_empty_class():
 def test_eed_empty_with_non_empty_hyp_functional():
     hyp = ["python"]
     ref = [[]]
-    assert eed(hyp, ref) == tensor(0.0)
+    assert extended_edit_distance(hyp, ref) == tensor(0.0)
 
 
 def test_eed_empty_with_non_empty_hyp_class():
-    eed_metric = EED()
+    eed_metric = ExtendedEditDistance()
     hyp = ["python"]
     ref = [[]]
     assert eed_metric(hyp, ref) == tensor(0.0)
@@ -113,12 +113,12 @@ def test_eed_empty_with_non_empty_hyp_class():
 def test_eed_return_sentence_level_score_functional():
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
-    _, sentence_eed = eed(hyp, ref, return_sentence_level_score=True)
+    _, sentence_eed = extended_edit_distance(hyp, ref, return_sentence_level_score=True)
     isinstance(sentence_eed, Tensor)
 
 
 def test_eed_return_sentence_level_class():
-    metric = EED(return_sentence_level_score=True)
+    metric = ExtendedEditDistance(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
     _, sentence_eed = metric(hyp, ref)
@@ -131,12 +131,12 @@ def test_parallelisation_eed():
     references = _inputs_multiple_references.targets[0]
 
     # batch_size == length of data
-    metric = EED()
+    metric = ExtendedEditDistance()
 
     sequential_score = metric(hypotheses, references)
 
     # batch of 1 with compute_on_step == False
-    metric = EED(compute_on_step=False)
+    metric = ExtendedEditDistance(compute_on_step=False)
 
     for hypothesis, reference in zip(hypotheses, references):
         metric([hypothesis], [reference])

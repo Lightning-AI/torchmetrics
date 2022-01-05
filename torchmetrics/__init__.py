@@ -67,12 +67,12 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
-    EED,
     TER,
     WER,
     BLEUScore,
     CharErrorRate,
     CHRFScore,
+    ExtendedEditDistance,
     MatchErrorRate,
     SacreBLEUScore,
     SQuAD,
@@ -99,8 +99,8 @@ __all__ = [
     "ConfusionMatrix",
     "CosineSimilarity",
     "TweedieDevianceScore",
-    "EED",
     "ExplainedVariance",
+    "ExtendedEditDistance"
     "F1",
     "FBeta",
     "HammingDistance",
