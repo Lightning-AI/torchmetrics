@@ -49,7 +49,7 @@ def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool 
     preds = preds.detach().cpu().numpy()
     mss = []
     for b in range(preds.shape[0]):
-        sdr_val_np, sir_val_np, sar_val_np, perm = bss_eval_sources(target[b], preds[b], compute_permutation)
+        sdr_val_np, _, _, _ = bss_eval_sources(target[b], preds[b], compute_permutation)
         mss.append(sdr_val_np)
     return torch.tensor(mss)
 

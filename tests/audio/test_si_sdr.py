@@ -22,7 +22,7 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import ScaleInvariantSDR
-from torchmetrics.functional import si_sdr
+from torchmetrics.functional import scale_invariant_signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -104,7 +104,7 @@ class TestSISDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=ScaleInvariantSDR,
-            metric_functional=si_sdr,
+            metric_functional=scale_invariant_signal_distortion_ratio,
             metric_args={"zero_mean": zero_mean},
         )
 
@@ -120,7 +120,7 @@ class TestSISDR(MetricTester):
             preds=preds,
             target=target,
             metric_module=ScaleInvariantSDR,
-            metric_functional=si_sdr,
+            metric_functional=scale_invariant_signal_distortion_ratio,
             metric_args={"zero_mean": zero_mean},
         )
 
