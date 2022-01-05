@@ -94,7 +94,7 @@ class TestSISDR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            si_sdr,
+            scale_invariant_signal_distortion_ratio,
             sk_metric,
             metric_args=dict(zero_mean=zero_mean),
         )
