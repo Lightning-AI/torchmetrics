@@ -12,7 +12,7 @@ else:
     compute_measures = Callable
 
 from torchmetrics.functional.text.wer import word_error_rate
-from torchmetrics.text.wer import WER
+from torchmetrics.text.wer import WordErrorRate
 
 
 def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
@@ -36,7 +36,7 @@ class TestWER(TextTester):
             ddp=ddp,
             preds=preds,
             targets=targets,
-            metric_class=WER,
+            metric_class=WordErrorRate,
             sk_metric=_compute_wer_metric_jiwer,
             dist_sync_on_step=dist_sync_on_step,
             input_order=INPUT_ORDER.PREDS_FIRST,
@@ -57,7 +57,7 @@ class TestWER(TextTester):
         self.run_differentiability_test(
             preds=preds,
             targets=targets,
-            metric_module=WER,
+            metric_module=WordErrorRate,
             metric_functional=word_error_rate,
             input_order=INPUT_ORDER.PREDS_FIRST,
         )

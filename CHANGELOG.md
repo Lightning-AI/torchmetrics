@@ -55,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
 
+- Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+
 
 ### Removed
 
