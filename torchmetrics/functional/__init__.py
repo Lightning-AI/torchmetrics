@@ -15,7 +15,7 @@ from torchmetrics.functional.audio.pit import pit, pit_permutate
 from torchmetrics.functional.audio.sdr import sdr
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
-from torchmetrics.functional.audio.snr import snr, signal_noise_ratio, scale_invariant_signal_noise_ratio
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio, snr
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc

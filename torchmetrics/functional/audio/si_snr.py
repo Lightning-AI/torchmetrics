@@ -28,7 +28,9 @@ def si_snr(preds: Tensor, target: Tensor) -> Tensor:
         >>> import torch
         >>> si_snr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
         tensor(15.0918)
-
     """
-    warn("`si_snr` was renamed to `scale_invariant_signal_noise_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    warn(
+        "`si_snr` was renamed to `scale_invariant_signal_noise_ratio` in v0.7 and it will be removed in v0.8",
+        DeprecationWarning,
+    )
     return scale_invariant_signal_noise_ratio(preds, target)

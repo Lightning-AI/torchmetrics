@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.snr import snr, scale_invariant_signal_noise_ratio
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, snr
 from torchmetrics.metric import Metric
 
 

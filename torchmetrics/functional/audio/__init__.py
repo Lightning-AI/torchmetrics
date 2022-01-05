@@ -15,4 +15,4 @@ from torchmetrics.functional.audio.pit import pit, pit_permutate  # noqa: F401
 from torchmetrics.functional.audio.sdr import sdr  # noqa: F401
 from torchmetrics.functional.audio.si_sdr import si_sdr  # noqa: F401
 from torchmetrics.functional.audio.si_snr import si_snr  # noqa: F401
-from torchmetrics.functional.audio.snr import signal_noise_ratio, snr, scale_invariant_signal_noise_ratio  # noqa: F401
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio, snr  # noqa: F401
