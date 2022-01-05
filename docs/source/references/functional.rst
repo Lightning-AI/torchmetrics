@@ -241,10 +241,10 @@ image_gradients [func]
     :noindex:
 
 
-ms_ssim [func]
-~~~~~~~~~~~~~~
+multiscale_ssim [func]
+~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.ms_ssim
+.. autofunction:: torchmetrics.functional.multiscale_ssim
     :noindex:
 
 
