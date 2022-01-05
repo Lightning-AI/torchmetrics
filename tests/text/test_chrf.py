@@ -4,7 +4,7 @@ from typing import Sequence
 import pytest
 from torch import Tensor, tensor
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
@@ -71,7 +71,6 @@ class TestCHRFScore(TextTester):
             sk_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
@@ -91,7 +90,6 @@ class TestCHRFScore(TextTester):
             metric_functional=chrf_score,
             sk_metric=nltk_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase, whitespace):
@@ -108,7 +106,6 @@ class TestCHRFScore(TextTester):
             metric_module=CHRFScore,
             metric_functional=chrf_score,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
 
