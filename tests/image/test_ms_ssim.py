@@ -20,7 +20,7 @@ from pytorch_msssim import msssim
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional.image.ms_ssim import ms_ssim
+from torchmetrics.functional.image.ms_ssim import multiscale_ssim
 from torchmetrics.image.ms_ssim import MultiScaleSSIM
 
 seed_all(42)
@@ -75,7 +75,7 @@ class TestMultiScaleSSIM(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            ms_ssim,
+            multiscale_ssim,
             partial(pytorch_msssim, val_range=1.0, kernel_size=kernel_size, normalize=normalize),
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size), "normalize": normalize},
         )
@@ -89,7 +89,7 @@ class TestMultiScaleSSIM(MetricTester):
         self.run_differentiability_test(
             _preds.type(torch.float64),
             _target.type(torch.float64),
-            metric_functional=ms_ssim,
+            metric_functional=multiscale_ssim,
             metric_module=MultiScaleSSIM,
             metric_args={
                 "data_range": 1.0,

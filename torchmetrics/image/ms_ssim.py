@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.ms_ssim import _ms_ssim_compute
+from torchmetrics.functional.image.ms_ssim import _multiscale_ssim_compute
 from torchmetrics.functional.image.ssim import _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -75,13 +75,7 @@ class MultiScaleSSIM(Metric):
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        betas: Union[Tuple[float, float, float, float, float], Tuple[float, ...]] = (
-            0.0448,
-            0.2856,
-            0.3001,
-            0.2363,
-            0.1333,
-        ),
+        betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Optional[Literal["relu", "simple"]] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -137,7 +131,7 @@ class MultiScaleSSIM(Metric):
         """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        return _ms_ssim_compute(
+        return _multiscale_ssim_compute(
             preds,
             target,
             self.kernel_size,

@@ -41,7 +41,7 @@ def _get_normalized_sim_and_cs(
     return sim, contrast_sensitivity
 
 
-def _ms_ssim_compute(
+def _multiscale_ssim_compute(
     preds: Tensor,
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
@@ -132,7 +132,7 @@ def _ms_ssim_compute(
     return torch.prod(cs_stack[:-1]) * sim_stack[-1]
 
 
-def ms_ssim(
+def multiscale_ssim(
     preds: Tensor,
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
@@ -141,7 +141,7 @@ def ms_ssim(
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-    betas: Tuple[float, float, float, float, float] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+    betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
     """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
@@ -183,10 +183,10 @@ def ms_ssim(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import ms_ssim
+        >>> from torchmetrics.functional import multiscale_ssim
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
-        >>> ms_ssim(preds, target)
+        >>> multiscale_ssim(preds, target)
         tensor(0.9558)
 
     References:
@@ -201,4 +201,4 @@ def ms_ssim(
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
     preds, target = _ssim_update(preds, target)
-    return _ms_ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
+    return _multiscale_ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
