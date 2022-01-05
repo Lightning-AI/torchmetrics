@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `WordInfoLost` and `WordInfoPreserved` ([#630](https://github.com/PyTorchLightning/metrics/pull/630))
   - `SQuAD` ([#623](https://github.com/PyTorchLightning/metrics/pull/623))
   - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
-  - `TER` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
+  - `TranslationEditRate` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
 
 
 - Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
