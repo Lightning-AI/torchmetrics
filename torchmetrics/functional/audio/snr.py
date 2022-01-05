@@ -16,7 +16,7 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.functional import si_sdr
+from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.utilities.checks import _check_same_shape
 
 
