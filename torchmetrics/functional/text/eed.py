@@ -387,8 +387,8 @@ def extended_edit_distance(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
-    The metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
+    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
+    metric utilises the Levenshtein distance and extends it by adding an additional jump operation.
 
     Args:
         preds:
