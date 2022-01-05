@@ -17,7 +17,6 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
-from torchmetrics.utilities.checks import _check_same_shape
 
 
 def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
