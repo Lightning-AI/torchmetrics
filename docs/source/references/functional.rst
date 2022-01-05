@@ -45,10 +45,10 @@ si_snr [func]
     :noindex:
 
 
-snr [func]
-~~~~~~~~~~
+signal_noise_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.snr
+.. autofunction:: torchmetrics.functional.signal_noise_ratio
     :noindex:
 
 

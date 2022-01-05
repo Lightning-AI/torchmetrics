@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from warnings import warn
+
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
+def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     r"""Signal-to-noise ratio (SNR_):
 
     .. math::
@@ -39,11 +41,10 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
         snr value of shape [...]
 
     Example:
-        >>> from torchmetrics.functional.audio import snr
+        >>> from torchmetrics.functional.audio import signal_noise_ratio
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> snr_val = snr(preds, target)
-        >>> snr_val
+        >>> signal_noise_ratio(preds, target)
         tensor(16.1805)
 
     References:
@@ -64,3 +65,18 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     snr_value = 10 * torch.log10(snr_value)
 
     return snr_value
+
+
+def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
+    r"""Signal-to-noise ratio (SNR_)
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.signal_noise_ratio`. Will be removed in v0.8.
+
+    Example:
+        >>> snr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
+        tensor(16.1805)
+
+    """
+    warn("`snr` was renamed to `signal_noise_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    return signal_noise_ratio(preds, target, zero_mean)
