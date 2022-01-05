@@ -87,7 +87,7 @@ def word_error_rate(
     return _wer_compute(errors, total)
 
 
-def web(
+def wer(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
 ) -> Tensor:
@@ -99,8 +99,8 @@ def web(
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> web(predictions=predictions, references=references)
+        >>> wer(predictions=predictions, references=references)
         tensor(0.5000)
     """
-    warn("`web` was renamed to `word_error_rate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    warn("`wer` was renamed to `word_error_rate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
     return word_error_rate(predictions, references)

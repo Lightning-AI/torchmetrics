@@ -69,13 +69,13 @@ from torchmetrics.retrieval import (  # noqa: E402
 from torchmetrics.text import (  # noqa: E402
     TER,
     WER,
-    WordErrorRate,
     BLEUScore,
     CharErrorRate,
     CHRFScore,
     MatchErrorRate,
     SacreBLEUScore,
     SQuAD,
+    WordErrorRate,
     WordInfoLost,
     WordInfoPreserved,
 )

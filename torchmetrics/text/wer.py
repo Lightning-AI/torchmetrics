@@ -125,10 +125,5 @@ class WER(WordErrorRate):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ):
-        warn("`WEB` was renamed to `WordErrorRate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-        super().__init__(
-            compute_on_step,
-                                    dist_sync_on_step,
-                                                              process_group,
-                                                                                             dist_sync_fn
-        )
+        warn("`WER` was renamed to `WordErrorRate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
