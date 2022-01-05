@@ -29,7 +29,9 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     Example:
         >>> si_sdr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
         tensor(18.4030)
-
     """
-    warn("`si_sdr` was renamed to `scale_invariant_signal_distortion_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    warn(
+        "`si_sdr` was renamed to `scale_invariant_signal_distortion_ratio` in v0.7 and it will be removed in v0.8",
+        DeprecationWarning,
+    )
     return scale_invariant_signal_distortion_ratio(preds, target, zero_mean)

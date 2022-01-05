@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.audio.pit import pit, pit_permutate
-from torchmetrics.functional.audio.sdr import signal_distortion_ratio, sdr, scale_invariant_signal_distortion_ratio
+from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, sdr, signal_distortion_ratio
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
 from torchmetrics.functional.audio.snr import snr

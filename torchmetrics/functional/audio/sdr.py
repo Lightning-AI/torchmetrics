@@ -215,12 +215,7 @@ def sdr(
         tensor(-12.0589)
     """
     warn("`sdr` was renamed to `signal_distortion_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return signal_distortion_ratio(preds,
-    target,
-    use_cg_iter,
-    filter_length,
-    zero_mean,
-    load_diag)
+    return signal_distortion_ratio(preds, target, use_cg_iter, filter_length, zero_mean, load_diag)
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
@@ -267,4 +262,3 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
     val = 10 * torch.log10(val)
 
     return val
-
