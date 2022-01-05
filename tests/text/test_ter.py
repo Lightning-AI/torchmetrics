@@ -4,7 +4,7 @@ from typing import Sequence
 import pytest
 from torch import Tensor, tensor
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from torchmetrics.functional.text.ter import ter
 from torchmetrics.text.ter import TER
@@ -75,7 +75,6 @@ class TestTER(TextTester):
             sk_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_ter_score_functional(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
@@ -99,7 +98,6 @@ class TestTER(TextTester):
             metric_functional=ter,
             sk_metric=nltk_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_chrf_score_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
@@ -116,7 +114,6 @@ class TestTER(TextTester):
             metric_module=TER,
             metric_functional=ter,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
 
