@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+from warnings import warn
 
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.audio.snr import ScaleInvariantSNR
 
 
 class SI_SNR(ScaleInvariantSNR):
     """Scale-invariant signal-to-noise ratio (SI-SNR).
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.ScaleInvariantSNR`. Will be removed in v0.8.
 
     Example:
         >>> import torch
@@ -35,12 +39,5 @@ class SI_SNR(ScaleInvariantSNR):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
-
-        self.add_state("sum_si_snr", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        warn("`SI_SDR` was renamed to `ScaleInvariantSNR` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

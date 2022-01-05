@@ -79,7 +79,7 @@ class TestSISNR(MetricTester):
             ddp,
             preds,
             target,
-            SI_SNR,
+            ScaleInvariantSNR,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
         )
