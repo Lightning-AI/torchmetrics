@@ -1,3 +1,4 @@
+setuptools==60.1.0 # for pesq
 coverage>5.2
 codecov>=2.1
 pytest>=6.0
@@ -23,7 +24,6 @@ scikit-image>0.17.1
 -r audio.txt
 
 # audio
-setuptools<=60.1.0 # for pesq
 pypesq
 mir_eval>=0.6
 #pesq @ https://github.com/ludlows/python-pesq/archive/refs/heads/master.zip
