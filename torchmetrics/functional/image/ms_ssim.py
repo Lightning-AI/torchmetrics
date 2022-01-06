@@ -127,8 +127,8 @@ def _multiscale_ssim_compute(
         sim_stack = (sim_stack + 1) / 2
         cs_stack = (cs_stack + 1) / 2
 
-    sim_stack = sim_stack ** torch.tensor(betas)
-    cs_stack = cs_stack ** torch.tensor(betas)
+    sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
+    cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
     return torch.prod(cs_stack[:-1]) * sim_stack[-1]
 
 

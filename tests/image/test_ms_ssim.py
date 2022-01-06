@@ -19,13 +19,14 @@ import torch
 from pytorch_msssim import msssim
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.functional.image.ms_ssim import multiscale_ssim
 from torchmetrics.image.ms_ssim import MultiScaleSSIM
 
 seed_all(42)
 
 Input = namedtuple("Input", ["preds", "target"])
+BATCH_SIZE = 1
 
 _inputs = []
 for size, coef in [(128, 0.9), (128, 0.7)]:
