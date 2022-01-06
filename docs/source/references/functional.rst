@@ -454,7 +454,7 @@ chrf_score [func]
     :noindex:
 
 extended_edit_distance [func]
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.extended_edit_distance
     :noindex:
