@@ -66,7 +66,7 @@ jobs:
       displayName: 'Sanity check'
 
     - bash: |
-        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=$(Build.StagingDirectory)/test-results.xml --durations=50
+        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=$(Build.StagingDirectory)/test-results.xml --durations=2
       displayName: 'Testing'
 
     - bash: |
