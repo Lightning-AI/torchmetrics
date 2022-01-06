@@ -77,8 +77,8 @@ from torchmetrics.text import (  # noqa: E402
     MatchErrorRate,
     SacreBLEUScore,
     SQuAD,
-    WordErrorRate,
     TranslationEditRate,
+    WordErrorRate,
     WordInfoLost,
     WordInfoPreserved,
 )
