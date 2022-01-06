@@ -394,7 +394,7 @@ class Metric(Module, ABC):
         """Override this method to compute the final metric value from state variables synchronized across the
         distributed backend."""
 
-    def reset(self) -> None:
+    def reset(self, exclude_states: Optional[Sequence['str']] = None) -> None:
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
@@ -403,6 +403,8 @@ class Metric(Module, ABC):
             self._computed = None
 
         for attr, default in self._defaults.items():
+            if exclude_states is not None and attr in exclude_states:
+                continue
             current_val = getattr(self, attr)
             if isinstance(default, Tensor):
                 setattr(self, attr, default.detach().clone().to(current_val.device))

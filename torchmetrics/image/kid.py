@@ -110,6 +110,9 @@ class KID(Metric):
             Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
         coef:
             Bias term in the polynomial kernel.
+        reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
+            change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if 
+            your dataset does not change.
         compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
@@ -174,6 +177,7 @@ class KID(Metric):
         degree: int = 3,
         gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
+        reset_real_features: bool = True,
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -235,6 +239,13 @@ class KID(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
+        if reset_real_features:
+            exclude_states = ()
+        else:
+            exclude_states = ('real_features',)
+
+        self._reset_excluded_states = exclude_states
+
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
 
@@ -276,3 +287,6 @@ class KID(Metric):
             kid_scores_.append(o)
         kid_scores = torch.stack(kid_scores_)
         return kid_scores.mean(), kid_scores.std(unbiased=False)
+
+    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
+        super().reset(set([*self._reset_excluded_states, *exclude_states]))
