@@ -8,9 +8,12 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
 
+env:
+  is_release: ${{ startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/tags/') }}
+  is_main_branch: ${{ github.ref == 'refs/heads/main' }}
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ ! (fromJSON(env.is_main_branch) || fromJSON(env.is_release)) }}
 
 jobs:
   pytest:
