@@ -64,18 +64,18 @@ def _prepare_n_grams_dicts(
         Dictionaries with default zero values for total reference, hypothesis and matching character and word
         n-grams.
     """
-    total_ref_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
-    total_ref_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
-    total_hyp_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
-    total_hyp_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
+    total_preds_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
+    total_preds_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
+    total_target_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
+    total_target_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
     total_matching_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
     total_matching_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
 
     return (
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
     )

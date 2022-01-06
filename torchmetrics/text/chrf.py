@@ -27,7 +27,7 @@ from torchmetrics import Metric
 from torchmetrics.functional.text.chrf import _chrf_score_compute, _chrf_score_update, _prepare_n_grams_dicts
 
 _N_GRAM_LEVELS = ("char", "word")
-_TEXT_LEVELS = ("ref", "hyp", "matching")
+_TEXT_LEVELS = ("preds", "target", "matching")
 
 _DICT_STATES_NAMES = (
     "total_preds_char_n_grams",

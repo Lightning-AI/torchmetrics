@@ -80,8 +80,8 @@ class WordInfoPreserved(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         self.add_state("errors", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("reference_total", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("prediction_total", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing word Information Preserved scores.
