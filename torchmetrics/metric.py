@@ -394,7 +394,7 @@ class Metric(Module, ABC):
         """Override this method to compute the final metric value from state variables synchronized across the
         distributed backend."""
 
-    def reset(self, exclude_states: Optional[Sequence['str']] = None) -> None:
+    def reset(self, exclude_states: Optional[Sequence["str"]] = None) -> None:
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None

@@ -160,9 +160,9 @@ class FID(Metric):
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
-            change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if 
+            change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
-        compute_on_step: 
+        compute_on_step:
             Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
@@ -255,10 +255,9 @@ class FID(Metric):
         if reset_real_features:
             exclude_states = ()
         else:
-            exclude_states = ('real_features',)
+            exclude_states = ("real_features",)
 
         self._reset_excluded_states = exclude_states
-
 
     def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
@@ -296,4 +295,4 @@ class FID(Metric):
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
 
     def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
-        super().reset(set([*self._reset_excluded_states, *exclude_states]))
+        super().reset({*self._reset_excluded_states, *exclude_states})
