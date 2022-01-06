@@ -25,7 +25,7 @@ from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics.classification.matthews_corrcoef import MatthewsCorrcoef
+from torchmetrics.classification.matthews_corrcoef import MatthewsCorrCoef
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 
 seed_all(42)
@@ -108,7 +108,7 @@ class TestMatthewsCorrCoef(MetricTester):
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=MatthewsCorrcoef,
+            metric_class=MatthewsCorrCoef,
             sk_metric=sk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args={
@@ -133,7 +133,7 @@ class TestMatthewsCorrCoef(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=MatthewsCorrcoef,
+            metric_module=MatthewsCorrCoef,
             metric_functional=matthews_corrcoef,
             metric_args={
                 "num_classes": num_classes,

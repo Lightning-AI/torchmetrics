@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `WordInfoLost` and `WordInfoPreserved` ([#630](https://github.com/PyTorchLightning/metrics/pull/630))
   - `SQuAD` ([#623](https://github.com/PyTorchLightning/metrics/pull/623))
   - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
-  - `TER` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
+  - `TranslationEditRate` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
 
 - Added `MultiScaleSSIM` into image metrics ([#679](https://github.com/PyTorchLightning/metrics/pull/679))
 
@@ -56,6 +56,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
+
+- Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+
+
+- Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
+  * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
+  * `PearsonCorrcoef` -> `PearsonCorrCoef`
+  * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
 
 
 ### Removed

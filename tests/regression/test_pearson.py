@@ -20,7 +20,7 @@ from scipy.stats import pearsonr
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
-from torchmetrics.regression.pearson import PearsonCorrcoef
+from torchmetrics.regression.pearson import PearsonCorrCoef
 
 seed_all(42)
 
@@ -59,7 +59,7 @@ class TestPearsonCorrcoef(MetricTester):
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=PearsonCorrcoef,
+            metric_class=PearsonCorrCoef,
             sk_metric=_sk_pearsonr,
             dist_sync_on_step=False,
         )
@@ -71,21 +71,21 @@ class TestPearsonCorrcoef(MetricTester):
 
     def test_pearson_corrcoef_differentiability(self, preds, target):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=PearsonCorrcoef, metric_functional=pearson_corrcoef
+            preds=preds, target=target, metric_module=PearsonCorrCoef, metric_functional=pearson_corrcoef
         )
 
     # Pearson half + cpu does not work due to missing support in torch.sqrt
     @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
-        self.run_precision_test_cpu(preds, target, PearsonCorrcoef, pearson_corrcoef)
+        self.run_precision_test_cpu(preds, target, PearsonCorrCoef, pearson_corrcoef)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pearson_corrcoef_half_gpu(self, preds, target):
-        self.run_precision_test_gpu(preds, target, PearsonCorrcoef, pearson_corrcoef)
+        self.run_precision_test_gpu(preds, target, PearsonCorrCoef, pearson_corrcoef)
 
 
 def test_error_on_different_shape():
-    metric = PearsonCorrcoef()
+    metric = PearsonCorrCoef()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 

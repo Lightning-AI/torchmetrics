@@ -557,7 +557,7 @@ def _ter_compute(total_num_edits: Tensor, total_ref_length: Tensor) -> Tensor:
     return _compute_ter_score_from_statistics(total_num_edits, total_ref_length)
 
 
-def ter(
+def translation_edit_rate(
     hypothesis_corpus: Union[str, Sequence[str]],
     reference_corpus: Sequence[Union[str, Sequence[str]]],
     normalize: bool = False,
@@ -594,7 +594,7 @@ def ter(
     Example:
         >>> hypothesis_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> ter(hypothesis_corpus, reference_corpus)
+        >>> translation_edit_rate(hypothesis_corpus, reference_corpus)
         tensor(0.1538)
 
     References:

@@ -4,10 +4,10 @@ from typing import Sequence
 import pytest
 from torch import Tensor, tensor
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
-from torchmetrics.functional.text.ter import ter
-from torchmetrics.text.ter import TER
+from torchmetrics.functional.text.ter import translation_edit_rate
+from torchmetrics.text.ter import TranslationEditRate
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
 if _SACREBLEU_AVAILABLE:
@@ -71,11 +71,10 @@ class TestTER(TextTester):
             ddp=ddp,
             preds=preds,
             targets=targets,
-            metric_class=TER,
+            metric_class=TranslationEditRate,
             sk_metric=nltk_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_ter_score_functional(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
@@ -96,10 +95,9 @@ class TestTER(TextTester):
         self.run_functional_metric_test(
             preds,
             targets,
-            metric_functional=ter,
+            metric_functional=translation_edit_rate,
             sk_metric=nltk_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_chrf_score_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
@@ -113,21 +111,20 @@ class TestTER(TextTester):
         self.run_differentiability_test(
             preds=preds,
             targets=targets,
-            metric_module=TER,
-            metric_functional=ter,
+            metric_module=TranslationEditRate,
+            metric_functional=translation_edit_rate,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
 
 def test_ter_empty_functional():
     hyp = []
     ref = [[]]
-    assert ter(hyp, ref) == tensor(0.0)
+    assert translation_edit_rate(hyp, ref) == tensor(0.0)
 
 
 def test_ter_empty_class():
-    ter_metric = TER()
+    ter_metric = TranslationEditRate()
     hyp = []
     ref = [[]]
     assert ter_metric(hyp, ref) == tensor(0.0)
@@ -136,11 +133,11 @@ def test_ter_empty_class():
 def test_ter_empty_with_non_empty_hyp_functional():
     hyp = ["python"]
     ref = [[]]
-    assert ter(hyp, ref) == tensor(0.0)
+    assert translation_edit_rate(hyp, ref) == tensor(0.0)
 
 
 def test_ter_empty_with_non_empty_hyp_class():
-    ter_metric = TER()
+    ter_metric = TranslationEditRate()
     hyp = ["python"]
     ref = [[]]
     assert ter_metric(hyp, ref) == tensor(0.0)
@@ -149,12 +146,12 @@ def test_ter_empty_with_non_empty_hyp_class():
 def test_ter_return_sentence_level_score_functional():
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
-    _, sentence_ter = ter(hyp, ref, return_sentence_level_score=True)
+    _, sentence_ter = translation_edit_rate(hyp, ref, return_sentence_level_score=True)
     isinstance(sentence_ter, Tensor)
 
 
 def test_ter_return_sentence_level_class():
-    ter_metric = TER(return_sentence_level_score=True)
+    ter_metric = TranslationEditRate(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
     ref = _inputs_single_sentence_multiple_references.targets
     _, sentence_ter = ter_metric(hyp, ref)

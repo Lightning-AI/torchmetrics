@@ -18,7 +18,7 @@ import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
 from torch import tensor
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.text.bleu import BLEUScore
@@ -67,7 +67,6 @@ class TestBLEUScore(TextTester):
             sk_metric=compute_bleu_metric_nltk,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
@@ -80,7 +79,6 @@ class TestBLEUScore(TextTester):
             metric_functional=bleu_score,
             sk_metric=compute_bleu_metric_nltk,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_bleu_score_differentiability(self, preds, targets, weights, n_gram, smooth_func, smooth):
@@ -92,7 +90,6 @@ class TestBLEUScore(TextTester):
             metric_module=BLEUScore,
             metric_functional=bleu_score,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
 
