@@ -205,7 +205,7 @@ def test_score(preds, refs):
     original_score = _parse_original_bert_score(original_score)
 
     Scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
-    Scorer.update(predictions=preds, references=refs)
+    Scorer.update(preds=preds, target=refs)
     metrics_score = Scorer.compute()
 
     for metric in _METRICS:
@@ -223,7 +223,7 @@ def test_score_with_idf(preds, refs):
     original_score = _parse_original_bert_score(original_score)
 
     Scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=True, batch_size=3)
-    Scorer.update(predictions=preds, references=refs)
+    Scorer.update(preds=preds, target=refs)
     metrics_score = Scorer.compute()
 
     for metric in _METRICS:
@@ -241,7 +241,7 @@ def test_score_all_layers(preds, refs):
     original_score = _parse_original_bert_score(original_score)
 
     Scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3)
-    Scorer.update(predictions=preds, references=refs)
+    Scorer.update(preds=preds, target=refs)
     metrics_score = Scorer.compute()
 
     for metric in _METRICS:
@@ -259,7 +259,7 @@ def test_score_all_layers_with_idf(preds, refs):
     original_score = _parse_original_bert_score(original_score)
 
     Scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
-    Scorer.update(predictions=preds, references=refs)
+    Scorer.update(preds=preds, target=refs)
     metrics_score = Scorer.compute()
 
     for metric in _METRICS:
@@ -280,7 +280,7 @@ def test_accumulation(preds, refs):
 
     Scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
     for p, r in zip(preds, refs):
-        Scorer.update(predictions=p, references=r)
+        Scorer.update(preds=p, target=r)
     metrics_score = Scorer.compute()
 
     for metric in _METRICS:

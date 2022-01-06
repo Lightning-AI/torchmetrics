@@ -46,9 +46,9 @@ class BERTScore(Metric):
     This implemenation follows the original implementation from `BERT_score`_.
 
     Args:
-        predictions:
+        preds:
             An iterable of predicted sentences.
-        references:
+        target:
             An iterable of target sentences.
         model_type:
             A name or a model path used to load `transformers` pretrained model.
@@ -111,11 +111,11 @@ class BERTScore(Metric):
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
 
     Example:
-        >>> from torchmetrics.text.bert import BERTScore
-        >>> predictions = ["hello there", "general kenobi"]
-        >>> references = ["hello there", "master kenobi"]
+        >>> from torchmetrics import BERTScore
+        >>> preds = ["hello there", "general kenobi"]
+        >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore.update(predictions=predictions,references=references)
+        >>> bertscore.update(preds=preds,target=target)
         >>> bertscore.compute()  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
@@ -170,8 +170,8 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
-        self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
-        self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.preds: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.target: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -192,7 +192,7 @@ class BERTScore(Metric):
             self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
             self.user_tokenizer = False
 
-    def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
+    def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 
@@ -202,26 +202,26 @@ class BERTScore(Metric):
             references:
                 An iterable of predicted sentences.
         """
-        predictions_dict = _preprocess_text(
-            predictions,
+        preds_dict = _preprocess_text(
+            preds,
             self.tokenizer,
             self.max_length,
             truncation=False,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        references_dict = _preprocess_text(
-            references,
+        target_dict = _preprocess_text(
+            target,
             self.tokenizer,
             self.max_length,
             truncation=False,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        self.predictions["input_ids"].append(predictions_dict["input_ids"])
-        self.predictions["attention_mask"].append(predictions_dict["attention_mask"])
-        self.references["input_ids"].append(references_dict["input_ids"])
-        self.references["attention_mask"].append(references_dict["attention_mask"])
+        self.preds["input_ids"].append(preds_dict["input_ids"])
+        self.preds["attention_mask"].append(preds_dict["attention_mask"])
+        self.target["input_ids"].append(target_dict["input_ids"])
+        self.target["attention_mask"].append(target_dict["attention_mask"])
 
     def compute(self) -> Dict[str, Union[List[float], str]]:
         """Calculate BERT scores.
@@ -230,8 +230,8 @@ class BERTScore(Metric):
             Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
         """
         return bert_score(
-            predictions=_concatenate(self.predictions),
-            references=_concatenate(self.references),
+            preds=_concatenate(self.preds),
+            test_average_precisiont=_concatenate(self.target),
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,

@@ -350,24 +350,24 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
 
 
 def _get_precision_recall_f1(
-    pred_embeddings: Tensor, ref_embeddings: Tensor, pred_idf_scale: Tensor, ref_idf_scale: Tensor
+    preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
-        pred_embeddings: Embeddings of candidate sentenecs.
-        ref_embeddings: Embeddings of reference sentences.
-        pred_idf_scale: An IDF scale factor for candidate sentences.
-        ref_idf_scale: An IDF scale factor for reference sentences.
+        preds_embeddings: Embeddings of candidate sentenecs.
+        target_embeddings: Embeddings of reference sentences.
+        preds_idf_scale: An IDF scale factor for candidate sentences.
+        target_idf_scale: An IDF scale factor for reference sentences.
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
     """
     # Dimensions: b = batch_size, l = num_layers, p = predictions_seq_len, r = references_seq_len, d = bert_dim
-    cos_sim = torch.einsum("blpd, blrd -> blpr", pred_embeddings, ref_embeddings)
+    cos_sim = torch.einsum("blpd, blrd -> blpr", preds_embeddings, target_embeddings)
     # Final metrics shape = (batch_size * num_layers | batch_size)
-    precision = _get_scaled_precision_or_recall(cos_sim, "precision", pred_idf_scale)
-    recall = _get_scaled_precision_or_recall(cos_sim, "recall", ref_idf_scale)
+    precision = _get_scaled_precision_or_recall(cos_sim, "precision", preds_idf_scale)
+    recall = _get_scaled_precision_or_recall(cos_sim, "recall", target_idf_scale)
 
     f1_score = 2 * precision * recall / (precision + recall)
     f1_score = f1_score.masked_fill(torch.isnan(f1_score), 0.0)
@@ -450,8 +450,8 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    predictions: Union[List[str], Dict[str, Tensor]],
-    references: Union[List[str], Dict[str, Tensor]],
+    preds: Union[List[str], Dict[str, Tensor]],
+    target: Union[List[str], Dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -478,10 +478,10 @@ def bert_score(
     This implemenation follows the original implementation from `BERT_score`_
 
     Args:
-        predictions:
+        preds:
             Either an iterable of predicted sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
             `attention_mask` `torch.Tensor`.
-        references:
+        target:
             Either an iterable of target sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
             `attention_mask` `torch.Tensor`.
         model_name_or_path:
@@ -536,7 +536,7 @@ def bert_score(
 
     Raises:
         ValueError:
-            If `len(predictions) != len(references)`.
+            If `len(preds) != len(target)`.
         ValueError:
             If `tqdm` package is required and not installed.
         ValueError:
@@ -548,14 +548,14 @@ def bert_score(
 
     Example:
         >>> from torchmetrics.functional.text.bert import bert_score
-        >>> predictions = ["hello there", "general kenobi"]
-        >>> references = ["hello there", "master kenobi"]
-        >>> bert_score(predictions=predictions, references=references, lang="en")  # doctest: +SKIP
+        >>> preds = ["hello there", "general kenobi"]
+        >>> target = ["hello there", "master kenobi"]
+        >>> bert_score(preds=preds, target=target, lang="en")  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
     """
-    if len(predictions) != len(references):
+    if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
 
     if verbose and (not _TQDM_AVAILABLE):
@@ -585,12 +585,12 @@ def bert_score(
     except AttributeError:
         warnings.warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
-    _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (predictions, references))
+    _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(
-        isinstance(text, list) and len(text) > 0 and isinstance(text[0], str) for text in (predictions, references)
+        isinstance(text, list) and len(text) > 0 and isinstance(text[0], str) for text in (preds, target)
     )
     _are_valid_tensors = all(
-        isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (predictions, references)
+        isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (preds, target)
     )
     if _are_empty_lists:
         warnings.warn("Predictions and references are empty.")
@@ -608,32 +608,32 @@ def bert_score(
 
     # We ignore mypy typing below as the proper typing is ensured by conditions above, only mypy cannot infer that.
     if _are_valid_lists:
-        ref_dataset = TextDataset(references, tokenizer, max_length, idf=idf)  # type: ignore
-        pred_dataset = TextDataset(
-            predictions,  # type: ignore
+        target_dataset = TextDataset(target, tokenizer, max_length, idf=idf)  # type: ignore
+        preds_dataset = TextDataset(
+            preds,  # type: ignore
             tokenizer,
             max_length,
             idf=idf,
-            tokens_idf=ref_dataset.tokens_idf,
+            tokens_idf=target_dataset.tokens_idf,
         )
     elif _are_valid_tensors:
-        ref_dataset = TokenizedDataset(**references, idf=idf)  # type: ignore
-        pred_dataset = TokenizedDataset(**predictions, idf=idf, tokens_idf=ref_dataset.tokens_idf)  # type: ignore
+        target_dataset = TokenizedDataset(**target, idf=idf)  # type: ignore
+        preds_dataset = TokenizedDataset(**preds, idf=idf, tokens_idf=target_dataset.tokens_idf)  # type: ignore
     else:
         raise ValueError("Invalid input provided.")
 
-    ref_loader = DataLoader(ref_dataset, batch_size=batch_size, num_workers=num_threads)
-    pred_loader = DataLoader(pred_dataset, batch_size=batch_size, num_workers=num_threads)
+    target_loader = DataLoader(target_dataset, batch_size=batch_size, num_workers=num_threads)
+    preds_loader = DataLoader(preds_dataset, batch_size=batch_size, num_workers=num_threads)
 
-    ref_embeddings, ref_idf_scale = _get_embeddings_and_idf_scale(
-        ref_loader, ref_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn
+    target_embeddings, target_idf_scale = _get_embeddings_and_idf_scale(
+        target_loader, target_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn
     )
-    pred_embeddings, pred_idf_scale = _get_embeddings_and_idf_scale(
-        pred_loader, pred_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn
+    preds_embeddings, preds_idf_scale = _get_embeddings_and_idf_scale(
+        preds_loader, preds_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn
     )
 
     precision, recall, f1_score = _get_precision_recall_f1(
-        pred_embeddings, ref_embeddings, pred_idf_scale, ref_idf_scale
+        preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
 
     if baseline is not None:
