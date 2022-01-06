@@ -84,7 +84,7 @@ class WordInfoLost(Metric):
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
-        """Store references/predictions for computing Word Information Lost scores.
+        """Store predictions/references for computing Word Information Lost scores.
 
         Args:
             preds: Transcription(s) to score as a string or list of strings

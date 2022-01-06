@@ -115,8 +115,7 @@ class BERTScore(Metric):
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore.update(preds=preds,target=target)
-        >>> bertscore.compute()  # doctest: +SKIP
+        >>> bertscore(preds=preds,target=target)  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
@@ -197,9 +196,9 @@ class BERTScore(Metric):
         tokenized form to ensure the DDP mode working.
 
         Args:
-            predictions:
+            preds:
                 An iterable of predicted sentences.
-            references:
+            target:
                 An iterable of predicted sentences.
         """
         preds_dict = _preprocess_text(
