@@ -85,22 +85,18 @@ jobs:
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision
-        pip install --requirement requirements.txt
-        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed
-        echo "pip list"
-        pip list
-        echo "conda list"
-        python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
-        echo "from pesq import pesq"
+        pip install --requirement requirements.txt --quiet
+        pip install --requirement requirements/test.txt --quiet
         pip uninstall pesq -y
         pip install pesq
-        python -c "from pesq import pesq"
+        pip list
+        python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
       shell: bash -l {0}
 
     - name: Testing
       run: |
         # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics tests -v --durations=2 --junitxml=$PYTEST_ARTEFACT
+        python -m pytest torchmetrics tests -v --durations=50 --junitxml=$PYTEST_ARTEFACT
       shell: bash -l {0}
 
     - name: Upload pytest test results
