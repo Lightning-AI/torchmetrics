@@ -314,10 +314,10 @@ KLDivergence
 .. autoclass:: torchmetrics.KLDivergence
     :noindex:
 
-MatthewsCorrcoef
+MatthewsCorrCoef
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.MatthewsCorrcoef
+.. autoclass:: torchmetrics.MatthewsCorrCoef
     :noindex:
 
 Precision
@@ -460,10 +460,10 @@ MeanSquaredLogError
     :noindex:
 
 
-PearsonCorrcoef
+PearsonCorrCoef
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PearsonCorrcoef
+.. autoclass:: torchmetrics.PearsonCorrCoef
     :noindex:
 
 
@@ -474,10 +474,10 @@ R2Score
     :noindex:
 
 
-SpearmanCorrcoef
+SpearmanCorrCoef
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SpearmanCorrcoef
+.. autoclass:: torchmetrics.SpearmanCorrCoef
     :noindex:
 
 SymmetricMeanAbsolutePercentageError
@@ -658,10 +658,10 @@ SQuAD
 .. autoclass:: torchmetrics.SQuAD
     :noindex:
 
-TER
-~~~
+TranslationEditRate
+~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.TER
+.. autoclass:: torchmetrics.TranslationEditRate
     :noindex:
 
 WER

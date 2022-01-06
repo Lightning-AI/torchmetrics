@@ -27,7 +27,7 @@ from torchmetrics.classification.hinge import Hinge  # noqa: F401
 from torchmetrics.classification.iou import IoU  # noqa: F401
 from torchmetrics.classification.jaccard import JaccardIndex  # noqa: F401
 from torchmetrics.classification.kl_divergence import KLDivergence  # noqa: F401
-from torchmetrics.classification.matthews_corrcoef import MatthewsCorrcoef  # noqa: F401
+from torchmetrics.classification.matthews_corrcoef import MatthewsCorrCoef, MatthewsCorrcoef  # noqa: F401
 from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.roc import ROC  # noqa: F401
