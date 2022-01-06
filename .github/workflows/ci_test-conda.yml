@@ -86,7 +86,7 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision
         pip install --requirement requirements.txt
-        pip install --requirement requirements/test.txt
+        pip install --requirement requirements/test.txt --upgrade-strategy only-if-needed
         echo "pip list"
         pip list
         echo "conda list"
