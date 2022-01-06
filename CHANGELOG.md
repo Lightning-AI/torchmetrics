@@ -56,6 +56,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
 
 
+- Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
+  * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
+  * `PearsonCorrcoef` -> `PearsonCorrCoef`
+  * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
+
+
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))

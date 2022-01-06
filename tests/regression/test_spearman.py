@@ -20,7 +20,7 @@ from scipy.stats import rankdata, spearmanr
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
-from torchmetrics.regression.spearman import SpearmanCorrcoef
+from torchmetrics.regression.spearman import SpearmanCorrCoef
 
 seed_all(42)
 
@@ -83,7 +83,7 @@ class TestSpearmanCorrcoef(MetricTester):
             ddp,
             preds,
             target,
-            SpearmanCorrcoef,
+            SpearmanCorrCoef,
             _sk_metric,
             dist_sync_on_step,
         )
@@ -93,21 +93,21 @@ class TestSpearmanCorrcoef(MetricTester):
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=SpearmanCorrcoef, metric_functional=spearman_corrcoef
+            preds=preds, target=target, metric_module=SpearmanCorrCoef, metric_functional=spearman_corrcoef
         )
 
     # Spearman half + cpu does not work due to missing support in torch.arange
     @pytest.mark.xfail(reason="Spearman metric does not support cpu + half precision")
     def test_spearman_corrcoef_half_cpu(self, preds, target):
-        self.run_precision_test_cpu(preds, target, SpearmanCorrcoef, spearman_corrcoef)
+        self.run_precision_test_cpu(preds, target, SpearmanCorrCoef, spearman_corrcoef)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_spearman_corrcoef_half_gpu(self, preds, target):
-        self.run_precision_test_gpu(preds, target, SpearmanCorrcoef, spearman_corrcoef)
+        self.run_precision_test_gpu(preds, target, SpearmanCorrCoef, spearman_corrcoef)
 
 
 def test_error_on_different_shape():
-    metric = SpearmanCorrcoef()
+    metric = SpearmanCorrCoef()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
