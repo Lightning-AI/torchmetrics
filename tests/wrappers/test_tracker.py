@@ -17,7 +17,7 @@ import pytest
 import torch
 
 from tests.helpers import seed_all
-from torchmetrics import Accuracy, MeanAbsoluteError, MeanSquaredError, Precision, Recall, MetricCollection
+from torchmetrics import Accuracy, MeanAbsoluteError, MeanSquaredError, MetricCollection, Precision, Recall
 from torchmetrics.wrappers import MetricTracker
 
 seed_all(42)
@@ -53,10 +53,22 @@ def test_raises_error_if_increment_not_called(method, method_input):
         (Recall(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
         (MeanSquaredError(), (torch.randn(50), torch.randn(50)), False),
         (MeanAbsoluteError(), (torch.randn(50), torch.randn(50)), False),
-        (MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]), (torch.randint(10, (50,)), torch.randint(10, (50,))), [True, True, True]),
+        (
+            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            (torch.randint(10, (50,)), torch.randint(10, (50,))),
+            True,
+        ),
+        (
+            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            (torch.randint(10, (50,)), torch.randint(10, (50,))),
+            [True, True, True],
+        ),
         (MetricCollection([MeanSquaredError(), MeanAbsoluteError()]), (torch.randn(50), torch.randn(50)), False),
-        (MetricCollection([MeanSquaredError(), MeanAbsoluteError()]), (torch.randn(50), torch.randn(50)), [False, False]),
+        (
+            MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+            (torch.randn(50), torch.randn(50)),
+            [False, False],
+        ),
     ],
 )
 def test_tracker(base_metric, metric_input, maximize):
@@ -71,7 +83,7 @@ def test_tracker(base_metric, metric_input, maximize):
 
         val = tracker.compute()
         if isinstance(val, dict):
-            for v in val.values(): 
+            for v in val.values():
                 assert v != 0.0
         else:
             assert val != 0.0
@@ -89,7 +101,7 @@ def test_tracker(base_metric, metric_input, maximize):
     if isinstance(val, dict):
         for v, i in zip(val.values(), idx.values()):
             assert v != 0.0
-            assert i in list(range(5))   
+            assert i in list(range(5))
     else:
         assert val != 0.0
         assert idx in list(range(5))
