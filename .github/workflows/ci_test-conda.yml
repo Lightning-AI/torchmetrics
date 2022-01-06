@@ -69,11 +69,6 @@ jobs:
         path: $TRANSFORMERS_CACHE
         key: cache-transformers
 
-    - name: Temp COCO env. fix
-      if: matrix.pytorch-version == '1.4'
-      run: |
-        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4
-
     - name: Update Environment
       run: |
         sudo apt install libsndfile1
@@ -85,6 +80,7 @@ jobs:
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision
+        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         pip install --requirement requirements.txt --quiet
         pip install --requirement requirements/test.txt --quiet
         pip list
