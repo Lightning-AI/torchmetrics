@@ -18,7 +18,7 @@ from typing import Sequence
 import pytest
 from torch import Tensor, tensor
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
@@ -61,7 +61,6 @@ class TestSacreBLEUScore(TextTester):
             sk_metric=original_sacrebleu,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
@@ -74,7 +73,6 @@ class TestSacreBLEUScore(TextTester):
             metric_functional=sacre_bleu_score,
             sk_metric=original_sacrebleu,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
@@ -86,5 +84,4 @@ class TestSacreBLEUScore(TextTester):
             metric_module=SacreBLEUScore,
             metric_functional=sacre_bleu_score,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
