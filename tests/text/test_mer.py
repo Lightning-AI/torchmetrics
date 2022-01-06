@@ -2,7 +2,7 @@ from typing import Callable, List, Union
 
 import pytest
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
@@ -39,7 +39,6 @@ class TestMatchErrorRate(TextTester):
             metric_class=MatchErrorRate,
             sk_metric=_compute_mer_metric_jiwer,
             dist_sync_on_step=dist_sync_on_step,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_mer_functional(self, preds, targets):
@@ -49,7 +48,6 @@ class TestMatchErrorRate(TextTester):
             targets,
             metric_functional=match_error_rate,
             sk_metric=_compute_mer_metric_jiwer,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_mer_differentiability(self, preds, targets):
@@ -59,5 +57,4 @@ class TestMatchErrorRate(TextTester):
             targets=targets,
             metric_module=MatchErrorRate,
             metric_functional=match_error_rate,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
