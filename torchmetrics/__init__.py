@@ -78,6 +78,7 @@ from torchmetrics.text import (  # noqa: E402
     SacreBLEUScore,
     SQuAD,
     TranslationEditRate,
+    WordErrorRate,
     WordInfoLost,
     WordInfoPreserved,
 )
@@ -154,6 +155,7 @@ __all__ = [
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
     "WER",
+    "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",
     "WordInfoLost",
