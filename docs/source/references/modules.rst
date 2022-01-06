@@ -658,10 +658,10 @@ SQuAD
 .. autoclass:: torchmetrics.SQuAD
     :noindex:
 
-TER
-~~~
+TranslationEditRate
+~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.TER
+.. autoclass:: torchmetrics.TranslationEditRate
     :noindex:
 
 WER
