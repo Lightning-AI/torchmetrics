@@ -92,6 +92,8 @@ jobs:
         echo "conda list"
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
         echo "from pesq import pesq"
+        pip uninstall pesq -y
+        pip install pesq
         python -c "from pesq import pesq"
       shell: bash -l {0}
 
