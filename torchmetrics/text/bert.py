@@ -230,7 +230,7 @@ class BERTScore(Metric):
         """
         return bert_score(
             preds=_concatenate(self.preds),
-            test_average_precisiont=_concatenate(self.target),
+            target=_concatenate(self.target),
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,

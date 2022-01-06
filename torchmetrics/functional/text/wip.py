@@ -14,7 +14,6 @@
 
 from typing import List, Tuple, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
