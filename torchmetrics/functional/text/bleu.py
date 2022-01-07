@@ -84,14 +84,14 @@ def _bleu_score_update(
 
     for (pred, targets) in zip(preds_, target_):
         preds_len += len(pred)
-        target_len_list = [len(ref) for ref in targets]
+        target_len_list = [len(tgt) for tgt in targets]
         target_len_diff = [abs(len(pred) - x) for x in target_len_list]
         target_len += target_len_list[target_len_diff.index(min(target_len_diff))]
         preds_counter: Counter = _count_ngram(pred, n_gram)
         target_counter: Counter = Counter()
 
-        for ref in targets:
-            target_counter |= _count_ngram(ref, n_gram)
+        for tgt in targets:
+            target_counter |= _count_ngram(tgt, n_gram)
 
         ngram_counter_clip = preds_counter & target_counter
 
@@ -183,7 +183,7 @@ def bleu_score(
         " Warning will be removed in v0.8."
     )
     preds_ = [preds] if isinstance(preds, str) else preds
-    target_ = [[target_text] if isinstance(target_text, str) else target_text for target_text in target]
+    target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]
 
     if len(preds_) != len(target_):
         raise ValueError(f"Corpus has different size {len(preds_)} != {len(target_)}")

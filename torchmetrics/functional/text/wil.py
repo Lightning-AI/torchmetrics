@@ -41,9 +41,9 @@ def _wil_update(
     errors = tensor(0.0)
     target_total = tensor(0.0)
     preds_total = tensor(0.0)
-    for pred, tar in zip(preds, target):
+    for pred, tgt in zip(preds, target):
         pred_tokens = pred.split()
-        target_tokens = tar.split()
+        target_tokens = tgt.split()
         errors += _edit_distance(pred_tokens, target_tokens)
         target_total += len(target_tokens)
         preds_total += len(pred_tokens)

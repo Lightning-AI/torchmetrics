@@ -343,8 +343,8 @@ def sacre_bleu_score(
 
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
-    trans_len = tensor(0, dtype=torch.float)
-    ref_len = tensor(0, dtype=torch.float)
+    trans_len = tensor(0.0)
+    ref_len = tensor(0.0)
 
     tokenize_fn = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
     trans_len, ref_len = _bleu_score_update(
