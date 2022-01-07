@@ -47,14 +47,13 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
     "preds, target",
     [(i.preds, i.target) for i in _inputs],
 )
-@pytest.mark.parametrize("kernel_size", [3, 5, 7])
+@pytest.mark.parametrize("kernel_size", [5, 7])
 class TestMultiScaleSSIM(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     def test_ms_ssim(self, preds, target, kernel_size, ddp, dist_sync_on_step):
-        print(preds.size)
         self.run_class_metric_test(
             ddp,
             preds,
