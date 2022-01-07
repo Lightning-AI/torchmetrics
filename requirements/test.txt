@@ -37,4 +37,4 @@ transformers>=4.0
 sacrebleu>=2.0.0
 
 # image
-pytorch_msssim @ https://github.com/jorge-pessoa/pytorch-msssim/archive/refs/heads/master.zip
+pytorch_msssim

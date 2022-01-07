@@ -16,7 +16,7 @@ from functools import partial
 
 import pytest
 import torch
-from pytorch_msssim import msssim
+from pytorch_msssim import ms_ssim
 
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, MetricTester
@@ -39,49 +39,42 @@ for size, coef in [(128, 0.9), (128, 0.7)]:
     )
 
 
-def pytorch_msssim(preds, target, val_range, kernel_size, normalize):
-    return msssim(img1=preds, img2=target, val_range=val_range, window_size=kernel_size, normalize=normalize)
+def pytorch_ms_ssim(preds, target, data_range, kernel_size):
+    return ms_ssim(preds, target, data_range=data_range, win_size=kernel_size)
 
 
 @pytest.mark.parametrize(
     "preds, target",
     [(i.preds, i.target) for i in _inputs],
 )
-@pytest.mark.parametrize(
-    ["kernel_size", "normalize"],
-    [
-        (3, None),
-        (5, "relu"),
-        (7, "simple"),
-    ],
-)
+@pytest.mark.parametrize("kernel_size", [3, 5, 7])
 class TestMultiScaleSSIM(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_ms_ssim(self, preds, target, kernel_size, normalize, ddp, dist_sync_on_step):
+    def test_ms_ssim(self, preds, target, kernel_size, ddp, dist_sync_on_step):
         print(preds.size)
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             MultiScaleSSIM,
-            partial(pytorch_msssim, val_range=1.0, kernel_size=kernel_size, normalize=normalize),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size), "normalize": normalize},
+            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=kernel_size),
+            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_ms_ssim_functional(self, preds, target, kernel_size, normalize):
+    def test_ms_ssim_functional(self, preds, target, kernel_size):
         self.run_functional_metric_test(
             preds,
             target,
             multiscale_ssim,
-            partial(pytorch_msssim, val_range=1.0, kernel_size=kernel_size, normalize=normalize),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size), "normalize": normalize},
+            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=kernel_size),
+            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
         )
 
-    def test_ms_ssim_differentiability(self, preds, target, kernel_size, normalize):
+    def test_ms_ssim_differentiability(self, preds, target, kernel_size):
         # We need to minimize this example to make the test tractable
         single_beta = (1.0,)
         _preds = preds[:, :, :, :16, :16]
@@ -95,7 +88,6 @@ class TestMultiScaleSSIM(MetricTester):
             metric_args={
                 "data_range": 1.0,
                 "kernel_size": (kernel_size, kernel_size),
-                "normalize": normalize,
                 "betas": single_beta,
             },
         )
