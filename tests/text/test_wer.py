@@ -15,8 +15,8 @@ from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.text.wer import WordErrorRate
 
 
-def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return compute_measures(reference, prediction)["wer"]
+def _compute_wer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    return compute_measures(target, preds)["wer"]
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")

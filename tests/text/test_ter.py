@@ -16,7 +16,7 @@ if _SACREBLEU_AVAILABLE:
 
 def sacrebleu_ter_fn(
     preds: Sequence[str],
-    targets: Sequence[Sequence[str]],
+    target: Sequence[Sequence[str]],
     normalized: bool,
     no_punct: bool,
     asian_support: bool,
@@ -26,8 +26,8 @@ def sacrebleu_ter_fn(
         normalized=normalized, no_punct=no_punct, asian_support=asian_support, case_sensitive=case_sensitive
     )
     # Sacrebleu CHRF expects different format of input
-    targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
-    sacrebleu_ter = sacrebleu_ter.corpus_score(preds, targets).score / 100
+    target = [[tgt[i] for tgt in target] for i in range(len(target[0]))]
+    sacrebleu_ter = sacrebleu_ter.corpus_score(preds, target).score / 100
     return tensor(sacrebleu_ter)
 
 
@@ -118,41 +118,41 @@ class TestTER(TextTester):
 
 
 def test_ter_empty_functional():
-    hyp = []
-    ref = [[]]
-    assert translation_edit_rate(hyp, ref) == tensor(0.0)
+    preds = []
+    targets = [[]]
+    assert translation_edit_rate(preds, targets) == tensor(0.0)
 
 
 def test_ter_empty_class():
     ter_metric = TranslationEditRate()
-    hyp = []
-    ref = [[]]
-    assert ter_metric(hyp, ref) == tensor(0.0)
+    preds = []
+    targets = [[]]
+    assert ter_metric(preds, targets) == tensor(0.0)
 
 
 def test_ter_empty_with_non_empty_hyp_functional():
-    hyp = ["python"]
-    ref = [[]]
-    assert translation_edit_rate(hyp, ref) == tensor(0.0)
+    preds = ["python"]
+    targets = [[]]
+    assert translation_edit_rate(preds, targets) == tensor(0.0)
 
 
 def test_ter_empty_with_non_empty_hyp_class():
     ter_metric = TranslationEditRate()
-    hyp = ["python"]
-    ref = [[]]
-    assert ter_metric(hyp, ref) == tensor(0.0)
+    preds = ["python"]
+    targets = [[]]
+    assert ter_metric(preds, targets) == tensor(0.0)
 
 
 def test_ter_return_sentence_level_score_functional():
-    hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
-    _, sentence_ter = translation_edit_rate(hyp, ref, return_sentence_level_score=True)
+    preds = _inputs_single_sentence_multiple_references.preds
+    targets = _inputs_single_sentence_multiple_references.targets
+    _, sentence_ter = translation_edit_rate(preds, targets, return_sentence_level_score=True)
     isinstance(sentence_ter, Tensor)
 
 
 def test_ter_return_sentence_level_class():
     ter_metric = TranslationEditRate(return_sentence_level_score=True)
-    hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
-    _, sentence_ter = ter_metric(hyp, ref)
+    preds = _inputs_single_sentence_multiple_references.preds
+    targets = _inputs_single_sentence_multiple_references.targets
+    _, sentence_ter = ter_metric(preds, targets)
     isinstance(sentence_ter, Tensor)
