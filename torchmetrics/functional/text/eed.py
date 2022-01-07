@@ -124,9 +124,9 @@ def _eed_function(
 
     Args:
         hyp:
-            hypothesis string
+            A hypothesis string
         ref:
-            reference string
+            A reference string
         alpha:
             optimal jump penalty, penalty for jumps between characters
         rho:
@@ -304,7 +304,7 @@ def _compute_sentence_statistics(
         preds_word:
             A hypothesis word
         alpha:
-            optimal jump penalty, penalty for jumps between characters
+            An optimal jump penalty, penalty for jumps between characters
         rho:
             coverage cost, penalty for repetition of characters
         deletion:

@@ -53,7 +53,7 @@ class ExtendedEditDistance(Metric):
         Extended edit distance score as a tensor
 
     Example:
-        >>> from torchmetrics.text import ExtendedEditDistance
+        >>> from torchmetrics import ExtendedEditDistance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
         >>> metric = ExtendedEditDistance()
