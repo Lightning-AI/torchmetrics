@@ -57,10 +57,10 @@ class PSNR(Metric):
 
     Example:
         >>> from torchmetrics import PSNR
-        >>> peak_signal_noise_ratio = PSNR()
+        >>> psnr = PSNR()
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> peak_signal_noise_ratio(preds, target)
+        >>> psnr(preds, target)
         tensor(2.5527)
 
     .. note::

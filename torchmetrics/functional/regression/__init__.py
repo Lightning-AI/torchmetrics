@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio  # noqa: F401
+from torchmetrics.functional.image.psnr import psnr  # noqa: F401
 from torchmetrics.functional.image.ssim import ssim  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
