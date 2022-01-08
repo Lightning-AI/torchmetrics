@@ -68,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `functional.snr` -> `functional.signal_distortion_ratio`
   * `functional.si_snr` -> `functional.scale_invariant_signal_noise_ratio`
   * `SNR` -> `SignalNoiseRatio`
-  * `SI_SNR` -> `ScaleInvariantSNR`
+  * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
 
 
 ### Removed

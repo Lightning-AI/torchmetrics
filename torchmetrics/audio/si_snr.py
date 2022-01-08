@@ -16,14 +16,14 @@ from warnings import warn
 
 from torch import Tensor
 
-from torchmetrics.audio.snr import ScaleInvariantSNR
+from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
 
 
-class SI_SNR(ScaleInvariantSNR):
+class SI_SNR(ScaleInvariantSignalNoiseRatio):
     """Scale-invariant signal-to-noise ratio (SI-SNR).
 
     .. deprecated:: v0.7
-        Use :class:`torchmetrics.ScaleInvariantSNR`. Will be removed in v0.8.
+        Use :class:`torchmetrics.ScaleInvariantSignalNoiseRatio`. Will be removed in v0.8.
 
     Example:
         >>> import torch
@@ -39,5 +39,8 @@ class SI_SNR(ScaleInvariantSNR):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        warn("`SI_SDR` was renamed to `ScaleInvariantSNR` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        warn(
+            "`SI_SDR` was renamed to `ScaleInvariantSignalNoiseRatio` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,
+        )
         super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

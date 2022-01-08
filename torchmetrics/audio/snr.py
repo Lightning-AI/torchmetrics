@@ -138,7 +138,7 @@ class SNR(SignalNoiseRatio):
         super().__init__(zero_mean, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
 
 
-class ScaleInvariantSNR(Metric):
+class ScaleInvariantSignalNoiseRatio(Metric):
     """Scale-invariant signal-to-noise ratio (SI-SNR).
 
     Forward accepts
@@ -167,10 +167,10 @@ class ScaleInvariantSNR(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import ScaleInvariantSNR
+        >>> from torchmetrics import ScaleInvariantSignalNoiseRatio
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> si_snr = ScaleInvariantSNR()
+        >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)
 

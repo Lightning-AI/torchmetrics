@@ -102,10 +102,10 @@ SI_SDR
 .. autoclass:: torchmetrics.SI_SDR
     :noindex:
 
-ScaleInvariantSNR
-~~~~~~~~~~~~~~~~~
+ScaleInvariantSignalNoiseRatio
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.ScaleInvariantSNR
+.. autoclass:: torchmetrics.ScaleInvariantSignalNoiseRatio
     :noindex:
 
 SignalNoiseRatio

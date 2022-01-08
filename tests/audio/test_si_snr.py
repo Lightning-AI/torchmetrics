@@ -21,7 +21,7 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.audio import ScaleInvariantSNR
+from torchmetrics.audio import ScaleInvariantSignalNoiseRatio
 from torchmetrics.functional import scale_invariant_signal_noise_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
@@ -79,7 +79,7 @@ class TestSISNR(MetricTester):
             ddp,
             preds,
             target,
-            ScaleInvariantSNR,
+            ScaleInvariantSignalNoiseRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
         )
@@ -96,7 +96,7 @@ class TestSISNR(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=ScaleInvariantSNR,
+            metric_module=ScaleInvariantSignalNoiseRatio,
             metric_functional=scale_invariant_signal_noise_ratio,
         )
 
@@ -111,12 +111,12 @@ class TestSISNR(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=ScaleInvariantSNR,
+            metric_module=ScaleInvariantSignalNoiseRatio,
             metric_functional=scale_invariant_signal_noise_ratio,
         )
 
 
-def test_error_on_different_shape(metric_class=ScaleInvariantSNR):
+def test_error_on_different_shape(metric_class=ScaleInvariantSignalNoiseRatio):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
