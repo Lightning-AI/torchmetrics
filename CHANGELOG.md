@@ -71,6 +71,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SI_SDR` -> `ScaleInvariantSignalDistortionRatio`
 
 
+- Renamed image metrics ([#732](https://github.com/PyTorchLightning/metrics/pull/732))
+  * `functional.psnr` -> `functional.peak_signal_noise_ratio`
+  * `PSNR` -> `PeakSignalNoiseRatio`
+
+
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
