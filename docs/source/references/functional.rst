@@ -7,9 +7,9 @@
 Functional metrics
 ##################
 
-*************
-Audio Metrics
-*************
+*****
+Audio
+*****
 
 pesq [func]
 ~~~~~~~~~~~
@@ -59,9 +59,9 @@ stoi [func]
     :noindex:
 
 
-**********************
-Classification Metrics
-**********************
+**************
+Classification
+**************
 
 accuracy [func]
 ~~~~~~~~~~~~~~~
@@ -230,9 +230,9 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
-*************
-Image Metrics
-*************
+*****
+Image
+*****
 
 image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -254,9 +254,9 @@ ssim [func]
 .. autofunction:: torchmetrics.functional.ssim
     :noindex:
 
-******************
-Regression Metrics
-******************
+**********
+Regression
+**********
 
 cosine_similarity [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~

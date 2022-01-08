@@ -15,9 +15,9 @@ metrics.
     :noindex:
 
 
-*************************
-Basic Aggregation Metrics
-*************************
+*****************
+Basic Aggregation
+*****************
 
 Torchmetrics comes with a number of metrics for aggregation of basic statistics: mean, max, min etc. of
 either tensors or native python floats.
@@ -52,12 +52,9 @@ SumMetric
 .. autoclass:: torchmetrics.SumMetric
     :noindex:
 
-*************
-Audio Metrics
-*************
-
-About Audio Metrics
-~~~~~~~~~~~~~~~~~~~
+*****
+Audio
+*****
 
 For the purposes of audio metrics, inputs (predictions, targets) must have the same size.
 If the input is 1D tensors the output will be a scalar. If the input is multi-dimensional with shape ``[...,time]``
@@ -121,9 +118,9 @@ STOI
     :noindex:
 
 
-**********************
-Classification Metrics
-**********************
+**************
+Classification
+**************
 
 Input types
 ~~~~~~~~~~~
@@ -364,9 +361,9 @@ StatScores
 .. autoclass:: torchmetrics.StatScores
     :noindex:
 
-*************
-Image Metrics
-*************
+*****
+Image
+*****
 
 Image quality metrics can be used to access the quality of synthetic generated images from machine
 learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
@@ -407,9 +404,9 @@ SSIM
 .. autoclass:: torchmetrics.SSIM
     :noindex:
 
-*****************
-Detection Metrics
-*****************
+*********
+Detection
+*********
 
 Object detection metrics can be used to evaluate the predicted detections with given groundtruth detections on images.
 
@@ -419,9 +416,9 @@ MAP
 .. autoclass:: torchmetrics.detection.map.MAP
     :noindex:
 
-******************
-Regression Metrics
-******************
+**********
+Regression
+**********
 
 CosineSimilarity
 ~~~~~~~~~~~~~~~~
