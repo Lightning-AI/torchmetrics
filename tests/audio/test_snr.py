@@ -22,19 +22,19 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.audio import SNR
-from torchmetrics.functional import snr
+from torchmetrics.audio import SignalNoiseRatio
+from torchmetrics.functional import signal_noise_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
 
-Time = 100
+TIME = 100
 
 Input = namedtuple("Input", ["preds", "target"])
 
 inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
 )
 
 
@@ -86,7 +86,7 @@ class TestSNR(MetricTester):
             ddp,
             preds,
             target,
-            SNR,
+            SignalNoiseRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(zero_mean=zero_mean),
@@ -96,14 +96,18 @@ class TestSNR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            snr,
+            signal_noise_ratio,
             sk_metric,
             metric_args=dict(zero_mean=zero_mean),
         )
 
     def test_snr_differentiability(self, preds, target, sk_metric, zero_mean):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={"zero_mean": zero_mean}
+            preds=preds,
+            target=target,
+            metric_module=SignalNoiseRatio,
+            metric_functional=signal_noise_ratio,
+            metric_args={"zero_mean": zero_mean},
         )
 
     @pytest.mark.skipif(
@@ -115,11 +119,15 @@ class TestSNR(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_snr_half_gpu(self, preds, target, sk_metric, zero_mean):
         self.run_precision_test_gpu(
-            preds=preds, target=target, metric_module=SNR, metric_functional=snr, metric_args={"zero_mean": zero_mean}
+            preds=preds,
+            target=target,
+            metric_module=SignalNoiseRatio,
+            metric_functional=signal_noise_ratio,
+            metric_args={"zero_mean": zero_mean},
         )
 
 
-def test_error_on_different_shape(metric_class=SNR):
+def test_error_on_different_shape(metric_class=SignalNoiseRatio):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
