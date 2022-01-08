@@ -18,11 +18,11 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from skimage.metrics import peak_signal_noise_ratio
+from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise_ratio
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import psnr
+from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PSNR
 
 seed_all(42)
@@ -64,7 +64,7 @@ def _sk_psnr(preds, target, data_range, reduction, dim):
     np_reduce_map = {"elementwise_mean": np.mean, "none": np.array, "sum": np.sum}
     return np_reduce_map[reduction](
         [
-            peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
+            skimage_peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
             for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
         ]
     )
@@ -112,7 +112,7 @@ class TestPSNR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            psnr,
+            peak_signal_noise_ratio,
             partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
         )
@@ -121,13 +121,21 @@ class TestPSNR(MetricTester):
     @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
     def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
         self.run_precision_test_cpu(
-            preds, target, PSNR, psnr, {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
+            preds,
+            target,
+            PSNR,
+            peak_signal_noise_ratio,
+            {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
         self.run_precision_test_gpu(
-            preds, target, PSNR, psnr, {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
+            preds,
+            target,
+            PSNR,
+            peak_signal_noise_ratio,
+            {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
 
 
@@ -138,7 +146,7 @@ def test_reduction_for_dim_none(reduction):
         PSNR(reduction=reduction, dim=None)
 
     with pytest.warns(UserWarning, match=match):
-        psnr(_inputs[0].preds, _inputs[0].target, reduction=reduction, dim=None)
+        peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, reduction=reduction, dim=None)
 
 
 def test_missing_data_range():
@@ -146,4 +154,4 @@ def test_missing_data_range():
         PSNR(data_range=None, dim=0)
 
     with pytest.raises(ValueError):
-        psnr(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
+        peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
