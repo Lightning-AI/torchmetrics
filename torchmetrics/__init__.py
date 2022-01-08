@@ -20,7 +20,9 @@ from torchmetrics.audio import (  # noqa: E402
     SI_SNR,
     SNR,
     ScaleInvariantSignalDistortionRatio,
+    ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
+    SignalNoiseRatio,
 )
 from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
@@ -155,6 +157,8 @@ __all__ = [
     "ScaleInvariantSignalDistortionRatio",
     "SI_SDR",
     "SI_SNR",
+    "ScaleInvariantSignalNoiseRatio",
+    "SignalNoiseRatio",
     "SNR",
     "SpearmanCorrcoef",
     "SpearmanCorrCoef",

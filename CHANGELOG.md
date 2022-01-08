@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
 
 
-- Added `ignore_index` to to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
+- Added `ignore_index` to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
 
 
 - Added support for multi references in `ROUGEScore` ([#680](https://github.com/PyTorchLightning/metrics/pull/680))
@@ -71,6 +71,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `functional.si_sdr` -> `functional.scale_invariant_signal_distortion_ratio`
   * `SDR` -> `SignalDistortionRatio`
   * `SI_SDR` -> `ScaleInvariantSignalDistortionRatio`
+
+
+- Renamed audio SNR metrics: ([#712](https://github.com/PyTorchLightning/metrics/pull/712))
+  * `functional.snr` -> `functional.signal_distortion_ratio`
+  * `functional.si_snr` -> `functional.scale_invariant_signal_noise_ratio`
+  * `SNR` -> `SignalNoiseRatio`
+  * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
 
 
 ### Removed

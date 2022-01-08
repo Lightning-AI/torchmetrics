@@ -66,12 +66,17 @@ the metric will be computed over the ``time`` dimension.
 .. doctest::
 
     >>> import torch
+    >>> from torchmetrics import SignalNoiseRatio
+    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> snr = SignalNoiseRatio()
+    >>> snr(preds, target)
+    tensor(16.1805)
     >>> from torchmetrics import SNR
     >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
     >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-    >>> snr = SNR()
-    >>> snr_val = snr(preds, target)
-    >>> snr_val
+    >>> snr = SignalNoiseRatio()
+    >>> snr(preds, target)
     tensor(16.1805)
 
 PESQ
@@ -97,16 +102,16 @@ ScaleInvariantSignalDistortionRatio
 .. autoclass:: torchmetrics.ScaleInvariantSignalDistortionRatio
     :noindex:
 
-SI_SNR
-~~~~~~
+ScaleInvariantSignalNoiseRatio
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SI_SNR
+.. autoclass:: torchmetrics.ScaleInvariantSignalNoiseRatio
     :noindex:
 
-SNR
-~~~
+SignalNoiseRatio
+~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SNR
+.. autoclass:: torchmetrics.SignalNoiseRatio
     :noindex:
 
 STOI
