@@ -85,10 +85,10 @@ PIT
 .. autoclass:: torchmetrics.PIT
     :noindex:
 
-SDR
-~~~
+SignalDistortionRatio
+~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SDR
+.. autoclass:: torchmetrics.SignalDistortionRatio
     :noindex:
 
 ScaleInvariantSDR

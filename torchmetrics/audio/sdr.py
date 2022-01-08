@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -19,7 +20,7 @@ from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_
 from torchmetrics.metric import Metric
 
 
-class SDR(Metric):
+class SignalDistortionRatio(Metric):
     r"""Signal to Distortion Ratio (SDR) [1,2,3]
 
     Forward accepts
@@ -60,12 +61,12 @@ class SDR(Metric):
             If ``fast-bss-eval`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio import SDR
+        >>> from torchmetrics.audio import SignalDistortionRatio
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> sdr = SDR()
+        >>> sdr = SignalDistortionRatio()
         >>> sdr(preds, target)
         tensor(-12.0589)
         >>> # use with pit
@@ -144,6 +145,51 @@ class SDR(Metric):
     def compute(self) -> Tensor:
         """Computes average SDR."""
         return self.sum_sdr / self.total
+
+
+class SDR(SignalDistortionRatio):
+    r"""Signal to Distortion Ratio (SDR)
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.SignalDistortionRatio`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> g = torch.manual_seed(1)
+        >>> sdr = SDR()
+        >>> sdr(torch.randn(8000), torch.randn(8000))
+        tensor(-12.0589)
+        >>> # use with pit
+        >>> from torchmetrics.audio import PIT
+        >>> from torchmetrics.functional.audio import signal_distortion_ratio
+        >>> pit = PIT(signal_distortion_ratio, 'max')
+        >>> pit(torch.randn(4, 2, 8000), torch.randn(4, 2, 8000))
+        tensor(-11.6051)
+    """
+
+    def __init__(
+        self,
+        use_cg_iter: Optional[int] = None,
+        filter_length: int = 512,
+        zero_mean: bool = False,
+        load_diag: Optional[float] = None,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+    ) -> None:
+        warn("`SDR` was renamed to `SignalDistortionRatio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+
+        super().__init__(
+            use_cg_iter,
+            filter_length,
+            zero_mean,
+            load_diag,
+            compute_on_step,
+            dist_sync_on_step,
+            process_group,
+            dist_sync_fn,
+        )
 
 
 class ScaleInvariantSDR(Metric):

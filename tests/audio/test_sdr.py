@@ -24,7 +24,7 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from torchmetrics.audio import SDR
+from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
 
@@ -83,7 +83,7 @@ class TestSDR(MetricTester):
             ddp,
             preds,
             target,
-            SDR,
+            SignalDistortionRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(),
@@ -103,7 +103,7 @@ class TestSDR(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=SDR,
+            metric_module=SignalDistortionRatio,
             metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
@@ -115,7 +115,7 @@ class TestSDR(MetricTester):
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
-            metric_module=SDR,
+            metric_module=SignalDistortionRatio,
             metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
@@ -125,13 +125,13 @@ class TestSDR(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=SDR,
+            metric_module=SignalDistortionRatio,
             metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
 
 
-def test_error_on_different_shape(metric_class=SDR):
+def test_error_on_different_shape(metric_class=SignalDistortionRatio):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
