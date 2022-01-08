@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Optional
+from warnings import warn
 
 import torch
 
@@ -46,7 +47,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def sdr(
+def signal_distortion_ratio(
     preds: Tensor,
     target: Tensor,
     use_cg_iter: Optional[int] = None,
@@ -86,18 +87,18 @@ def sdr(
         sdr value of shape ``[...]``
 
     Example:
-        >>> from torchmetrics.functional.audio import sdr
+        >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> sdr(preds, target)
+        >>> signal_distortion_ratio(preds, target)
         tensor(-12.0589)
         >>> # use with pit
         >>> from torchmetrics.functional.audio import pit
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> best_metric, best_perm = pit(preds, target, sdr, 'max')
+        >>> best_metric, best_perm = pit(preds, target, signal_distortion_ratio, 'max')
         >>> best_metric
         tensor([-11.6375, -11.4358, -11.7148, -11.6325])
         >>> best_perm
@@ -190,5 +191,74 @@ def sdr(
 
     # transform to decibels
     ratio = coh / (1 - coh)
-    sdr_val = 10.0 * torch.log10(ratio)
-    return sdr_val
+    val = 10.0 * torch.log10(ratio)
+    return val
+
+
+def sdr(
+    preds: Tensor,
+    target: Tensor,
+    use_cg_iter: Optional[int] = None,
+    filter_length: int = 512,
+    zero_mean: bool = False,
+    load_diag: Optional[float] = None,
+) -> Tensor:
+    r"""Signal to Distortion Ratio (SDR)
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.signal_distortion_ratio`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> g = torch.manual_seed(1)
+        >>> sdr(torch.randn(8000), torch.randn(8000))
+        tensor(-12.0589)
+    """
+    warn("`sdr` was renamed to `signal_distortion_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    return signal_distortion_ratio(preds, target, use_cg_iter, filter_length, zero_mean, load_diag)
+
+
+def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
+    """Calculates Scale-invariant signal-to-distortion ratio (SI-SDR) metric. The SI-SDR value is in general
+    considered an overall measure of how good a source sound.
+
+    Args:
+        preds:
+            shape ``[...,time]``
+        target:
+            shape ``[...,time]``
+        zero_mean:
+            If to zero mean target and preds or not
+
+    Returns:
+        si-sdr value of shape [...]
+
+    Example:
+        >>> from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
+        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> scale_invariant_signal_distortion_ratio(preds, target)
+        tensor(18.4030)
+
+    References:
+        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
+        and Signal Processing (ICASSP) 2019.
+    """
+    _check_same_shape(preds, target)
+    EPS = torch.finfo(preds.dtype).eps
+
+    if zero_mean:
+        target = target - torch.mean(target, dim=-1, keepdim=True)
+        preds = preds - torch.mean(preds, dim=-1, keepdim=True)
+
+    alpha = (torch.sum(preds * target, dim=-1, keepdim=True) + EPS) / (
+        torch.sum(target ** 2, dim=-1, keepdim=True) + EPS
+    )
+    target_scaled = alpha * target
+
+    noise = target_scaled - preds
+
+    val = (torch.sum(target_scaled ** 2, dim=-1) + EPS) / (torch.sum(noise ** 2, dim=-1) + EPS)
+    val = 10 * torch.log10(val)
+
+    return val
