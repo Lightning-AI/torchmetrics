@@ -16,7 +16,7 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.audio.si_sdr import si_sdr
+from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -108,4 +108,4 @@ def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
         Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
         696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
-    return si_sdr(target=target, preds=preds, zero_mean=True)
+    return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=True)
