@@ -241,10 +241,10 @@ image_gradients [func]
     :noindex:
 
 
-psnr [func]
+peak_signal_noise_ratio [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.psnr
+.. autofunction:: torchmetrics.functional.peak_signal_noise_ratio
     :noindex:
 
 
