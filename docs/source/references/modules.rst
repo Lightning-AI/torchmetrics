@@ -391,7 +391,7 @@ LPIPS
     :noindex:
 
 MultiScaleStructuralSimilarityIndexMeasure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MultiScaleStructuralSimilarityIndexMeasure
     :noindex:
