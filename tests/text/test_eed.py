@@ -123,26 +123,3 @@ def test_eed_return_sentence_level_class():
     ref = _inputs_single_sentence_multiple_references.targets
     _, sentence_eed = metric(hyp, ref)
     isinstance(sentence_eed, Tensor)
-
-
-# test parallel vs sequential computations
-def test_parallelisation_eed():
-    hypotheses = _inputs_multiple_references.preds[0]
-    references = _inputs_multiple_references.targets[0]
-
-    # batch_size == length of data
-    metric = ExtendedEditDistance()
-
-    sequential_score = metric(hypotheses, references)
-
-    # batch of 1 with compute_on_step == False
-    metric = ExtendedEditDistance(compute_on_step=False)
-
-    for hypothesis, reference in zip(hypotheses, references):
-        metric([hypothesis], [reference])
-
-    parallel_score = metric.compute()
-
-    score_comparison = bool(np.isclose(sequential_score, parallel_score))
-
-    assert bool(score_comparison) is True
