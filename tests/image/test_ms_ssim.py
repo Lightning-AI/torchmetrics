@@ -20,8 +20,8 @@ from pytorch_msssim import ms_ssim
 
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, MetricTester
-from torchmetrics.functional.image.ms_ssim import multiscale_structual_similarity_index_measure
-from torchmetrics.image.ms_ssim import MultiScaleStructualSimilarityIndexMeasure
+from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure
+from torchmetrics.image.ms_ssim import MultiScaleStructuralSimilarityIndexMeasure
 
 seed_all(42)
 
@@ -48,7 +48,7 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
     [(i.preds, i.target) for i in _inputs],
 )
 @pytest.mark.parametrize("kernel_size", [5, 7])
-class TestMultiScaleStructualSimilarityIndexMeasure(MetricTester):
+class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [False, True])
@@ -58,7 +58,7 @@ class TestMultiScaleStructualSimilarityIndexMeasure(MetricTester):
             ddp,
             preds,
             target,
-            MultiScaleStructualSimilarityIndexMeasure,
+            MultiScaleStructuralSimilarityIndexMeasure,
             partial(pytorch_ms_ssim, data_range=1.0, kernel_size=kernel_size),
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
             dist_sync_on_step=dist_sync_on_step,
@@ -68,7 +68,7 @@ class TestMultiScaleStructualSimilarityIndexMeasure(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            multiscale_structual_similarity_index_measure,
+            multiscale_structural_similarity_index_measure,
             partial(pytorch_ms_ssim, data_range=1.0, kernel_size=kernel_size),
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
         )
@@ -82,8 +82,8 @@ class TestMultiScaleStructualSimilarityIndexMeasure(MetricTester):
         self.run_differentiability_test(
             _preds.type(torch.float64),
             _target.type(torch.float64),
-            metric_functional=multiscale_structual_similarity_index_measure,
-            metric_module=MultiScaleStructualSimilarityIndexMeasure,
+            metric_functional=multiscale_structural_similarity_index_measure,
+            metric_module=MultiScaleStructuralSimilarityIndexMeasure,
             metric_args={
                 "data_range": 1.0,
                 "kernel_size": (kernel_size, kernel_size),

@@ -74,8 +74,8 @@ def _multiscale_ssim_compute(
             - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of SSIM.
-        k2: Parameter of SSIM.
+        k1: Parameter of structural similarity index measure.
+        k2: Parameter of structural similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
             resolutions.
         normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
@@ -132,7 +132,7 @@ def _multiscale_ssim_compute(
     return torch.prod(cs_stack[:-1]) * sim_stack[-1]
 
 
-def multiscale_structual_similarity_index_measure(
+def multiscale_structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
@@ -159,8 +159,8 @@ def multiscale_structual_similarity_index_measure(
             - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of structual similarity index measure.
-        k1: Parameter of structual similarity index measure.
+        k1: Parameter of structural similarity index measure.
+        k2: Parameter of structural similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
             resolutions.
         normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
@@ -183,10 +183,10 @@ def multiscale_structual_similarity_index_measure(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import multiscale_structual_similarity_index_measure
+        >>> from torchmetrics.functional import multiscale_structural_similarity_index_measure
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
-        >>> multiscale_structual_similarity_index_measure(preds, target)
+        >>> multiscale_structural_similarity_index_measure(preds, target)
         tensor(0.9558)
 
     References:
