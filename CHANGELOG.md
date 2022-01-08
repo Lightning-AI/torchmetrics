@@ -66,6 +66,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
 
 
+- Renamed audio SDR metrics: ([#711](https://github.com/PyTorchLightning/metrics/pull/711))
+  * `functional.sdr` -> `functional.signal_distortion_ratio`
+  * `functional.si_sdr` -> `functional.scale_invariant_signal_distortion_ratio`
+  * `SDR` -> `SignalDistortionRatio`
+  * `SI_SDR` -> `ScaleInvariantSignalDistortionRatio`
+
+
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))

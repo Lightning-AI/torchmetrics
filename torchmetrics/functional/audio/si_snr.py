@@ -13,7 +13,7 @@
 # limitations under the License.
 from torch import Tensor
 
-from torchmetrics.functional.audio.si_sdr import si_sdr
+from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio
 
 
 def si_snr(preds: Tensor, target: Tensor) -> Tensor:
@@ -43,4 +43,4 @@ def si_snr(preds: Tensor, target: Tensor) -> Tensor:
         696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
 
-    return si_sdr(target=target, preds=preds, zero_mean=True)
+    return scale_invariant_signal_distortion_ratio(target=target, preds=preds, zero_mean=True)
