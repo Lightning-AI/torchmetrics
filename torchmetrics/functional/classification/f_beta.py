@@ -243,7 +243,7 @@ def fbeta(
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
-def f1(
+def f1_score(
     preds: Tensor,
     target: Tensor,
     beta: float = 1.0,
@@ -342,10 +342,10 @@ def f1(
           of classes
 
     Example:
-        >>> from torchmetrics.functional import f1
+        >>> from torchmetrics.functional import f1_score
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1(preds, target, num_classes=3)
+        >>> f1_score(preds, target, num_classes=3)
         tensor(0.3333)
     """
     return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
