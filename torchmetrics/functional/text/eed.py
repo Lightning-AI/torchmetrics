@@ -282,7 +282,7 @@ def _preprocess_sentences(
     else:
         raise ValueError(f"Expected argument `language` to either be `en` or `ja` but got {language}")
 
-    preds = [preprocess_function(hyp) for hyp in preds]
+    preds = [preprocess_function(pred) for pred in preds]
     target = [[preprocess_function(ref) for ref in reference] for reference in target]
 
     return preds, target
