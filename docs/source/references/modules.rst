@@ -390,10 +390,10 @@ LPIPS
 .. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
     :noindex:
 
-MultiScaleSSIM
-~~~~~~~~~~~~~~
+MultiScaleStructualSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.MultiScaleSSIM
+.. autoclass:: torchmetrics.MultiScaleStructualSimilarityIndexMeasure
     :noindex:
 
 PSNR

@@ -241,10 +241,10 @@ image_gradients [func]
     :noindex:
 
 
-multiscale_ssim [func]
-~~~~~~~~~~~~~~~~~~~~~~
+multiscale_structual_similarity_index_measure [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.multiscale_ssim
+.. autofunction:: torchmetrics.functional.multiscale_structual_similarity_index_measure
     :noindex:
 
 
