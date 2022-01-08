@@ -95,20 +95,20 @@ def _multiscale_ssim_compute(
 
     if preds.size()[-1] < 2 ** len(betas) or preds.size()[-2] < 2 ** len(betas):
         raise ValueError(
-            f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be "
-            f"larger than or equal to {2 ** len(betas)}."
+            f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be"
+            f" larger than or equal to {2 ** len(betas)}."
         )
 
     _betas_div = max(1, (len(betas) - 1)) ** 2
     if preds.size()[-2] // _betas_div <= kernel_size[0] - 1:
         raise ValueError(
-            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[0]}, the image height "
-            f"must be larger than {(kernel_size[0] - 1) * _betas_div}."
+            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[0]},"
+            f" the image height must be larger than {(kernel_size[0] - 1) * _betas_div}."
         )
     if preds.size()[-1] // _betas_div <= kernel_size[1] - 1:
         raise ValueError(
-            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]}, the image width "
-            f"must be larger than {(kernel_size[1] - 1) * _betas_div}."
+            f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]},"
+            f" the image width must be larger than {(kernel_size[1] - 1) * _betas_div}."
         )
 
     for _ in range(len(betas)):
