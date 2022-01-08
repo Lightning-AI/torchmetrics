@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -19,7 +20,7 @@ from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio
 from torchmetrics.metric import Metric
 
 
-class SNR(Metric):
+class SignalNoiseRatio(Metric):
     r"""Signal-to-noise ratio (SNR_):
 
     .. math::
@@ -57,12 +58,11 @@ class SNR(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import SNR
+        >>> from torchmetrics import SignalNoiseRatio
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> snr = SNR()
-        >>> snr_val = snr(preds, target)
-        >>> snr_val
+        >>> snr = SignalNoiseRatio()
+        >>> snr(preds, target)
         tensor(16.1805)
 
     References:
@@ -109,6 +109,33 @@ class SNR(Metric):
     def compute(self) -> Tensor:
         """Computes average SNR."""
         return self.sum_snr / self.total
+
+
+class SNR(SignalNoiseRatio):
+    r"""Signal-to-noise ratio (SNR_):
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.SignalNoiseRatio`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> snr = SNR()
+        >>> snr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
+        tensor(16.1805)
+
+    """
+
+    def __init__(
+        self,
+        zero_mean: bool = False,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+    ) -> None:
+        warn("`SNR` was renamed to `SignalNoiseRatio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+
+        super().__init__(zero_mean, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
 
 
 class ScaleInvariantSNR(Metric):

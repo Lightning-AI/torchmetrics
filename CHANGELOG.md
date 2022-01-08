@@ -67,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed audio SNR metrics: ([#712](https://github.com/PyTorchLightning/metrics/pull/712))
   * `functional.snr` -> `functional.signal_distortion_ratio`
   * `functional.si_snr` -> `functional.scale_invariant_signal_noise_ratio`
+  * `SNR` -> `SignalNoiseRatio`
   * `SI_SNR` -> `ScaleInvariantSNR`
 
 
