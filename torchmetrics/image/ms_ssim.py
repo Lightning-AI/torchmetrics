@@ -24,7 +24,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class MultiScaleSSIM(Metric):
+class MultiScaleStructualSimilarityIndexMeasure(Metric):
     """Computes `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure, which is a generalization of
     Structual Similarity Index Measure by incorporating image details at different resolution scores.
 
@@ -38,23 +38,23 @@ class MultiScaleSSIM(Metric):
             - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        k1: Parameter of SSIM.
-        k2: Parameter of SSIM.
+        k1: Parameter of structual similarity index measure.
+        k1: Parameter of structual similarity index measure.
         betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
             resolutions.
-        normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
-            training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
-            adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
+        normalize: When MultiScaleStructualSimilarityIndexMeasure loss is used for training, it is desirable to use
+            normalizes to improve the training stability. This `normalize` argument is out of scope of the original
+            implementation [1], and it is adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
 
     Return:
         Tensor with Multi-Scale SSIM score
 
     Example:
-        >>> from torchmetrics import MultiScaleSSIM
+        >>> from torchmetrics import MultiScaleStructualSimilarityIndexMeasure
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
-        >>> ssim = MultiScaleSSIM()
-        >>> ssim(preds, target)
+        >>> ms_ssim = MultiScaleStructualSimilarityIndexMeasure()
+        >>> ms_ssim(preds, target)
         tensor(0.9558)
 
     References:
