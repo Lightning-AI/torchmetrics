@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
 
-class PSNR(Metric):
+class PeakSignalNoiseRatio(Metric):
     r"""
     Computes `Computes Peak Signal-to-Noise Ratio`_ (PSNR):
 

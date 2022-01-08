@@ -390,10 +390,10 @@ LPIPS
 .. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
     :noindex:
 
-PSNR
+PeakSignalNoiseRatio
 ~~~~
 
-.. autoclass:: torchmetrics.PSNR
+.. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
 SSIM
