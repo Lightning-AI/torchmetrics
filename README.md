@@ -266,7 +266,7 @@ acc = torchmetrics.functional.accuracy(preds, target)
 We currently have implemented metrics within the following domains:
 
 - Audio (
-  [ScaleInvariantSDR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSDR),
+  [ScaleInvariantSignalDistortionRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalDistortionRatio),
   [SI_SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-snr),
   [SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#snr)
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)

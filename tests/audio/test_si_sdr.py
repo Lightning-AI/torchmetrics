@@ -21,7 +21,7 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.audio import ScaleInvariantSDR
+from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
 from torchmetrics.functional import scale_invariant_signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
@@ -84,7 +84,7 @@ class TestSISDR(MetricTester):
             ddp,
             preds,
             target,
-            ScaleInvariantSDR,
+            ScaleInvariantSignalDistortionRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(zero_mean=zero_mean),
@@ -103,7 +103,7 @@ class TestSISDR(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=ScaleInvariantSDR,
+            metric_module=ScaleInvariantSignalDistortionRatio,
             metric_functional=scale_invariant_signal_distortion_ratio,
             metric_args={"zero_mean": zero_mean},
         )
@@ -119,13 +119,13 @@ class TestSISDR(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=ScaleInvariantSDR,
+            metric_module=ScaleInvariantSignalDistortionRatio,
             metric_functional=scale_invariant_signal_distortion_ratio,
             metric_args={"zero_mean": zero_mean},
         )
 
 
-def test_error_on_different_shape(metric_class=ScaleInvariantSDR):
+def test_error_on_different_shape(metric_class=ScaleInvariantSignalDistortionRatio):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

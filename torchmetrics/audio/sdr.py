@@ -192,7 +192,7 @@ class SDR(SignalDistortionRatio):
         )
 
 
-class ScaleInvariantSDR(Metric):
+class ScaleInvariantSignalDistortionRatio(Metric):
     """Scale-invariant signal-to-distortion ratio (SI-SDR). The SI-SDR value is in general considered an overall
     measure of how good a source sound.
 
@@ -224,10 +224,10 @@ class ScaleInvariantSDR(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import ScaleInvariantSDR
+        >>> from torchmetrics import ScaleInvariantSignalDistortionRatio
         >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-        >>> si_sdr = ScaleInvariantSDR()
+        >>> si_sdr = ScaleInvariantSignalDistortionRatio()
         >>> si_sdr(preds, target)
         tensor(18.4030)
 

@@ -91,10 +91,10 @@ SignalDistortionRatio
 .. autoclass:: torchmetrics.SignalDistortionRatio
     :noindex:
 
-ScaleInvariantSDR
-~~~~~~~~~~~~~~~~~
+ScaleInvariantSignalDistortionRatio
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.ScaleInvariantSDR
+.. autoclass:: torchmetrics.ScaleInvariantSignalDistortionRatio
     :noindex:
 
 SI_SNR
