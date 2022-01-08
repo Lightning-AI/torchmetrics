@@ -40,5 +40,8 @@ class SI_SDR(ScaleInvariantSignalDistortionRatio):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        warn("`SI_SDR` was renamed to `ScaleInvariantSignalDistortionRatio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        warn(
+            "`SI_SDR` was renamed to `ScaleInvariantSignalDistortionRatio` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,
+        )
         super().__init__(zero_mean, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
