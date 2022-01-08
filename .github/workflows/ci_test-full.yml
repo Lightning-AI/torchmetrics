@@ -8,6 +8,10 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
 jobs:
   pytest:
 
@@ -36,10 +40,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Update Pip
-      run: |
-        pip install "pip>=20.1" --upgrade --user  # needed for get pip cacher folder
 
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
     - name: Setup macOS
