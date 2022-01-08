@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Union
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -80,7 +81,9 @@ class SQuAD(Metric):
         self.add_state(name="exact_match", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:  # type: ignore
+    def update(  # type: ignore
+        self, preds: PREDS_TYPE, target: TARGETS_TYPE, targets: Union[None, TARGETS_TYPE] = None
+    ) -> None:
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
         Args:
@@ -121,6 +124,14 @@ class SQuAD(Metric):
             KeyError:
                 If the required keys are missing in either predictions or targets.
         """
+        if targets is not None:
+            warn(
+                "You are using deprecated argument `targets` in v0.7 which was renamed to `target`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            target = targets
+
         preds_dict, target_dict = _squad_input_check(preds, target)
         f1_score, exact_match, total = _squad_update(preds_dict, target_dict)
         self.f1_score += f1_score

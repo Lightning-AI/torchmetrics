@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -106,6 +107,8 @@ class TranslationEditRate(Metric):
         self,
         preds: Union[str, Sequence[str]],
         target: Sequence[Union[str, Sequence[str]]],
+        hypothesis_corpus: Union[None, str, Sequence[str]] = None,
+        reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     ) -> None:
         """Update TER statistics.
 
@@ -115,6 +118,22 @@ class TranslationEditRate(Metric):
             target:
                 An iterable of iterables of reference corpus.
         """
+        if hypothesis_corpus is not None:
+            warn(
+                "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            preds = hypothesis_corpus
+
+        if reference_corpus is not None:
+            warn(
+                "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            target = reference_corpus
+
         self.total_num_edits, self.total_tgt_len, self.sentence_ter = _ter_update(
             preds,
             target,

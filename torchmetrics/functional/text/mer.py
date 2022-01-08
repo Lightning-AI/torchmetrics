@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import List, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -65,6 +66,8 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
 def match_error_rate(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],
+    predictions: Union[None, str, List[str]] = None,
+    references: Union[None, str, List[str]] = None,
 ) -> Tensor:
     """Match error rate is a metric of the performance of an automatic speech recognition system. This value
     indicates the percentage of words that were incorrectly predicted and inserted. The lower the value, the better
@@ -83,6 +86,20 @@ def match_error_rate(
         >>> match_error_rate(preds=preds, target=target)
         tensor(0.4444)
     """
+    if predictions is not None:
+        warn(
+            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = predictions
+    if references is not None:
+        warn(
+            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = references
 
     errors, total = _mer_update(preds, target)
     return _mer_compute(errors, total)

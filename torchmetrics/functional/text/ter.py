@@ -36,6 +36,7 @@
 import re
 from functools import lru_cache
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -556,6 +557,8 @@ def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
 def translation_edit_rate(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
+    hypothesis_corpus: Union[None, str, Sequence[str]] = None,
+    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     normalize: bool = False,
     no_punctuation: bool = False,
     lowercase: bool = True,
@@ -605,6 +608,22 @@ def translation_edit_rate(
         raise ValueError(f"Expected argument `lowercase` to be of type boolean but got {lowercase}.")
     if not isinstance(asian_support, bool):
         raise ValueError(f"Expected argument `asian_support` to be of type boolean but got {asian_support}.")
+
+    if hypothesis_corpus is not None:
+        warn(
+            "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = hypothesis_corpus
+
+    if reference_corpus is not None:
+        warn(
+            "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = reference_corpus
 
     tokenizer: _TercomTokenizer = _TercomTokenizer(normalize, no_punctuation, lowercase, asian_support)
 

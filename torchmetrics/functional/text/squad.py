@@ -18,6 +18,7 @@ import re
 import string
 from collections import Counter
 from typing import Any, Callable, Dict, List, Tuple, Union
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -202,6 +203,7 @@ def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, 
 def squad(
     preds: PREDS_TYPE,
     target: TARGETS_TYPE,
+    targets: Union[None, TARGETS_TYPE] = None,
 ) -> Dict[str, Tensor]:
     """Calculate `SQuAD Metric`_ .
 
@@ -258,6 +260,13 @@ def squad(
         [1] SQuAD: 100,000+ Questions for Machine Comprehension of Text by Pranav Rajpurkar, Jian Zhang, Konstantin
         Lopyrev, Percy Liang `SQuAD Metric`_ .
     """
+    if targets is not None:
+        warn(
+            "You are using deprecated argument `targets` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = targets
 
     preds_dict, target_dict = _squad_input_check(preds, target)
     f1, exact_match, total = _squad_update(preds_dict, target_dict)

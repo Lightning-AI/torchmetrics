@@ -65,6 +65,8 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 def word_error_rate(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],
+    predictions: Union[None, str, List[str]] = None,
+    references: Union[None, str, List[str]] = None,
 ) -> Tensor:
     """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
@@ -83,6 +85,22 @@ def word_error_rate(
         >>> word_error_rate(preds=preds, target=target)
         tensor(0.5000)
     """
+    if predictions is not None:
+        warn(
+            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = predictions
+
+    if references is not None:
+        warn(
+            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = references
+
     errors, total = _wer_update(preds, target)
     return _wer_compute(errors, total)
 
@@ -90,6 +108,8 @@ def word_error_rate(
 def wer(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],
+    predictions: Union[None, str, List[str]] = None,
+    references: Union[None, str, List[str]] = None,
 ) -> Tensor:
     """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
 
@@ -102,5 +122,21 @@ def wer(
         >>> wer(preds=preds, target=target)
         tensor(0.5000)
     """
+    if predictions is not None:
+        warn(
+            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = predictions
+
+    if references is not None:
+        warn(
+            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = references
+
     warn("`wer` was renamed to `word_error_rate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
     return word_error_rate(preds, target)
