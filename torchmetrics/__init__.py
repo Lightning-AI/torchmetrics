@@ -21,6 +21,8 @@ from torchmetrics.audio import (  # noqa: E402
     SNR,
     ScaleInvariantSignalNoiseRatio,
     SignalNoiseRatio,
+    ScaleInvariantSignalDistortionRatio,
+    SignalDistortionRatio,
 )
 from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
@@ -150,6 +152,8 @@ __all__ = [
     "ROC",
     "SacreBLEUScore",
     "SDR",
+    "SignalDistortionRatio",
+    "ScaleInvariantSignalDistortionRatio",
     "SI_SDR",
     "SI_SNR",
     "ScaleInvariantSignalNoiseRatio",

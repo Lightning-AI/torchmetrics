@@ -24,7 +24,7 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import PIT
-from torchmetrics.functional import pit, si_sdr, snr
+from torchmetrics.functional import pit, scale_invariant_signal_distortion_ratio, snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -97,16 +97,18 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
 
 
 snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=snr, eval_func="max")
-si_sdr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=si_sdr, eval_func="max")
+si_sdr_pit_scipy = partial(
+    naive_implementation_pit_scipy, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max"
+)
 
 
 @pytest.mark.parametrize(
     "preds, target, sk_metric, metric_func, eval_func",
     [
         (inputs1.preds, inputs1.target, snr_pit_scipy, snr, "max"),
-        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, si_sdr, "max"),
+        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
         (inputs2.preds, inputs2.target, snr_pit_scipy, snr, "max"),
-        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, si_sdr, "max"),
+        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
     ],
 )
 class TestPIT(MetricTester):
