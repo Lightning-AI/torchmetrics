@@ -14,16 +14,11 @@
 
 from functools import partial
 
-import numpy as np
 import pytest
 from torch import Tensor, tensor
 
 from tests.text.helpers import TextTester
-from tests.text.inputs import (
-    _inputs_multiple_references,
-    _inputs_single_reference,
-    _inputs_single_sentence_multiple_references,
-)
+from tests.text.inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.text.eed import ExtendedEditDistance
 
