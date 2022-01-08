@@ -635,7 +635,7 @@ CHRFScore
     :noindex:
 
 ExtendedEditDistance
-~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.ExtendedEditDistance
     :noindex:
