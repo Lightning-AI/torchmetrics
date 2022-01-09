@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -458,4 +459,5 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
+    warn("`f1` was renamed to `f1_score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
     return f1_score(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
