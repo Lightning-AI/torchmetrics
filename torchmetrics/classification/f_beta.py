@@ -174,7 +174,7 @@ class FBeta(StatScores):
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
-class F1(FBeta):
+class F1Score(FBeta):
     """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
@@ -261,10 +261,10 @@ class F1(FBeta):
 
 
     Example:
-        >>> from torchmetrics import F1
+        >>> from torchmetrics import F1Score
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1 = F1(num_classes=3)
+        >>> f1 = F1Score(num_classes=3)
         >>> f1(preds, target)
         tensor(0.3333)
     """

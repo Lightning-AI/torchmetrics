@@ -27,7 +27,7 @@ from torchmetrics.audio import (  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
-    F1,
+    F1Score,
     ROC,
     Accuracy,
     AveragePrecision,
@@ -113,7 +113,7 @@ __all__ = [
     "CosineSimilarity",
     "TweedieDevianceScore",
     "ExplainedVariance",
-    "F1",
+    "F1Score",
     "FBeta",
     "HammingDistance",
     "Hinge",
