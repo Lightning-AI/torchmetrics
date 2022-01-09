@@ -122,7 +122,7 @@ dice_score [func]
 f1 [func]
 ~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.f1
+.. autofunction:: torchmetrics.functional.f1_score
     :noindex:
 
 
