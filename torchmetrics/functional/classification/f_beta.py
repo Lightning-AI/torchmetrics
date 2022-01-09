@@ -348,4 +348,6 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    return fbeta_score(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+    return fbeta_score(
+        preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass
+    )

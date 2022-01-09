@@ -178,7 +178,9 @@ def test_no_support(metric_class, metric_fn):
     assert result_cl == result_fn == 0
 
 
-@pytest.mark.parametrize("metric_class, metric_fn", [(partial(FBetaScore, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1)])
+@pytest.mark.parametrize(
+    "metric_class, metric_fn", [(partial(FBetaScore, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1)]
+)
 @pytest.mark.parametrize(
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
 )
@@ -202,7 +204,10 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
 
 @pytest.mark.parametrize(
     "metric_class, metric_fn, sk_fn",
-    [(partial(FBetaScore, beta=2.0), partial(fbeta_score, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)],
+    [
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score, beta=2.0), partial(fbeta_score, beta=2.0)),
+        (F1, f1, f1_score),
+    ],
 )
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
@@ -430,7 +435,10 @@ def test_top_k(
 @pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
 @pytest.mark.parametrize(
     "metric_class, metric_functional, sk_fn",
-    [(partial(FBetaScore, beta=2.0), partial(fbeta_score, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)],
+    [
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score, beta=2.0), partial(fbeta_score, beta=2.0)),
+        (F1, f1, f1_score),
+    ],
 )
 def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_index):
     preds = _input_miss_class.preds
