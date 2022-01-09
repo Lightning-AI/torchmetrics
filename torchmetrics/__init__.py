@@ -27,7 +27,6 @@ from torchmetrics.audio import (  # noqa: E402
 from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
-    F1Score,
     F1,
     ROC,
     Accuracy,
@@ -38,6 +37,7 @@ from torchmetrics.classification import (  # noqa: E402, F401
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
+    F1Score,
     FBeta,
     HammingDistance,
     Hinge,

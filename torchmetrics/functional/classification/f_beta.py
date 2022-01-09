@@ -351,6 +351,7 @@ def f1_score(
     """
     return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
 
+
 def f1(
     preds: Tensor,
     target: Tensor,

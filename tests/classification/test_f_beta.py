@@ -33,7 +33,8 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics import F1Score, FBeta, Metric
-from torchmetrics.functional import f1_score as f1_score_pl, fbeta
+from torchmetrics.functional import f1_score as f1_score_pl
+from torchmetrics.functional import fbeta
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod
 
@@ -183,7 +184,7 @@ def test_no_support(metric_class, metric_fn):
     [
         (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
         (F1Score, f1_score_pl),
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
@@ -441,7 +442,7 @@ def test_top_k(
     "metric_class, metric_functional, sk_fn",
     [
         (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)),
-        (F1Score, f1_score_pl, f1_score)
+        (F1Score, f1_score_pl, f1_score),
     ],
 )
 def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_index):
