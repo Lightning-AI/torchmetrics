@@ -14,6 +14,7 @@
 from typing import Any, Callable, Optional
 from warnings import warn
 
+import torch
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
