@@ -16,9 +16,9 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-import warnings
 from collections import Counter
 from typing import Callable, Sequence, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -146,6 +146,8 @@ def _bleu_score_compute(
 def bleu_score(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
+    translate_corpus: Union[None, str, Sequence[str]] = None,
+    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
@@ -178,10 +180,25 @@ def bleu_score(
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
-    warnings.warn(
+    warn(
         "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
         " Warning will be removed in v0.8."
     )
+    if translate_corpus is not None:
+        warn(
+            "You are using deprecated argument `translate_corpus` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = translate_corpus
+    if reference_corpus is not None:
+        warn(
+            "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = reference_corpus
+
     preds_ = [preds] if isinstance(preds, str) else preds
     target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]
 

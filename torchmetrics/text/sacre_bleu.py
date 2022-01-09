@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import warnings
-
 # referenced from
 # Library Name: torchtext
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence, Union
+from warnings import warn
 
 from typing_extensions import Literal
 
@@ -102,7 +101,7 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        warnings.warn(
+        warn(
             "Input order of targets and preds were changed to predictions firsts and targets \
                     second in v0.7. Warning will be removed in v0.8"
         )
@@ -116,13 +115,34 @@ class SacreBLEUScore(BLEUScore):
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def update(  # type: ignore
+        self,
+        preds: Sequence[str],
+        target: Sequence[Sequence[str]],
+        translate_corpus: Union[None, Sequence[str]] = None,
+        reference_corpus: Union[None, Sequence[Sequence[str]]] = None,
+    ) -> None:
         """Compute Precision Scores.
 
         Args:
             preds: An iterable of machine translated corpus
             target: An iterable of iterables of reference corpus
         """
+        if translate_corpus is not None:
+            warn(
+                "You are using deprecated argument `translate_corpus` in v0.7 which was renamed to `preds`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            preds = translate_corpus
+        if reference_corpus is not None:
+            warn(
+                "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            target = reference_corpus
+
         self.preds_len, self.target_len = _bleu_score_update(
             preds,
             target,

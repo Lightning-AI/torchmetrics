@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from typing import Any, Callable, Dict, List, Optional, Union
+from warnings import warn
 
 import torch
 
@@ -183,7 +183,7 @@ class BERTScore(Metric):
                 )
             if not model_name_or_path:
                 model_name_or_path = _DEFAULT_MODEL
-                warnings.warn(
+                warn(
                     "The argument `model_name_or_path` was not specified while it is required when default "
                     " `transformers` model are used."
                     f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
@@ -191,7 +191,13 @@ class BERTScore(Metric):
             self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
             self.user_tokenizer = False
 
-    def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
+    def update(  # type: ignore
+        self,
+        preds: List[str],
+        target: List[str],
+        predictions: Union[None, List[str]] = None,
+        references: Union[None, List[str]] = None,
+    ) -> None:
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 
@@ -201,6 +207,21 @@ class BERTScore(Metric):
             target:
                 An iterable of predicted sentences.
         """
+        if predictions is not None:
+            warn(
+                "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            preds = predictions
+        if references is not None:
+            warn(
+                "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            target = references
+
         preds_dict = _preprocess_text(
             preds,
             self.tokenizer,

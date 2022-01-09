@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import List, Tuple, Union
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -68,6 +69,8 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
 def word_information_preserved(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],
+    predictions: Union[None, str, List[str]] = None,
+    references: Union[None, str, List[str]] = None,
 ) -> Tensor:
     """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
@@ -84,5 +87,20 @@ def word_information_preserved(
         >>> word_information_preserved(preds=preds, target=target)
         tensor(0.3472)
     """
+    if predictions is not None:
+        warn(
+            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = predictions
+    if references is not None:
+        warn(
+            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = references
+
     errors, reference_total, prediction_total = _wip_update(preds, target)
     return _wip_compute(errors, reference_total, prediction_total)

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Any, Callable, List, Optional, Union
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -83,13 +84,34 @@ class WordInfoPreserved(Metric):
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
+    def update(  # type: ignore
+        self,
+        preds: Union[str, List[str]],
+        target: Union[str, List[str]],
+        predictions: Union[None, str, List[str]] = None,
+        references: Union[None, str, List[str]] = None,
+    ) -> None:
         """Store predictions/references for computing word Information Preserved scores.
 
         Args:
             preds: Transcription(s) to score as a string or list of strings
             target: Reference(s) for each speech input as a string or list of strings
         """
+        if predictions is not None:
+            warn(
+                "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            preds = predictions
+        if references is not None:
+            warn(
+                "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
+                " The past argument will be removed in v0.8.",
+                DeprecationWarning,
+            )
+            target = references
+
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors
         self.target_total += target_total

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import List, Tuple, Union
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -68,6 +69,8 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
 def word_information_lost(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],
+    predictions: Union[None, str, List[str]] = None,
+    references: Union[None, str, List[str]] = None,
 ) -> Tensor:
     """Word Information Lost rate is a metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
@@ -84,5 +87,20 @@ def word_information_lost(
         >>> word_information_lost(preds=preds, target=target)
         tensor(0.6528)
     """
+    if predictions is not None:
+        warn(
+            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = predictions
+    if references is not None:
+        warn(
+            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = references
+
     errors, target_total, preds_total = _wil_update(preds, target)
     return _wil_compute(errors, target_total, preds_total)

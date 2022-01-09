@@ -35,6 +35,7 @@
 
 from collections import defaultdict
 from typing import Dict, List, Optional, Sequence, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -587,7 +588,9 @@ def _chrf_score_compute(
 
 def chrf_score(
     preds: Union[str, Sequence[str]],
-    target: Union[Sequence[str], Sequence[Sequence[str]]],
+    target: Sequence[Union[str, Sequence[str]]],
+    hypothesis_corpus: Union[str, Sequence[str]] = None,
+    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     n_char_order: int = 6,
     n_word_order: int = 2,
     beta: float = 2.0,
@@ -642,6 +645,21 @@ def chrf_score(
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
+    if hypothesis_corpus is not None:
+        warn(
+            "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        preds = hypothesis_corpus
+    if reference_corpus is not None:
+        warn(
+            "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
+            " The past argument will be removed in v0.8.",
+            DeprecationWarning,
+        )
+        target = reference_corpus
+
     if not isinstance(n_char_order, int) or n_char_order < 1:
         raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
     if not isinstance(n_word_order, int) or n_word_order < 0:
