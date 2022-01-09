@@ -27,7 +27,7 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     return num / denom
 
 
-def _fbeta_compute(
+def _fbeta_score_compute(
     tp: Tensor,
     fp: Tensor,
     tn: Tensor,
@@ -108,7 +108,7 @@ def _fbeta_compute(
     )
 
 
-def fbeta(
+def fbeta_score(
     preds: Tensor,
     target: Tensor,
     beta: float = 1.0,
@@ -207,10 +207,10 @@ def fbeta(
           of classes
 
     Example:
-        >>> from torchmetrics.functional import fbeta
+        >>> from torchmetrics.functional import fbeta_score
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> fbeta(preds, target, num_classes=3, beta=0.5)
+        >>> fbeta_score(preds, target, num_classes=3, beta=0.5)
         tensor(0.3333)
 
     """
@@ -240,7 +240,7 @@ def fbeta(
         ignore_index=ignore_index,
     )
 
-    return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
+    return _fbeta_score_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
 def f1(
@@ -348,4 +348,4 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+    return fbeta_score(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
