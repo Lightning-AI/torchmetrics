@@ -281,7 +281,7 @@ ConfusionMatrix
     :noindex:
 
 F1Score
-~~
+~~~~~~~
 
 .. autoclass:: torchmetrics.F1Score
     :noindex:
