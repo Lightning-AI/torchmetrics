@@ -63,7 +63,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
 
-
 - Renamed audio SDR metrics: ([#711](https://github.com/PyTorchLightning/metrics/pull/711))
   * `functional.sdr` -> `functional.signal_distortion_ratio`
   * `functional.si_sdr` -> `functional.scale_invariant_signal_distortion_ratio`
@@ -77,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SNR` -> `SignalNoiseRatio`
   * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
 
+- Renamed `torchmetrics.functional.f1` to `torchmetrics.functional.f1_score` and `torchmetrics.F1` to `torchmetrics.F1Score` to unify name convention with other frameworks ([#731](https://github.com/PyTorchLightning/metrics/pull/731))
 
 ### Removed
 
