@@ -158,26 +158,26 @@ def confusion_matrix(
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> confmat = ConfusionMatrix(num_classes=2)
         >>> confmat(preds, target)
-        tensor([[2., 0.],
-                [1., 1.]])
+        tensor([[2, 0],
+                [1, 1]])
 
     Example (multiclass data):
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> confmat = ConfusionMatrix(num_classes=3)
         >>> confmat(preds, target)
-        tensor([[1., 1., 0.],
-                [0., 1., 0.],
-                [0., 0., 1.]])
+        tensor([[1, 1, 0],
+                [0, 1, 0],
+                [0, 0, 1]])
 
     Example (multilabel data):
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
         >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        tensor([[[1., 0.], [0., 1.]],
-                [[1., 0.], [1., 0.]],
-                [[0., 1.], [0., 1.]]])
+        tensor([[[1, 0], [0, 1]],
+                [[1, 0], [1, 0]],
+                [[0, 1], [0, 1]]])
 
     """
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold, multilabel)
