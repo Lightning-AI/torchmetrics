@@ -120,5 +120,5 @@ def word_information_lost(
         warn("If you specify both `target` and `references`, only `target` is considered.")
         target = target or references
 
-    errors, target_total, preds_total = _wil_update(preds, target)
+    errors, target_total, preds_total = _wil_update(preds, target)  # type: ignore
     return _wil_compute(errors, target_total, preds_total)

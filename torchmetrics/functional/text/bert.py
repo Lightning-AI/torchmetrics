@@ -588,7 +588,7 @@ def bert_score(
         warn("If you specify both `target` and `references`, only `target` is considered.")
         target = target or references
 
-    if len(preds) != len(target):
+    if len(preds) != len(target):  # type: ignore
         raise ValueError("Number of predicted and reference sententes must be the same!")
 
     if verbose and (not _TQDM_AVAILABLE):

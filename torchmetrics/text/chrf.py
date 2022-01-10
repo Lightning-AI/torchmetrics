@@ -188,8 +188,8 @@ class CHRFScore(Metric):
             target = target or reference_corpus
 
         n_grams_dicts_tuple = _chrf_score_update(
-            preds,
-            target,
+            preds,  # type: ignore
+            target,  # type: ignore
             *self._convert_states_to_dicts(),
             self.n_char_order,
             self.n_word_order,

@@ -702,8 +702,8 @@ def chrf_score(
         total_matching_word_n_grams,
         sentence_chrf_score,
     ) = _chrf_score_update(
-        preds,
-        target,
+        preds,  # type: ignore
+        target,  # type: ignore
         total_preds_char_n_grams,
         total_preds_word_n_grams,
         total_target_char_n_grams,

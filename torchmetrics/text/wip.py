@@ -127,7 +127,7 @@ class WordInfoPreserved(Metric):
             warn("If you specify both `target` and `references`, only `target` is considered.")
             target = target or references
 
-        errors, target_total, preds_total = _wip_update(preds, target)
+        errors, target_total, preds_total = _wip_update(preds, target)  # type: ignore
         self.errors += errors
         self.target_total += target_total
         self.preds_total += preds_total

@@ -213,10 +213,10 @@ def bleu_score(
         target = target or reference_corpus
 
     preds_ = [preds] if isinstance(preds, str) else preds
-    target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]
+    target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]  # type: ignore
 
-    if len(preds_) != len(target_):
-        raise ValueError(f"Corpus has different size {len(preds_)} != {len(target_)}")
+    if len(preds_) != len(target_):  # type: ignore
+        raise ValueError(f"Corpus has different size {len(preds_)} != {len(target_)}")  # type: ignore
 
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
@@ -224,7 +224,7 @@ def bleu_score(
     target_len = tensor(0.0)
 
     preds_len, target_len = _bleu_score_update(
-        preds_, target_, numerator, denominator, preds_len, target_len, n_gram, _tokenize_fn
+        preds_, target_, numerator, denominator, preds_len, target_len, n_gram, _tokenize_fn  # type: ignore
     )
 
     return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, smooth)

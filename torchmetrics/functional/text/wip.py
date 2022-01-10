@@ -120,5 +120,5 @@ def word_information_preserved(
         warn("If you specify both `target` and `references`, only `target` is considered.")
         target = target or references
 
-    errors, reference_total, prediction_total = _wip_update(preds, target)
+    errors, reference_total, prediction_total = _wip_update(preds, target)  # type: ignore
     return _wip_compute(errors, reference_total, prediction_total)

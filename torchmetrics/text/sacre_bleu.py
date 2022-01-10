@@ -157,8 +157,8 @@ class SacreBLEUScore(BLEUScore):
             target = target or reference_corpus
 
         self.preds_len, self.target_len = _bleu_score_update(
-            preds,
-            target,
+            preds,  # type: ignore
+            target,  # type: ignore
             self.numerator,
             self.denominator,
             self.preds_len,

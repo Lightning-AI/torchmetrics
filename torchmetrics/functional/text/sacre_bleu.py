@@ -363,8 +363,8 @@ def sacre_bleu_score(
         raise ValueError(
             f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
         )
-    if len(preds) != len(target):
-        raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")
+    if len(preds) != len(target):  # type: ignore
+        raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")  # type: ignore
     if tokenize == "intl" and not _REGEX_AVAILABLE:
         raise ModuleNotFoundError(
             "`'intl'` tokenization requires that `regex` is installed."
@@ -378,8 +378,8 @@ def sacre_bleu_score(
 
     tokenize_fn = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
     preds_len, target_len = _bleu_score_update(
-        preds,
-        target,
+        preds,  # type: ignore
+        target,  # type: ignore
         numerator,
         denominator,
         preds_len,

@@ -236,7 +236,7 @@ class BERTScore(Metric):
             target = target or references
 
         preds_dict = _preprocess_text(
-            preds,
+            preds,  # type: ignore
             self.tokenizer,
             self.max_length,
             truncation=False,
@@ -244,7 +244,7 @@ class BERTScore(Metric):
             own_tokenizer=self.user_tokenizer,
         )
         target_dict = _preprocess_text(
-            target,
+            target,  # type: ignore
             self.tokenizer,
             self.max_length,
             truncation=False,
