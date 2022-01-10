@@ -140,7 +140,7 @@ __all__ = [
     "MultiScaleStructuralSimilarityIndexMeasure",
     "PearsonCorrcoef",
     "PearsonCorrCoef",
-    "permutation_invariant_training",
+    "PermutationInvariantTraining",
     "Precision",
     "PrecisionRecallCurve",
     "PSNR",

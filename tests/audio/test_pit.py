@@ -23,7 +23,7 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.audio import permutation_invariant_training
+from torchmetrics.audio import PermutationInvariantTraining
 from torchmetrics.functional import permutation_invariant_training, scale_invariant_signal_distortion_ratio, snr
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
@@ -71,7 +71,7 @@ def naive_implementation_pit_scipy(
         for e in range(spk_num):
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...])
 
-    # pit_r = permutation_invariant_training(metric_func, eval_func)(preds, target)
+    # pit_r = PermutationInvariantTraining(metric_func, eval_func)(preds, target)
     metric_mtx = metric_mtx.detach().cpu().numpy()
     best_metrics = []
     best_perms = []
@@ -121,7 +121,7 @@ class TestPIT(MetricTester):
             ddp,
             preds,
             target,
-            permutation_invariant_training,
+            PermutationInvariantTraining,
             sk_metric=partial(_average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(metric_func=metric_func, eval_func=eval_func),
@@ -143,7 +143,7 @@ class TestPIT(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=permutation_invariant_training,
+            metric_module=PermutationInvariantTraining,
             metric_functional=pit_diff,
             metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
@@ -159,32 +159,32 @@ class TestPIT(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=permutation_invariant_training,
+            metric_module=PermutationInvariantTraining,
             metric_functional=partial(permutation_invariant_training, metric_func=metric_func, eval_func=eval_func),
             metric_args={"metric_func": metric_func, "eval_func": eval_func},
         )
 
 
 def test_error_on_different_shape() -> None:
-    metric = permutation_invariant_training(snr, "max")
+    metric = PermutationInvariantTraining(snr, "max")
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(3, 3, 10), torch.randn(3, 2, 10))
 
 
 def test_error_on_wrong_eval_func() -> None:
-    metric = permutation_invariant_training(snr, "xxx")
+    metric = PermutationInvariantTraining(snr, "xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
-    metric = permutation_invariant_training(snr, "max")
+    metric = PermutationInvariantTraining(snr, "max")
     with pytest.raises(ValueError, match="Inputs must be of shape *"):
         metric(torch.randn(3), torch.randn(3))
 
 
 def test_consistency_of_two_implementations() -> None:
-    from torchmetrics.functional.audio.permutation_invariant_training import (
+    from torchmetrics.functional.audio.pit import (
         _find_best_perm_by_exhuastive_method,
         _find_best_perm_by_linear_sum_assignment,
     )

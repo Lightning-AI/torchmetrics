@@ -19,8 +19,8 @@ from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 
 
-class permutation_invariant_training(Metric):
-    """Permutation invariant training. The permutation_invariant_training implements the famous Permutation
+class Permutation_Invariant_Training(Metric):
+    """Permutation invariant training (PermutationInvariantTraining). The PermutationInvariantTraining implements the famous Permutation
     Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
@@ -51,16 +51,16 @@ class permutation_invariant_training(Metric):
             additional args for metric_func
 
     Returns:
-        average PIT metric
+        average PermutationInvariantTraining metric
 
     Example:
         >>> import torch
-        >>> from torchmetrics import permutation_invariant_training
+        >>> from torchmetrics import PermutationInvariantTraining
         >>> from torchmetrics.functional import si_snr
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = permutation_invariant_training(si_snr, 'max')
+        >>> pit = PermutationInvariantTraining(si_snr, 'max')
         >>> pit(preds, target)
         tensor(-2.1065)
 
@@ -110,5 +110,5 @@ class permutation_invariant_training(Metric):
         self.total += pit_metric.numel()
 
     def compute(self) -> Tensor:
-        """Computes average PIT metric."""
+        """Computes average PermutationInvariantTraining metric."""
         return self.sum_pit_metric / self.total
