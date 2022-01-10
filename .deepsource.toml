@@ -8,11 +8,11 @@ enabled = true
 
 [[analyzers]]
 name = "shell"
-enabled = true
+enabled = false
 
 [[analyzers]]
 name = "python"
-enabled = true
+enabled = false
 
   [analyzers.meta]
   runtime_version = "3.x.x"
