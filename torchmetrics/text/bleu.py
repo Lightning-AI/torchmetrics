@@ -109,8 +109,10 @@ class BLEUScore(Metric):
             target: An iterable of iterables of reference corpus
             translate_corpus:
                 An iterable of machine translated corpus
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
             reference_corpus:
                 An iterable of iterables of reference corpus
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
         """
         if translate_corpus is not None:
             warn(
