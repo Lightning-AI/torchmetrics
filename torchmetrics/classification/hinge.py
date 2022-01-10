@@ -131,45 +131,11 @@ class HingeLoss(Metric):
 
 class Hinge(HingeLoss):
     r"""
-    Computes the mean `Hinge loss`_, typically used for Support Vector
-    Machines (SVMs). In the binary case it is defined as:
-
-    .. math::
-        \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
-
-    Where :math:`y \in {-1, 1}` is the target, and :math:`\hat{y} \in \mathbb{R}` is the prediction.
-
-    In the multi-class case, when ``multiclass_mode=None`` (default), ``multiclass_mode=MulticlassMode.CRAMMER_SINGER``
-    or ``multiclass_mode="crammer-singer"``, this metric will compute the multi-class hinge loss defined by Crammer and
-    Singer as:
-
-    .. math::
-        \text{Hinge loss} = \max\left(0, 1 - \hat{y}_y + \max_{i \ne y} (\hat{y}_i)\right)
-
-    Where :math:`y \in {0, ..., \mathrm{C}}` is the target class (where :math:`\mathrm{C}` is the number of classes),
-    and :math:`\hat{y} \in \mathbb{R}^\mathrm{C}` is the predicted output per class.
-
-    In the multi-class case when ``multiclass_mode=MulticlassMode.ONE_VS_ALL`` or ``multiclass_mode='one-vs-all'``, this
-    metric will use a one-vs-all approach to compute the hinge loss, giving a vector of C outputs where each entry pits
-    that class against all remaining classes.
-
-    This metric can optionally output the mean of the squared hinge loss by setting ``squared=True``
-
-    Only accepts inputs with preds shape of (N) (binary) or (N, C) (multi-class) and target shape of (N).
-
-    Args:
-        squared:
-            If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss (default).
-        multiclass_mode:
-            Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default),
-            ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
-            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
-
-    Raises:
-        ValueError:
-            If ``multiclass_mode`` is not: None, ``MulticlassMode.CRAMMER_SINGER``, ``"crammer-singer"``,
-            ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"``.
-
+    Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
+    
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.HingeLoss`. Will be removed in v0.8.
+    
     Example (binary case):
         >>> import torch
         >>> from torchmetrics import Hinge
