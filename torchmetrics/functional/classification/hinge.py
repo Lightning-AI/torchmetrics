@@ -230,8 +230,8 @@ def hinge_loss(
     """
     measure, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
     return _hinge_compute(measure, total)
-    
-    
+
+
 def hinge(
     preds: Tensor,
     target: Tensor,
@@ -306,4 +306,4 @@ def hinge(
         tensor([2.2333, 1.5000, 1.2333])
     """
     warn("`hinge` was renamed to `hinge_loss` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return hinge_loss(preds, target, squared, multiclass_mode)    
+    return hinge_loss(preds, target, squared, multiclass_mode)
