@@ -63,7 +63,7 @@ class HingeLoss(Metric):
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics import Hinge
+        >>> from torchmetrics import HingeLoss
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
         >>> hinge = HingeLoss()
