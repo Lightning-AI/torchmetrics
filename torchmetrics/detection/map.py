@@ -155,7 +155,7 @@ class MAP(Metric):
 
     Args:
         box_format:
-            Input format of given boxes. Supported formats are [‘xyxy’, ‘xywh’, ‘cxcywh’].
+            Input format of given boxes. Supported formats are [`xyxy`, `xywh`, `cxcywh`].
         iou_thresholds:
             IoU thresholds for evaluation. If set to `None` it corresponds to the stepped range `[0.5,...,0.95]`
             with step `0.05`. Else provide a list of floats.
@@ -251,10 +251,10 @@ class MAP(Metric):
         if box_format not in allowed_box_formats:
             raise ValueError(f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}")
         self.box_format = box_format
-        self.iou_thresholds = Tensor(iou_thresholds or torch.linspace(0.5, 0.95, round((0.95 - 0.5) / 0.05) + 1))
-        self.rec_thresholds = Tensor(rec_thresholds or torch.linspace(0.0, 1.00, round(1.00 / 0.01) + 1))
-        self.max_detection_thresholds = IntTensor(max_detection_thresholds or [1, 10, 100])
-        self.max_detection_thresholds, _ = torch.sort(self.max_detection_thresholds)
+        self.iou_thresholds = iou_thresholds or torch.linspace(0.5, 0.95, round((0.95 - 0.5) / 0.05) + 1).tolist()
+        self.rec_thresholds = rec_thresholds or torch.linspace(0.0, 1.00, round(1.00 / 0.01) + 1).tolist()
+        max_det_thr, _ = torch.sort(IntTensor(max_detection_thresholds or [1, 10, 100]))
+        self.max_detection_thresholds = max_det_thr.tolist()
         self.bbox_area_ranges = {
             "all": (0 ** 2, int(1e5 ** 2)),
             "small": (0 ** 2, 32 ** 2),
@@ -490,18 +490,20 @@ class MAP(Metric):
             prec = results["precision"]
             # IoU
             if iou_threshold is not None:
-                thr = torch.where(iou_threshold == self.iou_thresholds)[0]
-                prec = prec[thr]
-            prec = prec[:, :, :, area_inds, mdet_inds]
+                thr = self.iou_thresholds.index(iou_threshold)
+                prec = prec[thr, :, :, area_inds, mdet_inds]
+            else:
+                prec = prec[:, :, :, area_inds, mdet_inds]
         else:
             # dimension of recall: [TxKxAxM]
             prec = results["recall"]
             if iou_threshold is not None:
-                thr = torch.where(iou_threshold == self.iou_thresholds)[0]
-                prec = prec[thr]
-            prec = prec[:, :, area_inds, mdet_inds]
+                thr = self.iou_thresholds.index(iou_threshold)
+                prec = prec[thr, :, :, area_inds, mdet_inds]
+            else:
+                prec = prec[:, :, area_inds, mdet_inds]
 
-        mean_prec = Tensor([-1]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
+        mean_prec = Tensor([-1]).to(self.device) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
         return mean_prec
 
     def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
@@ -539,8 +541,8 @@ class MAP(Metric):
         scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs), device=self.device)
 
         # move tensors if necessary
-        self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
-        self.rec_thresholds = self.rec_thresholds.to(self.device)
+        # self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
+        rec_thresholds_tensor = Tensor(self.rec_thresholds).to(self.device)
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls in range(nb_classes):
@@ -554,7 +556,7 @@ class MAP(Metric):
                         idx_bbox_area=idx_bbox_area,
                         idx_max_det_thrs=idx_max_det_thrs,
                         eval_imgs=eval_imgs,
-                        rec_thresholds=self.rec_thresholds,
+                        rec_thresholds=rec_thresholds_tensor,
                         max_det=max_det,
                         nb_imgs=nb_imgs,
                         nb_bbox_areas=nb_bbox_areas,
