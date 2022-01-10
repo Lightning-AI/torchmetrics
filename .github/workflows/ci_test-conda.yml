@@ -7,6 +7,10 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
   pull_request:
     branches: [master, "release/*"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
 jobs:
   conda:
     runs-on: ubuntu-20.04
@@ -23,7 +27,7 @@ jobs:
       TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 55
+    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v2
 
@@ -69,11 +73,6 @@ jobs:
         path: $TRANSFORMERS_CACHE
         key: cache-transformers
 
-    - name: Temp COCO env. fix
-      if: matrix.pytorch-version == '1.4'
-      run: |
-        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4
-
     - name: Update Environment
       run: |
         sudo apt install libsndfile1
@@ -85,6 +84,7 @@ jobs:
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision
+        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         pip install --requirement requirements.txt --quiet
         pip install --requirement requirements/test.txt --quiet
         pip list

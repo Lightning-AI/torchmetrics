@@ -77,3 +77,4 @@
 .. _chrF++ score: https://aclanthology.org/W17-4770.pdf
 .. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
+.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf

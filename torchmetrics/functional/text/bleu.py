@@ -16,6 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
+import warnings
 from collections import Counter
 from typing import Callable, Sequence, Tuple, Union
 
@@ -57,8 +58,8 @@ def _tokenize_fn(sentence: str) -> Sequence[str]:
 
 
 def _bleu_score_update(
-    reference_corpus: Sequence[Sequence[str]],
     translate_corpus: Sequence[str],
+    reference_corpus: Sequence[Sequence[str]],
     numerator: Tensor,
     denominator: Tensor,
     trans_len: Tensor,
@@ -69,11 +70,11 @@ def _bleu_score_update(
     """Updates and returns variables required to compute the BLEU score.
 
     Args:
-        reference_corpus: An iterable of iterables of reference corpus
         translate_corpus: An iterable of machine translated corpus
+        reference_corpus: An iterable of iterables of reference corpus
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
-        trans_len: count of words in a candidate translation
+        trans_len: count of words in a candidate prediction
         ref_len: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
         tokenizer: A function that turns sentence into list of words
@@ -106,7 +107,12 @@ def _bleu_score_update(
 
 
 def _bleu_score_compute(
-    trans_len: Tensor, ref_len: Tensor, numerator: Tensor, denominator: Tensor, n_gram: int = 4, smooth: bool = False
+    trans_len: Tensor,
+    ref_len: Tensor,
+    numerator: Tensor,
+    denominator: Tensor,
+    n_gram: int = 4,
+    smooth: bool = False,
 ) -> Tensor:
     """Computes the BLEU score.
 
@@ -140,18 +146,18 @@ def _bleu_score_compute(
 
 
 def bleu_score(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
     translate_corpus: Union[str, Sequence[str]],
+    reference_corpus: Sequence[Union[str, Sequence[str]]],
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus
         translate_corpus:
             An iterable of machine translated corpus
+        reference_corpus:
+            An iterable of iterables of reference corpus
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
@@ -164,7 +170,7 @@ def bleu_score(
         >>> from torchmetrics.functional import bleu_score
         >>> translate_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> bleu_score(reference_corpus, translate_corpus)
+        >>> bleu_score(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -174,6 +180,10 @@ def bleu_score(
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+    warnings.warn(
+        "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
+        " Warning will be removed in v0.8."
+    )
     translate_corpus_ = [translate_corpus] if isinstance(translate_corpus, str) else translate_corpus
     reference_corpus_ = [
         [reference_text] if isinstance(reference_text, str) else reference_text for reference_text in reference_corpus
@@ -188,7 +198,7 @@ def bleu_score(
     ref_len = tensor(0, dtype=torch.float)
 
     trans_len, ref_len = _bleu_score_update(
-        reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram, _tokenize_fn
+        translate_corpus_, reference_corpus_, numerator, denominator, trans_len, ref_len, n_gram, _tokenize_fn
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)

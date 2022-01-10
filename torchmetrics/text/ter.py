@@ -21,7 +21,7 @@ from torchmetrics.functional.text.ter import _ter_compute, _ter_update, _TercomT
 from torchmetrics.metric import Metric
 
 
-class TER(Metric):
+class TranslationEditRate(Metric):
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references. This
     implementation follows the implmenetaions from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
@@ -52,8 +52,8 @@ class TER(Metric):
     Example:
         >>> hypothesis_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = TER()
-        >>> metric(reference_corpus, hypothesis_corpus)
+        >>> metric = TranslationEditRate()
+        >>> metric(hypothesis_corpus, reference_corpus)
         tensor(0.1538)
 
     References:
@@ -104,20 +104,20 @@ class TER(Metric):
 
     def update(  # type: ignore
         self,
-        reference_corpus: Sequence[Union[str, Sequence[str]]],
         hypothesis_corpus: Union[str, Sequence[str]],
+        reference_corpus: Sequence[Union[str, Sequence[str]]],
     ) -> None:
         """Update TER statistics.
 
         Args:
-            reference_corpus:
-                An iterable of iterables of reference corpus.
             hypothesis_corpus:
                 An iterable of hypothesis corpus.
+            reference_corpus:
+                An iterable of iterables of reference corpus.
         """
         self.total_num_edits, self.total_ref_len, self.sentence_ter = _ter_update(
-            reference_corpus,
             hypothesis_corpus,
+            reference_corpus,
             self.tokenizer,
             self.total_num_edits,
             self.total_ref_len,

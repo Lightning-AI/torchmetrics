@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ExtendedEditDistance` ([#668](https://github.com/PyTorchLightning/metrics/pull/668))
 
 
+- Added `MultiScaleSSIM` into image metrics ([#679](https://github.com/PyTorchLightning/metrics/pull/679))
+
+
 - Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
 
 
@@ -29,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
 
 
-- Added `ignore_index` to to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
+- Added `ignore_index` to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
 
 
 - Added support for multi references in `ROUGEScore` ([#680](https://github.com/PyTorchLightning/metrics/pull/680))
@@ -43,7 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Metrics having third party dependencies removed from global import ([#463](https://github.com/PyTorchLightning/metrics/pull/463))
 
 
-- `BLEUScore` now expects untokenized input to stay consistent with all the other text metrics ([#640](https://github.com/PyTorchLightning/metrics/pull/640))
+- Untokenized for `BLEUScore` input stay consistent with all the other text metrics ([#640](https://github.com/PyTorchLightning/metrics/pull/640))
+
+
+- Arguments reordered for `TER`, `BLEUScore`, `SacreBLEUScore`, `CHRFScore` now expect input order as predictions first and target second ([#696](https://github.com/PyTorchLightning/metrics/pull/696))
+
+
+- Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
 
 
 - Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
@@ -52,6 +61,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
+
+- Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+
+
+- Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
+  * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
+  * `PearsonCorrcoef` -> `PearsonCorrCoef`
+  * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
+
+- Renamed audio SDR metrics: ([#711](https://github.com/PyTorchLightning/metrics/pull/711))
+  * `functional.sdr` -> `functional.signal_distortion_ratio`
+  * `functional.si_sdr` -> `functional.scale_invariant_signal_distortion_ratio`
+  * `SDR` -> `SignalDistortionRatio`
+  * `SI_SDR` -> `ScaleInvariantSignalDistortionRatio`
+
+
+- Renamed audio SNR metrics: ([#712](https://github.com/PyTorchLightning/metrics/pull/712))
+  * `functional.snr` -> `functional.signal_distortion_ratio`
+  * `functional.si_snr` -> `functional.scale_invariant_signal_noise_ratio`
+  * `SNR` -> `SignalNoiseRatio`
+  * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
+
+
+- Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731))
+  * `torchmetrics.functional.f1` -> `torchmetrics.functional.f1_score`
+  * `torchmetrics.F1` -> `torchmetrics.F1Score`
+
+
+- Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
+  * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
+  * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
 
 
 - Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
@@ -75,6 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Fixed
+
+- Fixed MetricCollection kwargs filtering when no `kwargs` are present in update signature ([#707](https://github.com/PyTorchLightning/metrics/pull/707))
 
 
 

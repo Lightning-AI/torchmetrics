@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, List, Optional
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -22,7 +23,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class SpearmanCorrcoef(Metric):
+class SpearmanCorrCoef(Metric):
     r"""
     Computes `spearmans rank correlation coefficient`_.
 
@@ -45,10 +46,10 @@ class SpearmanCorrcoef(Metric):
             will be used to perform the allgather
 
     Example:
-        >>> from torchmetrics import SpearmanCorrcoef
+        >>> from torchmetrics import SpearmanCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> spearman = SpearmanCorrcoef()
+        >>> spearman = SpearmanCorrCoef()
         >>> spearman(preds, target)
         tensor(1.0000)
 
@@ -95,3 +96,30 @@ class SpearmanCorrcoef(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)
+
+
+class SpearmanCorrcoef(SpearmanCorrCoef):
+    """Computes `spearmans rank correlation coefficient`_.
+
+    Example:
+        >>> spearman = SpearmanCorrCoef()
+        >>> spearman(torch.tensor([2.5, 0.0, 2, 8]), torch.tensor([3, -0.5, 2, 7]))
+        tensor(1.0000)
+
+    .. deprecated:: v0.7
+        Renamed in favor of :class:`torchmetrics.SpearmanCorrCoef`. Will be removed in v0.8.
+    """
+
+    def __init__(
+        self,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable] = None,
+    ) -> None:
+        warn(
+            "`SpearmanCorrcoef` was renamed to `SpearmanCorrCoef` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,
+        )
+
+        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

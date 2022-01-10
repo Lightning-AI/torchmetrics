@@ -16,6 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
+import warnings
 from typing import Any, Callable, Optional, Sequence
 
 import torch
@@ -48,7 +49,7 @@ class BLEUScore(Metric):
         >>> translate_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = BLEUScore()
-        >>> metric(reference_corpus, translate_corpus)
+        >>> metric(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -81,7 +82,10 @@ class BLEUScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-
+        warnings.warn(
+            "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
+            " Warning will be removed in v0.8."
+        )
         self.n_gram = n_gram
         self.smooth = smooth
 
@@ -91,18 +95,18 @@ class BLEUScore(Metric):
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
     def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[str]], translate_corpus: Sequence[str]
+        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
     ) -> None:
         """Compute Precision Scores.
 
         Args:
-            reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
+            reference_corpus: An iterable of iterables of reference corpus
         """
 
         self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus,
             translate_corpus,
+            reference_corpus,
             self.numerator,
             self.denominator,
             self.trans_len,
