@@ -91,6 +91,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
   * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
 
+- Renamed F-Beta metrics: ([#729](https://github.com/PyTorchLightning/metrics/pull/729))
+  * `torchmetrics.functional.fbeta` -> `torchmetrics.functional.fbeta_score`
+  * `torchmetrics.FBeta` -> `torchmetrics.FBetaScore`
+
 
 ### Removed
 
