@@ -426,12 +426,12 @@ class MAP(Metric):
 
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
-                for idx_det in range(nb_det):
+                for idx_det, _ in enumerate(det):
                     m = MAP._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
                     if m != -1:
                         det_ignore[idx_iou, idx_det] = gt_ignore[m]
-                        det_matches[idx_iou, idx_det] = True
-                        gt_matches[idx_iou, m] = True
+                        det_matches[idx_iou, idx_det] = 1
+                        gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
         det_areas = box_area(det).to(self.device)
@@ -545,8 +545,8 @@ class MAP(Metric):
         rec_thresholds_tensor = Tensor(self.rec_thresholds).to(self.device)
 
         # retrieve E at each category, area range, and max number of detections
-        for idx_cls in range(nb_classes):
-            for idx_bbox_area in range(nb_bbox_areas):
+        for idx_cls, _ in enumerate(class_ids):
+            for idx_bbox_area, _ in enumerate(self.bbox_area_ranges):
                 for idx_max_det_thrs, max_det in enumerate(self.max_detection_thresholds):
                     recall, precision, scores = MAP.__calculate_recall_precision_scores(
                         recall,
@@ -693,8 +693,8 @@ class MAP(Metric):
         map, mar = self._summarize_results(precisions, recalls)
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values: Tensor = Tensor([-1])
-        mar_max_dets_per_class_values: Tensor = Tensor([-1])
+        map_per_class_values: Tensor = Tensor([-1], device=self.device)
+        mar_max_dets_per_class_values: Tensor = Tensor([-1], device=self.device)
         if self.class_metrics:
             map_per_class_list = []
             mar_max_dets_per_class_list = []
@@ -706,8 +706,8 @@ class MAP(Metric):
                 map_per_class_list.append(cls_map.map)
                 mar_max_dets_per_class_list.append(cls_mar[f"mar_{self.max_detection_thresholds[-1]}"])
 
-            map_per_class_values = Tensor(map_per_class_list)
-            mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list)
+            map_per_class_values = Tensor(map_per_class_list, device=self.device)
+            mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list, device=self.device)
 
         metrics = COCOMetricResults()
         metrics.update(map)
