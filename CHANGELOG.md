@@ -89,6 +89,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
 
 
+- Renamed pit metric: ([#0000](https://github.com/PyTorchLightning/metrics/pull/000))
+  * `torchmetrics.functional.pit` -> `torchmetrics.functional.permutation_invariant_training`
+  * `torchmetrics.PIT` -> `torchmetrics.permutation_invariant_training`
+
+
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))

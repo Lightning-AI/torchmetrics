@@ -17,10 +17,10 @@ pesq [func]
 .. autofunction:: torchmetrics.functional.audio.pesq.pesq
 
 
-pit [func]
+permutation_invariant_training [func]
 ~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pit
+.. autofunction:: torchmetrics.functional.permutation_invariant_training
     :noindex:
 
 

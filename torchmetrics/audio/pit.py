@@ -15,12 +15,12 @@ from typing import Any, Callable, Dict, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pit import pit
+from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 
 
-class PIT(Metric):
-    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
+class permutation_invariant_training(Metric):
+    """Permutation invariant training. The permutation_invariant_training implements the famous Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
@@ -54,12 +54,12 @@ class PIT(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import PIT
+        >>> from torchmetrics import permutation_invariant_training
         >>> from torchmetrics.functional import si_snr
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PIT(si_snr, 'max')
+        >>> pit = permutation_invariant_training(si_snr, 'max')
         >>> pit(preds, target)
         tensor(-2.1065)
 
@@ -103,7 +103,7 @@ class PIT(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        pit_metric = pit(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
+        pit_metric = permutation_invariant_training(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
 
         self.sum_pit_metric += pit_metric.sum()
         self.total += pit_metric.numel()

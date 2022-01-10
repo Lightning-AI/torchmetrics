@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pit import pit, pit_permutate  # noqa: F401
+from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate  # noqa: F401
 from torchmetrics.functional.audio.sdr import (  # noqa: F401
     scale_invariant_signal_distortion_ratio,
     sdr,

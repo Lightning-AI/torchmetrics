@@ -81,10 +81,10 @@ PESQ
 
 .. autoclass:: torchmetrics.audio.pesq.PESQ
 
-PIT
+permutation_invariant_training
 ~~~
 
-.. autoclass:: torchmetrics.PIT
+.. autoclass:: torchmetrics.permutation_invariant_training
     :noindex:
 
 SignalDistortionRatio
