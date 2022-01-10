@@ -286,10 +286,10 @@ F1
 .. autoclass:: torchmetrics.F1
     :noindex:
 
-FBetaScore
+FBeta
 ~~~~~
 
-.. autoclass:: torchmetrics.FBetaScore
+.. autoclass:: torchmetrics.FBeta
     :noindex:
 
 HammingDistance

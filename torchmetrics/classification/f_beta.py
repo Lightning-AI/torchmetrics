@@ -17,11 +17,11 @@ import torch
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
-from torchmetrics.functional.classification.f_beta import _fbeta_score_compute
+from torchmetrics.functional.classification.f_beta import _fbeta_compute
 from torchmetrics.utilities.enums import AverageMethod
 
 
-class FBetaScore(StatScores):
+class FBeta(StatScores):
     r"""
     Computes `F-score`_, specifically:
 
@@ -123,11 +123,11 @@ class FBetaScore(StatScores):
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``, ``None``.
 
     Example:
-        >>> from torchmetrics import FBetaScore
+        >>> from torchmetrics import FBeta
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f_beta_score = FBetaScore(num_classes=3, beta=0.5)
-        >>> f_beta_score(preds, target)
+        >>> f_beta = FBeta(num_classes=3, beta=0.5)
+        >>> f_beta(preds, target)
         tensor(0.3333)
 
     """
@@ -171,10 +171,10 @@ class FBetaScore(StatScores):
     def compute(self) -> Tensor:
         """Computes fbeta over state."""
         tp, fp, tn, fn = self._get_final_stats()
-        return _fbeta_score_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
+        return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
-class F1(FBetaScore):
+class F1(FBeta):
     """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model

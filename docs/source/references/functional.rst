@@ -126,10 +126,10 @@ f1 [func]
     :noindex:
 
 
-fbeta_score [func]
+fbeta [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.fbeta_score
+.. autofunction:: torchmetrics.functional.fbeta
     :noindex:
 
 hamming_distance [func]
