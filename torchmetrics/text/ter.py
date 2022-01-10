@@ -105,8 +105,8 @@ class TranslationEditRate(Metric):
 
     def update(  # type: ignore
         self,
-        preds: Union[str, Sequence[str]],
-        target: Sequence[Union[str, Sequence[str]]],
+        preds: Union[None, str, Sequence[str]] = None,
+        target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
         hypothesis_corpus: Union[None, str, Sequence[str]] = None,
         reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     ) -> None:
@@ -118,6 +118,11 @@ class TranslationEditRate(Metric):
             target:
                 An iterable of iterables of reference corpus.
         """
+        if preds is None and hypothesis_corpus is None:
+            raise ValueError("Either `preds` or `hypothesis_corpus` must be provided.")
+        if target is None and reference_corpus is None:
+            raise ValueError("Either `target` or `reference_corpus` must be provided.")
+
         if hypothesis_corpus is not None:
             warn(
                 "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
@@ -135,8 +140,8 @@ class TranslationEditRate(Metric):
             target = reference_corpus
 
         self.total_num_edits, self.total_tgt_len, self.sentence_ter = _ter_update(
-            preds,
-            target,
+            preds,  # type: ignore
+            target,  # type: ignore
             self.tokenizer,
             self.total_num_edits,
             self.total_tgt_len,

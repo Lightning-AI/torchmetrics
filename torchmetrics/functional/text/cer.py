@@ -61,8 +61,8 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
 
 def char_error_rate(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
+    preds: Union[None, str, List[str]] = None,
+    target: Union[None, str, List[str]] = None,
     predictions: Union[None, str, List[str]] = None,
     references: Union[None, str, List[str]] = None,
 ) -> Tensor:
@@ -80,6 +80,11 @@ def char_error_rate(
         >>> char_error_rate(preds=preds, target=target)
         tensor(0.3415)
     """
+    if preds is None and predictions is None:
+        raise ValueError("Either `preds` or `predictions` must be provided.")
+    if target is None and references is None:
+        raise ValueError("Either `target` or `references` must be provided.")
+
     if predictions is not None:
         warn(
             "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
@@ -95,5 +100,8 @@ def char_error_rate(
         )
         target = references
 
-    errors, total = _cer_update(preds, target)
+    errors, total = _cer_update(
+        preds,  # type: ignore
+        target,  # type: ignore
+    )
     return _cer_compute(errors, total)

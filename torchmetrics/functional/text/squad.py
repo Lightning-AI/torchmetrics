@@ -202,7 +202,7 @@ def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, 
 
 def squad(
     preds: PREDS_TYPE,
-    target: TARGETS_TYPE,
+    target: Union[None, TARGETS_TYPE] = None,
     targets: Union[None, TARGETS_TYPE] = None,
 ) -> Dict[str, Tensor]:
     """Calculate `SQuAD Metric`_ .
@@ -260,6 +260,9 @@ def squad(
         [1] SQuAD: 100,000+ Questions for Machine Comprehension of Text by Pranav Rajpurkar, Jian Zhang, Konstantin
         Lopyrev, Percy Liang `SQuAD Metric`_ .
     """
+    if target is None and targets is None:
+        raise ValueError("Either `target` or `targets` must be provided.")
+
     if targets is not None:
         warn(
             "You are using deprecated argument `targets` in v0.7 which was renamed to `target`. "
@@ -268,6 +271,6 @@ def squad(
         )
         target = targets
 
-    preds_dict, target_dict = _squad_input_check(preds, target)
+    preds_dict, target_dict = _squad_input_check(preds, target)  # type: ignore
     f1, exact_match, total = _squad_update(preds_dict, target_dict)
     return _squad_compute(f1, exact_match, total)

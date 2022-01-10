@@ -85,8 +85,8 @@ class MatchErrorRate(Metric):
 
     def update(  # type: ignore
         self,
-        preds: Union[str, List[str]],
-        target: Union[str, List[str]],
+        preds: Union[None, str, List[str]] = None,
+        target: Union[None, str, List[str]] = None,
         predictions: Union[None, str, List[str]] = None,
         references: Union[None, str, List[str]] = None,
     ) -> None:
@@ -96,6 +96,11 @@ class MatchErrorRate(Metric):
             preds: Transcription(s) to score as a string or list of strings
             target: Reference(s) for each speech input as a string or list of strings
         """
+        if preds is None and predictions is None:
+            raise ValueError("Either `preds` or `predictions` must be provided.")
+        if target is None and references is None:
+            raise ValueError("Either `target` or `references` must be provided.")
+
         if predictions is not None:
             warn(
                 "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
@@ -111,7 +116,10 @@ class MatchErrorRate(Metric):
             )
             target = references
 
-        errors, total = _mer_update(preds, target)
+        errors, total = _mer_update(
+            preds,  # type: ignore
+            target,  # type: ignore
+        )
         self.errors += errors
         self.total += total
 

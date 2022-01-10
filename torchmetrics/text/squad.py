@@ -82,7 +82,7 @@ class SQuAD(Metric):
         self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(  # type: ignore
-        self, preds: PREDS_TYPE, target: TARGETS_TYPE, targets: Union[None, TARGETS_TYPE] = None
+        self, preds: PREDS_TYPE, target: Union[None, TARGETS_TYPE] = None, targets: Union[None, TARGETS_TYPE] = None
     ) -> None:
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
@@ -124,6 +124,9 @@ class SQuAD(Metric):
             KeyError:
                 If the required keys are missing in either predictions or targets.
         """
+        if target is None and targets is None:
+            raise ValueError("Either `target` or `targets` must be provided.")
+
         if targets is not None:
             warn(
                 "You are using deprecated argument `targets` in v0.7 which was renamed to `target`. "
@@ -132,8 +135,8 @@ class SQuAD(Metric):
             )
             target = targets
 
-        preds_dict, target_dict = _squad_input_check(preds, target)
-        f1_score, exact_match, total = _squad_update(preds_dict, target_dict)
+        preds_dict, target_dict = _squad_input_check(preds, target)  # type: ignore
+        f1_score, exact_match, total = _squad_update(preds_dict, target_dict)  # type: ignore
         self.f1_score += f1_score
         self.exact_match += exact_match
         self.total += total

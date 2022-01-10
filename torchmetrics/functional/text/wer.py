@@ -63,8 +63,8 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
 
 def word_error_rate(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
+    preds: Union[None, str, List[str]] = None,
+    target: Union[None, str, List[str]] = None,
     predictions: Union[None, str, List[str]] = None,
     references: Union[None, str, List[str]] = None,
 ) -> Tensor:
@@ -85,6 +85,11 @@ def word_error_rate(
         >>> word_error_rate(preds=preds, target=target)
         tensor(0.5000)
     """
+    if preds is None and predictions is None:
+        raise ValueError("Either `preds` or `predictions` must be provided.")
+    if target is None and references is None:
+        raise ValueError("Either `target` or `references` must be provided.")
+
     if predictions is not None:
         warn(
             "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
@@ -101,13 +106,16 @@ def word_error_rate(
         )
         target = references
 
-    errors, total = _wer_update(preds, target)
+    errors, total = _wer_update(
+        preds,  # type: ignore
+        target,  # type: ignore
+    )
     return _wer_compute(errors, total)
 
 
 def wer(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
+    preds: Union[None, str, List[str]] = None,
+    target: Union[None, str, List[str]] = None,
     predictions: Union[None, str, List[str]] = None,
     references: Union[None, str, List[str]] = None,
 ) -> Tensor:
@@ -122,6 +130,9 @@ def wer(
         >>> wer(preds=preds, target=target)
         tensor(0.5000)
     """
+    assert preds is not None or predictions is not None
+    assert target is not None or references is not None
+
     if predictions is not None:
         warn(
             "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "

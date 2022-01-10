@@ -555,8 +555,8 @@ def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
 
 
 def translation_edit_rate(
-    preds: Union[str, Sequence[str]],
-    target: Sequence[Union[str, Sequence[str]]],
+    preds: Union[None, str, Sequence[str]] = None,
+    target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     hypothesis_corpus: Union[None, str, Sequence[str]] = None,
     reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     normalize: bool = False,
@@ -609,6 +609,11 @@ def translation_edit_rate(
     if not isinstance(asian_support, bool):
         raise ValueError(f"Expected argument `asian_support` to be of type boolean but got {asian_support}.")
 
+    if preds is None and hypothesis_corpus is None:
+        raise ValueError("Either `preds` or `hypothesis_corpus` must be provided.")
+    if target is None and reference_corpus is None:
+        raise ValueError("Either `target` or `reference_corpus` must be provided.")
+
     if hypothesis_corpus is not None:
         warn(
             "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
@@ -632,7 +637,12 @@ def translation_edit_rate(
     sentence_ter: Optional[List[Tensor]] = [] if return_sentence_level_score else None
 
     total_num_edits, total_tgt_length, sentence_ter = _ter_update(
-        preds, target, tokenizer, total_num_edits, total_tgt_length, sentence_ter
+        preds,  # type: ignore
+        target,  # type: ignore
+        tokenizer,
+        total_num_edits,
+        total_tgt_length,
+        sentence_ter,
     )
     ter_score = _ter_compute(total_num_edits, total_tgt_length)
 

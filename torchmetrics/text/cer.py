@@ -87,8 +87,8 @@ class CharErrorRate(Metric):
 
     def update(  # type: ignore
         self,
-        preds: Union[str, List[str]],
-        target: Union[str, List[str]],
+        preds: Union[None, str, List[str]] = None,
+        target: Union[None, str, List[str]] = None,
         predictions: Union[None, str, List[str]] = None,
         references: Union[None, str, List[str]] = None,
     ) -> None:
@@ -98,6 +98,10 @@ class CharErrorRate(Metric):
             preds: Transcription(s) to score as a string or list of strings
             target: Reference(s) for each speech input as a string or list of strings
         """
+        if preds is None and predictions is None:
+            raise ValueError("Either `preds` or `predictions` must be provided.")
+        if target is None and references is None:
+            raise ValueError("Either `target` or `references` must be provided.")
 
         if predictions is not None:
             warn(
@@ -114,7 +118,10 @@ class CharErrorRate(Metric):
             )
             target = references
 
-        errors, total = _cer_update(preds, target)
+        errors, total = _cer_update(
+            preds,  # type: ignore
+            target,  # type: ignore
+        )
         self.errors += errors
         self.total += total
 
