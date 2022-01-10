@@ -4,7 +4,6 @@ pytest>=6.0
 pytest-cov>2.10
 # pytest-xdist
 # pytest-flake8
-pytest-doctestplus
 flake8
 check-manifest
 twine>=3.2
