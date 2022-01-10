@@ -138,25 +138,18 @@ class Hinge(HingeLoss):
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics import Hinge
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([-2.2, 2.4, 0.1])
         >>> hinge = Hinge()
-        >>> hinge(preds, target)
+        >>> hinge(torch.tensor([-2.2, 2.4, 0.1]), torch.tensor([0, 1, 1]))
         tensor(0.3000)
 
     Example (default / multiclass case):
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge = Hinge()
-        >>> hinge(preds, target)
+        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
         tensor(2.9000)
 
     Example (multiclass example, one vs all mode):
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge = Hinge(multiclass_mode="one-vs-all")
-        >>> hinge(preds, target)
+        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
         tensor([2.2333, 1.5000, 1.2333])
 
     """
@@ -171,9 +164,4 @@ class Hinge(HingeLoss):
         dist_sync_fn: Callable = None,
     ) -> None:
         warn("`Hinge` was renamed to `HingeLoss` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(squared, multiclass_mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

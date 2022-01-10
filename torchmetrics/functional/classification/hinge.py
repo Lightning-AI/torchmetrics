@@ -246,16 +246,11 @@ def hinge(
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics.functional import hinge
-        >>> target = torch.tensor([0, 1, 1])
-        >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge(preds, target)
+        >>> hinge(torch.tensor([-2.2, 2.4, 0.1]), torch.tensor([0, 1, 1]))
         tensor(0.3000)
 
     Example (default / multiclass case):
-        >>> target = torch.tensor([0, 1, 2])
-        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge(preds, target)
+        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
         tensor(2.9000)
 
     Example (multiclass example, one vs all mode):
