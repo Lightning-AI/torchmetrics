@@ -194,7 +194,8 @@ class Hinge(HingeLoss):
         tensor([2.2333, 1.5000, 1.2333])
 
     """
-    
+
+
     def __init__(
         self,
         squared: bool = False,
