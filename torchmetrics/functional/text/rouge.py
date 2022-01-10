@@ -13,10 +13,11 @@
 # limitations under the License.
 import re
 from collections import Counter
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
@@ -33,6 +34,7 @@ ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
     "rougeL": "L",
     "rougeLsum": "Lsum",
 }
+ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 
 
 def _add_newline_to_end_of_each_sentence(x: str) -> str:
@@ -68,7 +70,7 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
     return dict(precision=tensor(precision), recall=tensor(recall), fmeasure=tensor(fmeasure))
 
 
-def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
+def _lcs(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> int:
     """Common DP algorithm to compute the length of the longest common subsequence.
 
     Args:
@@ -87,7 +89,7 @@ def _lcs(pred_tokens: List[str], target_tokens: List[str]) -> int:
     return LCS[-1][-1]
 
 
-def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> List[str]:
+def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> Sequence[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
     score_Text Normalizition`_
@@ -112,7 +114,7 @@ def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> Li
     return tokens
 
 
-def _rouge_n_score(pred: List[str], target: List[str], n_gram: int) -> Dict[str, Tensor]:
+def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> Dict[str, Tensor]:
     """This computes precision, recall and F1 score for the Rouge-N metric.
 
     Args:
@@ -124,7 +126,7 @@ def _rouge_n_score(pred: List[str], target: List[str], n_gram: int) -> Dict[str,
             N-gram overlap.
     """
 
-    def _create_ngrams(tokens: List[str], n: int) -> Counter:
+    def _create_ngrams(tokens: Sequence[str], n: int) -> Counter:
         ngrams: Counter = Counter()
         for ngram in (tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1)):
             ngrams[ngram] += 1
@@ -140,7 +142,7 @@ def _rouge_n_score(pred: List[str], target: List[str], n_gram: int) -> Dict[str,
     return _compute_metrics(hits, max(pred_len, 1), max(target_len, 1))
 
 
-def _rouge_l_score(pred: List[str], target: List[str]) -> Dict[str, Tensor]:
+def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tensor]:
     """This computes precision, recall and F1 score for the Rouge-L or Rouge-LSum metric.
 
     Args:
@@ -158,9 +160,10 @@ def _rouge_l_score(pred: List[str], target: List[str]) -> Dict[str, Tensor]:
 
 
 def _rouge_score_update(
-    preds: List[str],
-    targets: List[str],
+    preds: Sequence[str],
+    targets: Sequence[Sequence[str]],
     rouge_keys_values: List[Union[int, str]],
+    accumulate: str,
     stemmer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
@@ -169,9 +172,14 @@ def _rouge_score_update(
         preds:
             An iterable of predicted sentences.
         targets:
-            An iterable of target sentences.
+            An iterable of iterable of target sentences.
         rouge_keys_values:
             List of N-grams/'L'/'Lsum' arguments.
+        accumulate:
+            Useful incase of multi-reference rouge score.
+            ``avg`` takes the avg of all references with respect to predictions
+            ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
+            Allowed values are ``avg`` and ``best``.
         stemmer:
             Porter stemmer instance to strip word suffixes to improve matching.
 
@@ -179,8 +187,8 @@ def _rouge_score_update(
         >>> targets = "Is your name John".split()
         >>> preds = "My name is John".split()
         >>> from pprint import pprint
-        >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'])
-        >>> pprint(score)  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> score = _rouge_score_update(preds, targets, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
+        >>> pprint(score)  # doctest: +SKIP
         {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
@@ -199,24 +207,62 @@ def _rouge_score_update(
             {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}]}
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
+
     for pred_raw, target_raw in zip(preds, targets):
+        result_inner: Dict[Union[int, str], Dict[str, Tensor]] = {rouge_key: {} for rouge_key in rouge_keys_values}
+        result_avg: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
+        list_results = []
         pred = _normalize_and_tokenize_text(pred_raw, stemmer)
-        target = _normalize_and_tokenize_text(target_raw, stemmer)
+        pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
 
-        if "Lsum" in rouge_keys_values:
-            # rougeLsum expects "\n" separated sentences within a summary
-            pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
-            target_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(target_raw), stemmer)
+        for target_raw_inner in target_raw:
+            target = _normalize_and_tokenize_text(target_raw_inner, stemmer)
 
-        for rouge_key in rouge_keys_values:
-            if isinstance(rouge_key, int):
-                score = _rouge_n_score(pred, target, rouge_key)
-            else:
-                score = _rouge_l_score(
-                    pred if rouge_key != "Lsum" else pred_Lsum,
-                    target if rouge_key != "Lsum" else target_Lsum,
+            if "Lsum" in rouge_keys_values:
+                # rougeLsum expects "\n" separated sentences within a summary
+                target_Lsum = _normalize_and_tokenize_text(
+                    _add_newline_to_end_of_each_sentence(target_raw_inner), stemmer
                 )
-            results[rouge_key].append(score)
+
+            for rouge_key in rouge_keys_values:
+                if isinstance(rouge_key, int):
+                    score = _rouge_n_score(pred, target, rouge_key)
+                else:
+                    score = _rouge_l_score(
+                        pred if rouge_key != "Lsum" else pred_Lsum,
+                        target if rouge_key != "Lsum" else target_Lsum,
+                    )
+                result_inner[rouge_key] = score
+                result_avg[rouge_key].append(score)
+            list_results.append(result_inner.copy())
+
+        if accumulate == "best":
+            key_curr = rouge_keys_values[0]
+            all_fmeasure = torch.tensor([v[key_curr]["fmeasure"] for v in list_results])
+            highest_idx = int(torch.argmax(all_fmeasure).item())
+
+            for rouge_key in rouge_keys_values:
+                results[rouge_key].append(list_results[highest_idx][rouge_key])
+
+        elif accumulate == "avg":
+            new_result_avg: Dict[Union[int, str], Dict[str, Tensor]] = {
+                rouge_key: {} for rouge_key in rouge_keys_values
+            }
+            for rouge_key, metrics in result_avg.items():
+                _dict_metric_score_batch: Dict[str, List[Tensor]] = {}
+                for metric in metrics:
+                    for _type, value in metric.items():
+                        if _type not in _dict_metric_score_batch:
+                            _dict_metric_score_batch[_type] = []
+                        _dict_metric_score_batch[_type].append(value)
+
+                new_result_avg[rouge_key] = {
+                    _type: torch.tensor(_dict_metric_score_batch[_type]).mean() for _type in _dict_metric_score_batch
+                }
+
+            for rouge_key in rouge_keys_values:
+                results[rouge_key].append(new_result_avg[rouge_key])
+
     return results
 
 
@@ -239,8 +285,9 @@ def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str,
 
 
 def rouge_score(
-    preds: Union[str, List[str]],
-    targets: Union[str, List[str]],
+    preds: Union[str, Sequence[str]],
+    targets: Union[str, Sequence[str], Sequence[Sequence[str]]],
+    accumulate: Literal["avg", "best"] = "best",
     use_stemmer: bool = False,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
@@ -250,7 +297,11 @@ def rouge_score(
         preds:
             An iterable of predicted sentences or a single predicted sentence.
         targets:
-            An iterable of target sentences or a single target sentence.
+            An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
+        accumulate:
+            Useful incase of multi-reference rouge score.
+            - ``avg`` takes the avg of all references with respect to predictions
+            - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         rouge_keys:
@@ -261,10 +312,11 @@ def rouge_score(
         Python dictionary of rouge scores for each input rouge key.
 
     Example:
+        >>> from torchmetrics.functional.text.rouge import rouge_score
         >>> targets = "Is your name John"
         >>> preds = "My name is John"
         >>> from pprint import pprint
-        >>> pprint(rouge_score(preds, targets))  # doctest: +NORMALIZE_WHITESPACE +SKIP
+        >>> pprint(rouge_score(preds, targets))  # doctest: +SKIP
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,
@@ -302,14 +354,17 @@ def rouge_score(
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
+    if isinstance(targets, list) and all(isinstance(target, str) for target in targets):
+        targets = [targets] if isinstance(preds, str) else [[target] for target in targets]
+
     if isinstance(preds, str):
         preds = [preds]
 
     if isinstance(targets, str):
-        targets = [targets]
+        targets = [[targets]]
 
     sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-        preds, targets, rouge_keys_values, stemmer=stemmer
+        preds, targets, rouge_keys_values, stemmer=stemmer, accumulate=accumulate
     )
 
     output: Dict[str, List[Tensor]] = {}

@@ -21,8 +21,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from torchmetrics.audio import STOI
-from torchmetrics.functional import stoi
+from torchmetrics.audio.stoi import STOI
+from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)

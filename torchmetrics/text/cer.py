@@ -43,18 +43,18 @@ class CharErrorRate(Metric):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
     Returns:
-        (Tensor) Character error rate
+        Character error rate score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
@@ -99,6 +99,6 @@ class CharErrorRate(Metric):
         """Calculate the character error rate.
 
         Returns:
-            (Tensor) Character error rate
+           Character error rate score
         """
         return _cer_compute(self.errors, self.total)

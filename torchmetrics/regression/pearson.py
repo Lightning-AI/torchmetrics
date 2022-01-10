@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, List, Optional, Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -52,7 +53,7 @@ def _final_aggregation(
     return var_x, var_y, corr_xy, nb
 
 
-class PearsonCorrcoef(Metric):
+class PearsonCorrCoef(Metric):
     r"""
     Computes `Pearson Correlation Coefficient`_:
 
@@ -69,18 +70,18 @@ class PearsonCorrcoef(Metric):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Example:
-        >>> from torchmetrics import PearsonCorrcoef
+        >>> from torchmetrics import PearsonCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> pearson = PearsonCorrcoef()
+        >>> pearson = PearsonCorrCoef()
         >>> pearson(preds, target)
         tensor(0.9849)
 
@@ -108,12 +109,12 @@ class PearsonCorrcoef(Metric):
             process_group=process_group,
         )
 
-        self.add_state("mean_x", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("mean_y", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("var_x", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("var_y", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("corr_xy", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("n_total", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("mean_x", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("mean_y", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("var_x", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("var_y", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("corr_xy", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("n_total", default=torch.tensor(0.0), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -139,3 +140,31 @@ class PearsonCorrcoef(Metric):
             n_total = self.n_total
 
         return _pearson_corrcoef_compute(var_x, var_y, corr_xy, n_total)
+
+
+class PearsonCorrcoef(PearsonCorrCoef):
+    r"""
+    Computes `Pearson Correlation Coefficient`_:
+
+    Example:
+        >>> pearson = PearsonCorrcoef()
+        >>> pearson(torch.tensor([2.5, 0.0, 2, 8]), torch.tensor([3, -0.5, 2, 7]))
+        tensor(0.9849)
+
+    .. deprecated:: v0.7
+        Renamed in favor of :class:`torchmetrics.PearsonCorrCoef`. Will be removed in v0.8.
+
+    """
+
+    def __init__(
+        self,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+    ) -> None:
+        warn(
+            "`PearsonCorrcoef` was renamed to `PearsonCorrCoef` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,
+        )
+
+        super().__init__(compute_on_step, dist_sync_on_step, process_group)

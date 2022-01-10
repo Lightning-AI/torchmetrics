@@ -13,7 +13,7 @@
 # limitations under the License.
 
 default_language_version:
-  python: python3.8
+  python: python3.9
 
 ci:
   autofix_prs: true
@@ -23,21 +23,22 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      # - id: check-json
       - id: check-yaml
+      - id: check-toml
       - id: check-docstring-first
       - id: check-executables-have-shebangs
-      - id: check-toml
       - id: check-case-conflict
       - id: check-added-large-files
         args: ['--maxkb=250', '--enforce-all']
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.0
+    rev: v2.31.0
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
@@ -50,35 +51,39 @@ repos:
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.3
+    rev: 5.10.1
     hooks:
       - id: isort
         name: imports
         require_serial: false
 
   - repo: https://github.com/psf/black
-    rev: 21.9b0
+    rev: 21.12b0
     hooks:
       - id: black
         name: Format code
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.10
+    rev: 0.7.11
     hooks:
       - id: mdformat
         additional_dependencies:
           - mdformat-gfm
           - mdformat-black
           - mdformat_frontmatter
-        exclude: CHANGELOG.md
+        exclude: |
+            (?x)^(
+                CHANGELOG.md|
+                docs/paper_JOSS/paper.md
+            )$
 
   - repo: https://github.com/asottile/yesqa
-    rev: v1.2.3
+    rev: v1.3.0
     hooks:
       - id: yesqa
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 3.9.2
+    rev: 4.0.1
     hooks:
       - id: flake8
         name: PEP8

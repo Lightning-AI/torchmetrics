@@ -13,8 +13,18 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
-from torchmetrics.audio import PESQ, PIT, SI_SDR, SI_SNR, SNR, STOI  # noqa: E402
-from torchmetrics.classification import (  # noqa: E402
+from torchmetrics.audio import (  # noqa: E402
+    PIT,
+    SDR,
+    SI_SDR,
+    SI_SNR,
+    SNR,
+    ScaleInvariantSignalDistortionRatio,
+    ScaleInvariantSignalNoiseRatio,
+    SignalDistortionRatio,
+    SignalNoiseRatio,
+)
+from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
     F1,
@@ -27,22 +37,25 @@ from torchmetrics.classification import (  # noqa: E402
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
+    F1Score,
     FBeta,
     HammingDistance,
     Hinge,
+    HingeLoss,
     IoU,
+    JaccardIndex,
     KLDivergence,
     MatthewsCorrcoef,
+    MatthewsCorrCoef,
     Precision,
     PrecisionRecallCurve,
     Recall,
     Specificity,
     StatScores,
 )
-from torchmetrics.collections import MetricCollection  # noqa: E402
-from torchmetrics.detection import MAP  # noqa: E402
-from torchmetrics.image import FID, IS, KID, LPIPS, PSNR, SSIM  # noqa: E402
+from torchmetrics.image import PSNR, SSIM, MultiScaleStructuralSimilarityIndexMeasure  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
+from torchmetrics.metric_collections import MetricCollection  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
     ExplainedVariance,
@@ -51,8 +64,10 @@ from torchmetrics.regression import (  # noqa: E402
     MeanSquaredError,
     MeanSquaredLogError,
     PearsonCorrcoef,
+    PearsonCorrCoef,
     R2Score,
     SpearmanCorrcoef,
+    SpearmanCorrCoef,
     SymmetricMeanAbsolutePercentageError,
     TweedieDevianceScore,
 )
@@ -66,8 +81,20 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRecall,
     RetrievalRPrecision,
 )
-from torchmetrics.text import WER, BERTScore, BLEUScore, CharErrorRate, ROUGEScore, SacreBLEUScore  # noqa: E402
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MultioutputWrapper  # noqa: E402
+from torchmetrics.text import (  # noqa: E402
+    WER,
+    BLEUScore,
+    CharErrorRate,
+    CHRFScore,
+    MatchErrorRate,
+    SacreBLEUScore,
+    SQuAD,
+    TranslationEditRate,
+    WordErrorRate,
+    WordInfoLost,
+    WordInfoPreserved,
+)
+from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
 __all__ = [
     "functional",
@@ -78,28 +105,26 @@ __all__ = [
     "BinnedAveragePrecision",
     "BinnedPrecisionRecallCurve",
     "BinnedRecallAtFixedPrecision",
-    "BERTScore",
     "BLEUScore",
     "BootStrapper",
     "CalibrationError",
     "CatMetric",
+    "CHRFScore",
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
     "TweedieDevianceScore",
     "ExplainedVariance",
     "F1",
+    "F1Score",
     "FBeta",
-    "FID",
     "HammingDistance",
     "Hinge",
-    "IoU",
-    "IS",
-    "KID",
+    "HingeLoss",
+    "JaccardIndex",
     "KLDivergence",
-    "LPIPS",
-    "MAP",
     "MatthewsCorrcoef",
+    "MatthewsCorrCoef",
     "MaxMetric",
     "MeanAbsoluteError",
     "MeanAbsolutePercentageError",
@@ -109,10 +134,12 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinMaxMetric",
     "MinMetric",
     "MultioutputWrapper",
+    "MultiScaleStructuralSimilarityIndexMeasure",
     "PearsonCorrcoef",
-    "PESQ",
+    "PearsonCorrCoef",
     "PIT",
     "Precision",
     "PrecisionRecallCurve",
@@ -128,18 +155,28 @@ __all__ = [
     "RetrievalRecall",
     "RetrievalRPrecision",
     "ROC",
-    "ROUGEScore",
     "SacreBLEUScore",
+    "SDR",
+    "SignalDistortionRatio",
+    "ScaleInvariantSignalDistortionRatio",
     "SI_SDR",
     "SI_SNR",
+    "ScaleInvariantSignalNoiseRatio",
+    "SignalNoiseRatio",
     "SNR",
     "SpearmanCorrcoef",
+    "SpearmanCorrCoef",
     "Specificity",
+    "SQuAD",
     "SSIM",
     "StatScores",
-    "STOI",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
+    "TranslationEditRate",
     "WER",
+    "WordErrorRate",
     "CharErrorRate",
+    "MatchErrorRate",
+    "WordInfoLost",
+    "WordInfoPreserved",
 ]

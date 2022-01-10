@@ -25,12 +25,13 @@ ______________________________________________________________________
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PytorchLightning/metrics/blob/master/LICENSE)
 
 [![CI testing - base](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-base.yml)
-[![PyTorch & Conda](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml/badge.svg?event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml)
+[![PyTorch & Conda](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml/badge.svg?branch=master&event=push)](https://github.com/PyTorchLightning/metrics/actions/workflows/ci_test-conda.yml)
 [![Build Status](https://dev.azure.com/PytorchLightning/Metrics/_apis/build/status/PyTorchLightning.metrics?branchName=master)](https://dev.azure.com/PytorchLightning/Metrics/_build/latest?definitionId=3&branchName=master)
 
 [![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-pw5v393p-qRaDgEk24~EjiZNBpSQFgQ)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
+[![JOSS status](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43/status.svg)](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PyTorchLightning/metrics/master.svg)](https://results.pre-commit.ci/latest/github/PyTorchLightning/metrics/master)
 
 ______________________________________________________________________
@@ -70,6 +71,7 @@ pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 Extra dependencies for specialized metrics:
 
 ```bash
+pip install torchmetrics[audio]
 pip install torchmetrics[image]
 pip install torchmetrics[text]
 pip install torchmetrics[all]  # install all of the above
@@ -264,9 +266,9 @@ acc = torchmetrics.functional.accuracy(preds, target)
 We currently have implemented metrics within the following domains:
 
 - Audio (
-  [SI_SDR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-sdr),
-  [SI_SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-snr),
-  [SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#snr)
+  [ScaleInvariantSignalDistortionRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalDistortionRatio),
+  [ScaleInvariantSignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalNoiseRatio),
+  [SignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#SignalNoiseRatio)
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
   )
 - Classification (

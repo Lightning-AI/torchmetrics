@@ -39,6 +39,8 @@
 
 
 import re
+import warnings
+from functools import partial
 from typing import Sequence
 
 import torch
@@ -276,8 +278,8 @@ class _SacreBLEUTokenizer:
 
 
 def sacre_bleu_score(
-    reference_corpus: Sequence[Sequence[str]],
     translate_corpus: Sequence[str],
+    reference_corpus: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
@@ -287,10 +289,10 @@ def sacre_bleu_score(
     follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus
         translate_corpus:
             An iterable of machine translated corpus
+        reference_corpus:
+            An iterable of iterables of reference corpus
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
@@ -308,7 +310,7 @@ def sacre_bleu_score(
         >>> from torchmetrics.functional import sacre_bleu_score
         >>> translate_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> sacre_bleu_score(reference_corpus, translate_corpus)
+        >>> sacre_bleu_score(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -320,6 +322,10 @@ def sacre_bleu_score(
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+    warnings.warn(
+        "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
+        " Warning will be removed in v0.8."
+    )
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
@@ -335,21 +341,21 @@ def sacre_bleu_score(
             "torchmetrics[text]`."
         )
 
-    reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
-        [_SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in reference]
-        for reference in reference_corpus
-    ]
-    translate_corpus_: Sequence[Sequence[str]] = [
-        _SacreBLEUTokenizer.tokenize(line, tokenize, lowercase) for line in translate_corpus
-    ]
-
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
     trans_len = tensor(0, dtype=torch.float)
     ref_len = tensor(0, dtype=torch.float)
 
+    tokenize_fn = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
     trans_len, ref_len = _bleu_score_update(
-        reference_corpus_, translate_corpus_, numerator, denominator, trans_len, ref_len, n_gram
+        translate_corpus,
+        reference_corpus,
+        numerator,
+        denominator,
+        trans_len,
+        ref_len,
+        n_gram,
+        tokenize_fn,
     )
 
     return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)

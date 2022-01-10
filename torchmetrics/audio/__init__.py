@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.audio.pesq import PESQ  # noqa: F401
 from torchmetrics.audio.pit import PIT  # noqa: F401
+from torchmetrics.audio.sdr import SDR, ScaleInvariantSignalDistortionRatio, SignalDistortionRatio  # noqa: F401
 from torchmetrics.audio.si_sdr import SI_SDR  # noqa: F401
 from torchmetrics.audio.si_snr import SI_SNR  # noqa: F401
-from torchmetrics.audio.snr import SNR  # noqa: F401
-from torchmetrics.audio.stoi import STOI  # noqa: F401
+from torchmetrics.audio.snr import SNR, ScaleInvariantSignalNoiseRatio, SignalNoiseRatio  # noqa: F401

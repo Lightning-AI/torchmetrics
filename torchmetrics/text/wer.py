@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from typing import Any, Callable, List, Optional, Union
 from warnings import warn
 
@@ -22,7 +21,7 @@ from torchmetrics.functional.text.wer import _wer_compute, _wer_update
 from torchmetrics.metric import Metric
 
 
-class WER(Metric):
+class WordErrorRate(Metric):
     r"""
     Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
@@ -42,26 +41,24 @@ class WER(Metric):
     Compute WER score of transcribed segments against references.
 
     Args:
-        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> metric = WER()
+        >>> metric = WordErrorRate()
         >>> metric(predictions, references)
         tensor(0.5000)
     """
@@ -72,7 +69,6 @@ class WER(Metric):
 
     def __init__(
         self,
-        concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -84,8 +80,6 @@ class WER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        if concatenate_texts is not None:
-            warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
@@ -104,6 +98,32 @@ class WER(Metric):
         """Calculate the word error rate.
 
         Returns:
-            (Tensor) Word error rate
+            Word error rate score
         """
         return _wer_compute(self.errors, self.total)
+
+
+class WER(WordErrorRate):
+    r"""
+    Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.WordErrorRate`. Will be removed in v0.8.
+
+    Examples:
+        >>> predictions = ["this is the prediction", "there is an other sample"]
+        >>> references = ["this is the reference", "there is another one"]
+        >>> metric = WER()
+        >>> metric(predictions, references)
+        tensor(0.5000)
+    """
+
+    def __init__(
+        self,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+    ):
+        warn("`WER` was renamed to `WordErrorRate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

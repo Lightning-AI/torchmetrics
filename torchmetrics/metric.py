@@ -25,7 +25,15 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_max, dim_zero_mean, dim_zero_min, dim_zero_sum
+from torchmetrics.utilities.data import (
+    _flatten,
+    _squeeze_if_scalar,
+    dim_zero_cat,
+    dim_zero_max,
+    dim_zero_mean,
+    dim_zero_min,
+    dim_zero_sum,
+)
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
@@ -56,12 +64,13 @@ class Metric(Module, ABC):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
+            default: `None` (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -269,7 +278,7 @@ class Metric(Module, ABC):
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
                 Specify the process group on which synchronization is called.
-                default: None (which selects the entire world)
+                default: `None` (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
@@ -330,7 +339,7 @@ class Metric(Module, ABC):
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
                 Specify the process group on which synchronization is called.
-                default: None (which selects the entire world)
+                default: `None` (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             should_unsync: Whether to restore the cache state so that the metrics can
@@ -369,7 +378,8 @@ class Metric(Module, ABC):
             with self.sync_context(
                 dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
             ):
-                self._computed = compute(*args, **kwargs)
+                value = compute(*args, **kwargs)
+                self._computed = _squeeze_if_scalar(value)
 
             return self._computed
 
@@ -552,8 +562,14 @@ class Metric(Module, ABC):
             k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
         }
 
-        # if no kwargs filtered, return al kwargs as default
-        if not filtered_kwargs:
+        exists_var_keyword = any([v.kind == inspect.Parameter.VAR_KEYWORD for v in _sign_params.values()])
+        # if no kwargs filtered, return all kwargs as default
+        if not filtered_kwargs and not exists_var_keyword:
+            # no kwargs in update signature -> don't return any kwargs
+            filtered_kwargs = {}
+        elif exists_var_keyword:
+            # kwargs found in update signature -> return all kwargs to be sure to not omit any.
+            # filtering logic is likely implemented within the update call.
             filtered_kwargs = kwargs
         return filtered_kwargs
 
@@ -747,6 +763,35 @@ class CompositionalMetric(Metric):
 
         return self.op(val_a, val_b)
 
+    @torch.jit.unused
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+
+        val_a = (
+            self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
+            if isinstance(self.metric_a, Metric)
+            else self.metric_a
+        )
+        val_b = (
+            self.metric_b(*args, **self.metric_b._filter_kwargs(**kwargs))
+            if isinstance(self.metric_b, Metric)
+            else self.metric_b
+        )
+
+        if val_a is None:
+            # compute_on_step of metric_a is False
+            return None
+
+        if val_b is None:
+            if isinstance(self.metric_b, Metric):
+                # compute_on_step of metric_b is False
+                return None
+
+            # Unary op
+            return self.op(val_a)
+
+        # Binary op
+        return self.op(val_a, val_b)
+
     def reset(self) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.reset()
@@ -765,3 +810,6 @@ class CompositionalMetric(Metric):
         repr_str = self.__class__.__name__ + _op_metrics
 
         return repr_str
+
+    def _wrap_compute(self, compute: Callable) -> Callable:
+        return compute

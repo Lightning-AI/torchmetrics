@@ -7,6 +7,10 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
   pull_request:
     branches: [master, "release/*"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
 jobs:
   conda:
     runs-on: ubuntu-20.04
@@ -18,9 +22,12 @@ jobs:
         include:
           - python-version: 3.7
             pytorch-version: '1.3'
+    env:
+      PYTEST_ARTEFACT: test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
+      TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 55
+    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v2
 
@@ -60,10 +67,11 @@ jobs:
       # prevent hanging Conda creations
       timeout-minutes: 10
 
-    - name: Temp COCO env. fix
-      if: matrix.pytorch-version == '1.4'
-      run: |
-        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4
+    - name: HF cache
+      uses: actions/cache@v2
+      with:
+        path: $TRANSFORMERS_CACHE
+        key: cache-transformers
 
     - name: Update Environment
       run: |
@@ -76,6 +84,7 @@ jobs:
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
         python ./.github/prune-packages.py requirements/image.txt torchvision
+        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         pip install --requirement requirements.txt --quiet
         pip install --requirement requirements/test.txt --quiet
         pip list
@@ -85,13 +94,13 @@ jobs:
     - name: Testing
       run: |
         # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics tests -v --durations=35 --junitxml=junit/test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
+        python -m pytest torchmetrics tests -v --durations=50 --junitxml=$PYTEST_ARTEFACT
       shell: bash -l {0}
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@master
       with:
-        name: test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
-        path: junit/test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
+        name: $PYTEST_ARTEFACT
+        path: $PYTEST_ARTEFACT
       # Use always() to always run this step to publish test results when there are test failures
       if: failure()

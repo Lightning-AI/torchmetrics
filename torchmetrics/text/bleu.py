@@ -16,13 +16,14 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
+import warnings
 from typing import Any, Callable, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
-from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
+from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update, _tokenize_fn
 
 
 class BLEUScore(Metric):
@@ -34,21 +35,21 @@ class BLEUScore(Metric):
         smooth:
             Whether or not to apply smoothing – see [2]
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
 
     Example:
-        >>> translate_corpus = ['the cat is on the mat'.split()]
-        >>> reference_corpus = [['there is a cat on the mat'.split(), 'a cat is on the mat'.split()]]
+        >>> translate_corpus = ['the cat is on the mat']
+        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = BLEUScore()
-        >>> metric(reference_corpus, translate_corpus)
+        >>> metric(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -81,7 +82,10 @@ class BLEUScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-
+        warnings.warn(
+            "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
+            " Warning will be removed in v0.8."
+        )
         self.n_gram = n_gram
         self.smooth = smooth
 
@@ -91,22 +95,24 @@ class BLEUScore(Metric):
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
     def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[Sequence[str]]], translate_corpus: Sequence[Sequence[str]]
+        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
     ) -> None:
         """Compute Precision Scores.
 
         Args:
-            reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
+            reference_corpus: An iterable of iterables of reference corpus
         """
+
         self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus,
             translate_corpus,
+            reference_corpus,
             self.numerator,
             self.denominator,
             self.trans_len,
             self.ref_len,
             self.n_gram,
+            _tokenize_fn,
         )
 
     def compute(self) -> Tensor:

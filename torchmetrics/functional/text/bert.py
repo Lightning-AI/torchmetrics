@@ -547,6 +547,7 @@ def bert_score(
             If invalid input is provided.
 
     Example:
+        >>> from torchmetrics.functional.text.bert import bert_score
         >>> predictions = ["hello there", "general kenobi"]
         >>> references = ["hello there", "master kenobi"]
         >>> bert_score(predictions=predictions, references=references, lang="en")  # doctest: +SKIP

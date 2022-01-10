@@ -19,11 +19,7 @@ import torch
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.map import MAP
-from torchmetrics.utilities.imports import (
-    _PYCOCOTOOLS_AVAILABLE,
-    _TORCHVISION_AVAILABLE,
-    _TORCHVISION_GREATER_EQUAL_0_8,
-)
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
 
@@ -59,7 +55,7 @@ _inputs = Input(
             ),  # coco image id 74
             dict(
                 boxes=torch.Tensor([[0.00, 2.87, 601.00, 421.52]]),
-                scores=torch.Tensor([0.699, 0.423]),
+                scores=torch.Tensor([0.699]),
                 labels=torch.IntTensor([5]),
             ),  # coco image id 133
         ],
@@ -164,10 +160,10 @@ def _compare_fn(preds, target) -> dict:
     }
 
 
-_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
+_pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 class TestMAP(MetricTester):
     """Test the MAP metric for object detection predictions.
 
@@ -181,7 +177,6 @@ class TestMAP(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
     def test_map(self, ddp):
         """Test modular implementation for correctness."""
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.preds,
@@ -195,25 +190,23 @@ class TestMAP(MetricTester):
 
 
 # noinspection PyTypeChecker
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
-
     MAP()  # no error
 
     with pytest.raises(ValueError, match="Expected argument `class_metrics` to be a boolean"):
         MAP(class_metrics=0)
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_empty_preds():
     """Test empty predictions."""
-
     metric = MAP()
 
     metric.update(
         [
-            dict(boxes=torch.Tensor([[]]), scores=torch.Tensor([]), labels=torch.IntTensor([])),
+            dict(boxes=torch.Tensor([]), scores=torch.Tensor([]), labels=torch.IntTensor([])),
         ],
         [
             dict(boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=torch.IntTensor([4])),
@@ -222,18 +215,57 @@ def test_empty_preds():
     metric.compute()
 
 
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_empty_ground_truths():
+    """Test empty ground truths."""
+    metric = MAP()
+
+    metric.update(
+        [
+            dict(
+                boxes=torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                scores=torch.Tensor([0.5]),
+                labels=torch.IntTensor([4]),
+            ),
+        ],
+        [
+            dict(boxes=torch.Tensor([]), labels=torch.IntTensor([])),
+        ],
+    )
+    metric.compute()
+
+
+_gpu_test_condition = not torch.cuda.is_available()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
+def test_map_gpu():
+    """Test predictions on single gpu."""
+    metric = MAP()
+    metric = metric.to("cuda")
+    metric.update(_inputs.preds[0], _inputs.target[0])
+    metric.compute()
+
+
 @pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
+def test_empty_metric():
+    """Test empty metric."""
+    metric = MAP()
+    metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_input():
     """Test class input validation."""
-
     metric = MAP()
 
     metric.update([], [])  # no error
 
-    with pytest.raises(ValueError, match="Expected argument `preds` to be of type List"):
+    with pytest.raises(ValueError, match="Expected argument `preds` to be of type Sequence"):
         metric.update(torch.Tensor(), [])  # type: ignore
 
-    with pytest.raises(ValueError, match="Expected argument `target` to be of type List"):
+    with pytest.raises(ValueError, match="Expected argument `target` to be of type Sequence"):
         metric.update([], torch.Tensor())  # type: ignore
 
     with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
@@ -269,31 +301,31 @@ def test_error_on_wrong_input():
             [dict(boxes=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type Tensor"):
         metric.update(
             [dict(boxes=[], scores=torch.Tensor(), labels=torch.IntTensor())],
             [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=[], labels=torch.IntTensor())],
             [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=[])],
             [dict(boxes=torch.Tensor(), labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=torch.IntTensor())],
             [dict(boxes=[], labels=torch.IntTensor())],
         )
 
-    with pytest.raises(ValueError, match="Expected all labels in `target` to be of type torch.Tensor"):
+    with pytest.raises(ValueError, match="Expected all labels in `target` to be of type Tensor"):
         metric.update(
             [dict(boxes=torch.Tensor(), scores=torch.Tensor(), labels=torch.IntTensor())],
             [dict(boxes=torch.Tensor(), labels=[])],

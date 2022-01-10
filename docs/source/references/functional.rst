@@ -7,14 +7,14 @@
 Functional metrics
 ##################
 
-*************
-Audio Metrics
-*************
+*****
+Audio
+*****
 
 pesq [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pesq
+.. autofunction:: torchmetrics.functional.audio.pesq.pesq
 
 
 pit [func]
@@ -24,37 +24,44 @@ pit [func]
     :noindex:
 
 
-si_sdr [func]
-~~~~~~~~~~~~~
+signal_distortion_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.si_sdr
+.. autofunction:: torchmetrics.functional.signal_distortion_ratio
     :noindex:
 
 
-si_snr [func]
-~~~~~~~~~~~~~
+scale_invariant_signal_distortion_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.scale_invariant_signal_distortion_ratio
+    :noindex:
+
+
+scale_invariant_signal_noise_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.si_snr
     :noindex:
 
 
-snr [func]
-~~~~~~~~~~
+signal_noise_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.snr
+.. autofunction:: torchmetrics.functional.signal_noise_ratio
     :noindex:
 
 
 stoi [func]
 ~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.stoi
+.. autofunction:: torchmetrics.functional.audio.stoi.stoi
     :noindex:
 
 
-**********************
-Classification Metrics
-**********************
+**************
+Classification
+**************
 
 accuracy [func]
 ~~~~~~~~~~~~~~~
@@ -115,7 +122,7 @@ dice_score [func]
 f1 [func]
 ~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.f1
+.. autofunction:: torchmetrics.functional.f1_score
     :noindex:
 
 
@@ -131,16 +138,16 @@ hamming_distance [func]
 .. autofunction:: torchmetrics.functional.hamming_distance
     :noindex:
 
-hinge [func]
-~~~~~~~~~~~~
+hinge_loss [func]
+~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.hinge
+.. autofunction:: torchmetrics.functional.hinge_loss
     :noindex:
 
-iou [func]
-~~~~~~~~~~
+jaccard_index [func]
+~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.iou
+.. autofunction:: torchmetrics.functional.jaccard_index
     :noindex:
 
 kl_divergence [func]
@@ -223,14 +230,21 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
-*************
-Image Metrics
-*************
+*****
+Image
+*****
 
 image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.image_gradients
+    :noindex:
+
+
+multiscale_structural_similarity_index_measure [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.multiscale_structural_similarity_index_measure
     :noindex:
 
 
@@ -247,9 +261,9 @@ ssim [func]
 .. autofunction:: torchmetrics.functional.ssim
     :noindex:
 
-******************
-Regression Metrics
-******************
+**********
+Regression
+**********
 
 cosine_similarity [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -426,7 +440,7 @@ Text
 bert_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.bert_score
+.. autofunction:: torchmetrics.functional.text.bert.bert_score
 
 bleu_score [func]
 ~~~~~~~~~~~~~~~~~
@@ -440,10 +454,22 @@ char_error_rate [func]
 .. autofunction:: torchmetrics.functional.char_error_rate
     :noindex:
 
+chrf_score [func]
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.chrf_score
+    :noindex:
+
+match_error_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.match_error_rate
+    :noindex:
+
 rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.rouge_score
+.. autofunction:: torchmetrics.functional.text.rouge.rouge_score
     :noindex:
 
 sacre_bleu_score [func]
@@ -452,8 +478,32 @@ sacre_bleu_score [func]
 .. autofunction:: torchmetrics.functional.sacre_bleu_score
     :noindex:
 
+squad [func]
+~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.squad
+    :noindex:
+
+translation_edit_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.translation_edit_rate
+    :noindex:
+
 wer [func]
 ~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.wer
+    :noindex:
+
+word_information_lost [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.word_information_lost
+    :noindex:
+
+word_information_preserved [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.word_information_preserved
     :noindex:

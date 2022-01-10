@@ -12,35 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 from warnings import warn
 
 import torch
 from torch import Tensor, tensor
 
-
-def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
-    """Standard dynamic programming algorithm to compute the edit distance.
-
-    Args:
-        prediction_tokens: A tokenized predicted sentence
-        reference_tokens: A tokenized reference sentence
-
-    Returns:
-        (int) Edit distance between the predicted sentence and the reference sentence
-    """
-    dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
-    for i in range(len(prediction_tokens) + 1):
-        dp[i][0] = i
-    for j in range(len(reference_tokens) + 1):
-        dp[0][j] = j
-    for i in range(1, len(prediction_tokens) + 1):
-        for j in range(1, len(reference_tokens) + 1):
-            if prediction_tokens[i - 1] == reference_tokens[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]
-            else:
-                dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1
-    return dp[-1][-1]
+from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _wer_update(
@@ -54,8 +32,8 @@ def _wer_update(
         references: Reference(s) for each speech input as a string or list of strings
 
     Returns:
-        (Tensor) Number of edit operations to get from the reference to the prediction, summed over all samples
-        (Tensor) Number of words over all references
+        Number of edit operations to get from the reference to the prediction, summed over all samples
+        Number of words overall references
     """
     if isinstance(predictions, str):
         predictions = [predictions]
@@ -76,18 +54,17 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
-        total: Number of words over all references
+        total: Number of words overall references
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
     """
     return errors / total
 
 
-def wer(
+def word_error_rate(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
-    concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
 ) -> Tensor:
     """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
@@ -96,11 +73,28 @@ def wer(
     Args:
         predictions: Transcription(s) to score as a string or list of strings
         references: Reference(s) for each speech input as a string or list of strings
-        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
+
+    Examples:
+        >>> predictions = ["this is the prediction", "there is an other sample"]
+        >>> references = ["this is the reference", "there is another one"]
+        >>> word_error_rate(predictions=predictions, references=references)
+        tensor(0.5000)
+    """
+    errors, total = _wer_update(predictions, references)
+    return _wer_compute(errors, total)
+
+
+def wer(
+    predictions: Union[str, List[str]],
+    references: Union[str, List[str]],
+) -> Tensor:
+    """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.fuctional.word_error_rate`. Will be removed in v0.8.
 
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
@@ -108,7 +102,5 @@ def wer(
         >>> wer(predictions=predictions, references=references)
         tensor(0.5000)
     """
-    if concatenate_texts is not None:
-        warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
-    errors, total = _wer_update(predictions, references)
-    return _wer_compute(errors, total)
+    warn("`wer` was renamed to `word_error_rate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    return word_error_rate(predictions, references)

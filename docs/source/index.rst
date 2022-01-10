@@ -34,7 +34,7 @@ More reading
    :name: community
    :caption: Community
 
-
+   governance
    generated/CODE_OF_CONDUCT.md
    generated/CONTRIBUTING.md
    generated/CHANGELOG.md

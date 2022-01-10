@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 # referenced from
 # Library Name: torchtext
 # Authors: torchtext authors and @sluks
@@ -46,12 +48,12 @@ class SacreBLEUScore(BLEUScore):
         lowercase:
             If ``True``, BLEU score over lowercased text is calculated.
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -67,7 +69,7 @@ class SacreBLEUScore(BLEUScore):
         >>> translate_corpus = ['the cat is on the mat']
         >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = SacreBLEUScore()
-        >>> metric(reference_corpus, translate_corpus)
+        >>> metric(translate_corpus, reference_corpus)
         tensor(0.7598)
 
     References:
@@ -99,6 +101,10 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        warnings.warn(
+            "Input order of targets and preds were changed to predictions firsts and targets \
+                    second in v0.7. Warning will be removed in v0.8"
+        )
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
@@ -110,25 +116,21 @@ class SacreBLEUScore(BLEUScore):
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[str]], translate_corpus: Sequence[str]
+        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
     ) -> None:
         """Compute Precision Scores.
 
         Args:
-            reference_corpus: An iterable of iterables of reference corpus
             translate_corpus: An iterable of machine translated corpus
+            reference_corpus: An iterable of iterables of reference corpus
         """
-        reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
-            [self.tokenizer(line) for line in reference] for reference in reference_corpus
-        ]
-        translate_corpus_: Sequence[Sequence[str]] = [self.tokenizer(line) for line in translate_corpus]
-
         self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus_,
-            translate_corpus_,
+            translate_corpus,
+            reference_corpus,
             self.numerator,
             self.denominator,
             self.trans_len,
             self.ref_len,
             self.n_gram,
+            self.tokenizer,
         )

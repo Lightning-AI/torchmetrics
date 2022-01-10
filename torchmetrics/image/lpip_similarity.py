@@ -79,12 +79,12 @@ class LPIPS(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics import LPIPS
+        >>> from torchmetrics.image.lpip_similarity import LPIPS
         >>> lpips = LPIPS(net_type='vgg')
         >>> img1 = torch.rand(10, 3, 100, 100)
         >>> img2 = torch.rand(10, 3, 100, 100)
         >>> lpips(img1, img2)
-        tensor([0.3566], grad_fn=<DivBackward0>)
+        tensor(0.3566, grad_fn=<SqueezeBackward0>)
     """
 
     is_differentiable = True
@@ -127,8 +127,8 @@ class LPIPS(Metric):
             raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
         self.reduction = reduction
 
-        self.add_state("sum_scores", torch.zeros(1), dist_reduce_fx="sum")
-        self.add_state("total", torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
         """Update internal states with lpips score.

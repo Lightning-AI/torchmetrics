@@ -35,7 +35,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, k: Optional[int] = N
     Args:
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document relevance.
-        k: consider only the top k elements (default: None, which considers them all)
+        k: consider only the top k elements (default: `None`, which considers them all)
 
     Return:
         a single-value tensor with the nDCG of the predictions ``preds`` w.r.t. the labels ``target``.
