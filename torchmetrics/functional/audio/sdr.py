@@ -129,7 +129,7 @@ def signal_distortion_ratio(
     if not _FAST_BSS_EVAL_AVAILABLE:
         raise ValueError(
             "SDR metric requires that fast-bss-eval is installed."
-            "Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`"
+            " Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`."
         )
     _check_same_shape(preds, target)
 
