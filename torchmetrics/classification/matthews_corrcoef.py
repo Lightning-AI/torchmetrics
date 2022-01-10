@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -23,7 +24,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
 from torchmetrics.metric import Metric
 
 
-class MatthewsCorrcoef(Metric):
+class MatthewsCorrCoef(Metric):
     r"""
     Calculates `Matthews correlation coefficient`_ that measures
     the general correlation or quality of a classification. In the binary case it
@@ -65,10 +66,10 @@ class MatthewsCorrcoef(Metric):
             will be used to perform the allgather
 
     Example:
-        >>> from torchmetrics import MatthewsCorrcoef
+        >>> from torchmetrics import MatthewsCorrCoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef = MatthewsCorrcoef(num_classes=2)
+        >>> matthews_corrcoef = MatthewsCorrCoef(num_classes=2)
         >>> matthews_corrcoef(preds, target)
         tensor(0.5774)
 
@@ -110,3 +111,32 @@ class MatthewsCorrcoef(Metric):
     def compute(self) -> Tensor:
         """Computes matthews correlation coefficient."""
         return _matthews_corrcoef_compute(self.confmat)
+
+
+class MatthewsCorrcoef(MatthewsCorrCoef):
+    """Calculates `Matthews correlation coefficient`_ that measures the general correlation or quality of a
+    classification.
+
+    Example:
+        >>> matthews_corrcoef = MatthewsCorrcoef(num_classes=2)
+        >>> matthews_corrcoef(torch.tensor([0, 1, 0, 0]), torch.tensor([1, 1, 0, 0]))
+        tensor(0.5774)
+
+    .. deprecated:: v0.7
+        Renamed in favor of :class:`torchmetrics.MatthewsCorrCoef`. Will be removed in v0.8.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        threshold: float = 0.5,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+    ) -> None:
+        warn(
+            "`MatthewsCorrcoef` was renamed to `MatthewsCorrCoef` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,
+        )
+        super().__init__(num_classes, threshold, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

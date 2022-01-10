@@ -13,7 +13,17 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
-from torchmetrics.audio import PIT, SDR, SI_SDR, SI_SNR, SNR  # noqa: E402
+from torchmetrics.audio import (  # noqa: E402
+    PIT,
+    SDR,
+    SI_SDR,
+    SI_SNR,
+    SNR,
+    ScaleInvariantSignalDistortionRatio,
+    ScaleInvariantSignalNoiseRatio,
+    SignalDistortionRatio,
+    SignalNoiseRatio,
+)
 from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
@@ -27,20 +37,23 @@ from torchmetrics.classification import (  # noqa: E402, F401
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
+    F1Score,
     FBeta,
     HammingDistance,
     Hinge,
+    HingeLoss,
     IoU,
     JaccardIndex,
     KLDivergence,
     MatthewsCorrcoef,
+    MatthewsCorrCoef,
     Precision,
     PrecisionRecallCurve,
     Recall,
     Specificity,
     StatScores,
 )
-from torchmetrics.image import PSNR, SSIM  # noqa: E402
+from torchmetrics.image import PSNR, SSIM, MultiScaleStructuralSimilarityIndexMeasure  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.metric_collections import MetricCollection  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
@@ -51,8 +64,10 @@ from torchmetrics.regression import (  # noqa: E402
     MeanSquaredError,
     MeanSquaredLogError,
     PearsonCorrcoef,
+    PearsonCorrCoef,
     R2Score,
     SpearmanCorrcoef,
+    SpearmanCorrCoef,
     SymmetricMeanAbsolutePercentageError,
     TweedieDevianceScore,
 )
@@ -67,7 +82,6 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
-    TER,
     WER,
     BLEUScore,
     CharErrorRate,
@@ -75,6 +89,8 @@ from torchmetrics.text import (  # noqa: E402
     MatchErrorRate,
     SacreBLEUScore,
     SQuAD,
+    TranslationEditRate,
+    WordErrorRate,
     WordInfoLost,
     WordInfoPreserved,
 )
@@ -100,12 +116,15 @@ __all__ = [
     "TweedieDevianceScore",
     "ExplainedVariance",
     "F1",
+    "F1Score",
     "FBeta",
     "HammingDistance",
     "Hinge",
+    "HingeLoss",
     "JaccardIndex",
     "KLDivergence",
     "MatthewsCorrcoef",
+    "MatthewsCorrCoef",
     "MaxMetric",
     "MeanAbsoluteError",
     "MeanAbsolutePercentageError",
@@ -118,7 +137,9 @@ __all__ = [
     "MinMaxMetric",
     "MinMetric",
     "MultioutputWrapper",
+    "MultiScaleStructuralSimilarityIndexMeasure",
     "PearsonCorrcoef",
+    "PearsonCorrCoef",
     "PIT",
     "Precision",
     "PrecisionRecallCurve",
@@ -136,18 +157,24 @@ __all__ = [
     "ROC",
     "SacreBLEUScore",
     "SDR",
+    "SignalDistortionRatio",
+    "ScaleInvariantSignalDistortionRatio",
     "SI_SDR",
     "SI_SNR",
+    "ScaleInvariantSignalNoiseRatio",
+    "SignalNoiseRatio",
     "SNR",
     "SpearmanCorrcoef",
+    "SpearmanCorrCoef",
     "Specificity",
     "SQuAD",
     "SSIM",
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
-    "TER",
+    "TranslationEditRate",
     "WER",
+    "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",
     "WordInfoLost",

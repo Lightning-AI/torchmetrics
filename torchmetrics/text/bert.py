@@ -177,9 +177,9 @@ class BERTScore(Metric):
             self.user_tokenizer = True
         else:
             if not _TRANSFORMERS_AVAILABLE:
-                raise ValueError(
-                    "`BERTScore` metric with default tokenizers requires `transformers` package be installed. "
-                    "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
+                raise ModuleNotFoundError(
+                    "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
+                    " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
                 )
             if not model_name_or_path:
                 model_name_or_path = _DEFAULT_MODEL

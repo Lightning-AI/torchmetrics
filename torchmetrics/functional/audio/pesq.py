@@ -50,7 +50,7 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
         pesq value of shape [...]
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``peqs`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
@@ -72,9 +72,9 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
         [1] https://github.com/ludlows/python-pesq
     """
     if not _PESQ_AVAILABLE:
-        raise ValueError(
+        raise ModuleNotFoundError(
             "PESQ metric requires that pesq is installed."
-            "Either install as `pip install torchmetrics[audio]` or `pip install pesq`"
+            " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
         )
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")

@@ -18,7 +18,7 @@ from torchmetrics.functional.text.chrf import chrf_score  # noqa: F401
 from torchmetrics.functional.text.mer import match_error_rate  # noqa: F401
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score  # noqa: F401
 from torchmetrics.functional.text.squad import squad  # noqa: F401
-from torchmetrics.functional.text.ter import ter  # noqa: F401
-from torchmetrics.functional.text.wer import wer  # noqa: F401
+from torchmetrics.functional.text.ter import translation_edit_rate  # noqa: F401
+from torchmetrics.functional.text.wer import wer, word_error_rate  # noqa: F401
 from torchmetrics.functional.text.wil import word_information_lost  # noqa: F401
 from torchmetrics.functional.text.wip import word_information_preserved  # noqa: F401

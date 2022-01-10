@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import List, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -61,7 +62,7 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-def wer(
+def word_error_rate(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
 ) -> Tensor:
@@ -79,8 +80,27 @@ def wer(
     Examples:
         >>> predictions = ["this is the prediction", "there is an other sample"]
         >>> references = ["this is the reference", "there is another one"]
-        >>> wer(predictions=predictions, references=references)
+        >>> word_error_rate(predictions=predictions, references=references)
         tensor(0.5000)
     """
     errors, total = _wer_update(predictions, references)
     return _wer_compute(errors, total)
+
+
+def wer(
+    predictions: Union[str, List[str]],
+    references: Union[str, List[str]],
+) -> Tensor:
+    """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.fuctional.word_error_rate`. Will be removed in v0.8.
+
+    Examples:
+        >>> predictions = ["this is the prediction", "there is an other sample"]
+        >>> references = ["this is the reference", "there is another one"]
+        >>> wer(predictions=predictions, references=references)
+        tensor(0.5000)
+    """
+    warn("`wer` was renamed to `word_error_rate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    return word_error_rate(predictions, references)

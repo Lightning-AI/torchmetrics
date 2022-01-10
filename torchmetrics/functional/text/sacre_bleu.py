@@ -359,9 +359,9 @@ def sacre_bleu_score(
     if len(preds) != len(target):
         raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")
     if tokenize == "intl" and not _REGEX_AVAILABLE:
-        raise ValueError(
-            "`'intl'` tokenization requires `regex` installed. Use `pip install regex` or `pip install "
-            "torchmetrics[text]`."
+        raise ModuleNotFoundError(
+            "`'intl'` tokenization requires that `regex` is installed."
+            " Use `pip install regex` or `pip install torchmetrics[text]`."
         )
 
     numerator = torch.zeros(n_gram)
