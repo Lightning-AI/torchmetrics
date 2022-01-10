@@ -116,7 +116,7 @@ class SignalDistortionRatio(Metric):
     ) -> None:
         if not _FAST_BSS_EVAL_AVAILABLE:
             raise ModuleNotFoundError(
-                "SDR metric requires that fast-bss-eval is installed."
+                "SDR metric requires that `fast-bss-eval` is installed."
                 " Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`."
             )
         super().__init__(

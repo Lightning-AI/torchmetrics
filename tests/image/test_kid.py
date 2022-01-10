@@ -67,7 +67,7 @@ def test_kid_raises_errors_and_warnings():
     else:
         with pytest.raises(
             ModuleNotFoundError,
-            match="KID metric requires that Torch-fidelity is installed."
+            match="KID metric requires that `Torch-fidelity` is installed."
             " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`.",
         ):
             KID()

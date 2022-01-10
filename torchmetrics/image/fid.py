@@ -230,7 +230,7 @@ class FID(Metric):
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
-                    "FID metric requires that Torch-fidelity is installed."
+                    "FID metric requires that `Torch-fidelity` is installed."
                     " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
                 )
             valid_int_input = [64, 192, 768, 2048]

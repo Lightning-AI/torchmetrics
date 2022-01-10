@@ -540,9 +540,9 @@ def bert_score(
         ModuleNotFoundError:
             If `tqdm` package is required and not installed.
         ModuleNotFoundError:
-            If `transformers` package is required and not installed.
+            If ``transformers`` package is required and not installed.
         ValueError:
-            If `num_layer` is larger than the number of the model layers.
+            If ``num_layer`` is larger than the number of the model layers.
         ValueError:
             If invalid input is provided.
 

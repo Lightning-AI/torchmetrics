@@ -54,7 +54,7 @@ def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]
         pkg_version = pkg.__version__  # type: ignore
     except (ModuleNotFoundError, DistributionNotFound):
         return None
-    except ModuleNotFoundError:
+    except ImportError:
         # catches cyclic imports - the case with integrated libs
         # see: https://stackoverflow.com/a/32965521
         pkg_version = get_distribution(package).version

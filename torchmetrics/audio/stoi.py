@@ -107,7 +107,7 @@ class STOI(Metric):
         )
         if not _PYSTOI_AVAILABLE:
             raise ModuleNotFoundError(
-                "STOI metric requires that pystoi is installed."
+                "STOI metric requires that `pystoi` is installed."`
                 " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
             )
         self.fs = fs
