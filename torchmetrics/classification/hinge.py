@@ -132,10 +132,10 @@ class HingeLoss(Metric):
 class Hinge(HingeLoss):
     r"""
     Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
-    
+
     .. deprecated:: v0.7
         Use :class:`torchmetrics.HingeLoss`. Will be removed in v0.8.
-    
+
     Example (binary case):
         >>> import torch
         >>> from torchmetrics import Hinge
