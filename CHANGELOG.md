@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
   - `TranslationEditRate` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
 
+- Added `MultiScaleSSIM` into image metrics ([#679](https://github.com/PyTorchLightning/metrics/pull/679))
+
 
 - Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
 
