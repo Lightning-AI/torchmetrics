@@ -41,6 +41,9 @@ def _prepare_extras(skip_files: Tuple[str] = ("devel.txt")):
     extras_req = {
         name: _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files) if "_test" not in name
     }
+    for name, fname in zip(found_req_names, found_req_files):
+        if "_test" in name:
+            extras_req["test"] += _load_req(file_name=fname)
     # filter the uniques
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible denpendencies
