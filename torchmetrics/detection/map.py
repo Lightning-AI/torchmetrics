@@ -649,14 +649,12 @@ class MAP(Metric):
                     pr[i - 1] = pr[i]
 
             inds = torch.searchsorted(rc, rec_thresholds, right=False)
-            # TODO: optimize
-            try:
-                for ri, pi in enumerate(inds):  # range(min(len(inds), len(pr))):
-                    # pi = inds[ri]
-                    prec[ri] = pr[pi]
-                    score[ri] = det_scores_sorted[pi]
-            except Exception:
-                pass
+            if inds.max() >= nd:
+                num_inds = inds.argmax()
+                inds = inds[:num_inds]
+            for ri, pi in enumerate(inds):
+                prec[ri] = pr[pi]
+                score[ri] = det_scores_sorted[pi]
             precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = prec
             scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = score
 
@@ -701,7 +699,7 @@ class MAP(Metric):
             map_per_class_list = []
             mar_max_dets_per_class_list = []
 
-            for class_idx in range(len(classes)):
+            for class_idx, _ in enumerate(classes):
                 cls_precisions = precisions[:, :, class_idx].unsqueeze(dim=2)
                 cls_recalls = recalls[:, class_idx].unsqueeze(dim=1)
                 cls_map, cls_mar = self._summarize_results(cls_precisions, cls_recalls)
