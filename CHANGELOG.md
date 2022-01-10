@@ -89,9 +89,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
 
 
-- Renamed pit metric: ([#0000](https://github.com/PyTorchLightning/metrics/pull/000))
+- Renamed pit metric: ([#737](https://github.com/PyTorchLightning/metrics/pull/737))
   * `torchmetrics.functional.pit` -> `torchmetrics.functional.permutation_invariant_training`
-  * `torchmetrics.PIT` -> `torchmetrics.permutation_invariant_training`
+  * `torchmetrics.PIT` -> `torchmetrics.PermutationInvariantTraining`
 
 
 ### Removed

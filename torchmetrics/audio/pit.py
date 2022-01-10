@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 
 
-class Permutation_Invariant_Training(Metric):
+class PermutationInvariantTraining(Metric):
     """Permutation invariant training (PermutationInvariantTraining). The PermutationInvariantTraining implements the famous Permutation
     Invariant Training method.
 

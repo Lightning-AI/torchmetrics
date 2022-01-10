@@ -81,7 +81,7 @@ PESQ
 
 .. autoclass:: torchmetrics.audio.pesq.PESQ
 
-permutation_invariant_training
+PermutationInvariantTraining
 ~~~
 
 .. autoclass:: torchmetrics.permutation_invariant_training
