@@ -109,9 +109,9 @@ class SacreBLEUScore(BLEUScore):
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
         if tokenize == "intl" and not _REGEX_AVAILABLE:
-            raise ValueError(
-                "`'intl'` tokenization requires `regex` installed. Use `pip install regex` or `pip install "
-                "torchmetrics[text]`."
+            raise ModuleNotFoundError(
+                "`'intl'` tokenization requires `regex` installed."
+                " Use `pip install regex` or `pip install torchmetrics[text]`."
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 

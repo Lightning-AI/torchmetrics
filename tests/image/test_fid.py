@@ -83,10 +83,9 @@ def test_fid_raises_errors_and_warnings():
             _ = FID(feature=2)
     else:
         with pytest.raises(
-            ValueError,
+            ModuleNotFoundError,
             match="FID metric requires that Torch-fidelity is installed."
-            "Either install as `pip install torchmetrics[image-quality]`"
-            " or `pip install torch-fidelity`",
+            " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
         ):
             _ = FID()
 

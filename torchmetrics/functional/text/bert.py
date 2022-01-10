@@ -537,9 +537,9 @@ def bert_score(
     Raises:
         ValueError:
             If `len(predictions) != len(references)`.
-        ValueError:
+        ModuleNotFoundError:
             If `tqdm` package is required and not installed.
-        ValueError:
+        ModuleNotFoundError:
             If `transformers` package is required and not installed.
         ValueError:
             If `num_layer` is larger than the number of the model layers.
@@ -559,15 +559,15 @@ def bert_score(
         raise ValueError("Number of predicted and reference sententes must be the same!")
 
     if verbose and (not _TQDM_AVAILABLE):
-        raise ValueError(
+        raise ModuleNotFoundError(
             "An argument `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`."
         )
 
     if model is None:
         if not _TRANSFORMERS_AVAILABLE:
-            raise ValueError(
-                "`bert_score` metric with default models requires `transformers` package be installed. "
-                "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
+            raise ModuleNotFoundError(
+                "`bert_score` metric with default models requires `transformers` package be installed."
+                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
             )
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         model = AutoModel.from_pretrained(model_name_or_path)

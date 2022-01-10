@@ -16,6 +16,7 @@ from warnings import warn
 
 from torch import Tensor, tensor
 
+from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
 
@@ -57,7 +58,7 @@ class SignalDistortionRatio(Metric):
             will be used to perform the allgather.
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``fast-bss-eval`` package is not installed
 
     Example:
@@ -113,6 +114,11 @@ class SignalDistortionRatio(Metric):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
+        if not _FAST_BSS_EVAL_AVAILABLE:
+            raise ModuleNotFoundError(
+                "SDR metric requires that fast-bss-eval is installed."
+                " Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`."
+            )
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
