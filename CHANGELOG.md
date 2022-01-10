@@ -55,9 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
 
 
-- Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
-
-
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
@@ -92,15 +89,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
   * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
   * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
-
-
-- Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
-
-
-- Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
-  * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
-  * `PearsonCorrcoef` -> `PearsonCorrCoef`
-  * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
 
 
 ### Removed
