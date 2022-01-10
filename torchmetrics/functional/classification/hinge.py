@@ -240,7 +240,7 @@ def hinge(
 ) -> Tensor:
     r"""
     Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
-    
+
     .. deprecated:: v0.7
         Use :func:`torchmetrics.functional.hinge_loss`. Will be removed in v0.8.
 
