@@ -181,6 +181,10 @@ class FBeta(FBetaScore):
 
     .. deprecated:: v0.7
         Use :class:`torchmetrics.FBetaScore`. Will be removed in v0.8.
+    Example:
+        >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
+        >>> f_beta(torch.tensor([0, 2, 1, 0, 0, 1]), torch.tensor([0, 1, 2, 0, 1, 2]))
+        tensor(0.3333)
     """
 
     def __init__(

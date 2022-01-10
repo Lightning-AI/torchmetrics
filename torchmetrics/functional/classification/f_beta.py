@@ -261,6 +261,9 @@ def fbeta(
 
     .. deprecated:: v0.7
         Use :class:`torchmetrics.functional.f1_score`. Will be removed in v0.8.
+    Example:
+        >>> fbeta(torch.tensor([0, 2, 1, 0, 0, 1]), torch.tensor([0, 1, 2, 0, 1, 2]), num_classes=3, beta=0.5)
+        tensor(0.3333)
     """
     warn("`f1` was renamed to `f1_score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
     return fbeta_score(
