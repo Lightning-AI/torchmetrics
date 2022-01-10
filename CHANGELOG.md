@@ -53,6 +53,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
 
 
+- Changed dtype of metric state from `torch.float` to `torch.long` in `ConfusionMatrix` to accommodate larger values ([#708](https://github.com/PyTorchLightning/metrics/issues/708))
+
+
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
