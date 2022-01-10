@@ -18,10 +18,10 @@ from torch import Tensor
 from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
 
 
-def _pairwise_manhatten_distance_update(
+def _pairwise_manhattan_distance_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise manhatten similarity matrix.
+    """Calculates the pairwise manhattan similarity matrix.
 
     Args:
         x: tensor of shape ``[N,d]``
@@ -36,11 +36,11 @@ def _pairwise_manhatten_distance_update(
     return distance
 
 
-def pairwise_manhatten_distance(
+def pairwise_manhattan_distance(
     x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     r"""
-    Calculates pairwise manhatten distance:
+    Calculates pairwise manhattan distance:
 
     .. math::
         d_{man}(x,y) = ||x-y||_1 = \sum_{d=1}^D |x_d - y_d|
@@ -61,18 +61,18 @@ def pairwise_manhatten_distance(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import pairwise_manhatten_distance
+        >>> from torchmetrics.functional import pairwise_manhattan_distance
         >>> x = torch.tensor([[2, 3], [3, 5], [5, 8]], dtype=torch.float32)
         >>> y = torch.tensor([[1, 0], [2, 1]], dtype=torch.float32)
-        >>> pairwise_manhatten_distance(x, y)
+        >>> pairwise_manhattan_distance(x, y)
         tensor([[ 4.,  2.],
                 [ 7.,  5.],
                 [12., 10.]])
-        >>> pairwise_manhatten_distance(x)
+        >>> pairwise_manhattan_distance(x)
         tensor([[0., 3., 8.],
                 [3., 0., 5.],
                 [8., 5., 0.]])
 
     """
-    distance = _pairwise_manhatten_distance_update(x, y, zero_diagonal)
+    distance = _pairwise_manhattan_distance_update(x, y, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)
