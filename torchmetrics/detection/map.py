@@ -560,6 +560,7 @@ class MAP(Metric):
                         max_det=max_det,
                         nb_imgs=nb_imgs,
                         nb_bbox_areas=nb_bbox_areas,
+                        device=self.device,
                     )
 
         return precision, recall
@@ -605,6 +606,7 @@ class MAP(Metric):
         max_det: int,
         nb_imgs: int,
         nb_bbox_areas: int,
+        device,
     ) -> Tuple[Tensor, Tensor, Tensor]:
         nb_rec_thrs = len(rec_thresholds)
         idx_cls_pointer = idx_cls * nb_bbox_areas * nb_imgs
@@ -636,8 +638,8 @@ class MAP(Metric):
             nd = len(tp)
             rc = tp / npig
             pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
-            prec = torch.zeros((nb_rec_thrs,))
-            score = torch.zeros((nb_rec_thrs,))
+            prec = torch.zeros((nb_rec_thrs,), device=device)
+            score = torch.zeros((nb_rec_thrs,), device=device)
 
             recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
 
@@ -693,8 +695,8 @@ class MAP(Metric):
         map, mar = self._summarize_results(precisions, recalls)
 
         # if class mode is enabled, evaluate metrics per class
-        map_per_class_values: Tensor = Tensor([-1], device=self.device)
-        mar_max_dets_per_class_values: Tensor = Tensor([-1], device=self.device)
+        map_per_class_values: Tensor = Tensor([-1]).to(self.device)
+        mar_max_dets_per_class_values: Tensor = Tensor([-1]).to(self.device)
         if self.class_metrics:
             map_per_class_list = []
             mar_max_dets_per_class_list = []
@@ -706,8 +708,8 @@ class MAP(Metric):
                 map_per_class_list.append(cls_map.map)
                 mar_max_dets_per_class_list.append(cls_mar[f"mar_{self.max_detection_thresholds[-1]}"])
 
-            map_per_class_values = Tensor(map_per_class_list, device=self.device)
-            mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list, device=self.device)
+            map_per_class_values = Tensor(map_per_class_list).to(self.device)
+            mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list).to(self.device)
 
         metrics = COCOMetricResults()
         metrics.update(map)
