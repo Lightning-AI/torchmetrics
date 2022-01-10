@@ -138,10 +138,10 @@ hamming_distance [func]
 .. autofunction:: torchmetrics.functional.hamming_distance
     :noindex:
 
-hinge [func]
-~~~~~~~~~~~~
+hinge_loss [func]
+~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.hinge
+.. autofunction:: torchmetrics.functional.hinge_loss
     :noindex:
 
 jaccard_index [func]

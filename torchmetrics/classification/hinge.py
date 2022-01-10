@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional, Union
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -19,7 +20,7 @@ from torchmetrics.functional.classification.hinge import MulticlassMode, _hinge_
 from torchmetrics.metric import Metric
 
 
-class Hinge(Metric):
+class HingeLoss(Metric):
     r"""
     Computes the mean `Hinge loss`_, typically used for Support Vector
     Machines (SVMs). In the binary case it is defined as:
@@ -62,24 +63,24 @@ class Hinge(Metric):
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics import Hinge
+        >>> from torchmetrics import HingeLoss
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge = Hinge()
+        >>> hinge = HingeLoss()
         >>> hinge(preds, target)
         tensor(0.3000)
 
     Example (default / multiclass case):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge = Hinge()
+        >>> hinge = HingeLoss()
         >>> hinge(preds, target)
         tensor(2.9000)
 
     Example (multiclass example, one vs all mode):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge = Hinge(multiclass_mode="one-vs-all")
+        >>> hinge = HingeLoss(multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([2.2333, 1.5000, 1.2333])
 
@@ -126,3 +127,41 @@ class Hinge(Metric):
 
     def compute(self) -> Tensor:
         return _hinge_compute(self.measure, self.total)
+
+
+class Hinge(HingeLoss):
+    r"""
+    Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.HingeLoss`. Will be removed in v0.8.
+
+    Example (binary case):
+        >>> import torch
+        >>> hinge = Hinge()
+        >>> hinge(torch.tensor([-2.2, 2.4, 0.1]), torch.tensor([0, 1, 1]))
+        tensor(0.3000)
+
+    Example (default / multiclass case):
+        >>> hinge = Hinge()
+        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
+        tensor(2.9000)
+
+    Example (multiclass example, one vs all mode):
+        >>> hinge = Hinge(multiclass_mode="one-vs-all")
+        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
+        tensor([2.2333, 1.5000, 1.2333])
+
+    """
+
+    def __init__(
+        self,
+        squared: bool = False,
+        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+    ) -> None:
+        warn("`Hinge` was renamed to `HingeLoss` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        super().__init__(squared, multiclass_mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

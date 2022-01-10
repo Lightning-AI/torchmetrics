@@ -298,10 +298,10 @@ HammingDistance
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
 
-Hinge
-~~~~~
+HingeLoss
+~~~~~~~~~
 
-.. autoclass:: torchmetrics.Hinge
+.. autoclass:: torchmetrics.HingeLoss
     :noindex:
 
 JaccardIndex
