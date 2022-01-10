@@ -16,7 +16,7 @@ from warnings import warn
 
 from torch import Tensor, tensor
 
-from torchmetrics.classification.hinge import MulticlassMode, _hinge_compute, _hinge_update
+from torchmetrics.functional.classification.hinge import MulticlassMode, _hinge_compute, _hinge_update
 from torchmetrics.metric import Metric
 
 
