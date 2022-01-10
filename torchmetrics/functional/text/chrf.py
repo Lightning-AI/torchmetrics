@@ -587,8 +587,8 @@ def _chrf_score_compute(
 
 
 def chrf_score(
-    preds: Union[str, Sequence[str]],
-    target: Sequence[Union[str, Sequence[str]]],
+    preds: Union[None, str, Sequence[str]] = None,
+    target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     n_char_order: int = 6,
     n_word_order: int = 2,
     beta: float = 2.0,
@@ -651,20 +651,27 @@ def chrf_score(
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
+    if preds is None and hypothesis_corpus is None:
+        raise ValueError("Either `preds` or `hypothesis_corpus` must be provided.")
+    if target is None and reference_corpus is None:
+        raise ValueError("Either `target` or `reference_corpus` must be provided.")
+
     if hypothesis_corpus is not None:
         warn(
             "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        preds = hypothesis_corpus
+        warn("If you specify both `preds` and `hypothesis_corpus`, only `preds` is considered.")
+        preds = preds or hypothesis_corpus
     if reference_corpus is not None:
         warn(
             "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        target = reference_corpus
+        warn("If you specify both `target` and `reference_corpus`, only `target` is considered.")
+        target = target or reference_corpus
 
     if not isinstance(n_char_order, int) or n_char_order < 1:
         raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")

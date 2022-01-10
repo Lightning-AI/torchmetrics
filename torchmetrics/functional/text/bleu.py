@@ -144,8 +144,8 @@ def _bleu_score_compute(
 
 
 def bleu_score(
-    preds: Union[str, Sequence[str]],
-    target: Sequence[Union[str, Sequence[str]]],
+    preds: Union[None, str, Sequence[str]] = None,
+    target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     n_gram: int = 4,
     smooth: bool = False,
     translate_corpus: Union[None, str, Sequence[str]] = None,
@@ -190,20 +190,27 @@ def bleu_score(
         "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
         " Warning will be removed in v0.8."
     )
+    if preds is None and translate_corpus is None:
+        raise ValueError("Either `preds` or `translate_corpus` must be provided.")
+    if target is None and reference_corpus is None:
+        raise ValueError("Either `target` or `reference_corpus` must be provided.")
+
     if translate_corpus is not None:
         warn(
             "You are using deprecated argument `translate_corpus` in v0.7 which was renamed to `preds`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        preds = translate_corpus
+        warn("If you specify both `preds` and `translate_corpus`, only `preds` is considered.")
+        preds = preds or translate_corpus
     if reference_corpus is not None:
         warn(
             "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        target = reference_corpus
+        warn("If you specify both `target` and `reference_corpus`, only `target` is considered.")
+        target = target or reference_corpus
 
     preds_ = [preds] if isinstance(preds, str) else preds
     target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]

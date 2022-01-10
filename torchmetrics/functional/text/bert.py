@@ -451,8 +451,8 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    preds: Union[List[str], Dict[str, Tensor]],
-    target: Union[List[str], Dict[str, Tensor]],
+    preds: Union[None, List[str], Dict[str, Tensor]] = None,
+    target: Union[None, List[str], Dict[str, Tensor]] = None,
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -566,20 +566,27 @@ def bert_score(
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
     """
+    if preds is None and predictions is None:
+        raise ValueError("Either `preds` or `predictions` must be provided.")
+    if target is None and references is None:
+        raise ValueError("Either `target` or `references` must be provided.")
+
     if predictions is not None:
         warn(
             "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        preds = predictions
+        warn("If you specify both `preds` and `predictions`, only `preds` is considered.")
+        preds = preds or predictions
     if references is not None:
         warn(
             "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        target = references
+        warn("If you specify both `target` and `references`, only `target` is considered.")
+        target = target or references
 
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")

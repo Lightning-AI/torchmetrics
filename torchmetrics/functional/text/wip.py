@@ -67,8 +67,8 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
 
 
 def word_information_preserved(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
+    preds: Union[None, str, List[str]] = None,
+    target: Union[None, str, List[str]] = None,
     predictions: Union[None, str, List[str]] = None,
     references: Union[None, str, List[str]] = None,
 ) -> Tensor:
@@ -98,20 +98,27 @@ def word_information_preserved(
         >>> word_information_preserved(preds, target)
         tensor(0.3472)
     """
+    if preds is None and predictions is None:
+        raise ValueError("Either `preds` or `predictions` must be provided.")
+    if target is None and references is None:
+        raise ValueError("Either `target` or `references` must be provided.")
+
     if predictions is not None:
         warn(
             "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        preds = predictions
+        warn("If you specify both `preds` and `predictions`, only `preds` is considered.")
+        preds = preds or predictions
     if references is not None:
         warn(
             "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        target = references
+        warn("If you specify both `target` and `references`, only `target` is considered.")
+        target = target or references
 
     errors, reference_total, prediction_total = _wip_update(preds, target)
     return _wip_compute(errors, reference_total, prediction_total)

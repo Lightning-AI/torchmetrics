@@ -193,8 +193,8 @@ class BERTScore(Metric):
 
     def update(  # type: ignore
         self,
-        preds: List[str],
-        target: List[str],
+        preds: Union[None, List[str]] = None,
+        target: Union[None, List[str]] = None,
         predictions: Union[None, List[str]] = None,
         references: Union[None, List[str]] = None,
     ) -> None:
@@ -213,20 +213,27 @@ class BERTScore(Metric):
                 An iterable of reference sentences.
                 This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
         """
+        if preds is None and predictions is None:
+            raise ValueError("Either `preds` or `predictions` must be provided.")
+        if target is None and references is None:
+            raise ValueError("Either `target` or `references` must be provided.")
+
         if predictions is not None:
             warn(
                 "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
                 " The past argument will be removed in v0.8.",
                 DeprecationWarning,
             )
-            preds = predictions
+            warn("If you specify both `preds` and `predictions`, only `preds` is considered.")
+            preds = preds or predictions
         if references is not None:
             warn(
                 "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
                 " The past argument will be removed in v0.8.",
                 DeprecationWarning,
             )
-            target = references
+            warn("If you specify both `target` and `references`, only `target` is considered.")
+            target = target or references
 
         preds_dict = _preprocess_text(
             preds,

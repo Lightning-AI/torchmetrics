@@ -278,8 +278,8 @@ class _SacreBLEUTokenizer:
 
 
 def sacre_bleu_score(
-    preds: Sequence[str],
-    target: Sequence[Sequence[str]],
+    preds: Union[None, Sequence[str]] = None,
+    target: Union[None, Sequence[Sequence[str]]] = None,
     n_gram: int = 4,
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
@@ -334,20 +334,27 @@ def sacre_bleu_score(
         "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
         " Warning will be removed in v0.8."
     )
+    if preds is None and translate_corpus is None:
+        raise ValueError("Either `preds` or `translate_corpus` must be provided.")
+    if target is None and reference_corpus is None:
+        raise ValueError("Either `target` or `reference_corpus` must be provided.")
+
     if translate_corpus is not None:
         warn(
             "You are using deprecated argument `translate_corpus` in v0.7 which was renamed to `preds`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        preds = translate_corpus
+        warn("If you specify both `preds` and `translate_corpus`, only `preds` is considered.")
+        preds = preds or translate_corpus
     if reference_corpus is not None:
         warn(
             "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
             " The past argument will be removed in v0.8.",
             DeprecationWarning,
         )
-        target = reference_corpus
+        warn("If you specify both `target` and `reference_corpus`, only `target` is considered.")
+        target = target or reference_corpus
 
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
