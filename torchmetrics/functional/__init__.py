@@ -69,6 +69,7 @@ from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.chrf import chrf_score
+from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
@@ -93,6 +94,7 @@ __all__ = [
     "tweedie_deviance_score",
     "dice_score",
     "explained_variance",
+    "extended_edit_distance",
     "f1",
     "f1_score",
     "fbeta",

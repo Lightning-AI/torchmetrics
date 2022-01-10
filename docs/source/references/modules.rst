@@ -642,6 +642,12 @@ CHRFScore
 .. autoclass:: torchmetrics.CHRFScore
     :noindex:
 
+ExtendedEditDistance
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ExtendedEditDistance
+    :noindex:
+
 MatchErrorRate
 ~~~~~~~~~~~~~~
 
