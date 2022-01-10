@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional, Sequence, Tuple, Union
-
+from warnings import warn
 import torch
 from torch import Tensor, tensor
 
@@ -56,7 +56,7 @@ class PeakSignalNoiseRatio(Metric):
             If ``dim`` is not ``None`` and ``data_range`` is not given.
 
     Example:
-        >>> from torchmetrics import PSNR
+        >>> from torchmetrics import PeakSignalNoiseRatio
         >>> peak_signal_noise_ratio = PSNR()
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
@@ -146,3 +146,73 @@ class PeakSignalNoiseRatio(Metric):
             sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
             total = torch.cat([values.flatten() for values in self.total])
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
+
+class PSNR(PeakSignalNoiseRatio):
+    """Peak Signal Noise Ratio (PSNR).
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.PeakSignalNoiseRatio`. Will be removed in v0.8.
+
+        .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
+
+        Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
+
+        Args:
+            data_range:
+                the range of the data. If None, it is determined from the data (max - min).
+                The ``data_range`` must be given when ``dim`` is not None.
+            base: a base of a logarithm to use.
+            reduction: a method to reduce metric score over labels.
+
+                - ``'elementwise_mean'``: takes the mean (default)
+                - ``'sum'``: takes the sum
+                - ``'none'``: no reduction will be applied
+
+            dim:
+                Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
+                None meaning scores will be reduced across all dimensions and all batches.
+            compute_on_step:
+                Forward only calls ``update()`` and return None if this is set to False.
+            dist_sync_on_step:
+                Synchronize metric state across processes at each ``forward()``
+                before returning the value at the step.
+            process_group:
+                Specify the process group on which synchronization is called.
+
+        Raises:
+            ValueError:
+                If ``dim`` is not ``None`` and ``data_range`` is not given.
+
+        Example:
+            >>> from torchmetrics import PSNR
+            >>> peak_signal_noise_ratio = PSNR()
+            >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
+            >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
+            >>> psnr(preds, target)
+            tensor(2.5527)
+
+        .. note::
+            Half precision is only support on GPU for this metric
+
+        """
+    min_target: Tensor
+    max_target: Tensor
+    higher_is_better = False
+
+    def __init__(
+            self,
+            data_range: Optional[float] = None,
+            base: float = 10.0,
+            reduction: str = "elementwise_mean",
+            dim: Optional[Union[int, Tuple[int, ...]]] = None,
+            compute_on_step: bool = True,
+            dist_sync_on_step: bool = False,
+            process_group: Optional[Any] = None,
+    ) -> None:
+        warn(
+            "`PSNR` was renamed to `PeakSignalNoiseRatio` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,)
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+        )
