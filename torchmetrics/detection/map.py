@@ -532,9 +532,11 @@ class MAP(Metric):
         nb_bbox_areas = len(self.bbox_area_ranges)
         nb_max_det_thrs = len(self.max_detection_thresholds)
         nb_imgs = len(img_ids)
-        precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
-        recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
-        scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
+        precision = -torch.ones(
+            (nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs), device=self.device
+        )
+        recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs), device=self.device)
+        scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs), device=self.device)
 
         # move tensors if necessary
         self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
