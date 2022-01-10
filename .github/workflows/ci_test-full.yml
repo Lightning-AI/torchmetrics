@@ -129,7 +129,7 @@ jobs:
 
     - name: Integrations
       run: |
-        pip install -r requirements/integrate.txt --quiet --upgrade --find-links $PYTORCH_URL
+        pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         python -m pytest integrations -v --durations=25
       shell: bash
