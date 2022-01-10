@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 
 from integrations.lightning.boring_model import BoringModel, RandomDataset
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3
-from torchmetrics import Accuracy, AveragePrecision, Metric
+from torchmetrics import Accuracy, AveragePrecision, Metric, MetricCollection
 
 
 class SumMetric(Metric):
@@ -201,45 +201,85 @@ def test_metrics_reset(tmpdir):
     _assert_called(model, "test")
 
 
-# todo: reconsider if it make sense to keep here
-# def test_metric_lightning_log(tmpdir):
-#     """ Test logging a metric object and that the metric state gets reset after each epoch."""
-#     class TestModel(BoringModel):
-#         def __init__(self):
-#             super().__init__()
-#             self.metric_step = SumMetric()
-#             self.metric_epoch = SumMetric()
-#             self.sum = 0.0
-#
-#         def on_epoch_start(self):
-#             self.sum = 0.0
-#
-#         def training_step(self, batch, batch_idx):
-#             x = batch
-#             self.metric_step(x.sum())
-#             self.sum += x.sum()
-#             self.log("sum_step", self.metric_step, on_epoch=True, on_step=False)
-#             return {'loss': self.step(x), 'data': x}
-#
-#         def training_epoch_end(self, outs):
-#             self.log("sum_epoch", self.metric_epoch(torch.stack([o['data'] for o in outs]).sum()))
-#
-#     model = TestModel()
-#     model.val_dataloader = None
-#
-#     trainer = Trainer(
-#         default_root_dir=tmpdir,
-#         limit_train_batches=2,
-#         limit_val_batches=2,
-#         max_epochs=2,
-#         log_every_n_steps=1,
-#         weights_summary=None,
-#     )
-#     trainer.fit(model)
-#
-#     logged = trainer.logged_metrics
-#     assert torch.allclose(tensor(logged["sum_step"]), model.sum)
-#     assert torch.allclose(tensor(logged["sum_epoch"]), model.sum)
+def test_metric_lightning_log(tmpdir):
+    """ Test logging a metric object and that the metric state gets reset after each epoch."""
+    class TestModel(BoringModel):
+        def __init__(self):
+            super().__init__()
+            self.metric_step = SumMetric()
+            self.metric_epoch = SumMetric()
+            self.sum = 0.0
+
+        def on_epoch_start(self):
+            self.sum = 0.0
+
+        def training_step(self, batch, batch_idx):
+            x = batch
+            self.metric_step(x.sum())
+            self.sum += x.sum()
+            self.log("sum_step", self.metric_step, on_epoch=True, on_step=False)
+            return {'loss': self.step(x), 'data': x}
+
+        def training_epoch_end(self, outs):
+            self.log("sum_epoch", self.metric_epoch(torch.stack([o['data'] for o in outs]).sum()))
+
+    model = TestModel()
+    model.val_dataloader = None
+
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=2,
+        max_epochs=2,
+        log_every_n_steps=1,
+        weights_summary=None,
+    )
+    trainer.fit(model)
+
+    logged = trainer.logged_metrics
+    assert torch.allclose(tensor(logged["sum_step"]), model.sum)
+    assert torch.allclose(tensor(logged["sum_epoch"]), model.sum)
+
+
+def test_metric_collection_lightning_log(tmpdir):
+
+    class TestModel(BoringModel):
+
+        def __init__(self):
+            super().__init__()
+            self.metric = MetricCollection([SumMetric(), DiffMetric()])
+            self.sum = 0.0
+            self.diff = 0.0
+
+        def training_step(self, batch, batch_idx):
+            x = batch
+            metric_vals = self.metric(x.sum())
+            self.sum += x.sum()
+            self.diff -= x.sum()
+            self.log_dict({f'{k}_step': v for k, v in metric_vals.items()})
+            return self.step(x)
+
+        def training_epoch_end(self, outputs):
+            metric_vals = self.metric.compute()
+            self.log_dict({f'{k}_epoch': v for k, v in metric_vals.items()})
+
+    model = TestModel()
+    model.val_dataloader = None
+
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=2,
+        max_epochs=1,
+        log_every_n_steps=1,
+        weights_summary=None,
+    )
+    trainer.fit(model)
+
+    logged = trainer.logged_metrics
+    assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum)
+    assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff)
+
 
 # todo: need to be fixed
 # def test_scriptable(tmpdir):
@@ -278,42 +318,3 @@ def test_metrics_reset(tmpdir):
 #     output = model(rand_input)
 #     script_output = script_model(rand_input)
 #     assert torch.allclose(output, script_output)
-
-# def test_metric_collection_lightning_log(tmpdir):
-#
-#     class TestModel(BoringModel):
-#
-#         def __init__(self):
-#             super().__init__()
-#             self.metric = MetricCollection([SumMetric(), DiffMetric()])
-#             self.sum = 0.0
-#             self.diff = 0.0
-#
-#         def training_step(self, batch, batch_idx):
-#             x = batch
-#             metric_vals = self.metric(x.sum())
-#             self.sum += x.sum()
-#             self.diff -= x.sum()
-#             self.log_dict({f'{k}_step': v for k, v in metric_vals.items()})
-#             return self.step(x)
-#
-#         def training_epoch_end(self, outputs):
-#             metric_vals = self.metric.compute()
-#             self.log_dict({f'{k}_epoch': v for k, v in metric_vals.items()})
-#
-#     model = TestModel()
-#     model.val_dataloader = None
-#
-#     trainer = Trainer(
-#         default_root_dir=tmpdir,
-#         limit_train_batches=2,
-#         limit_val_batches=2,
-#         max_epochs=1,
-#         log_every_n_steps=1,
-#         weights_summary=None,
-#     )
-#     trainer.fit(model)
-#
-#     logged = trainer.logged_metrics
-#     assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum)
-#     assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff)
