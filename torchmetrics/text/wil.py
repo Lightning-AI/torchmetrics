@@ -94,8 +94,10 @@ class WordInfoLost(Metric):
         """Store predictions/references for computing Word Information Lost scores.
 
         Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
+            preds:
+                Transcription(s) to score as a string or list of strings
+            target:
+                Reference(s) for each speech input as a string or list of strings
             predictions:
                 Transcription(s) to score as a string or list of strings
                 This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.

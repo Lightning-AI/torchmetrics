@@ -73,19 +73,24 @@ def word_information_lost(
     references: Union[None, str, List[str]] = None,
 ) -> Tensor:
     """Word Information Lost rate is a metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
-    performance of the ASR system with a Word Information Lost rate of 0 being a perfect score.
+    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
+    the performance of the ASR system with a Word Information Lost rate of 0 being a perfect score.
+
     Args:
-        preds: Transcription(s) to score as a string or list of strings
-        target: Reference(s) for each speech input as a string or list of strings
+        preds:
+            Transcription(s) to score as a string or list of strings
+        target:
+            Reference(s) for each speech input as a string or list of strings
         predictions:
             Transcription(s) to score as a string or list of strings
             This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
         references:
             Reference(s) for each speech input as a string or list of strings
             This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+
     Returns:
         Word Information Lost rate
+
     Examples:
         >>> from torchmetrics.functional import word_information_lost
         >>> preds = ["this is the prediction", "there is an other sample"]

@@ -72,20 +72,25 @@ def word_information_preserved(
     predictions: Union[None, str, List[str]] = None,
     references: Union[None, str, List[str]] = None,
 ) -> Tensor:
-    """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
-    performance of the ASR system with a Word Information preserved rate of 0 being a perfect score.
+    """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system.
+    This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the
+    better the performance of the ASR system with a Word Information preserved rate of 0 being a perfect score.
+
     Args:
-        preds: Transcription(s) to score as a string or list of strings
-        total: Reference(s) for each speech input as a string or list of strings
+        preds:
+            Transcription(s) to score as a string or list of strings
+        total:
+            Reference(s) for each speech input as a string or list of strings
         predictions:
             Transcription(s) to score as a string or list of strings
             This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
         references:
             Reference(s) for each speech input as a string or list of strings
             This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+
     Returns:
         Word Information preserved rate
+
     Examples:
         >>> from torchmetrics.functional import word_information_preserved
         >>> preds = ["this is the prediction", "there is an other sample"]
