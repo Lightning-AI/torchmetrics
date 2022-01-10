@@ -195,7 +195,6 @@ class Hinge(HingeLoss):
 
     """
 
-
     def __init__(
         self,
         squared: bool = False,
