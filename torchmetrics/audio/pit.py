@@ -20,8 +20,8 @@ from torchmetrics.metric import Metric
 
 
 class Permutation_Invariant_Training(Metric):
-    """Permutation invariant training (PermutationInvariantTraining). The PermutationInvariantTraining implements the famous Permutation
-    Invariant Training method.
+    """Permutation invariant training (PermutationInvariantTraining). The PermutationInvariantTraining implements
+    the famous Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 

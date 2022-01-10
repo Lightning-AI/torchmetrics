@@ -2,7 +2,7 @@ r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *  # noqa: F401, F403
+from torchmetrics.__about__ import *  # noqa: F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
