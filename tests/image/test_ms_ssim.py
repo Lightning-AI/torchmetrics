@@ -21,7 +21,7 @@ from pytorch_msssim import ms_ssim
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure
-from torchmetrics.image.ms_ssim import MultiScaleStructuralSimilarityIndexMeasure
+from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 
 seed_all(42)
 
