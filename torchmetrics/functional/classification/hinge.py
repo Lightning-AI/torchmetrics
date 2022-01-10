@@ -210,7 +210,7 @@ def hinge_loss(
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics.functional import hinge
+        >>> from torchmetrics.functional import hinge_loss
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
         >>> hinge_loss(preds, target)
