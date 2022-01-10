@@ -55,7 +55,7 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
         stoi value of shape [...]
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``pystoi`` package is not installed
 
     Example:
@@ -81,9 +81,9 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
 
     """
     if not _PYSTOI_AVAILABLE:
-        raise ValueError(
-            "STOI metric requires that pystoi is installed."
-            "Either install as `pip install torchmetrics[audio]` or `pip install pystoi`"
+        raise ModuleNotFoundError(
+            "STOI metric requires that `pystoi` is installed."
+            " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
         )
     _check_same_shape(preds, target)
 
