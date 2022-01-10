@@ -101,7 +101,9 @@ class ROUGEScore(Metric):
         )
         if use_stemmer or "rougeLsum" in rouge_keys:
             if not _NLTK_AVAILABLE:
-                raise ModuleNotFoundError("Stemmer and/or `rougeLsum` requires that nltk is installed. Use `pip install nltk`.")
+                raise ModuleNotFoundError(
+                    "Stemmer and/or `rougeLsum` requires that nltk is installed. Use `pip install nltk`."
+                )
             import nltk
 
         if not isinstance(rouge_keys, tuple):

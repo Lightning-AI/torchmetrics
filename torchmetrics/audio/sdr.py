@@ -16,9 +16,9 @@ from warnings import warn
 
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
 
 class SignalDistortionRatio(Metric):
