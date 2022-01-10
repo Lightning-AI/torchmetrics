@@ -1,0 +1,5 @@
+jiwer>=2.3.0
+rouge-score>=0.0.4
+bert_score==0.3.10
+transformers>=4.0
+sacrebleu>=2.0.0

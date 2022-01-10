@@ -1,0 +1,2 @@
+scikit-image>0.17.1
+pytorch_msssim
