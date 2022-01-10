@@ -644,9 +644,11 @@ class MAP(Metric):
             recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
 
             # Remove zigzags for AUC
-            for i in range(nd - 1, 0, -1):
-                if pr[i] > pr[i - 1]:
-                    pr[i - 1] = pr[i]
+            diff_zero = torch.zeros((1,), device=device)
+            diff = torch.ones((1,), device=device)
+            while not torch.all(diff == 0):
+                diff = torch.clamp(torch.cat((torch.diff(pr), diff_zero), 0), min=0)
+                pr += diff
 
             inds = torch.searchsorted(rc, rec_thresholds, right=False)
             num_inds = inds.argmax() if inds.max() >= nd else nb_rec_thrs
