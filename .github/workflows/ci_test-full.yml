@@ -128,6 +128,7 @@ jobs:
         fail_ci_if_error: false
 
     - name: Integrations
+      if: success()
       run: |
         pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
