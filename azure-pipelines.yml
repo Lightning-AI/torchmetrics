@@ -23,7 +23,7 @@ jobs:
     # how much time to give 'run always even if cancelled tasks' before stopping them
     cancelTimeoutInMinutes: "2"
 
-    pool: azure-gpus-spot
+    pool: gridai-spot-pool
 
     container:
       image: "pytorch/pytorch:1.8.1-cuda10.2-cudnn7-runtime"
