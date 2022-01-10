@@ -174,6 +174,7 @@ class FBetaScore(StatScores):
         tp, fp, tn, fn = self._get_final_stats()
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
+
 class FBeta(FBetaScore):
     r"""
     Computes `F-score`_, specifically:
@@ -212,7 +213,6 @@ class FBeta(FBetaScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-
 
 
 class F1Score(FBetaScore):

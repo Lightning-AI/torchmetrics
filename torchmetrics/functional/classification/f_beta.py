@@ -263,7 +263,9 @@ def fbeta(
         Use :class:`torchmetrics.functional.f1_score`. Will be removed in v0.8.
     """
     warn("`f1` was renamed to `f1_score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return fbeta_score(preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+    return fbeta_score(
+        preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass
+    )
 
 
 def f1_score(
@@ -371,7 +373,9 @@ def f1_score(
         >>> f1_score(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    return fbeta_score(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+    return fbeta_score(
+        preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass
+    )
 
 
 def f1(
