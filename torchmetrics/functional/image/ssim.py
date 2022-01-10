@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -99,7 +99,8 @@ def _ssim_compute(
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-) -> Tensor:
+    return_contrast_sensitivity: bool = False,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Computes Structual Similarity Index Measure.
 
     Args:
@@ -169,6 +170,11 @@ def _ssim_compute(
 
     ssim_idx = ((2 * mu_pred_target + c1) * upper) / ((mu_pred_sq + mu_target_sq + c1) * lower)
     ssim_idx = ssim_idx[..., pad_h:-pad_h, pad_w:-pad_w]
+
+    if return_contrast_sensitivity:
+        contrast_sensitivity = upper / lower
+        contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
+        return reduce(ssim_idx, reduction), reduce(contrast_sensitivity, reduction)
 
     return reduce(ssim_idx, reduction)
 

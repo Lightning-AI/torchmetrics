@@ -241,6 +241,13 @@ image_gradients [func]
     :noindex:
 
 
+multiscale_structural_similarity_index_measure [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.multiscale_structural_similarity_index_measure
+    :noindex:
+
+
 psnr [func]
 ~~~~~~~~~~~
 
