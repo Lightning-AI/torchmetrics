@@ -145,7 +145,7 @@ def test_rouge_metric_raises_errors_and_warnings():
     if not _NLTK_AVAILABLE:
         with pytest.raises(
             ModuleNotFoundError,
-            match="ROUGE metric requires that `nltk` is installed."`
+            match="ROUGE metric requires that `nltk` is installed."
             " Either as `pip install torchmetrics[text]` or `pip install nltk`.",
         ):
             ROUGEScore()
