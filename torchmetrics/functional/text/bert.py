@@ -453,8 +453,6 @@ def _rescale_metrics_with_baseline(
 def bert_score(
     preds: Union[List[str], Dict[str, Tensor]],
     target: Union[List[str], Dict[str, Tensor]],
-    predictions: Union[None, List[str], Dict[str, Tensor]] = None,
-    references: Union[None, List[str], Dict[str, Tensor]] = None,
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -472,6 +470,8 @@ def bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
+    predictions: Union[None, List[str], Dict[str, Tensor]] = None,
+    references: Union[None, List[str], Dict[str, Tensor]] = None,
 ) -> Dict[str, Union[List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
     matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
@@ -533,6 +533,14 @@ def bert_score(
             A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url:
             A url path to the user's own  csv/tsv file with the baseline scale.
+        predictions:
+            Either an iterable of predicted sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
+            `attention_mask` `torch.Tensor`.
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+        references:
+            Either an iterable of target sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
+            `attention_mask` `torch.Tensor`.
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
@@ -553,7 +561,7 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bert_score(preds=preds, target=target, lang="en")  # doctest: +SKIP
+        >>> bert_score(preds, target, lang="en")  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}

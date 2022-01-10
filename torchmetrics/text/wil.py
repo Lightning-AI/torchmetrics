@@ -58,7 +58,7 @@ class WordInfoLost(Metric):
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
         >>> metric = WordInfoLost()
-        >>> metric(preds=preds, target=target)
+        >>> metric(preds, target)
         tensor(0.6528)
     """
     is_differentiable = False
@@ -96,6 +96,12 @@ class WordInfoLost(Metric):
         Args:
             preds: Transcription(s) to score as a string or list of strings
             target: Reference(s) for each speech input as a string or list of strings
+            predictions:
+                Transcription(s) to score as a string or list of strings
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            references:
+                Reference(s) for each speech input as a string or list of strings
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
         """
         if predictions is not None:
             warn(

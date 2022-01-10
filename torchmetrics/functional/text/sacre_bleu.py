@@ -280,12 +280,12 @@ class _SacreBLEUTokenizer:
 def sacre_bleu_score(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
-    translate_corpus: Union[None, Sequence[str]] = None,
-    reference_corpus: Union[None, Sequence[Sequence[str]]] = None,
     n_gram: int = 4,
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
     lowercase: bool = False,
+    translate_corpus: Union[None, Sequence[str]] = None,
+    reference_corpus: Union[None, Sequence[Sequence[str]]] = None,
 ) -> Tensor:
     """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
     follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
@@ -304,6 +304,12 @@ def sacre_bleu_score(
             Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
         lowercase:
             If ``True``, BLEU score over lowercased text is calculated.
+        translate_corpus:
+            An iterable of machine translated corpus
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+        reference_corpus:
+            An iterable of iterables of reference corpus
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
 
     Return:
         Tensor with BLEU Score
@@ -312,7 +318,7 @@ def sacre_bleu_score(
         >>> from torchmetrics.functional import sacre_bleu_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> sacre_bleu_score(preds=preds, target=target)
+        >>> sacre_bleu_score(preds, target)
         tensor(0.7598)
 
     References:

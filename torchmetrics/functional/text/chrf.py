@@ -589,14 +589,14 @@ def _chrf_score_compute(
 def chrf_score(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
-    hypothesis_corpus: Union[str, Sequence[str]] = None,
-    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     n_char_order: int = 6,
     n_word_order: int = 2,
     beta: float = 2.0,
     lowercase: bool = False,
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
+    hypothesis_corpus: Union[None, str, Sequence[str]] = None,
+    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Calculate `chrF score`_  of machine translated text with one or more references. This implementation
     supports both chrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score`_. This
@@ -621,6 +621,12 @@ def chrf_score(
             An indication whether to keep whitespaces during character n-gram extraction.
         return_sentence_level_score:
             An indication whether a sentence-level chrF/chrF++ score to be returned.
+        hypothesis_corpus:
+            An iterable of hypothesis corpus.
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+        reference_corpus:
+            An iterable of iterables of reference corpus.
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
 
     Return:
         A corpus-level chrF/chrF++ score.
@@ -638,7 +644,7 @@ def chrf_score(
         >>> from torchmetrics.functional import chrf_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> chrf_score(preds=preds, target=target)
+        >>> chrf_score(preds, target)
         tensor(0.8640)
 
     References:

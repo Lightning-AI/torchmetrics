@@ -146,10 +146,10 @@ def _bleu_score_compute(
 def bleu_score(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
-    translate_corpus: Union[None, str, Sequence[str]] = None,
-    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     n_gram: int = 4,
     smooth: bool = False,
+    translate_corpus: Union[None, str, Sequence[str]] = None,
+    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
 ) -> Tensor:
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
@@ -162,6 +162,12 @@ def bleu_score(
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
             Whether or not to apply smoothing – see [2]
+        translate_corpus:
+            An iterable of machine translated corpus
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+        reference_corpus:
+            An iterable of iterables of reference corpus
+            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
 
     Return:
         Tensor with BLEU Score
@@ -170,7 +176,7 @@ def bleu_score(
         >>> from torchmetrics.functional import bleu_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> bleu_score(preds=preds, target=target)
+        >>> bleu_score(preds, target)
         tensor(0.7598)
 
     References:

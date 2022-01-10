@@ -88,7 +88,7 @@ class CHRFScore(Metric):
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = CHRFScore()
-        >>> metric(preds=preds, target=target)
+        >>> metric(preds, target)
         tensor(0.8640)
 
     References:
@@ -158,6 +158,12 @@ class CHRFScore(Metric):
                 An iterable of hypothesis corpus.
             target:
                 An iterable of iterables of reference corpus.
+            hypotshesis_corpus:
+                An iterable of hypothesis corpus.
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            reference_corpus:
+                An iterable of iterables of reference corpus.
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
         """
         if hypothesis_corpus is not None:
             warn(

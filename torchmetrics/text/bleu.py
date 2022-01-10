@@ -50,7 +50,7 @@ class BLEUScore(Metric):
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = BLEUScore()
-        >>> metric(preds=preds, target=target)
+        >>> metric(preds, target)
         tensor(0.7598)
 
     References:
@@ -107,6 +107,10 @@ class BLEUScore(Metric):
         Args:
             preds: An iterable of machine translated corpus
             target: An iterable of iterables of reference corpus
+            translate_corpus:
+                An iterable of machine translated corpus
+            reference_corpus:
+                An iterable of iterables of reference corpus
         """
         if translate_corpus is not None:
             warn(

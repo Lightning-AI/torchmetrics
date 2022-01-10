@@ -115,7 +115,7 @@ class BERTScore(Metric):
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore(preds=preds,target=target)  # doctest: +SKIP
+        >>> bertscore(preds, target)  # doctest: +SKIP
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
@@ -205,7 +205,13 @@ class BERTScore(Metric):
             preds:
                 An iterable of predicted sentences.
             target:
+                An iterable of reference sentences.
+            predictions:
                 An iterable of predicted sentences.
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            references:
+                An iterable of reference sentences.
+                This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
         """
         if predictions is not None:
             warn(
