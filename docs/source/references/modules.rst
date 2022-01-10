@@ -280,10 +280,10 @@ ConfusionMatrix
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
-F1
-~~
+F1Score
+~~~~~~~
 
-.. autoclass:: torchmetrics.F1
+.. autoclass:: torchmetrics.F1Score
     :noindex:
 
 FBeta
