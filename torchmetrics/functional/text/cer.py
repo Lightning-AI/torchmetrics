@@ -75,7 +75,7 @@ def char_error_rate(
         predictions:
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            references:
+        references:
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `target` and will be removed in v0.8.
     Returns:
