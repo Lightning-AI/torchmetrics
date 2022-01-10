@@ -171,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `pairwise_cosine_similarity`
   - `pairwise_euclidean_distance`
   - `pairwise_linear_similarity`
-  - `pairwise_manhattan_distance`
+  - `pairwise_manhatten_distance`
 
 ### Changed
 
