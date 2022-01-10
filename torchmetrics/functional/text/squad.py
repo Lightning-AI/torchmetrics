@@ -203,7 +203,7 @@ def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, 
 def squad(
     preds: PREDS_TYPE,
     target: Union[None, TARGETS_TYPE] = None,
-    targets: Union[None, TARGETS_TYPE] = None,
+    targets: Union[None, TARGETS_TYPE] = None,  # ToDo: remove in v0.8
 ) -> Dict[str, Tensor]:
     """Calculate `SQuAD Metric`_ .
 
@@ -240,7 +240,9 @@ def squad(
                     'question': 'Is this a test?',
                     'title': 'train test'
                 }
-
+        targets:
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Return:
         Dictionary containing the F1 score, Exact match score for the batch.

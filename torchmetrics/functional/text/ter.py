@@ -557,8 +557,8 @@ def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
 def translation_edit_rate(
     preds: Union[None, str, Sequence[str]] = None,
     target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
-    hypothesis_corpus: Union[None, str, Sequence[str]] = None,
-    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
+    hypothesis_corpus: Union[None, str, Sequence[str]] = None,  # ToDo: remove in v0.8
+    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,  # ToDo: remove in v0.8
     normalize: bool = False,
     no_punctuation: bool = False,
     lowercase: bool = True,
@@ -575,6 +575,12 @@ def translation_edit_rate(
             An iterable of hypothesis corpus.
         target:
             An iterable of iterables of reference corpus.
+        hypothesis_corpus:
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+            reference_corpus:
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `target` and will be removed in v0.8.
         normalize:
             An indication whether a general tokenization to be applied.
         no_punctuation:

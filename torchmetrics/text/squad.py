@@ -82,7 +82,10 @@ class SQuAD(Metric):
         self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(  # type: ignore
-        self, preds: PREDS_TYPE, target: Union[None, TARGETS_TYPE] = None, targets: Union[None, TARGETS_TYPE] = None
+        self,
+        preds: PREDS_TYPE,
+        target: Union[None, TARGETS_TYPE] = None,
+        targets: Union[None, TARGETS_TYPE] = None,  # ToDo: remove in v0.8
     ) -> None:
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
@@ -119,6 +122,9 @@ class SQuAD(Metric):
                         'question': 'Is this a test?',
                         'title': 'train test'
                     }
+            targets:
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
         Raises:
             KeyError:

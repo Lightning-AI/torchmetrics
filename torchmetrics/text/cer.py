@@ -89,14 +89,20 @@ class CharErrorRate(Metric):
         self,
         preds: Union[None, str, List[str]] = None,
         target: Union[None, str, List[str]] = None,
-        predictions: Union[None, str, List[str]] = None,
-        references: Union[None, str, List[str]] = None,
+        predictions: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
+        references: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
     ) -> None:
         """Store references/predictions for computing Character Error Rate scores.
 
         Args:
             preds: Transcription(s) to score as a string or list of strings
             target: Reference(s) for each speech input as a string or list of strings
+            predictions:
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+            references:
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         if preds is None and predictions is None:
             raise ValueError("Either `preds` or `predictions` must be provided.")

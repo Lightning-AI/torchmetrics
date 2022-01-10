@@ -107,8 +107,8 @@ class TranslationEditRate(Metric):
         self,
         preds: Union[None, str, Sequence[str]] = None,
         target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
-        hypothesis_corpus: Union[None, str, Sequence[str]] = None,
-        reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
+        hypothesis_corpus: Union[None, str, Sequence[str]] = None,  # ToDo: remove in v0.8
+        reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,  # ToDo: remove in v0.8
     ) -> None:
         """Update TER statistics.
 
@@ -117,6 +117,12 @@ class TranslationEditRate(Metric):
                 An iterable of hypothesis corpus.
             target:
                 An iterable of iterables of reference corpus.
+            hypothesis_corpus:
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+            reference_corpus:
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         if preds is None and hypothesis_corpus is None:
             raise ValueError("Either `preds` or `hypothesis_corpus` must be provided.")
