@@ -65,7 +65,6 @@ _inputs_error_rate_batch_size_1 = Input(**ERROR_RATES_BATCHES_1)
 
 _inputs_error_rate_batch_size_2 = Input(**ERROR_RATES_BATCHES_2)
 
-
 SAMPLE_1 = {
     "exact_match": 100.0,
     "f1": 100.0,
@@ -104,3 +103,8 @@ _inputs_squad_exact_mismatch = SquadInput(
 _inputs_squad_batch_match = SquadInput(
     preds=BATCH["preds"], targets=BATCH["targets"], exact_match=BATCH["exact_match"], f1=BATCH["f1"]
 )
+
+# single reference
+TUPLE_OF_SINGLE_REFERENCES = (((REFERENCE_1A), (REFERENCE_1B)), ((REFERENCE_1B), (REFERENCE_1C)))
+_inputs_single_reference = Input(preds=TUPLE_OF_HYPOTHESES, targets=TUPLE_OF_SINGLE_REFERENCES)
+

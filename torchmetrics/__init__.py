@@ -13,7 +13,17 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
-from torchmetrics.audio import PIT, SDR, SI_SDR, SI_SNR, SNR  # noqa: E402
+from torchmetrics.audio import (  # noqa: E402
+    PIT,
+    SDR,
+    SI_SDR,
+    SI_SNR,
+    SNR,
+    ScaleInvariantSignalDistortionRatio,
+    ScaleInvariantSignalNoiseRatio,
+    SignalDistortionRatio,
+    SignalNoiseRatio,
+)
 from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
@@ -27,9 +37,11 @@ from torchmetrics.classification import (  # noqa: E402, F401
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
+    F1Score,
     FBeta,
     HammingDistance,
     Hinge,
+    HingeLoss,
     IoU,
     JaccardIndex,
     KLDivergence,
@@ -41,7 +53,7 @@ from torchmetrics.classification import (  # noqa: E402, F401
     Specificity,
     StatScores,
 )
-from torchmetrics.image import PSNR, SSIM  # noqa: E402
+from torchmetrics.image import PSNR, SSIM, MultiScaleStructuralSimilarityIndexMeasure  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.metric_collections import MetricCollection  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
@@ -74,6 +86,7 @@ from torchmetrics.text import (  # noqa: E402
     BLEUScore,
     CharErrorRate,
     CHRFScore,
+    ExtendedEditDistance,
     MatchErrorRate,
     SacreBLEUScore,
     SQuAD,
@@ -103,10 +116,13 @@ __all__ = [
     "CosineSimilarity",
     "TweedieDevianceScore",
     "ExplainedVariance",
+    "ExtendedEditDistance",
     "F1",
+    "F1Score",
     "FBeta",
     "HammingDistance",
     "Hinge",
+    "HingeLoss",
     "JaccardIndex",
     "KLDivergence",
     "MatthewsCorrcoef",
@@ -123,6 +139,7 @@ __all__ = [
     "MinMaxMetric",
     "MinMetric",
     "MultioutputWrapper",
+    "MultiScaleStructuralSimilarityIndexMeasure",
     "PearsonCorrcoef",
     "PearsonCorrCoef",
     "PIT",
@@ -142,8 +159,12 @@ __all__ = [
     "ROC",
     "SacreBLEUScore",
     "SDR",
+    "SignalDistortionRatio",
+    "ScaleInvariantSignalDistortionRatio",
     "SI_SDR",
     "SI_SNR",
+    "ScaleInvariantSignalNoiseRatio",
+    "SignalNoiseRatio",
     "SNR",
     "SpearmanCorrcoef",
     "SpearmanCorrCoef",

@@ -24,8 +24,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from torchmetrics.audio import SDR
-from torchmetrics.functional import sdr
+from torchmetrics.audio import SignalDistortionRatio
+from torchmetrics.functional import signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
 
 seed_all(42)
@@ -49,7 +49,7 @@ def sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool 
     preds = preds.detach().cpu().numpy()
     mss = []
     for b in range(preds.shape[0]):
-        sdr_val_np, sir_val_np, sar_val_np, perm = bss_eval_sources(target[b], preds[b], compute_permutation)
+        sdr_val_np, _, _, _ = bss_eval_sources(target[b], preds[b], compute_permutation)
         mss.append(sdr_val_np)
     return torch.tensor(mss)
 
@@ -83,7 +83,7 @@ class TestSDR(MetricTester):
             ddp,
             preds,
             target,
-            SDR,
+            SignalDistortionRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(),
@@ -93,7 +93,7 @@ class TestSDR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            sdr,
+            signal_distortion_ratio,
             sk_metric,
             metric_args=dict(),
         )
@@ -103,8 +103,8 @@ class TestSDR(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=SDR,
-            metric_functional=sdr,
+            metric_module=SignalDistortionRatio,
+            metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
 
@@ -115,8 +115,8 @@ class TestSDR(MetricTester):
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
-            metric_module=SDR,
-            metric_functional=sdr,
+            metric_module=SignalDistortionRatio,
+            metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
 
@@ -125,13 +125,13 @@ class TestSDR(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=SDR,
-            metric_functional=sdr,
+            metric_module=SignalDistortionRatio,
+            metric_functional=signal_distortion_ratio,
             metric_args=dict(),
         )
 
 
-def test_error_on_different_shape(metric_class=SDR):
+def test_error_on_different_shape(metric_class=SignalDistortionRatio):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
@@ -143,7 +143,7 @@ def test_on_real_audio():
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
     assert torch.allclose(
-        sdr(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
+        signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
         torch.tensor(0.2211),
         rtol=0.0001,
         atol=1e-4,

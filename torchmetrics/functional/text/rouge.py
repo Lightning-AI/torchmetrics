@@ -40,7 +40,7 @@ ALLOWED_ACCUMULATE_VALUES = ("avg", "best")
 def _add_newline_to_end_of_each_sentence(x: str) -> str:
     """This was added to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
     if not _NLTK_AVAILABLE:
-        raise ValueError("ROUGE-Lsum calculation requires that nltk is installed. Use `pip install nltk`.")
+        raise ModuleNotFoundError("ROUGE-Lsum calculation requires that `nltk` is installed. Use `pip install nltk`.")
     import nltk
 
     nltk.download("punkt", quiet=True, force=False)
@@ -331,7 +331,7 @@ def rouge_score(
          'rougeLsum_recall': 0.25}
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If the python package ``nltk`` is not installed.
         ValueError:
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
@@ -342,7 +342,7 @@ def rouge_score(
 
     if use_stemmer:
         if not _NLTK_AVAILABLE:
-            raise ValueError("Stemmer requires that nltk is installed. Use `pip install nltk`.")
+            raise ModuleNotFoundError("Stemmer requires that `nltk` is installed. Use `pip install nltk`.")
         import nltk
 
     stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None

@@ -54,7 +54,7 @@ class PESQ(Metric):
             will be used to perform the allgather
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``peqs`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
@@ -99,9 +99,9 @@ class PESQ(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         if not _PESQ_AVAILABLE:
-            raise ValueError(
+            raise ModuleNotFoundError(
                 "PESQ metric requires that pesq is installed."
-                "Either install as `pip install torchmetrics[audio]` or `pip install pesq`"
+                " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
             )
         if fs not in (8000, 16000):
             raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")

@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SQuAD` ([#623](https://github.com/PyTorchLightning/metrics/pull/623))
   - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
   - `TranslationEditRate` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
+  - `ExtendedEditDistance` ([#668](https://github.com/PyTorchLightning/metrics/pull/668))
+
+
+- Added `MultiScaleSSIM` into image metrics ([#679](https://github.com/PyTorchLightning/metrics/pull/679))
 
 
 - Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
@@ -28,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
 
 
-- Added `ignore_index` to to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
+- Added `ignore_index` to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
 
 
 - Added support for multi references in `ROUGEScore` ([#680](https://github.com/PyTorchLightning/metrics/pull/680))
@@ -51,6 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
 
 
+- Changed dtype of metric state from `torch.float` to `torch.long` in `ConfusionMatrix` to accommodate larger values ([#708](https://github.com/PyTorchLightning/metrics/issues/708))
+
+
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
@@ -62,6 +69,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
+
+- Renamed audio SDR metrics: ([#711](https://github.com/PyTorchLightning/metrics/pull/711))
+  * `functional.sdr` -> `functional.signal_distortion_ratio`
+  * `functional.si_sdr` -> `functional.scale_invariant_signal_distortion_ratio`
+  * `SDR` -> `SignalDistortionRatio`
+  * `SI_SDR` -> `ScaleInvariantSignalDistortionRatio`
+
+
+- Renamed audio SNR metrics: ([#712](https://github.com/PyTorchLightning/metrics/pull/712))
+  * `functional.snr` -> `functional.signal_distortion_ratio`
+  * `functional.si_snr` -> `functional.scale_invariant_signal_noise_ratio`
+  * `SNR` -> `SignalNoiseRatio`
+  * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
+
+
+- Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731))
+  * `torchmetrics.functional.f1` -> `torchmetrics.functional.f1_score`
+  * `torchmetrics.F1` -> `torchmetrics.F1Score`
+
+
+- Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
+  * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
+  * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
 
 
 ### Removed

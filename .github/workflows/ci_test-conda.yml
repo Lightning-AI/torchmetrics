@@ -7,6 +7,10 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
   pull_request:
     branches: [master, "release/*"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
 jobs:
   conda:
     runs-on: ubuntu-20.04
@@ -23,7 +27,7 @@ jobs:
       TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 55
+    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v2
 
@@ -82,7 +86,7 @@ jobs:
         python ./.github/prune-packages.py requirements/image.txt torchvision
         pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         pip install --requirement requirements.txt --quiet
-        pip install --requirement requirements/test.txt --quiet
+        pip install --requirement requirements/devel.txt --quiet
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
       shell: bash -l {0}

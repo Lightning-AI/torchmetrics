@@ -8,6 +8,10 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
 jobs:
   pytest:
 
@@ -82,7 +86,6 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
-        pip uninstall -y torchmetrics
         pip list
       shell: bash
 
@@ -126,4 +129,7 @@ jobs:
 
     - name: Integrations
       run: |
+        pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed --find-links $PYTORCH_URL
+        pip uninstall -y torchmetrics
         python -m pytest integrations -v --durations=25
+      shell: bash

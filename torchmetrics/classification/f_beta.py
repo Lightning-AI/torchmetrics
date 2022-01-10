@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -174,7 +175,7 @@ class FBeta(StatScores):
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
-class F1(FBeta):
+class F1Score(FBeta):
     """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
@@ -261,6 +262,54 @@ class F1(FBeta):
 
 
     Example:
+        >>> from torchmetrics import F1Score
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> f1 = F1Score(num_classes=3)
+        >>> f1(preds, target)
+        tensor(0.3333)
+    """
+
+    is_differentiable = False
+    higher_is_better = True
+
+    def __init__(
+        self,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: str = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            beta=1.0,
+            threshold=threshold,
+            average=average,
+            mdmc_average=mdmc_average,
+            ignore_index=ignore_index,
+            top_k=top_k,
+            multiclass=multiclass,
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
+
+
+class F1(F1Score):
+    """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.F1Score`. Will be removed in v0.8.
+
+    Example:
         >>> from torchmetrics import F1
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
@@ -286,9 +335,9 @@ class F1(FBeta):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ) -> None:
+        warn("`F1` was renamed to `F1Score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
         super().__init__(
             num_classes=num_classes,
-            beta=1.0,
             threshold=threshold,
             average=average,
             mdmc_average=mdmc_average,
