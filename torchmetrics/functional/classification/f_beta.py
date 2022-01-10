@@ -109,7 +109,7 @@ def _fbeta_compute(
     )
 
 
-def fbeta(
+def fbeta_score(
     preds: Tensor,
     target: Tensor,
     beta: float = 1.0,
@@ -208,10 +208,10 @@ def fbeta(
           of classes
 
     Example:
-        >>> from torchmetrics.functional import fbeta
+        >>> from torchmetrics.functional import fbeta_score
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> fbeta(preds, target, num_classes=3, beta=0.5)
+        >>> fbeta_score(preds, target, num_classes=3, beta=0.5)
         tensor(0.3333)
 
     """
@@ -242,6 +242,28 @@ def fbeta(
     )
 
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
+
+
+def fbeta(
+    preds: Tensor,
+    target: Tensor,
+    beta: float = 1.0,
+    average: str = "micro",
+    mdmc_average: Optional[str] = None,
+    ignore_index: Optional[int] = None,
+    num_classes: Optional[int] = None,
+    threshold: float = 0.5,
+    top_k: Optional[int] = None,
+    multiclass: Optional[bool] = None,
+) -> Tensor:
+    r"""
+    Computes f_beta metric.
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.functional.f1_score`. Will be removed in v0.8.
+    """
+    warn("`f1` was renamed to `f1_score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    return fbeta_score(preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
 
 
 def f1_score(
@@ -349,7 +371,7 @@ def f1_score(
         >>> f1_score(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+    return fbeta_score(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
 
 
 def f1(

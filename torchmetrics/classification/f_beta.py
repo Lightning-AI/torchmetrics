@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.f_beta import _fbeta_compute
 from torchmetrics.utilities.enums import AverageMethod
 
 
-class FBeta(StatScores):
+class FBetaScore(StatScores):
     r"""
     Computes `F-score`_, specifically:
 
@@ -124,10 +124,10 @@ class FBeta(StatScores):
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``, ``None``.
 
     Example:
-        >>> from torchmetrics import FBeta
+        >>> from torchmetrics import FBetaScore
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f_beta = FBeta(num_classes=3, beta=0.5)
+        >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
         >>> f_beta(preds, target)
         tensor(0.3333)
 
@@ -174,8 +174,48 @@ class FBeta(StatScores):
         tp, fp, tn, fn = self._get_final_stats()
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
+class FBeta(FBetaScore):
+    r"""
+    Computes `F-score`_, specifically:
 
-class F1Score(FBeta):
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.FBetaScore`. Will be removed in v0.8.
+    """
+
+    def __init__(
+        self,
+        num_classes: Optional[int] = None,
+        beta: float = 1.0,
+        threshold: float = 0.5,
+        average: str = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable = None,
+    ) -> None:
+        warn("`FBeta` was renamed to `FBetaScore` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        super().__init__(
+            num_classes=num_classes,
+            beta=beta,
+            threshold=threshold,
+            average=average,
+            mdmc_average=mdmc_average,
+            ignore_index=ignore_index,
+            top_k=top_k,
+            multiclass=multiclass,
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            process_group=process_group,
+            dist_sync_fn=dist_sync_fn,
+        )
+
+
+
+class F1Score(FBetaScore):
     """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
     Works with binary, multiclass, and multilabel data. Accepts logits or probabilities from a model
