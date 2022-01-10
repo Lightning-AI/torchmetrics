@@ -195,7 +195,7 @@ class Hinge(HingeLoss):
 
     """
     
-        def __init__(
+    def __init__(
         self,
         squared: bool = False,
         multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
