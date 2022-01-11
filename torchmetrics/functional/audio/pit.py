@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -169,9 +169,7 @@ def permutation_invariant_training(
     op = torch.max if eval_func == "max" else torch.min
     if spk_num < 3 or not _SCIPY_AVAILABLE:
         if spk_num >= 3 and not _SCIPY_AVAILABLE:
-            warnings.warn(
-                f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance"
-            )
+            warn(f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance")
 
         best_metric, best_perm = _find_best_perm_by_exhuastive_method(metric_mtx, op)
     else:
@@ -192,9 +190,11 @@ def pit(
 
     Example:
         >>> from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
-        >>> best_metric, best_perm = pit(torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]]),
-        ...                              torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]]),
-        ...                              scale_invariant_signal_distortion_ratio, 'max')
+        >>> # [batch, spk, time]
+        >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
+        >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
+        >>> best_metric, best_perm = permutation_invariant_training(
+        ...     preds, target, scale_invariant_signal_distortion_ratio, 'max')
         >>> best_metric
         tensor([-5.1091])
         >>> best_perm

@@ -84,7 +84,7 @@ PESQ
 PermutationInvariantTraining
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.permutation_invariant_training
+.. autoclass:: torchmetrics.PermutationInvariantTraining
     :noindex:
 
 SignalDistortionRatio
