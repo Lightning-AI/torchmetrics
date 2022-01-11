@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
-from warnings import warn
 
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
@@ -173,6 +173,7 @@ class SDR(SignalDistortionRatio):
         tensor(-11.6051)
     """
 
+    @deprecated(target=SignalDistortionRatio, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         use_cg_iter: Optional[int] = None,
@@ -184,9 +185,7 @@ class SDR(SignalDistortionRatio):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        warn("`SDR` was renamed to `SignalDistortionRatio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-
-        super().__init__(
+        void(
             use_cg_iter,
             filter_length,
             zero_mean,

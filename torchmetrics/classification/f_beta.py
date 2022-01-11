@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
@@ -188,6 +188,7 @@ class FBeta(FBetaScore):
         tensor(0.3333)
     """
 
+    @deprecated(target=FBetaScore, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -203,20 +204,19 @@ class FBeta(FBetaScore):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ) -> None:
-        warn("`FBeta` was renamed to `FBetaScore` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-        super().__init__(
-            num_classes=num_classes,
-            beta=beta,
-            threshold=threshold,
-            average=average,
-            mdmc_average=mdmc_average,
-            ignore_index=ignore_index,
-            top_k=top_k,
-            multiclass=multiclass,
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+        void(
+            num_classes,
+            beta,
+            threshold,
+            average,
+            mdmc_average,
+            ignore_index,
+            top_k,
+            multiclass,
+            compute_on_step,
+            dist_sync_on_step,
+            process_group,
+            dist_sync_fn,
         )
 
 
@@ -363,9 +363,7 @@ class F1(F1Score):
         tensor(0.3333)
     """
 
-    is_differentiable = False
-    higher_is_better = True
-
+    @deprecated(target=F1Score, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -380,17 +378,16 @@ class F1(F1Score):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ) -> None:
-        warn("`F1` was renamed to `F1Score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-        super().__init__(
-            num_classes=num_classes,
-            threshold=threshold,
-            average=average,
-            mdmc_average=mdmc_average,
-            ignore_index=ignore_index,
-            top_k=top_k,
-            multiclass=multiclass,
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+        void(
+            num_classes,
+            threshold,
+            average,
+            mdmc_average,
+            ignore_index,
+            top_k,
+            multiclass,
+            compute_on_step,
+            dist_sync_on_step,
+            process_group,
+            dist_sync_fn,
         )
