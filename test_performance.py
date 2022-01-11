@@ -1,7 +1,7 @@
 import contextlib
 import json
 import time
-from typing import List, Callable
+from typing import Callable, List
 
 import line_profiler
 import torch
@@ -16,10 +16,11 @@ profile_functions = False
 
 
 class WrappedLineProfiler(line_profiler.LineProfiler):
-    """Measures time for executing code in the specified profiling_functions.
-    More info: https://github.com/pyutils/line_profiler
+    """Measures time for executing code in the specified profiling_functions. More info:
+    https://github.com/pyutils/line_profiler.
 
-    Call the print_stats() method after profiling to get results"""
+    Call the print_stats() method after profiling to get results
+    """
 
     def __init__(self, profiling_functions: List[Callable]):
         super().__init__(*profiling_functions)
