@@ -104,7 +104,7 @@ def _find_best_perm_by_exhuastive_method(
 def permutation_invariant_training(
     preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
-    """Permutation invariant training. The permutation_invariant_training implements the famous Permutation
+    """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous Permutation
     Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
@@ -183,7 +183,7 @@ def permutation_invariant_training(
 def pit(
     preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
-    """Permutation invariant training. The pit implements the famous Permutation Invariant Training method.
+    """Permutation invariant training. The ``pit`` implements the famous Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
@@ -217,8 +217,8 @@ def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
     """permutate estimate according to perm.
 
     Args:
-        preds (Tensor): the estimates you want to permutate, shape [batch, spk, ...]
-        perm (Tensor): the permutation returned from permutation_invariant_training, shape [batch, spk]
+        preds: the estimates you want to permutate, shape [batch, spk, ...]
+        perm: the permutation returned from permutation_invariant_training, shape [batch, spk]
 
     Returns:
         Tensor: the permutated version of estimate
