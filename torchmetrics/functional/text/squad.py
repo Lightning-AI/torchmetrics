@@ -241,6 +241,7 @@ def squad(
                     'title': 'train test'
                 }
         targets:
+
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `target` and will be removed in v0.8.
 

@@ -576,11 +576,15 @@ def translation_edit_rate(
         target:
             An iterable of iterables of reference corpus.
         hypothesis_corpus:
+
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            reference_corpus:
+
+        reference_corpus:
+
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `target` and will be removed in v0.8.
+
         normalize:
             An indication whether a general tokenization to be applied.
         no_punctuation:
