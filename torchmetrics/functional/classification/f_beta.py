@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -243,7 +244,7 @@ def fbeta(
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
-def f1(
+def f1_score(
     preds: Tensor,
     target: Tensor,
     beta: float = 1.0,
@@ -342,10 +343,38 @@ def f1(
           of classes
 
     Example:
+        >>> from torchmetrics.functional import f1_score
+        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
+        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
+        >>> f1_score(preds, target, num_classes=3)
+        tensor(0.3333)
+    """
+    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+
+
+def f1(
+    preds: Tensor,
+    target: Tensor,
+    beta: float = 1.0,
+    average: str = "micro",
+    mdmc_average: Optional[str] = None,
+    ignore_index: Optional[int] = None,
+    num_classes: Optional[int] = None,
+    threshold: float = 0.5,
+    top_k: Optional[int] = None,
+    multiclass: Optional[bool] = None,
+) -> Tensor:
+    """Computes F1 metric. F1 metrics correspond to a equally weighted average of the precision and recall scores.
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.functional.f1_score`. Will be removed in v0.8.
+
+    Example:
         >>> from torchmetrics.functional import f1
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    return fbeta(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+    warn("`f1` was renamed to `f1_score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    return f1_score(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)

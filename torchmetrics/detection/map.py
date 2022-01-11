@@ -216,7 +216,7 @@ class MAP(Metric):
         }
 
     Raises:
-        ImportError:
+        ModuleNotFoundError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ValueError:
             If ``class_metrics`` is not a boolean
@@ -242,9 +242,9 @@ class MAP(Metric):
         )
 
         if not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8):
-            raise ImportError(
+            raise ModuleNotFoundError(
                 "`MAP` metric requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`"
+                " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")

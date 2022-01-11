@@ -2,7 +2,7 @@ from typing import Callable, List, Union
 
 import pytest
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
@@ -11,8 +11,8 @@ if _JIWER_AVAILABLE:
 else:
     compute_measures = Callable
 
-from torchmetrics.functional.text.wer import wer
-from torchmetrics.text.wer import WER
+from torchmetrics.functional.text.wer import word_error_rate
+from torchmetrics.text.wer import WordErrorRate
 
 
 def _compute_wer_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
@@ -36,10 +36,9 @@ class TestWER(TextTester):
             ddp=ddp,
             preds=preds,
             targets=targets,
-            metric_class=WER,
+            metric_class=WordErrorRate,
             sk_metric=_compute_wer_metric_jiwer,
             dist_sync_on_step=dist_sync_on_step,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_wer_functional(self, preds, targets):
@@ -47,9 +46,8 @@ class TestWER(TextTester):
         self.run_functional_metric_test(
             preds,
             targets,
-            metric_functional=wer,
+            metric_functional=word_error_rate,
             sk_metric=_compute_wer_metric_jiwer,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_wer_differentiability(self, preds, targets):
@@ -57,7 +55,6 @@ class TestWER(TextTester):
         self.run_differentiability_test(
             preds=preds,
             targets=targets,
-            metric_module=WER,
-            metric_functional=wer,
-            input_order=INPUT_ORDER.PREDS_FIRST,
+            metric_module=WordErrorRate,
+            metric_functional=word_error_rate,
         )

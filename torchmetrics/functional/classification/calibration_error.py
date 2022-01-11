@@ -118,20 +118,21 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
     L1 norm (Expected Calibration Error)
 
     .. math::
-        \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
+        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|
 
     Infinity norm (Maximum Calibration Error)
 
     .. math::
-        \text{RMSCE} =  \max_{i} (p_i - c_i)
+        \text{MCE} =  \max_{i} (p_i - c_i)
 
     L2 norm (Root Mean Square Calibration Error)
 
     .. math::
-        \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
+        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}
 
-    Where :math:`p_i` is the top-1 prediction accuracy in
-    bin i and :math:`c_i` is the average confidence of predictions in bin i.
+    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`,
+    :math:`c_i` is the average confidence of predictions in bin :math:`i`, and
+    :math:`b_i` is the fraction of data points in bin :math:`i`.
 
     .. note:
         L2-norm debiasing is not yet supported.

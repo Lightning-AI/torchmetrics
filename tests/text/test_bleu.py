@@ -18,7 +18,7 @@ import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
 from torch import tensor
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.text.bleu import BLEUScore
@@ -27,7 +27,7 @@ from torchmetrics.text.bleu import BLEUScore
 smooth_func = SmoothingFunction().method2
 
 
-def _compute_bleu_metric_nltk(list_of_references, hypotheses, weights, smoothing_function, **kwargs):
+def _compute_bleu_metric_nltk(hypotheses, list_of_references, weights, smoothing_function, **kwargs):
     hypotheses_ = [hypothesis.split() for hypothesis in hypotheses]
     list_of_references_ = [[line.split() for line in ref] for ref in list_of_references]
     return corpus_bleu(
@@ -67,7 +67,6 @@ class TestBLEUScore(TextTester):
             sk_metric=compute_bleu_metric_nltk,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
@@ -80,7 +79,6 @@ class TestBLEUScore(TextTester):
             metric_functional=bleu_score,
             sk_metric=compute_bleu_metric_nltk,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
     def test_bleu_score_differentiability(self, preds, targets, weights, n_gram, smooth_func, smooth):
@@ -92,31 +90,30 @@ class TestBLEUScore(TextTester):
             metric_module=BLEUScore,
             metric_functional=bleu_score,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.TARGETS_FIRST,
         )
 
 
 def test_bleu_empty_functional():
     hyp = [[]]
     ref = [[[]]]
-    assert bleu_score(ref, hyp) == tensor(0.0)
+    assert bleu_score(hyp, ref) == tensor(0.0)
 
 
 def test_no_4_gram_functional():
     hyps = ["My full pytorch-lightning"]
     refs = [["My full pytorch-lightning test", "Completely Different"]]
-    assert bleu_score(refs, hyps) == tensor(0.0)
+    assert bleu_score(hyps, refs) == tensor(0.0)
 
 
 def test_bleu_empty_class():
     bleu = BLEUScore()
     hyp = [[]]
     ref = [[[]]]
-    assert bleu(ref, hyp) == tensor(0.0)
+    assert bleu(hyp, ref) == tensor(0.0)
 
 
 def test_no_4_gram_class():
     bleu = BLEUScore()
     hyps = ["My full pytorch-lightning"]
     refs = [["My full pytorch-lightning test", "Completely Different"]]
-    assert bleu(refs, hyps) == tensor(0.0)
+    assert bleu(hyps, refs) == tensor(0.0)

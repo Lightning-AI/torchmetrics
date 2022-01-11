@@ -18,7 +18,7 @@ from typing import Sequence
 import pytest
 import torch
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_single_reference
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
@@ -120,7 +120,6 @@ class TestROUGEScore(TextTester):
             sk_metric=rouge_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
             key=pl_rouge_metric_key,
         )
 
@@ -137,7 +136,6 @@ class TestROUGEScore(TextTester):
             metric_functional=rouge_score,
             sk_metric=rouge_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
             key=pl_rouge_metric_key,
         )
 
@@ -146,9 +144,9 @@ def test_rouge_metric_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     if not _NLTK_AVAILABLE:
         with pytest.raises(
-            ValueError,
-            match="ROUGE metric requires that nltk is installed."
-            "Either as `pip install torchmetrics[text]` or `pip install nltk`",
+            ModuleNotFoundError,
+            match="ROUGE metric requires that `nltk` is installed."
+            " Either as `pip install torchmetrics[text]` or `pip install nltk`.",
         ):
             ROUGEScore()
 
