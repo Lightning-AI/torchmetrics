@@ -147,13 +147,10 @@ class PIT(PermutationInvariantTraining):
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        warn("`PIT` was renamed to `PermutationInvariantTraining` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+        warn(
+            "`PIT` was renamed to `PermutationInvariantTraining` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,
+        )
         super().__init__(
-            metric_func,
-        eval_func,
-        compute_on_step,
-        dist_sync_on_step,
-        process_group,
-        dist_sync_fn,
-        **kwargs
+            metric_func, eval_func, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn, **kwargs
         )
