@@ -161,40 +161,13 @@ def psnr(
 ) -> Tensor:
     """Computes the peak signal-to-noise ratio.
 
-        . deprecated:: v0.7
-        Use :function:torchmetrics.functional.psnr. Will be removed in v0.8.
-    Args:
-        preds: estimated signal
-        target: groun truth signal
-        data_range:
-            the range of the data. If None, it is determined from the data (max - min). ``data_range`` must be given
-            when ``dim`` is not None.
-        base: a base of a logarithm to use (default: 10)
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
-        dim:
-            Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is
-            None meaning scores will be reduced across all dimensions.
-    Return:
-        Tensor with PSNR score
-
-    Raises:
-        ValueError:
-            If ``dim`` is not ``None`` and ``data_range`` is not provided.
+    .. deprecated:: v0.7
+        Use :func:torchmetrics.functional.psnr. Will be removed in v0.8.
 
     Example:
-        >>> from torchmetrics.functional import psnr
-        >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
-        >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> psnr(pred, target)
-        tensor(2.5527)
 
-    .. note::
-        Half precision is only support on GPU for this metric
+        >>> psnr(torch.tensor([[0.0, 1.0], [2.0, 3.0]]), torch.tensor([[3.0, 2.0], [1.0, 0.0]]))
+        tensor(2.5527)
     """
     if dim is None and reduction != "elementwise_mean":
         rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")

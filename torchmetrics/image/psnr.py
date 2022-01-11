@@ -155,46 +155,10 @@ class PSNR(PeakSignalNoiseRatio):
     .. deprecated:: v0.7
         Use :class:`torchmetrics.PeakSignalNoiseRatio`. Will be removed in v0.8.
 
-        .. math:: \text{PSNR}(I, J) = 10 * \\log_{10} \\left(\frac{\\max(I)^2}{\text{MSE}(I, J)}\right)
-
-        Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
-
-        Args:
-            data_range:
-                the range of the data. If None, it is determined from the data (max - min).
-                The ``data_range`` must be given when ``dim`` is not None.
-            base: a base of a logarithm to use.
-            reduction: a method to reduce metric score over labels.
-
-                - ``'elementwise_mean'``: takes the mean (default)
-                - ``'sum'``: takes the sum
-                - ``'none'``: no reduction will be applied
-
-            dim:
-                Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
-                None meaning scores will be reduced across all dimensions and all batches.
-            compute_on_step:
-                Forward only calls ``update()`` and return None if this is set to False.
-            dist_sync_on_step:
-                Synchronize metric state across processes at each ``forward()``
-                before returning the value at the step.
-            process_group:
-                Specify the process group on which synchronization is called.
-
-        Raises:
-            ValueError:
-                If ``dim`` is not ``None`` and ``data_range`` is not given.
-
-        Example:
-            >>> from torchmetrics import PSNR
-            >>> peak_signal_noise_ratio = PSNR()
-            >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
-            >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-            >>> psnr(preds, target)
-            tensor(2.5527)
-
-        .. note::
-            Half precision is only support on GPU for this metric
+    Example:
+        >>> peak_signal_noise_ratio = PSNR()
+        >>> psnr(torch.tensor([[0.0, 1.0], [2.0, 3.0]]), torch.tensor([[3.0, 2.0], [1.0, 0.0]]))
+        tensor(2.5527)
     """
 
     min_target: Tensor

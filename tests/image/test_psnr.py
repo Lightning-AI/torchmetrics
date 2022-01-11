@@ -22,8 +22,8 @@ from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import peak_signal_noise_ratio, psnr
-from torchmetrics.image import PSNR, PeakSignalNoiseRatio
+from torchmetrics.functional import peak_signal_noise_ratio
+from torchmetrics.image import  PeakSignalNoiseRatio
 
 seed_all(42)
 
@@ -101,7 +101,7 @@ class TestPSNR(MetricTester):
             ddp,
             preds,
             target,
-            PSNR,
+            PeakSignalNoiseRatio,
             partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
             dist_sync_on_step=dist_sync_on_step,
@@ -123,7 +123,7 @@ class TestPSNR(MetricTester):
         self.run_precision_test_cpu(
             preds,
             target,
-            PSNR,
+            PeakSignalNoiseRatio,
             peak_signal_noise_ratio,
             {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
@@ -133,7 +133,7 @@ class TestPSNR(MetricTester):
         self.run_precision_test_gpu(
             preds,
             target,
-            PSNR,
+            PeakSignalNoiseRatio,
             peak_signal_noise_ratio,
             {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
@@ -143,7 +143,7 @@ class TestPSNR(MetricTester):
 def test_reduction_for_dim_none(reduction):
     match = f"The `reduction={reduction}` will not have any effect when `dim` is None."
     with pytest.warns(UserWarning, match=match):
-        PSNR(reduction=reduction, dim=None)
+        PeakSignalNoiseRatio(reduction=reduction, dim=None)
 
     with pytest.warns(UserWarning, match=match):
         peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, reduction=reduction, dim=None)
@@ -151,7 +151,7 @@ def test_reduction_for_dim_none(reduction):
 
 def test_missing_data_range():
     with pytest.raises(ValueError):
-        PSNR(data_range=None, dim=0)
+        PeakSignalNoiseRatio(data_range=None, dim=0)
 
     with pytest.raises(ValueError):
         peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
