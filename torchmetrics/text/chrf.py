@@ -18,10 +18,11 @@
 # Link:
 
 import itertools
+import logging
 from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
@@ -144,12 +145,17 @@ class CHRFScore(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
+    @deprecated(
+        args_mapping={"hypothesis_corpus": "preds", "reference_corpus": "target"},
+        target=True,
+        stream=logging.warning,
+        deprecated_in="0.7",
+        remove_in="0.8",
+    )
     def update(  # type: ignore
         self,
         preds: Union[None, Sequence[str]] = None,
         target: Union[None, Sequence[Sequence[str]]] = None,
-        hypothesis_corpus: Union[None, Sequence[str]] = None,
-        reference_corpus: Union[None, Sequence[Sequence[str]]] = None,
     ) -> None:
         """Compute Precision Scores.
 
@@ -158,35 +164,13 @@ class CHRFScore(Metric):
                 An iterable of hypothesis corpus.
             target:
                 An iterable of iterables of reference corpus.
-            hypotshesis_corpus:
-                An iterable of hypothesis corpus.
-                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            hypothesis_corpus:
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
             reference_corpus:
-                An iterable of iterables of reference corpus.
-                This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         """
-        if preds is None and hypothesis_corpus is None:
-            raise ValueError("Either `preds` or `hypothesis_corpus` must be provided.")
-        if target is None and reference_corpus is None:
-            raise ValueError("Either `target` or `reference_corpus` must be provided.")
-
-        if hypothesis_corpus is not None:
-            warn(
-                "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            warn("If you specify both `preds` and `hypothesis_corpus`, only `preds` is considered.")
-            preds = preds or hypothesis_corpus
-        if reference_corpus is not None:
-            warn(
-                "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            warn("If you specify both `target` and `reference_corpus`, only `target` is considered.")
-            target = target or reference_corpus
-
         n_grams_dicts_tuple = _chrf_score_update(
             preds,  # type: ignore
             target,  # type: ignore

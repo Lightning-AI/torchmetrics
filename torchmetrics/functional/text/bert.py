@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
+import logging
 import math
 import urllib
 import warnings
 from collections import Counter, defaultdict
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
@@ -450,6 +451,13 @@ def _rescale_metrics_with_baseline(
     return all_metrics[..., 0], all_metrics[..., 1], all_metrics[..., 2]
 
 
+@deprecated(
+    args_mapping={"predictions": "preds", "references": "target"},
+    target=True,
+    stream=logging.warning,
+    deprecated_in="0.7",
+    remove_in="0.8",
+)
 def bert_score(
     preds: Union[None, List[str], Dict[str, Tensor]] = None,
     target: Union[None, List[str], Dict[str, Tensor]] = None,
@@ -470,8 +478,6 @@ def bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
-    predictions: Union[None, List[str], Dict[str, Tensor]] = None,
-    references: Union[None, List[str], Dict[str, Tensor]] = None,
 ) -> Dict[str, Union[List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
     matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with
@@ -534,13 +540,11 @@ def bert_score(
         baseline_url:
             A url path to the user's own  csv/tsv file with the baseline scale.
         predictions:
-            Either an iterable of predicted sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
-            `attention_mask` `torch.Tensor`.
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         references:
-            Either an iterable of target sentences or a `Dict[str, torch.Tensor]` containing `input_ids` and
-            `attention_mask` `torch.Tensor`.
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
@@ -566,28 +570,6 @@ def bert_score(
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
     """
-    if preds is None and predictions is None:
-        raise ValueError("Either `preds` or `predictions` must be provided.")
-    if target is None and references is None:
-        raise ValueError("Either `target` or `references` must be provided.")
-
-    if predictions is not None:
-        warn(
-            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `preds` and `predictions`, only `preds` is considered.")
-        preds = preds or predictions
-    if references is not None:
-        warn(
-            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `target` and `references`, only `target` is considered.")
-        target = target or references
-
     if len(preds) != len(target):  # type: ignore
         raise ValueError("Number of predicted and reference sententes must be the same!")
 

@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from typing import List, Tuple, Union
-from warnings import warn
 
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
@@ -66,11 +67,16 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
     return 1 - ((errors / target_total) * (errors / preds_total))
 
 
+@deprecated(
+    args_mapping={"predictions": "preds", "references": "target"},
+    target=True,
+    stream=logging.warning,
+    deprecated_in="0.7",
+    remove_in="0.8",
+)
 def word_information_lost(
     preds: Union[None, str, List[str]] = None,
     target: Union[None, str, List[str]] = None,
-    predictions: Union[None, str, List[str]] = None,
-    references: Union[None, str, List[str]] = None,
 ) -> Tensor:
     """Word Information Lost rate is a metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
@@ -82,11 +88,11 @@ def word_information_lost(
         target:
             Reference(s) for each speech input as a string or list of strings
         predictions:
-            Transcription(s) to score as a string or list of strings
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         references:
-            Reference(s) for each speech input as a string or list of strings
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Returns:
         Word Information Lost rate
@@ -98,27 +104,5 @@ def word_information_lost(
         >>> word_information_lost(preds, target)
         tensor(0.6528)
     """
-    if preds is None and predictions is None:
-        raise ValueError("Either `preds` or `predictions` must be provided.")
-    if target is None and references is None:
-        raise ValueError("Either `target` or `references` must be provided.")
-
-    if predictions is not None:
-        warn(
-            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `preds` and `predictions`, only `preds` is considered.")
-        preds = preds or predictions
-    if references is not None:
-        warn(
-            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `target` and `references`, only `target` is considered.")
-        target = target or references
-
     errors, target_total, preds_total = _wil_update(preds, target)  # type: ignore
     return _wil_compute(errors, target_total, preds_total)

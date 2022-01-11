@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 from typing import Any, Callable, Dict, List, Optional, Union
 from warnings import warn
 
 import torch
+from deprecate import deprecated
 
 from torchmetrics.functional import bert_score
 from torchmetrics.functional.text.bert import _preprocess_text
@@ -191,12 +193,17 @@ class BERTScore(Metric):
             self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
             self.user_tokenizer = False
 
+    @deprecated(
+        args_mapping={"predictions": "preds", "references": "target"},
+        target=True,
+        stream=logging.warning,
+        deprecated_in="0.7",
+        remove_in="0.8",
+    )
     def update(  # type: ignore
         self,
         preds: Union[None, List[str]] = None,
         target: Union[None, List[str]] = None,
-        predictions: Union[None, List[str]] = None,
-        references: Union[None, List[str]] = None,
     ) -> None:
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
@@ -207,34 +214,12 @@ class BERTScore(Metric):
             target:
                 An iterable of reference sentences.
             predictions:
-                An iterable of predicted sentences.
-                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
             references:
-                An iterable of reference sentences.
-                This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         """
-        if preds is None and predictions is None:
-            raise ValueError("Either `preds` or `predictions` must be provided.")
-        if target is None and references is None:
-            raise ValueError("Either `target` or `references` must be provided.")
-
-        if predictions is not None:
-            warn(
-                "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            warn("If you specify both `preds` and `predictions`, only `preds` is considered.")
-            preds = preds or predictions
-        if references is not None:
-            warn(
-                "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            warn("If you specify both `target` and `references`, only `target` is considered.")
-            target = target or references
-
         preds_dict = _preprocess_text(
             preds,  # type: ignore
             self.tokenizer,

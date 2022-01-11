@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from typing import Any, Callable, List, Optional, Union
-from warnings import warn
 
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wip import _wip_compute, _wip_update
@@ -84,12 +85,17 @@ class WordInfoPreserved(Metric):
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
+    @deprecated(
+        args_mapping={"predictions": "preds", "references": "target"},
+        target=True,
+        stream=logging.warning,
+        deprecated_in="0.7",
+        remove_in="0.8",
+    )
     def update(  # type: ignore
         self,
         preds: Union[None, str, List[str]] = None,
         target: Union[None, str, List[str]] = None,
-        predictions: Union[None, str, List[str]] = None,
-        references: Union[None, str, List[str]] = None,
     ) -> None:
         """Store predictions/references for computing word Information Preserved scores.
 
@@ -99,34 +105,12 @@ class WordInfoPreserved(Metric):
             target:
                 Reference(s) for each speech input as a string or list of strings
             predictions:
-                Transcription(s) to score as a string or list of strings
-                This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
             references:
-                Reference(s) for each speech input as a string or list of strings
-                This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+                .. deprecated:: v0.7
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         """
-        if preds is None and predictions is None:
-            raise ValueError("Either `preds` or `predictions` must be provided.")
-        if target is None and references is None:
-            raise ValueError("Either `target` or `references` must be provided.")
-
-        if predictions is not None:
-            warn(
-                "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            warn("If you specify both `preds` and `predictions`, only `preds` is considered.")
-            preds = preds or predictions
-        if references is not None:
-            warn(
-                "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            warn("If you specify both `target` and `references`, only `target` is considered.")
-            target = target or references
-
         errors, target_total, preds_total = _wip_update(preds, target)  # type: ignore
         self.errors += errors
         self.target_total += target_total

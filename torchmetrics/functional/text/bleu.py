@@ -16,11 +16,13 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
+import logging
 from collections import Counter
 from typing import Callable, Sequence, Tuple, Union
 from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 
@@ -143,13 +145,18 @@ def _bleu_score_compute(
     return bleu
 
 
+@deprecated(
+    args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
+    target=True,
+    stream=logging.warning,
+    deprecated_in="0.7",
+    remove_in="0.8",
+)
 def bleu_score(
     preds: Union[None, str, Sequence[str]] = None,
     target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
     n_gram: int = 4,
     smooth: bool = False,
-    translate_corpus: Union[None, str, Sequence[str]] = None,
-    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
 ) -> Tensor:
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
@@ -163,11 +170,11 @@ def bleu_score(
         smooth:
             Whether or not to apply smoothing – see [2]
         translate_corpus:
-            An iterable of machine translated corpus
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         reference_corpus:
-            An iterable of iterables of reference corpus
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Return:
         Tensor with BLEU Score
@@ -190,27 +197,6 @@ def bleu_score(
         "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
         " Warning will be removed in v0.8."
     )
-    if preds is None and translate_corpus is None:
-        raise ValueError("Either `preds` or `translate_corpus` must be provided.")
-    if target is None and reference_corpus is None:
-        raise ValueError("Either `target` or `reference_corpus` must be provided.")
-
-    if translate_corpus is not None:
-        warn(
-            "You are using deprecated argument `translate_corpus` in v0.7 which was renamed to `preds`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `preds` and `translate_corpus`, only `preds` is considered.")
-        preds = preds or translate_corpus
-    if reference_corpus is not None:
-        warn(
-            "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `target` and `reference_corpus`, only `target` is considered.")
-        target = target or reference_corpus
 
     preds_ = [preds] if isinstance(preds, str) else preds
     target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]  # type: ignore

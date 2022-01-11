@@ -37,13 +37,14 @@
 # MIT License
 # Copyright (c) 2017 - Shujian Huang <huangsj@nju.edu.cn>
 
-
+import logging
 import re
 from functools import partial
 from typing import Sequence, Union
 from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
@@ -277,6 +278,13 @@ class _SacreBLEUTokenizer:
         return line
 
 
+@deprecated(
+    args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
+    target=True,
+    stream=logging.warning,
+    deprecated_in="0.7",
+    remove_in="0.8",
+)
 def sacre_bleu_score(
     preds: Union[None, Sequence[str]] = None,
     target: Union[None, Sequence[Sequence[str]]] = None,
@@ -284,8 +292,6 @@ def sacre_bleu_score(
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
     lowercase: bool = False,
-    translate_corpus: Union[None, Sequence[str]] = None,
-    reference_corpus: Union[None, Sequence[Sequence[str]]] = None,
 ) -> Tensor:
     """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
     follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
@@ -305,11 +311,11 @@ def sacre_bleu_score(
         lowercase:
             If ``True``, BLEU score over lowercased text is calculated.
         translate_corpus:
-            An iterable of machine translated corpus
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         reference_corpus:
-            An iterable of iterables of reference corpus
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Return:
         Tensor with BLEU Score
@@ -334,27 +340,6 @@ def sacre_bleu_score(
         "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
         " Warning will be removed in v0.8."
     )
-    if preds is None and translate_corpus is None:
-        raise ValueError("Either `preds` or `translate_corpus` must be provided.")
-    if target is None and reference_corpus is None:
-        raise ValueError("Either `target` or `reference_corpus` must be provided.")
-
-    if translate_corpus is not None:
-        warn(
-            "You are using deprecated argument `translate_corpus` in v0.7 which was renamed to `preds`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `preds` and `translate_corpus`, only `preds` is considered.")
-        preds = preds or translate_corpus
-    if reference_corpus is not None:
-        warn(
-            "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `target` and `reference_corpus`, only `target` is considered.")
-        target = target or reference_corpus
 
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")

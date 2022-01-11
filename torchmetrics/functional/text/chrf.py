@@ -32,12 +32,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import logging
 from collections import defaultdict
 from typing import Dict, List, Optional, Sequence, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _validate_inputs
@@ -586,6 +586,13 @@ def _chrf_score_compute(
     return chrf_f_score
 
 
+@deprecated(
+    args_mapping={"hypothesis_corpus": "preds", "reference_corpus": "target"},
+    target=True,
+    stream=logging.warning,
+    deprecated_in="0.7",
+    remove_in="0.8",
+)
 def chrf_score(
     preds: Union[None, str, Sequence[str]] = None,
     target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
@@ -595,8 +602,6 @@ def chrf_score(
     lowercase: bool = False,
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
-    hypothesis_corpus: Union[None, str, Sequence[str]] = None,
-    reference_corpus: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Calculate `chrF score`_  of machine translated text with one or more references. This implementation
     supports both chrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score`_. This
@@ -622,11 +627,11 @@ def chrf_score(
         return_sentence_level_score:
             An indication whether a sentence-level chrF/chrF++ score to be returned.
         hypothesis_corpus:
-            An iterable of hypothesis corpus.
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `preds` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         reference_corpus:
-            An iterable of iterables of reference corpus.
-            This argument is deprecated in v0.7 and will be removed in v0.8. Use `target` instead.
+            .. deprecated:: v0.7
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Return:
         A corpus-level chrF/chrF++ score.
@@ -651,28 +656,6 @@ def chrf_score(
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
     """
-    if preds is None and hypothesis_corpus is None:
-        raise ValueError("Either `preds` or `hypothesis_corpus` must be provided.")
-    if target is None and reference_corpus is None:
-        raise ValueError("Either `target` or `reference_corpus` must be provided.")
-
-    if hypothesis_corpus is not None:
-        warn(
-            "You are using deprecated argument `hypothesis_corpus` in v0.7 which was renamed to `preds`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `preds` and `hypothesis_corpus`, only `preds` is considered.")
-        preds = preds or hypothesis_corpus
-    if reference_corpus is not None:
-        warn(
-            "You are using deprecated argument `reference_corpus` in v0.7 which was renamed to `target`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        warn("If you specify both `target` and `reference_corpus`, only `target` is considered.")
-        target = target or reference_corpus
-
     if not isinstance(n_char_order, int) or n_char_order < 1:
         raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
     if not isinstance(n_word_order, int) or n_word_order < 0:
