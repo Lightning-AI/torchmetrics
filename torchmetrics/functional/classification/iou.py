@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.classification.jaccard import jaccard_index
 
 
+@deprecated(target=jaccard_index, deprecated_in="0.7", remove_in="0.8")
 def iou(
     preds: Tensor,
     target: Tensor,
@@ -43,9 +44,4 @@ def iou(
          >>> iou(pred, target)
          tensor(0.9660)
     """
-    warn(
-        "Function `iou` is renamed in v0.7 and will be removed in v0.8."
-        " Use `functional.functional.jaccard_index` instead.",
-        DeprecationWarning,
-    )
-    return jaccard_index(preds, target, ignore_index, absent_score, threshold, num_classes, reduction)
+    return void(preds, target, ignore_index, absent_score, threshold, num_classes, reduction)

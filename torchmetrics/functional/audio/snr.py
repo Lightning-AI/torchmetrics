@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio
@@ -68,6 +68,7 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
     return snr_value
 
 
+@deprecated(target=signal_noise_ratio, deprecated_in="0.7", remove_in="0.8")
 def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     r"""Signal-to-noise ratio (SNR_)
 
@@ -79,8 +80,7 @@ def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
         tensor(16.1805)
 
     """
-    warn("`snr` was renamed to `signal_noise_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return signal_noise_ratio(preds, target, zero_mean)
+    return void(preds, target, zero_mean)
 
 
 def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:

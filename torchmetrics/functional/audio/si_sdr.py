@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
 
 
+@deprecated(target=scale_invariant_signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8")
 def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """Calculates Scale-invariant signal-to-distortion ratio (SI-SDR) metric.
 
@@ -29,8 +30,4 @@ def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
         >>> si_sdr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
         tensor(18.4030)
     """
-    warn(
-        "`si_sdr` was renamed to `scale_invariant_signal_distortion_ratio` in v0.7 and it will be removed in v0.8",
-        DeprecationWarning,
-    )
-    return scale_invariant_signal_distortion_ratio(preds, target, zero_mean)
+    return void(preds, target, zero_mean)
