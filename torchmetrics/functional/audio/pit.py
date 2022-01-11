@@ -206,7 +206,10 @@ def pit(
     Reference:
         [1]	`Permutation Invariant Training of Deep Models`_
     """
-    warn("`pit` was renamed to `permutation_invariant_training` in v0.7 and it will be removed in v0.8", DeprecationWarning)
+    warn(
+        "`pit` was renamed to `permutation_invariant_training` in v0.7 and it will be removed in v0.8",
+        DeprecationWarning,
+    )
     return permutation_invariant_training(preds, target, metric_func, eval_func, **kwargs)
 
 
