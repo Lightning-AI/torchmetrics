@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Optional, Tuple, Union
 from warnings import warn
+
 import torch
 from torch import Tensor, tensor
 
@@ -159,6 +160,7 @@ def psnr(
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
     """Computes the peak signal-to-noise ratio.
+
         . deprecated:: v0.7
         Use :function:torchmetrics.functional.psnr. Will be removed in v0.8.
     Args:
@@ -209,5 +211,6 @@ def psnr(
     sum_squared_error, n_obs = _psnr_update(preds, target, dim=dim)
     warn(
         "`psnr` was renamed to `peak_signal_noise_ratio` in v0.7 and it will be removed in v0.8",
-        DeprecationWarning,)
+        DeprecationWarning,
+    )
     return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)

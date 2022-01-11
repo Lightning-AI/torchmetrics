@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Any, Optional, Sequence, Tuple, Union
 from warnings import warn
+
 import torch
 from torch import Tensor, tensor
 
@@ -147,12 +148,14 @@ class PeakSignalNoiseRatio(Metric):
             total = torch.cat([values.flatten() for values in self.total])
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
 
+
 class PSNR(PeakSignalNoiseRatio):
     """Peak Signal Noise Ratio (PSNR).
+
     .. deprecated:: v0.7
         Use :class:`torchmetrics.PeakSignalNoiseRatio`. Will be removed in v0.8.
 
-        .. math:: \text{PSNR}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)}\right)
+        .. math:: \text{PSNR}(I, J) = 10 * \\log_{10} \\left(\frac{\\max(I)^2}{\text{MSE}(I, J)}\right)
 
         Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function.
 
@@ -192,25 +195,26 @@ class PSNR(PeakSignalNoiseRatio):
 
         .. note::
             Half precision is only support on GPU for this metric
+    """
 
-        """
     min_target: Tensor
     max_target: Tensor
     higher_is_better = False
 
     def __init__(
-            self,
-            data_range: Optional[float] = None,
-            base: float = 10.0,
-            reduction: str = "elementwise_mean",
-            dim: Optional[Union[int, Tuple[int, ...]]] = None,
-            compute_on_step: bool = True,
-            dist_sync_on_step: bool = False,
-            process_group: Optional[Any] = None,
+        self,
+        data_range: Optional[float] = None,
+        base: float = 10.0,
+        reduction: str = "elementwise_mean",
+        dim: Optional[Union[int, Tuple[int, ...]]] = None,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
     ) -> None:
         warn(
             "`PSNR` was renamed to `PeakSignalNoiseRatio` in v0.7 and it will be removed in v0.8",
-            DeprecationWarning,)
+            DeprecationWarning,
+        )
         super().__init__(
             compute_on_step=compute_on_step,
             dist_sync_on_step=dist_sync_on_step,
