@@ -69,26 +69,26 @@ class ConfusionMatrix(Metric):
         >>> preds = torch.tensor([0, 1, 0, 0])
         >>> confmat = ConfusionMatrix(num_classes=2)
         >>> confmat(preds, target)
-        tensor([[2., 0.],
-                [1., 1.]])
+        tensor([[2, 0],
+                [1, 1]])
 
     Example (multiclass data):
         >>> target = torch.tensor([2, 1, 0, 0])
         >>> preds = torch.tensor([2, 1, 0, 1])
         >>> confmat = ConfusionMatrix(num_classes=3)
         >>> confmat(preds, target)
-        tensor([[1., 1., 0.],
-                [0., 1., 0.],
-                [0., 0., 1.]])
+        tensor([[1, 1, 0],
+                [0, 1, 0],
+                [0, 0, 1]])
 
     Example (multilabel data):
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
         >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        tensor([[[1., 0.], [0., 1.]],
-                [[1., 0.], [1., 0.]],
-                [[0., 1.], [0., 1.]]])
+        tensor([[[1, 0], [0, 1]],
+                [[1, 0], [1, 0]],
+                [[0, 1], [0, 1]]])
 
     """
     is_differentiable = False
@@ -118,7 +118,10 @@ class ConfusionMatrix(Metric):
         if self.normalize not in allowed_normalize:
             raise ValueError(f"Argument average needs to one of the following: {allowed_normalize}")
 
-        default = torch.zeros(num_classes, 2, 2) if multilabel else torch.zeros(num_classes, num_classes)
+        if multilabel:
+            default = torch.zeros(num_classes, 2, 2, dtype=torch.long)
+        else:
+            default = torch.zeros(num_classes, num_classes, dtype=torch.long)
         self.add_state("confmat", default=default, dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore

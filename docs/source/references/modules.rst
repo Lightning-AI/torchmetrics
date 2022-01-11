@@ -286,10 +286,10 @@ F1Score
 .. autoclass:: torchmetrics.F1Score
     :noindex:
 
-FBeta
-~~~~~
+FBetaScore
+~~~~~~~~~~
 
-.. autoclass:: torchmetrics.FBeta
+.. autoclass:: torchmetrics.FBetaScore
     :noindex:
 
 HammingDistance
@@ -640,6 +640,12 @@ CHRFScore
 ~~~~~~~~~
 
 .. autoclass:: torchmetrics.CHRFScore
+    :noindex:
+
+ExtendedEditDistance
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ExtendedEditDistance
     :noindex:
 
 MatchErrorRate
