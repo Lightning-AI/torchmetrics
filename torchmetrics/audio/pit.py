@@ -16,7 +16,7 @@ from warnings import warn
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pit import permutation_invariant_training, pit
+from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 
 
