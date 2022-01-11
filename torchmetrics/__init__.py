@@ -14,11 +14,12 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
 from torchmetrics.audio import (  # noqa: E402
+    PermutationInvariantTraining,
+    PIT,
     SDR,
     SI_SDR,
     SI_SNR,
     SNR,
-    PermutationInvariantTraining,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     SignalDistortionRatio,
@@ -141,6 +142,7 @@ __all__ = [
     "PearsonCorrcoef",
     "PearsonCorrCoef",
     "PermutationInvariantTraining",
+    "PIT",
     "Precision",
     "PrecisionRecallCurve",
     "PSNR",
