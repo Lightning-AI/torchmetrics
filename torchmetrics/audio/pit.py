@@ -15,7 +15,7 @@ from typing import Any, Callable, Dict, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pit import pit, permutation_invariant_training
+from torchmetrics.functional.audio.pit import permutation_invariant_training, pit
 from torchmetrics.metric import Metric
 
 
@@ -115,8 +115,7 @@ class PermutationInvariantTraining(Metric):
 
 
 class PIT(Metric):
-    """Permutation invariant training (PIT). The PIT implements
-    the famous Permutation Invariant Training method.
+    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
