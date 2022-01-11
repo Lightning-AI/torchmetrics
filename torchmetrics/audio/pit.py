@@ -153,7 +153,7 @@ class PIT(Metric):
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PermutationInvariantTraining(si_snr, 'max')
+        >>> pit = PIT(si_snr, 'max')
         >>> pit(preds, target)
         tensor(-2.1065)
 

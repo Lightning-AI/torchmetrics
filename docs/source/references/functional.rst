@@ -18,7 +18,7 @@ pesq [func]
 
 
 permutation_invariant_training [func]
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.permutation_invariant_training
     :noindex:
