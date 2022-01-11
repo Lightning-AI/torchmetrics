@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Dict, Optional
+from warnings import warn
 
 from torch import Tensor, tensor
 
@@ -114,7 +115,7 @@ class PermutationInvariantTraining(Metric):
         return self.sum_pit_metric / self.total
 
 
-class PIT(Metric):
+class PIT(PermutationInvariantTraining):
     """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
@@ -122,39 +123,12 @@ class PIT(Metric):
     .. deprecated:: v0.7
         Use :class:`torchmetrics.audio.PermutationInvariantTraining`. Will be removed in v0.8.
 
-
-    Args:
-        metric_func:
-            a metric function accept a batch of target and estimate, i.e. metric_func(preds[:, i, ...],
-            target[:, j, ...]), and returns a batch of metric tensors [batch]
-        eval_func:
-            the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
-            or the larger the better.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
-        kwargs:
-            additional args for metric_func
-
-    Returns:
-        average PIT metric
-
     Example:
         >>> import torch
-        >>> from torchmetrics import PIT
         >>> from torchmetrics.functional import si_snr
         >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> pit = PIT(si_snr, 'max')
-        >>> pit(preds, target)
+        >>> pit(torch.randn(3, 2, 5), torch.randn(3, 2, 5))
         tensor(-2.1065)
 
     Reference:
@@ -162,10 +136,6 @@ class PIT(Metric):
         speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
-
-    is_differentiable = True
-    sum_pit_metric: Tensor
-    total: Tensor
 
     def __init__(
         self,
@@ -177,31 +147,13 @@ class PIT(Metric):
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
+        warn("`PIT` was renamed to `PermutationInvariantTraining` in v0.7 and it will be removed in v0.8", DeprecationWarning)
         super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+            metric_func,
+        eval_func,
+        compute_on_step,
+        dist_sync_on_step,
+        process_group,
+        dist_sync_fn,
+        **kwargs
         )
-        self.metric_func = metric_func
-        self.eval_func = eval_func
-        self.kwargs = kwargs
-
-        self.add_state("sum_pit_metric", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        pit_metric = pit(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
-
-        self.sum_pit_metric += pit_metric.sum()
-        self.total += pit_metric.numel()
-
-    def compute(self) -> Tensor:
-        """Computes average PermutationInvariantTraining metric."""
-        return self.sum_pit_metric / self.total
