@@ -69,7 +69,7 @@ class LPIPS(Metric):
             will be used to perform the allgather
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``lpips`` package is not installed
         ValueError:
             If ``net_type`` is not one of ``"vgg"``, ``"alex"`` or ``"squeeze"``
@@ -112,9 +112,9 @@ class LPIPS(Metric):
         )
 
         if not _LPIPS_AVAILABLE:
-            raise ValueError(
+            raise ModuleNotFoundError(
                 "LPIPS metric requires that lpips is installed."
-                "Either install as `pip install torchmetrics[image]` or `pip install lpips`"
+                " Either install as `pip install torchmetrics[image]` or `pip install lpips`."
             )
 
         valid_net_type = ("vgg", "alex", "squeeze")

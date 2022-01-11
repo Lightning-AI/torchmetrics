@@ -138,10 +138,10 @@ hamming_distance [func]
 .. autofunction:: torchmetrics.functional.hamming_distance
     :noindex:
 
-hinge [func]
-~~~~~~~~~~~~
+hinge_loss [func]
+~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.hinge
+.. autofunction:: torchmetrics.functional.hinge_loss
     :noindex:
 
 jaccard_index [func]
@@ -240,9 +240,15 @@ image_gradients [func]
 .. autofunction:: torchmetrics.functional.image_gradients
     :noindex:
 
+multiscale_structural_similarity_index_measure [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.multiscale_structural_similarity_index_measure
+    :noindex:
+
 
 peak_signal_noise_ratio [func]
-~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.peak_signal_noise_ratio
     :noindex:
@@ -451,6 +457,12 @@ chrf_score [func]
 ~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.chrf_score
+    :noindex:
+
+extended_edit_distance [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.extended_edit_distance
     :noindex:
 
 match_error_rate [func]

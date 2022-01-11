@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.image.psnr import PeakSignalNoiseRatio,PSNR  # noqa: F401
-from torchmetrics.image.ssim import SSIM  # noqa: F401
+from torchmetrics.image.ssim import SSIM, MultiScaleStructuralSimilarityIndexMeasure  # noqa: F401

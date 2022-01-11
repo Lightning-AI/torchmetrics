@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SQuAD` ([#623](https://github.com/PyTorchLightning/metrics/pull/623))
   - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
   - `TranslationEditRate` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
+  - `ExtendedEditDistance` ([#668](https://github.com/PyTorchLightning/metrics/pull/668))
+
+
+- Added `MultiScaleSSIM` into image metrics ([#679](https://github.com/PyTorchLightning/metrics/pull/679))
 
 
 - Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
@@ -51,6 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
 
 
+- Changed dtype of metric state from `torch.float` to `torch.long` in `ConfusionMatrix` to accommodate larger values ([#708](https://github.com/PyTorchLightning/metrics/issues/708))
+
+
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
@@ -76,9 +83,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SNR` -> `SignalNoiseRatio`
   * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
 
+
 - Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731))
   * `torchmetrics.functional.f1` -> `torchmetrics.functional.f1_score`
   * `torchmetrics.F1` -> `torchmetrics.F1Score`
+
+
+- Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
+  * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
+  * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
+
 
 - Renamed image metrics ([#732](https://github.com/PyTorchLightning/metrics/pull/732))
   * `functional.psnr` -> `functional.peak_signal_noise_ratio`

@@ -66,10 +66,9 @@ def test_is_raises_errors_and_warnings():
             _ = IS(feature=2)
     else:
         with pytest.raises(
-            ValueError,
-            match="IS metric requires that Torch-fidelity is installed."
-            "Either install as `pip install torchmetrics[image-quality]`"
-            " or `pip install torch-fidelity`",
+            ModuleNotFoundError,
+            match="IS metric requires that `Torch-fidelity` is installed."
+            " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
         ):
             IS()
 

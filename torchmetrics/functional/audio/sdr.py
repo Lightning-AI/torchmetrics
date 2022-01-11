@@ -80,13 +80,14 @@ def signal_distortion_ratio(
             signals may sometimes be zero
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``fast-bss-eval`` package is not installed
 
     Returns:
         sdr value of shape ``[...]``
 
     Example:
+
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> import torch
         >>> g = torch.manual_seed(1)
@@ -125,11 +126,10 @@ def signal_distortion_ratio(
 
         [3] https://github.com/fakufaku/fast_bss_eval
     """
-
     if not _FAST_BSS_EVAL_AVAILABLE:
-        raise ValueError(
-            "SDR metric requires that fast-bss-eval is installed."
-            "Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`"
+        raise ModuleNotFoundError(
+            "SDR metric requires that `fast-bss-eval` is installed."
+            " Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`."
         )
     _check_same_shape(preds, target)
 

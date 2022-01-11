@@ -26,7 +26,7 @@ from torchmetrics.functional.classification.confusion_matrix import confusion_ma
 from torchmetrics.functional.classification.dice import dice_score
 from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta
 from torchmetrics.functional.classification.hamming_distance import hamming_distance
-from torchmetrics.functional.classification.hinge import hinge
+from torchmetrics.functional.classification.hinge import hinge, hinge_loss
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
@@ -37,6 +37,7 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
+from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr
 from torchmetrics.functional.image.ssim import ssim
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
@@ -68,6 +69,7 @@ from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.chrf import chrf_score
+from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
@@ -92,11 +94,13 @@ __all__ = [
     "tweedie_deviance_score",
     "dice_score",
     "explained_variance",
+    "extended_edit_distance",
     "f1",
     "f1_score",
     "fbeta",
     "hamming_distance",
     "hinge",
+    "hinge_loss",
     "image_gradients",
     "jaccard_index",
     "kl_divergence",
@@ -105,6 +109,7 @@ __all__ = [
     "mean_absolute_percentage_error",
     "mean_squared_error",
     "mean_squared_log_error",
+    "multiscale_structural_similarity_index_measure",
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",

@@ -298,10 +298,10 @@ HammingDistance
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
 
-Hinge
-~~~~~
+HingeLoss
+~~~~~~~~~
 
-.. autoclass:: torchmetrics.Hinge
+.. autoclass:: torchmetrics.HingeLoss
     :noindex:
 
 JaccardIndex
@@ -392,8 +392,14 @@ LPIPS
 .. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
     :noindex:
 
+MultiScaleStructuralSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MultiScaleStructuralSimilarityIndexMeasure
+    :noindex:
+
 PeakSignalNoiseRatio
-~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
@@ -634,6 +640,12 @@ CHRFScore
 ~~~~~~~~~
 
 .. autoclass:: torchmetrics.CHRFScore
+    :noindex:
+
+ExtendedEditDistance
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ExtendedEditDistance
     :noindex:
 
 MatchErrorRate
