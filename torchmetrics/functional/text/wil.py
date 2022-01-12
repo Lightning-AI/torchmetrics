@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from typing import List, Tuple, Union
 
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
@@ -67,13 +65,6 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
     return 1 - ((errors / target_total) * (errors / preds_total))
 
 
-@deprecated(
-    args_mapping={"predictions": "preds", "references": "target"},
-    target=True,
-    stream=logging.warning,
-    deprecated_in="0.7",
-    remove_in="0.8",
-)
 def word_information_lost(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],

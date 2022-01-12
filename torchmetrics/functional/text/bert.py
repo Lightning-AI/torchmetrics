@@ -543,6 +543,13 @@ def bert_score(
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
 
+    .. deprecated:: v0.7
+        Args:
+            predictions:
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+            references:
+                This argument is deprecated in favor of  `target` and will be removed in v0.8.
+
     Raises:
         ValueError:
             If `len(preds) != len(target)`.

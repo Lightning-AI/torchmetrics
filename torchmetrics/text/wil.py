@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from typing import Any, Callable, List, Optional, Union
 
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wil import _wil_compute, _wil_update
@@ -85,13 +83,6 @@ class WordInfoLost(Metric):
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    @deprecated(
-        args_mapping={"predictions": "preds", "references": "target"},
-        target=True,
-        stream=logging.warning,
-        deprecated_in="0.7",
-        remove_in="0.8",
-    )
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store predictions/references for computing Word Information Lost scores.
 

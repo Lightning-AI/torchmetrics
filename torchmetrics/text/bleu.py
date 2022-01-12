@@ -110,6 +110,13 @@ class BLEUScore(Metric):
         Args:
             preds: An iterable of machine translated corpus
             target: An iterable of iterables of reference corpus
+
+        .. deprecated:: v0.7
+            Args:
+                translate_corpus:
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+                reference_corpus:
+                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         self.preds_len, self.target_len = _bleu_score_update(
             preds,

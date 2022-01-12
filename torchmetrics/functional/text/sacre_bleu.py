@@ -314,6 +314,13 @@ def sacre_bleu_score(
     Return:
         Tensor with BLEU Score
 
+    .. deprecated:: v0.7
+        Args:
+            translate_corpus:
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+            reference_corpus:
+                This argument is deprecated in favor of  `target` and will be removed in v0.8.
+
     Example:
         >>> from torchmetrics.functional import sacre_bleu_score
         >>> preds = ['the cat is on the mat']

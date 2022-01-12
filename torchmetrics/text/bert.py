@@ -209,6 +209,13 @@ class BERTScore(Metric):
                 An iterable of predicted sentences.
             target:
                 An iterable of reference sentences.
+
+        .. deprecated:: v0.7
+            Args:
+                predictions:
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+                references:
+                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         preds_dict = _preprocess_text(
             preds,

@@ -18,11 +18,9 @@
 # Link:
 
 import itertools
-import logging
 from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
@@ -145,13 +143,6 @@ class CHRFScore(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
-    @deprecated(
-        args_mapping={"hypothesis_corpus": "preds", "reference_corpus": "target"},
-        target=True,
-        stream=logging.warning,
-        deprecated_in="0.7",
-        remove_in="0.8",
-    )
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 

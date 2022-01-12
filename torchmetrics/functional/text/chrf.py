@@ -32,12 +32,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 from collections import defaultdict
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _validate_inputs
@@ -586,13 +584,6 @@ def _chrf_score_compute(
     return chrf_f_score
 
 
-@deprecated(
-    args_mapping={"hypothesis_corpus": "preds", "reference_corpus": "target"},
-    target=True,
-    stream=logging.warning,
-    deprecated_in="0.7",
-    remove_in="0.8",
-)
 def chrf_score(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
