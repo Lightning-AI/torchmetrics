@@ -255,10 +255,10 @@ psnr [func]
     :noindex:
 
 
-ssim [func]
-~~~~~~~~~~~
+scale_invariant_signal_noise_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.ssim
+.. autofunction:: torchmetrics.functional.scale_invariant_signal_noise_ratio
     :noindex:
 
 **********

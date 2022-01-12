@@ -404,10 +404,10 @@ PSNR
 .. autoclass:: torchmetrics.PSNR
     :noindex:
 
-SSIM
-~~~~
+StructuralSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SSIM
+.. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
 
 *********
