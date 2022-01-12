@@ -240,7 +240,6 @@ image_gradients [func]
 .. autofunction:: torchmetrics.functional.image_gradients
     :noindex:
 
-
 multiscale_structural_similarity_index_measure [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -248,10 +247,10 @@ multiscale_structural_similarity_index_measure [func]
     :noindex:
 
 
-psnr [func]
-~~~~~~~~~~~
+peak_signal_noise_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.psnr
+.. autofunction:: torchmetrics.functional.peak_signal_noise_ratio
     :noindex:
 
 
