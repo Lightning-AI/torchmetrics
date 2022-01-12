@@ -161,10 +161,6 @@ class PSNR(PeakSignalNoiseRatio):
         tensor(2.5527)
     """
 
-    min_target: Tensor
-    max_target: Tensor
-    higher_is_better = False
-
     def __init__(
         self,
         data_range: Optional[float] = None,
@@ -179,8 +175,4 @@ class PSNR(PeakSignalNoiseRatio):
             "`PSNR` was renamed to `PeakSignalNoiseRatio` in v0.7 and it will be removed in v0.8",
             DeprecationWarning,
         )
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(data_range, base, reduction, dim, compute_on_step, dist_sync_on_step, process_group)
