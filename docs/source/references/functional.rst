@@ -360,10 +360,10 @@ pairwise_linear_similarity [func]
     :noindex:
 
 
-pairwise_manhatten_distance [func]
+pairwise_manhattan_distance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pairwise_manhatten_distance
+.. autofunction:: torchmetrics.functional.pairwise_manhattan_distance
     :noindex:
 
 
