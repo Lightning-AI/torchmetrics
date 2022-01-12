@@ -108,6 +108,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `torchmetrics.PIT` -> `torchmetrics.PermutationInvariantTraining`
 
 
+- Renamed SSIM metric: ([#747](https://github.com/PyTorchLightning/metrics/pull/747))
+  * `torchmetrics.functional.ssim` -> `torchmetrics.functional.scale_invariant_signal_noise_ratio`
+  * `torchmetrics.SSIM` -> `torchmetrics.StructuralSimilarityIndexMeasure`
+
+
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
