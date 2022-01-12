@@ -16,18 +16,15 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.mean_absolute_percentage_error import (
-    _mean_absolute_percentage_error_compute,
-    _mean_absolute_percentage_error_update,
-)
+from torchmetrics.functional.regression.log_mse import _mean_squared_log_error_compute, _mean_squared_log_error_update
 from torchmetrics.metric import Metric
 
 
-class MeanAbsolutePercentageError(Metric):
+class MeanSquaredLogError(Metric):
     r"""
-    Computes `Mean Absolute Percentage Error`_ (MAPE):
+    Computes `mean squared logarithmic error`_ (MSLE):
 
-    .. math:: \text{MAPE} = \frac{1}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, y_i)}
+    .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -40,26 +37,21 @@ class MeanAbsolutePercentageError(Metric):
         process_group:
             Specify the process group on which synchronization is called.
 
-    Note:
-        The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
-
-    Note:
-        MAPE output is a non-negative floating point. Best result is 0.0 . But it is important to note that,
-        bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
-        This `MAPE implementation returns`_ a very large number instead of ``inf``.
-
     Example:
-        >>> from torchmetrics import MeanAbsolutePercentageError
-        >>> target = torch.tensor([1, 10, 1e6])
-        >>> preds = torch.tensor([0.9, 15, 1.2e6])
-        >>> mean_abs_percentage_error = MeanAbsolutePercentageError()
-        >>> mean_abs_percentage_error(preds, target)
-        tensor(0.2667)
+        >>> from torchmetrics import MeanSquaredLogError
+        >>> target = torch.tensor([2.5, 5, 4, 8])
+        >>> preds = torch.tensor([3, 5, 2.5, 7])
+        >>> mean_squared_log_error = MeanSquaredLogError()
+        >>> mean_squared_log_error(preds, target)
+        tensor(0.0397)
+
+    .. note::
+        Half precision is only support on GPU for this metric
 
     """
     is_differentiable = True
     higher_is_better = False
-    sum_abs_per_error: Tensor
+    sum_squared_log_error: Tensor
     total: Tensor
 
     def __init__(
@@ -76,8 +68,8 @@ class MeanAbsolutePercentageError(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_log_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -86,11 +78,11 @@ class MeanAbsolutePercentageError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
+        sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
 
-        self.sum_abs_per_error += sum_abs_per_error
-        self.total += num_obs
+        self.sum_squared_log_error += sum_squared_log_error
+        self.total += n_obs
 
     def compute(self) -> Tensor:
-        """Computes mean absolute percentage error over state."""
-        return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
+        """Compute mean squared logarithmic error over state."""
+        return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)

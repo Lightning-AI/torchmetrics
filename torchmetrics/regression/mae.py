@@ -16,18 +16,15 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
-    _symmetric_mean_absolute_percentage_error_compute,
-    _symmetric_mean_absolute_percentage_error_update,
-)
+from torchmetrics.functional.regression.mae import _mean_absolute_error_compute, _mean_absolute_error_update
 from torchmetrics.metric import Metric
 
 
-class SymmetricMeanAbsolutePercentageError(Metric):
+class MeanAbsoluteError(Metric):
     r"""
-    Computes symmetric mean absolute percentage error (`SMAPE`_).
+    `Computes Mean Absolute Error`_ (MAE):
 
-    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n max(\frac{|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon})
+    .. math:: \text{MAE} = \frac{1}{N}\sum_i^N | y_i - \hat{y_i} |
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -35,28 +32,22 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()`` before returning the value at the step.
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
 
-    Note:
-        The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.
-
-    Note:
-        SMAPE output is a non-negative floating point between 0 and 1. Best result is 0.0 .
-
-
     Example:
-        >>> from torchmetrics import SymmetricMeanAbsolutePercentageError
-        >>> target = torch.tensor([1, 10, 1e6])
-        >>> preds = torch.tensor([0.9, 15, 1.2e6])
-        >>> smape = SymmetricMeanAbsolutePercentageError()
-        >>> smape(preds, target)
-        tensor(0.2290)
+        >>> from torchmetrics import MeanAbsoluteError
+        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> mean_absolute_error = MeanAbsoluteError()
+        >>> mean_absolute_error(preds, target)
+        tensor(0.5000)
     """
     is_differentiable = True
     higher_is_better = False
-    sum_abs_per_error: Tensor
+    sum_abs_error: Tensor
     total: Tensor
 
     def __init__(
@@ -73,8 +64,8 @@ class SymmetricMeanAbsolutePercentageError(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_abs_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -83,11 +74,11 @@ class SymmetricMeanAbsolutePercentageError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(preds, target)
+        sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
 
-        self.sum_abs_per_error += sum_abs_per_error
-        self.total += num_obs
+        self.sum_abs_error += sum_abs_error
+        self.total += n_obs
 
     def compute(self) -> Tensor:
-        """Computes mean absolute percentage error over state."""
-        return _symmetric_mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
+        """Computes mean absolute error over state."""
+        return _mean_absolute_error_compute(self.sum_abs_error, self.total)
