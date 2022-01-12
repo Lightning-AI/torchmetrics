@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional, Sequence, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
@@ -161,6 +161,7 @@ class PSNR(PeakSignalNoiseRatio):
         tensor(2.5527)
     """
 
+    @deprecated(target=PeakSignalNoiseRatio, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         data_range: Optional[float] = None,
@@ -171,8 +172,4 @@ class PSNR(PeakSignalNoiseRatio):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
-        warn(
-            "`PSNR` was renamed to `PeakSignalNoiseRatio` in v0.7 and it will be removed in v0.8",
-            DeprecationWarning,
-        )
-        super().__init__(data_range, base, reduction, dim, compute_on_step, dist_sync_on_step, process_group)
+        void(data_range, base, reduction, dim, compute_on_step, dist_sync_on_step, process_group)

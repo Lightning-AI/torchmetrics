@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, List, Optional, Tuple
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute, _pearson_corrcoef_update
@@ -156,15 +156,11 @@ class PearsonCorrcoef(PearsonCorrCoef):
 
     """
 
+    @deprecated(target=PearsonCorrCoef, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
-        warn(
-            "`PearsonCorrcoef` was renamed to `PearsonCorrCoef` in v0.7 and it will be removed in v0.8",
-            DeprecationWarning,
-        )
-
-        super().__init__(compute_on_step, dist_sync_on_step, process_group)
+        void(compute_on_step, dist_sync_on_step, process_group)

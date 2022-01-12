@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import List, Optional, Sequence, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
@@ -234,6 +234,7 @@ def structural_similarity_index_measure(
     return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
 
 
+@deprecated(target=structural_similarity_index_measure, deprecated_in="0.7", remove_in="0.8")
 def ssim(
     preds: Tensor,
     target: Tensor,
@@ -255,11 +256,7 @@ def ssim(
         >>> ssim(preds, target)
         tensor(0.9219)
     """
-    warn(
-        "`ssim` was renamed to `structural_similarity_index_measure` in v0.7 and it will be removed in v0.8",
-        DeprecationWarning,
-    )
-    return structural_similarity_index_measure(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
+    return void(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
 
 
 def _get_normalized_sim_and_cs(

@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-from warnings import warn
 
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
 
 
+@deprecated(target=pairwise_manhattan_distance, deprecated_in="0.7", remove_in="0.8")
 def pairwise_manhatten_distance(
     x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
@@ -42,9 +43,4 @@ def pairwise_manhatten_distance(
                 [8., 5., 0.]])
 
     """
-    warn(
-        "`pairwise_manhatten_distance` was renamed to `pairwise_manhattan_distance` in v0.7"
-        " and it will be removed in v0.8",
-        DeprecationWarning,
-    )
-    return pairwise_manhattan_distance(x, y, reduction, zero_diagonal)
+    return void(x, y, reduction, zero_diagonal)

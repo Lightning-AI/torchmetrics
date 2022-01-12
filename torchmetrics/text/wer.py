@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, List, Optional, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wer import _wer_compute, _wer_update
@@ -118,12 +118,12 @@ class WER(WordErrorRate):
         tensor(0.5000)
     """
 
+    @deprecated(target=WordErrorRate, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-    ):
-        warn("`WER` was renamed to `WordErrorRate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
+    ) -> None:
+        void(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

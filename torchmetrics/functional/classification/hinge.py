@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_squeeze
@@ -232,6 +232,7 @@ def hinge_loss(
     return _hinge_compute(measure, total)
 
 
+@deprecated(target=hinge_loss, deprecated_in="0.7", remove_in="0.8")
 def hinge(
     preds: Tensor,
     target: Tensor,
@@ -259,5 +260,4 @@ def hinge(
         >>> hinge(preds, target, multiclass_mode="one-vs-all")
         tensor([2.2333, 1.5000, 1.2333])
     """
-    warn("`hinge` was renamed to `hinge_loss` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return hinge_loss(preds, target, squared, multiclass_mode)
+    return void(preds, target, squared, multiclass_mode)
