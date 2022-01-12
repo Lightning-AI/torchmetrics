@@ -26,7 +26,7 @@ def pairwise_manhatten_distance(
     Calculates pairwise manhattan distance.
 
     .. deprecated:: v0.7
-        Use :func:`torchmetrics.functional.pairwise_manhatten_distance`. Will be removed in v0.8.
+        Use :func:`torchmetrics.functional.pairwise_manhattan_distance`. Will be removed in v0.8.
 
     Example:
         >>> import torch
