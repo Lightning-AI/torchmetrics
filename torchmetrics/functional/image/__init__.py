@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr  # noqa: F401
+from torchmetrics.functional.image.ssim import (  # noqa: F401
+    multiscale_structural_similarity_index_measure,
+    ssim,
+    structural_similarity_index_measure,
+)

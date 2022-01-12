@@ -11,13 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr  # noqa: F401
-from torchmetrics.functional.image.ssim import (  # noqa: F401
-    multiscale_structural_similarity_index_measure,
-    ssim,
-    structural_similarity_index_measure,
-)
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error  # noqa: F401
