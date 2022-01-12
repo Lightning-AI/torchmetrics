@@ -72,16 +72,11 @@ def char_error_rate(
     Args:
         preds: Transcription(s) to score as a string or list of strings
         target: Reference(s) for each speech input as a string or list of strings
-        predictions:
-
-            .. deprecated:: v0.7
+        .. deprecated:: v0.7
+            predictions:
                 This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-
-        references:
-
-            .. deprecated:: v0.7
+            references:
                 This argument is deprecated in favor of  `target` and will be removed in v0.8.
-
     Returns:
         Character error rate score
     Examples:
