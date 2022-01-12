@@ -58,10 +58,10 @@ class PeakSignalNoiseRatio(Metric):
 
     Example:
         >>> from torchmetrics import PeakSignalNoiseRatio
-        >>> peak_signal_noise_ratio = PSNR()
+        >>> psnr = PeakSignalNoiseRatio()
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> peak_signal_noise_ratio(preds, target)
+        >>> psnr(preds, target)
         tensor(2.5527)
 
     .. note::
@@ -156,7 +156,7 @@ class PSNR(PeakSignalNoiseRatio):
         Use :class:`torchmetrics.PeakSignalNoiseRatio`. Will be removed in v0.8.
 
     Example:
-        >>> peak_signal_noise_ratio = PSNR()
+        >>> psnr = PSNR()
         >>> psnr(torch.tensor([[0.0, 1.0], [2.0, 3.0]]), torch.tensor([[3.0, 2.0], [1.0, 0.0]]))
         tensor(2.5527)
     """
