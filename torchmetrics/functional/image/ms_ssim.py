@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Sequence, Tuple
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure as _ms_ssim
 
 
+@deprecated(target=_ms_ssim, deprecated_in="0.7", remove_in="0.8")
 def multiscale_structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,
@@ -42,9 +43,4 @@ def multiscale_structural_similarity_index_measure(
         >>> multiscale_structural_similarity_index_measure(preds, target)
         tensor(0.9558)
     """
-    warn(
-        "`multiscale_structural_similarity_index_measure` was moved from"
-        " `functional.image.ms_ssim` to `functional.image.ssim` in v0.7 and it will be removed in v0.8",
-        DeprecationWarning,
-    )
-    return _ms_ssim(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
+    return void(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
