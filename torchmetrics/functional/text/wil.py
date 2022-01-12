@@ -75,8 +75,8 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
     remove_in="0.8",
 )
 def word_information_lost(
-    preds: Union[None, str, List[str]] = None,
-    target: Union[None, str, List[str]] = None,
+    preds: Union[str, List[str]],
+    target: Union[str, List[str]],
 ) -> Tensor:
     """Word Information Lost rate is a metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
@@ -87,12 +87,6 @@ def word_information_lost(
             Transcription(s) to score as a string or list of strings
         target:
             Reference(s) for each speech input as a string or list of strings
-        predictions:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-        references:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Returns:
         Word Information Lost rate
@@ -104,5 +98,5 @@ def word_information_lost(
         >>> word_information_lost(preds, target)
         tensor(0.6528)
     """
-    errors, target_total, preds_total = _wil_update(preds, target)  # type: ignore
+    errors, target_total, preds_total = _wil_update(preds, target)
     return _wil_compute(errors, target_total, preds_total)

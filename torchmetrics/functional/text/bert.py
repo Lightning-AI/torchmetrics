@@ -459,8 +459,8 @@ def _rescale_metrics_with_baseline(
     remove_in="0.8",
 )
 def bert_score(
-    preds: Union[None, List[str], Dict[str, Tensor]] = None,
-    target: Union[None, List[str], Dict[str, Tensor]] = None,
+    preds: Union[List[str], Dict[str, Tensor]],
+    target: Union[List[str], Dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -539,16 +539,6 @@ def bert_score(
             A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url:
             A url path to the user's own  csv/tsv file with the baseline scale.
-        predictions:
-
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-
-        references:
-
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
@@ -574,7 +564,7 @@ def bert_score(
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
     """
-    if len(preds) != len(target):  # type: ignore
+    if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
 
     if verbose and (not _TQDM_AVAILABLE):

@@ -594,8 +594,8 @@ def _chrf_score_compute(
     remove_in="0.8",
 )
 def chrf_score(
-    preds: Union[None, str, Sequence[str]] = None,
-    target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     n_char_order: int = 6,
     n_word_order: int = 2,
     beta: float = 2.0,
@@ -626,12 +626,6 @@ def chrf_score(
             An indication whether to keep whitespaces during character n-gram extraction.
         return_sentence_level_score:
             An indication whether a sentence-level chrF/chrF++ score to be returned.
-        hypothesis_corpus:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-        reference_corpus:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Return:
         A corpus-level chrF/chrF++ score.
@@ -685,8 +679,8 @@ def chrf_score(
         total_matching_word_n_grams,
         sentence_chrf_score,
     ) = _chrf_score_update(
-        preds,  # type: ignore
-        target,  # type: ignore
+        preds,
+        target,
         total_preds_char_n_grams,
         total_preds_word_n_grams,
         total_target_char_n_grams,

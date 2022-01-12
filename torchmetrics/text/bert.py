@@ -202,8 +202,8 @@ class BERTScore(Metric):
     )
     def update(  # type: ignore
         self,
-        preds: Union[None, List[str]] = None,
-        target: Union[None, List[str]] = None,
+        preds: List[str],
+        target: List[str],
     ) -> None:
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
@@ -213,15 +213,9 @@ class BERTScore(Metric):
                 An iterable of predicted sentences.
             target:
                 An iterable of reference sentences.
-            predictions:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            references:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         """
         preds_dict = _preprocess_text(
-            preds,  # type: ignore
+            preds,
             self.tokenizer,
             self.max_length,
             truncation=False,
@@ -229,7 +223,7 @@ class BERTScore(Metric):
             own_tokenizer=self.user_tokenizer,
         )
         target_dict = _preprocess_text(
-            target,  # type: ignore
+            target,
             self.tokenizer,
             self.max_length,
             truncation=False,

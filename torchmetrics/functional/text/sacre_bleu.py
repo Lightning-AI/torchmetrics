@@ -40,7 +40,7 @@
 import logging
 import re
 from functools import partial
-from typing import Sequence, Union
+from typing import Sequence
 from warnings import warn
 
 import torch
@@ -286,8 +286,8 @@ class _SacreBLEUTokenizer:
     remove_in="0.8",
 )
 def sacre_bleu_score(
-    preds: Union[None, Sequence[str]] = None,
-    target: Union[None, Sequence[Sequence[str]]] = None,
+    preds: Sequence[str],
+    target: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
@@ -310,12 +310,6 @@ def sacre_bleu_score(
             Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
         lowercase:
             If ``True``, BLEU score over lowercased text is calculated.
-        translate_corpus:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-        reference_corpus:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Return:
         Tensor with BLEU Score
@@ -348,8 +342,8 @@ def sacre_bleu_score(
         raise ValueError(
             f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
         )
-    if len(preds) != len(target):  # type: ignore
-        raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")  # type: ignore
+    if len(preds) != len(target):
+        raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")
     if tokenize == "intl" and not _REGEX_AVAILABLE:
         raise ModuleNotFoundError(
             "`'intl'` tokenization requires that `regex` is installed."
@@ -363,8 +357,8 @@ def sacre_bleu_score(
 
     tokenize_fn = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
     preds_len, target_len = _bleu_score_update(
-        preds,  # type: ignore
-        target,  # type: ignore
+        preds,
+        target,
         numerator,
         denominator,
         preds_len,

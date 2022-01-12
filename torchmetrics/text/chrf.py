@@ -154,8 +154,8 @@ class CHRFScore(Metric):
     )
     def update(  # type: ignore
         self,
-        preds: Union[None, Sequence[str]] = None,
-        target: Union[None, Sequence[Sequence[str]]] = None,
+        preds: Sequence[str],
+        target: Sequence[Sequence[str]],
     ) -> None:
         """Compute Precision Scores.
 
@@ -164,16 +164,10 @@ class CHRFScore(Metric):
                 An iterable of hypothesis corpus.
             target:
                 An iterable of iterables of reference corpus.
-            hypothesis_corpus:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            reference_corpus:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         """
         n_grams_dicts_tuple = _chrf_score_update(
-            preds,  # type: ignore
-            target,  # type: ignore
+            preds,
+            target,
             *self._convert_states_to_dicts(),
             self.n_char_order,
             self.n_word_order,

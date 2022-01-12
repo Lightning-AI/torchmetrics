@@ -74,8 +74,8 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
     remove_in="0.8",
 )
 def word_information_preserved(
-    preds: Union[None, str, List[str]] = None,
-    target: Union[None, str, List[str]] = None,
+    preds: Union[str, List[str]],
+    target: Union[str, List[str]],
 ) -> Tensor:
     """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system.
     This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the
@@ -86,12 +86,6 @@ def word_information_preserved(
             Transcription(s) to score as a string or list of strings
         total:
             Reference(s) for each speech input as a string or list of strings
-        predictions:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-        references:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Returns:
         Word Information preserved rate
@@ -103,5 +97,5 @@ def word_information_preserved(
         >>> word_information_preserved(preds, target)
         tensor(0.3472)
     """
-    errors, reference_total, prediction_total = _wip_update(preds, target)  # type: ignore
+    errors, reference_total, prediction_total = _wip_update(preds, target)
     return _wip_compute(errors, reference_total, prediction_total)

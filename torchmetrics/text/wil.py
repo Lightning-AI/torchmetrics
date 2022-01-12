@@ -94,10 +94,8 @@ class WordInfoLost(Metric):
     )
     def update(  # type: ignore
         self,
-        preds: Union[None, str, List[str]] = None,
-        target: Union[None, str, List[str]] = None,
-        predictions: Union[None, str, List[str]] = None,
-        references: Union[None, str, List[str]] = None,
+        preds: Union[str, List[str]],
+        target: Union[str, List[str]],
     ) -> None:
         """Store predictions/references for computing Word Information Lost scores.
 
@@ -106,14 +104,8 @@ class WordInfoLost(Metric):
                 Transcription(s) to score as a string or list of strings
             target:
                 Reference(s) for each speech input as a string or list of strings
-            predictions:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            references:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         """
-        errors, target_total, preds_total = _wil_update(preds, target)  # type: ignore
+        errors, target_total, preds_total = _wil_update(preds, target)
         self.errors += errors
         self.target_total += target_total
         self.preds_total += preds_total

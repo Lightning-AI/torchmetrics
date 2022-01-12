@@ -153,8 +153,8 @@ def _bleu_score_compute(
     remove_in="0.8",
 )
 def bleu_score(
-    preds: Union[None, str, Sequence[str]] = None,
-    target: Union[None, Sequence[Union[str, Sequence[str]]]] = None,
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
@@ -169,12 +169,6 @@ def bleu_score(
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
             Whether or not to apply smoothing – see [2]
-        translate_corpus:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-        reference_corpus:
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
 
     Return:
         Tensor with BLEU Score
@@ -199,10 +193,10 @@ def bleu_score(
     )
 
     preds_ = [preds] if isinstance(preds, str) else preds
-    target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]  # type: ignore
+    target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]
 
-    if len(preds_) != len(target_):  # type: ignore
-        raise ValueError(f"Corpus has different size {len(preds_)} != {len(target_)}")  # type: ignore
+    if len(preds_) != len(target_):
+        raise ValueError(f"Corpus has different size {len(preds_)} != {len(target_)}")
 
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
@@ -210,7 +204,7 @@ def bleu_score(
     target_len = tensor(0.0)
 
     preds_len, target_len = _bleu_score_update(
-        preds_, target_, numerator, denominator, preds_len, target_len, n_gram, _tokenize_fn  # type: ignore
+        preds_, target_, numerator, denominator, preds_len, target_len, n_gram, _tokenize_fn
     )
 
     return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, smooth)

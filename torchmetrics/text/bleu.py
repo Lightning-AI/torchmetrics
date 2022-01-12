@@ -17,7 +17,7 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 import logging
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Callable, Optional, Sequence
 from warnings import warn
 
 import torch
@@ -106,24 +106,18 @@ class BLEUScore(Metric):
     )
     def update(  # type: ignore
         self,
-        preds: Union[None, Sequence[str]] = None,
-        target: Union[None, Sequence[Sequence[str]]] = None,
+        preds: Sequence[str],
+        target: Sequence[Sequence[str]],
     ) -> None:
         """Compute Precision Scores.
 
         Args:
             preds: An iterable of machine translated corpus
             target: An iterable of iterables of reference corpus
-            translate_corpus:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            reference_corpus:
-                .. deprecated:: v0.7
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
         """
         self.preds_len, self.target_len = _bleu_score_update(
-            preds,  # type: ignore
-            target,  # type: ignore
+            preds,
+            target,
             self.numerator,
             self.denominator,
             self.preds_len,
