@@ -104,11 +104,7 @@ class BLEUScore(Metric):
         deprecated_in="0.7",
         remove_in="0.8",
     )
-    def update(  # type: ignore
-        self,
-        preds: Sequence[str],
-        target: Sequence[Sequence[str]],
-    ) -> None:
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:

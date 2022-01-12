@@ -200,11 +200,7 @@ class BERTScore(Metric):
         deprecated_in="0.7",
         remove_in="0.8",
     )
-    def update(  # type: ignore
-        self,
-        preds: List[str],
-        target: List[str],
-    ) -> None:
+    def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 

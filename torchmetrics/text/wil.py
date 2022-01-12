@@ -92,11 +92,7 @@ class WordInfoLost(Metric):
         deprecated_in="0.7",
         remove_in="0.8",
     )
-    def update(  # type: ignore
-        self,
-        preds: Union[str, List[str]],
-        target: Union[str, List[str]],
-    ) -> None:
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store predictions/references for computing Word Information Lost scores.
 
         Args:
