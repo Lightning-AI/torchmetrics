@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from typing import Any, Callable, List, Optional, Union
-from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -85,47 +84,18 @@ class MatchErrorRate(Metric):
 
     def update(  # type: ignore
         self,
-        preds: Union[None, str, List[str]] = None,
-        target: Union[None, str, List[str]] = None,
-        predictions: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
-        references: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
+        preds: Union[str, List[str]],
+        target: Union[str, List[str]],
     ) -> None:
         """Store references/predictions for computing Match Error Rate scores.
 
         Args:
             preds: Transcription(s) to score as a string or list of strings
             target: Reference(s) for each speech input as a string or list of strings
-
-        .. deprecated:: v0.7
-            Args:
-                predictions:
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-                references:
-                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
-        if preds is None and predictions is None:
-            raise ValueError("Either `preds` or `predictions` must be provided.")
-        if target is None and references is None:
-            raise ValueError("Either `target` or `references` must be provided.")
-
-        if predictions is not None:
-            warn(
-                "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            preds = predictions
-        if references is not None:
-            warn(
-                "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            target = references
-
         errors, total = _mer_update(
-            preds,  # type: ignore
-            target,  # type: ignore
+            preds,
+            target,
         )
         self.errors += errors
         self.total += total
