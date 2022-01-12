@@ -254,13 +254,6 @@ psnr [func]
 .. autofunction:: torchmetrics.functional.psnr
     :noindex:
 
-
-scale_invariant_signal_noise_ratio [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.scale_invariant_signal_noise_ratio
-    :noindex:
-
 **********
 Regression
 **********
