@@ -225,12 +225,11 @@ def test_metric_lightning_log(tmpdir):
             self.log("sum_epoch", self.metric_epoch(torch.stack([o["data"] for o in outs]).sum()))
 
     model = TestModel()
-    model.val_dataloader = None
 
     trainer = Trainer(
         default_root_dir=tmpdir,
         limit_train_batches=2,
-        limit_val_batches=2,
+        limit_val_batches=0,
         max_epochs=2,
         log_every_n_steps=1,
         weights_summary=None,
@@ -263,12 +262,11 @@ def test_metric_collection_lightning_log(tmpdir):
             self.log_dict({f"{k}_epoch": v for k, v in metric_vals.items()})
 
     model = TestModel()
-    model.val_dataloader = None
 
     trainer = Trainer(
         default_root_dir=tmpdir,
         limit_train_batches=2,
-        limit_val_batches=2,
+        limit_val_batches=0,
         max_epochs=1,
         log_every_n_steps=1,
         weights_summary=None,
