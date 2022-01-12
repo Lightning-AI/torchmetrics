@@ -18,8 +18,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.ms_ssim import _multiscale_ssim_compute
-from torchmetrics.functional.image.ssim import _ssim_compute, _ssim_update
+from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
@@ -139,15 +138,9 @@ class SSIM(StructuralSimilarityIndexMeasure):
             "`SSIM` was renamed to `StructuralSimilarityIndexMeasure` in v0.7 and it will be removed in v0.8",
             DeprecationWarning,
         )
-        super().__init__(kernel_size,
-        sigma,
-        reduction,
-        data_range,
-        k1,
-        k2,
-        compute_on_step,
-        dist_sync_on_step,
-        process_group)
+        super().__init__(
+            kernel_size, sigma, reduction, data_range, k1, k2, compute_on_step, dist_sync_on_step, process_group
+        )
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
