@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Sequence, Tuple, Union
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -230,3 +231,31 @@ def structural_similarity_index_measure(
     """
     preds, target = _ssim_update(preds, target)
     return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
+
+
+def ssim(
+    preds: Tensor,
+    target: Tensor,
+    kernel_size: Sequence[int] = (11, 11),
+    sigma: Sequence[float] = (1.5, 1.5),
+    reduction: str = "elementwise_mean",
+    data_range: Optional[float] = None,
+    k1: float = 0.01,
+    k2: float = 0.03,
+) -> Tensor:
+    """Computes Structural Similarity Index Measure.
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.scale_invariant_signal_noise_ratio`. Will be removed in v0.8.
+
+    Example:
+        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> target = preds * 0.75
+        >>> ssim(preds, target)
+        tensor(0.9219)
+    """
+    warn(
+        "`ssim` was renamed to `structural_similarity_index_measure` in v0.7 and it will be removed in v0.8",
+        DeprecationWarning,
+    )
+    return structural_similarity_index_measure(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)

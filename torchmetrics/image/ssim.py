@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Tuple
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -106,6 +107,47 @@ class StructuralSimilarityIndexMeasure(Metric):
         return _ssim_compute(
             preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
         )
+
+
+class SSIM(StructuralSimilarityIndexMeasure):
+    """Computes Structual Similarity Index Measure (SSIM_).
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.StructuralSimilarityIndexMeasure`. Will be removed in v0.8.
+
+    Example:
+        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> target = preds * 0.75
+        >>> ssim = SSIM()
+        >>> ssim(preds, target)
+        tensor(0.9219)
+    """
+
+    def __init__(
+        self,
+        kernel_size: Sequence[int] = (11, 11),
+        sigma: Sequence[float] = (1.5, 1.5),
+        reduction: str = "elementwise_mean",
+        data_range: Optional[float] = None,
+        k1: float = 0.01,
+        k2: float = 0.03,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+    ) -> None:
+        warn(
+            "`SSIM` was renamed to `StructuralSimilarityIndexMeasure` in v0.7 and it will be removed in v0.8",
+            DeprecationWarning,
+        )
+        super().__init__(kernel_size,
+        sigma,
+        reduction,
+        data_range,
+        k1,
+        k2,
+        compute_on_step,
+        dist_sync_on_step,
+        process_group)
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
