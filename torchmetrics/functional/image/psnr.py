@@ -169,21 +169,8 @@ def psnr(
         >>> psnr(torch.tensor([[0.0, 1.0], [2.0, 3.0]]), torch.tensor([[3.0, 2.0], [1.0, 0.0]]))
         tensor(2.5527)
     """
-    if dim is None and reduction != "elementwise_mean":
-        rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")
-
-    if data_range is None:
-        if dim is not None:
-            # Maybe we could use `torch.amax(target, dim=dim) - torch.amin(target, dim=dim)` in PyTorch 1.7 to calculate
-            # `data_range` in the future.
-            raise ValueError("The `data_range` must be given when `dim` is not None.")
-
-        data_range = target.max() - target.min()
-    else:
-        data_range = tensor(float(data_range))
-    sum_squared_error, n_obs = _psnr_update(preds, target, dim=dim)
     warn(
         "`psnr` was renamed to `peak_signal_noise_ratio` in v0.7 and it will be removed in v0.8",
         DeprecationWarning,
     )
-    return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)
+    return peak_signal_noise_ratio(preds, target, data_range, base, reduction, dim)
