@@ -60,6 +60,7 @@ from torchmetrics.image import (  # noqa: E402
     SSIM,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    StructuralSimilarityIndexMeasure,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.metric_collections import MetricCollection  # noqa: E402
@@ -181,6 +182,7 @@ __all__ = [
     "Specificity",
     "SQuAD",
     "SSIM",
+    "StructuralSimilarityIndexMeasure",
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
