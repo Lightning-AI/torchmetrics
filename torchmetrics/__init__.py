@@ -60,6 +60,7 @@ from torchmetrics.image import (  # noqa: E402
     SSIM,
     MultiScaleStructuralSimilarityIndexMeasure,
     StructuralSimilarityIndexMeasure,
+    PeakSignalNoiseRatio,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.metric_collections import MetricCollection  # noqa: E402
@@ -155,6 +156,7 @@ __all__ = [
     "Precision",
     "PrecisionRecallCurve",
     "PSNR",
+    "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
     "RetrievalFallOut",

@@ -37,7 +37,7 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.psnr import psnr
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     ssim,
@@ -125,6 +125,7 @@ __all__ = [
     "precision",
     "precision_recall",
     "precision_recall_curve",
+    "peak_signal_noise_ratio",
     "psnr",
     "r2_score",
     "recall",

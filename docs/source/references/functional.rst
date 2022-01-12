@@ -119,7 +119,7 @@ dice_score [func]
     :noindex:
 
 
-f1 [func]
+f1_score [func]
 ~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.f1_score
@@ -132,11 +132,13 @@ fbeta_score [func]
 .. autofunction:: torchmetrics.functional.fbeta_score
     :noindex:
 
+
 hamming_distance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.hamming_distance
     :noindex:
+
 
 hinge_loss [func]
 ~~~~~~~~~~~~~~~~~
@@ -144,11 +146,13 @@ hinge_loss [func]
 .. autofunction:: torchmetrics.functional.hinge_loss
     :noindex:
 
+
 jaccard_index [func]
 ~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.jaccard_index
     :noindex:
+
 
 kl_divergence [func]
 ~~~~~~~~~~~~~~~~~~~~
@@ -156,11 +160,13 @@ kl_divergence [func]
 .. autofunction:: torchmetrics.functional.kl_divergence
     :noindex:
 
+
 matthews_corrcoef [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.matthews_corrcoef
     :noindex:
+
 
 roc [func]
 ~~~~~~~~~~
@@ -203,6 +209,7 @@ select_topk [func]
 .. autofunction:: torchmetrics.utilities.data.select_topk
     :noindex:
 
+
 specificity [func]
 ~~~~~~~~~~~~~~~~~~
 
@@ -230,9 +237,11 @@ to_onehot [func]
 .. autofunction:: torchmetrics.utilities.data.to_onehot
     :noindex:
 
+
 *****
 Image
 *****
+
 
 image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -255,15 +264,17 @@ multiscale_structural_similarity_index_measure [func]
     :noindex:
 
 
-psnr [func]
-~~~~~~~~~~~
+peak_signal_noise_ratio [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.psnr
+.. autofunction:: torchmetrics.functional.peak_signal_noise_ratio
     :noindex:
+
 
 **********
 Regression
 **********
+
 
 cosine_similarity [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~
