@@ -103,6 +103,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `PSNR` -> `PeakSignalNoiseRatio`
 
 
+- Renamed PIT metric: ([#737](https://github.com/PyTorchLightning/metrics/pull/737))
+  * `torchmetrics.functional.pit` -> `torchmetrics.functional.permutation_invariant_training`
+  * `torchmetrics.PIT` -> `torchmetrics.PermutationInvariantTraining`
+
+
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
