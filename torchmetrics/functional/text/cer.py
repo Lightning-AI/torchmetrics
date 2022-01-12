@@ -81,6 +81,7 @@ def char_error_rate(
 
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `target` and will be removed in v0.8.
+
     Returns:
         Character error rate score
     Examples:
