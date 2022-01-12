@@ -37,7 +37,6 @@
 # MIT License
 # Copyright (c) 2017 - Shujian Huang <huangsj@nju.edu.cn>
 
-import logging
 import re
 from functools import partial
 from typing import Sequence
@@ -281,7 +280,7 @@ class _SacreBLEUTokenizer:
 @deprecated(
     args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
     target=True,
-    stream=logging.warning,
+    stream=partial(warn, category=FutureWarning),
     deprecated_in="0.7",
     remove_in="0.8",
 )

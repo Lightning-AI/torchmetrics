@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
-import logging
 import math
 import urllib
-import warnings
 from collections import Counter, defaultdict
+from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from warnings import warn
 
 import torch
 from deprecate import deprecated
@@ -428,7 +428,7 @@ def _load_baseline(
         baseline = _read_csv_from_url(baseline_url)
     else:
         baseline = None
-        warnings.warn("Baseline was not successfully loaded. No baseline is going to be used.")
+        warn("Baseline was not successfully loaded. No baseline is going to be used.")
 
     return baseline
 
@@ -454,7 +454,7 @@ def _rescale_metrics_with_baseline(
 @deprecated(
     args_mapping={"predictions": "preds", "references": "target"},
     target=True,
-    stream=logging.warning,
+    stream=partial(warn, category=FutureWarning),
     deprecated_in="0.7",
     remove_in="0.8",
 )
@@ -599,7 +599,7 @@ def bert_score(
                 f"Please use num_layers <= {model.config.num_hidden_layers}"  # type: ignore
             )
     except AttributeError:
-        warnings.warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
+        warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
     _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(
@@ -609,7 +609,7 @@ def bert_score(
         isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (preds, target)
     )
     if _are_empty_lists:
-        warnings.warn("Predictions and references are empty.")
+        warn("Predictions and references are empty.")
         output_dict: Dict[str, Union[List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],

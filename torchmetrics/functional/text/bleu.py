@@ -16,8 +16,8 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-import logging
 from collections import Counter
+from functools import partial
 from typing import Callable, Sequence, Tuple, Union
 from warnings import warn
 
@@ -148,7 +148,7 @@ def _bleu_score_compute(
 @deprecated(
     args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
     target=True,
-    stream=logging.warning,
+    stream=partial(warn, category=FutureWarning),
     deprecated_in="0.7",
     remove_in="0.8",
 )
