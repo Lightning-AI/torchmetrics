@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from typing import List, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
@@ -87,6 +87,7 @@ def word_error_rate(
     return _wer_compute(errors, total)
 
 
+@deprecated(target=word_error_rate, deprecated_in="0.7", remove_in="0.8")
 def wer(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],
@@ -102,5 +103,4 @@ def wer(
         >>> wer(predictions=predictions, references=references)
         tensor(0.5000)
     """
-    warn("`wer` was renamed to `word_error_rate` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return word_error_rate(predictions, references)
+    return void(predictions, references)

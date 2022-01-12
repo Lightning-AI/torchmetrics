@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple, Union
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.utilities import rank_zero_warn, reduce
@@ -151,6 +151,7 @@ def peak_signal_noise_ratio(
     return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)
 
 
+@deprecated(target=peak_signal_noise_ratio, deprecated_in="0.7", remove_in="0.8")
 def psnr(
     preds: Tensor,
     target: Tensor,
@@ -169,8 +170,4 @@ def psnr(
         >>> psnr(torch.tensor([[0.0, 1.0], [2.0, 3.0]]), torch.tensor([[3.0, 2.0], [1.0, 0.0]]))
         tensor(2.5527)
     """
-    warn(
-        "`psnr` was renamed to `peak_signal_noise_ratio` in v0.7 and it will be removed in v0.8",
-        DeprecationWarning,
-    )
-    return peak_signal_noise_ratio(preds, target, data_range, base, reduction, dim)
+    return void(preds, target, data_range, base, reduction, dim)

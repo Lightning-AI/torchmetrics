@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from typing import Optional
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
 
@@ -195,6 +195,7 @@ def signal_distortion_ratio(
     return val
 
 
+@deprecated(target=signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8")
 def sdr(
     preds: Tensor,
     target: Tensor,
@@ -214,8 +215,7 @@ def sdr(
         >>> sdr(torch.randn(8000), torch.randn(8000))
         tensor(-12.0589)
     """
-    warn("`sdr` was renamed to `signal_distortion_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return signal_distortion_ratio(preds, target, use_cg_iter, filter_length, zero_mean, load_diag)
+    return void(preds, target, use_cg_iter, filter_length, zero_mean, load_diag)
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:

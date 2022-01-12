@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Dict, Optional
-from warnings import warn
 
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pit import permutation_invariant_training
@@ -137,6 +137,7 @@ class PIT(PermutationInvariantTraining):
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
 
+    @deprecated(target=PermutationInvariantTraining, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         metric_func: Callable,
@@ -147,10 +148,4 @@ class PIT(PermutationInvariantTraining):
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        warn(
-            "`PIT` was renamed to `PermutationInvariantTraining` in v0.7 and it will be removed in v0.8",
-            DeprecationWarning,
-        )
-        super().__init__(
-            metric_func, eval_func, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn, **kwargs
-        )
+        void(metric_func, eval_func, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn, **kwargs)
