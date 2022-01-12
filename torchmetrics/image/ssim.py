@@ -139,15 +139,9 @@ class SSIM(StructuralSimilarityIndexMeasure):
             "`SSIM` was renamed to `StructuralSimilarityIndexMeasure` in v0.7 and it will be removed in v0.8",
             DeprecationWarning,
         )
-        super().__init__(kernel_size,
-        sigma,
-        reduction,
-        data_range,
-        k1,
-        k2,
-        compute_on_step,
-        dist_sync_on_step,
-        process_group)
+        super().__init__(
+            kernel_size, sigma, reduction, data_range, k1, k2, compute_on_step, dist_sync_on_step, process_group
+        )
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
