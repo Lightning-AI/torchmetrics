@@ -16,12 +16,10 @@ from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr  # 
 from torchmetrics.functional.image.ssim import ssim  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
-from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401
-from torchmetrics.functional.regression.mean_absolute_percentage_error import (  # noqa: F401
-    mean_absolute_percentage_error,
-)
-from torchmetrics.functional.regression.mean_squared_error import mean_squared_error  # noqa: F401
-from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error  # noqa: F401
+from torchmetrics.functional.regression.log_mse import mean_squared_log_error  # noqa: F401
+from torchmetrics.functional.regression.mae import mean_absolute_error  # noqa: F401
+from torchmetrics.functional.regression.mape import mean_absolute_percentage_error  # noqa: F401
+from torchmetrics.functional.regression.mse import mean_squared_error  # noqa: F401
 from torchmetrics.functional.regression.pearson import pearson_corrcoef  # noqa: F401
 from torchmetrics.functional.regression.r2 import r2_score  # noqa: F401
 from torchmetrics.functional.regression.spearman import spearman_corrcoef  # noqa: F401

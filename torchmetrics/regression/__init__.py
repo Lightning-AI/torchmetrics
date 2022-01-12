@@ -13,14 +13,12 @@
 # limitations under the License.
 from torchmetrics.regression.cosine_similarity import CosineSimilarity  # noqa: F401
 from torchmetrics.regression.explained_variance import ExplainedVariance  # noqa: F401
-from torchmetrics.regression.mean_absolute_error import MeanAbsoluteError  # noqa: F401
-from torchmetrics.regression.mean_absolute_percentage_error import MeanAbsolutePercentageError  # noqa: F401
-from torchmetrics.regression.mean_squared_error import MeanSquaredError  # noqa: F401
-from torchmetrics.regression.mean_squared_log_error import MeanSquaredLogError  # noqa: F401
+from torchmetrics.regression.log_mse import MeanSquaredLogError  # noqa: F401
+from torchmetrics.regression.mae import MeanAbsoluteError  # noqa: F401
+from torchmetrics.regression.mape import MeanAbsolutePercentageError  # noqa: F401
+from torchmetrics.regression.mse import MeanSquaredError  # noqa: F401
 from torchmetrics.regression.pearson import PearsonCorrCoef, PearsonCorrcoef  # noqa: F401
 from torchmetrics.regression.r2 import R2Score  # noqa: F401
 from torchmetrics.regression.spearman import SpearmanCorrCoef, SpearmanCorrcoef  # noqa: F401
-from torchmetrics.regression.symmetric_mean_absolute_percentage_error import (  # noqa: F401
-    SymmetricMeanAbsolutePercentageError,
-)
+from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError  # noqa: F401
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore  # noqa: F401
