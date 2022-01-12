@@ -12,56 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
+from warnings import warn
 
 from torch import Tensor
 
-from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_distance_matrix
-
-
-def _pairwise_manhatten_distance_update(
-    x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
-) -> Tensor:
-    """Calculates the pairwise manhatten similarity matrix.
-
-    Args:
-        x: tensor of shape ``[N,d]``
-        y: if provided, a tensor of shape ``[M,d]``
-        zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
-    """
-    x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
-
-    distance = (x.unsqueeze(1) - y.unsqueeze(0).repeat(x.shape[0], 1, 1)).abs().sum(dim=-1)
-    if zero_diagonal:
-        distance.fill_diagonal_(0)
-    return distance
+from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
 
 
 def pairwise_manhatten_distance(
     x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     r"""
-    Calculates pairwise manhatten distance:
+    Calculates pairwise manhattan distance.
 
-    .. math::
-        d_{man}(x,y) = ||x-y||_1 = \sum_{d=1}^D |x_d - y_d|
-
-    If both `x` and `y` are passed in, the calculation will be performed pairwise between the rows of `x` and `y`.
-    If only `x` is passed in, the calculation will be performed between the rows of `x`.
-
-    Args:
-        x: Tensor with shape ``[N, d]``
-        y: Tensor with shape ``[M, d]``, optional
-        reduction: reduction to apply along the last dimension. Choose between `'mean'`, `'sum'`
-            (applied along column dimension) or  `'none'`, `None` for no reduction
-        zero_diagonal: if the diagonal of the distance matrix should be set to 0. If only `x` is given
-            this defaults to `True` else if `y` is also given it defaults to `False`
-
-    Returns:
-        A ``[N,N]`` matrix of distances if only ``x`` is given, else a ``[N,M]`` matrix
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.pairwise_manhattan_distance`. Will be removed in v0.8.
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import pairwise_manhatten_distance
         >>> x = torch.tensor([[2, 3], [3, 5], [5, 8]], dtype=torch.float32)
         >>> y = torch.tensor([[1, 0], [2, 1]], dtype=torch.float32)
         >>> pairwise_manhatten_distance(x, y)
@@ -74,5 +42,9 @@ def pairwise_manhatten_distance(
                 [8., 5., 0.]])
 
     """
-    distance = _pairwise_manhatten_distance_update(x, y, zero_diagonal)
-    return _reduce_distance_matrix(distance, reduction)
+    warn(
+        "`pairwise_manhatten_distance` was renamed to `pairwise_manhattan_distance` in v0.7"
+        " and it will be removed in v0.8",
+        DeprecationWarning,
+    )
+    return pairwise_manhattan_distance(x, y, reduction, zero_diagonal)
