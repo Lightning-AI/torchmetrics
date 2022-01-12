@@ -59,8 +59,8 @@ from torchmetrics.image import (  # noqa: E402
     PSNR,
     SSIM,
     MultiScaleStructuralSimilarityIndexMeasure,
-    StructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    StructuralSimilarityIndexMeasure,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.metric_collections import MetricCollection  # noqa: E402
