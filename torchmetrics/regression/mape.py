@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.mean_absolute_percentage_error import (
+from torchmetrics.functional.regression.mape import (
     _mean_absolute_percentage_error_compute,
     _mean_absolute_percentage_error_update,
 )

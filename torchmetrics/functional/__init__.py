@@ -25,7 +25,7 @@ from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice_score
 from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta, fbeta_score
-from torchmetrics.functional.classification.hamming_distance import hamming_distance
+from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge, hinge_loss
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index
@@ -46,14 +46,14 @@ from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
 from torchmetrics.functional.pairwise.manhatten import pairwise_manhatten_distance
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
-from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error
-from torchmetrics.functional.regression.mean_absolute_percentage_error import mean_absolute_percentage_error
-from torchmetrics.functional.regression.mean_squared_error import mean_squared_error
-from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error
+from torchmetrics.functional.regression.mae import mean_absolute_error
+from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
+from torchmetrics.functional.regression.mse import mean_squared_error
+from torchmetrics.functional.regression.log_mse import mean_squared_log_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
-from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
+from torchmetrics.functional.regression.symmetric_mape import (
     symmetric_mean_absolute_percentage_error,
 )
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score

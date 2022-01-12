@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.mean_squared_log_error import (
+from torchmetrics.functional.regression.log_mse import (
     _mean_squared_log_error_compute,
     _mean_squared_log_error_update,
 )
