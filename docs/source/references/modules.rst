@@ -81,10 +81,10 @@ PESQ
 
 .. autoclass:: torchmetrics.audio.pesq.PESQ
 
-PIT
-~~~
+PermutationInvariantTraining
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PIT
+.. autoclass:: torchmetrics.PermutationInvariantTraining
     :noindex:
 
 SignalDistortionRatio
@@ -398,16 +398,16 @@ MultiScaleStructuralSimilarityIndexMeasure
 .. autoclass:: torchmetrics.MultiScaleStructuralSimilarityIndexMeasure
     :noindex:
 
-PSNR
-~~~~
+PeakSignalNoiseRatio
+~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PSNR
+.. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
-SSIM
-~~~~
+StructuralSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SSIM
+.. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
 
 *********
