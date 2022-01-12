@@ -71,11 +71,11 @@ class SignalDistortionRatio(Metric):
         >>> sdr(preds, target)
         tensor(-12.0589)
         >>> # use with pit
-        >>> from torchmetrics.audio import PIT
+        >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> pit = PIT(signal_distortion_ratio, 'max')
+        >>> pit = PermutationInvariantTraining(signal_distortion_ratio, 'max')
         >>> pit(preds, target)
         tensor(-11.6051)
 
@@ -166,9 +166,9 @@ class SDR(SignalDistortionRatio):
         >>> sdr(torch.randn(8000), torch.randn(8000))
         tensor(-12.0589)
         >>> # use with pit
-        >>> from torchmetrics.audio import PIT
+        >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
-        >>> pit = PIT(signal_distortion_ratio, 'max')
+        >>> pit = PermutationInvariantTraining(signal_distortion_ratio, 'max')
         >>> pit(torch.randn(4, 2, 8000), torch.randn(4, 2, 8000))
         tensor(-11.6051)
     """
