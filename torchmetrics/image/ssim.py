@@ -24,7 +24,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class SSIM(Metric):
+class StructuralSimilarityIndexMeasure(Metric):
     """Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
@@ -44,10 +44,10 @@ class SSIM(Metric):
         Tensor with SSIM score
 
     Example:
-        >>> from torchmetrics import SSIM
+        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> ssim = SSIM()
+        >>> ssim = StructuralSimilarityIndexMeasure()
         >>> ssim(preds, target)
         tensor(0.9219)
     """
