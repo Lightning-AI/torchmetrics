@@ -16,10 +16,7 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.mae import (
-    _mean_absolute_error_compute,
-    _mean_absolute_error_update,
-)
+from torchmetrics.functional.regression.mae import _mean_absolute_error_compute, _mean_absolute_error_update
 from torchmetrics.metric import Metric
 
 

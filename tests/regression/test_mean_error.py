@@ -33,9 +33,7 @@ from torchmetrics.functional import (
     mean_squared_error,
     mean_squared_log_error,
 )
-from torchmetrics.functional.regression.symmetric_mape import (
-    symmetric_mean_absolute_percentage_error,
-)
+from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.regression import (
     MeanAbsoluteError,
     MeanAbsolutePercentageError,
