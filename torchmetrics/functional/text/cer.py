@@ -81,6 +81,7 @@ def char_error_rate(
                 This argument is deprecated in favor of  `preds` and will be removed in v0.8.
             references:
                 This argument is deprecated in favor of  `target` and will be removed in v0.8.
+
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]

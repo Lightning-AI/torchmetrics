@@ -240,13 +240,15 @@ def squad(
                     'question': 'Is this a test?',
                     'title': 'train test'
                 }
-        targets:
 
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Return:
         Dictionary containing the F1 score, Exact match score for the batch.
+
+    .. deprecated:: v0.7
+        Args:
+            targets:
+                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Example:
         >>> from torchmetrics.functional.text.squad import squad

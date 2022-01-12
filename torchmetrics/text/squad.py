@@ -122,9 +122,10 @@ class SQuAD(Metric):
                         'question': 'Is this a test?',
                         'title': 'train test'
                     }
-            targets:
 
-                .. deprecated:: v0.7
+        .. deprecated:: v0.7
+            Args:
+                targets:
                     This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
         Raises:

@@ -117,14 +117,12 @@ class TranslationEditRate(Metric):
                 An iterable of hypothesis corpus.
             target:
                 An iterable of iterables of reference corpus.
-            hypothesis_corpus:
 
-                .. deprecated:: v0.7
+        .. deprecated:: v0.7
+            Args:
+                hypothesis_corpus:
                     This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-
-            reference_corpus:
-
-                .. deprecated:: v0.7
+                reference_corpus:
                     This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         if preds is None and hypothesis_corpus is None:

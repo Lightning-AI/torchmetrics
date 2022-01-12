@@ -76,18 +76,16 @@ def match_error_rate(
     Args:
         preds: Transcription(s) to score as a string or list of strings
         target: Reference(s) for each speech input as a string or list of strings
-        predictions:
-
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-
-        references:
-
-            .. deprecated:: v0.7
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Returns:
         Match error rate score
+
+    .. deprecated:: v0.7
+        Args:
+            predictions:
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+            references:
+                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
