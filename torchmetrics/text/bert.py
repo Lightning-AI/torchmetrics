@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Union
 from warnings import warn
 
@@ -196,7 +195,6 @@ class BERTScore(Metric):
     @deprecated(
         args_mapping={"predictions": "preds", "references": "target"},
         target=True,
-        stream=partial(warn, category=FutureWarning),
         deprecated_in="0.7",
         remove_in="0.8",
     )

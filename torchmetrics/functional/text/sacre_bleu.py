@@ -280,7 +280,6 @@ class _SacreBLEUTokenizer:
 @deprecated(
     args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
     target=True,
-    stream=partial(warn, category=FutureWarning),
     deprecated_in="0.7",
     remove_in="0.8",
 )

@@ -15,7 +15,6 @@ import csv
 import math
 import urllib
 from collections import Counter, defaultdict
-from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
 
@@ -454,7 +453,6 @@ def _rescale_metrics_with_baseline(
 @deprecated(
     args_mapping={"predictions": "preds", "references": "target"},
     target=True,
-    stream=partial(warn, category=FutureWarning),
     deprecated_in="0.7",
     remove_in="0.8",
 )
