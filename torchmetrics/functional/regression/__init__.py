@@ -13,7 +13,7 @@
 # limitations under the License.
 from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure  # noqa: F401
 from torchmetrics.functional.image.psnr import psnr  # noqa: F401
-from torchmetrics.functional.image.ssim import ssim  # noqa: F401
+from torchmetrics.functional.image.ssim import ssim, structural_similarity_index_measure  # noqa: F401
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity  # noqa: F401
 from torchmetrics.functional.regression.explained_variance import explained_variance  # noqa: F401
 from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error  # noqa: F401

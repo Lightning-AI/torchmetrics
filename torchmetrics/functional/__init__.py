@@ -39,7 +39,7 @@ from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.functional.image.psnr import psnr
-from torchmetrics.functional.image.ssim import ssim
+from torchmetrics.functional.image.ssim import ssim, structural_similarity_index_measure
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
@@ -148,6 +148,7 @@ __all__ = [
     "specificity",
     "squad",
     "ssim",
+    "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",

@@ -179,7 +179,7 @@ def _ssim_compute(
     return reduce(ssim_idx, reduction)
 
 
-def ssim(
+def structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
@@ -189,7 +189,7 @@ def ssim(
     k1: float = 0.01,
     k2: float = 0.03,
 ) -> Tensor:
-    """Computes Structual Similarity Index Measure.
+    """Computes Structural Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -222,10 +222,10 @@ def ssim(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import ssim
+        >>> from torchmetrics.functional import structural_similarity_index_measure
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> ssim(preds, target)
+        >>> structural_similarity_index_measure(preds, target)
         tensor(0.9219)
     """
     preds, target = _ssim_update(preds, target)

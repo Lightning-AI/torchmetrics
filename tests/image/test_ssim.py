@@ -20,7 +20,7 @@ from skimage.metrics import structural_similarity
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import ssim
+from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import SSIM
 
 seed_all(42)
@@ -89,7 +89,7 @@ class TestSSIM(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            ssim,
+            structural_similarity_index_measure,
             partial(_sk_ssim, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
         )
@@ -97,11 +97,11 @@ class TestSSIM(MetricTester):
     # SSIM half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
     def test_ssim_half_cpu(self, preds, target, multichannel, kernel_size):
-        self.run_precision_test_cpu(preds, target, SSIM, ssim, {"data_range": 1.0})
+        self.run_precision_test_cpu(preds, target, SSIM, structural_similarity_index_measure, {"data_range": 1.0})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ssim_half_gpu(self, preds, target, multichannel, kernel_size):
-        self.run_precision_test_gpu(preds, target, SSIM, ssim, {"data_range": 1.0})
+        self.run_precision_test_gpu(preds, target, SSIM, structural_similarity_index_measure, {"data_range": 1.0})
 
 
 @pytest.mark.parametrize(
@@ -122,12 +122,12 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma):
     pred_t = torch.rand(pred)
     target_t = torch.rand(target, dtype=torch.float64)
     with pytest.raises(TypeError):
-        ssim(pred_t, target_t)
+        structural_similarity_index_measure(pred_t, target_t)
 
     pred = torch.rand(pred)
     target = torch.rand(target)
     with pytest.raises(ValueError):
-        ssim(pred, target, kernel, sigma)
+        structural_similarity_index_measure(pred, target, kernel, sigma)
 
 
 def test_ssim_unequal_kernel_size():
@@ -163,5 +163,5 @@ def test_ssim_unequal_kernel_size():
         ]
     )
     # kernel order matters
-    assert ssim(preds, target, kernel_size=(3, 5)) == torch.tensor(0.10814697)
-    assert ssim(preds, target, kernel_size=(5, 3)) != torch.tensor(0.10814697)
+    assert structural_similarity_index_measure(preds, target, kernel_size=(3, 5)) == torch.tensor(0.10814697)
+    assert structural_similarity_index_measure(preds, target, kernel_size=(5, 3)) != torch.tensor(0.10814697)
