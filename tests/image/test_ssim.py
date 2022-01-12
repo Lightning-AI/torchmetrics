@@ -97,11 +97,15 @@ class TestSSIM(MetricTester):
     # SSIM half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
     def test_ssim_half_cpu(self, preds, target, multichannel, kernel_size):
-        self.run_precision_test_cpu(preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0})
+        self.run_precision_test_cpu(
+            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
+        )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ssim_half_gpu(self, preds, target, multichannel, kernel_size):
-        self.run_precision_test_gpu(preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0})
+        self.run_precision_test_gpu(
+            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
+        )
 
 
 @pytest.mark.parametrize(

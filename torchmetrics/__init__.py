@@ -55,7 +55,12 @@ from torchmetrics.classification import (  # noqa: E402, F401
     Specificity,
     StatScores,
 )
-from torchmetrics.image import PSNR, SSIM, StructuralSimilarityIndexMeasure, MultiScaleStructuralSimilarityIndexMeasure  # noqa: E402
+from torchmetrics.image import (  # noqa: E402
+    PSNR,
+    SSIM,
+    MultiScaleStructuralSimilarityIndexMeasure,
+    StructuralSimilarityIndexMeasure,
+)
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.metric_collections import MetricCollection  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
