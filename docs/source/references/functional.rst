@@ -17,10 +17,10 @@ pesq [func]
 .. autofunction:: torchmetrics.functional.audio.pesq.pesq
 
 
-pit [func]
-~~~~~~~~~~
+permutation_invariant_training [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pit
+.. autofunction:: torchmetrics.functional.permutation_invariant_training
     :noindex:
 
 
@@ -367,10 +367,10 @@ pairwise_linear_similarity [func]
     :noindex:
 
 
-pairwise_manhatten_distance [func]
+pairwise_manhattan_distance [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.pairwise_manhatten_distance
+.. autofunction:: torchmetrics.functional.pairwise_manhattan_distance
     :noindex:
 
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pit import pit, pit_permutate
+from torchmetrics.functional.audio.pit import permutation_invariant_training, pit, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, sdr, signal_distortion_ratio
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
@@ -43,6 +43,7 @@ from torchmetrics.functional.image.ssim import ssim
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
+from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
 from torchmetrics.functional.pairwise.manhatten import pairwise_manhatten_distance
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
@@ -114,8 +115,10 @@ __all__ = [
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",
+    "pairwise_manhattan_distance",
     "pairwise_manhatten_distance",
     "pearson_corrcoef",
+    "permutation_invariant_training",
     "pit",
     "pit_permutate",
     "precision",
