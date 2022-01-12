@@ -540,15 +540,15 @@ def bert_score(
         baseline_url:
             A url path to the user's own  csv/tsv file with the baseline scale.
         predictions:
-        
+
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-                
+
         references:
-        
+
             .. deprecated:: v0.7
                 This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-                
+
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
