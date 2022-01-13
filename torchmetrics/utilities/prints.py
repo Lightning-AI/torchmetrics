@@ -16,8 +16,6 @@ import warnings
 from functools import partial, wraps
 from typing import Any, Callable
 
-from _warnings import warn
-
 from torchmetrics import _logger as log
 
 
@@ -49,4 +47,4 @@ def _debug(*args: Any, **kwargs: Any) -> None:
 rank_zero_debug = rank_zero_only(_debug)
 rank_zero_info = rank_zero_only(_info)
 rank_zero_warn = rank_zero_only(_warn)
-_future_warning = partial(warn, category=FutureWarning)
+_future_warning = partial(warnings.warn, category=FutureWarning)
