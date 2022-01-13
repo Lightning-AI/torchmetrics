@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
 
@@ -21,6 +20,9 @@ from torch import nn
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+
+# this is just a bypass for this module name collision with build-in one
+from torchmetrics.utilities.imports import OrderedDict
 
 
 class MetricCollection(nn.ModuleDict):
