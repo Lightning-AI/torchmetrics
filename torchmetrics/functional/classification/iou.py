@@ -18,9 +18,10 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.classification.jaccard import jaccard_index
+from torchmetrics.utilities import _future_warning
 
 
-@deprecated(target=jaccard_index, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=jaccard_index, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def iou(
     preds: Tensor,
     target: Tensor,

@@ -19,6 +19,7 @@ from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
+from torchmetrics.utilities import _future_warning
 
 
 def _wer_update(
@@ -67,6 +68,7 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
     target=True,
     deprecated_in="0.7",
     remove_in="0.8",
+    stream=_future_warning,
 )
 def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
     """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
@@ -97,7 +99,7 @@ def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]])
     return _wer_compute(errors, total)
 
 
-@deprecated(target=word_error_rate, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=word_error_rate, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def wer(
     predictions: Union[str, List[str]],
     references: Union[str, List[str]],

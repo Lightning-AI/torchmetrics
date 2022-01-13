@@ -18,6 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
 
@@ -173,7 +174,7 @@ class SDR(SignalDistortionRatio):
         tensor(-11.6051)
     """
 
-    @deprecated(target=SignalDistortionRatio, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=SignalDistortionRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         use_cg_iter: Optional[int] = None,
