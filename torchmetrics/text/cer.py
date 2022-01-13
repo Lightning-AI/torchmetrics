@@ -20,6 +20,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.text.cer import _cer_compute, _cer_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 
 
 class CharErrorRate(Metric):
@@ -90,6 +91,7 @@ class CharErrorRate(Metric):
         target=True,
         deprecated_in="0.7",
         remove_in="0.8",
+        stream=_future_warning,
     )
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Character Error Rate scores.

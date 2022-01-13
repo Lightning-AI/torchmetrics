@@ -18,6 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.hinge import MulticlassMode, _hinge_compute, _hinge_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 
 
 class HingeLoss(Metric):
@@ -154,7 +155,7 @@ class Hinge(HingeLoss):
 
     """
 
-    @deprecated(target=HingeLoss, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=HingeLoss, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         squared: bool = False,

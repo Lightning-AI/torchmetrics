@@ -17,6 +17,7 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+from torchmetrics.utilities import _future_warning
 
 
 class SI_SDR(ScaleInvariantSignalDistortionRatio):
@@ -32,7 +33,9 @@ class SI_SDR(ScaleInvariantSignalDistortionRatio):
         tensor(18.4030)
     """
 
-    @deprecated(target=ScaleInvariantSignalDistortionRatio, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(
+        target=ScaleInvariantSignalDistortionRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning
+    )
     def __init__(
         self,
         zero_mean: bool = False,

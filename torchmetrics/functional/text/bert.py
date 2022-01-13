@@ -23,6 +23,7 @@ from deprecate import deprecated
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
@@ -455,6 +456,7 @@ def _rescale_metrics_with_baseline(
     target=True,
     deprecated_in="0.7",
     remove_in="0.8",
+    stream=_future_warning,
 )
 def bert_score(
     preds: Union[List[str], Dict[str, Tensor]],

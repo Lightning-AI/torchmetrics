@@ -48,6 +48,7 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
@@ -282,6 +283,7 @@ class _SacreBLEUTokenizer:
     target=True,
     deprecated_in="0.7",
     remove_in="0.8",
+    stream=_future_warning,
 )
 def sacre_bleu_score(
     preds: Sequence[str],

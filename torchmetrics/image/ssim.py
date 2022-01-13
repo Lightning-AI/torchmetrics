@@ -20,7 +20,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -122,7 +122,7 @@ class SSIM(StructuralSimilarityIndexMeasure):
         tensor(0.9219)
     """
 
-    @deprecated(target=StructuralSimilarityIndexMeasure, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=StructuralSimilarityIndexMeasure, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         kernel_size: Sequence[int] = (11, 11),

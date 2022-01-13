@@ -19,6 +19,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wer import _wer_compute, _wer_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 
 
 class WordErrorRate(Metric):
@@ -88,6 +89,7 @@ class WordErrorRate(Metric):
         target=True,
         deprecated_in="0.7",
         remove_in="0.8",
+        stream=_future_warning,
     )
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Word Error Rate scores.
@@ -131,7 +133,7 @@ class WER(WordErrorRate):
         tensor(0.5000)
     """
 
-    @deprecated(target=WordErrorRate, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=WordErrorRate, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         compute_on_step: bool = True,

@@ -19,9 +19,10 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure as _ms_ssim
+from torchmetrics.utilities import _future_warning
 
 
-@deprecated(target=_ms_ssim, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=_ms_ssim, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def multiscale_structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,

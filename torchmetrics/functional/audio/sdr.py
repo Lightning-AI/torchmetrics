@@ -43,7 +43,7 @@ else:
 
 from torch import Tensor
 
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -195,7 +195,7 @@ def signal_distortion_ratio(
     return val
 
 
-@deprecated(target=signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def sdr(
     preds: Tensor,
     target: Tensor,
