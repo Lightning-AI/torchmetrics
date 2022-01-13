@@ -21,10 +21,7 @@ from torchmetrics.utilities.warn import _future_warning
 
 
 @deprecated(
-    target=scale_invariant_signal_distortion_ratio,
-    deprecated_in="0.7",
-    remove_in="0.8",
-    stream=_future_warning
+    target=scale_invariant_signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning
 )
 def si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     """Calculates Scale-invariant signal-to-distortion ratio (SI-SDR) metric.

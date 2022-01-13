@@ -15,5 +15,4 @@
 from functools import partial
 from warnings import warn
 
-
 _future_warning = partial(warn, category=FutureWarning)

@@ -34,10 +34,7 @@ class SI_SDR(ScaleInvariantSignalDistortionRatio):
     """
 
     @deprecated(
-        target=ScaleInvariantSignalDistortionRatio,
-        deprecated_in="0.7",
-        remove_in="0.8",
-        stream=_future_warning
+        target=ScaleInvariantSignalDistortionRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning
     )
     def __init__(
         self,
