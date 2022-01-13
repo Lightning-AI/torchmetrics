@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import warnings
-
 # referenced from
 # Library Name: torchtext
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from typing import Any, Callable, Optional, Sequence
+from warnings import warn
 
+from deprecate import deprecated
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
@@ -66,10 +66,11 @@ class SacreBLEUScore(BLEUScore):
 
 
     Example:
-        >>> translate_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> from torchmetrics import SacreBLEUScore
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = SacreBLEUScore()
-        >>> metric(translate_corpus, reference_corpus)
+        >>> metric(preds, target)
         tensor(0.7598)
 
     References:
@@ -101,7 +102,7 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        warnings.warn(
+        warn(
             "Input order of targets and preds were changed to predictions firsts and targets \
                     second in v0.7. Warning will be removed in v0.8"
         )
@@ -115,22 +116,33 @@ class SacreBLEUScore(BLEUScore):
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    def update(  # type: ignore
-        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
-    ) -> None:
+    @deprecated(
+        args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
+        target=True,
+        deprecated_in="0.7",
+        remove_in="0.8",
+    )
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
-            translate_corpus: An iterable of machine translated corpus
-            reference_corpus: An iterable of iterables of reference corpus
+            preds: An iterable of machine translated corpus
+            target: An iterable of iterables of reference corpus
+
+        .. deprecated:: v0.7
+            Args:
+                translate_corpus:
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+                reference_corpus:
+                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
-        self.trans_len, self.ref_len = _bleu_score_update(
-            translate_corpus,
-            reference_corpus,
+        self.preds_len, self.target_len = _bleu_score_update(
+            preds,
+            target,
             self.numerator,
             self.denominator,
-            self.trans_len,
-            self.ref_len,
+            self.preds_len,
+            self.target_len,
             self.n_gram,
             self.tokenizer,
         )

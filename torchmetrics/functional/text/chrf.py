@@ -32,7 +32,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 from collections import defaultdict
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
@@ -64,18 +63,18 @@ def _prepare_n_grams_dicts(
         Dictionaries with default zero values for total reference, hypothesis and matching character and word
         n-grams.
     """
-    total_ref_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
-    total_ref_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
-    total_hyp_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
-    total_hyp_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
+    total_preds_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
+    total_preds_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
+    total_target_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
+    total_target_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
     total_matching_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
     total_matching_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
 
     return (
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
     )
@@ -311,11 +310,11 @@ def _calculate_fscore(
 
 
 def _calculate_sentence_level_chrf_score(
-    references: List[str],
-    hyp_char_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
-    hyp_word_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
-    hyp_char_n_grams: Dict[int, Tensor],
-    hyp_word_n_grams: Dict[int, Tensor],
+    targets: List[str],
+    pred_char_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
+    pred_word_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
+    preds_char_n_grams: Dict[int, Tensor],
+    preds_word_n_grams: Dict[int, Tensor],
     n_char_order: int,
     n_word_order: int,
     n_order: float,
@@ -327,15 +326,15 @@ def _calculate_sentence_level_chrf_score(
     are evaluated and score and statistics for the best matching reference is returned.
 
     Args:
-        references:
+        targets:
             An iterable of references.
-        hyp_char_n_grams_counts:
+        preds_char_n_grams_counts:
             A dictionary of dictionaries with hypothesis character n-grams.
-        hyp_word_n_grams_counts:
+        preds_word_n_grams_counts:
             A dictionary of dictionaries with hypothesis word n-grams.
-        hyp_char_n_grams:
+        pred_char_n_grams:
             A total number of hypothesis character n-grams.
-        hyp_word_n_grams:
+        pred_word_n_grams:
             A total number of hypothesis word n-grams.
         n_char_order:
             A character n-gram order.
@@ -359,35 +358,35 @@ def _calculate_sentence_level_chrf_score(
             A total number of matching character n-grams between the best matching reference and hypothesis.
         matching_word_n_grams:
             A total number of matching word n-grams between the best matching reference and hypothesis.
-        ref_char_n_grams:
+        target_char_n_grams:
             A total number of reference character n-grams.
-        ref_word_n_grams:
+        target_word_n_grams:
             A total number of reference word n-grams.
     """
 
     best_f_score = tensor(0.0)
     best_matching_char_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     best_matching_word_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
-    best_ref_char_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
-    best_ref_word_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
+    best_target_char_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
+    best_target_word_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
 
-    for reference in references:
+    for target in targets:
         (
-            ref_char_n_grams_counts,
-            ref_word_n_grams_counts,
-            ref_char_n_grams,
-            ref_word_n_grams,
-        ) = _get_n_grams_counts_and_total_ngrams(reference, n_char_order, n_word_order, lowercase, whitespace)
-        matching_char_n_grams = _get_ngram_matches(ref_char_n_grams_counts, hyp_char_n_grams_counts)
-        matching_word_n_grams = _get_ngram_matches(ref_word_n_grams_counts, hyp_word_n_grams_counts)
+            target_char_n_grams_counts,
+            target_word_n_grams_counts,
+            target_char_n_grams,
+            target_word_n_grams,
+        ) = _get_n_grams_counts_and_total_ngrams(target, n_char_order, n_word_order, lowercase, whitespace)
+        matching_char_n_grams = _get_ngram_matches(target_char_n_grams_counts, pred_char_n_grams_counts)
+        matching_word_n_grams = _get_ngram_matches(target_word_n_grams_counts, pred_word_n_grams_counts)
 
         f_score = _calculate_fscore(
             matching_char_n_grams,
             matching_word_n_grams,
-            hyp_char_n_grams,
-            hyp_word_n_grams,
-            ref_char_n_grams,
-            ref_word_n_grams,
+            preds_char_n_grams,
+            preds_word_n_grams,
+            target_char_n_grams,
+            target_word_n_grams,
             n_order,
             beta,
         )
@@ -396,25 +395,25 @@ def _calculate_sentence_level_chrf_score(
             best_f_score = f_score
             best_matching_char_n_grams = matching_char_n_grams
             best_matching_word_n_grams = matching_word_n_grams
-            best_ref_char_n_grams = ref_char_n_grams
-            best_ref_word_n_grams = ref_word_n_grams
+            best_target_char_n_grams = target_char_n_grams
+            best_target_word_n_grams = target_word_n_grams
 
     return (
         best_f_score,
         best_matching_char_n_grams,
         best_matching_word_n_grams,
-        best_ref_char_n_grams,
-        best_ref_word_n_grams,
+        best_target_char_n_grams,
+        best_target_word_n_grams,
     )
 
 
 def _chrf_score_update(
-    hypothesis_corpus: Union[str, Sequence[str]],
-    reference_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
-    total_hyp_char_n_grams: Dict[int, Tensor],
-    total_hyp_word_n_grams: Dict[int, Tensor],
-    total_ref_char_n_grams: Dict[int, Tensor],
-    total_ref_word_n_grams: Dict[int, Tensor],
+    preds: Union[str, Sequence[str]],
+    target: Union[Sequence[str], Sequence[Sequence[str]]],
+    total_preds_char_n_grams: Dict[int, Tensor],
+    total_preds_word_n_grams: Dict[int, Tensor],
+    total_target_char_n_grams: Dict[int, Tensor],
+    total_target_word_n_grams: Dict[int, Tensor],
     total_matching_char_n_grams: Dict[int, Tensor],
     total_matching_word_n_grams: Dict[int, Tensor],
     n_char_order: int,
@@ -435,17 +434,17 @@ def _chrf_score_update(
 ]:
     """
     Args:
-        hypothesis_corpus:
+        preds:
             An iterable of hypothesis corpus.
-        reference_corpus:
+        target:
             An iterable of iterables of reference corpus.
-        total_hyp_char_n_grams:
+        total_preds_char_n_grams:
             A dictionary containing a total number of hypothesis character n-grams.
-        total_hyp_word_n_grams:
+        total_preds_word_n_grams:
             A dictionary containing a total number of hypothesis word n-grams.
-        total_ref_char_n_grams:
+        total_target_char_n_grams:
             A dictionary containing a total number of reference character n-grams.
-        total_ref_word_n_grams:
+        total_target_word_n_grams:
             A dictionary containing a total number of reference word n-grams.
         total_matching_char_n_grams:
             A dictionary containing a total number of matching character n-grams between references and hypotheses.
@@ -467,13 +466,13 @@ def _chrf_score_update(
             A list of sentence-level chrF/chrF++ scores.
 
     Return:
-        total_ref_char_n_grams:
+        total_target_char_n_grams:
             An updated dictionary containing a total number of reference character n-grams.
-        total_ref_word_n_grams:
+        total_target_word_n_grams:
             An updated dictionary containing a total number of reference word n-grams.
-        total_hyp_char_n_grams:
+        total_preds_char_n_grams:
             An updated dictionary containing a total number of hypothesis character n-grams.
-        total_hyp_word_n_grams:
+        total_preds_word_n_grams:
             An updated dictionary containing a total number of hypothesis word n-grams.
         total_matching_char_n_grams:
             An updated dictionary containing a total number of matching character n-grams between references and
@@ -486,32 +485,32 @@ def _chrf_score_update(
 
     Raises:
         ValueError:
-            If length of `reference_corpus` and `hypothesis_corpus` differs.
+            If length of `preds` and `target` differs.
     """
-    reference_corpus, hypothesis_corpus = _validate_inputs(reference_corpus, hypothesis_corpus)
+    target_corpus, preds = _validate_inputs(target, preds)
 
-    for (hypothesis, references) in zip(hypothesis_corpus, reference_corpus):
+    for (pred, targets) in zip(preds, target_corpus):
         (
-            hyp_char_n_grams_counts,
-            hyp_word_n_grams_counts,
-            hyp_char_n_grams,
-            hyp_word_n_grams,
-        ) = _get_n_grams_counts_and_total_ngrams(hypothesis, n_char_order, n_word_order, lowercase, whitespace)
-        total_hyp_char_n_grams = _sum_over_dicts(total_hyp_char_n_grams, hyp_char_n_grams)
-        total_hyp_word_n_grams = _sum_over_dicts(total_hyp_word_n_grams, hyp_word_n_grams)
+            pred_char_n_grams_counts,
+            pred_word_n_grams_counts,
+            pred_char_n_grams,
+            pred_word_n_grams,
+        ) = _get_n_grams_counts_and_total_ngrams(pred, n_char_order, n_word_order, lowercase, whitespace)
+        total_preds_char_n_grams = _sum_over_dicts(total_preds_char_n_grams, pred_char_n_grams)
+        total_preds_word_n_grams = _sum_over_dicts(total_preds_word_n_grams, pred_word_n_grams)
 
         (
             sentence_level_f_score,
             matching_char_n_grams,
             matching_word_n_grams,
-            ref_char_n_grams,
-            ref_word_n_grams,
+            target_char_n_grams,
+            target_word_n_grams,
         ) = _calculate_sentence_level_chrf_score(
-            references,  # type: ignore
-            hyp_char_n_grams_counts,
-            hyp_word_n_grams_counts,
-            hyp_char_n_grams,
-            hyp_word_n_grams,
+            targets,  # type: ignore
+            pred_char_n_grams_counts,
+            pred_word_n_grams_counts,
+            pred_char_n_grams,
+            pred_word_n_grams,
             n_char_order,
             n_word_order,
             n_order,
@@ -523,16 +522,16 @@ def _chrf_score_update(
         if sentence_chrf_score is not None:
             sentence_chrf_score.append(sentence_level_f_score.unsqueeze(0))
 
-        total_ref_char_n_grams = _sum_over_dicts(total_ref_char_n_grams, ref_char_n_grams)
-        total_ref_word_n_grams = _sum_over_dicts(total_ref_word_n_grams, ref_word_n_grams)
+        total_target_char_n_grams = _sum_over_dicts(total_target_char_n_grams, target_char_n_grams)
+        total_target_word_n_grams = _sum_over_dicts(total_target_word_n_grams, target_word_n_grams)
         total_matching_char_n_grams = _sum_over_dicts(total_matching_char_n_grams, matching_char_n_grams)
         total_matching_word_n_grams = _sum_over_dicts(total_matching_word_n_grams, matching_word_n_grams)
 
     return (
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
         sentence_chrf_score,
@@ -540,10 +539,10 @@ def _chrf_score_update(
 
 
 def _chrf_score_compute(
-    total_hyp_char_n_grams: Dict[int, Tensor],
-    total_hyp_word_n_grams: Dict[int, Tensor],
-    total_ref_char_n_grams: Dict[int, Tensor],
-    total_ref_word_n_grams: Dict[int, Tensor],
+    total_preds_char_n_grams: Dict[int, Tensor],
+    total_preds_word_n_grams: Dict[int, Tensor],
+    total_target_char_n_grams: Dict[int, Tensor],
+    total_target_word_n_grams: Dict[int, Tensor],
     total_matching_char_n_grams: Dict[int, Tensor],
     total_matching_word_n_grams: Dict[int, Tensor],
     n_order: float,
@@ -552,13 +551,13 @@ def _chrf_score_compute(
     """Compute chrF/chrF++ score based on pre-computed target, prediction and matching character and word n-grams.
 
     Args:
-        total_hyp_char_n_grams:
+        total_preds_char_n_grams:
             A dictionary containing a total number of hypothesis character n-grams.
-        total_hyp_word_n_grams:
+        total_preds_word_n_grams:
             A dictionary containing a total number of hypothesis word n-grams.
-        total_ref_char_n_grams:
+        total_target_char_n_grams:
             A dictionary containing a total number of reference character n-grams.
-        total_ref_word_n_grams:
+        total_target_word_n_grams:
             A dictionary containing a total number of reference word n-grams.
         total_matching_char_n_grams:
             A dictionary containing a total number of matching character n-grams between references and hypotheses.
@@ -575,10 +574,10 @@ def _chrf_score_compute(
     chrf_f_score = _calculate_fscore(
         total_matching_char_n_grams,
         total_matching_word_n_grams,
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         n_order,
         beta,
     )
@@ -586,8 +585,8 @@ def _chrf_score_compute(
 
 
 def chrf_score(
-    hypothesis_corpus: Union[str, Sequence[str]],
-    reference_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     n_char_order: int = 6,
     n_word_order: int = 2,
     beta: float = 2.0,
@@ -601,9 +600,9 @@ def chrf_score(
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
-        hypothesis_corpus:
+        preds:
             An iterable of hypothesis corpus.
-        reference_corpus:
+        target:
             An iterable of iterables of reference corpus.
         n_char_order:
             A character n-gram order. If `n_char_order=6`, the metrics refers to the official chrF/chrF++.
@@ -633,9 +632,9 @@ def chrf_score(
 
     Example:
         >>> from torchmetrics.functional import chrf_score
-        >>> hypothesis_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> chrf_score(hypothesis_corpus, reference_corpus)
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> chrf_score(preds, target)
         tensor(0.8640)
 
     References:
@@ -652,10 +651,10 @@ def chrf_score(
     n_order = float(n_char_order + n_word_order)
 
     (
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
     ) = _prepare_n_grams_dicts(n_char_order, n_word_order)
@@ -663,20 +662,20 @@ def chrf_score(
     sentence_chrf_score: Optional[List[Tensor]] = [] if return_sentence_level_score else None
 
     (
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
         sentence_chrf_score,
     ) = _chrf_score_update(
-        hypothesis_corpus,
-        reference_corpus,
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        preds,
+        target,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
         n_char_order,
@@ -689,10 +688,10 @@ def chrf_score(
     )
 
     chrf_f_score = _chrf_score_compute(
-        total_hyp_char_n_grams,
-        total_hyp_word_n_grams,
-        total_ref_char_n_grams,
-        total_ref_word_n_grams,
+        total_preds_char_n_grams,
+        total_preds_word_n_grams,
+        total_target_char_n_grams,
+        total_target_word_n_grams,
         total_matching_char_n_grams,
         total_matching_word_n_grams,
         n_order,

@@ -53,17 +53,18 @@ class WordInfoLost(Metric):
 
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
+        >>> from torchmetrics import WordInfoLost
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
         >>> metric = WordInfoLost()
-        >>> metric(predictions, references)
+        >>> metric(preds, target)
         tensor(0.6528)
     """
     is_differentiable = False
     higher_is_better = False
     errors: Tensor
-    reference_total: Tensor
-    prediction_total: Tensor
+    target_total: Tensor
+    preds_total: Tensor
 
     def __init__(
         self,
@@ -79,20 +80,22 @@ class WordInfoLost(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         self.add_state("errors", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("reference_total", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("prediction_total", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
-        """Store references/predictions for computing Word Information Lost scores.
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
+        """Store predictions/references for computing Word Information Lost scores.
 
         Args:
-            predictions: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each speech input as a string or list of strings
+            preds:
+                Transcription(s) to score as a string or list of strings
+            target:
+                Reference(s) for each speech input as a string or list of strings
         """
-        errors, reference_total, prediction_total = _wil_update(predictions, references)
+        errors, target_total, preds_total = _wil_update(preds, target)
         self.errors += errors
-        self.reference_total += reference_total
-        self.prediction_total += prediction_total
+        self.target_total += target_total
+        self.preds_total += preds_total
 
     def compute(self) -> Tensor:
         """Calculate the Word Information Lost.
@@ -100,4 +103,4 @@ class WordInfoLost(Metric):
         Returns:
             Word Information Lost score
         """
-        return _wil_compute(self.errors, self.reference_total, self.prediction_total)
+        return _wil_compute(self.errors, self.target_total, self.preds_total)
