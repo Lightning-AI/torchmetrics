@@ -19,6 +19,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -234,7 +235,7 @@ def structural_similarity_index_measure(
     return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
 
 
-@deprecated(target=structural_similarity_index_measure, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=structural_similarity_index_measure, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def ssim(
     preds: Tensor,
     target: Tensor,

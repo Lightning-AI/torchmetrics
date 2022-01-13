@@ -18,6 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 
 
 class PermutationInvariantTraining(Metric):
@@ -137,7 +138,7 @@ class PIT(PermutationInvariantTraining):
         Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
     """
 
-    @deprecated(target=PermutationInvariantTraining, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=PermutationInvariantTraining, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         metric_func: Callable,

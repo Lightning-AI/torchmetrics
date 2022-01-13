@@ -19,7 +19,7 @@ from torch import Tensor
 
 from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -110,7 +110,7 @@ class SpearmanCorrcoef(SpearmanCorrCoef):
         Renamed in favor of :class:`torchmetrics.SpearmanCorrCoef`. Will be removed in v0.8.
     """
 
-    @deprecated(target=SpearmanCorrCoef, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=SpearmanCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         compute_on_step: bool = True,

@@ -18,6 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, snr
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 
 
 class SignalNoiseRatio(Metric):
@@ -125,7 +126,7 @@ class SNR(SignalNoiseRatio):
 
     """
 
-    @deprecated(target=SignalNoiseRatio, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=SignalNoiseRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         zero_mean: bool = False,

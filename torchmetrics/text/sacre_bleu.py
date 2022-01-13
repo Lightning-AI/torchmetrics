@@ -26,6 +26,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.text.bleu import _bleu_score_update
 from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer
 from torchmetrics.text.bleu import BLEUScore
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
@@ -121,6 +122,7 @@ class SacreBLEUScore(BLEUScore):
         target=True,
         deprecated_in="0.7",
         remove_in="0.8",
+        stream=_future_warning,
     )
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.

@@ -19,6 +19,7 @@ from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
+from torchmetrics.utilities import _future_warning
 
 
 def _cer_update(
@@ -65,6 +66,7 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
     target=True,
     deprecated_in="0.7",
     remove_in="0.8",
+    stream=_future_warning,
 )
 def char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
     """character error rate is a common metric of the performance of an automatic speech recognition system. This

@@ -17,9 +17,10 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
+from torchmetrics.utilities import _future_warning
 
 
-@deprecated(target=pairwise_manhattan_distance, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=pairwise_manhattan_distance, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def pairwise_manhatten_distance(
     x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:

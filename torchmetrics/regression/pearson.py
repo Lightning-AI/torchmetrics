@@ -19,6 +19,7 @@ from torch import Tensor
 
 from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute, _pearson_corrcoef_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 
 
 def _final_aggregation(
@@ -156,7 +157,7 @@ class PearsonCorrcoef(PearsonCorrCoef):
 
     """
 
-    @deprecated(target=PearsonCorrCoef, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=PearsonCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         compute_on_step: bool = True,

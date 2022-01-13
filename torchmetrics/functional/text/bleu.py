@@ -24,6 +24,8 @@ import torch
 from deprecate import deprecated
 from torch import Tensor, tensor
 
+from torchmetrics.utilities import _future_warning
+
 
 def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
     """Counting how many times each word appears in a given text with ngram.
@@ -149,6 +151,7 @@ def _bleu_score_compute(
     target=True,
     deprecated_in="0.7",
     remove_in="0.8",
+    stream=_future_warning,
 )
 def bleu_score(
     preds: Union[str, Sequence[str]],
