@@ -21,6 +21,7 @@ from torchmetrics.functional import bert_score
 from torchmetrics.functional.text.bert import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.warn import _future_warning
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoTokenizer
@@ -197,6 +198,7 @@ class BERTScore(Metric):
         target=True,
         deprecated_in="0.7",
         remove_in="0.8",
+        stream=_future_warning,
     )
     def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a

@@ -18,6 +18,7 @@ from torch import Tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.warn import _future_warning
 
 
 def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
@@ -68,7 +69,7 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
     return snr_value
 
 
-@deprecated(target=signal_noise_ratio, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=signal_noise_ratio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
     r"""Signal-to-noise ratio (SNR_)
 

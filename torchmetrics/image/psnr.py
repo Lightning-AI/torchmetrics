@@ -20,6 +20,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.warn import _future_warning
 
 
 class PeakSignalNoiseRatio(Metric):
@@ -161,7 +162,7 @@ class PSNR(PeakSignalNoiseRatio):
         tensor(2.5527)
     """
 
-    @deprecated(target=PeakSignalNoiseRatio, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=PeakSignalNoiseRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         data_range: Optional[float] = None,

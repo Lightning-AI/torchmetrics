@@ -20,6 +20,7 @@ from torch import Tensor
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
 from torchmetrics.utilities.enums import AverageMethod
+from torchmetrics.utilities.warn import _future_warning
 
 
 class FBetaScore(StatScores):
@@ -188,7 +189,7 @@ class FBeta(FBetaScore):
         tensor(0.3333)
     """
 
-    @deprecated(target=FBetaScore, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=FBetaScore, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         num_classes: Optional[int] = None,
@@ -363,7 +364,7 @@ class F1(F1Score):
         tensor(0.3333)
     """
 
-    @deprecated(target=F1Score, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=F1Score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         num_classes: Optional[int] = None,

@@ -22,6 +22,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     _matthews_corrcoef_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.warn import _future_warning
 
 
 class MatthewsCorrCoef(Metric):
@@ -126,7 +127,7 @@ class MatthewsCorrcoef(MatthewsCorrCoef):
         Renamed in favor of :class:`torchmetrics.MatthewsCorrCoef`. Will be removed in v0.8.
     """
 
-    @deprecated(target=MatthewsCorrCoef, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=MatthewsCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         num_classes: int,

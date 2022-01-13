@@ -20,6 +20,7 @@ from torch import Tensor
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
+from torchmetrics.utilities.warn import _future_warning
 
 
 def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
@@ -244,7 +245,7 @@ def fbeta_score(
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
-@deprecated(target=fbeta_score, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=fbeta_score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def fbeta(
     preds: Tensor,
     target: Tensor,
@@ -380,7 +381,7 @@ def f1_score(
     )
 
 
-@deprecated(target=f1_score, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=f1_score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def f1(
     preds: Tensor,
     target: Tensor,

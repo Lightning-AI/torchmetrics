@@ -21,6 +21,7 @@ from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
+from torchmetrics.utilities.warn import _future_warning
 
 # _ps_dict: cache of permutations
 # it's necessary to cache it, otherwise it will consume a large amount of time
@@ -179,7 +180,7 @@ def permutation_invariant_training(
     return best_metric, best_perm
 
 
-@deprecated(target=permutation_invariant_training, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=permutation_invariant_training, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def pit(
     preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:

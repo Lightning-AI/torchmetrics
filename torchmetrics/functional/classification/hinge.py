@@ -20,6 +20,7 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
+from torchmetrics.utilities.warn import _future_warning
 
 
 class MulticlassMode(EnumStr):
@@ -232,7 +233,7 @@ def hinge_loss(
     return _hinge_compute(measure, total)
 
 
-@deprecated(target=hinge_loss, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=hinge_loss, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def hinge(
     preds: Tensor,
     target: Tensor,

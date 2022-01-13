@@ -24,6 +24,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.warn import _future_warning
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
@@ -455,6 +456,7 @@ def _rescale_metrics_with_baseline(
     target=True,
     deprecated_in="0.7",
     remove_in="0.8",
+    stream=_future_warning,
 )
 def bert_score(
     preds: Union[List[str], Dict[str, Tensor]],

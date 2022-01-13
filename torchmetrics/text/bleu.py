@@ -25,6 +25,7 @@ from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update, _tokenize_fn
+from torchmetrics.utilities.warn import _future_warning
 
 
 class BLEUScore(Metric):
@@ -101,6 +102,7 @@ class BLEUScore(Metric):
         target=True,
         deprecated_in="0.7",
         remove_in="0.8",
+        stream=_future_warning,
     )
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.

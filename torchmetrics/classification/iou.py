@@ -17,6 +17,7 @@ import torch
 from deprecate import deprecated, void
 
 from torchmetrics.classification.jaccard import JaccardIndex
+from torchmetrics.utilities.warn import _future_warning
 
 
 class IoU(JaccardIndex):
@@ -37,7 +38,7 @@ class IoU(JaccardIndex):
 
     """
 
-    @deprecated(target=JaccardIndex, deprecated_in="0.7", remove_in="0.8")
+    @deprecated(target=JaccardIndex, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         num_classes: int,

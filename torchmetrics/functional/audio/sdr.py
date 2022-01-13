@@ -18,6 +18,7 @@ import torch
 from deprecate import deprecated, void
 
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.utilities.warn import _future_warning
 
 if _FAST_BSS_EVAL_AVAILABLE:
     if _TORCH_GREATER_EQUAL_1_8:
@@ -195,7 +196,7 @@ def signal_distortion_ratio(
     return val
 
 
-@deprecated(target=signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8")
+@deprecated(target=signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def sdr(
     preds: Tensor,
     target: Tensor,
