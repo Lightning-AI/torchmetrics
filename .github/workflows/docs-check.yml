@@ -76,7 +76,7 @@ jobs:
         working-directory: ./docs
         run: |
           make clean
-          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going" -b linkcheck
+          make html --debug SPHINXOPTS="-W --keep-going" -b linkcheck
 
       - name: Upload built docs
         uses: actions/upload-artifact@v2
