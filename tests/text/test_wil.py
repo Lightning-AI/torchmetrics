@@ -10,8 +10,8 @@ from torchmetrics.text.wil import WordInfoLost
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 
-def _compute_wil_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return wil(reference, prediction)
+def _compute_wil_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    return wil(target, preds)
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")

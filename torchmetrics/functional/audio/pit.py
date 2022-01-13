@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, Tuple, Union
 from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -178,12 +179,11 @@ def permutation_invariant_training(
     return best_metric, best_perm
 
 
+@deprecated(target=permutation_invariant_training, deprecated_in="0.7", remove_in="0.8")
 def pit(
     preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
     """Permutation invariant training. The ``pit`` implements the famous Permutation Invariant Training method.
-
-    [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
     .. deprecated:: v0.7
         Use :func:`torchmetrics.functional.permutation_invariant_training`. Will be removed in v0.8.
@@ -202,15 +202,8 @@ def pit(
         >>> pit_permutate(preds, best_perm)
         tensor([[[-0.0579,  0.3560, -0.9604],
                  [-0.1719,  0.3205,  0.2951]]])
-
-    Reference:
-        [1]	`Permutation Invariant Training of Deep Models`_
     """
-    warn(
-        "`pit` was renamed to `permutation_invariant_training` in v0.7 and it will be removed in v0.8",
-        DeprecationWarning,
-    )
-    return permutation_invariant_training(preds, target, metric_func, eval_func, **kwargs)
+    return void(preds, target, metric_func, eval_func, **kwargs)
 
 
 def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:

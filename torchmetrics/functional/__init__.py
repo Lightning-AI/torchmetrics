@@ -25,7 +25,7 @@ from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice_score
 from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta, fbeta_score
-from torchmetrics.functional.classification.hamming_distance import hamming_distance
+from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge, hinge_loss
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index
@@ -37,9 +37,12 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure
-from torchmetrics.functional.image.psnr import psnr
-from torchmetrics.functional.image.ssim import ssim
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr
+from torchmetrics.functional.image.ssim import (
+    multiscale_structural_similarity_index_measure,
+    ssim,
+    structural_similarity_index_measure,
+)
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
@@ -47,16 +50,14 @@ from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distan
 from torchmetrics.functional.pairwise.manhatten import pairwise_manhatten_distance
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
-from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error
-from torchmetrics.functional.regression.mean_absolute_percentage_error import mean_absolute_percentage_error
-from torchmetrics.functional.regression.mean_squared_error import mean_squared_error
-from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error
+from torchmetrics.functional.regression.log_mse import mean_squared_log_error
+from torchmetrics.functional.regression.mae import mean_absolute_error
+from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
+from torchmetrics.functional.regression.mse import mean_squared_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
-from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
-    symmetric_mean_absolute_percentage_error,
-)
+from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
@@ -124,6 +125,7 @@ __all__ = [
     "precision",
     "precision_recall",
     "precision_recall_curve",
+    "peak_signal_noise_ratio",
     "psnr",
     "r2_score",
     "recall",
@@ -150,6 +152,7 @@ __all__ = [
     "specificity",
     "squad",
     "ssim",
+    "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",

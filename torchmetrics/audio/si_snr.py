@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
-from warnings import warn
 
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
@@ -32,6 +32,7 @@ class SI_SNR(ScaleInvariantSignalNoiseRatio):
         tensor(15.0918)
     """
 
+    @deprecated(target=ScaleInvariantSignalNoiseRatio, deprecated_in="0.7", remove_in="0.8")
     def __init__(
         self,
         compute_on_step: bool = True,
@@ -39,8 +40,4 @@ class SI_SNR(ScaleInvariantSignalNoiseRatio):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        warn(
-            "`SI_SNR` was renamed to `ScaleInvariantSignalNoiseRatio` in v0.7 and it will be removed in v0.8",
-            DeprecationWarning,
-        )
-        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
+        void(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

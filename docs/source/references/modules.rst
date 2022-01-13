@@ -398,16 +398,16 @@ MultiScaleStructuralSimilarityIndexMeasure
 .. autoclass:: torchmetrics.MultiScaleStructuralSimilarityIndexMeasure
     :noindex:
 
-PSNR
-~~~~
+PeakSignalNoiseRatio
+~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PSNR
+.. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
-SSIM
-~~~~
+StructuralSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SSIM
+.. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
 
 *********

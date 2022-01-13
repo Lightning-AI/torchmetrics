@@ -14,6 +14,7 @@
 from typing import Optional, Tuple, Union
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.utilities import rank_zero_warn, reduce
@@ -91,7 +92,7 @@ def _psnr_update(
     return sum_squared_error, n_obs
 
 
-def psnr(
+def peak_signal_noise_ratio(
     preds: Tensor,
     target: Tensor,
     data_range: Optional[float] = None,
@@ -125,10 +126,10 @@ def psnr(
             If ``dim`` is not ``None`` and ``data_range`` is not provided.
 
     Example:
-        >>> from torchmetrics.functional import psnr
+        >>> from torchmetrics.functional import peak_signal_noise_ratio
         >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> psnr(pred, target)
+        >>> peak_signal_noise_ratio(pred, target)
         tensor(2.5527)
 
     .. note::
@@ -148,3 +149,25 @@ def psnr(
         data_range = tensor(float(data_range))
     sum_squared_error, n_obs = _psnr_update(preds, target, dim=dim)
     return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)
+
+
+@deprecated(target=peak_signal_noise_ratio, deprecated_in="0.7", remove_in="0.8")
+def psnr(
+    preds: Tensor,
+    target: Tensor,
+    data_range: Optional[float] = None,
+    base: float = 10.0,
+    reduction: str = "elementwise_mean",
+    dim: Optional[Union[int, Tuple[int, ...]]] = None,
+) -> Tensor:
+    """Computes the peak signal-to-noise ratio.
+
+    .. deprecated:: v0.7
+        Use :func:torchmetrics.functional.psnr. Will be removed in v0.8.
+
+    Example:
+
+        >>> psnr(torch.tensor([[0.0, 1.0], [2.0, 3.0]]), torch.tensor([[3.0, 2.0], [1.0, 0.0]]))
+        tensor(2.5527)
+    """
+    return void(preds, target, data_range, base, reduction, dim)

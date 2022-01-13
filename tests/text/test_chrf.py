@@ -110,28 +110,28 @@ class TestCHRFScore(TextTester):
 
 
 def test_chrf_empty_functional():
-    hyp = []
-    ref = [[]]
-    assert chrf_score(hyp, ref) == tensor(0.0)
+    preds = []
+    targets = [[]]
+    assert chrf_score(preds, targets) == tensor(0.0)
 
 
 def test_chrf_empty_class():
     chrf = CHRFScore()
-    hyp = []
-    ref = [[]]
-    assert chrf(hyp, ref) == tensor(0.0)
+    preds = []
+    targets = [[]]
+    assert chrf(preds, targets) == tensor(0.0)
 
 
 def test_chrf_return_sentence_level_score_functional():
-    hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
-    _, chrf_sentence_score = chrf_score(hyp, ref, return_sentence_level_score=True)
+    preds = _inputs_single_sentence_multiple_references.preds
+    targets = _inputs_single_sentence_multiple_references.targets
+    _, chrf_sentence_score = chrf_score(preds, targets, return_sentence_level_score=True)
     isinstance(chrf_sentence_score, Tensor)
 
 
 def test_chrf_return_sentence_level_class():
     chrf = CHRFScore(return_sentence_level_score=True)
-    hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
-    _, chrf_sentence_score = chrf(hyp, ref)
+    preds = _inputs_single_sentence_multiple_references.preds
+    targets = _inputs_single_sentence_multiple_references.targets
+    _, chrf_sentence_score = chrf(preds, targets)
     isinstance(chrf_sentence_score, Tensor)

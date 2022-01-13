@@ -16,11 +16,12 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-import warnings
 from collections import Counter
 from typing import Callable, Sequence, Tuple, Union
+from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 
@@ -58,57 +59,55 @@ def _tokenize_fn(sentence: str) -> Sequence[str]:
 
 
 def _bleu_score_update(
-    translate_corpus: Sequence[str],
-    reference_corpus: Sequence[Sequence[str]],
+    preds: Sequence[str],
+    target: Sequence[Sequence[str]],
     numerator: Tensor,
     denominator: Tensor,
-    trans_len: Tensor,
-    ref_len: Tensor,
+    preds_len: Tensor,
+    target_len: Tensor,
     n_gram: int = 4,
     tokenizer: Callable[[str], Sequence[str]] = _tokenize_fn,
 ) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute the BLEU score.
 
     Args:
-        translate_corpus: An iterable of machine translated corpus
-        reference_corpus: An iterable of iterables of reference corpus
+        preds: An iterable of machine translated corpus
+        target: An iterable of iterables of reference corpus
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
-        trans_len: count of words in a candidate prediction
-        ref_len: count of words in a reference translation
+        preds_len: count of words in a candidate prediction
+        target: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
         tokenizer: A function that turns sentence into list of words
     """
-    reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
-        [tokenizer(line) if line else [] for line in reference] for reference in reference_corpus
-    ]
-    translate_corpus_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in translate_corpus]
+    target_: Sequence[Sequence[Sequence[str]]] = [[tokenizer(line) if line else [] for line in t] for t in target]
+    preds_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in preds]
 
-    for (translation, references) in zip(translate_corpus_, reference_corpus_):
-        trans_len += len(translation)
-        ref_len_list = [len(ref) for ref in references]
-        ref_len_diff = [abs(len(translation) - x) for x in ref_len_list]
-        ref_len += ref_len_list[ref_len_diff.index(min(ref_len_diff))]
-        translation_counter: Counter = _count_ngram(translation, n_gram)
-        reference_counter: Counter = Counter()
+    for (pred, targets) in zip(preds_, target_):
+        preds_len += len(pred)
+        target_len_list = [len(tgt) for tgt in targets]
+        target_len_diff = [abs(len(pred) - x) for x in target_len_list]
+        target_len += target_len_list[target_len_diff.index(min(target_len_diff))]
+        preds_counter: Counter = _count_ngram(pred, n_gram)
+        target_counter: Counter = Counter()
 
-        for ref in references:
-            reference_counter |= _count_ngram(ref, n_gram)
+        for tgt in targets:
+            target_counter |= _count_ngram(tgt, n_gram)
 
-        ngram_counter_clip = translation_counter & reference_counter
+        ngram_counter_clip = preds_counter & target_counter
 
         for counter_clip in ngram_counter_clip:
             numerator[len(counter_clip) - 1] += ngram_counter_clip[counter_clip]
 
-        for counter in translation_counter:
-            denominator[len(counter) - 1] += translation_counter[counter]
+        for counter in preds_counter:
+            denominator[len(counter) - 1] += preds_counter[counter]
 
-    return trans_len, ref_len
+    return preds_len, target_len
 
 
 def _bleu_score_compute(
-    trans_len: Tensor,
-    ref_len: Tensor,
+    preds_len: Tensor,
+    target_len: Tensor,
     numerator: Tensor,
     denominator: Tensor,
     n_gram: int = 4,
@@ -117,8 +116,8 @@ def _bleu_score_compute(
     """Computes the BLEU score.
 
     Args:
-        trans_len: count of words in a candidate translation
-        ref_len: count of words in a reference translation
+        preds_len: count of words in a candidate translation
+        target_len: count of words in a reference translation
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
         n_gram: gram value ranged 1 to 4
@@ -139,24 +138,30 @@ def _bleu_score_compute(
 
     log_precision_scores = tensor([1.0 / n_gram] * n_gram, device=device) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = tensor(1.0, device=device) if trans_len > ref_len else torch.exp(1 - (ref_len / trans_len))
+    brevity_penalty = tensor(1.0, device=device) if preds_len > target_len else torch.exp(1 - (target_len / preds_len))
     bleu = brevity_penalty * geometric_mean
 
     return bleu
 
 
+@deprecated(
+    args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
+    target=True,
+    deprecated_in="0.7",
+    remove_in="0.8",
+)
 def bleu_score(
-    translate_corpus: Union[str, Sequence[str]],
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     n_gram: int = 4,
     smooth: bool = False,
 ) -> Tensor:
     """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     Args:
-        translate_corpus:
+        preds:
             An iterable of machine translated corpus
-        reference_corpus:
+        target:
             An iterable of iterables of reference corpus
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
@@ -166,11 +171,18 @@ def bleu_score(
     Return:
         Tensor with BLEU Score
 
+    .. deprecated:: v0.7
+        Args:
+            translate_corpus:
+                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+            reference_corpus:
+                This argument is deprecated in favor of  `target` and will be removed in v0.8.
+
     Example:
         >>> from torchmetrics.functional import bleu_score
-        >>> translate_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> bleu_score(translate_corpus, reference_corpus)
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> bleu_score(preds, target)
         tensor(0.7598)
 
     References:
@@ -180,25 +192,24 @@ def bleu_score(
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
-    warnings.warn(
+    warn(
         "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
         " Warning will be removed in v0.8."
     )
-    translate_corpus_ = [translate_corpus] if isinstance(translate_corpus, str) else translate_corpus
-    reference_corpus_ = [
-        [reference_text] if isinstance(reference_text, str) else reference_text for reference_text in reference_corpus
-    ]
 
-    if len(translate_corpus_) != len(reference_corpus_):
-        raise ValueError(f"Corpus has different size {len(translate_corpus_)} != {len(reference_corpus_)}")
+    preds_ = [preds] if isinstance(preds, str) else preds
+    target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]
+
+    if len(preds_) != len(target_):
+        raise ValueError(f"Corpus has different size {len(preds_)} != {len(target_)}")
 
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
-    trans_len = tensor(0, dtype=torch.float)
-    ref_len = tensor(0, dtype=torch.float)
+    preds_len = tensor(0.0)
+    target_len = tensor(0.0)
 
-    trans_len, ref_len = _bleu_score_update(
-        translate_corpus_, reference_corpus_, numerator, denominator, trans_len, ref_len, n_gram, _tokenize_fn
+    preds_len, target_len = _bleu_score_update(
+        preds_, target_, numerator, denominator, preds_len, target_len, n_gram, _tokenize_fn
     )
 
-    return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)
+    return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, smooth)
