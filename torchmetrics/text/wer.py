@@ -56,10 +56,10 @@ class WordErrorRate(Metric):
         Word error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
         >>> metric = WordErrorRate()
-        >>> metric(predictions, references)
+        >>> metric(preds, target)
         tensor(0.5000)
     """
     is_differentiable = False
@@ -83,14 +83,27 @@ class WordErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
+    @deprecated(
+        args_mapping={"predictions": "preds", "references": "target"},
+        target=True,
+        deprecated_in="0.7",
+        remove_in="0.8",
+    )
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Word Error Rate scores.
 
         Args:
-            predictions: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
+
+        .. deprecated:: v0.7
+            Args:
+                predictions:
+                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
+                references:
+                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
-        errors, total = _wer_update(predictions, references)
+        errors, total = _wer_update(preds, target)
         self.errors += errors
         self.total += total
 
@@ -111,10 +124,10 @@ class WER(WordErrorRate):
         Use :class:`torchmetrics.WordErrorRate`. Will be removed in v0.8.
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
         >>> metric = WER()
-        >>> metric(predictions, references)
+        >>> metric(preds, target)
         tensor(0.5000)
     """
 

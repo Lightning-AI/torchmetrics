@@ -53,11 +53,11 @@ class ROUGEScore(Metric):
 
     Example:
         >>> from torchmetrics.text.rouge import ROUGEScore
-        >>> targets = "Is your name John"
         >>> preds = "My name is John"
+        >>> target = "Is your name John"
         >>> rouge = ROUGEScore()   # doctest: +SKIP
         >>> from pprint import pprint
-        >>> pprint(rouge(preds, targets))  # doctest: +SKIP
+        >>> pprint(rouge(preds, target))  # doctest: +SKIP
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,
@@ -128,28 +128,28 @@ class ROUGEScore(Metric):
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
     def update(  # type: ignore
-        self, preds: Union[str, Sequence[str]], targets: Union[str, Sequence[str], Sequence[Sequence[str]]]
+        self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
     ) -> None:
         """Compute rouge scores.
 
         Args:
             preds:
                 An iterable of predicted sentences or a single predicted sentence.
-            targets:
+            target:
                 An iterable of iterable of target sentences or an iterable
                 of target sentences or a single target sentence.
         """
-        if isinstance(targets, list) and all(isinstance(target, str) for target in targets):
-            targets = [targets] if isinstance(preds, str) else [[target] for target in targets]
+        if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
+            target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 
         if isinstance(preds, str):
             preds = [preds]
 
-        if isinstance(targets, str):
-            targets = [[targets]]
+        if isinstance(target, str):
+            target = [[target]]
 
         output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-            preds, targets, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
+            preds, target, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
         )
         for rouge_key, metrics in output.items():
             for metric in metrics:
