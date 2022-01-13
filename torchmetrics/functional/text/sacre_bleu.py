@@ -48,8 +48,8 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
-from torchmetrics.utilities.warn import _future_warning
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 

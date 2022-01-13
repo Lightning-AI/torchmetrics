@@ -17,7 +17,7 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
-from torchmetrics.utilities.warn import _future_warning
+from torchmetrics.utilities import _future_warning
 
 
 class SI_SNR(ScaleInvariantSignalNoiseRatio):

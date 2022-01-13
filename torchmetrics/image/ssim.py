@@ -20,9 +20,8 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.warn import _future_warning
 
 
 class StructuralSimilarityIndexMeasure(Metric):

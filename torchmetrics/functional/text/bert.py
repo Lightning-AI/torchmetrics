@@ -23,8 +23,8 @@ from deprecate import deprecated
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
-from torchmetrics.utilities.warn import _future_warning
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer

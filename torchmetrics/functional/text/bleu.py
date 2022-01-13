@@ -24,7 +24,7 @@ import torch
 from deprecate import deprecated
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.warn import _future_warning
+from torchmetrics.utilities import _future_warning
 
 
 def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:

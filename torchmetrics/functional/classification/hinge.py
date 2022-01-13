@@ -17,10 +17,10 @@ import torch
 from deprecate import deprecated, void
 from torch import Tensor, tensor
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
-from torchmetrics.utilities.warn import _future_warning
 
 
 class MulticlassMode(EnumStr):

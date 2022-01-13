@@ -17,7 +17,7 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
-from torchmetrics.utilities.warn import _future_warning
+from torchmetrics.utilities import _future_warning
 
 
 @deprecated(

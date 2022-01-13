@@ -16,7 +16,7 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio
-from torchmetrics.utilities.warn import _future_warning
+from torchmetrics.utilities import _future_warning
 
 
 @deprecated(target=scale_invariant_signal_noise_ratio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)

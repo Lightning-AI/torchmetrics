@@ -18,7 +18,6 @@ import torch
 from deprecate import deprecated, void
 
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
-from torchmetrics.utilities.warn import _future_warning
 
 if _FAST_BSS_EVAL_AVAILABLE:
     if _TORCH_GREATER_EQUAL_1_8:
@@ -44,7 +43,7 @@ else:
 
 from torch import Tensor
 
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 

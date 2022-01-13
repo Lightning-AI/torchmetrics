@@ -18,7 +18,7 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.classification.jaccard import jaccard_index
-from torchmetrics.utilities.warn import _future_warning
+from torchmetrics.utilities import _future_warning
 
 
 @deprecated(target=jaccard_index, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)

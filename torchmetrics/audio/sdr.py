@@ -18,8 +18,8 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
-from torchmetrics.utilities.warn import _future_warning
 
 
 class SignalDistortionRatio(Metric):

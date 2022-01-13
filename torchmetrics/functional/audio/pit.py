@@ -19,9 +19,9 @@ import torch
 from deprecate import deprecated, void
 from torch import Tensor
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
-from torchmetrics.utilities.warn import _future_warning
 
 # _ps_dict: cache of permutations
 # it's necessary to cache it, otherwise it will consume a large amount of time

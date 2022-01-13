@@ -25,7 +25,7 @@ from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update, _tokenize_fn
-from torchmetrics.utilities.warn import _future_warning
+from torchmetrics.utilities import _future_warning
 
 
 class BLEUScore(Metric):

@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, snr
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.warn import _future_warning
+from torchmetrics.utilities import _future_warning
 
 
 class SignalNoiseRatio(Metric):

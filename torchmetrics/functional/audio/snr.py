@@ -17,8 +17,8 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.warn import _future_warning
 
 
 def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:

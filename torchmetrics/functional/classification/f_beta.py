@@ -18,9 +18,9 @@ from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
-from torchmetrics.utilities.warn import _future_warning
 
 
 def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
