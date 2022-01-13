@@ -16,6 +16,7 @@ from typing import List, Tuple, Union
 from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
@@ -62,12 +63,13 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-def word_error_rate(
-    preds: Union[None, str, List[str]] = None,
-    target: Union[None, str, List[str]] = None,
-    predictions: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
-    references: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
-) -> Tensor:
+@deprecated(
+    args_mapping={"predictions": "preds", "references": "target"},
+    target=True,
+    deprecated_in="0.7",
+    remove_in="0.8",
+)
+def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
     """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
     performance of the ASR system with a WER of 0 being a perfect score.
@@ -92,31 +94,7 @@ def word_error_rate(
         >>> word_error_rate(preds=preds, target=target)
         tensor(0.5000)
     """
-    if preds is None and predictions is None:
-        raise ValueError("Either `preds` or `predictions` must be provided.")
-    if target is None and references is None:
-        raise ValueError("Either `target` or `references` must be provided.")
-
-    if predictions is not None:
-        warn(
-            "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        preds = predictions
-
-    if references is not None:
-        warn(
-            "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
-            " The past argument will be removed in v0.8.",
-            DeprecationWarning,
-        )
-        target = references
-
-    errors, total = _wer_update(
-        preds,  # type: ignore
-        target,  # type: ignore
-    )
+    errors, total = _wer_update(preds, target)
     return _wer_compute(errors, total)
 
 

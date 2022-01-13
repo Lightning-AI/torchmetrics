@@ -15,6 +15,7 @@ from typing import Any, Callable, List, Optional, Union
 from warnings import warn
 
 import torch
+from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wer import _wer_compute, _wer_update
@@ -83,13 +84,13 @@ class WordErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(  # type: ignore
-        self,
-        preds: Union[None, str, List[str]] = None,
-        target: Union[None, str, List[str]] = None,
-        predictions: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
-        references: Union[None, str, List[str]] = None,  # ToDo: remove in v0.8
-    ) -> None:
+    @deprecated(
+        args_mapping={"predictions": "preds", "references": "target"},
+        target=True,
+        deprecated_in="0.7",
+        remove_in="0.8",
+    )
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Word Error Rate scores.
 
         Args:
@@ -103,31 +104,7 @@ class WordErrorRate(Metric):
                 references:
                     This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
-        if preds is None and predictions is None:
-            raise ValueError("Either `preds` or `predictions` must be provided.")
-        if target is None and references is None:
-            raise ValueError("Either `target` or `references` must be provided.")
-
-        if predictions is not None:
-            warn(
-                "You are using deprecated argument `predictions` in v0.7 which was renamed to `preds`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            preds = predictions
-
-        if references is not None:
-            warn(
-                "You are using deprecated argument `references` in v0.7 which was renamed to `target`. "
-                " The past argument will be removed in v0.8.",
-                DeprecationWarning,
-            )
-            target = references
-
-        errors, total = _wer_update(
-            preds,  # type: ignore
-            target,  # type: ignore
-        )
+        errors, total = _wer_update(preds, target)
         self.errors += errors
         self.total += total
 
