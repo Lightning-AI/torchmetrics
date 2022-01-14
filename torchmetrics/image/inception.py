@@ -209,9 +209,4 @@ class IS(InceptionScore):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
     ) -> None:
-        void(feature,
-        splits,
-        compute_on_step,
-        dist_sync_on_step,
-        process_group,
-        dist_sync_fn)
+        void(feature, splits, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

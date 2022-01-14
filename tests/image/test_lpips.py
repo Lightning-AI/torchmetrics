@@ -62,7 +62,9 @@ class TestLPIPS(MetricTester):
 
     def test_lpips_differentiability(self, net_type):
         """test for differentiability of LPIPS metric."""
-        self.run_differentiability_test(preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity)
+        self.run_differentiability_test(
+            preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity
+        )
 
     # LPIPS half + cpu does not work due to missing support in torch.min
     @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")

@@ -314,14 +314,15 @@ class KID(KernelInceptionDistance):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ) -> None:
-        void(feature,
-        subsets,
-        subset_size,
-        degree,
-        gamma,
-        coef,
-        compute_on_step,
-        dist_sync_on_step,
-        process_group,
-        dist_sync_fn
+        void(
+            feature,
+            subsets,
+            subset_size,
+            degree,
+            gamma,
+            coef,
+            compute_on_step,
+            dist_sync_on_step,
+            process_group,
+            dist_sync_fn,
         )

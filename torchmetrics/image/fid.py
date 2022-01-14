@@ -20,7 +20,7 @@ from torch import Tensor
 from torch.autograd import Function
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn, rank_zero_info
+from torchmetrics.utilities import _future_warning, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
@@ -295,7 +295,6 @@ class FID(FrechetInceptionDistance):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics.image.fid import FrechetInceptionDistance
         >>> fid = FID(feature=64)  # doctest: +SKIP
         >>> # generate two slightly overlapping image intensity distributions
         >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
@@ -316,10 +315,4 @@ class FID(FrechetInceptionDistance):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
     ) -> None:
-        void(
-            feature,
-                                                   compute_on_step,
-                                                                           dist_sync_on_step,
-                                                                                                     process_group,
-                        dist_sync_fn
-        )
+        void(feature, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

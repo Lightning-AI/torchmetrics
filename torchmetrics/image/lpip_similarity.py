@@ -177,7 +177,9 @@ class LPIPS(LearnedPerceptualImagePatchSimilarity):
         tensor(0.3566, grad_fn=<SqueezeBackward0>)
     """
 
-    @deprecated(target=LearnedPerceptualImagePatchSimilarity, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+    @deprecated(
+        target=LearnedPerceptualImagePatchSimilarity, deprecated_in="0.7", remove_in="0.8", stream=_future_warning
+    )
     def __init__(
         self,
         net_type: str = "alex",
@@ -187,11 +189,4 @@ class LPIPS(LearnedPerceptualImagePatchSimilarity):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
     ) -> None:
-        void(
-            net_type,
-                            reduction,
-                                             compute_on_step,
-                                                                     dist_sync_on_step,
-                                                                                               process_group,
-                   dist_sync_fn
-        )
+        void(net_type, reduction, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
