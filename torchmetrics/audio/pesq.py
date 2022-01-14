@@ -102,7 +102,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         )
         if not _PESQ_AVAILABLE:
             raise ModuleNotFoundError(
-                "PerceptualEvaluationSpeechQuality metric requires that pesq is installed."
+                "PerceptualEvaluationSpeechQuality metric requires that `pesq` is installed."
                 " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
             )
         if fs not in (8000, 16000):
@@ -138,7 +138,7 @@ class PESQ(PerceptualEvaluationSpeechQuality):
     """Perceptual Evaluation of Speech Quality (PESQ).
 
     .. deprecated:: v0.7
-        Use :class:`torchmetrics.audio.PermutationInvariantTraining`. Will be removed in v0.8.
+        Use :class:`torchmetrics.audio.PerceptualEvaluationSpeechQuality`. Will be removed in v0.8.
 
     Example:
         >>> import torch
