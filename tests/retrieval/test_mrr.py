@@ -28,7 +28,7 @@ from tests.retrieval.helpers import (
     _errors_test_functional_metric_parameters_default,
 )
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
-from torchmetrics.retrieval.rreciprocal_rank import RetrievalMRR
+from torchmetrics.retrieval.reciprocal_rank import RetrievalMRR
 
 seed_all(42)
 
