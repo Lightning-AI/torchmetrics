@@ -24,4 +24,4 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torchmetrics.image.fid import FrechetInceptionDistance  # noqa: F401
 
 if _LPIPS_AVAILABLE:
-    from torchmetrics.image.lpip_similarity import LearnedPerceptualImagePatchSimilarity  # noqa: F401
+    from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity  # noqa: F401

@@ -389,7 +389,7 @@ KernelInceptionDistance
 LearnedPerceptualImagePatchSimilarity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.lpip_similarity.LearnedPerceptualImagePatchSimilarity
+.. autoclass:: torchmetrics.image.lpip.LearnedPerceptualImagePatchSimilarity
     :noindex:
 
 MultiScaleStructuralSimilarityIndexMeasure
