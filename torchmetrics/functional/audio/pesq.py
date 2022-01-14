@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import numpy as np
+from deprecate import deprecated, void
 
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
@@ -22,10 +23,13 @@ else:
 import torch
 from torch import Tensor
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
+def perceptual_evaluation_speech_quality(
+    preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False
+) -> Tensor:
     r"""PESQ (Perceptual Evaluation of Speech Quality)
 
     This is a wrapper for the ``pesq`` package [1]. Note that input will be moved to `cpu`
@@ -58,14 +62,14 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.functional.audio.pesq import pesq
+        >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> pesq(preds, target, 8000, 'nb')
+        >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')
         tensor(2.2076)
-        >>> pesq(preds, target, 16000, 'wb')
+        >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')
         tensor(1.7359)
 
     References:
@@ -98,3 +102,23 @@ def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
         pesq_val = pesq_val.to(preds.device)
 
     return pesq_val
+
+
+@deprecated(target=perceptual_evaluation_speech_quality, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+def pesq(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
+    r"""PESQ (Perceptual Evaluation of Speech Quality)
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.audio.perceptual_evaluation_speech_quality`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn(8000)
+        >>> target = torch.randn(8000)
+        >>> pesq(preds, target, 8000, 'nb')
+        tensor(2.2076)
+        >>> pesq(preds, target, 16000, 'wb')
+        tensor(1.7359)
+    """
+    return void(preds, target, fs, mode, keep_same_device)
