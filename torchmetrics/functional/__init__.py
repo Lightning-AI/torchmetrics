@@ -85,7 +85,6 @@ __all__ = [
     "auc",
     "auroc",
     "average_precision",
-    "bert_score",
     "bleu_score",
     "calibration_error",
     "chrf_score",

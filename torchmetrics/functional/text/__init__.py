@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 from torchmetrics.functional.text.bleu import bleu_score  # noqa: F401
 from torchmetrics.functional.text.cer import char_error_rate  # noqa: F401
 from torchmetrics.functional.text.chrf import chrf_score  # noqa: F401

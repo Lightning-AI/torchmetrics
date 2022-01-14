@@ -24,7 +24,7 @@ from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoTokenizer
+    from transformers.models.auto import AutoTokenizer
 
 
 # Default model recommended in the original implementation.

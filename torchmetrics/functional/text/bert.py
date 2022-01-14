@@ -27,7 +27,7 @@ from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoModel, AutoTokenizer
+    from transformers.models.auto import AutoModel, AutoTokenizer
 
 if _TQDM_AVAILABLE:
     import tqdm
