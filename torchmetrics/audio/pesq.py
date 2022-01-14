@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pesq import pesq
+from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
@@ -62,7 +62,7 @@ class PESQ(Metric):
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.audio.pesq import PESQ
+        >>> from torchmetrics.audio.perceptual_evaluation_speech_quality import PESQ
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
@@ -120,7 +120,7 @@ class PESQ(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        pesq_batch = pesq(preds, target, self.fs, self.mode, False).to(self.sum_pesq.device)
+        pesq_batch = perceptual_evaluation_speech_quality(preds, target, self.fs, self.mode, False).to(self.sum_pesq.device)
 
         self.sum_pesq += pesq_batch.sum()
         self.total += pesq_batch.numel()

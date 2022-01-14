@@ -22,7 +22,7 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio.pesq import PESQ
-from torchmetrics.functional.audio.pesq import pesq
+from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -92,14 +92,14 @@ class TestPESQ(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            pesq,
+            perceptual_evaluation_speech_quality,
             sk_metric,
             metric_args=dict(fs=fs, mode=mode),
         )
 
     def test_pesq_differentiability(self, preds, target, sk_metric, fs, mode):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=PESQ, metric_functional=pesq, metric_args=dict(fs=fs, mode=mode)
+            preds=preds, target=target, metric_module=PESQ, metric_functional=perceptual_evaluation_speech_quality, metric_args=dict(fs=fs, mode=mode)
         )
 
     @pytest.mark.skipif(
@@ -114,7 +114,7 @@ class TestPESQ(MetricTester):
             preds=preds,
             target=target,
             metric_module=PESQ,
-            metric_functional=partial(pesq, fs=fs, mode=mode),
+            metric_functional=partial(perceptual_evaluation_speech_quality, fs=fs, mode=mode),
             metric_args=dict(fs=fs, mode=mode),
         )
 
@@ -134,5 +134,5 @@ def test_on_real_audio():
 
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
-    assert pesq(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb") == 1.0832337141036987
-    assert pesq(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb") == 1.6072081327438354
+    assert perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb") == 1.0832337141036987
+    assert perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb") == 1.6072081327438354
