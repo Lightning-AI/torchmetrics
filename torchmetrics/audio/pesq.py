@@ -122,7 +122,9 @@ class PerceptualEvaluationSpeechQuality(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        pesq_batch = perceptual_evaluation_speech_quality(preds, target, self.fs, self.mode, False).to(self.sum_pesq.device)
+        pesq_batch = perceptual_evaluation_speech_quality(preds, target, self.fs, self.mode, False).to(
+            self.sum_pesq.device
+        )
 
         self.sum_pesq += pesq_batch.sum()
         self.total += pesq_batch.numel()
@@ -161,11 +163,4 @@ class PESQ(PerceptualEvaluationSpeechQuality):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        void(
-            fs,
-        mode,
-        compute_on_step,
-                                dist_sync_on_step,
-                                                          process_group,
-                                                                                         dist_sync_fn
-        )
+        void(fs, mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

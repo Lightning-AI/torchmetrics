@@ -23,11 +23,13 @@ else:
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities.checks import _check_same_shape
 
 
-def perceptual_evaluation_speech_quality(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
+def perceptual_evaluation_speech_quality(
+    preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False
+) -> Tensor:
     r"""PESQ (Perceptual Evaluation of Speech Quality)
 
     This is a wrapper for the ``pesq`` package [1]. Note that input will be moved to `cpu`

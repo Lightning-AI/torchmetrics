@@ -99,7 +99,11 @@ class TestPESQ(MetricTester):
 
     def test_pesq_differentiability(self, preds, target, sk_metric, fs, mode):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=PerceptualEvaluationSpeechQuality, metric_functional=perceptual_evaluation_speech_quality, metric_args=dict(fs=fs, mode=mode)
+            preds=preds,
+            target=target,
+            metric_module=PerceptualEvaluationSpeechQuality,
+            metric_functional=perceptual_evaluation_speech_quality,
+            metric_args=dict(fs=fs, mode=mode),
         )
 
     @pytest.mark.skipif(
@@ -134,5 +138,11 @@ def test_on_real_audio():
 
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
-    assert perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb") == 1.0832337141036987
-    assert perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb") == 1.6072081327438354
+    assert (
+        perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
+        == 1.0832337141036987
+    )
+    assert (
+        perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb")
+        == 1.6072081327438354
+    )
