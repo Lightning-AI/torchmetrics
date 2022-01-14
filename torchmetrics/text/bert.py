@@ -24,6 +24,7 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoTokenizer
+
     __doctest_skip__ = ["BERTScore"]
 
 
