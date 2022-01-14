@@ -22,7 +22,7 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio.stoi import ShortTermObjectiveIntelligibility
-from torchmetrics.functional.audio.stoi import stoi
+from torchmetrics.functional.audio.stoi import short_term_objective_intelligibility
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -92,7 +92,7 @@ class TestSTOI(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            stoi,
+            short_term_objective_intelligibility,
             sk_metric,
             metric_args=dict(fs=fs, extended=extended),
         )
@@ -102,7 +102,7 @@ class TestSTOI(MetricTester):
             preds=preds,
             target=target,
             metric_module=ShortTermObjectiveIntelligibility,
-            metric_functional=stoi,
+            metric_functional=short_term_objective_intelligibility,
             metric_args=dict(fs=fs, extended=extended),
         )
 
@@ -118,7 +118,7 @@ class TestSTOI(MetricTester):
             preds=preds,
             target=target,
             metric_module=ShortTermObjectiveIntelligibility,
-            metric_functional=partial(stoi, fs=fs, extended=extended),
+            metric_functional=partial(short_term_objective_intelligibility, fs=fs, extended=extended),
             metric_args=dict(fs=fs, extended=extended),
         )
 
@@ -139,7 +139,7 @@ def test_on_real_audio():
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
     assert torch.allclose(
-        stoi(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
+        short_term_objective_intelligibility(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
         torch.tensor(0.6739177),
         rtol=0.0001,
         atol=1e-4,
