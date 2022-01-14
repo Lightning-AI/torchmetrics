@@ -76,10 +76,10 @@ the metric will be computed over the ``time`` dimension.
     >>> snr(preds, target)
     tensor(16.1805)
 
-PESQ
-~~~~
+PerceptualEvaluationSpeechQuality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.audio.pesq.PESQ
+.. autoclass:: torchmetrics.audio.pesq.PerceptualEvaluationSpeechQuality
 
 PermutationInvariantTraining
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
