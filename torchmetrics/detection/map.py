@@ -201,22 +201,21 @@ class MeanAveragePrecision(Metric):
         >>> metric = MeanAveragePrecision()
         >>> metric.update(preds, target)
         >>> from pprint import pprint
-        >>> pprint(metric.compute())
+        >>> pprint(metric.compute())  # doctest: +NORMALIZE_WHITESPACE
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
-         'map_small': tensor(-1.),
-         'map_medium': tensor(-1.),
          'map_large': tensor(0.6000),
+         'map_medium': tensor(-1.),
+         'map_per_class': tensor(-1.),
+         'map_small': tensor(-1.),
          'mar_1': tensor(0.6000),
          'mar_10': tensor(0.6000),
          'mar_100': tensor(0.6000),
-         'mar_small': tensor(-1.),
-         'mar_medium': tensor(-1.),
+         'mar_100_per_class': tensor(-1.),
          'mar_large': tensor(0.6000),
-         'map_per_class': tensor(-1.),
-         'mar_100_per_class': tensor(-1.)
-        }
+         'mar_medium': tensor(-1.),
+         'mar_small': tensor(-1.)}
 
     Raises:
         ModuleNotFoundError:
@@ -765,22 +764,21 @@ class MAP(MeanAveragePrecision):
         >>> metric = MAP()
         >>> metric.update(preds, target)
         >>> from pprint import pprint
-        >>> pprint(metric.compute())
+        >>> pprint(metric.compute())  # doctest: +NORMALIZE_WHITESPACE
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
-         'map_small': tensor(-1.),
-         'map_medium': tensor(-1.),
          'map_large': tensor(0.6000),
+         'map_medium': tensor(-1.),
+         'map_per_class': tensor(-1.),
+         'map_small': tensor(-1.),
          'mar_1': tensor(0.6000),
          'mar_10': tensor(0.6000),
          'mar_100': tensor(0.6000),
-         'mar_small': tensor(-1.),
-         'mar_medium': tensor(-1.),
+         'mar_100_per_class': tensor(-1.),
          'mar_large': tensor(0.6000),
-         'map_per_class': tensor(-1.),
-         'mar_100_per_class': tensor(-1.)
-        }
+         'mar_medium': tensor(-1.),
+         'mar_small': tensor(-1.)}
     """
 
     @deprecated(target=MeanAveragePrecision, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)

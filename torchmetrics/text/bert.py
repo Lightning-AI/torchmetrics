@@ -117,8 +117,8 @@ class BERTScore(Metric):
         >>> from torchmetrics.text.bert import BERTScore
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bertscore = BERTScore()
-        >>> bertscore(preds, target)
+        >>> bert = BERTScore()
+        >>> bert(preds, target)
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}

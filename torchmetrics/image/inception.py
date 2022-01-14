@@ -101,7 +101,7 @@ class InceptionScore(Metric):
         >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> inception.update(imgs)
         >>> inception.compute()
-        (tensor(1.0569), tensor(0.0113))
+        (tensor(1.0544), tensor(0.0117))
 
     """
     features: List
@@ -198,7 +198,7 @@ class IS(InceptionScore):
         >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> inception.update(imgs)
         >>> inception.compute()
-        (tensor(1.0569), tensor(0.0113))
+        (tensor(1.0544), tensor(0.0117))
 
     """
 

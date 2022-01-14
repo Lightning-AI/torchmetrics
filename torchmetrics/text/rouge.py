@@ -61,18 +61,19 @@ class ROUGEScore(Metric):
         >>> rouge = ROUGEScore()
         >>> from pprint import pprint
         >>> pprint(rouge(preds, target))
-        {'rouge1_fmeasure': 0.25,
-         'rouge1_precision': 0.25,
-         'rouge1_recall': 0.25,
-         'rouge2_fmeasure': 0.0,
-         'rouge2_precision': 0.0,
-         'rouge2_recall': 0.0,
-         'rougeL_fmeasure': 0.25,
-         'rougeL_precision': 0.25,
-         'rougeL_recall': 0.25,
-         'rougeLsum_fmeasure': 0.25,
-         'rougeLsum_precision': 0.25,
-         'rougeLsum_recall': 0.25}
+        {'rouge1_fmeasure': tensor(0.7500),
+         'rouge1_precision': tensor(0.7500),
+         'rouge1_recall': tensor(0.7500),
+         'rouge2_fmeasure': tensor(0.),
+         'rouge2_precision': tensor(0.),
+         'rouge2_recall': tensor(0.),
+         'rougeL_fmeasure': tensor(0.5000),
+         'rougeL_precision': tensor(0.5000),
+         'rougeL_recall': tensor(0.5000),
+         'rougeLsum_fmeasure': tensor(0.5000),
+         'rougeLsum_precision': tensor(0.5000),
+         'rougeLsum_recall': tensor(0.5000)}
+
 
     Raises:
         ValueError:

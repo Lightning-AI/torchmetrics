@@ -163,7 +163,7 @@ class KernelInceptionDistance(Metric):
         >>> kid.update(imgs_dist2, real=False)
         >>> kid_mean, kid_std = kid.compute()
         >>> print((kid_mean, kid_std))
-        (tensor(0.0338), tensor(0.0025))
+        (tensor(0.0337), tensor(0.0023))
 
     """
     real_features: List[Tensor]
@@ -299,7 +299,7 @@ class KID(KernelInceptionDistance):
         >>> kid.update(imgs_dist2, real=False)
         >>> kid_mean, kid_std = kid.compute()
         >>> print((kid_mean, kid_std))
-        (tensor(0.0338), tensor(0.0025))
+        (tensor(0.0337), tensor(0.0023))
 
     """
 

@@ -191,23 +191,24 @@ def _rouge_score_update(
         >>> target = "Is your name John".split()
         >>> from pprint import pprint
         >>> score = _rouge_score_update(preds, target, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
-        >>> pprint(score)
+        >>> pprint(score)  # doctest: +NORMALIZE_WHITESPACE
         {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}],
-        2: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-        3: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-        'L': [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-            {'fmeasure': tensor(1.), 'precision': tensor(1.), 'recall': tensor(1.)}]}
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
+         2: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
+         3: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
+         'L': [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
+               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}]}
+
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
 
@@ -320,18 +321,19 @@ def rouge_score(
         >>> target = "Is your name John"
         >>> from pprint import pprint
         >>> pprint(rouge_score(preds, target))
-        {'rouge1_fmeasure': 0.25,
-         'rouge1_precision': 0.25,
-         'rouge1_recall': 0.25,
-         'rouge2_fmeasure': 0.0,
-         'rouge2_precision': 0.0,
-         'rouge2_recall': 0.0,
-         'rougeL_fmeasure': 0.25,
-         'rougeL_precision': 0.25,
-         'rougeL_recall': 0.25,
-         'rougeLsum_fmeasure': 0.25,
-         'rougeLsum_precision': 0.25,
-         'rougeLsum_recall': 0.25}
+        {'rouge1_fmeasure': tensor(0.7500),
+         'rouge1_precision': tensor(0.7500),
+         'rouge1_recall': tensor(0.7500),
+         'rouge2_fmeasure': tensor(0.),
+         'rouge2_precision': tensor(0.),
+         'rouge2_recall': tensor(0.),
+         'rougeL_fmeasure': tensor(0.5000),
+         'rougeL_precision': tensor(0.5000),
+         'rougeL_recall': tensor(0.5000),
+         'rougeLsum_fmeasure': tensor(0.5000),
+         'rougeLsum_precision': tensor(0.5000),
+         'rougeLsum_recall': tensor(0.5000)}
+
 
     Raises:
         ModuleNotFoundError:
