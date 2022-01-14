@@ -26,4 +26,4 @@ if _PESQ_AVAILABLE:
     from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality  # noqa: F401
 
 if _PYSTOI_AVAILABLE:
-    from torchmetrics.functional.audio.stoi import stoi  # noqa: F401
+    from torchmetrics.functional.audio.stoi import short_term_objective_intelligibility  # noqa: F401
