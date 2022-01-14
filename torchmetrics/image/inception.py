@@ -23,6 +23,9 @@ from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+if not _TORCH_FIDELITY_AVAILABLE:
+    __doctest_skip__ = ["InceptionScore", "IS"]
+
 
 class InceptionScore(Metric):
     r"""
@@ -93,11 +96,11 @@ class InceptionScore(Metric):
         >>> import torch
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics.image.inception import InceptionScore
-        >>> inception = InceptionScore()  # doctest: +SKIP
+        >>> inception = InceptionScore()
         >>> # generate some images
-        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> inception.update(imgs)  # doctest: +SKIP
-        >>> inception.compute()  # doctest: +SKIP
+        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> inception.update(imgs)
+        >>> inception.compute()
         (tensor(1.0569), tensor(0.0113))
 
     """
@@ -190,11 +193,11 @@ class IS(InceptionScore):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> inception = IS()  # doctest: +SKIP
+        >>> inception = IS()
         >>> # generate some images
-        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> inception.update(imgs)  # doctest: +SKIP
-        >>> inception.compute()  # doctest: +SKIP
+        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> inception.update(imgs)
+        >>> inception.compute()
         (tensor(1.0569), tensor(0.0113))
 
     """
