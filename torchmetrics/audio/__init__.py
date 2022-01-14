@@ -19,4 +19,4 @@ from torchmetrics.audio.snr import SNR, ScaleInvariantSignalNoiseRatio, SignalNo
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
 if _PESQ_AVAILABLE:
-    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality  # noqa: F401

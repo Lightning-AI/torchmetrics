@@ -23,4 +23,4 @@ from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
 if _PESQ_AVAILABLE:
-    from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
+    from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality  # noqa: F401

@@ -23,7 +23,7 @@ else:
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 
 
