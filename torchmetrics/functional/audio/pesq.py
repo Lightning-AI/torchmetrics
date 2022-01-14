@@ -60,7 +60,7 @@ def perceptual_evaluation_speech_quality(preds: Tensor, target: Tensor, fs: int,
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.functional.audio.perceptual_evaluation_speech_quality import perceptual_evaluation_speech_quality
+        >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)

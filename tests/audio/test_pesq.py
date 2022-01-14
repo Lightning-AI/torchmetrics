@@ -21,7 +21,7 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from torchmetrics.audio.pesq import PESQ
+from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
@@ -82,7 +82,7 @@ class TestPESQ(MetricTester):
             ddp,
             preds,
             target,
-            PESQ,
+            PerceptualEvaluationSpeechQuality,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(fs=fs, mode=mode),
@@ -99,7 +99,7 @@ class TestPESQ(MetricTester):
 
     def test_pesq_differentiability(self, preds, target, sk_metric, fs, mode):
         self.run_differentiability_test(
-            preds=preds, target=target, metric_module=PESQ, metric_functional=perceptual_evaluation_speech_quality, metric_args=dict(fs=fs, mode=mode)
+            preds=preds, target=target, metric_module=PerceptualEvaluationSpeechQuality, metric_functional=perceptual_evaluation_speech_quality, metric_args=dict(fs=fs, mode=mode)
         )
 
     @pytest.mark.skipif(
@@ -113,13 +113,13 @@ class TestPESQ(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=PESQ,
+            metric_module=PerceptualEvaluationSpeechQuality,
             metric_functional=partial(perceptual_evaluation_speech_quality, fs=fs, mode=mode),
             metric_args=dict(fs=fs, mode=mode),
         )
 
 
-def test_error_on_different_shape(metric_class=PESQ):
+def test_error_on_different_shape(metric_class=PerceptualEvaluationSpeechQuality):
     metric = metric_class(16000, "nb")
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
