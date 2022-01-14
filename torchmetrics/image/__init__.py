@@ -19,7 +19,10 @@ from torchmetrics.image.ssim import (  # noqa: F401
     StructuralSimilarityIndexMeasure,
 )
 
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _LPIPS_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torchmetrics.image.fid import FrechetInceptionDistance
+
+if _LPIPS_AVAILABLE:
+    from torchmetrics.image.lpip_similarity import LearnedPerceptualImagePatchSimilarity

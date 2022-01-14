@@ -386,10 +386,10 @@ Kernel Inception Distance
 .. autoclass:: torchmetrics.image.kid.Kernel Inception Distance
     :noindex:
 
-LPIPS
-~~~~~
+LearnedPerceptualImagePatchSimilarity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
+.. autoclass:: torchmetrics.image.lpip_similarity.LearnedPerceptualImagePatchSimilarity
     :noindex:
 
 MultiScaleStructuralSimilarityIndexMeasure
