@@ -21,7 +21,7 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from torchmetrics.audio.stoi import STOI
+from torchmetrics.audio.stoi import ShortTermObjectiveIntelligibility
 from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
@@ -82,7 +82,7 @@ class TestSTOI(MetricTester):
             ddp,
             preds,
             target,
-            STOI,
+            ShortTermObjectiveIntelligibility,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(fs=fs, extended=extended),
@@ -101,7 +101,7 @@ class TestSTOI(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=STOI,
+            metric_module=ShortTermObjectiveIntelligibility,
             metric_functional=stoi,
             metric_args=dict(fs=fs, extended=extended),
         )
@@ -117,13 +117,13 @@ class TestSTOI(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=STOI,
+            metric_module=ShortTermObjectiveIntelligibility,
             metric_functional=partial(stoi, fs=fs, extended=extended),
             metric_args=dict(fs=fs, extended=extended),
         )
 
 
-def test_error_on_different_shape(metric_class=STOI):
+def test_error_on_different_shape(metric_class=ShortTermObjectiveIntelligibility):
     metric = metric_class(16000)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
