@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
+- Renamed audio STOI metric `audio.STOI` to `audio.ShortTermObjectiveIntelligibility` ([#753](https://github.com/PyTorchLightning/metrics/pull/753))
 - Renamed audio SDR metrics: ([#711](https://github.com/PyTorchLightning/metrics/pull/711))
   * `functional.sdr` -> `functional.signal_distortion_ratio`
   * `functional.si_sdr` -> `functional.scale_invariant_signal_distortion_ratio`
