@@ -380,10 +380,10 @@ InceptionScore
 .. autoclass:: torchmetrics.image.inception.InceptionScore
     :noindex:
 
-Kernel Inception Distance
-~~~~~~~~~~~~~~~~~~~~~~~~~
+KernelInceptionDistance
+~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.kid.Kernel Inception Distance
+.. autoclass:: torchmetrics.image.kid.KernelInceptionDistance
     :noindex:
 
 LearnedPerceptualImagePatchSimilarity
