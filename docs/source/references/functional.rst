@@ -52,10 +52,10 @@ signal_noise_ratio [func]
     :noindex:
 
 
-stoi [func]
-~~~~~~~~~~~
+short_term_objective_intelligibility [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.audio.stoi.stoi
+.. autofunction:: torchmetrics.functional.audio.stoi.short_term_objective_intelligibility
     :noindex:
 
 
