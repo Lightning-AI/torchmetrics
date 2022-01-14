@@ -741,10 +741,10 @@ class MAP(MeanAveragePrecision):
     r"""
     Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
     <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_
-    for object detection predictions.
+    for object detection tasks.
 
     .. deprecated:: v0.7
-        Use :class:`torchmetrics.detect.MeanAveragePrecision`. Will be removed in v0.8.
+        Use :class:`torchmetrics.detection.MeanAveragePrecision`. Will be removed in v0.8.
 
     Example:
         >>> import torch
