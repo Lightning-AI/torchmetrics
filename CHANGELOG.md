@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed image SSIM metric: ([#747](https://github.com/PyTorchLightning/metrics/pull/747))
   * `torchmetrics.functional.ssim` -> `torchmetrics.functional.scale_invariant_signal_noise_ratio`
   * `torchmetrics.SSIM` -> `torchmetrics.StructuralSimilarityIndexMeasure`
+- Renamed detection `MAP` to `MeanAveragePrecision` metric ([#754](https://github.com/PyTorchLightning/metrics/pull/754))
 
 ### Removed
 
