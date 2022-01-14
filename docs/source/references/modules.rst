@@ -416,10 +416,10 @@ Detection
 
 Object detection metrics can be used to evaluate the predicted detections with given groundtruth detections on images.
 
-MAP
-~~~
+MeanAveragePrecision
+~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.detection.map.MAP
+.. autoclass:: torchmetrics.detection.map.MeanAveragePrecision
     :noindex:
 
 **********
