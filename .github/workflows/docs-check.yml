@@ -37,9 +37,10 @@ jobs:
         working-directory: ./docs
         run: |
           # First run the same pipeline as Read-The-Docs
-          apt-get update && sudo apt-get install -y cmake
+          sudo apt-get update && sudo apt-get install -y cmake
           make doctest
           make coverage
+        shell: bash
 
   make-docs:
     runs-on: ubuntu-20.04

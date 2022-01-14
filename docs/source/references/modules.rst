@@ -112,7 +112,7 @@ SignalNoiseRatio
     :noindex:
 
 ShortTermObjectiveIntelligibility
-~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.audio.stoi.ShortTermObjectiveIntelligibility
     :noindex:
