@@ -232,7 +232,6 @@ def test_metric_lightning_log(tmpdir):
         limit_val_batches=0,
         max_epochs=2,
         log_every_n_steps=1,
-        weights_summary=None,
     )
     trainer.fit(model)
 
