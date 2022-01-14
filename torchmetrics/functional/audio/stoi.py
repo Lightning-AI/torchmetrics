@@ -82,7 +82,7 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
     """
     if not _PYSTOI_AVAILABLE:
         raise ModuleNotFoundError(
-            "STOI metric requires that `pystoi` is installed."
+            "ShortTermObjectiveIntelligibility metric requires that `pystoi` is installed."
             " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
         )
     _check_same_shape(preds, target)
