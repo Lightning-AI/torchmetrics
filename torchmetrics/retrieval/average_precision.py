@@ -14,7 +14,7 @@
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
-from torchmetrics.retrieval.metric_base import RetrievalMetric
+from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalMAP(RetrievalMetric):

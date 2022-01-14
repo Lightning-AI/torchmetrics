@@ -14,7 +14,7 @@
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
-from torchmetrics.retrieval.metric_base import RetrievalMetric
+from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalMRR(RetrievalMetric):

@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
-from torchmetrics.retrieval.metric_base import RetrievalMetric
+from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalHitRate(RetrievalMetric):

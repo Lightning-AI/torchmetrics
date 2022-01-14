@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.recall import retrieval_recall
-from torchmetrics.retrieval.metric_base import RetrievalMetric
+from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalRecall(RetrievalMetric):

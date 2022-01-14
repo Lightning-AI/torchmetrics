@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
-from torchmetrics.retrieval.metric_base import RetrievalMetric
+from torchmetrics.retrieval.base import RetrievalMetric
 from torchmetrics.utilities.data import get_group_indexes
 
 
