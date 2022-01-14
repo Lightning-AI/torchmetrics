@@ -17,7 +17,7 @@ import pytest
 import torch
 from torch.utils.data import Dataset
 
-from torchmetrics.image.inception import IS
+from torchmetrics.image.inception import InceptionScore
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 torch.manual_seed(42)
@@ -30,7 +30,7 @@ def test_no_train():
     class MyModel(torch.nn.Module):
         def __init__(self):
             super().__init__()
-            self.metric = IS()
+            self.metric = InceptionScore()
 
         def forward(self, x):
             return x
@@ -38,13 +38,13 @@ def test_no_train():
     model = MyModel()
     model.train()
     assert model.training
-    assert not model.metric.inception.training, "IS metric was changed to training mode which should not happen"
+    assert not model.metric.inception.training, "InceptionScore metric was changed to training mode which should not happen"
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_is_pickle():
     """Assert that we can initialize the metric and pickle it."""
-    metric = IS()
+    metric = InceptionScore()
     assert metric
 
     # verify metrics work after being loaded from pickled state
@@ -56,29 +56,29 @@ def test_is_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     with pytest.warns(
         UserWarning,
-        match="Metric `IS` will save all extracted features in buffer."
+        match="Metric `InceptionScore` will save all extracted features in buffer."
         " For large datasets this may lead to large memory footprint.",
     ):
-        IS()
+        InceptionScore()
 
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
-            _ = IS(feature=2)
+            _ = InceptionScore(feature=2)
     else:
         with pytest.raises(
             ModuleNotFoundError,
-            match="IS metric requires that `Torch-fidelity` is installed."
+            match="InceptionScore metric requires that `Torch-fidelity` is installed."
             " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
         ):
-            IS()
+            InceptionScore()
 
     with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
-        IS(feature=[1, 2])
+        InceptionScore(feature=[1, 2])
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_is_update_compute():
-    metric = IS()
+    metric = InceptionScore()
 
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
@@ -106,7 +106,7 @@ def test_compare_is(tmpdir):
     """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
-    metric = IS(splits=1).cuda()
+    metric = InceptionScore(splits=1).cuda()
 
     # Generate some synthetic data
     img1 = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)

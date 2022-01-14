@@ -20,7 +20,7 @@ from torch import Tensor
 from torch.autograd import Function
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn, rank_zero_info
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 

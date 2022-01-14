@@ -374,10 +374,10 @@ FrechetInceptionDistance
 .. autoclass:: torchmetrics.image.fid.FrechetInceptionDistance
     :noindex:
 
-IS
-~~
+InceptionScore
+~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.inception.IS
+.. autoclass:: torchmetrics.image.inception.InceptionScore
     :noindex:
 
 Kernel Inception Distance
