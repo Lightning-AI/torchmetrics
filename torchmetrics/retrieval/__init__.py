@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.retrieval.average_precision import RetrievalMAP  # noqa: F401
+from torchmetrics.retrieval.base import RetrievalMetric  # noqa: F401
 from torchmetrics.retrieval.fall_out import RetrievalFallOut  # noqa: F401
 from torchmetrics.retrieval.hit_rate import RetrievalHitRate  # noqa: F401
-from torchmetrics.retrieval.base import RetrievalMetric  # noqa: F401
 from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG  # noqa: F401
 from torchmetrics.retrieval.precision import RetrievalPrecision  # noqa: F401
 from torchmetrics.retrieval.r_precision import RetrievalRPrecision  # noqa: F401
