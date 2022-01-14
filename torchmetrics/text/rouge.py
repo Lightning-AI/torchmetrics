@@ -25,6 +25,9 @@ from torchmetrics.functional.text.rouge import (
 )
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
+if not _NLTK_AVAILABLE:
+    __doctest_skip__ = ["ROUGEScore"]
+
 
 class ROUGEScore(Metric):
     """`Calculate Rouge Score`_, used for automatic summarization. This implementation should imitate the behaviour
@@ -55,9 +58,9 @@ class ROUGEScore(Metric):
         >>> from torchmetrics.text.rouge import ROUGEScore
         >>> preds = "My name is John"
         >>> target = "Is your name John"
-        >>> rouge = ROUGEScore()   # doctest: +SKIP
+        >>> rouge = ROUGEScore()
         >>> from pprint import pprint
-        >>> pprint(rouge(preds, target))  # doctest: +SKIP
+        >>> pprint(rouge(preds, target))
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,

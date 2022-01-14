@@ -21,6 +21,9 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
+if not _NLTK_AVAILABLE:
+    __doctest_skip__ = ["rouge_score"]
+
 ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
     "rouge1": 1,
     "rouge2": 2,
@@ -188,7 +191,7 @@ def _rouge_score_update(
         >>> target = "Is your name John".split()
         >>> from pprint import pprint
         >>> score = _rouge_score_update(preds, target, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
-        >>> pprint(score)  # doctest: +SKIP
+        >>> pprint(score)
         {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
@@ -316,7 +319,7 @@ def rouge_score(
         >>> preds = "My name is John"
         >>> target = "Is your name John"
         >>> from pprint import pprint
-        >>> pprint(rouge_score(preds, target))  # doctest: +SKIP
+        >>> pprint(rouge_score(preds, target))
         {'rouge1_fmeasure': 0.25,
          'rouge1_precision': 0.25,
          'rouge1_recall': 0.25,

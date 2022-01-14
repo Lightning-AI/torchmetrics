@@ -24,9 +24,9 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
-    __doctest_skip__ = ["MeanAveragePrecision", "MAP"]
 else:
     box_convert = box_iou = box_area = None
+    __doctest_skip__ = ["MeanAveragePrecision", "MAP"]
 
 log = logging.getLogger(__name__)
 
