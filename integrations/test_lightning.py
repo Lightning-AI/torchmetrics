@@ -21,31 +21,12 @@ from torch.utils.data import DataLoader
 
 from integrations.lightning.boring_model import BoringModel, RandomDataset
 from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3
-from torchmetrics import Accuracy, AveragePrecision, Metric, MetricCollection
+from torchmetrics import Accuracy, AveragePrecision, MetricCollection, SumMetric
 
 
-class SumMetric(Metric):
-    def __init__(self):
-        super().__init__()
-        self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
-
-    def update(self, x):
-        self.x += x
-
-    def compute(self):
-        return self.x
-
-
-class DiffMetric(Metric):
-    def __init__(self):
-        super().__init__()
-        self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
-
-    def update(self, x):
-        self.x -= x
-
-    def compute(self):
-        return self.x
+class DiffMetric(SumMetric):
+    def update(self, value):
+        super().update(-value)
 
 
 def test_metric_lightning(tmpdir):
@@ -232,7 +213,6 @@ def test_metric_lightning_log(tmpdir):
         limit_val_batches=0,
         max_epochs=2,
         log_every_n_steps=1,
-        weights_summary=None,
     )
     trainer.fit(model)
 
