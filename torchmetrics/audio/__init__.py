@@ -16,3 +16,7 @@ from torchmetrics.audio.sdr import SDR, ScaleInvariantSignalDistortionRatio, Sig
 from torchmetrics.audio.si_sdr import SI_SDR  # noqa: F401
 from torchmetrics.audio.si_snr import SI_SNR  # noqa: F401
 from torchmetrics.audio.snr import SNR, ScaleInvariantSignalNoiseRatio, SignalNoiseRatio  # noqa: F401
+from torchmetrics.utilities.imports import _PESQ_AVAILABLE
+
+if _PESQ_AVAILABLE:
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality  # noqa: F401

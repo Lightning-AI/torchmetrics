@@ -11,10 +11,10 @@ Functional metrics
 Audio
 *****
 
-pesq [func]
-~~~~~~~~~~~
+perceptual_evaluation_speech_quality [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.audio.pesq.pesq
+.. autofunction:: torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality
 
 
 permutation_invariant_training [func]
