@@ -22,8 +22,6 @@ from torchmetrics.text.ter import TranslationEditRate  # noqa: F401
 from torchmetrics.text.wer import WER, WordErrorRate  # noqa: F401
 from torchmetrics.text.wil import WordInfoLost  # noqa: F401
 from torchmetrics.text.wip import WordInfoPreserved  # noqa: F401
-
-
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
