@@ -243,10 +243,10 @@ class MeanAveragePrecision(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        if not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8):
+        if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
                 "`MeanAveragePrecision` metric requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`."
+                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
