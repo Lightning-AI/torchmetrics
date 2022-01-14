@@ -7,7 +7,7 @@
 # add extra requirements
 -r image.txt
 -r text.txt
--r detection.txt
+# -r detection.txt  # version collision with min versio of PyTorch
 -r audio.txt
 
 # add extra testing

@@ -11,3 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
+
+if _TORCHVISION_GREATER_EQUAL_0_8:
+    from torchmetrics.detection.map import MeanAveragePrecision  # noqa: F401
