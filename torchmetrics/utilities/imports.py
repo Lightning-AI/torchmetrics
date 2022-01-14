@@ -27,6 +27,8 @@ def _module_available(module_path: str) -> bool:
 
     >>> _module_available('os')
     True
+    >>> _module_available('os.bla')
+    False
     >>> _module_available('bla.bla')
     False
     """
