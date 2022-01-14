@@ -24,6 +24,9 @@ from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+if not _TORCH_FIDELITY_AVAILABLE:
+    __doctest_skip__ = ["KernelInceptionDistance", "KID"]
+
 
 def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
     """Adapted from `KID Score`_"""
@@ -152,14 +155,14 @@ class KernelInceptionDistance(Metric):
         >>> import torch
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics.image.kid import KernelInceptionDistance
-        >>> kid = KernelInceptionDistance(subset_size=50)  # doctest: +SKIP
+        >>> kid = KernelInceptionDistance(subset_size=50)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> kid.update(imgs_dist1, real=True)  # doctest: +SKIP
-        >>> kid.update(imgs_dist2, real=False)  # doctest: +SKIP
-        >>> kid_mean, kid_std = kid.compute()  # doctest: +SKIP
-        >>> print((kid_mean, kid_std))  # doctest: +SKIP
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> kid.update(imgs_dist1, real=True)
+        >>> kid.update(imgs_dist2, real=False)
+        >>> kid_mean, kid_std = kid.compute()
+        >>> print((kid_mean, kid_std))
         (tensor(0.0338), tensor(0.0025))
 
     """
@@ -288,14 +291,14 @@ class KID(KernelInceptionDistance):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> kid = KID(subset_size=50)  # doctest: +SKIP
+        >>> kid = KID(subset_size=50)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> kid.update(imgs_dist1, real=True)  # doctest: +SKIP
-        >>> kid.update(imgs_dist2, real=False)  # doctest: +SKIP
-        >>> kid_mean, kid_std = kid.compute()  # doctest: +SKIP
-        >>> print((kid_mean, kid_std))  # doctest: +SKIP
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> kid.update(imgs_dist1, real=True)
+        >>> kid.update(imgs_dist2, real=False)
+        >>> kid_mean, kid_std = kid.compute()
+        >>> print((kid_mean, kid_std))
         (tensor(0.0338), tensor(0.0025))
 
     """
