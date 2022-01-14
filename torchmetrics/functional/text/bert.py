@@ -24,10 +24,10 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from torchmetrics.utilities import _future_warning
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE
 
-if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoModel, AutoTokenizer
+if _TRANSFORMERS_AUTO_AVAILABLE:
+    from transformers.models.auto import AutoModel, AutoTokenizer
 
 if _TQDM_AVAILABLE:
     import tqdm
@@ -580,7 +580,7 @@ def bert_score(
         )
 
     if model is None:
-        if not _TRANSFORMERS_AVAILABLE:
+        if not _TRANSFORMERS_AUTO_AVAILABLE:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
                 " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."

@@ -67,7 +67,6 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
-from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.chrf import chrf_score
@@ -80,13 +79,16 @@ from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.functional.text.wer import wer, word_error_rate
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
+from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
+
+if _TRANSFORMERS_AUTO_AVAILABLE:
+    from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 
 __all__ = [
     "accuracy",
     "auc",
     "auroc",
     "average_precision",
-    "bert_score",
     "bleu_score",
     "calibration_error",
     "chrf_score",
