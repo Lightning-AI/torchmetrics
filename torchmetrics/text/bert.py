@@ -17,7 +17,7 @@ from warnings import warn
 import torch
 from deprecate import deprecated
 
-from torchmetrics.functional.text import bert_score
+from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bert import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
