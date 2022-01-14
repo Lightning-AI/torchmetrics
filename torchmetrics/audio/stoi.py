@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from deprecate import deprecated, void
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.stoi import stoi
+from torchmetrics.functional.audio.stoi import short_term_objective_intelligibility
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
@@ -125,7 +125,9 @@ class ShortTermObjectiveIntelligibility(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        stoi_batch = stoi(preds, target, self.fs, self.extended, False).to(self.sum_stoi.device)
+        stoi_batch = short_term_objective_intelligibility(
+            preds, target, self.fs, self.extended, False).to(self.sum_stoi.device
+        )
 
         self.sum_stoi += stoi_batch.sum()
         self.total += stoi_batch.numel()
