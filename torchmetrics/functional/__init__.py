@@ -79,9 +79,9 @@ from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.functional.text.wer import wer, word_error_rate
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_AUTO_AVAILABLE:
     from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 
 __all__ = [

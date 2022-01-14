@@ -20,9 +20,9 @@ from deprecate import deprecated
 from torchmetrics.functional.text.bert import _preprocess_text, bert_score
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoTokenizer
 
 
@@ -177,7 +177,7 @@ class BERTScore(Metric):
             self.tokenizer = user_tokenizer
             self.user_tokenizer = True
         else:
-            if not _TRANSFORMERS_AVAILABLE:
+            if not _TRANSFORMERS_AUTO_AVAILABLE:
                 raise ModuleNotFoundError(
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
                     " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
