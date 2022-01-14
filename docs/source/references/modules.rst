@@ -380,10 +380,10 @@ IS
 .. autoclass:: torchmetrics.image.inception.IS
     :noindex:
 
-KID
-~~~
+Kernel Inception Distance
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.kid.KID
+.. autoclass:: torchmetrics.image.kid.Kernel Inception Distance
     :noindex:
 
 LPIPS
