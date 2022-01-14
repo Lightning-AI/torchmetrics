@@ -208,7 +208,6 @@ def _rouge_score_update(
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}]}
-
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
 
