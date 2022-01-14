@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.retrieval.mean_average_precision import RetrievalMAP  # noqa: F401
-from torchmetrics.retrieval.mean_reciprocal_rank import RetrievalMRR  # noqa: F401
-from torchmetrics.retrieval.retrieval_fallout import RetrievalFallOut  # noqa: F401
-from torchmetrics.retrieval.retrieval_hit_rate import RetrievalHitRate  # noqa: F401
-from torchmetrics.retrieval.retrieval_metric import RetrievalMetric  # noqa: F401
-from torchmetrics.retrieval.retrieval_ndcg import RetrievalNormalizedDCG  # noqa: F401
-from torchmetrics.retrieval.retrieval_precision import RetrievalPrecision  # noqa: F401
-from torchmetrics.retrieval.retrieval_r_precision import RetrievalRPrecision  # noqa: F401
-from torchmetrics.retrieval.retrieval_recall import RetrievalRecall  # noqa: F401
+from torchmetrics.retrieval.average_precision import RetrievalMAP  # noqa: F401
+from torchmetrics.retrieval.base import RetrievalMetric  # noqa: F401
+from torchmetrics.retrieval.fall_out import RetrievalFallOut  # noqa: F401
+from torchmetrics.retrieval.hit_rate import RetrievalHitRate  # noqa: F401
+from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG  # noqa: F401
+from torchmetrics.retrieval.precision import RetrievalPrecision  # noqa: F401
+from torchmetrics.retrieval.r_precision import RetrievalRPrecision  # noqa: F401
+from torchmetrics.retrieval.recall import RetrievalRecall  # noqa: F401
+from torchmetrics.retrieval.reciprocal_rank import RetrievalMRR  # noqa: F401

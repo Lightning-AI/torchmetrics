@@ -29,7 +29,7 @@ from tests.retrieval.helpers import (
     _errors_test_functional_metric_parameters_k,
 )
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
-from torchmetrics.retrieval.retrieval_hit_rate import RetrievalHitRate
+from torchmetrics.retrieval.hit_rate import RetrievalHitRate
 
 seed_all(42)
 

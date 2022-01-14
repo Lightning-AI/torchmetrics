@@ -13,31 +13,33 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
+import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
-from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
+from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
+from torchmetrics.retrieval.base import RetrievalMetric
+from torchmetrics.utilities.data import get_group_indexes
 
 
-class RetrievalNormalizedDCG(RetrievalMetric):
-    """Computes `Normalized Discounted Cumulative Gain`_.
+class RetrievalFallOut(RetrievalMetric):
+    """Computes `Fall-out`_.
 
-    Works with binary or positive integer target data. Accepts float predictions from a model output.
+    Works with binary target data. Accepts float predictions from a model output.
 
     Forward accepts:
 
     - ``preds`` (float tensor): ``(N, ...)``
-    - ``target`` (long, int, bool or float tensor): ``(N, ...)``
+    - ``target`` (long or bool tensor): ``(N, ...)``
     - ``indexes`` (long tensor): ``(N, ...)``
 
     ``indexes``, ``preds`` and ``target`` must have the same dimension.
     ``indexes`` indicate to which query a prediction belongs.
-    Predictions will be first grouped by ``indexes`` and then `Normalized Discounted Cumulative Gain`
-    will be computed as the mean of the `Normalized Discounted Cumulative Gain` over each query.
+    Predictions will be first grouped by ``indexes`` and then `Fall-out` will be computed as the mean
+    of the `Fall-out` over each query.
 
     Args:
         empty_target_action:
-            Specify what to do with queries that do not have at least a positive ``target``. Choose from:
+            Specify what to do with queries that do not have at least a negative ``target``. Choose from:
 
             - ``'neg'``: those queries count as ``0.0`` (default)
             - ``'pos'``: those queries count as ``1.0``
@@ -67,20 +69,20 @@ class RetrievalNormalizedDCG(RetrievalMetric):
             If ``k`` parameter is not `None` or an integer larger than 0.
 
     Example:
-        >>> from torchmetrics import RetrievalNormalizedDCG
+        >>> from torchmetrics import RetrievalFallOut
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
-        >>> ndcg = RetrievalNormalizedDCG()
-        >>> ndcg(preds, target, indexes=indexes)
-        tensor(0.8467)
+        >>> fo = RetrievalFallOut(k=2)
+        >>> fo(preds, target, indexes=indexes)
+        tensor(0.5000)
     """
 
-    higher_is_better = True
+    higher_is_better = False
 
     def __init__(
         self,
-        empty_target_action: str = "neg",
+        empty_target_action: str = "pos",
         ignore_index: Optional[int] = None,
         k: Optional[int] = None,
         compute_on_step: bool = True,
@@ -100,7 +102,37 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         if (k is not None) and not (isinstance(k, int) and k > 0):
             raise ValueError("`k` has to be a positive integer or None")
         self.k = k
-        self.allow_non_binary_target = True
+
+    def compute(self) -> Tensor:
+        """First concat state `indexes`, `preds` and `target` since they were stored as lists.
+
+        After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
+        for each group compute the `_metric` if the number of negative targets is at least 1, otherwise behave as
+        specified by `self.empty_target_action`.
+        """
+        indexes = torch.cat(self.indexes, dim=0)
+        preds = torch.cat(self.preds, dim=0)
+        target = torch.cat(self.target, dim=0)
+
+        res = []
+        groups = get_group_indexes(indexes)
+
+        for group in groups:
+            mini_preds = preds[group]
+            mini_target = target[group]
+
+            if not (1 - mini_target).sum():
+                if self.empty_target_action == "error":
+                    raise ValueError("`compute` method was provided with a query with no negative target.")
+                if self.empty_target_action == "pos":
+                    res.append(tensor(1.0))
+                elif self.empty_target_action == "neg":
+                    res.append(tensor(0.0))
+            else:
+                # ensure list containt only float tensors
+                res.append(self._metric(mini_preds, mini_target))
+
+        return torch.stack([x.to(preds) for x in res]).mean() if res else tensor(0.0).to(preds)
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_normalized_dcg(preds, target, k=self.k)
+        return retrieval_fall_out(preds, target, k=self.k)
