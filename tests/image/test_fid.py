@@ -73,7 +73,7 @@ def test_fid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     with pytest.warns(
         UserWarning,
-        match="Metric `FID` will save all extracted features in buffer."
+        match="Metric `FrechetInceptionDistance` will save all extracted features in buffer."
         " For large datasets this may lead to large memory footprint.",
     ):
         _ = FrechetInceptionDistance()
