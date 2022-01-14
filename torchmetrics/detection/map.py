@@ -432,7 +432,9 @@ class MeanAveragePrecision(Metric):
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
-                    m = MeanAveragePrecision._find_best_gt_match(t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det)
+                    m = MeanAveragePrecision._find_best_gt_match(
+                        t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det
+                    )
                     if m != -1:
                         det_ignore[idx_iou, idx_det] = gt_ignore[m]
                         det_matches[idx_iou, idx_det] = True
@@ -780,9 +782,7 @@ class MAP(MeanAveragePrecision):
         }
     """
 
-    @deprecated(
-        target=MeanAveragePrecision, deprecated_in="0.7", remove_in="0.8", stream=_future_warning
-    )
+    @deprecated(target=MeanAveragePrecision, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         box_format: str = "xyxy",
@@ -797,12 +797,12 @@ class MAP(MeanAveragePrecision):
     ) -> None:  # type: ignore
         void(
             box_format,
-                              iou_thresholds,
-                                                                      rec_thresholds,
-                                                                                                              max_detection_thresholds,
-                              class_metrics,
-                                                    compute_on_step,
-                                                                            dist_sync_on_step,
-                                                                                                      process_group,
-                        dist_sync_fn
+            iou_thresholds,
+            rec_thresholds,
+            max_detection_thresholds,
+            class_metrics,
+            compute_on_step,
+            dist_sync_on_step,
+            process_group,
+            dist_sync_fn,
         )
