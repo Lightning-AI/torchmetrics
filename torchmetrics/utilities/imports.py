@@ -37,7 +37,7 @@ def _module_available(module_path: str) -> bool:
     except AttributeError:
         # Python 3.6
         return False
-    except ModuleNotFoundError:
+    except (ImportError, ModuleNotFoundError):
         # Python 3.7+
         return False
 
