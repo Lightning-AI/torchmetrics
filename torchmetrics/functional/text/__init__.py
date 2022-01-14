@@ -29,4 +29,4 @@ if _TRANSFORMERS_AUTO_AVAILABLE:
     from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 
 if _NLTK_AVAILABLE:
-    from torchmetrics.text.rouge import ROUGEScore  # noqa: F401
+    from torchmetrics.functional.text.rouge import rouge_score  # noqa: F401
