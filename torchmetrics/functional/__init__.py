@@ -82,7 +82,7 @@ from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.text.bert import bert_score
+    from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 
 __all__ = [
     "accuracy",

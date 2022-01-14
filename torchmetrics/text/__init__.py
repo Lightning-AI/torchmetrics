@@ -25,4 +25,4 @@ from torchmetrics.text.wip import WordInfoPreserved  # noqa: F401
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.text.bert import BERTScore
+    from torchmetrics.text.bert import BERTScore  # noqa: F401
