@@ -25,7 +25,7 @@ if _LPIPS_AVAILABLE:
     from lpips import LPIPS as _LPIPS
 else:
 
-    class Lpips_backbone(torch.nn.Module):  # type: ignore
+    class _LPIPS(torch.nn.Module):  # type: ignore
         pass
 
 
