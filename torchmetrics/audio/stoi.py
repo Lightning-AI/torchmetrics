@@ -125,8 +125,8 @@ class ShortTermObjectiveIntelligibility(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        stoi_batch = short_term_objective_intelligibility(
-            preds, target, self.fs, self.extended, False).to(self.sum_stoi.device
+        stoi_batch = short_term_objective_intelligibility(preds, target, self.fs, self.extended, False).to(
+            self.sum_stoi.device
         )
 
         self.sum_stoi += stoi_batch.sum()
