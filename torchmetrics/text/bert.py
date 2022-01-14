@@ -24,6 +24,7 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoTokenizer
+    __doctest_skip__ = ["BERTScore"]
 
 
 # Default model recommended in the original implementation.
@@ -116,7 +117,7 @@ class BERTScore(Metric):
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore(preds, target)  # doctest: +SKIP
+        >>> bertscore(preds, target)
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}

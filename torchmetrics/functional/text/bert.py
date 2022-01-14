@@ -28,6 +28,7 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_A
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoModel, AutoTokenizer
+    __doctest_skip__ = ["bert_score"]
 
 if _TQDM_AVAILABLE:
     import tqdm
@@ -566,7 +567,7 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bert_score(preds, target, lang="en")  # doctest: +SKIP
+        >>> bert_score(preds, target, lang="en")
         {'precision': [0.99..., 0.99...],
          'recall': [0.99..., 0.99...],
          'f1': [0.99..., 0.99...]}
