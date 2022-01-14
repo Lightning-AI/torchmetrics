@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
-- Renamed audio STOI metric: ([#753](https://github.com/PyTorchLightning/metrics/pull/753))
+- Renamed audio STOI metric: ([#753](https://github.com/PyTorchLightning/metrics/pull/753), [#758](https://github.com/PyTorchLightning/metrics/pull/758))
   * `audio.STOI` to `audio.ShortTermObjectiveIntelligibility`
   * `functional.audio.stoi` to `functional.audio.short_term_objective_intelligibility`
 - Renamed audio PESQ metrics: ([#751](https://github.com/PyTorchLightning/metrics/pull/751))
