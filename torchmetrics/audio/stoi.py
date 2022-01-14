@@ -13,14 +13,16 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.stoi import stoi
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
 
-class STOI(Metric):
+class ShortTermObjectiveIntelligibility(Metric):
     r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
     Note that input will be moved to `cpu` to perform the metric calculation.
 
@@ -63,12 +65,12 @@ class STOI(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio.stoi import STOI
+        >>> from torchmetrics.audio.stoi import ShortTermObjectiveIntelligibility
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> stoi = STOI(8000, False)
+        >>> stoi = ShortTermObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
         tensor(-0.0100)
 
@@ -131,3 +133,32 @@ class STOI(Metric):
     def compute(self) -> Tensor:
         """Computes average STOI."""
         return self.sum_stoi / self.total
+
+
+class STOI(ShortTermObjectiveIntelligibility):
+    r"""STOI (Short Term Objective Intelligibility), a wrapper for the pystoi package.
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.audio.ShortTermObjectiveIntelligibility`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn(8000)
+        >>> target = torch.randn(8000)
+        >>> stoi = STOI(8000, False)
+        >>> stoi(preds, target)
+        tensor(-0.0100)
+    """
+
+    @deprecated(target=ShortTermObjectiveIntelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+    def __init__(
+        self,
+        fs: int,
+        extended: bool = False,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+    ) -> None:
+        void(fs, extended, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
