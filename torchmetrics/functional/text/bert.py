@@ -463,7 +463,7 @@ def _rescale_metrics_with_baseline(
 def bert_score(
     preds: Union[List[str], Dict[str, Tensor]],
     target: Union[List[str], Dict[str, Tensor]],
-    model_name_or_path: Optional[str] = None,
+    model_name_or_path: str,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     model: Optional[torch.nn.Module] = None,
@@ -568,10 +568,10 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bert_score(preds, target, model_name_or_path="roberta-base")
-        {'precision': [0.99..., 0.99...],
-         'recall': [0.99..., 0.99...],
-         'f1': [0.99..., 0.99...]}
+        >>> bert_score(preds, target, model_name_or_path="roberta-base")  # doctest: +NORMALIZE_WHITESPACE +ELLIPSES
+        {'precision': [0.999..., 0.987...],
+         'recall': [0.999..., 0.987...],
+         'f1': [0.999..., 0.987...]}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
