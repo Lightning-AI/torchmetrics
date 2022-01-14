@@ -368,10 +368,10 @@ Image
 Image quality metrics can be used to access the quality of synthetic generated images from machine
 learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
 
-FID
-~~~
+FrechetInceptionDistance
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.fid.FID
+.. autoclass:: torchmetrics.image.fid.FrechetInceptionDistance
     :noindex:
 
 IS

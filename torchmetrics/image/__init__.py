@@ -17,3 +17,8 @@ from torchmetrics.image.ssim import (  # noqa: F401
     MultiScaleStructuralSimilarityIndexMeasure,
     StructuralSimilarityIndexMeasure,
 )
+
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+
+if _TORCH_FIDELITY_AVAILABLE:
+    from torchmetrics.image.fid import FrechetInceptionDistance
