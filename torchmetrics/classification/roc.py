@@ -80,7 +80,7 @@ class ROC(Metric):
         [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]
         >>> tpr
         [tensor([0., 1., 1.]), tensor([0., 1., 1.]), tensor([0., 0., 1.]), tensor([0., 0., 1.])]
-        >>> thresholds # doctest: +NORMALIZE_WHITESPACE
+        >>> thresholds
         [tensor([1.7500, 0.7500, 0.0500]),
          tensor([1.7500, 0.7500, 0.0500]),
          tensor([1.7500, 0.7500, 0.0500]),
@@ -94,15 +94,15 @@ class ROC(Metric):
         >>> target = torch.tensor([[1, 1, 0], [0, 1, 0], [0, 0, 0], [0, 1, 1]])
         >>> roc = ROC(num_classes=3, pos_label=1)
         >>> fpr, tpr, thresholds = roc(pred, target)
-        >>> fpr # doctest: +NORMALIZE_WHITESPACE
+        >>> fpr
         [tensor([0.0000, 0.3333, 0.3333, 0.6667, 1.0000]),
          tensor([0., 0., 0., 1., 1.]),
          tensor([0.0000, 0.0000, 0.3333, 0.6667, 1.0000])]
-        >>> tpr  # doctest: +NORMALIZE_WHITESPACE
+        >>> tpr
         [tensor([0., 0., 1., 1., 1.]),
          tensor([0.0000, 0.3333, 0.6667, 0.6667, 1.0000]),
          tensor([0., 1., 1., 1., 1.])]
-        >>> thresholds # doctest: +NORMALIZE_WHITESPACE
+        >>> thresholds
         [tensor([1.8603, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.7576, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.1837, 0.1837, 0.1338, 0.1183, 0.1138])]

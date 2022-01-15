@@ -201,7 +201,7 @@ class MeanAveragePrecision(Metric):
         >>> metric = MeanAveragePrecision()
         >>> metric.update(preds, target)
         >>> from pprint import pprint
-        >>> pprint(metric.compute())  # doctest: +NORMALIZE_WHITESPACE
+        >>> pprint(metric.compute())
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
@@ -764,7 +764,7 @@ class MAP(MeanAveragePrecision):
         >>> metric = MAP()
         >>> metric.update(preds, target)
         >>> from pprint import pprint
-        >>> pprint(metric.compute())  # doctest: +NORMALIZE_WHITESPACE
+        >>> pprint(metric.compute())
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),

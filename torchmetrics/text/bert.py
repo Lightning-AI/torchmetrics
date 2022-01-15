@@ -118,7 +118,7 @@ class BERTScore(Metric):
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bert = BERTScore(model_name_or_path="roberta-base")
-        >>> bert(preds, target)  # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+        >>> bert(preds, target)
         {'precision': [0.999..., 0.999., 0.987..., 0.987...],
          'recall': [0.999..., 0.999..., 0.987..., 0.987...],
          'f1': [0.999..., 0.999..., 0.987..., 0.987...]}
