@@ -240,10 +240,6 @@ class BERTScore(Metric):
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        # self.preds["input_ids"].append(preds_dict["input_ids"])
-        # self.preds["attention_mask"].append(preds_dict["attention_mask"])
-        # self.target["input_ids"].append(target_dict["input_ids"])
-        # self.target["attention_mask"].append(target_dict["attention_mask"])
 
         self.preds_input_ids.append(preds_dict["input_ids"])
         self.preds_attention_mask.append(preds_dict["attention_mask"])
