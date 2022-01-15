@@ -568,7 +568,7 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bert_score(preds, target, model_name_or_path="roberta-base")  # doctest: +NORMALIZE_WHITESPACE +ELLIPSES
+        >>> bert_score(preds, target, model_name_or_path="roberta-base")  # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
         {'precision': [0.999..., 0.987...],
          'recall': [0.999..., 0.987...],
          'f1': [0.999..., 0.987...]}
