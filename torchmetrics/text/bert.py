@@ -16,6 +16,7 @@ from warnings import warn
 
 import torch
 from deprecate import deprecated
+from torch import Tensor
 
 from torchmetrics.functional.text.bert import _preprocess_text, bert_score
 from torchmetrics.metric import Metric
@@ -30,11 +31,9 @@ if _TRANSFORMERS_AUTO_AVAILABLE:
 _DEFAULT_MODEL = "roberta-large"
 
 
-def _concatenate(d: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
-    """Concatenate list of tensors within a given dictionary."""
-    output_dict: Dict[str, torch.Tensor] = {}
-    for k, v in d.items():
-        output_dict[k] = torch.cat(v)
+def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
+    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
+    output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
     return output_dict
 
 
@@ -117,12 +116,17 @@ class BERTScore(Metric):
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
         >>> bertscore(preds, target)  # doctest: +SKIP
-        {'precision': [0.99..., 0.99...],
-         'recall': [0.99..., 0.99...],
-         'f1': [0.99..., 0.99...]}
+        {'precision': [0.999..., 0.996...],
+         'recall': [0.999..., 0.996...],
+         'f1': [0.999..., 0.996...]}
     """
 
+    is_differentiable = False
     higher_is_better = True
+    preds_input_ids: List[Tensor]
+    preds_attention_mask: List[Tensor]
+    target_input_ids: List[Tensor]
+    target_attention_mask: List[Tensor]
 
     def __init__(
         self,
@@ -154,7 +158,7 @@ class BERTScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        self.model_name_or_path = model_name_or_path
+        self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL
         self.num_layers = num_layers
         self.all_layers = all_layers
         self.model = model
@@ -182,15 +186,19 @@ class BERTScore(Metric):
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
                     " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
                 )
-            if not model_name_or_path:
-                model_name_or_path = _DEFAULT_MODEL
+            if model_name_or_path is None:
                 warn(
-                    "The argument `model_name_or_path` was not specified while it is required when default "
+                    "The argument `model_name_or_path` was not specified while it is required when default"
                     " `transformers` model are used."
                     f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
                 )
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path)
             self.user_tokenizer = False
+
+        self.add_state("preds_input_ids", [], dist_reduce_fx="cat")
+        self.add_state("preds_attention_mask", [], dist_reduce_fx="cat")
+        self.add_state("target_input_ids", [], dist_reduce_fx="cat")
+        self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
     @deprecated(
         args_mapping={"predictions": "preds", "references": "target"},
@@ -232,10 +240,15 @@ class BERTScore(Metric):
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        self.preds["input_ids"].append(preds_dict["input_ids"])
-        self.preds["attention_mask"].append(preds_dict["attention_mask"])
-        self.target["input_ids"].append(target_dict["input_ids"])
-        self.target["attention_mask"].append(target_dict["attention_mask"])
+        # self.preds["input_ids"].append(preds_dict["input_ids"])
+        # self.preds["attention_mask"].append(preds_dict["attention_mask"])
+        # self.target["input_ids"].append(target_dict["input_ids"])
+        # self.target["attention_mask"].append(target_dict["attention_mask"])
+
+        self.preds_input_ids.append(preds_dict["input_ids"])
+        self.preds_attention_mask.append(preds_dict["attention_mask"])
+        self.target_input_ids.append(target_dict["input_ids"])
+        self.target_attention_mask.append(target_dict["attention_mask"])
 
     def compute(self) -> Dict[str, Union[List[float], str]]:
         """Calculate BERT scores.
@@ -244,8 +257,8 @@ class BERTScore(Metric):
             Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
         """
         return bert_score(
-            preds=_concatenate(self.preds),
-            target=_concatenate(self.target),
+            preds=_get_input_dict(self.preds_input_ids, self.preds_attention_mask),
+            target=_get_input_dict(self.target_input_ids, self.target_attention_mask),
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,
