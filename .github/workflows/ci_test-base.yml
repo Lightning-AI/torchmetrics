@@ -52,17 +52,16 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-pip-py${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
+        key: ${{ runner.os }}-tiny-pip-py${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
         restore-keys: |
-          ${{ runner.os }}-pip-py${{ matrix.python-version }}-
+          ${{ runner.os }}-tiny-pip-py${{ matrix.python-version }}-
 
     - name: Install dependencies
       run: |
         python --version
         pip --version
         pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
-        python ./requirements/adjust-versions.py requirements/image.txt
-        pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
+        pip install --requirement requirements/test.txt --upgrade --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         pip list
       shell: bash
