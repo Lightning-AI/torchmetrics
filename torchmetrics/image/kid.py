@@ -18,8 +18,8 @@ from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import Module
 
-from torchmetrics import Metric
 from torchmetrics.image.fid import NoTrainInceptionV3
+from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE

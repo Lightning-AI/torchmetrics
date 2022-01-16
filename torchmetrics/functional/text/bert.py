@@ -35,6 +35,10 @@ if _TQDM_AVAILABLE:
     import tqdm
 
 
+# Default model recommended in the original implementation.
+_DEFAULT_MODEL = "roberta-large"
+
+
 def _preprocess_text(
     text: List[str],
     tokenizer: Any,
@@ -568,10 +572,10 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bert_score(preds, target, model_name_or_path="roberta-base")
-        {'precision': [0.999..., 0.987...],
-         'recall': [0.999..., 0.987...],
-         'f1': [0.999..., 0.987...]}
+        >>> bert_score(preds, target)
+        {'precision': [0.999..., 0.996...],
+         'recall': [0.999..., 0.996...],
+         'f1': [0.999..., 0.996...]}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
@@ -587,8 +591,14 @@ def bert_score(
                 "`bert_score` metric with default models requires `transformers` package be installed."
                 " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
             )
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-        model = AutoModel.from_pretrained(model_name_or_path)
+        if model_name_or_path is None:
+            warn(
+                "The argument `model_name_or_path` was not specified while it is required when default"
+                " `transformers` model are used."
+                f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
+            )
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
+        model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
     else:
         tokenizer = user_tokenizer
     model.eval()
