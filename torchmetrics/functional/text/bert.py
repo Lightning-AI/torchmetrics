@@ -467,7 +467,7 @@ def _rescale_metrics_with_baseline(
 def bert_score(
     preds: Union[List[str], Dict[str, Tensor]],
     target: Union[List[str], Dict[str, Tensor]],
-    model_name_or_path: str,
+    model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     model: Optional[torch.nn.Module] = None,
