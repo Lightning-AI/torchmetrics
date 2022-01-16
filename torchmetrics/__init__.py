@@ -194,12 +194,3 @@ __all__ = [
     "WordInfoLost",
     "WordInfoPreserved",
 ]
-
-
-__doctest_requires__ = {
-    ("ROUGEScore", "rouge_score", "_rouge_score_update"): ["nltk"],
-    ("BERTScore", "bert_score"): ["transformers"],
-    ("FrechetInceptionDistance", "FID"): ["torch_fidelity"],
-    ("KernelInceptionDistance", "KID"): ["torch_fidelity"],
-    ("InceptionScore", "IS"): ["torch_fidelity"],
-}

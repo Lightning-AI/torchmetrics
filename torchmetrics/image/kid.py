@@ -24,6 +24,8 @@ from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+__doctest_requires__ = {("KernelInceptionDistance", "KID"): ["torch_fidelity"]}
+
 
 def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
     """Adapted from `KID Score`_"""

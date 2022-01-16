@@ -25,6 +25,8 @@ from torchmetrics.functional.text.rouge import (
 )
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
+__doctest_requires__ = {("ROUGEScore",): ["nltk"]}
+
 
 class ROUGEScore(Metric):
     """`Calculate Rouge Score`_, used for automatic summarization. This implementation should imitate the behaviour

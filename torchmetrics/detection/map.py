@@ -31,6 +31,15 @@ else:
 log = logging.getLogger(__name__)
 
 
+__doctest_requires__ = {
+    ("ROUGEScore", "rouge_score", "_rouge_score_update"): ["nltk"],
+    ("BERTScore", "bert_score"): ["transformers"],
+    ("FrechetInceptionDistance", "FID"): ["torch_fidelity"],
+    ("KernelInceptionDistance", "KID"): ["torch_fidelity"],
+    ("InceptionScore", "IS"): ["torch_fidelity"],
+}
+
+
 class BaseMetricResults(dict):
     """Base metric class, that allows fields for pre-defined metrics."""
 

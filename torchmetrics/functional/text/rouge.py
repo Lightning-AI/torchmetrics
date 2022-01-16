@@ -21,6 +21,8 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
+__doctest_requires__ = {("rouge_score", "_rouge_score_update"): ["nltk"]}
+
 ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
     "rouge1": 1,
     "rouge2": 2,

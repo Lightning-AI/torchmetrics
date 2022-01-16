@@ -36,6 +36,8 @@ if _TQDM_AVAILABLE:
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
+__doctest_requires__ = {("bert_score",): ["transformers"]}
+
 
 def _preprocess_text(
     text: List[str],

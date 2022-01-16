@@ -23,3 +23,10 @@ if _PESQ_AVAILABLE:
 
 if _PYSTOI_AVAILABLE:
     from torchmetrics.audio.stoi import ShortTermObjectiveIntelligibility  # noqa: F401
+
+
+__doctest_requires__ = {
+    ("sdr.SignalDistortionRatio", "sdr.SDR"): ["fast_bss_eval"],
+    ("pesq.PerceptualEvaluationSpeechQuality",): ["pesq"],
+    ("stoi.ShortTermObjectiveIntelligibility",): ["pystoi"],
+}

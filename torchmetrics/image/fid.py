@@ -32,6 +32,9 @@ else:
         pass
 
 
+__doctest_requires__ = {("FrechetInceptionDistance", "FID"): ["torch_fidelity"]}
+
+
 if _SCIPY_AVAILABLE:
     import scipy
 

@@ -31,6 +31,9 @@ if _TRANSFORMERS_AUTO_AVAILABLE:
 _DEFAULT_MODEL = "roberta-large"
 
 
+__doctest_requires__ = {("BERTScore",): ["transformers"]}
+
+
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
     """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
     output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
