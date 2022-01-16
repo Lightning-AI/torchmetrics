@@ -30,7 +30,15 @@ if _PYSTOI_AVAILABLE:
 
 
 __doctest_requires__ = {
-    ("sdr.signal_distortion_ratio", "sdr.sdr"): ["fast_bss_eval"],
-    ("pesq.perceptual_evaluation_speech_quality", "pesq.pesq"): ["pesq"],
-    ("stoi.short_term_objective_intelligibility", "stoi.stoi"): ["pystoi"],
+    ("torchmetrics.functional.audio.sdr.signal_distortion_ratio", "torchmetrics.functional.audio.sdr.sdr"): [
+        "fast_bss_eval"
+    ],
+    (
+        "torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality",
+        "torchmetrics.functional.audio.pesq.pesq",
+    ): ["pesq"],
+    (
+        "torchmetrics.functional.audio.stoi.short_term_objective_intelligibility",
+        "torchmetrics.functional.audio.stoi.stoi",
+    ): ["pystoi"],
 }

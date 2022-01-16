@@ -26,7 +26,7 @@ if _PYSTOI_AVAILABLE:
 
 
 __doctest_requires__ = {
-    ("sdr.SignalDistortionRatio", "sdr.SDR"): ["fast_bss_eval"],
-    ("pesq.PerceptualEvaluationSpeechQuality",): ["pesq"],
-    ("stoi.ShortTermObjectiveIntelligibility",): ["pystoi"],
+    ("torchmetrics.audio.sdr.SignalDistortionRatio", "torchmetrics.audio.sdr.SDR"): ["fast_bss_eval"],
+    ("torchmetrics.audio.pesq.PerceptualEvaluationSpeechQuality",): ["pesq"],
+    ("torchmetrics.audio.stoi.ShortTermObjectiveIntelligibility",): ["pystoi"],
 }
