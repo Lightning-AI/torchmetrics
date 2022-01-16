@@ -18,7 +18,6 @@ from tests.helpers.testers import MetricTester
 from torchmetrics.detection import IOU
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
-
 preds = torch.Tensor(
     [
         [296.55, 93.96, 314.97, 152.79],
@@ -48,7 +47,7 @@ giou = torch.Tensor(
         [0.0000, 0.0000, 0.0000, 0.7428, 0.0000, 0.0000, 0.0000],
         [0.0000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000],
         [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.8812, 0.0000],
-        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.8775]
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.8775],
     ]
 )
 
