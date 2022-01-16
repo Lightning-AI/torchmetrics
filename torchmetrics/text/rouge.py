@@ -25,8 +25,7 @@ from torchmetrics.functional.text.rouge import (
 )
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
-if not _NLTK_AVAILABLE:
-    __doctest_skip__ = ["ROUGEScore"]
+__doctest_requires__ = {("ROUGEScore",): ["nltk"]}
 
 
 class ROUGEScore(Metric):
