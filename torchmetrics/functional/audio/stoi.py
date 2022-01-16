@@ -26,6 +26,13 @@ from torch import Tensor
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 
+__doctest_requires__ = {
+    (
+        "short_term_objective_intelligibility",
+        "stoi",
+    ): ["pystoi"]
+}
+
 
 def short_term_objective_intelligibility(
     preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False

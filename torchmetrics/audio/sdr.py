@@ -21,6 +21,8 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
+__doctest_requires__ = {("SignalDistortionRatio", "SDR"): ["fast_bss_eval"]}
+
 
 class SignalDistortionRatio(Metric):
     r"""Signal to Distortion Ratio (SDR) [1,2,3]

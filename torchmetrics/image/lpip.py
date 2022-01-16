@@ -29,6 +29,9 @@ else:
         pass
 
 
+__doctest_requires__ = {("LearnedPerceptualImagePatchSimilarity", "LPIPS"): ["lpips"]}
+
+
 class NoTrainLpips(_LPIPS):
     def train(self, mode: bool) -> "NoTrainLpips":
         """the network should not be able to be switched away from evaluation mode."""
