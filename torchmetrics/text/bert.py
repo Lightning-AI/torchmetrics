@@ -188,9 +188,9 @@ class BERTScore(Metric):
                 )
             if model_name_or_path is None:
                 warn(
-                    "The argument `model_name_or_path` was not specified while it is required when default"
-                    " `transformers` model are used."
-                    f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
+                    "The argument `model_name_or_path` was not specified while it is required when the default"
+                    " `transformers` model is used."
+                    f" It will use the default recommended model - {_DEFAULT_MODEL!r}."
                 )
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path)
             self.user_tokenizer = False
