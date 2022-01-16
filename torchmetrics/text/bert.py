@@ -132,7 +132,7 @@ class BERTScore(Metric):
 
     def __init__(
         self,
-        model_name_or_path: str,
+        model_name_or_path: Optional[str] = None,
         num_layers: Optional[int] = None,
         all_layers: bool = False,
         model: Optional[torch.nn.Module] = None,
