@@ -28,8 +28,6 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_A
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoModel, AutoTokenizer
-else:
-    __doctest_skip__ = ["bert_score"]
 
 if _TQDM_AVAILABLE:
     import tqdm

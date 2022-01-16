@@ -23,9 +23,6 @@ from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
-if not _TORCH_FIDELITY_AVAILABLE:
-    __doctest_skip__ = ["InceptionScore", "IS"]
-
 
 class InceptionScore(Metric):
     r"""
