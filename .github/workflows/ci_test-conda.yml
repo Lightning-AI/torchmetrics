@@ -82,6 +82,7 @@ jobs:
         conda list
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
+        pip install --requirement requirements/test.txt --quiet
         python ./.github/assistant.py prune-packages requirements/image.txt torchvision
         python ./.github/assistant.py prune-packages requirements/detection.txt torchvision
         pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9

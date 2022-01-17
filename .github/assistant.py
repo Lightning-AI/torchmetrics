@@ -12,7 +12,9 @@ LUT_PYTHON_TORCH = {
     "3.9": "1.7.1",
 }
 _PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
-REQUIREMENTS_FILES = (os.path.join(_PATH_ROOT, "requirements.txt"),) + tuple(glob.glob(os.path.join(_PATH_ROOT, "requirements", "*.txt")))
+REQUIREMENTS_FILES = (os.path.join(_PATH_ROOT, "requirements.txt"),) + tuple(
+    glob.glob(os.path.join(_PATH_ROOT, "requirements", "*.txt"))
+)
 
 
 class AssistantCLI:

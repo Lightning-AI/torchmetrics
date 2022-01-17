@@ -57,6 +57,11 @@ jobs:
       run: |
         choco install ffmpeg
 
+    - name: Pip install test deps
+      run: |
+        pip install --requirement requirements/devel.txt
+        pip list
+
     - name: Set min. dependencies
       if: matrix.requires == 'oldest'
       run: |
