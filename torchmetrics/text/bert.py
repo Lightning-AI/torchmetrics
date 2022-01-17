@@ -117,10 +117,11 @@ class BERTScore(Metric):
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore(preds, target)
-        {'precision': [0.999..., 0.996...],
-         'recall': [0.999..., 0.996...],
-         'f1': [0.999..., 0.996...]}
+        >>> from pprint import pprint
+        >>> pprint(bertscore(preds, target)) # doctest: +ELLIPSIS
+        {'f1': [0.999..., 0.996...],
+         'precision': [0.999..., 0.996...],
+         'recall': [0.999..., 0.996...]}
     """
 
     is_differentiable = False
