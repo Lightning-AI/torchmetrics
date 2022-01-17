@@ -9,6 +9,8 @@ twine>=3.2
 mypy>=0.790
 phmdoctest>=1.1.1
 pre-commit>=1.0
+
+requests
 fire
 
 cloudpickle>=1.3

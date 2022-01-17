@@ -43,7 +43,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: PIP install assitant's deps
-      run: pip install fire
+      run: pip install fire requests
 
     - name: Set min. dependencies
       if: matrix.requires == 'oldest'
