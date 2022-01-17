@@ -140,7 +140,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
 
 class STOI(ShortTimeObjectiveIntelligibility):
-    r"""STOI (Short Term Objective Intelligibility), a wrapper for the pystoi package.
+    r"""STOI (Short-Time Objective Intelligibility), a wrapper for the pystoi package.
 
     .. deprecated:: v0.7
         Use :class:`torchmetrics.audio.ShortTimeObjectiveIntelligibility`. Will be removed in v0.8.

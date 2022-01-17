@@ -112,7 +112,7 @@ def short_time_objective_intelligibility(
 
 @deprecated(target=short_time_objective_intelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def stoi(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
-    r"""STOI (Short Term Objective Intelligibility)
+    r"""STOI (Short-Time Objective Intelligibility)
 
     .. deprecated:: v0.7
         Use :func:`torchmetrics.functional.audio.short_time_objective_intelligibility`. Will be removed in v0.8.
