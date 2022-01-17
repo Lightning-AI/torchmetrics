@@ -42,10 +42,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: PIP install assitant's deps
+      run: pip install fire
+
     - name: Set min. dependencies
       if: matrix.requires == 'oldest'
-      run: |
-        python .github/set-oldest-versions.py
+      run: python .github/assistant.py set-oldest-versions
 
     - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
       if: matrix.requires == 'latest'
