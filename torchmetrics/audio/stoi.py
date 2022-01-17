@@ -21,6 +21,8 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
+__doctest_requires__ = {("ShortTermObjectiveIntelligibility", "STOI"): ["pystoi"]}
+
 
 class ShortTermObjectiveIntelligibility(Metric):
     r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].

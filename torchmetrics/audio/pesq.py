@@ -21,6 +21,8 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
+__doctest_requires__ = {("PerceptualEvaluationSpeechQuality", "PESQ"): ["pesq"]}
+
 
 class PerceptualEvaluationSpeechQuality(Metric):
     """Perceptual Evaluation of Speech Quality (PESQ)

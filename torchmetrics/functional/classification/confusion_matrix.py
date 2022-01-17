@@ -86,7 +86,7 @@ def _confusion_matrix_compute(confmat: Tensor, normalize: Optional[str] = None) 
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> confmat = _confusion_matrix_update(preds, target, num_classes=3, multilabel=True)
-        >>> _confusion_matrix_compute(confmat)  # doctest: +NORMALIZE_WHITESPACE
+        >>> _confusion_matrix_compute(confmat)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
@@ -174,7 +174,7 @@ def confusion_matrix(
         >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
         >>> confmat = ConfusionMatrix(num_classes=3, multilabel=True)
-        >>> confmat(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        >>> confmat(preds, target)
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])

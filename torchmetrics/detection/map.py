@@ -20,12 +20,13 @@ from torch import IntTensor, Size, Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
+if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
+    __doctest_skip__ = ["MeanAveragePrecision", "MAP"]
 
 log = logging.getLogger(__name__)
 
@@ -197,25 +198,24 @@ class MeanAveragePrecision(Metric):
         ...     labels=torch.IntTensor([0]),
         ...   )
         ... ]
-        >>> metric = MeanAveragePrecision()  # doctest: +SKIP
-        >>> metric.update(preds, target)  # doctest: +SKIP
+        >>> metric = MeanAveragePrecision()
+        >>> metric.update(preds, target)
         >>> from pprint import pprint
-        >>> pprint(metric.compute())  # doctest: +SKIP
+        >>> pprint(metric.compute())
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
-         'map_small': tensor(-1.),
-         'map_medium': tensor(-1.),
          'map_large': tensor(0.6000),
+         'map_medium': tensor(-1.),
+         'map_per_class': tensor(-1.),
+         'map_small': tensor(-1.),
          'mar_1': tensor(0.6000),
          'mar_10': tensor(0.6000),
          'mar_100': tensor(0.6000),
-         'mar_small': tensor(-1.),
-         'mar_medium': tensor(-1.),
+         'mar_100_per_class': tensor(-1.),
          'mar_large': tensor(0.6000),
-         'map_per_class': tensor(-1.),
-         'mar_100_per_class': tensor(-1.)
-        }
+         'mar_medium': tensor(-1.),
+         'mar_small': tensor(-1.)}
 
     Raises:
         ModuleNotFoundError:
@@ -761,25 +761,24 @@ class MAP(MeanAveragePrecision):
         ...     labels=torch.IntTensor([0]),
         ...   )
         ... ]
-        >>> metric = MAP()  # doctest: +SKIP
-        >>> metric.update(preds, target)  # doctest: +SKIP
+        >>> metric = MAP()
+        >>> metric.update(preds, target)
         >>> from pprint import pprint
-        >>> pprint(metric.compute())  # doctest: +SKIP
+        >>> pprint(metric.compute())
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
-         'map_small': tensor(-1.),
-         'map_medium': tensor(-1.),
          'map_large': tensor(0.6000),
+         'map_medium': tensor(-1.),
+         'map_per_class': tensor(-1.),
+         'map_small': tensor(-1.),
          'mar_1': tensor(0.6000),
          'mar_10': tensor(0.6000),
          'mar_100': tensor(0.6000),
-         'mar_small': tensor(-1.),
-         'mar_medium': tensor(-1.),
+         'mar_100_per_class': tensor(-1.),
          'mar_large': tensor(0.6000),
-         'map_per_class': tensor(-1.),
-         'mar_100_per_class': tensor(-1.)
-        }
+         'mar_medium': tensor(-1.),
+         'mar_small': tensor(-1.)}
     """
 
     @deprecated(target=MeanAveragePrecision, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)

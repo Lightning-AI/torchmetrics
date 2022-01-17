@@ -40,6 +40,7 @@ else:
     toeplitz_conjugate_gradient = None
     compute_stats = None
     _normalize = None
+    __doctest_skip__ = ["signal_distortion_ratio", "sdr"]
 
 from torch import Tensor
 
