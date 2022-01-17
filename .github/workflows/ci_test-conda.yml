@@ -1,4 +1,4 @@
-name: PyTorch & Conda
+name: CI testing - PyTorch & Conda
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
@@ -27,7 +27,7 @@ jobs:
       TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 60
+    timeout-minutes: 65
     steps:
     - uses: actions/checkout@v2
 
