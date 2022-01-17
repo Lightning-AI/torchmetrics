@@ -28,6 +28,8 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_A
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoModel, AutoTokenizer
+else:
+    __doctest_skip__ = ["bert_score"]
 
 if _TQDM_AVAILABLE:
     import tqdm
@@ -570,10 +572,11 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bert_score(preds, target)  # doctest: +SKIP
-        {'precision': [0.999..., 0.996...],
-         'recall': [0.999..., 0.996...],
-         'f1': [0.999..., 0.996...]}
+        >>> from pprint import pprint
+        >>> pprint(bert_score(preds, target)) # doctest: +ELLIPSIS
+        {'f1': [0.999..., 0.996...],
+         'precision': [0.999..., 0.996...],
+         'recall': [0.999..., 0.996...]}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")

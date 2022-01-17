@@ -72,7 +72,7 @@ class PrecisionRecallCurve(Metric):
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> pr_curve = PrecisionRecallCurve(num_classes=5)
         >>> precision, recall, thresholds = pr_curve(pred, target)
-        >>> precision   # doctest: +NORMALIZE_WHITESPACE
+        >>> precision
         [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall

@@ -26,6 +26,13 @@ from torch import Tensor
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 
+__doctest_requires__ = {
+    (
+        "perceptual_evaluation_speech_quality",
+        "pesq",
+    ): ["pesq"]
+}
+
 
 def perceptual_evaluation_speech_quality(
     preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False

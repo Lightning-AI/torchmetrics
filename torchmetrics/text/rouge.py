@@ -25,6 +25,8 @@ from torchmetrics.functional.text.rouge import (
 )
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
+__doctest_requires__ = {("ROUGEScore",): ["nltk"]}
+
 
 class ROUGEScore(Metric):
     """`Calculate Rouge Score`_, used for automatic summarization. This implementation should imitate the behaviour
@@ -55,21 +57,22 @@ class ROUGEScore(Metric):
         >>> from torchmetrics.text.rouge import ROUGEScore
         >>> preds = "My name is John"
         >>> target = "Is your name John"
-        >>> rouge = ROUGEScore()   # doctest: +SKIP
+        >>> rouge = ROUGEScore()
         >>> from pprint import pprint
-        >>> pprint(rouge(preds, target))  # doctest: +SKIP
-        {'rouge1_fmeasure': 0.25,
-         'rouge1_precision': 0.25,
-         'rouge1_recall': 0.25,
-         'rouge2_fmeasure': 0.0,
-         'rouge2_precision': 0.0,
-         'rouge2_recall': 0.0,
-         'rougeL_fmeasure': 0.25,
-         'rougeL_precision': 0.25,
-         'rougeL_recall': 0.25,
-         'rougeLsum_fmeasure': 0.25,
-         'rougeLsum_precision': 0.25,
-         'rougeLsum_recall': 0.25}
+        >>> pprint(rouge(preds, target))
+        {'rouge1_fmeasure': tensor(0.7500),
+         'rouge1_precision': tensor(0.7500),
+         'rouge1_recall': tensor(0.7500),
+         'rouge2_fmeasure': tensor(0.),
+         'rouge2_precision': tensor(0.),
+         'rouge2_recall': tensor(0.),
+         'rougeL_fmeasure': tensor(0.5000),
+         'rougeL_precision': tensor(0.5000),
+         'rougeL_recall': tensor(0.5000),
+         'rougeLsum_fmeasure': tensor(0.5000),
+         'rougeLsum_precision': tensor(0.5000),
+         'rougeLsum_recall': tensor(0.5000)}
+
 
     Raises:
         ValueError:
