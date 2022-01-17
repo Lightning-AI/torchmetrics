@@ -20,8 +20,7 @@ jobs:
         python-version: ["3.8"]
         pytorch-version: ["1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11"]
         include:
-          - python-version: 3.7
-            pytorch-version: '1.3'
+          - {python-version: 3.7, pytorch-version: '1.3'}
     env:
       PYTEST_ARTEFACT: test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
       TRANSFORMERS_CACHE: .cache/huggingface/
@@ -83,7 +82,8 @@ jobs:
         conda list
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
-        python ./.github/prune-packages.py requirements/image.txt torchvision
+        python ./.github/assistant.py prune-packages requirements/image.txt torchvision
+        python ./.github/assistant.py prune-packages requirements/detection.txt torchvision
         pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         pip install --requirement requirements.txt --quiet
         pip install --requirement requirements/devel.txt --quiet
