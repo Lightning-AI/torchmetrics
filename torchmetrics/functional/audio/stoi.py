@@ -28,10 +28,10 @@ from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def short_term_objective_intelligibility(
+def short_time_objective_intelligibility(
     preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False
 ) -> Tensor:
-    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
+    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
     Note that input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
@@ -64,12 +64,12 @@ def short_term_objective_intelligibility(
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.functional.audio.stoi import short_term_objective_intelligibility
+        >>> from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> short_term_objective_intelligibility(preds, target, 8000).float()
+        >>> short_time_objective_intelligibility(preds, target, 8000).float()
         tensor(-0.0100)
 
     References:
@@ -110,7 +110,7 @@ def short_term_objective_intelligibility(
     return stoi_val
 
 
-@deprecated(target=short_term_objective_intelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+@deprecated(target=short_time_objective_intelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def stoi(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
     r"""STOI (Short Term Objective Intelligibility)
 
