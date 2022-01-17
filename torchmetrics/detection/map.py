@@ -26,18 +26,8 @@ if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
-    __doctest_skip__ = ["MeanAveragePrecision", "MAP"]
 
 log = logging.getLogger(__name__)
-
-
-__doctest_requires__ = {
-    ("ROUGEScore", "rouge_score", "_rouge_score_update"): ["nltk"],
-    ("BERTScore", "bert_score"): ["transformers"],
-    ("FrechetInceptionDistance", "FID"): ["torch_fidelity"],
-    ("KernelInceptionDistance", "KID"): ["torch_fidelity"],
-    ("InceptionScore", "IS"): ["torch_fidelity"],
-}
 
 
 class BaseMetricResults(dict):
