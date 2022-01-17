@@ -16,16 +16,16 @@ from typing import Any, Callable, Optional
 from deprecate import deprecated, void
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.stoi import short_term_objective_intelligibility
+from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-__doctest_requires__ = {("ShortTermObjectiveIntelligibility", "STOI"): ["pystoi"]}
+__doctest_requires__ = {("ShortTimeObjectiveIntelligibility", "STOI"): ["pystoi"]}
 
 
-class ShortTermObjectiveIntelligibility(Metric):
-    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
+class ShortTimeObjectiveIntelligibility(Metric):
+    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
     Note that input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
@@ -67,12 +67,12 @@ class ShortTermObjectiveIntelligibility(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio.stoi import ShortTermObjectiveIntelligibility
+        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> stoi = ShortTermObjectiveIntelligibility(8000, False)
+        >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
         tensor(-0.0100)
 
@@ -127,7 +127,7 @@ class ShortTermObjectiveIntelligibility(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        stoi_batch = short_term_objective_intelligibility(preds, target, self.fs, self.extended, False).to(
+        stoi_batch = short_time_objective_intelligibility(preds, target, self.fs, self.extended, False).to(
             self.sum_stoi.device
         )
 
@@ -139,11 +139,11 @@ class ShortTermObjectiveIntelligibility(Metric):
         return self.sum_stoi / self.total
 
 
-class STOI(ShortTermObjectiveIntelligibility):
-    r"""STOI (Short Term Objective Intelligibility), a wrapper for the pystoi package.
+class STOI(ShortTimeObjectiveIntelligibility):
+    r"""STOI (Short-Time Objective Intelligibility), a wrapper for the pystoi package.
 
     .. deprecated:: v0.7
-        Use :class:`torchmetrics.audio.ShortTermObjectiveIntelligibility`. Will be removed in v0.8.
+        Use :class:`torchmetrics.audio.ShortTimeObjectiveIntelligibility`. Will be removed in v0.8.
 
     Example:
         >>> import torch
@@ -155,7 +155,7 @@ class STOI(ShortTermObjectiveIntelligibility):
         tensor(-0.0100)
     """
 
-    @deprecated(target=ShortTermObjectiveIntelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+    @deprecated(target=ShortTimeObjectiveIntelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         fs: int,

@@ -44,8 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
 - Renamed audio STOI metric: ([#753](https://github.com/PyTorchLightning/metrics/pull/753), [#758](https://github.com/PyTorchLightning/metrics/pull/758))
-  * `audio.STOI` to `audio.ShortTermObjectiveIntelligibility`
-  * `functional.audio.stoi` to `functional.audio.short_term_objective_intelligibility`
+  * `audio.STOI` to `audio.ShortTimeObjectiveIntelligibility`
+  * `functional.audio.stoi` to `functional.audio.short_time_objective_intelligibility`
 - Renamed audio PESQ metrics: ([#751](https://github.com/PyTorchLightning/metrics/pull/751))
   * `functional.audio.pesq` -> `functional.audio.perceptual_evaluation_speech_quality`
   * `audio.PESQ` -> `audio.PerceptualEvaluationSpeechQuality`
@@ -122,7 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added audio metrics:
   - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
-  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
+  - Short-Time Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
 - Added Information retrieval metrics:
   - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577))
   - `RetrievalHitRate` ([#576](https://github.com/PyTorchLightning/metrics/pull/576))
