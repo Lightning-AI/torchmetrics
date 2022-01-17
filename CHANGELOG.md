@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
+
 
 ## [0.7.0] - 2022-01-17
 
