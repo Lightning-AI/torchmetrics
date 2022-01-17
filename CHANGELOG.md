@@ -122,7 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added audio metrics:
   - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
-  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
+  - Short-Time Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
 - Added Information retrieval metrics:
   - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577))
   - `RetrievalHitRate` ([#576](https://github.com/PyTorchLightning/metrics/pull/576))
