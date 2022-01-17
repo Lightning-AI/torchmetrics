@@ -31,8 +31,7 @@ else:
     class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
         pass
 
-
-__doctest_requires__ = {("FrechetInceptionDistance", "FID"): ["torch_fidelity"]}
+    __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
 
 
 if _SCIPY_AVAILABLE:

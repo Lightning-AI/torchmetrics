@@ -21,17 +21,11 @@ if _PYSTOI_AVAILABLE:
     from pystoi import stoi as stoi_backend
 else:
     stoi_backend = None
+    __doctest_skip__ = ["short_term_objective_intelligibility", "stoi"]
 from torch import Tensor
 
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
-
-__doctest_requires__ = {
-    (
-        "short_term_objective_intelligibility",
-        "stoi",
-    ): ["pystoi"]
-}
 
 
 def short_term_objective_intelligibility(

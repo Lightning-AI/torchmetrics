@@ -25,13 +25,12 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoTokenizer
+else:
+    __doctest_skip__ = ["BERTScore"]
 
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
-
-
-__doctest_requires__ = {("BERTScore",): ["transformers"]}
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:

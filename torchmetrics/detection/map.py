@@ -20,12 +20,13 @@ from torch import IntTensor, Size, Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
+if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
+    __doctest_skip__ = ["MeanAveragePrecision", "MAP"]
 
 log = logging.getLogger(__name__)
 

@@ -28,6 +28,8 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_A
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoModel, AutoTokenizer
+else:
+    __doctest_skip__ = ["bert_score"]
 
 if _TQDM_AVAILABLE:
     import tqdm
@@ -35,8 +37,6 @@ if _TQDM_AVAILABLE:
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
-
-__doctest_requires__ = {("bert_score",): ["transformers"]}
 
 
 def _preprocess_text(

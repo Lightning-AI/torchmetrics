@@ -28,8 +28,7 @@ else:
     class _LPIPS(torch.nn.Module):  # type: ignore
         pass
 
-
-__doctest_requires__ = {("LearnedPerceptualImagePatchSimilarity", "LPIPS"): ["lpips"]}
+    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 
 
 class NoTrainLpips(_LPIPS):
