@@ -35,6 +35,7 @@ jobs:
         pip install fire requests
         # python actions/assistant.py list_runtimes $PR_NUMBER
         echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+    - run: echo "${{ github.event.pull_request.number }}"
 
   pytest:
     runs-on: ${{ matrix.os }}

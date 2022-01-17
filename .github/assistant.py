@@ -102,11 +102,13 @@ class AssistantCLI:
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:
-            logging.debug("No data was received.")
-            return [] if as_list else ""
+            logging.error("No data was received.")
+            return "tests"
         files = [d["filename"] for d in data]
         # filter only package files and skip inits
         files = [fn for fn in files if fn.startswith("torchmetrics") and "__init__.py" not in fn]
+        if not files:
+            return "tests"
         # parse domains
         files = [fn.replace("torchmetrics/", "").replace("functional/", "") for fn in files]
         # filter domain names
@@ -123,5 +125,5 @@ class AssistantCLI:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     fire.Fire(AssistantCLI)
