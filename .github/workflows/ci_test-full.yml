@@ -13,10 +13,32 @@ concurrency:
   cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
 jobs:
-  pytest:
-
-    runs-on: ${{ matrix.os }}
+  # ToDo: consider unify in single workflow and distribute to all others
+  check-diff:
+    runs-on: ubuntu-20.04
     if: github.event.pull_request.draft == false
+    timeout-minutes: 5
+    # Map a step output to a job output
+    outputs:
+      focus: ${{ steps.diff-domains.outputs.focus }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Get PR diff
+      id: diff-files
+      env:
+        PR_NUMBER: "${{ github.event.pull_request.number }}"
+      run: |
+        pip install fire requests
+        # python actions/assistant.py list_runtimes $PR_NUMBER
+        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+
+  pytest:
+    runs-on: ${{ matrix.os }}
+    needs: check-diff
     strategy:
       fail-fast: false
       matrix:
@@ -98,17 +120,9 @@ jobs:
         path: $TRANSFORMERS_CACHE
         key: cache-transformers
 
-    - name: Get PR diff
-      id: diff-domains
-      env:
-        PR_NUMBER: "${{ github.event.pull_request.number }}"
-      run: |
-        # python .github/assistant.py changed_domains $PR_NUMBER
-        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
-
     - name: Tests
       env:
-        TEST_DIRS: "${{ steps.diff-domains.outputs.focus }}"
+        TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
         python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
