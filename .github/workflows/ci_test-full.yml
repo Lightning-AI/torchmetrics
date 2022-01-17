@@ -101,10 +101,20 @@ jobs:
         path: $TRANSFORMERS_CACHE
         key: cache-transformers
 
+    - name: Get PR diff
+      id: diff-domains
+      env:
+        PR_NUMBER: "${{ github.event.pull_request.number }}"
+      run: |
+        # python .github/assistant.py changed_domains $PR_NUMBER
+        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+
     - name: Tests
+      env:
+        TEST_DIRS: "${{ steps.diff-domains.outputs.focus }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
-        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
+        python -m pytest torchmetrics $TEST_DIRS -v --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2

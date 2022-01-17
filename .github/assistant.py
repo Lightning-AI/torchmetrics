@@ -1,20 +1,38 @@
 import glob
+import json
 import logging
 import os
 import re
 import sys
-from typing import List
+import traceback
+from typing import List, Optional, Tuple, Union
 
 import fire
+import requests
 
+_REQUEST_TIMEOUT = 10
+_PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
+_PKG_WIDE_SUBPACKAGES = ("utilities",)
 LUT_PYTHON_TORCH = {
     "3.8": "1.4",
     "3.9": "1.7.1",
 }
-_PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
 REQUIREMENTS_FILES = (os.path.join(_PATH_ROOT, "requirements.txt"),) + tuple(
     glob.glob(os.path.join(_PATH_ROOT, "requirements", "*.txt"))
 )
+
+
+def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
+    """General request with checking if request limit was reached."""
+    auth_header = {"Authorization": f"token {auth_token}"} if auth_token else {}
+    try:
+        req = requests.get(url, headers=auth_header, timeout=_REQUEST_TIMEOUT)
+    except requests.exceptions.Timeout:
+        traceback.print_exc()
+        return None
+    if req.status_code == 403:
+        return None
+    return json.loads(req.content.decode(req.encoding))
 
 
 class AssistantCLI:
@@ -59,7 +77,38 @@ class AssistantCLI:
         for fpath in req_files:
             AssistantCLI.replace_min_requirements(fpath)
 
+    @staticmethod
+    def changed_domains(
+        pr: int,
+        auth_token: Optional[str] = None,
+        as_list: bool = False,
+        general_sub_pkgs: Tuple[str] = _PKG_WIDE_SUBPACKAGES,
+    ) -> Union[str, List[str]]:
+        """Determine what domains were changed in particular PR."""
+        url = f"https://api.github.com/repos/PyTorchLightning/metrics/pulls/{pr}/files"
+        logging.debug(url)
+        data = request_url(url, auth_token)
+        if not data:
+            logging.debug("No data was received.")
+            return [] if as_list else ""
+        files = [d["filename"] for d in data]
+        # filter only package files and skip inits
+        files = [fn for fn in files if fn.startswith("torchmetrics") and "__init__.py" not in fn]
+        # parse domains
+        files = [fn.replace("torchmetrics/", "").replace("functional/", "") for fn in files]
+        # filter domain names
+        tm_modules = [fn.split("/")[0] for fn in files if "/" in fn]
+        # filter general (used everywhere) sub-packages
+        tm_modules = [md for md in tm_modules if md not in general_sub_pkgs]
+        if len(files) > len(tm_modules):
+            return "tests"
+        # keep only unique
+        tm_modules = set(tm_modules)
+        if as_list:
+            return list(tm_modules)
+        return " ".join([f"tests/{md}" for md in tm_modules])
+
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     fire.Fire(AssistantCLI)
