@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-__doctest_requires__ = {("ShortTermObjectiveIntelligibility", "STOI"): ["pystoi"]}
+__doctest_requires__ = {("ShortTimeObjectiveIntelligibility", "STOI"): ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
@@ -143,7 +143,7 @@ class STOI(ShortTimeObjectiveIntelligibility):
     r"""STOI (Short Term Objective Intelligibility), a wrapper for the pystoi package.
 
     .. deprecated:: v0.7
-        Use :class:`torchmetrics.audio.ShortTermObjectiveIntelligibility`. Will be removed in v0.8.
+        Use :class:`torchmetrics.audio.ShortTimeObjectiveIntelligibility`. Will be removed in v0.8.
 
     Example:
         >>> import torch

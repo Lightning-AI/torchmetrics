@@ -21,7 +21,7 @@ if _PYSTOI_AVAILABLE:
     from pystoi import stoi as stoi_backend
 else:
     stoi_backend = None
-    __doctest_skip__ = ["short_term_objective_intelligibility", "stoi"]
+    __doctest_skip__ = ["short_time_objective_intelligibility", "stoi"]
 from torch import Tensor
 
 from torchmetrics.utilities import _future_warning
@@ -87,7 +87,7 @@ def short_time_objective_intelligibility(
     """
     if not _PYSTOI_AVAILABLE:
         raise ModuleNotFoundError(
-            "ShortTermObjectiveIntelligibility metric requires that `pystoi` is installed."
+            "ShortTimeObjectiveIntelligibility metric requires that `pystoi` is installed."
             " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
         )
     _check_same_shape(preds, target)
@@ -115,7 +115,7 @@ def stoi(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bo
     r"""STOI (Short Term Objective Intelligibility)
 
     .. deprecated:: v0.7
-        Use :func:`torchmetrics.functional.audio.short_term_objective_intelligibility`. Will be removed in v0.8.
+        Use :func:`torchmetrics.functional.audio.short_time_objective_intelligibility`. Will be removed in v0.8.
 
     Example:
         >>> from torchmetrics.functional.audio.stoi import stoi
