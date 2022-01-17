@@ -46,17 +46,21 @@ def _ce_compute(
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
-    conf_bin = torch.zeros_like(bin_boundaries)
-    acc_bin = torch.zeros_like(bin_boundaries)
-    prop_bin = torch.zeros_like(bin_boundaries)
-    for i, (bin_lower, bin_upper) in enumerate(zip(bin_boundaries[:-1], bin_boundaries[1:])):
-        # Calculated confidence and accuracy in each bin
-        in_bin = confidences.gt(bin_lower.item()) * confidences.le(bin_upper.item())
-        prop_in_bin = in_bin.float().mean()
-        if prop_in_bin.item() > 0:
-            acc_bin[i] = accuracies[in_bin].float().mean()
-            conf_bin[i] = confidences[in_bin].mean()
-            prop_bin[i] = prop_in_bin
+    acc_bin = torch.zeros(len(bin_boundaries) - 1)
+    conf_bin = torch.zeros(len(bin_boundaries) - 1)
+    count_bin = torch.zeros(len(bin_boundaries) - 1)
+
+    indices = torch.bucketize(confidences, bin_boundaries) - 1
+
+    count_bin.scatter_add_(dim=0, index=indices, src=torch.ones_like(confidences))
+
+    conf_bin.scatter_add_(dim=0, index=indices, src=confidences)
+    conf_bin = torch.nan_to_num(conf_bin / count_bin)
+
+    acc_bin.scatter_add_(dim=0, index=indices, src=accuracies)
+    acc_bin = torch.nan_to_num(acc_bin / count_bin)
+
+    prop_bin = count_bin / count_bin.sum()
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
