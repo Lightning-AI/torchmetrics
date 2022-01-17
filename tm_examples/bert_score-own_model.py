@@ -22,7 +22,7 @@ from typing import Dict, List, Union
 import torch
 import torch.nn as nn
 
-from torchmetrics import BERTScore
+from torchmetrics.text.bert import BERTScore
 
 _NUM_LAYERS = 2
 _MODEL_DIM = 4
