@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
 jobs:
-  # ToDo: consider unify in single workflow and distribute to all others
+  # ToDo: consider unifying in a single workflow and distributing outputs to all others depending ones
   check-diff:
     runs-on: ubuntu-20.04
     if: github.event.pull_request.draft == false
