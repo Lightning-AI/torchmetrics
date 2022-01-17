@@ -124,11 +124,10 @@ if __name__ == "__main__":
     tokenizer = UserTokenizer()
     model = get_user_model_encoder()
 
-    Scorer = BERTScore(
+    bs = BERTScore(
         model=model, user_tokenizer=tokenizer, user_forward_fn=user_forward_fn, max_length=_MAX_LEN, return_hash=False
     )
-    Scorer.update(_PREDS, _REFS)
-    print("Predictions")
-    pprint(Scorer.predictions)
+    bs.update(_PREDS, _REFS)
+    print(f"Predictions:\n {bs.preds_input_ids}\n {bs.preds_attention_mask}")
 
-    pprint(Scorer.compute())
+    pprint(bs.compute())
