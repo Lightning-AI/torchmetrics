@@ -105,7 +105,7 @@ jobs:
         TEST_DIRS: "${{ steps.diff-domains.outputs.focus }}"
       run: |
         # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics $TEST_DIRS -v --durations=50 --junitxml=$PYTEST_ARTEFACT
+        python -m pytest torchmetrics $TEST_DIRS --durations=50 --junitxml=$PYTEST_ARTEFACT
       shell: bash -l {0}
 
     - name: Upload pytest test results
