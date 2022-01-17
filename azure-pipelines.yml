@@ -95,7 +95,7 @@ jobs:
 
     - bash: |
         set -e
-        pip install . -e
+        pip install .
         FILES="tm_examples/*.py"
         for fn in $FILES
         do
