@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [UnReleased] - 2022-MM-DD
+
+### Added
+
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
 ## [0.7.0] - 2022-01-17
 
 ### Added
@@ -38,7 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
-- Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+- Renamed text WER metric ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+ * `functional.wer` -> `functional.word_error_rate`
+ * `WER` -> `WordErrorRate`
 - Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
   * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
@@ -60,27 +79,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SNR` -> `SignalNoiseRatio`
   * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
 - Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731), [#740](https://github.com/PyTorchLightning/metrics/pull/740))
-  * `torchmetrics.functional.f1` -> `torchmetrics.functional.f1_score`
-  * `torchmetrics.F1` -> `torchmetrics.F1Score`
-  * `torchmetrics.functional.fbeta` -> `torchmetrics.functional.fbeta_score`
-  * `torchmetrics.FBeta` -> `torchmetrics.FBetaScore`
+  *  `functional.f1` ->  `functional.f1_score`
+  *  `F1` ->  `F1Score`
+  *  `functional.fbeta` ->  `functional.fbeta_score`
+  *  `FBeta` ->  `FBetaScore`
 - Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
-  * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
-  * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
+  *  `functional.hinge` ->  `functional.hinge_loss`
+  *  `Hinge` ->  `HingeLoss`
 - Renamed image PSNR metrics ([#732](https://github.com/PyTorchLightning/metrics/pull/732))
   * `functional.psnr` -> `functional.peak_signal_noise_ratio`
   * `PSNR` -> `PeakSignalNoiseRatio`
 - Renamed image PIT metric: ([#737](https://github.com/PyTorchLightning/metrics/pull/737))
-  * `torchmetrics.functional.pit` -> `torchmetrics.functional.permutation_invariant_training`
-  * `torchmetrics.PIT` -> `torchmetrics.PermutationInvariantTraining`
+  *  `functional.pit` ->  `functional.permutation_invariant_training`
+  *  `PIT` ->  `PermutationInvariantTraining`
 - Renamed image SSIM metric: ([#747](https://github.com/PyTorchLightning/metrics/pull/747))
-  * `torchmetrics.functional.ssim` -> `torchmetrics.functional.scale_invariant_signal_noise_ratio`
-  * `torchmetrics.SSIM` -> `torchmetrics.StructuralSimilarityIndexMeasure`
+  *  `functional.ssim` ->  `functional.scale_invariant_signal_noise_ratio`
+  *  `SSIM` ->  `StructuralSimilarityIndexMeasure`
 - Renamed detection `MAP` to `MeanAveragePrecision` metric ([#754](https://github.com/PyTorchLightning/metrics/pull/754))
 - Renamed Fidelity & LPIPS image metric: ([#752](https://github.com/PyTorchLightning/metrics/pull/752))
-  * `torchmetrics.image.FID` -> `torchmetrics.image.FrechetInceptionDistance`
-  * `torchmetrics.image.KID` -> `torchmetrics.image.KernelInceptionDistance`
-  * `torchmetrics.image.LPIPS` -> `torchmetrics.image.LearnedPerceptualImagePatchSimilarity`
+  *  `image.FID` ->  `image.FrechetInceptionDistance`
+  *  `image.KID` ->  `image.KernelInceptionDistance`
+  *  `image.LPIPS` ->  `image.LearnedPerceptualImagePatchSimilarity`
 
 ### Removed
 
@@ -156,7 +175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
-- Deprecated `torchmetrics.functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
+- Deprecated  `functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
 
 ### Removed
 
