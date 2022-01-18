@@ -324,7 +324,7 @@ over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn an
 
 If you want to cite this framework feel free to use this (but only if you loved it 😊):
 
-```misc
+```bibtex
 @misc{torchmetrics,
   author = {PyTorchLightning Team},
   title = {Torchmetrics: Machine learning metrics for distributed, scalable PyTorch applications},
