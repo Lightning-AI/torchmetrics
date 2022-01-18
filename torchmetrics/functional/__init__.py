@@ -158,7 +158,6 @@ __all__ = [
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",
-    "wer",
     "word_error_rate",
     "char_error_rate",
     "match_error_rate",
