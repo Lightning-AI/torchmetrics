@@ -90,7 +90,6 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
-    WER,
     BLEUScore,
     CharErrorRate,
     CHRFScore,
@@ -187,7 +186,6 @@ __all__ = [
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
-    "WER",
     "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",
