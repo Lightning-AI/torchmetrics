@@ -46,9 +46,9 @@ def _ce_compute(
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
-    acc_bin = torch.zeros(len(bin_boundaries) - 1)
-    conf_bin = torch.zeros(len(bin_boundaries) - 1)
-    count_bin = torch.zeros(len(bin_boundaries) - 1)
+    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
+    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
+    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
 
     indices = torch.bucketize(confidences, bin_boundaries) - 1
 
