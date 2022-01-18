@@ -678,10 +678,10 @@ TranslationEditRate
 .. autoclass:: torchmetrics.TranslationEditRate
     :noindex:
 
-WER
-~~~
+WordErrorRate
+~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.WER
+.. autoclass:: torchmetrics.WordErrorRate
     :noindex:
 
 WordInfoLost

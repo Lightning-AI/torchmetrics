@@ -19,11 +19,9 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
@@ -457,13 +455,6 @@ def _rescale_metrics_with_baseline(
     return all_metrics[..., 0], all_metrics[..., 1], all_metrics[..., 2]
 
 
-@deprecated(
-    args_mapping={"predictions": "preds", "references": "target"},
-    target=True,
-    deprecated_in="0.7",
-    remove_in="0.8",
-    stream=_future_warning,
-)
 def bert_score(
     preds: Union[List[str], Dict[str, Tensor]],
     target: Union[List[str], Dict[str, Tensor]],
@@ -548,13 +539,6 @@ def bert_score(
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
-
-    .. deprecated:: v0.7
-        Args:
-            predictions:
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            references:
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Raises:
         ValueError:

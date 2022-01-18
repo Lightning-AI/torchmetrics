@@ -19,7 +19,7 @@ from torchmetrics.text.mer import MatchErrorRate  # noqa: F401
 from torchmetrics.text.sacre_bleu import SacreBLEUScore  # noqa: F401
 from torchmetrics.text.squad import SQuAD  # noqa: F401
 from torchmetrics.text.ter import TranslationEditRate  # noqa: F401
-from torchmetrics.text.wer import WER, WordErrorRate  # noqa: F401
+from torchmetrics.text.wer import WordErrorRate  # noqa: F401
 from torchmetrics.text.wil import WordInfoLost  # noqa: F401
 from torchmetrics.text.wip import WordInfoPreserved  # noqa: F401
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE
