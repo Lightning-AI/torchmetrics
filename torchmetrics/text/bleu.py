@@ -20,12 +20,10 @@ from typing import Any, Callable, Optional, Sequence
 from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update, _tokenize_fn
-from torchmetrics.utilities import _future_warning
 
 
 class BLEUScore(Metric):
@@ -97,26 +95,12 @@ class BLEUScore(Metric):
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    @deprecated(
-        args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
-        target=True,
-        deprecated_in="0.7",
-        remove_in="0.8",
-        stream=_future_warning,
-    )
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
             preds: An iterable of machine translated corpus
             target: An iterable of iterables of reference corpus
-
-        .. deprecated:: v0.7
-            Args:
-                translate_corpus:
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-                reference_corpus:
-                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         self.preds_len, self.target_len = _bleu_score_update(
             preds,

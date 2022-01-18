@@ -15,11 +15,9 @@
 from typing import List, Tuple, Union
 
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
-from torchmetrics.utilities import _future_warning
 
 
 def _cer_update(
@@ -61,13 +59,6 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-@deprecated(
-    args_mapping={"predictions": "preds", "references": "target"},
-    target=True,
-    deprecated_in="0.7",
-    remove_in="0.8",
-    stream=_future_warning,
-)
 def char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
     """character error rate is a common metric of the performance of an automatic speech recognition system. This
     value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better the
@@ -75,15 +66,9 @@ def char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]])
     Args:
         preds: Transcription(s) to score as a string or list of strings
         target: Reference(s) for each speech input as a string or list of strings
+
     Returns:
         Character error rate score
-
-    .. deprecated:: v0.7
-        Args:
-            predictions:
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            references:
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
