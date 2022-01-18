@@ -13,10 +13,33 @@ concurrency:
   cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
 jobs:
-  pytest:
-
-    runs-on: ${{ matrix.os }}
+  # ToDo: consider unifying in a single workflow and distributing outputs to all others depending ones
+  check-diff:
+    runs-on: ubuntu-20.04
     if: github.event.pull_request.draft == false
+    timeout-minutes: 5
+    # Map a step output to a job output
+    outputs:
+      focus: ${{ steps.diff-domains.outputs.focus }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Get PR diff
+      id: diff-domains
+      env:
+        PR_NUMBER: "${{ github.event.pull_request.number }}"
+      run: |
+        pip install fire requests
+        # python actions/assistant.py list_runtimes $PR_NUMBER
+        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+    - run: echo "${{ steps.diff-domains.outputs.focus }}"
+
+  pytest:
+    runs-on: ${{ matrix.os }}
+    needs: check-diff
     strategy:
       fail-fast: false
       matrix:
@@ -57,10 +80,12 @@ jobs:
       run: |
         choco install ffmpeg
 
+    - name: PIP install assitant's deps
+      run: pip install fire requests
+
     - name: Set min. dependencies
       if: matrix.requires == 'oldest'
-      run: |
-        python .github/set-oldest-versions.py
+      run: python .github/assistant.py set-oldest-versions
 
     - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
       if: matrix.requires == 'latest'
@@ -97,9 +122,11 @@ jobs:
         key: cache-transformers
 
     - name: Tests
+      env:
+        TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
-        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
+        python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
