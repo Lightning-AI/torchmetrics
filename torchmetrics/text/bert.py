@@ -15,12 +15,10 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor
 
 from torchmetrics.functional.text.bert import _preprocess_text, bert_score
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
@@ -203,13 +201,6 @@ class BERTScore(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    @deprecated(
-        args_mapping={"predictions": "preds", "references": "target"},
-        target=True,
-        deprecated_in="0.7",
-        remove_in="0.8",
-        stream=_future_warning,
-    )
     def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
@@ -219,13 +210,6 @@ class BERTScore(Metric):
                 An iterable of predicted sentences.
             target:
                 An iterable of reference sentences.
-
-        .. deprecated:: v0.7
-            Args:
-                predictions:
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-                references:
-                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         preds_dict = _preprocess_text(
             preds,
