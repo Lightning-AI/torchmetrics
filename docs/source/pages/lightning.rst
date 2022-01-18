@@ -115,7 +115,7 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
 
             def training_epoch_end(self, outputs):
                 # this will compute and reset the metric automatically at the epoch end
-                self.log('train_epoch_accuracy', self.accuracy)
+                self.log('train_epoch_accuracy', self.training_acc)
 
                 # this will not reset the metric automatically at the epoch end so you
                 # need to call it yourself
