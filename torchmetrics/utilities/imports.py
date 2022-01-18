@@ -13,6 +13,7 @@
 # limitations under the License.
 """Import utilities."""
 import operator
+from collections import OrderedDict  # noqa: F401
 from importlib import import_module
 from importlib.util import find_spec
 from typing import Callable, Optional
@@ -26,6 +27,8 @@ def _module_available(module_path: str) -> bool:
 
     >>> _module_available('os')
     True
+    >>> _module_available('os.bla')
+    False
     >>> _module_available('bla.bla')
     False
     """
@@ -34,7 +37,7 @@ def _module_available(module_path: str) -> bool:
     except AttributeError:
         # Python 3.6
         return False
-    except ModuleNotFoundError:
+    except (ImportError, ModuleNotFoundError):
         # Python 3.7+
         return False
 
@@ -54,7 +57,7 @@ def _compare_version(package: str, op: Callable, version: str) -> Optional[bool]
         pkg_version = pkg.__version__  # type: ignore
     except (ModuleNotFoundError, DistributionNotFound):
         return None
-    except ImportError:
+    except (ImportError, AttributeError):
         # catches cyclic imports - the case with integrated libs
         # see: https://stackoverflow.com/a/32965521
         pkg_version = get_distribution(package).version
@@ -86,6 +89,7 @@ _TORCHVISION_AVAILABLE: bool = _module_available("torchvision")
 _TORCHVISION_GREATER_EQUAL_0_8: Optional[bool] = _compare_version("torchvision", operator.ge, "0.8.0")
 _TQDM_AVAILABLE: bool = _module_available("tqdm")
 _TRANSFORMERS_AVAILABLE: bool = _module_available("transformers")
+_TRANSFORMERS_AUTO_AVAILABLE = _module_available("transformers.models.auto")
 _PESQ_AVAILABLE: bool = _module_available("pesq")
 _SACREBLEU_AVAILABLE: bool = _module_available("sacrebleu")
 _REGEX_AVAILABLE: bool = _module_available("regex")

@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
 
@@ -244,6 +245,7 @@ def fbeta_score(
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
+@deprecated(target=fbeta_score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def fbeta(
     preds: Tensor,
     target: Tensor,
@@ -266,10 +268,7 @@ def fbeta(
         >>> fbeta(torch.tensor([0, 2, 1, 0, 0, 1]), torch.tensor([0, 1, 2, 0, 1, 2]), num_classes=3, beta=0.5)
         tensor(0.3333)
     """
-    warn("`f1` was renamed to `f1_score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return fbeta_score(
-        preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass
-    )
+    return void(preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
 
 
 def f1_score(
@@ -382,6 +381,7 @@ def f1_score(
     )
 
 
+@deprecated(target=f1_score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def f1(
     preds: Tensor,
     target: Tensor,
@@ -406,5 +406,4 @@ def f1(
         >>> f1(preds, target, num_classes=3)
         tensor(0.3333)
     """
-    warn("`f1` was renamed to `f1_score` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return f1_score(preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
+    return void(preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)

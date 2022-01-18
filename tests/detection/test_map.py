@@ -18,7 +18,7 @@ import pytest
 import torch
 
 from tests.helpers.testers import MetricTester
-from torchmetrics.detection.map import MAP
+from torchmetrics.detection.map import MeanAveragePrecision
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
@@ -181,7 +181,7 @@ class TestMAP(MetricTester):
             ddp=ddp,
             preds=_inputs.preds,
             target=_inputs.target,
-            metric_class=MAP,
+            metric_class=MeanAveragePrecision,
             sk_metric=_compare_fn,
             dist_sync_on_step=False,
             check_batch=False,
@@ -193,16 +193,16 @@ class TestMAP(MetricTester):
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
-    MAP()  # no error
+    MeanAveragePrecision()  # no error
 
     with pytest.raises(ValueError, match="Expected argument `class_metrics` to be a boolean"):
-        MAP(class_metrics=0)
+        MeanAveragePrecision(class_metrics=0)
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_empty_preds():
     """Test empty predictions."""
-    metric = MAP()
+    metric = MeanAveragePrecision()
 
     metric.update(
         [
@@ -218,7 +218,7 @@ def test_empty_preds():
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_empty_ground_truths():
     """Test empty ground truths."""
-    metric = MAP()
+    metric = MeanAveragePrecision()
 
     metric.update(
         [
@@ -242,7 +242,7 @@ _gpu_test_condition = not torch.cuda.is_available()
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
 def test_map_gpu():
     """Test predictions on single gpu."""
-    metric = MAP()
+    metric = MeanAveragePrecision()
     metric = metric.to("cuda")
     metric.update(_inputs.preds[0], _inputs.target[0])
     metric.compute()
@@ -251,14 +251,14 @@ def test_map_gpu():
 @pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
 def test_empty_metric():
     """Test empty metric."""
-    metric = MAP()
+    metric = MeanAveragePrecision()
     metric.compute()
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_input():
     """Test class input validation."""
-    metric = MAP()
+    metric = MeanAveragePrecision()
 
     metric.update([], [])  # no error
 

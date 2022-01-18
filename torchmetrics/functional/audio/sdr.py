@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from typing import Optional
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
 
@@ -40,10 +40,11 @@ else:
     toeplitz_conjugate_gradient = None
     compute_stats = None
     _normalize = None
+    __doctest_skip__ = ["signal_distortion_ratio", "sdr"]
 
 from torch import Tensor
 
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -95,11 +96,11 @@ def signal_distortion_ratio(
         >>> target = torch.randn(8000)
         >>> signal_distortion_ratio(preds, target)
         tensor(-12.0589)
-        >>> # use with pit
-        >>> from torchmetrics.functional.audio import pit
+        >>> # use with permutation_invariant_training
+        >>> from torchmetrics.functional.audio import permutation_invariant_training
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> best_metric, best_perm = pit(preds, target, signal_distortion_ratio, 'max')
+        >>> best_metric, best_perm = permutation_invariant_training(preds, target, signal_distortion_ratio, 'max')
         >>> best_metric
         tensor([-11.6375, -11.4358, -11.7148, -11.6325])
         >>> best_perm
@@ -195,6 +196,7 @@ def signal_distortion_ratio(
     return val
 
 
+@deprecated(target=signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
 def sdr(
     preds: Tensor,
     target: Tensor,
@@ -214,8 +216,7 @@ def sdr(
         >>> sdr(torch.randn(8000), torch.randn(8000))
         tensor(-12.0589)
     """
-    warn("`sdr` was renamed to `signal_distortion_ratio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-    return signal_distortion_ratio(preds, target, use_cg_iter, filter_length, zero_mean, load_diag)
+    return void(preds, target, use_cg_iter, filter_length, zero_mean, load_diag)
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:

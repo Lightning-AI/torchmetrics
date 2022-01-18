@@ -29,7 +29,7 @@ from tests.retrieval.helpers import (
     _errors_test_functional_metric_parameters_k,
 )
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
-from torchmetrics.retrieval.retrieval_fallout import RetrievalFallOut
+from torchmetrics.retrieval.fall_out import RetrievalFallOut
 
 seed_all(42)
 

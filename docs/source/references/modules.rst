@@ -76,15 +76,15 @@ the metric will be computed over the ``time`` dimension.
     >>> snr(preds, target)
     tensor(16.1805)
 
-PESQ
-~~~~
+PerceptualEvaluationSpeechQuality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.audio.pesq.PESQ
+.. autoclass:: torchmetrics.audio.pesq.PerceptualEvaluationSpeechQuality
 
-PIT
-~~~
+PermutationInvariantTraining
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PIT
+.. autoclass:: torchmetrics.PermutationInvariantTraining
     :noindex:
 
 SignalDistortionRatio
@@ -111,10 +111,10 @@ SignalNoiseRatio
 .. autoclass:: torchmetrics.SignalNoiseRatio
     :noindex:
 
-STOI
-~~~~
+ShortTimeObjectiveIntelligibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.audio.stoi.STOI
+.. autoclass:: torchmetrics.audio.stoi.ShortTimeObjectiveIntelligibility
     :noindex:
 
 
@@ -368,28 +368,28 @@ Image
 Image quality metrics can be used to access the quality of synthetic generated images from machine
 learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
 
-FID
-~~~
+FrechetInceptionDistance
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.fid.FID
+.. autoclass:: torchmetrics.image.fid.FrechetInceptionDistance
     :noindex:
 
-IS
-~~
+InceptionScore
+~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.inception.IS
+.. autoclass:: torchmetrics.image.inception.InceptionScore
     :noindex:
 
-KID
-~~~
+KernelInceptionDistance
+~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.kid.KID
+.. autoclass:: torchmetrics.image.kid.KernelInceptionDistance
     :noindex:
 
-LPIPS
-~~~~~
+LearnedPerceptualImagePatchSimilarity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.image.lpip_similarity.LPIPS
+.. autoclass:: torchmetrics.image.lpip.LearnedPerceptualImagePatchSimilarity
     :noindex:
 
 MultiScaleStructuralSimilarityIndexMeasure
@@ -398,16 +398,16 @@ MultiScaleStructuralSimilarityIndexMeasure
 .. autoclass:: torchmetrics.MultiScaleStructuralSimilarityIndexMeasure
     :noindex:
 
-PSNR
-~~~~
+PeakSignalNoiseRatio
+~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PSNR
+.. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
-SSIM
-~~~~
+StructuralSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SSIM
+.. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
 
 *********
@@ -416,10 +416,10 @@ Detection
 
 Object detection metrics can be used to evaluate the predicted detections with given groundtruth detections on images.
 
-MAP
-~~~
+MeanAveragePrecision
+~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.detection.map.MAP
+.. autoclass:: torchmetrics.detection.map.MeanAveragePrecision
     :noindex:
 
 **********

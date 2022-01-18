@@ -167,8 +167,8 @@ the following limitations:
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
-  - :ref:`references/modules:PSNR` and :ref:`references/functional:psnr [func]`
-  - :ref:`references/modules:SSIM` and :ref:`references/functional:ssim [func]`
+  - :ref:`references/modules:PeakSignalNoiseRatio` and :ref:`references/functional:peak_signal_noise_ratio [func]`
+  - :ref:`references/modules:StructuralSimilarityIndexMeasure` and :ref:`references/functional:structural_similarity_index_measure [func]`
   - :ref:`references/modules:KLDivergence` and :ref:`references/functional:kl_divergence [func]`
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.

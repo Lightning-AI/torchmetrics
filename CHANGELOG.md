@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [unreleased] - 2022-MM-DD
+## [UnReleased] - 2022-MM-DD
+
+### Added
+
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+## [0.7.0] - 2022-01-17
 
 ### Added
 
@@ -18,101 +35,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CHRFScore` ([#641](https://github.com/PyTorchLightning/metrics/pull/641))
   - `TranslationEditRate` ([#646](https://github.com/PyTorchLightning/metrics/pull/646))
   - `ExtendedEditDistance` ([#668](https://github.com/PyTorchLightning/metrics/pull/668))
-
-
 - Added `MultiScaleSSIM` into image metrics ([#679](https://github.com/PyTorchLightning/metrics/pull/679))
-
-
-- Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
-
-
 - Added Signal to Distortion Ratio (`SDR`) to audio package ([#565](https://github.com/PyTorchLightning/metrics/pull/565))
-
-
 - Added `MinMaxMetric` to wrappers ([#556](https://github.com/PyTorchLightning/metrics/pull/556))
-
-
 - Added `ignore_index` to retrieval metrics ([#676](https://github.com/PyTorchLightning/metrics/pull/676))
-
-
 - Added support for multi references in `ROUGEScore` ([#680](https://github.com/PyTorchLightning/metrics/pull/680))
-
+- Added a default VSCode devcontainer configuration ([#621](https://github.com/PyTorchLightning/metrics/pull/621))
 
 ### Changed
 
 - Scalar metrics will now consistently have additional dimensions squeezed ([#622](https://github.com/PyTorchLightning/metrics/pull/622))
-
-
 - Metrics having third party dependencies removed from global import ([#463](https://github.com/PyTorchLightning/metrics/pull/463))
-
-
 - Untokenized for `BLEUScore` input stay consistent with all the other text metrics ([#640](https://github.com/PyTorchLightning/metrics/pull/640))
-
-
 - Arguments reordered for `TER`, `BLEUScore`, `SacreBLEUScore`, `CHRFScore` now expect input order as predictions first and target second ([#696](https://github.com/PyTorchLightning/metrics/pull/696))
-
-
-- Renamed `torchmetrics.collections` to `torchmetrics.metrics_collections` to avoid clashing with system's `collections` package ([#695](https://github.com/PyTorchLightning/metrics/pull/695))
-
-
-- Changed dtype of metric state from `torch.float` to `torch.long` in `ConfusionMatrix` to accommodate larger values ([#708](https://github.com/PyTorchLightning/metrics/issues/708))
-
+- Changed dtype of metric state from `torch.float` to `torch.long` in `ConfusionMatrix` to accommodate larger values ([#715](https://github.com/PyTorchLightning/metrics/pull/715))
+- Unify `preds`, `target` input argument's naming across all text metrics ([#723](https://github.com/PyTorchLightning/metrics/pull/723), [#727](https://github.com/PyTorchLightning/metrics/pull/727))
+  * `bert`, `bleu`, `chrf`, `sacre_bleu`, `wip`, `wil`, `cer`, `ter`, `wer`, `mer`, `rouge`, `squad`
 
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
-
-- Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
-
-
+- Renamed text WER metric ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+ * `functional.wer` -> `functional.word_error_rate`
+ * `WER` -> `WordErrorRate`
 - Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
   * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
-
+- Renamed audio STOI metric: ([#753](https://github.com/PyTorchLightning/metrics/pull/753), [#758](https://github.com/PyTorchLightning/metrics/pull/758))
+  * `audio.STOI` to `audio.ShortTimeObjectiveIntelligibility`
+  * `functional.audio.stoi` to `functional.audio.short_time_objective_intelligibility`
+- Renamed audio PESQ metrics: ([#751](https://github.com/PyTorchLightning/metrics/pull/751))
+  * `functional.audio.pesq` -> `functional.audio.perceptual_evaluation_speech_quality`
+  * `audio.PESQ` -> `audio.PerceptualEvaluationSpeechQuality`
 - Renamed audio SDR metrics: ([#711](https://github.com/PyTorchLightning/metrics/pull/711))
   * `functional.sdr` -> `functional.signal_distortion_ratio`
   * `functional.si_sdr` -> `functional.scale_invariant_signal_distortion_ratio`
   * `SDR` -> `SignalDistortionRatio`
   * `SI_SDR` -> `ScaleInvariantSignalDistortionRatio`
-
-
 - Renamed audio SNR metrics: ([#712](https://github.com/PyTorchLightning/metrics/pull/712))
   * `functional.snr` -> `functional.signal_distortion_ratio`
   * `functional.si_snr` -> `functional.scale_invariant_signal_noise_ratio`
   * `SNR` -> `SignalNoiseRatio`
   * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
-
-
-- Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731))
-  * `torchmetrics.functional.f1` -> `torchmetrics.functional.f1_score`
-  * `torchmetrics.F1` -> `torchmetrics.F1Score`
-
-
+- Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731), [#740](https://github.com/PyTorchLightning/metrics/pull/740))
+  *  `functional.f1` ->  `functional.f1_score`
+  *  `F1` ->  `F1Score`
+  *  `functional.fbeta` ->  `functional.fbeta_score`
+  *  `FBeta` ->  `FBetaScore`
 - Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
-  * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
-  * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
-
-- Renamed F-Beta metrics: ([#740](https://github.com/PyTorchLightning/metrics/pull/740))
-  * `torchmetrics.functional.fbeta` -> `torchmetrics.functional.fbeta_score`
-  * `torchmetrics.FBeta` -> `torchmetrics.FBetaScore`
-
+  *  `functional.hinge` ->  `functional.hinge_loss`
+  *  `Hinge` ->  `HingeLoss`
+- Renamed image PSNR metrics ([#732](https://github.com/PyTorchLightning/metrics/pull/732))
+  * `functional.psnr` -> `functional.peak_signal_noise_ratio`
+  * `PSNR` -> `PeakSignalNoiseRatio`
+- Renamed image PIT metric: ([#737](https://github.com/PyTorchLightning/metrics/pull/737))
+  *  `functional.pit` ->  `functional.permutation_invariant_training`
+  *  `PIT` ->  `PermutationInvariantTraining`
+- Renamed image SSIM metric: ([#747](https://github.com/PyTorchLightning/metrics/pull/747))
+  *  `functional.ssim` ->  `functional.scale_invariant_signal_noise_ratio`
+  *  `SSIM` ->  `StructuralSimilarityIndexMeasure`
+- Renamed detection `MAP` to `MeanAveragePrecision` metric ([#754](https://github.com/PyTorchLightning/metrics/pull/754))
+- Renamed Fidelity & LPIPS image metric: ([#752](https://github.com/PyTorchLightning/metrics/pull/752))
+  *  `image.FID` ->  `image.FrechetInceptionDistance`
+  *  `image.KID` ->  `image.KernelInceptionDistance`
+  *  `image.LPIPS` ->  `image.LearnedPerceptualImagePatchSimilarity`
 
 ### Removed
 
 - Removed `embedding_similarity` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
-
-
 - Removed argument `concatenate_texts` from `wer` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
-
-
 - Removed arguments `newline_sep` and `decimal_places` from `rouge` metric ([#638](https://github.com/PyTorchLightning/metrics/pull/638))
-
 
 ### Fixed
 
 - Fixed MetricCollection kwargs filtering when no `kwargs` are present in update signature ([#707](https://github.com/PyTorchLightning/metrics/pull/707))
-
 
 
 ## [0.6.2] - 2021-12-15
@@ -144,7 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added audio metrics:
   - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
-  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
+  - Short-Time Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
 - Added Information retrieval metrics:
   - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577))
   - `RetrievalHitRate` ([#576](https://github.com/PyTorchLightning/metrics/pull/576))
@@ -178,7 +175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
-- Deprecated `torchmetrics.functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
+- Deprecated  `functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
 
 ### Removed
 

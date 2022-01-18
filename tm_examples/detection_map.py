@@ -18,7 +18,7 @@ python detection_map.py.
 
 import torch
 
-from torchmetrics import MAP
+from torchmetrics.detection.map import MeanAveragePrecision
 
 # Preds should be a list of elements, where each element is a dict
 # containing 3 keys: boxes, scores, labels
@@ -50,7 +50,7 @@ target = [
 
 if __name__ == "__main__":
     # Initialize metric
-    metric = MAP()
+    metric = MeanAveragePrecision()
 
     # Update metric with predictions and respective ground truth
     metric.update(preds, target)

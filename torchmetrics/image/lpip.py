@@ -14,20 +14,24 @@
 from typing import Any, Callable, List, Optional
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 if _LPIPS_AVAILABLE:
-    from lpips import LPIPS as Lpips_backbone
+    from lpips import LPIPS as _LPIPS
 else:
 
-    class Lpips_backbone(torch.nn.Module):  # type: ignore
+    class _LPIPS(torch.nn.Module):  # type: ignore
         pass
 
+    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 
-class NoTrainLpips(Lpips_backbone):
+
+class NoTrainLpips(_LPIPS):
     def train(self, mode: bool) -> "NoTrainLpips":
         """the network should not be able to be switched away from evaluation mode."""
         return super().train(False)
@@ -38,7 +42,7 @@ def _valid_img(img: Tensor) -> bool:
     return img.ndim == 4 and img.shape[1] == 3 and img.min() >= -1.0 and img.max() <= 1.0
 
 
-class LPIPS(Metric):
+class LearnedPerceptualImagePatchSimilarity(Metric):
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
     two images. LPIPS essentially computes the similarity between the activations of two image patches for some
     pre-defined network. This measure have been shown to match human perseption well. A low LPIPS score means that
@@ -79,8 +83,8 @@ class LPIPS(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics.image.lpip_similarity import LPIPS
-        >>> lpips = LPIPS(net_type='vgg')
+        >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+        >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='vgg')
         >>> img1 = torch.rand(10, 3, 100, 100)
         >>> img2 = torch.rand(10, 3, 100, 100)
         >>> lpips(img1, img2)
@@ -155,3 +159,36 @@ class LPIPS(Metric):
             return self.sum_scores / self.total
         if self.reduction == "sum":
             return self.sum_scores
+
+
+class LPIPS(LearnedPerceptualImagePatchSimilarity):
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
+    two images. LPIPS essentially computes the similarity between the activations of two image patches for some
+    pre-defined network.
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.image.LearnedPerceptualImagePatchSimilarity`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> lpips = LPIPS(net_type='vgg')
+        >>> img1 = torch.rand(10, 3, 100, 100)
+        >>> img2 = torch.rand(10, 3, 100, 100)
+        >>> lpips(img1, img2)
+        tensor(0.3566, grad_fn=<SqueezeBackward0>)
+    """
+
+    @deprecated(
+        target=LearnedPerceptualImagePatchSimilarity, deprecated_in="0.7", remove_in="0.8", stream=_future_warning
+    )
+    def __init__(
+        self,
+        net_type: str = "alex",
+        reduction: str = "mean",
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
+    ) -> None:
+        void(net_type, reduction, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
