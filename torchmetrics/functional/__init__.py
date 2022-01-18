@@ -76,7 +76,7 @@ from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.squad import squad
 from torchmetrics.functional.text.ter import translation_edit_rate
-from torchmetrics.functional.text.wer import wer, word_error_rate
+from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE

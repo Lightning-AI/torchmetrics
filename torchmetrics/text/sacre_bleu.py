@@ -18,15 +18,12 @@
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from typing import Any, Callable, Optional, Sequence
-from warnings import warn
 
-from deprecate import deprecated
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
 from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer
 from torchmetrics.text.bleu import BLEUScore
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
@@ -103,10 +100,6 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        warn(
-            "Input order of targets and preds were changed to predictions firsts and targets \
-                    second in v0.7. Warning will be removed in v0.8"
-        )
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
@@ -117,26 +110,12 @@ class SacreBLEUScore(BLEUScore):
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    @deprecated(
-        args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
-        target=True,
-        deprecated_in="0.7",
-        remove_in="0.8",
-        stream=_future_warning,
-    )
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
             preds: An iterable of machine translated corpus
             target: An iterable of iterables of reference corpus
-
-        .. deprecated:: v0.7
-            Args:
-                translate_corpus:
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-                reference_corpus:
-                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         self.preds_len, self.target_len = _bleu_score_update(
             preds,

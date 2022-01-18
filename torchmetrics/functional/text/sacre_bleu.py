@@ -40,15 +40,12 @@
 import re
 from functools import partial
 from typing import Sequence
-from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _REGEX_AVAILABLE
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
@@ -278,13 +275,6 @@ class _SacreBLEUTokenizer:
         return line
 
 
-@deprecated(
-    args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
-    target=True,
-    deprecated_in="0.7",
-    remove_in="0.8",
-    stream=_future_warning,
-)
 def sacre_bleu_score(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
@@ -314,13 +304,6 @@ def sacre_bleu_score(
     Return:
         Tensor with BLEU Score
 
-    .. deprecated:: v0.7
-        Args:
-            translate_corpus:
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            reference_corpus:
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
-
     Example:
         >>> from torchmetrics.functional import sacre_bleu_score
         >>> preds = ['the cat is on the mat']
@@ -337,10 +320,6 @@ def sacre_bleu_score(
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
-    warn(
-        "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
-        " Warning will be removed in v0.8."
-    )
 
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
