@@ -106,11 +106,12 @@ class AssistantCLI:
             return "tests"
         files = [d["filename"] for d in data]
         # filter only package files and skip inits
-        files = [fn for fn in files if fn.startswith("torchmetrics") and "__init__.py" not in fn]
+        _filter = lambda fn: (fn.startswith("torchmetrics") and "__init__.py" not in fn) or fn.startswith("tests")
+        files = [fn for fn in files if _filter(fn)]
         if not files:
             return "tests"
         # parse domains
-        files = [fn.replace("torchmetrics/", "").replace("functional/", "") for fn in files]
+        files = [fn.replace("torchmetrics/", "").replace("tests/", "").replace("functional/", "") for fn in files]
         # filter domain names
         tm_modules = [fn.split("/")[0] for fn in files if "/" in fn]
         # filter general (used everywhere) sub-packages
