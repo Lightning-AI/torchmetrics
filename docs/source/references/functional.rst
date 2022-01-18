@@ -508,7 +508,7 @@ translation_edit_rate [func]
     :noindex:
 
 word_error_rate [func]
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.word_error_rate
     :noindex:
