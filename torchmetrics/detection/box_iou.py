@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor
 
-from torchmetrics.functional.detection.iou import _iou_compute, _iou_update
+from torchmetrics.functional.detection.box_iou import _box_iou_compute, _box_iou_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
@@ -65,16 +65,17 @@ class IOU(Metric):
             " For large datasets with many objects, this may lead to large memory footprint."
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: list[Tensor], target: list[Tensor]) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
             preds: Predictions from model (probabilities, or labels)
             target: Ground truth labels
         """
-        x = _iou_update(preds, target, self.threshold)
-        self.x.append(x)
+        for p, t in zip(preds, target):
+            x = _box_iou_update(p, t, self.threshold)
+            self.x.append(x)
 
     def compute(self) -> Tensor:
         """Computes IOU based on inputs passed in to ``update`` previously."""
-        return _iou_compute(self.x)
+        return _box_iou_compute(self.x)
