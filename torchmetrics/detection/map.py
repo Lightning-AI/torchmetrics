@@ -536,9 +536,7 @@ class MeanAveragePrecision(Metric):
         nb_bbox_areas = len(self.bbox_area_ranges)
         nb_max_det_thrs = len(self.max_detection_thresholds)
         nb_imgs = len(img_ids)
-        precision = -torch.ones(
-            (nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)
-        )
+        precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
         recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
         scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
 
@@ -561,7 +559,7 @@ class MeanAveragePrecision(Metric):
                         rec_thresholds=rec_thresholds_tensor,
                         max_det=max_det,
                         nb_imgs=nb_imgs,
-                        nb_bbox_areas=nb_bbox_areas
+                        nb_bbox_areas=nb_bbox_areas,
                     )
 
         return precision, recall
