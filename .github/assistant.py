@@ -92,12 +92,14 @@ class AssistantCLI:
 
     @staticmethod
     def changed_domains(
-        pr: int,
+        pr: Optional[int] = None,
         auth_token: Optional[str] = None,
         as_list: bool = False,
         general_sub_pkgs: Tuple[str] = _PKG_WIDE_SUBPACKAGES,
     ) -> Union[str, List[str]]:
         """Determine what domains were changed in particular PR."""
+        if not pr:
+            return "tests"
         url = f"https://api.github.com/repos/PyTorchLightning/metrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
