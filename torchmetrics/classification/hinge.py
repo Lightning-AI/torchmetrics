@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional, Union
-from warnings import warn
 
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.hinge import MulticlassMode, _hinge_compute, _hinge_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 
 
 class HingeLoss(Metric):
@@ -154,6 +155,7 @@ class Hinge(HingeLoss):
 
     """
 
+    @deprecated(target=HingeLoss, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         squared: bool = False,
@@ -163,5 +165,4 @@ class Hinge(HingeLoss):
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
     ) -> None:
-        warn("`Hinge` was renamed to `HingeLoss` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-        super().__init__(squared, multiclass_mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
+        void(squared, multiclass_mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

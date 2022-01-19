@@ -44,10 +44,10 @@ class SQuAD(Metric):
 
     Example:
         >>> from torchmetrics import SQuAD
-        >>> predictions = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
-        >>> references = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
+        >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
+        >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
         >>> sqaud = SQuAD()
-        >>> sqaud(predictions, references)
+        >>> sqaud(preds, target)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
 
     References:
@@ -80,7 +80,7 @@ class SQuAD(Metric):
         self.add_state(name="exact_match", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, preds: PREDS_TYPE, targets: TARGETS_TYPE) -> None:  # type: ignore
+    def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:  # type: ignore
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
         Args:
@@ -93,7 +93,7 @@ class SQuAD(Metric):
 
                     {"prediction_text": "TorchMetrics is awesome", "id": "123"}
 
-            targets:
+            target:
                 A Dictioinary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
 
                 Example target:
@@ -121,8 +121,8 @@ class SQuAD(Metric):
             KeyError:
                 If the required keys are missing in either predictions or targets.
         """
-        preds_dict, targets_dict = _squad_input_check(preds, targets)
-        f1_score, exact_match, total = _squad_update(preds_dict, targets_dict)
+        preds_dict, target_dict = _squad_input_check(preds, target)
+        f1_score, exact_match, total = _squad_update(preds_dict, target_dict)
         self.f1_score += f1_score
         self.exact_match += exact_match
         self.total += total

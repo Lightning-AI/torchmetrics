@@ -20,7 +20,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
 from torchmetrics import Metric
 from torchmetrics.classification import Accuracy
-from torchmetrics.metric_collections import MetricCollection
+from torchmetrics.collections import MetricCollection
 
 seed_all(42)
 

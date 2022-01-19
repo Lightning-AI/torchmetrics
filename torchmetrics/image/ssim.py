@@ -14,17 +14,17 @@
 from typing import Any, List, Optional, Sequence, Tuple
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.ms_ssim import _multiscale_ssim_compute
-from torchmetrics.functional.image.ssim import _ssim_compute, _ssim_update
+from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class SSIM(Metric):
+class StructuralSimilarityIndexMeasure(Metric):
     """Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
@@ -44,10 +44,10 @@ class SSIM(Metric):
         Tensor with SSIM score
 
     Example:
-        >>> from torchmetrics import SSIM
+        >>> from torchmetrics import StructuralSimilarityIndexMeasure
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> ssim = SSIM()
+        >>> ssim = StructuralSimilarityIndexMeasure()
         >>> ssim(preds, target)
         tensor(0.9219)
     """
@@ -106,6 +106,36 @@ class SSIM(Metric):
         return _ssim_compute(
             preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
         )
+
+
+class SSIM(StructuralSimilarityIndexMeasure):
+    """Computes Structual Similarity Index Measure (SSIM_).
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.StructuralSimilarityIndexMeasure`. Will be removed in v0.8.
+
+    Example:
+        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> target = preds * 0.75
+        >>> ssim = SSIM()
+        >>> ssim(preds, target)
+        tensor(0.9219)
+    """
+
+    @deprecated(target=StructuralSimilarityIndexMeasure, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+    def __init__(
+        self,
+        kernel_size: Sequence[int] = (11, 11),
+        sigma: Sequence[float] = (1.5, 1.5),
+        reduction: str = "elementwise_mean",
+        data_range: Optional[float] = None,
+        k1: float = 0.01,
+        k2: float = 0.03,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+    ) -> None:
+        void(kernel_size, sigma, reduction, data_range, k1, k2, compute_on_step, dist_sync_on_step, process_group)
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):

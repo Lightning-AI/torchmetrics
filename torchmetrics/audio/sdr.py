@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, Optional
-from warnings import warn
 
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
+
+__doctest_requires__ = {("SignalDistortionRatio", "SDR"): ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
@@ -71,11 +74,11 @@ class SignalDistortionRatio(Metric):
         >>> sdr(preds, target)
         tensor(-12.0589)
         >>> # use with pit
-        >>> from torchmetrics.audio import PIT
+        >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> pit = PIT(signal_distortion_ratio, 'max')
+        >>> pit = PermutationInvariantTraining(signal_distortion_ratio, 'max')
         >>> pit(preds, target)
         tensor(-11.6051)
 
@@ -166,13 +169,14 @@ class SDR(SignalDistortionRatio):
         >>> sdr(torch.randn(8000), torch.randn(8000))
         tensor(-12.0589)
         >>> # use with pit
-        >>> from torchmetrics.audio import PIT
+        >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
-        >>> pit = PIT(signal_distortion_ratio, 'max')
+        >>> pit = PermutationInvariantTraining(signal_distortion_ratio, 'max')
         >>> pit(torch.randn(4, 2, 8000), torch.randn(4, 2, 8000))
         tensor(-11.6051)
     """
 
+    @deprecated(target=SignalDistortionRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         use_cg_iter: Optional[int] = None,
@@ -184,9 +188,7 @@ class SDR(SignalDistortionRatio):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        warn("`SDR` was renamed to `SignalDistortionRatio` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-
-        super().__init__(
+        void(
             use_cg_iter,
             filter_length,
             zero_mean,

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pit import pit, pit_permutate
+from torchmetrics.functional.audio.pit import permutation_invariant_training, pit, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, sdr, signal_distortion_ratio
 from torchmetrics.functional.audio.si_sdr import si_sdr
 from torchmetrics.functional.audio.si_snr import si_snr
@@ -24,8 +24,8 @@ from torchmetrics.functional.classification.calibration_error import calibration
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice_score
-from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta
-from torchmetrics.functional.classification.hamming_distance import hamming_distance
+from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta, fbeta_score
+from torchmetrics.functional.classification.hamming import hamming_distance
 from torchmetrics.functional.classification.hinge import hinge, hinge_loss
 from torchmetrics.functional.classification.iou import iou  # noqa: F401
 from torchmetrics.functional.classification.jaccard import jaccard_index
@@ -37,25 +37,27 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.ms_ssim import multiscale_structural_similarity_index_measure
-from torchmetrics.functional.image.psnr import psnr
-from torchmetrics.functional.image.ssim import ssim
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr
+from torchmetrics.functional.image.ssim import (
+    multiscale_structural_similarity_index_measure,
+    ssim,
+    structural_similarity_index_measure,
+)
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
+from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
 from torchmetrics.functional.pairwise.manhatten import pairwise_manhatten_distance
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
-from torchmetrics.functional.regression.mean_absolute_error import mean_absolute_error
-from torchmetrics.functional.regression.mean_absolute_percentage_error import mean_absolute_percentage_error
-from torchmetrics.functional.regression.mean_squared_error import mean_squared_error
-from torchmetrics.functional.regression.mean_squared_log_error import mean_squared_log_error
+from torchmetrics.functional.regression.log_mse import mean_squared_log_error
+from torchmetrics.functional.regression.mae import mean_absolute_error
+from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
+from torchmetrics.functional.regression.mse import mean_squared_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
-from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
-    symmetric_mean_absolute_percentage_error,
-)
+from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
@@ -65,7 +67,6 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
-from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.functional.text.chrf import chrf_score
@@ -75,16 +76,19 @@ from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.functional.text.squad import squad
 from torchmetrics.functional.text.ter import translation_edit_rate
-from torchmetrics.functional.text.wer import wer, word_error_rate
+from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
+from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
+
+if _TRANSFORMERS_AUTO_AVAILABLE:
+    from torchmetrics.functional.text.bert import bert_score  # noqa: F401
 
 __all__ = [
     "accuracy",
     "auc",
     "auroc",
     "average_precision",
-    "bert_score",
     "bleu_score",
     "calibration_error",
     "chrf_score",
@@ -98,6 +102,7 @@ __all__ = [
     "f1",
     "f1_score",
     "fbeta",
+    "fbeta_score",
     "hamming_distance",
     "hinge",
     "hinge_loss",
@@ -113,13 +118,16 @@ __all__ = [
     "pairwise_cosine_similarity",
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",
+    "pairwise_manhattan_distance",
     "pairwise_manhatten_distance",
     "pearson_corrcoef",
+    "permutation_invariant_training",
     "pit",
     "pit_permutate",
     "precision",
     "precision_recall",
     "precision_recall_curve",
+    "peak_signal_noise_ratio",
     "psnr",
     "r2_score",
     "recall",
@@ -146,10 +154,10 @@ __all__ = [
     "specificity",
     "squad",
     "ssim",
+    "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",
-    "wer",
     "word_error_rate",
     "char_error_rate",
     "match_error_rate",

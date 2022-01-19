@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import warnings
-
 # referenced from
 # Library Name: torchtext
 # Authors: torchtext authors and @sluks
@@ -66,10 +64,11 @@ class SacreBLEUScore(BLEUScore):
 
 
     Example:
-        >>> translate_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> from torchmetrics import SacreBLEUScore
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = SacreBLEUScore()
-        >>> metric(translate_corpus, reference_corpus)
+        >>> metric(preds, target)
         tensor(0.7598)
 
     References:
@@ -101,10 +100,6 @@ class SacreBLEUScore(BLEUScore):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        warnings.warn(
-            "Input order of targets and preds were changed to predictions firsts and targets \
-                    second in v0.7. Warning will be removed in v0.8"
-        )
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
@@ -115,22 +110,20 @@ class SacreBLEUScore(BLEUScore):
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    def update(  # type: ignore
-        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
-    ) -> None:
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
-            translate_corpus: An iterable of machine translated corpus
-            reference_corpus: An iterable of iterables of reference corpus
+            preds: An iterable of machine translated corpus
+            target: An iterable of iterables of reference corpus
         """
-        self.trans_len, self.ref_len = _bleu_score_update(
-            translate_corpus,
-            reference_corpus,
+        self.preds_len, self.target_len = _bleu_score_update(
+            preds,
+            target,
             self.numerator,
             self.denominator,
-            self.trans_len,
-            self.ref_len,
+            self.preds_len,
+            self.target_len,
             self.n_gram,
             self.tokenizer,
         )

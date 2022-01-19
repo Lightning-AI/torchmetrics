@@ -273,7 +273,7 @@ We currently have implemented metrics within the following domains:
   )
 - Classification (
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
-  [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1),
+  [F1Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1score),
   [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
   and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
   )
@@ -284,21 +284,21 @@ We currently have implemented metrics within the following domains:
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
   )
 - Image (
-  [FID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#fid),
-  [KID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#kid),
-  [SSIM](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ssim)
+  [FrechetInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#FrechetInceptionDistance),
+  [KernelInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#KernelInceptionDistance),
+  [StructuralSimilarityIndexMeasure](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#StructuralSimilarityIndexMeasure)
   and [2 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
   )
 - Regression (
   [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
-  [PearsonCorrcoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
+  [PearsonCorrCoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
   [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
   )
 - Text (
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
-  [WER](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#wer)
+  [WordErrorRate](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#WordErrorRate)
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
@@ -324,7 +324,7 @@ over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn an
 
 If you want to cite this framework feel free to use this (but only if you loved it 😊):
 
-```misc
+```bibtex
 @misc{torchmetrics,
   author = {PyTorchLightning Team},
   title = {Torchmetrics: Machine learning metrics for distributed, scalable PyTorch applications},

@@ -29,7 +29,7 @@ from tests.retrieval.helpers import (
     _errors_test_functional_metric_parameters_with_nonbinary,
 )
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
-from torchmetrics.retrieval.retrieval_ndcg import RetrievalNormalizedDCG
+from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG
 
 seed_all(42)
 

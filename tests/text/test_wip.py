@@ -10,8 +10,8 @@ from torchmetrics.text.wip import WordInfoPreserved
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 
-def _compute_wip_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return wip(reference, prediction)
+def _compute_wip_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    return wip(target, preds)
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")

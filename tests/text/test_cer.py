@@ -15,8 +15,8 @@ else:
     compute_measures = Callable
 
 
-def compare_fn(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return cer(reference, prediction)
+def compare_fn(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    return cer(target, preds)
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")

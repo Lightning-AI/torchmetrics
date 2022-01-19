@@ -21,7 +21,7 @@ _PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comment_char: str = "#") -> List[str]:
     """Load requirements from a file.
 
-    >>> _load_requirements(_PROJECT_ROOT)  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> _load_requirements(_PROJECT_ROOT)
     ['numpy...', 'torch...']
     """
     with open(os.path.join(path_dir, file_name)) as file:
@@ -43,7 +43,7 @@ def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comme
 def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     """Load readme as decribtion.
 
-    >>> _load_readme_description(_PROJECT_ROOT, "",  "")  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> _load_readme_description(_PROJECT_ROOT, "",  "")
     '<div align="center">...'
     """
     path_readme = os.path.join(path_dir, "README.md")

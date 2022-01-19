@@ -14,6 +14,7 @@
 from collections import namedtuple
 
 Input = namedtuple("Input", ["preds", "targets"])
+SquadInput = namedtuple("SquadInput", ["preds", "targets", "exact_match", "f1"])
 
 # example taken from
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.corpus_bleu and adjusted
@@ -63,6 +64,45 @@ ERROR_RATES_BATCHES_2 = {
 _inputs_error_rate_batch_size_1 = Input(**ERROR_RATES_BATCHES_1)
 
 _inputs_error_rate_batch_size_2 = Input(**ERROR_RATES_BATCHES_2)
+
+SAMPLE_1 = {
+    "exact_match": 100.0,
+    "f1": 100.0,
+    "preds": {"prediction_text": "1976", "id": "id1"},
+    "targets": {"answers": {"answer_start": [97], "text": ["1976"]}, "id": "id1"},
+}
+
+SAMPLE_2 = {
+    "exact_match": 0.0,
+    "f1": 0.0,
+    "preds": {"prediction_text": "Hello", "id": "id2"},
+    "targets": {"answers": {"answer_start": [97], "text": ["World"]}, "id": "id2"},
+}
+
+BATCH = {
+    "exact_match": [100.0, 0.0],
+    "f1": [100.0, 0.0],
+    "preds": [
+        {"prediction_text": "1976", "id": "id1"},
+        {"prediction_text": "Hello", "id": "id2"},
+    ],
+    "targets": [
+        {"answers": {"answer_start": [97], "text": ["1976"]}, "id": "id1"},
+        {"answers": {"answer_start": [97], "text": ["World"]}, "id": "id2"},
+    ],
+}
+
+_inputs_squad_exact_match = SquadInput(
+    preds=SAMPLE_1["preds"], targets=SAMPLE_1["targets"], exact_match=SAMPLE_1["exact_match"], f1=SAMPLE_1["f1"]
+)
+
+_inputs_squad_exact_mismatch = SquadInput(
+    preds=SAMPLE_2["preds"], targets=SAMPLE_2["targets"], exact_match=SAMPLE_2["exact_match"], f1=SAMPLE_2["f1"]
+)
+
+_inputs_squad_batch_match = SquadInput(
+    preds=BATCH["preds"], targets=BATCH["targets"], exact_match=BATCH["exact_match"], f1=BATCH["f1"]
+)
 
 # single reference
 TUPLE_OF_SINGLE_REFERENCES = (((REFERENCE_1A), (REFERENCE_1B)), ((REFERENCE_1B), (REFERENCE_1C)))
