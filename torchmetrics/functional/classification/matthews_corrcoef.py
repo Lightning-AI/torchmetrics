@@ -43,7 +43,7 @@ def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
     cov_ytyt = s ** 2 - sum(tk * tk)
 
     if cov_ypyp * cov_ytyt == 0:
-        return 0.0
+        return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
     else:
         return cov_ytyp / torch.sqrt(cov_ytyt * cov_ypyp)
 
