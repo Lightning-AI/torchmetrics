@@ -143,7 +143,7 @@ class TestMatthewsCorrCoef(MetricTester):
 
 
 def test_zero_case():
-    """ Cases where the denominator in the matthews corrcoef is 0, the score should return 0"""
+    """Cases where the denominator in the matthews corrcoef is 0, the score should return 0."""
     # Example where neither 1 or 2 is present in the target tensor
-    out = matthews_corrcoef(torch.tensor([0,1,2]), torch.tensor([0,0,0]), 3)
+    out = matthews_corrcoef(torch.tensor([0, 1, 2]), torch.tensor([0, 0, 0]), 3)
     assert out == 0.0
