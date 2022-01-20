@@ -20,7 +20,6 @@ from torchmetrics.classification.ranking import _coverage_error_compute, _covera
 from torchmetrics.metric import Metric
 
 
-
 class CoverageError(Metric):
     def __init__(
             self,

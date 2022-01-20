@@ -16,24 +16,20 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from sklearn.metrics import (
-    coverage_error, label_ranking_average_precision_score, label_ranking_loss
-)
-from torch import tensor, Tensor
-from torchmetrics import CoverageError
+from sklearn.metrics import coverage_error, label_ranking_average_precision_score, label_ranking_loss
+from torch import Tensor, tensor
 
 from tests.classification.inputs import _input_multilabel as _input_mlb
 from tests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
-
+from torchmetrics import CoverageError
 
 seed_all(42)
 
 
-@pytest.mark.parametrize("metric", []
-)
+@pytest.mark.parametrize("metric", [])
 @pytest.mark.parametrize(
     "preds, target, subset_accuracy",
     [
@@ -55,6 +51,8 @@ class TestRanking(MetricTester):
             dist_sync_on_step=dist_sync_on_step,
             metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
         )
+
+
 """
     def test_accuracy_fn(self, preds, target, subset_accuracy):
         self.run_functional_metric_test(

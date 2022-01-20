@@ -57,7 +57,6 @@ from torchmetrics.classification import (  # noqa: E402, F401
     Recall,
     Specificity,
     StatScores,
-    
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402

@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple
+
 import torch
 from torch import Tensor
+
 from torchmetrics.utilities.checks import _input_format_classification
 
 
@@ -74,7 +76,7 @@ def coverage_error(y_pred, y_true, sample_weights=None):
 def _label_ranking_average_precision_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None):
     # Invert so that the highest score receives rank 1
     preds = -preds
-    relevant = 
+    relevant =
 
 def _label_ranking_average_precision_compute():
 
@@ -169,5 +171,3 @@ def label_ranking_loss(y_pred, y_true, sample_weights=None):
         return loss.sum() / sample_weights.sum()
 
     return loss.mean()
-
-
