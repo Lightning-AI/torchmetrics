@@ -18,7 +18,7 @@ import torch
 from scipy.linalg import sqrtm as scipy_sqrtm
 from torch.utils.data import Dataset
 
-from torchmetrics.image.fid import FID, sqrtm
+from torchmetrics.image.fid import FrechetInceptionDistance, sqrtm
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 torch.manual_seed(42)
@@ -37,7 +37,7 @@ def test_matrix_sqrt(matrix_size):
 
     scipy_res = scipy_sqrtm((cov1 @ cov2).numpy()).real
     tm_res = sqrtm(cov1 @ cov2)
-    assert torch.allclose(torch.tensor(scipy_res).float(), tm_res, atol=1e-3)
+    assert torch.allclose(torch.tensor(scipy_res).float().trace(), tm_res.trace())
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
@@ -47,7 +47,7 @@ def test_no_train():
     class MyModel(torch.nn.Module):
         def __init__(self):
             super().__init__()
-            self.metric = FID()
+            self.metric = FrechetInceptionDistance()
 
         def forward(self, x):
             return x
@@ -61,7 +61,7 @@ def test_no_train():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_fid_pickle():
     """Assert that we can initialize the metric and pickle it."""
-    metric = FID()
+    metric = FrechetInceptionDistance()
     assert metric
 
     # verify metrics work after being loaded from pickled state
@@ -73,25 +73,24 @@ def test_fid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     with pytest.warns(
         UserWarning,
-        match="Metric `FID` will save all extracted features in buffer."
+        match="Metric `FrechetInceptionDistance` will save all extracted features in buffer."
         " For large datasets this may lead to large memory footprint.",
     ):
-        _ = FID()
+        _ = FrechetInceptionDistance()
 
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
-            _ = FID(feature=2)
+            _ = FrechetInceptionDistance(feature=2)
     else:
         with pytest.raises(
-            ValueError,
-            match="FID metric requires that Torch-fidelity is installed."
-            "Either install as `pip install torchmetrics[image-quality]`"
-            " or `pip install torch-fidelity`",
+            ModuleNotFoundError,
+            match="FID metric requires that `Torch-fidelity` is installed."
+            " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
         ):
-            _ = FID()
+            _ = FrechetInceptionDistance()
 
     with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
-        _ = FID(feature=[1, 2])
+        _ = FrechetInceptionDistance(feature=[1, 2])
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
@@ -99,7 +98,7 @@ def test_fid_raises_errors_and_warnings():
 def test_fid_same_input(feature):
     """if real and fake are update on the same data the fid score should be
     0."""
-    metric = FID(feature=feature)
+    metric = FrechetInceptionDistance(feature=feature)
 
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
@@ -129,7 +128,7 @@ def test_compare_fid(tmpdir, feature=2048):
     """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
-    metric = FID(feature=feature).cuda()
+    metric = FrechetInceptionDistance(feature=feature).cuda()
 
     # Generate some synthetic data
     img1 = torch.randint(0, 180, (100, 3, 299, 299), dtype=torch.uint8)

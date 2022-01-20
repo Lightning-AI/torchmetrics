@@ -62,6 +62,7 @@ class KLDivergence(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = False
     # TODO: canot be used because if scripting
     # measures: Union[List[Tensor], Tensor]
     total: Tensor
@@ -91,10 +92,10 @@ class KLDivergence(Metric):
         self.reduction = reduction
 
         if self.reduction in ["mean", "sum"]:
-            self.add_state("measures", torch.zeros(1), dist_reduce_fx="sum")
+            self.add_state("measures", torch.tensor(0.0), dist_reduce_fx="sum")
         else:
             self.add_state("measures", [], dist_reduce_fx="cat")
-        self.add_state("total", torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("total", torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
         measures, total = _kld_update(p, q, self.log_prob)

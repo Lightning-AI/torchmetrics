@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 import warnings
-from functools import wraps
+from functools import partial, wraps
 from typing import Any, Callable
 
 from torchmetrics import _logger as log
@@ -47,3 +47,4 @@ def _debug(*args: Any, **kwargs: Any) -> None:
 rank_zero_debug = rank_zero_only(_debug)
 rank_zero_info = rank_zero_only(_info)
 rank_zero_warn = rank_zero_only(_warn)
+_future_warning = partial(warnings.warn, category=FutureWarning)

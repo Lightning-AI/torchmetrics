@@ -2,16 +2,16 @@
 Quick Start
 ###########
 
-TorchMetrics is a collection of 25+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 60+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
-* A standardized interface to increase reproducability
+* A standardized interface to increase reproducibility
 * Reduces Boilerplate
-* Distrubuted-training compatible
+* Distributed-training compatible
 * Rigorously tested
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
-You can use TorchMetrics in any PyTorch model, or with in `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
+You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
 
 * This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
@@ -96,10 +96,19 @@ The code below shows how to use the class-based interface:
 Implementing your own metric
 ****************************
 
-Implementing your own metric is as easy as subclassing an :class:`torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
+Implementing your own metric is as easy as subclassing a :class:`torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
 
 1. Implement ``__init__`` where you call ``self.add_state`` for every internal state that is needed for the metrics computations
 2. Implement ``update`` method, where all logic that is necessary for updating metric states go
 3. Implement ``compute`` method, where the final metric computations happens
 
 For practical examples and more info about implementing a metric, please see this :ref:`page <implement>`.
+
+
+Development Environment
+~~~~~~~~~~~~~~~~~~~~~~~
+
+TorchMetrics provides a `Devcontainer <https://code.visualstudio.com/docs/remote/containers>`_ configuration for `Visual Studio Code <https://code.visualstudio.com/>`_ to use a `Docker container <https://www.docker.com/>`_ as a pre-configured development environment.
+This avoids struggles setting up a development environment and makes them reproducible and consistent.
+Please follow the `installation instructions <https://code.visualstudio.com/docs/remote/containers#_installation>`_ and make yourself familiar with the `container tutorials <https://code.visualstudio.com/docs/remote/containers-tutorial>`_ if you want to use them.
+In order to use GPUs, you can enable them within the ``.devcontainer/devcontainer.json`` file.

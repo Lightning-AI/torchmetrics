@@ -37,7 +37,15 @@ def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
     pk = confmat.sum(dim=0).float()
     c = torch.trace(confmat).float()
     s = confmat.sum().float()
-    return (c * s - sum(tk * pk)) / (torch.sqrt(s ** 2 - sum(pk * pk)) * torch.sqrt(s ** 2 - sum(tk * tk)))
+
+    cov_ytyp = c * s - sum(tk * pk)
+    cov_ypyp = s ** 2 - sum(pk * pk)
+    cov_ytyt = s ** 2 - sum(tk * tk)
+
+    if cov_ypyp * cov_ytyt == 0:
+        return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
+    else:
+        return cov_ytyp / torch.sqrt(cov_ytyt * cov_ypyp)
 
 
 def matthews_corrcoef(
@@ -64,7 +72,7 @@ def matthews_corrcoef(
         target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
         num_classes: Number of classes in the dataset.
         threshold:
-            Threshold value for binary or multi-label probabilities. default: 0.5
+            Threshold value for binary or multi-label probabilities.
 
     Example:
         >>> from torchmetrics.functional import matthews_corrcoef

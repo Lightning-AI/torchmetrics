@@ -99,7 +99,7 @@ def cohen_kappa(
              - ``'quadratic'``: quadratic weighting
 
          threshold:
-             Threshold value for binary or multi-label probabilities. default: 0.5
+             Threshold value for binary or multi-label probabilities.
 
      Example:
          >>> from torchmetrics.functional import cohen_kappa

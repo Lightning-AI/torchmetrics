@@ -59,12 +59,12 @@ class R2Score(Metric):
             * ``'variance_weighted'`` scores are weighted by their individual variances
 
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:
@@ -88,6 +88,7 @@ class R2Score(Metric):
 
     """
     is_differentiable = True
+    higher_is_better = True
     sum_squared_error: Tensor
     sum_error: Tensor
     residual: Tensor

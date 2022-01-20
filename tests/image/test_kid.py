@@ -17,7 +17,7 @@ import pytest
 import torch
 from torch.utils.data import Dataset
 
-from torchmetrics.image.kid import KID
+from torchmetrics.image.kid import KernelInceptionDistance
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 torch.manual_seed(42)
@@ -30,7 +30,7 @@ def test_no_train():
     class MyModel(torch.nn.Module):
         def __init__(self):
             super().__init__()
-            self.metric = KID()
+            self.metric = KernelInceptionDistance()
 
         def forward(self, x):
             return x
@@ -44,7 +44,7 @@ def test_no_train():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_kid_pickle():
     """Assert that we can initialize the metric and pickle it."""
-    metric = KID()
+    metric = KernelInceptionDistance()
     assert metric
 
     # verify metrics work after being loaded from pickled state
@@ -56,28 +56,27 @@ def test_kid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     with pytest.warns(
         UserWarning,
-        match="Metric `KID` will save all extracted features in buffer."
+        match="Metric `Kernel Inception Distance` will save all extracted features in buffer."
         " For large datasets this may lead to large memory footprint.",
     ):
-        KID()
+        KernelInceptionDistance()
 
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
-            KID(feature=2)
+            KernelInceptionDistance(feature=2)
     else:
         with pytest.raises(
-            ValueError,
-            match="KID metric requires that Torch-fidelity is installed."
-            "Either install as `pip install torchmetrics[image]`"
-            " or `pip install torch-fidelity`",
+            ModuleNotFoundError,
+            match="Kernel Inception Distance metric requires that `Torch-fidelity` is installed."
+            " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`.",
         ):
-            KID()
+            KernelInceptionDistance()
 
     with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
-        KID(feature=[1, 2])
+        KernelInceptionDistance(feature=[1, 2])
 
     with pytest.raises(ValueError, match="Argument `subset_size` should be smaller than the number of samples"):
-        m = KID()
+        m = KernelInceptionDistance()
         m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=True)
         m.update(torch.randint(0, 255, (5, 3, 299, 299), dtype=torch.uint8), real=False)
         m.compute()
@@ -86,26 +85,26 @@ def test_kid_raises_errors_and_warnings():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_kid_extra_parameters():
     with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
-        KID(subsets=-1)
+        KernelInceptionDistance(subsets=-1)
 
     with pytest.raises(ValueError, match="Argument `subset_size` expected to be integer larger than 0"):
-        KID(subset_size=-1)
+        KernelInceptionDistance(subset_size=-1)
 
     with pytest.raises(ValueError, match="Argument `degree` expected to be integer larger than 0"):
-        KID(degree=-1)
+        KernelInceptionDistance(degree=-1)
 
     with pytest.raises(ValueError, match="Argument `gamma` expected to be `None` or float larger than 0"):
-        KID(gamma=-1)
+        KernelInceptionDistance(gamma=-1)
 
     with pytest.raises(ValueError, match="Argument `coef` expected to be float larger than 0"):
-        KID(coef=-1)
+        KernelInceptionDistance(coef=-1)
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_kid_same_input(feature):
     """test that the metric works."""
-    metric = KID(feature=feature, subsets=5, subset_size=2)
+    metric = KernelInceptionDistance(feature=feature, subsets=5, subset_size=2)
 
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
@@ -136,7 +135,7 @@ def test_compare_kid(tmpdir, feature=2048):
     """check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
-    metric = KID(feature=feature, subsets=1, subset_size=100).cuda()
+    metric = KernelInceptionDistance(feature=feature, subsets=1, subset_size=100).cuda()
 
     # Generate some synthetic data
     img1 = torch.randint(0, 180, (100, 3, 299, 299), dtype=torch.uint8)

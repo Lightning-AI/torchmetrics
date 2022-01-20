@@ -14,15 +14,16 @@
 from typing import Any, Callable, List, Optional
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class SpearmanCorrcoef(Metric):
+class SpearmanCorrCoef(Metric):
     r"""
     Computes `spearmans rank correlation coefficient`_.
 
@@ -34,26 +35,27 @@ class SpearmanCorrcoef(Metric):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
     Example:
-        >>> from torchmetrics import SpearmanCorrcoef
+        >>> from torchmetrics import SpearmanCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> spearman = SpearmanCorrcoef()
+        >>> spearman = SpearmanCorrCoef()
         >>> spearman(preds, target)
         tensor(1.0000)
 
     """
     is_differentiable = False
+    higher_is_better = True
     preds: List[Tensor]
     target: List[Tensor]
 
@@ -94,3 +96,26 @@ class SpearmanCorrcoef(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)
+
+
+class SpearmanCorrcoef(SpearmanCorrCoef):
+    """Computes `spearmans rank correlation coefficient`_.
+
+    Example:
+        >>> spearman = SpearmanCorrCoef()
+        >>> spearman(torch.tensor([2.5, 0.0, 2, 8]), torch.tensor([3, -0.5, 2, 7]))
+        tensor(1.0000)
+
+    .. deprecated:: v0.7
+        Renamed in favor of :class:`torchmetrics.SpearmanCorrCoef`. Will be removed in v0.8.
+    """
+
+    @deprecated(target=SpearmanCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+    def __init__(
+        self,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable] = None,
+    ) -> None:
+        void(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

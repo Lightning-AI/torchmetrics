@@ -24,7 +24,7 @@ from tests.classification.inputs import _input_multidim_multiclass_prob as _inpu
 from tests.classification.inputs import _input_multilabel
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, MetricTester
-from torchmetrics.classification.average_precision import AveragePrecision
+from torchmetrics.classification.avg_precision import AveragePrecision
 from torchmetrics.functional import average_precision
 
 seed_all(42)
@@ -134,9 +134,9 @@ class TestAveragePrecision(MetricTester):
         # And a constant score
         # The precision is then the fraction of positive whatever the recall
         # is, as there is only one threshold:
-        pytest.param(tensor([1, 1, 1, 1]), tensor([0, 0, 0, 1]), 0.25),
+        (tensor([1, 1, 1, 1]), tensor([0, 0, 0, 1]), 0.25),
         # With threshold 0.8 : 1 TP and 2 TN and one FN
-        pytest.param(tensor([0.6, 0.7, 0.8, 9]), tensor([1, 0, 0, 1]), 0.75),
+        (tensor([0.6, 0.7, 0.8, 9]), tensor([1, 0, 0, 1]), 0.75),
     ],
 )
 def test_average_precision(scores, target, expected_score):

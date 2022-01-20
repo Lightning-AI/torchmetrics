@@ -13,15 +13,19 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pesq import pesq
+from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
+__doctest_requires__ = {("PerceptualEvaluationSpeechQuality", "PESQ"): ["pesq"]}
 
-class PESQ(Metric):
-    """PESQ (Perceptual Evaluation of Speech Quality)
+
+class PerceptualEvaluationSpeechQuality(Metric):
+    """Perceptual Evaluation of Speech Quality (PESQ)
 
     This is a wrapper for the pesq package [1]. . Note that input will be moved to `cpu`
     to perform the metric calculation.
@@ -54,7 +58,7 @@ class PESQ(Metric):
             will be used to perform the allgather
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``peqs`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
@@ -62,15 +66,15 @@ class PESQ(Metric):
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.audio import PESQ
+        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> nb_pesq = PESQ(8000, 'nb')
+        >>> nb_pesq = PerceptualEvaluationSpeechQuality(8000, 'nb')
         >>> nb_pesq(preds, target)
         tensor(2.2076)
-        >>> wb_pesq = PESQ(16000, 'wb')
+        >>> wb_pesq = PerceptualEvaluationSpeechQuality(16000, 'wb')
         >>> wb_pesq(preds, target)
         tensor(1.7359)
 
@@ -99,9 +103,9 @@ class PESQ(Metric):
             dist_sync_fn=dist_sync_fn,
         )
         if not _PESQ_AVAILABLE:
-            raise ValueError(
-                "PESQ metric requires that pesq is installed."
-                "Either install as `pip install torchmetrics[audio]` or `pip install pesq`"
+            raise ModuleNotFoundError(
+                "PerceptualEvaluationSpeechQuality metric requires that `pesq` is installed."
+                " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
             )
         if fs not in (8000, 16000):
             raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
@@ -120,7 +124,9 @@ class PESQ(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        pesq_batch = pesq(preds, target, self.fs, self.mode, False).to(self.sum_pesq.device)
+        pesq_batch = perceptual_evaluation_speech_quality(preds, target, self.fs, self.mode, False).to(
+            self.sum_pesq.device
+        )
 
         self.sum_pesq += pesq_batch.sum()
         self.total += pesq_batch.numel()
@@ -128,3 +134,35 @@ class PESQ(Metric):
     def compute(self) -> Tensor:
         """Computes average PESQ."""
         return self.sum_pesq / self.total
+
+
+class PESQ(PerceptualEvaluationSpeechQuality):
+    """Perceptual Evaluation of Speech Quality (PESQ).
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.audio.PerceptualEvaluationSpeechQuality`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn(8000)
+        >>> target = torch.randn(8000)
+        >>> nb_pesq = PESQ(8000, 'nb')
+        >>> nb_pesq(preds, target)
+        tensor(2.2076)
+        >>> wb_pesq = PESQ(16000, 'wb')
+        >>> wb_pesq(preds, target)
+        tensor(1.7359)
+    """
+
+    @deprecated(target=PerceptualEvaluationSpeechQuality, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+    def __init__(
+        self,
+        fs: int,
+        mode: str,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+    ) -> None:
+        void(fs, mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

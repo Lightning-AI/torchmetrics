@@ -41,6 +41,11 @@ class AUROC(Metric):
     dimension more than the ``target`` tensor the input will be interpretated as
     multiclass.
 
+    .. note::
+        If either the positive class or negative class is completly missing in the target tensor,
+        the auroc score is meaningless in this case and a score of 0 will be returned together
+        with an warning.
+
     Args:
        num_classes: integer with number of classes for multi-label and multiclass problems.
            Should be set to ``None`` for binary problems
@@ -58,12 +63,13 @@ class AUROC(Metric):
            If not ``None``, calculates standardized partial AUC over the
            range [0, max_fpr]. Should be a float between 0 and 1.
        compute_on_step:
-           Forward only calls ``update()`` and return None if this is set to False. default: True
+           Forward only calls ``update()`` and return None if this is set to False.
        dist_sync_on_step:
            Synchronize metric state across processes at each ``forward()``
            before returning the value at the step.
        process_group:
-           Specify the process group on which synchronization is called. default: None (which selects the entire world)
+           Specify the process group on which synchronization is called.
+
        dist_sync_fn:
            Callback that performs the allgather operation on the metric state. When ``None``, DDP
            will be used to perform the allgather
@@ -100,6 +106,7 @@ class AUROC(Metric):
 
     """
     is_differentiable = False
+    higher_is_better = True
     preds: List[Tensor]
     target: List[Tensor]
 

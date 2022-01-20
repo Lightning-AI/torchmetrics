@@ -32,12 +32,19 @@ The example below shows how to use a metric in your `LightningModule <https://py
             preds = self(x)
             ...
             # log step metric
-            self.log('train_acc_step', self.accuracy(preds, y))
+            self.accuracy(preds, y)
+            self.log('train_acc_step', self.accuracy)
             ...
 
         def training_epoch_end(self, outs):
             # log epoch metric
-            self.log('train_acc_epoch', self.accuracy.compute())
+            self.log('train_acc_epoch', self.accuracy)
+
+.. note::
+    ``self.log`` in Lightning only supports logging of *scalar-tensors*. While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics such as
+    :class:`~torchmetrics.ConfusionMatrix`, :class:`~torchmetrics.ROC`, :class:`~torchmetrics.MAP`, :class:`~torchmetrics.RougeScore` return outputs that are non-scalar
+    tensors (often dicts or list of tensors) and should therefore be dealt with separately. For info about the return type and shape please look at the documentation for
+    the ``compute`` method for each metric you want to log.
 
 ********************
 Logging TorchMetrics
@@ -79,6 +86,43 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
             ...
             self.valid_acc(logits, y)
             self.log('valid_acc', self.valid_acc, on_step=True, on_epoch=True)
+
+.. note:: the ``.reset()`` method of the metric will automatically be called at the end of an epoch within lightning only if you pass
+    the metric instance inside `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_.
+    Also if you are calling ``.compute`` by yourself, you need to call the ``.reset()`` too.
+
+    .. testcode:: python
+
+        class MyModule(LightningModule):
+
+            def __init__(self):
+                ...
+                self.train_acc = torchmetrics.Accuracy()
+                self.train_precision = torchmetrics.Precision()
+
+            def training_step(self, batch, batch_idx):
+                x, y = batch
+                preds = self(x)
+                ...
+
+                # this will reset the metric automatically at the epoch end
+                self.train_acc(preds, y)
+                self.log('train_acc', self.train_acc, on_step=True, on_epoch=False)
+
+                # this will not reset the metric automatically at the epoch end
+                precision = self.train_precision(preds, y)
+                self.log('train_precision', precision, on_step=True, on_epoch=False)
+
+            def training_epoch_end(self, outputs):
+                # this will compute and reset the metric automatically at the epoch end
+                self.log('train_epoch_accuracy', self.training_acc)
+
+                # this will not reset the metric automatically at the epoch end so you
+                # need to call it yourself
+                mean_precision = self.precision.compute()
+                self.log('train_epoch_precision', mean_precision)
+                self.precision.reset()
+
 
 .. note::
 

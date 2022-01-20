@@ -5,6 +5,7 @@
 .. _Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
 .. _Normalized Discounted Cumulative Gain: https://en.wikipedia.org/wiki/Discounted_cumulative_gain
 .. _IR Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Precision
+.. _IR R-Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#R-precision
 .. _IR Recall: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Recall
 .. _Accuracy: https://en.wikipedia.org/wiki/Accuracy_and_precision
 .. _SMAPE: https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error
@@ -27,7 +28,7 @@
 .. _sklearn averaging methods: https://scikit-learn.org/stable/modules/model_evaluation.html#multiclass-and-multilabel-classification
 .. _Cosine Similarity: https://en.wikipedia.org/wiki/Cosine_similarity
 .. _spearmans rank correlation coefficient: https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
-.. _WER: https://en.wikipedia.org/wiki/Word_error_rate
+.. _WordErrorRate: https://en.wikipedia.org/wiki/Word_error_rate
 .. _FID: https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance
 .. _mean-squared-error: https://en.wikipedia.org/wiki/Mean_squared_error
 .. _SSIM: https://en.wikipedia.org/wiki/Structural_similarity
@@ -37,6 +38,7 @@
 .. _MAPE implementation returns: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
 .. _mean squared logarithmic error: https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error
 .. _LPIPS: https://arxiv.org/abs/1801.03924
+.. _Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR): https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
 .. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/document/7952154
 .. _Computes the Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf
@@ -70,3 +72,9 @@
 .. _Python ROUGE Implementation: https://pypi.org/project/rouge-score/
 .. _Scikit_Learn-Ranking.py: https: //github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
 .. _Verified Uncertainty Calibration: https://arxiv.org/abs/1909.10155
+.. _SQuAD Metric: https://arxiv.org/pdf/1606.05250.pdf
+.. _chrF score: https://aclanthology.org/W15-3049.pdf
+.. _chrF++ score: https://aclanthology.org/W17-4770.pdf
+.. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
+.. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
+.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf

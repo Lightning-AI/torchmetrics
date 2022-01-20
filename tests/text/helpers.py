@@ -13,7 +13,6 @@
 # limitations under the License.
 import pickle
 import sys
-from enum import Enum, unique
 from functools import partial
 from typing import Any, Callable, Sequence, Union
 
@@ -29,12 +28,6 @@ try:
     set_start_method("spawn")
 except RuntimeError:
     pass
-
-
-@unique
-class INPUT_ORDER(Enum):
-    PREDS_FIRST = 1
-    TARGETS_FIRST = 2
 
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
@@ -56,7 +49,6 @@ def _class_test(
     device: str = "cpu",
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
-    input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
     key: str = None,
     **kwargs_update: Any,
 ):
@@ -78,7 +70,6 @@ def _class_test(
             calculated across devices for each batch (and not just at the end)
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-        input_order: Define the ordering for the preds and targets positional arguments.
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
             the sk_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -106,11 +97,7 @@ def _class_test(
 
     for i in range(rank, NUM_BATCHES, worldsize):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
-
-        if input_order == INPUT_ORDER.PREDS_FIRST:
-            batch_result = metric(preds[i], targets[i], **batch_kwargs_update)
-        elif input_order == INPUT_ORDER.TARGETS_FIRST:
-            batch_result = metric(targets[i], preds[i], **batch_kwargs_update)
+        batch_result = metric(preds[i], targets[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             # Concatenation of Sequence of strings
@@ -124,10 +111,7 @@ def _class_test(
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
-            if input_order == INPUT_ORDER.PREDS_FIRST:
-                sk_batch_result = sk_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
-            elif input_order == INPUT_ORDER.TARGETS_FIRST:
-                sk_batch_result = sk_metric(ddp_targets, ddp_preds, **ddp_kwargs_upd)
+            sk_batch_result = sk_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
             _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
         elif check_batch and not metric.dist_sync_on_step:
@@ -135,11 +119,7 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            if input_order == INPUT_ORDER.PREDS_FIRST:
-                sk_batch_result = sk_metric(preds[i], targets[i], **batch_kwargs_update)
-            elif input_order == INPUT_ORDER.TARGETS_FIRST:
-                sk_batch_result = sk_metric(targets[i], preds[i], **batch_kwargs_update)
-
+            sk_batch_result = sk_metric(preds[i], targets[i], **batch_kwargs_update)
             _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
     # check that metrics are hashable
@@ -159,11 +139,7 @@ def _class_test(
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    if input_order == INPUT_ORDER.PREDS_FIRST:
-        sk_result = sk_metric(total_preds, total_targets, **total_kwargs_update)
-    elif input_order == INPUT_ORDER.TARGETS_FIRST:
-        sk_result = sk_metric(total_targets, total_preds, **total_kwargs_update)
-
+    sk_result = sk_metric(total_preds, total_targets, **total_kwargs_update)
     # assert after aggregation
     _assert_allclose(result, sk_result, atol=atol, key=key)
 
@@ -177,7 +153,6 @@ def _functional_test(
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
-    input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
     key: str = None,
     **kwargs_update,
 ):
@@ -191,7 +166,6 @@ def _functional_test(
         metric_args: dict with additional arguments used for class initialization
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-        input_order: Define the ordering for the preds and targets positional arguments.
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
             the sk_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -207,19 +181,13 @@ def _functional_test(
 
     for i in range(NUM_BATCHES):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
-        if input_order == INPUT_ORDER.PREDS_FIRST:
-            lightning_result = metric(preds[i], targets[i], **extra_kwargs)
-        elif input_order == INPUT_ORDER.TARGETS_FIRST:
-            lightning_result = metric(targets[i], preds[i], **extra_kwargs)
+        lightning_result = metric(preds[i], targets[i], **extra_kwargs)
 
         extra_kwargs = {
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        if input_order == INPUT_ORDER.PREDS_FIRST:
-            sk_result = sk_metric(preds[i], targets[i], **extra_kwargs)
-        elif input_order == INPUT_ORDER.TARGETS_FIRST:
-            sk_result = sk_metric(targets[i], preds[i], **extra_kwargs)
+        sk_result = sk_metric(preds[i], targets[i], **extra_kwargs)
 
         # assert its the same
         _assert_allclose(lightning_result, sk_result, atol=atol, key=key)
@@ -271,7 +239,6 @@ class TextTester(MetricTester):
         sk_metric: Callable,
         metric_args: dict = None,
         fragment_kwargs: bool = False,
-        input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
         key: str = None,
         **kwargs_update,
     ):
@@ -284,7 +251,6 @@ class TextTester(MetricTester):
             sk_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-            input_order: Define the ordering for the preds and targets positional arguments.
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -301,7 +267,6 @@ class TextTester(MetricTester):
             atol=self.atol,
             device=device,
             fragment_kwargs=fragment_kwargs,
-            input_order=input_order,
             key=key,
             **kwargs_update,
         )
@@ -319,7 +284,6 @@ class TextTester(MetricTester):
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
-        input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
         key: str = None,
         **kwargs_update,
     ):
@@ -339,7 +303,6 @@ class TextTester(MetricTester):
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-            input_order: Define the ordering for the preds and targets positional arguments.
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -365,7 +328,6 @@ class TextTester(MetricTester):
                     atol=self.atol,
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
-                    input_order=input_order,
                     key=key,
                     **kwargs_update,
                 ),
@@ -389,7 +351,6 @@ class TextTester(MetricTester):
                 device=device,
                 fragment_kwargs=fragment_kwargs,
                 check_scriptable=check_scriptable,
-                input_order=input_order,
                 key=key,
                 **kwargs_update,
             )
@@ -449,7 +410,6 @@ class TextTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = None,
-        input_order: INPUT_ORDER = INPUT_ORDER.PREDS_FIRST,
         key: str = None,
     ):
         """Test if a metric is differentiable or not.
@@ -459,17 +419,13 @@ class TextTester(MetricTester):
             targets: torch tensor with targets
             metric_module: the metric module to test
             metric_args: dict with additional arguments used for class initialization
-            input_order: Define the ordering for the preds and targets positional arguments.
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
         metric = metric_module(**metric_args)
-        if input_order == INPUT_ORDER.PREDS_FIRST:
-            out = metric(preds[0], targets[0])
-        elif input_order == INPUT_ORDER.TARGETS_FIRST:
-            out = metric(targets[0], preds[0])
+        out = metric(preds[0], targets[0])
 
         # Check if requires_grad matches is_differentiable attribute
         _assert_requires_grad(metric, out, key=key)

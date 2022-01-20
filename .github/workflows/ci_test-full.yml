@@ -8,25 +8,55 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
 
-jobs:
-  pytest:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
-    runs-on: ${{ matrix.os }}
+jobs:
+  # ToDo: consider unifying in a single workflow and distributing outputs to all others depending ones
+  check-diff:
+    runs-on: ubuntu-20.04
     if: github.event.pull_request.draft == false
+    timeout-minutes: 5
+    # Map a step output to a job output
+    outputs:
+      focus: ${{ steps.diff-domains.outputs.focus }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Get PR diff
+      id: diff-domains
+      env:
+        PR_NUMBER: "${{ github.event.pull_request.number }}"
+      run: |
+        pip install fire requests
+        # python actions/assistant.py list_runtimes $PR_NUMBER
+        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+    - run: echo "${{ steps.diff-domains.outputs.focus }}"
+
+  pytest:
+    runs-on: ${{ matrix.os }}
+    needs: check-diff
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
         python-version: [3.6, 3.8, 3.9]
-        requires: ['minimal', 'latest']
+        requires: ['oldest', 'latest']
         exclude:
-          - python-version: 3.6
-            requires: 'latest'
-          - python-version: 3.9
-            requires: 'minimal'
+          - {python-version: 3.6, requires: 'latest'}
+          - {python-version: 3.9, requires: 'oldest'}
+    env:
+      PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
+      PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
+      TRANSFORMERS_CACHE: ci-cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 55
+    # seems that MacOS jobs take much more than orger OS
+    timeout-minutes: 85
 
     steps:
     - uses: actions/checkout@v2
@@ -34,10 +64,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Update Pip
-      run: |
-        pip install "pip>=20.1" --upgrade --user  # needed for get pip cacher folder
 
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
     - name: Setup macOS
@@ -54,10 +80,12 @@ jobs:
       run: |
         choco install ffmpeg
 
+    - name: PIP install assitant's deps
+      run: pip install fire requests
+
     - name: Set min. dependencies
-      if: matrix.requires == 'minimal'
-      run: |
-        python .github/set-minimal-versions.py
+      if: matrix.requires == 'oldest'
+      run: python .github/assistant.py set-oldest-versions
 
     - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
       if: matrix.requires == 'latest'
@@ -74,30 +102,37 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/test.txt') }}
+        key: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}
         restore-keys: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-
 
     - name: Install dependencies
       run: |
         pip --version
-        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
-        pip install --requirement requirements/devel.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-        pip uninstall -y torchmetrics
+        pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip list
       shell: bash
 
+    - name: HF cache
+      uses: actions/cache@v2
+      with:
+        path: $TRANSFORMERS_CACHE
+        key: cache-transformers
+
     - name: Tests
+      env:
+        TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
-        python -m pytest torchmetrics tests -v --cov=torchmetrics --junitxml=junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}
-        path: junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
+        name: $PYTEST_ARTEFACT
+        path: "junit/$PYTEST_ARTEFACT"
       if: failure()
 
     - name: Statistics
@@ -119,7 +154,3 @@ jobs:
         env_vars: OS,PYTHON
         name: codecov-umbrella
         fail_ci_if_error: false
-
-    - name: Integrations
-      run: |
-        python -m pytest integrations -v --durations=25

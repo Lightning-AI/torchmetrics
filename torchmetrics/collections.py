@@ -23,6 +23,9 @@ from torch.functional import Tensor
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
+# this is just a bypass for this module name collision with build-in one
+from torchmetrics.utilities.imports import OrderedDict
+
 
 class MetricCollection(nn.ModuleDict):
     """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.

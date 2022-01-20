@@ -278,8 +278,7 @@ def setup(app):
 
 # copy all notebooks to local folder
 path_nbs = os.path.join(_PATH_HERE, "notebooks")
-if not os.path.isdir(path_nbs):
-    os.mkdir(path_nbs)
+os.makedirs(path_nbs, exist_ok=True)
 for path_ipynb in glob.glob(os.path.join(_PATH_ROOT, "notebooks", "*.ipynb")):
     path_ipynb2 = os.path.join(path_nbs, os.path.basename(path_ipynb))
     shutil.copy(path_ipynb, path_ipynb2)

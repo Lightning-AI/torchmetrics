@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from typing import Any, Callable, List, Optional, Union
-from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -22,9 +20,9 @@ from torchmetrics.functional.text.wer import _wer_compute, _wer_update
 from torchmetrics.metric import Metric
 
 
-class WER(Metric):
+class WordErrorRate(Metric):
     r"""
-    Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
+    Word error rate (WordErrorRate_) is a common metric of the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
     Word error rate can then be computed as:
@@ -42,27 +40,25 @@ class WER(Metric):
     Compute WER score of transcribed segments against references.
 
     Args:
-        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively.
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
-        >>> metric = WER()
-        >>> metric(predictions, references)
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
+        >>> metric = WordErrorRate()
+        >>> metric(preds, target)
         tensor(0.5000)
     """
     is_differentiable = False
@@ -72,7 +68,6 @@ class WER(Metric):
 
     def __init__(
         self,
-        concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
@@ -84,19 +79,17 @@ class WER(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        if concatenate_texts is not None:
-            warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Word Error Rate scores.
 
         Args:
-            predictions: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
         """
-        errors, total = _wer_update(predictions, references)
+        errors, total = _wer_update(preds, target)
         self.errors += errors
         self.total += total
 
@@ -104,6 +97,6 @@ class WER(Metric):
         """Calculate the word error rate.
 
         Returns:
-            (Tensor) Word error rate
+            Word error rate score
         """
         return _wer_compute(self.errors, self.total)

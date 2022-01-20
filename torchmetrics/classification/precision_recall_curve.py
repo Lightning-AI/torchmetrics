@@ -44,25 +44,25 @@ class PrecisionRecallCurve(Metric):
             this argument should not be set as we iteratively change it in the
             range [0,num_classes-1]
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Example (binary case):
         >>> from torchmetrics import PrecisionRecallCurve
-        >>> pred = torch.tensor([0, 1, 2, 3])
+        >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])
         >>> target = torch.tensor([0, 1, 1, 0])
         >>> pr_curve = PrecisionRecallCurve(pos_label=1)
         >>> precision, recall, thresholds = pr_curve(pred, target)
         >>> precision
-        tensor([0.6667, 0.5000, 0.0000, 1.0000])
+        tensor([0.6667, 0.5000, 1.0000, 1.0000])
         >>> recall
-        tensor([1.0000, 0.5000, 0.0000, 0.0000])
+        tensor([1.0000, 0.5000, 0.5000, 0.0000])
         >>> thresholds
-        tensor([1, 2, 3])
+        tensor([0.1000, 0.4000, 0.8000])
 
     Example (multiclass case):
         >>> pred = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
@@ -72,13 +72,13 @@ class PrecisionRecallCurve(Metric):
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> pr_curve = PrecisionRecallCurve(num_classes=5)
         >>> precision, recall, thresholds = pr_curve(pred, target)
-        >>> precision   # doctest: +NORMALIZE_WHITESPACE
+        >>> precision
         [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
         >>> recall
         [tensor([1., 0.]), tensor([1., 0.]), tensor([1., 0., 0.]), tensor([1., 0., 0.]), tensor([nan, 0.])]
         >>> thresholds
-        [tensor([0.7500]), tensor([0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500])]
+        [tensor(0.7500), tensor(0.7500), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor(0.0500)]
     """
 
     is_differentiable = False

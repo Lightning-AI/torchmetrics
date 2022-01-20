@@ -13,6 +13,8 @@ clean:
 	rm -rf ./docs/source/generated
 	rm -rf ./docs/source/*/generated
 	rm -rf ./docs/source/api
+	rm -rf build
+	rm -rf dist
 
 test: clean env
 
@@ -26,4 +28,4 @@ docs: clean
 
 env:
 	pip install -r requirements.txt
-	pip install -r requirements/test.txt
+	pip install -r requirements/devel.txt

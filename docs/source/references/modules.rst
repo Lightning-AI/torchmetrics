@@ -15,9 +15,9 @@ metrics.
     :noindex:
 
 
-*************************
-Basic Aggregation Metrics
-*************************
+*****************
+Basic Aggregation
+*****************
 
 Torchmetrics comes with a number of metrics for aggregation of basic statistics: mean, max, min etc. of
 either tensors or native python floats.
@@ -52,12 +52,9 @@ SumMetric
 .. autoclass:: torchmetrics.SumMetric
     :noindex:
 
-*************
-Audio Metrics
-*************
-
-About Audio Metrics
-~~~~~~~~~~~~~~~~~~~
+*****
+Audio
+*****
 
 For the purposes of audio metrics, inputs (predictions, targets) must have the same size.
 If the input is 1D tensors the output will be a scalar. If the input is multi-dimensional with shape ``[...,time]``
@@ -66,53 +63,64 @@ the metric will be computed over the ``time`` dimension.
 .. doctest::
 
     >>> import torch
+    >>> from torchmetrics import SignalNoiseRatio
+    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+    >>> snr = SignalNoiseRatio()
+    >>> snr(preds, target)
+    tensor(16.1805)
     >>> from torchmetrics import SNR
     >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
     >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-    >>> snr = SNR()
-    >>> snr_val = snr(preds, target)
-    >>> snr_val
+    >>> snr = SignalNoiseRatio()
+    >>> snr(preds, target)
     tensor(16.1805)
 
-PESQ
-~~~~
+PerceptualEvaluationSpeechQuality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PESQ
+.. autoclass:: torchmetrics.audio.pesq.PerceptualEvaluationSpeechQuality
 
-PIT
-~~~
+PermutationInvariantTraining
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PIT
+.. autoclass:: torchmetrics.PermutationInvariantTraining
     :noindex:
 
-SI_SDR
-~~~~~~
+SignalDistortionRatio
+~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SI_SDR
+.. autoclass:: torchmetrics.SignalDistortionRatio
     :noindex:
 
-SI_SNR
-~~~~~~
+ScaleInvariantSignalDistortionRatio
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SI_SNR
+.. autoclass:: torchmetrics.ScaleInvariantSignalDistortionRatio
     :noindex:
 
-SNR
-~~~
+ScaleInvariantSignalNoiseRatio
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SNR
+.. autoclass:: torchmetrics.ScaleInvariantSignalNoiseRatio
     :noindex:
 
-STOI
-~~~~
+SignalNoiseRatio
+~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.STOI
+.. autoclass:: torchmetrics.SignalNoiseRatio
+    :noindex:
+
+ShortTimeObjectiveIntelligibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.audio.stoi.ShortTimeObjectiveIntelligibility
     :noindex:
 
 
-**********************
-Classification Metrics
-**********************
+**************
+Classification
+**************
 
 Input types
 ~~~~~~~~~~~
@@ -272,16 +280,16 @@ ConfusionMatrix
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
-F1
-~~
+F1Score
+~~~~~~~
 
-.. autoclass:: torchmetrics.F1
+.. autoclass:: torchmetrics.F1Score
     :noindex:
 
-FBeta
-~~~~~
+FBetaScore
+~~~~~~~~~~
 
-.. autoclass:: torchmetrics.FBeta
+.. autoclass:: torchmetrics.FBetaScore
     :noindex:
 
 HammingDistance
@@ -290,16 +298,16 @@ HammingDistance
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
 
-Hinge
-~~~~~
+HingeLoss
+~~~~~~~~~
 
-.. autoclass:: torchmetrics.Hinge
+.. autoclass:: torchmetrics.HingeLoss
     :noindex:
 
-IoU
-~~~
+JaccardIndex
+~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.IoU
+.. autoclass:: torchmetrics.JaccardIndex
     :noindex:
 
 KLDivergence
@@ -308,10 +316,10 @@ KLDivergence
 .. autoclass:: torchmetrics.KLDivergence
     :noindex:
 
-MatthewsCorrcoef
+MatthewsCorrCoef
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.MatthewsCorrcoef
+.. autoclass:: torchmetrics.MatthewsCorrCoef
     :noindex:
 
 Precision
@@ -353,52 +361,70 @@ StatScores
 .. autoclass:: torchmetrics.StatScores
     :noindex:
 
-*************
-Image Metrics
-*************
+*****
+Image
+*****
 
 Image quality metrics can be used to access the quality of synthetic generated images from machine
 learning algorithms such as `Generative Adverserial Networks (GANs) <https://en.wikipedia.org/wiki/Generative_adversarial_network>`_.
 
-FID
-~~~
+FrechetInceptionDistance
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.FID
+.. autoclass:: torchmetrics.image.fid.FrechetInceptionDistance
     :noindex:
 
-IS
-~~
+InceptionScore
+~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.IS
+.. autoclass:: torchmetrics.image.inception.InceptionScore
     :noindex:
 
-KID
-~~~
+KernelInceptionDistance
+~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.KID
+.. autoclass:: torchmetrics.image.kid.KernelInceptionDistance
     :noindex:
 
-LPIPS
-~~~~~
+LearnedPerceptualImagePatchSimilarity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.LPIPS
+.. autoclass:: torchmetrics.image.lpip.LearnedPerceptualImagePatchSimilarity
     :noindex:
 
-PSNR
-~~~~
+MultiScaleStructuralSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PSNR
+.. autoclass:: torchmetrics.MultiScaleStructuralSimilarityIndexMeasure
     :noindex:
 
-SSIM
-~~~~
+PeakSignalNoiseRatio
+~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SSIM
+.. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
-******************
-Regression Metrics
-******************
+StructuralSimilarityIndexMeasure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
+    :noindex:
+
+*********
+Detection
+*********
+
+Object detection metrics can be used to evaluate the predicted detections with given groundtruth detections on images.
+
+MeanAveragePrecision
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.detection.map.MeanAveragePrecision
+    :noindex:
+
+**********
+Regression
+**********
 
 CosineSimilarity
 ~~~~~~~~~~~~~~~~
@@ -442,10 +468,10 @@ MeanSquaredLogError
     :noindex:
 
 
-PearsonCorrcoef
+PearsonCorrCoef
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.PearsonCorrcoef
+.. autoclass:: torchmetrics.PearsonCorrCoef
     :noindex:
 
 
@@ -456,10 +482,10 @@ R2Score
     :noindex:
 
 
-SpearmanCorrcoef
+SpearmanCorrCoef
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.SpearmanCorrcoef
+.. autoclass:: torchmetrics.SpearmanCorrCoef
     :noindex:
 
 SymmetricMeanAbsolutePercentageError
@@ -490,7 +516,7 @@ For the purposes of retrieval metrics, inputs (indexes, predictions and targets)
     :header: "indexes shape", "indexes dtype", "preds shape", "preds dtype", "target shape", "target dtype"
     :widths: 10, 10, 10, 10, 10, 10
 
-    "``long``", "(N,...)", "``float``", "(N,...)", "``long`` or ``bool``", "(N,...)"
+    "(N,...)", "``long``", "(N,...)", "``float``", "(N,...)", "``long`` or ``bool``"
 
 .. note::
     All dimensions are flattened at the beginning, so
@@ -554,6 +580,13 @@ RetrievalPrecision
     :noindex:
 
 
+RetrievalRPrecision
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalRPrecision
+    :noindex:
+
+
 RetrievalRecall
 ~~~~~~~~~~~~~~~
 
@@ -574,6 +607,13 @@ RetrievalNormalizedDCG
 .. autoclass:: torchmetrics.RetrievalNormalizedDCG
     :noindex:
 
+
+RetrievalHitRate
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RetrievalHitRate
+    :noindex:
+
 ****
 Text
 ****
@@ -581,7 +621,7 @@ Text
 BERTScore
 ~~~~~~~~~~
 
-.. autoclass:: torchmetrics.BERTScore
+.. autoclass:: torchmetrics.text.bert.BERTScore
     :noindex:
 
 BLEUScore
@@ -590,18 +630,72 @@ BLEUScore
 .. autoclass:: torchmetrics.BLEUScore
     :noindex:
 
+CharErrorRate
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CharErrorRate
+    :noindex:
+
+CHRFScore
+~~~~~~~~~
+
+.. autoclass:: torchmetrics.CHRFScore
+    :noindex:
+
+ExtendedEditDistance
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ExtendedEditDistance
+    :noindex:
+
+MatchErrorRate
+~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MatchErrorRate
+    :noindex:
+
 ROUGEScore
 ~~~~~~~~~~
 
-.. autoclass:: torchmetrics.ROUGEScore
+.. autoclass:: torchmetrics.text.rouge.ROUGEScore
     :noindex:
 
+SacreBLEUScore
+~~~~~~~~~~~~~~
 
-WER
-~~~
-
-.. autoclass:: torchmetrics.WER
+.. autoclass:: torchmetrics.SacreBLEUScore
     :noindex:
+
+SQuAD
+~~~~~
+
+.. autoclass:: torchmetrics.SQuAD
+    :noindex:
+
+TranslationEditRate
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.TranslationEditRate
+    :noindex:
+
+WordErrorRate
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordErrorRate
+    :noindex:
+
+WordInfoLost
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoLost
+    :noindex:
+
+WordInfoPreserved
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.WordInfoPreserved
+    :noindex:
+
 
 ********
 Wrappers
@@ -620,6 +714,12 @@ MetricTracker
 ~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.MetricTracker
+    :noindex:
+
+MinMaxMetric
+~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.MinMaxMetric
     :noindex:
 
 MultioutputWrapper
