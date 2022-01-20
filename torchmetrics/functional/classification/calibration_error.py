@@ -22,9 +22,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 
 def _slow_binning(
-    confidences: FloatTensor,
-    accuracies: FloatTensor,
-    bin_boundaries: FloatTensor
+    confidences: FloatTensor, accuracies: FloatTensor, bin_boundaries: FloatTensor
 ) -> Tuple[FloatTensor, FloatTensor, FloatTensor]:
     """
     Compute calibration bins using for loops. Use for pytorch < 1.6
@@ -51,12 +49,9 @@ def _slow_binning(
 
 
 def _fast_binning(
-    confidences: FloatTensor,
-    accuracies: FloatTensor,
-    bin_boundaries: FloatTensor
+    confidences: FloatTensor, accuracies: FloatTensor, bin_boundaries: FloatTensor
 ) -> Tuple[FloatTensor, FloatTensor, FloatTensor]:
-    """
-    Compute calibration bins using torch.bucketize. Use for pytorch >= 1.6.
+    """Compute calibration bins using torch.bucketize. Use for pytorch >= 1.6.
 
     Args:
         confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
@@ -65,7 +60,6 @@ def _fast_binning(
 
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
-
     """
     acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
     conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
@@ -112,13 +106,9 @@ def _ce_compute(
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
     if _TORCH_GREATER_EQUAL_1_6:
-        acc_bin, conf_bin, prop_bin = _fast_binning(
-            confidences, accuracies, bin_boundaries
-        )
+        acc_bin, conf_bin, prop_bin = _fast_binning(confidences, accuracies, bin_boundaries)
     else:
-        acc_bin, conf_bin, prop_bin = _slow_binning(
-            confidences, accuracies, bin_boundaries
-        )
+        acc_bin, conf_bin, prop_bin = _slow_binning(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
