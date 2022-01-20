@@ -16,17 +16,34 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.kl_divergence import _kld_compute, _kld_update
+from torchmetrics.classification.ranking import _coverage_error_compute, _coverage_error_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat
+
 
 
 class CoverageError(Metric):
     def __init__(
-        self,
+            self,
+        ):
+        self.add_state("coverage", torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("numel", torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("weight", torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+        coverage, numel, sample_weight = _coverage_error_update(
+            preds, target, sample_weight
         )
+        self.coverage += coverage
+        self.numel += numel
+        self.weight += sample_weight
+
+    def compute(self) -> Tensor:
+        return _coverage_error_compute(self.coverage, self.numel, self.sample_weight)
+
 
 class LabelRankingAveragePrecisionScore(Metric):
-
+    def __init__(
+        self
+    )
 
 class LabelRankingLoss(Metric):

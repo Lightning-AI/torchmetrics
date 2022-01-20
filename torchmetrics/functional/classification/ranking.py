@@ -34,10 +34,6 @@ def _coverage_error_update(preds: Tensor, target: Tensor, sample_weight: Optiona
         preds: Tensor,
         target: Tensor,
         threshold: float = 0.5,
-    top_k: Optional[int] = None,
-    num_classes: Optional[int] = None,
-    multiclass: Optional[bool] = None,
-
     )
     offset = torch.zeros_like(preds)
     offset[target == 0] = 1.1  # Any number >1 works
