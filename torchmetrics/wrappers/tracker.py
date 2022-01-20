@@ -35,9 +35,10 @@ class MetricTracker(nn.ModuleList):
         -``MetricTracker.best_metric()``: returns the best value
 
     Args:
-        metric: instance of a torchmetric modular to keep track of at each timestep.
-        maximize: bool indicating if higher metric values are better (`True`) or lower
-            is better (`False`)
+        metric: instance of a `torchmetrics.Metric` or `torchmetrics.MetricCollection` to keep track 
+            of at each timestep.
+        maximize: either single bool or list of bool indicating if higher metric values are 
+            better (`True`) or lower is better (`False`).
 
     Example (single metric):
         >>> from torchmetrics import Accuracy, MetricTracker
@@ -84,21 +85,21 @@ class MetricTracker(nn.ModuleList):
         {'MeanSquaredError': 0, 'ExplainedVariance': 2}
         >>> tracker.compute_all()  # doctest: +NORMALIZE_WHITESPACE
         {'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481]),
-        'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622])}
+         'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622])}
     """
 
     def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
             raise TypeError(
-                "metric arg need to be an instance of a torchmetrics"
+                "Metric arg need to be an instance of a torchmetrics"
                 f" `Metric` or `MetricCollection` but got {metric}"
             )
         self._base_metric = metric
         if not isinstance(maximize, (bool, list)):
             raise ValueError("Argument `maximize` should either be a single bool or list of bool")
-        if isinstance(maximize, list) and not isinstance(metric, MetricCollection) and len(maximize) != len(metric):
-            raise ValueError("The len of argument `maximize` should match the length of th metric collection")
+        if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
+            raise ValueError("The len of argument `maximize` should match the length of the metric collection")
         self.maximize = maximize
 
         self._increment_called = False
