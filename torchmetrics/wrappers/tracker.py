@@ -56,8 +56,8 @@ class MetricTracker(nn.ModuleList):
         current acc=0.07999999821186066
         current acc=0.10199999809265137
         >>> best_acc, which_epoch = tracker.best_metric(return_step=True)
-        >>> best_acc
-        0.12600000202655792
+        >>> best_acc  # doctest: +ELLIPSIS
+        0.1260...
         >>> which_epoch
         2
         >>> tracker.compute_all()
@@ -78,12 +78,13 @@ class MetricTracker(nn.ModuleList):
         current stats={'MeanSquaredError': tensor(1.9491), 'ExplainedVariance': tensor(-0.8298)}
         current stats={'MeanSquaredError': tensor(1.9800), 'ExplainedVariance': tensor(-0.9199)}
         current stats={'MeanSquaredError': tensor(2.2481), 'ExplainedVariance': tensor(-1.1622)}
+        >>> from pprint import pprint
         >>> best_res, which_epoch = tracker.best_metric(return_step=True)
-        >>> best_res
+        >>> pprint(best_res)
         {'MeanSquaredError': 1.8218144178390503, 'ExplainedVariance': -0.8297995328903198}
         >>> which_epoch
         {'MeanSquaredError': 0, 'ExplainedVariance': 2}
-        >>> tracker.compute_all()  # doctest: +NORMALIZE_WHITESPACE
+        >>> pprint(tracker.compute_all())
         {'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481]),
          'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622])}
     """
@@ -137,8 +138,7 @@ class MetricTracker(nn.ModuleList):
         if isinstance(self._base_metric, MetricCollection):
             keys = res[0].keys()
             return {k: torch.stack([r[k] for r in res], dim=0) for k in keys}
-        else:
-            return torch.stack(res, dim=0)
+        return torch.stack(res, dim=0)
 
     def reset(self) -> None:
         """Resets the current metric being tracked."""

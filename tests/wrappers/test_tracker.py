@@ -24,7 +24,7 @@ seed_all(42)
 
 
 def test_raises_error_on_wrong_input():
-    """make sure that input type errors are raised on wrong input."""
+    """Make sure that input type errors are raised on the wrong input."""
     with pytest.raises(TypeError, match="Metric arg need to be an instance of a .*"):
         MetricTracker([1, 2, 3])
 
