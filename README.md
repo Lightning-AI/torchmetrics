@@ -78,6 +78,7 @@ pip install torchmetrics[all]  # install all of the above
 ```
 
 Install latest develop version
+
 ```bash
 pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
