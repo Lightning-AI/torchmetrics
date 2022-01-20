@@ -18,6 +18,71 @@ from torch import FloatTensor, Tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+
+
+def _slow_binning(
+    confidences: FloatTensor,
+    accuracies: FloatTensor,
+    bin_boundaries: FloatTensor
+) -> Tuple[FloatTensor, FloatTensor, FloatTensor]:
+    """
+    Compute calibration bins using for loops. Use for pytorch < 1.6
+    Args:
+        confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
+
+    Returns:
+        tuple with binned accuracy, binned confidence and binned probabilities
+    """
+    conf_bin = torch.zeros_like(bin_boundaries)
+    acc_bin = torch.zeros_like(bin_boundaries)
+    prop_bin = torch.zeros_like(bin_boundaries)
+    for i, (bin_lower, bin_upper) in enumerate(zip(bin_boundaries[:-1], bin_boundaries[1:])):
+        # Calculated confidence and accuracy in each bin
+        in_bin = confidences.gt(bin_lower.item()) * confidences.le(bin_upper.item())
+        prop_in_bin = in_bin.float().mean()
+        if prop_in_bin.item() > 0:
+            acc_bin[i] = accuracies[in_bin].float().mean()
+            conf_bin[i] = confidences[in_bin].mean()
+            prop_bin[i] = prop_in_bin
+    return acc_bin, conf_bin, prop_bin
+
+
+def _fast_binning(
+    confidences: FloatTensor,
+    accuracies: FloatTensor,
+    bin_boundaries: FloatTensor
+) -> Tuple[FloatTensor, FloatTensor, FloatTensor]:
+    """
+    Compute calibration bins using torch.bucketize. Use for pytorch >= 1.6.
+
+    Args:
+        confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
+
+    Returns:
+        tuple with binned accuracy, binned confidence and binned probabilities
+
+    """
+    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
+    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
+    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
+
+    indices = torch.bucketize(confidences, bin_boundaries) - 1
+
+    count_bin.scatter_add_(dim=0, index=indices, src=torch.ones_like(confidences))
+
+    conf_bin.scatter_add_(dim=0, index=indices, src=confidences)
+    conf_bin = torch.nan_to_num(conf_bin / count_bin)
+
+    acc_bin.scatter_add_(dim=0, index=indices, src=accuracies)
+    acc_bin = torch.nan_to_num(acc_bin / count_bin)
+
+    prop_bin = count_bin / count_bin.sum()
+    return acc_bin, conf_bin, prop_bin
 
 
 def _ce_compute(
@@ -46,21 +111,14 @@ def _ce_compute(
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
-    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
-    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
-    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
-
-    indices = torch.bucketize(confidences, bin_boundaries) - 1
-
-    count_bin.scatter_add_(dim=0, index=indices, src=torch.ones_like(confidences))
-
-    conf_bin.scatter_add_(dim=0, index=indices, src=confidences)
-    conf_bin = torch.nan_to_num(conf_bin / count_bin)
-
-    acc_bin.scatter_add_(dim=0, index=indices, src=accuracies)
-    acc_bin = torch.nan_to_num(acc_bin / count_bin)
-
-    prop_bin = count_bin / count_bin.sum()
+    if _TORCH_GREATER_EQUAL_1_6:
+        acc_bin, conf_bin, prop_bin = _fast_binning(
+            confidences, accuracies, bin_boundaries
+        )
+    else:
+        acc_bin, conf_bin, prop_bin = _slow_binning(
+            confidences, accuracies, bin_boundaries
+        )
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
@@ -90,7 +148,7 @@ def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]
         ValueError: If the dataset shape is not binary, multiclass, or multidimensional-multiclass.
 
     Returns:
-        Tuple[FloatTensor, FloatTensor]: [description]
+        tuple with confidences and accuracies
     """
     _, _, mode = _input_format_classification(preds, target)
 
