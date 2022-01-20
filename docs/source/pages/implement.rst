@@ -10,11 +10,11 @@ To implement your own custom metric, subclass the base :class:`~torchmetrics.Met
 - ``update()``: Any code needed to update the state given any inputs to the metric.
 - ``compute()``: Computes a final value from the state of the metric.
 
-All you need to do is call ``add_state`` correctly to implement a custom metric with DDP.
-``reset()`` is called on metric state variables added using ``add_state()``.
-
-To see how metric states are synchronized across distributed processes, refer to ``add_state()`` docs
-from the base ``Metric`` class.
+We provide the remaining interface, such as ``reset()`` that will make sure to correctly reset all metric
+states that have been added using ``add_state``. You should therefore not implement ``reset()`` yourself.
+Additionally, adding metric states with ``add_state`` will make sure that states are correctly synchronized
+in distributed settings (DDP). To see how metric states are synchronized across distributed processes, 
+refer to ``add_state()`` docs from the base ``Metric`` class.
 
 Example implementation:
 
