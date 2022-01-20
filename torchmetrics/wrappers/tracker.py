@@ -80,13 +80,14 @@ class MetricTracker(nn.ModuleList):
         current stats={'MeanSquaredError': tensor(2.2481), 'ExplainedVariance': tensor(-1.1622)}
         >>> from pprint import pprint
         >>> best_res, which_epoch = tracker.best_metric(return_step=True)
-        >>> pprint(best_res)
-        {'MeanSquaredError': 1.8218144178390503, 'ExplainedVariance': -0.8297995328903198}
+        >>> pprint(best_res)  # doctest: +ELLIPSIS
+        {'ExplainedVariance': -0.829...,
+         'MeanSquaredError': 1.821...}
         >>> which_epoch
         {'MeanSquaredError': 0, 'ExplainedVariance': 2}
         >>> pprint(tracker.compute_all())
-        {'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481]),
-         'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622])}
+        {'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622]),
+         'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481])}
     """
 
     def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
