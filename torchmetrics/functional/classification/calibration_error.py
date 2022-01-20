@@ -21,15 +21,15 @@ from torchmetrics.utilities.enums import DataType
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 
-def _slow_binning(
-    confidences: FloatTensor, accuracies: FloatTensor, bin_boundaries: FloatTensor
-) -> Tuple[FloatTensor, FloatTensor, FloatTensor]:
+def _binning_with_loop(
+    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
+) -> Tuple[Tensor, Tensor, Tensor]:
     """
     Compute calibration bins using for loops. Use for pytorch < 1.6
     Args:
-        confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
-        accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
+        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
 
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
@@ -48,15 +48,15 @@ def _slow_binning(
     return acc_bin, conf_bin, prop_bin
 
 
-def _fast_binning(
-    confidences: FloatTensor, accuracies: FloatTensor, bin_boundaries: FloatTensor
-) -> Tuple[FloatTensor, FloatTensor, FloatTensor]:
+def _binning_bucketize(
+    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute calibration bins using torch.bucketize. Use for pytorch >= 1.6.
 
     Args:
-        confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
-        accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
+        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
 
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
@@ -80,20 +80,20 @@ def _fast_binning(
 
 
 def _ce_compute(
-    confidences: FloatTensor,
-    accuracies: FloatTensor,
-    bin_boundaries: FloatTensor,
+    confidences: Tensor,
+    accuracies: Tensor,
+    bin_boundaries: Tensor,
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
     """Computes the calibration error given the provided bin boundaries and norm.
 
     Args:
-        confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
-        accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
-        norm (str, optional): Norm function to use when computing calibration error. Defaults to "l1".
-        debias (bool, optional): Apply debiasing to L2 norm computation as in
+        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
+        norm: Norm function to use when computing calibration error. Defaults to "l1".
+        debias: Apply debiasing to L2 norm computation as in
             `Verified Uncertainty Calibration`_. Defaults to False.
 
     Raises:
@@ -106,9 +106,9 @@ def _ce_compute(
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
     if _TORCH_GREATER_EQUAL_1_6:
-        acc_bin, conf_bin, prop_bin = _fast_binning(confidences, accuracies, bin_boundaries)
+        acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
     else:
-        acc_bin, conf_bin, prop_bin = _slow_binning(confidences, accuracies, bin_boundaries)
+        acc_bin, conf_bin, prop_bin = _binning_with_loop(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
@@ -126,13 +126,13 @@ def _ce_compute(
     return ce
 
 
-def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]:
+def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
     correctness.
 
     Args:
-        preds (Tensor):  Input softmaxed predictions.
-        target (Tensor): Labels.
+        preds:  Input softmaxed predictions.
+        target: Labels.
 
     Raises:
         ValueError: If the dataset shape is not binary, multiclass, or multidimensional-multiclass.
@@ -190,10 +190,10 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
         L2-norm debiasing is not yet supported.
 
     Args:
-        preds (Tensor): Model output probabilities.
-        target (Tensor): Ground-truth target class labels.
-        n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
-        norm (str, optional): Norm used to compare empirical and expected probability bins.
+        preds: Model output probabilities.
+        target: Ground-truth target class labels.
+        n_bins: Number of bins to use when computing t. Defaults to 15.
+        norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
     """
     if norm not in ("l1", "l2", "max"):
