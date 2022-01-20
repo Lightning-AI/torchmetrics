@@ -16,18 +16,18 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.mean_squared_error import (
-    _mean_squared_error_compute,
-    _mean_squared_error_update,
+from torchmetrics.functional.regression.symmetric_mape import (
+    _symmetric_mean_absolute_percentage_error_compute,
+    _symmetric_mean_absolute_percentage_error_update,
 )
 from torchmetrics.metric import Metric
 
 
-class MeanSquaredError(Metric):
+class SymmetricMeanAbsolutePercentageError(Metric):
     r"""
-    Computes `mean squared error`_ (MSE):
+    Computes symmetric mean absolute percentage error (`SMAPE`_).
 
-    .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
+    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n max(\frac{|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon})
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -35,25 +35,28 @@ class MeanSquaredError(Metric):
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
+            Synchronize metric state across processes at each ``forward()`` before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
-        squared:
-            If True returns MSE value, if False returns RMSE value.
+
+    Note:
+        The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.
+
+    Note:
+        SMAPE output is a non-negative floating point between 0 and 1. Best result is 0.0 .
+
 
     Example:
-        >>> from torchmetrics import MeanSquaredError
-        >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
-        >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
-        >>> mean_squared_error = MeanSquaredError()
-        >>> mean_squared_error(preds, target)
-        tensor(0.8750)
-
+        >>> from torchmetrics import SymmetricMeanAbsolutePercentageError
+        >>> target = torch.tensor([1, 10, 1e6])
+        >>> preds = torch.tensor([0.9, 15, 1.2e6])
+        >>> smape = SymmetricMeanAbsolutePercentageError()
+        >>> smape(preds, target)
+        tensor(0.2290)
     """
     is_differentiable = True
     higher_is_better = False
-    sum_squared_error: Tensor
+    sum_abs_per_error: Tensor
     total: Tensor
 
     def __init__(
@@ -62,7 +65,6 @@ class MeanSquaredError(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        squared: bool = True,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -71,9 +73,8 @@ class MeanSquaredError(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-        self.squared = squared
+        self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -82,11 +83,11 @@ class MeanSquaredError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
+        sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(preds, target)
 
-        self.sum_squared_error += sum_squared_error
-        self.total += n_obs
+        self.sum_abs_per_error += sum_abs_per_error
+        self.total += num_obs
 
     def compute(self) -> Tensor:
-        """Computes mean squared error over state."""
-        return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)
+        """Computes mean absolute percentage error over state."""
+        return _symmetric_mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)

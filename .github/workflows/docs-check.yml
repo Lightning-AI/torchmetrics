@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       # Note: This uses an internal pip API and may not always work
       # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
@@ -34,12 +34,13 @@ jobs:
       - name: Test Documentation
         env:
           SPHINX_MOCK_REQUIREMENTS: 0
+        working-directory: ./docs
         run: |
           # First run the same pipeline as Read-The-Docs
-          apt-get update && sudo apt-get install -y cmake
-          cd docs
+          sudo apt-get update && sudo apt-get install -y cmake
           make doctest
           make coverage
+        shell: bash
 
   make-docs:
     runs-on: ubuntu-20.04
@@ -47,7 +48,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       # Note: This uses an internal pip API and may not always work
       # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
@@ -72,11 +73,11 @@ jobs:
         shell: bash
 
       - name: Make Documentation
+        # First run the same pipeline as Read-The-Docs
+        working-directory: ./docs
         run: |
-          # First run the same pipeline as Read-The-Docs
-          cd docs
           make clean
-          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going" -b linkcheck
+          make html --debug SPHINXOPTS="-W --keep-going" -b linkcheck
 
       - name: Upload built docs
         uses: actions/upload-artifact@v2
@@ -84,3 +85,22 @@ jobs:
           name: docs-build
           path: docs/build/
         if: always()
+
+  paper-JOSS:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build draft PDF
+        uses: openjournals/openjournals-draft-action@master
+        with:
+          journal: joss
+          # This should be the path to the paper within your repo.
+          paper-path: ./docs/paper_JOSS/paper.md
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: JOSS paper
+          # This is the output path where Pandoc will write the compiled
+          # PDF. Note, this should be the same directory as the input paper.md
+          path: ./docs/paper_JOSS/paper.pdf

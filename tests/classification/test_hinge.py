@@ -21,8 +21,8 @@ from sklearn.preprocessing import OneHotEncoder
 
 from tests.classification.inputs import Input
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
-from torchmetrics import Hinge
-from torchmetrics.functional import hinge
+from torchmetrics import HingeLoss
+from torchmetrics.functional import hinge_loss
 from torchmetrics.functional.classification.hinge import MulticlassMode
 
 torch.manual_seed(42)
@@ -95,7 +95,7 @@ class TestHinge(MetricTester):
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=Hinge,
+            metric_class=HingeLoss,
             sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
             dist_sync_on_step=dist_sync_on_step,
             metric_args={
@@ -108,7 +108,7 @@ class TestHinge(MetricTester):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
-            metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode),
+            metric_functional=partial(hinge_loss, squared=squared, multiclass_mode=multiclass_mode),
             sk_metric=partial(_sk_hinge, squared=squared, multiclass_mode=multiclass_mode),
         )
 
@@ -116,8 +116,8 @@ class TestHinge(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=Hinge,
-            metric_functional=partial(hinge, squared=squared, multiclass_mode=multiclass_mode),
+            metric_module=HingeLoss,
+            metric_functional=partial(hinge_loss, squared=squared, multiclass_mode=multiclass_mode),
         )
 
 
@@ -148,9 +148,9 @@ _input_extra_dim = Input(
 )
 def test_bad_inputs_fn(preds, target, multiclass_mode):
     with pytest.raises(ValueError):
-        _ = hinge(preds, target, multiclass_mode=multiclass_mode)
+        _ = hinge_loss(preds, target, multiclass_mode=multiclass_mode)
 
 
 def test_bad_inputs_class():
     with pytest.raises(ValueError):
-        Hinge(multiclass_mode="invalid_mode")
+        HingeLoss(multiclass_mode="invalid_mode")

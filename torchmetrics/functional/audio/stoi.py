@@ -13,6 +13,7 @@
 # limitations under the License.
 import numpy as np
 import torch
+from deprecate import deprecated, void
 
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
@@ -20,13 +21,17 @@ if _PYSTOI_AVAILABLE:
     from pystoi import stoi as stoi_backend
 else:
     stoi_backend = None
+    __doctest_skip__ = ["short_time_objective_intelligibility", "stoi"]
 from torch import Tensor
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False) -> Tensor:
-    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
+def short_time_objective_intelligibility(
+    preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False
+) -> Tensor:
+    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
     Note that input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
@@ -55,16 +60,16 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
         stoi value of shape [...]
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.functional.audio.stoi import stoi
+        >>> from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> stoi(preds, target, 8000).float()
+        >>> short_time_objective_intelligibility(preds, target, 8000).float()
         tensor(-0.0100)
 
     References:
@@ -81,9 +86,9 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
 
     """
     if not _PYSTOI_AVAILABLE:
-        raise ValueError(
-            "STOI metric requires that pystoi is installed."
-            "Either install as `pip install torchmetrics[audio]` or `pip install pystoi`"
+        raise ModuleNotFoundError(
+            "ShortTimeObjectiveIntelligibility metric requires that `pystoi` is installed."
+            " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
         )
     _check_same_shape(preds, target)
 
@@ -103,3 +108,22 @@ def stoi(preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_sa
         stoi_val = stoi_val.to(preds.device)
 
     return stoi_val
+
+
+@deprecated(target=short_time_objective_intelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+def stoi(preds: Tensor, target: Tensor, fs: int, mode: str, keep_same_device: bool = False) -> Tensor:
+    r"""STOI (Short-Time Objective Intelligibility)
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.audio.short_time_objective_intelligibility`. Will be removed in v0.8.
+
+    Example:
+        >>> from torchmetrics.functional.audio.stoi import stoi
+        >>> import torch
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn(8000)
+        >>> target = torch.randn(8000)
+        >>> stoi(preds, target, 8000).float()
+        tensor(-0.0100)
+    """
+    return void(preds, target, fs, mode, keep_same_device)

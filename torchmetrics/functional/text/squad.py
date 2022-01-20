@@ -139,14 +139,14 @@ def _squad_input_check(
 
 def _squad_update(
     preds: Dict[str, str],
-    targets: List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]],
+    target: List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]],
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute F1 Score and Exact Match for a collection of predictions and references.
 
     Args:
         preds:
             A dictionary mapping an `id` to the predicted `answer`.
-        targets:
+        target:
             A list of dictionary mapping `paragraphs` to list of dictionary mapping `qas` to a list of dictionary
             containing `id` and list of all possible `answers`.
 
@@ -155,12 +155,12 @@ def _squad_update(
 
     Example:
         >>> from torchmetrics.functional.text.squad import _squad_update
-        >>> predictions = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
-        >>> targets = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
-        >>> preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in predictions}
+        >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
+        >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
+        >>> preds_dict = {pred["id"]: pred["prediction_text"] for pred in preds}
         >>> targets_dict = [
         ...     dict(paragraphs=[dict(qas=[dict(answers=[
-        ...         {"text": txt} for txt in target["answers"]["text"]], id=target["id"]) for target in targets
+        ...         {"text": txt} for txt in tgt["answers"]["text"]], id=tgt["id"]) for tgt in target
         ...     ])])
         ... ]
         >>> _squad_update(preds_dict, targets_dict)
@@ -169,7 +169,7 @@ def _squad_update(
     f1 = tensor(0.0)
     exact_match = tensor(0.0)
     total = tensor(0)
-    for article in targets:
+    for article in target:
         for paragraph in article["paragraphs"]:
             for qa in paragraph["qas"]:
                 total += 1
@@ -177,9 +177,9 @@ def _squad_update(
                     rank_zero_warn(f"Unanswered question {qa['id']} will receive score 0.")
                     continue
                 ground_truths = list(map(lambda x: x["text"], qa["answers"]))  # type: ignore
-                prediction = preds[qa["id"]]  # type: ignore
-                exact_match += _metric_max_over_ground_truths(_compute_exact_match_score, prediction, ground_truths)
-                f1 += _metric_max_over_ground_truths(_compute_f1_score, prediction, ground_truths)
+                pred = preds[qa["id"]]  # type: ignore
+                exact_match += _metric_max_over_ground_truths(_compute_exact_match_score, pred, ground_truths)
+                f1 += _metric_max_over_ground_truths(_compute_f1_score, pred, ground_truths)
 
     return f1, exact_match, total
 
@@ -199,10 +199,7 @@ def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, 
     return {"exact_match": exact_match, "f1": f1}
 
 
-def squad(
-    preds: PREDS_TYPE,
-    targets: TARGETS_TYPE,
-) -> Dict[str, Tensor]:
+def squad(preds: PREDS_TYPE, target: TARGETS_TYPE) -> Dict[str, Tensor]:
     """Calculate `SQuAD Metric`_ .
 
     Args:
@@ -215,8 +212,8 @@ def squad(
 
                 {"prediction_text": "TorchMetrics is awesome", "id": "123"}
 
-        targets:
-            A Dictioinary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
+        target:
+            A Dictionary or List of Dictionary-s that contain the `answers` and `id` in the SQuAD Format.
 
             Example target:
 
@@ -245,9 +242,9 @@ def squad(
 
     Example:
         >>> from torchmetrics.functional.text.squad import squad
-        >>> predictions = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
-        >>> references = [{"answers": {"answer_start": [97], "text": ["1976"]},"id": "56e10a3be3433e1400422b22"}]
-        >>> squad(predictions, references)
+        >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
+        >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]},"id": "56e10a3be3433e1400422b22"}]
+        >>> squad(preds, target)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
 
     Raises:
@@ -258,7 +255,6 @@ def squad(
         [1] SQuAD: 100,000+ Questions for Machine Comprehension of Text by Pranav Rajpurkar, Jian Zhang, Konstantin
         Lopyrev, Percy Liang `SQuAD Metric`_ .
     """
-
-    preds_dict, targets_dict = _squad_input_check(preds, targets)
-    f1, exact_match, total = _squad_update(preds_dict, targets_dict)
+    preds_dict, target_dict = _squad_input_check(preds, target)
+    f1, exact_match, total = _squad_update(preds_dict, target_dict)
     return _squad_compute(f1, exact_match, total)

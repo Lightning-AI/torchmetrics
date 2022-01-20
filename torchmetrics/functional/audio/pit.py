@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from itertools import permutations
 from typing import Any, Callable, Dict, Tuple, Union
+from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
@@ -101,10 +103,11 @@ def _find_best_perm_by_exhuastive_method(
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
-def pit(
+def permutation_invariant_training(
     preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
 ) -> Tuple[Tensor, Tensor]:
-    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
+    """Permutation invariant training (PIT). The ``permutation_invariant_training`` implements the famous
+    Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
@@ -127,11 +130,12 @@ def pit(
         best_perm of shape [batch]
 
     Example:
-        >>> from torchmetrics.functional.audio import si_sdr
+        >>> from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
         >>> # [batch, spk, time]
         >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
         >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
-        >>> best_metric, best_perm = pit(preds, target, si_sdr, 'max')
+        >>> best_metric, best_perm = permutation_invariant_training(
+        ...     preds, target, scale_invariant_signal_distortion_ratio, 'max')
         >>> best_metric
         tensor([-5.1091])
         >>> best_perm
@@ -167,9 +171,7 @@ def pit(
     op = torch.max if eval_func == "max" else torch.min
     if spk_num < 3 or not _SCIPY_AVAILABLE:
         if spk_num >= 3 and not _SCIPY_AVAILABLE:
-            warnings.warn(
-                f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance"
-            )
+            warn(f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance")
 
         best_metric, best_perm = _find_best_perm_by_exhuastive_method(metric_mtx, op)
     else:
@@ -178,22 +180,22 @@ def pit(
     return best_metric, best_perm
 
 
-def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
-    """permutate estimate according to perm.
+@deprecated(target=permutation_invariant_training, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+def pit(
+    preds: torch.Tensor, target: torch.Tensor, metric_func: Callable, eval_func: str = "max", **kwargs: Dict[str, Any]
+) -> Tuple[Tensor, Tensor]:
+    """Permutation invariant training. The ``pit`` implements the famous Permutation Invariant Training method.
 
-    Args:
-        preds (Tensor): the estimates you want to permutate, shape [batch, spk, ...]
-        perm (Tensor): the permutation returned from pit, shape [batch, spk]
-
-    Returns:
-        Tensor: the permutated version of estimate
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.permutation_invariant_training`. Will be removed in v0.8.
 
     Example:
-        >>> from torchmetrics.functional.audio import si_sdr
+        >>> from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
         >>> # [batch, spk, time]
         >>> preds = torch.tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
         >>> target = torch.tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
-        >>> best_metric, best_perm = pit(preds, target, si_sdr, 'max')
+        >>> best_metric, best_perm = permutation_invariant_training(
+        ...     preds, target, scale_invariant_signal_distortion_ratio, 'max')
         >>> best_metric
         tensor([-5.1091])
         >>> best_perm
@@ -201,6 +203,19 @@ def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
         >>> pit_permutate(preds, best_perm)
         tensor([[[-0.0579,  0.3560, -0.9604],
                  [-0.1719,  0.3205,  0.2951]]])
+    """
+    return void(preds, target, metric_func, eval_func, **kwargs)
+
+
+def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
+    """permutate estimate according to perm.
+
+    Args:
+        preds: the estimates you want to permutate, shape [batch, spk, ...]
+        perm: the permutation returned from permutation_invariant_training, shape [batch, spk]
+
+    Returns:
+        Tensor: the permutated version of estimate
     """
     preds_pmted = torch.stack([torch.index_select(pred, 0, p) for pred, p in zip(preds, perm)])
     return preds_pmted

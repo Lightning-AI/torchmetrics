@@ -37,7 +37,6 @@
 # MIT License
 # Copyright (c) 2017 - Shujian Huang <huangsj@nju.edu.cn>
 
-
 import re
 from functools import partial
 from typing import Sequence
@@ -277,8 +276,8 @@ class _SacreBLEUTokenizer:
 
 
 def sacre_bleu_score(
-    reference_corpus: Sequence[Sequence[str]],
-    translate_corpus: Sequence[str],
+    preds: Sequence[str],
+    target: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
     tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
@@ -288,10 +287,10 @@ def sacre_bleu_score(
     follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus
-        translate_corpus:
+        preds:
             An iterable of machine translated corpus
+        target:
+            An iterable of iterables of reference corpus
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
@@ -307,9 +306,9 @@ def sacre_bleu_score(
 
     Example:
         >>> from torchmetrics.functional import sacre_bleu_score
-        >>> translate_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> sacre_bleu_score(reference_corpus, translate_corpus)
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> sacre_bleu_score(preds, target)
         tensor(0.7598)
 
     References:
@@ -321,6 +320,7 @@ def sacre_bleu_score(
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
+
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
@@ -328,29 +328,29 @@ def sacre_bleu_score(
         raise ValueError(
             f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
         )
-    if len(translate_corpus) != len(reference_corpus):
-        raise ValueError(f"Corpus has different size {len(translate_corpus)} != {len(reference_corpus)}")
+    if len(preds) != len(target):
+        raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")
     if tokenize == "intl" and not _REGEX_AVAILABLE:
-        raise ValueError(
-            "`'intl'` tokenization requires `regex` installed. Use `pip install regex` or `pip install "
-            "torchmetrics[text]`."
+        raise ModuleNotFoundError(
+            "`'intl'` tokenization requires that `regex` is installed."
+            " Use `pip install regex` or `pip install torchmetrics[text]`."
         )
 
     numerator = torch.zeros(n_gram)
     denominator = torch.zeros(n_gram)
-    trans_len = tensor(0, dtype=torch.float)
-    ref_len = tensor(0, dtype=torch.float)
+    preds_len = tensor(0.0)
+    target_len = tensor(0.0)
 
     tokenize_fn = partial(_SacreBLEUTokenizer.tokenize, tokenize=tokenize, lowercase=lowercase)
-    trans_len, ref_len = _bleu_score_update(
-        reference_corpus,
-        translate_corpus,
+    preds_len, target_len = _bleu_score_update(
+        preds,
+        target,
         numerator,
         denominator,
-        trans_len,
-        ref_len,
+        preds_len,
+        target_len,
         n_gram,
         tokenize_fn,
     )
 
-    return _bleu_score_compute(trans_len, ref_len, numerator, denominator, n_gram, smooth)
+    return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, smooth)

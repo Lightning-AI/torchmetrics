@@ -21,8 +21,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
-from torchmetrics.audio.stoi import STOI
-from torchmetrics.functional.audio.stoi import stoi
+from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -82,7 +82,7 @@ class TestSTOI(MetricTester):
             ddp,
             preds,
             target,
-            STOI,
+            ShortTimeObjectiveIntelligibility,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(fs=fs, extended=extended),
@@ -92,7 +92,7 @@ class TestSTOI(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            stoi,
+            short_time_objective_intelligibility,
             sk_metric,
             metric_args=dict(fs=fs, extended=extended),
         )
@@ -101,8 +101,8 @@ class TestSTOI(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=STOI,
-            metric_functional=stoi,
+            metric_module=ShortTimeObjectiveIntelligibility,
+            metric_functional=short_time_objective_intelligibility,
             metric_args=dict(fs=fs, extended=extended),
         )
 
@@ -117,13 +117,13 @@ class TestSTOI(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=STOI,
-            metric_functional=partial(stoi, fs=fs, extended=extended),
+            metric_module=ShortTimeObjectiveIntelligibility,
+            metric_functional=partial(short_time_objective_intelligibility, fs=fs, extended=extended),
             metric_args=dict(fs=fs, extended=extended),
         )
 
 
-def test_error_on_different_shape(metric_class=STOI):
+def test_error_on_different_shape(metric_class=ShortTimeObjectiveIntelligibility):
     metric = metric_class(16000)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
@@ -139,7 +139,7 @@ def test_on_real_audio():
     rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
     rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
     assert torch.allclose(
-        stoi(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
+        short_time_objective_intelligibility(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
         torch.tensor(0.6739177),
         rtol=0.0001,
         atol=1e-4,

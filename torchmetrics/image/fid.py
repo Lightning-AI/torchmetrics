@@ -15,11 +15,12 @@ from typing import Any, Callable, List, Optional, Union
 
 import numpy as np
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 from torch.autograd import Function
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_info, rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
@@ -29,6 +30,8 @@ else:
 
     class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
         pass
+
+    __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
 
 
 if _SCIPY_AVAILABLE:
@@ -122,7 +125,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
     return diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * tr_covmean
 
 
-class FID(Metric):
+class FrechetInceptionDistance(Metric):
     r"""
     Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images. Given by
 
@@ -191,14 +194,14 @@ class FID(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics.image.fid import FID
-        >>> fid = FID(feature=64)  # doctest: +SKIP
+        >>> from torchmetrics.image.fid import FrechetInceptionDistance
+        >>> fid = FrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> fid.update(imgs_dist1, real=True)  # doctest: +SKIP
-        >>> fid.update(imgs_dist2, real=False)  # doctest: +SKIP
-        >>> fid.compute()  # doctest: +SKIP
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> fid.update(imgs_dist1, real=True)
+        >>> fid.update(imgs_dist2, real=False)
+        >>> fid.compute()
         tensor(12.7202)
 
     """
@@ -222,16 +225,16 @@ class FID(Metric):
         )
 
         rank_zero_warn(
-            "Metric `FID` will save all extracted features in buffer."
+            "Metric `FrechetInceptionDistance` will save all extracted features in buffer."
             " For large datasets this may lead to large memory footprint.",
             UserWarning,
         )
 
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
-                raise ValueError(
-                    "FID metric requires that Torch-fidelity is installed."
-                    "Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`"
+                raise ModuleNotFoundError(
+                    "FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
+                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
                 )
             valid_int_input = [64, 192, 768, 2048]
             if feature not in valid_int_input:
@@ -282,3 +285,36 @@ class FID(Metric):
 
         # compute fid
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
+
+
+class FID(FrechetInceptionDistance):
+    r"""
+    Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images.
+
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.image.FrechetInceptionDistance`. Will be removed in v0.8.
+
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(123)
+        >>> fid = FID(feature=64)
+        >>> # generate two slightly overlapping image intensity distributions
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> fid.update(imgs_dist1, real=True)
+        >>> fid.update(imgs_dist2, real=False)
+        >>> fid.compute()
+        tensor(12.7202)
+
+    """
+
+    @deprecated(target=FrechetInceptionDistance, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+    def __init__(
+        self,
+        feature: Union[int, torch.nn.Module] = 2048,
+        compute_on_step: bool = False,
+        dist_sync_on_step: bool = False,
+        process_group: Optional[Any] = None,
+        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
+    ) -> None:
+        void(feature, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

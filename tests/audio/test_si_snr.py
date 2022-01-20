@@ -21,8 +21,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.audio import SI_SNR
-from torchmetrics.functional import si_snr
+from torchmetrics.audio import ScaleInvariantSignalNoiseRatio
+from torchmetrics.functional import scale_invariant_signal_noise_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -79,7 +79,7 @@ class TestSISNR(MetricTester):
             ddp,
             preds,
             target,
-            SI_SNR,
+            ScaleInvariantSignalNoiseRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
         )
@@ -88,12 +88,17 @@ class TestSISNR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            si_snr,
+            scale_invariant_signal_noise_ratio,
             sk_metric,
         )
 
     def test_si_snr_differentiability(self, preds, target, sk_metric):
-        self.run_differentiability_test(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=ScaleInvariantSignalNoiseRatio,
+            metric_functional=scale_invariant_signal_noise_ratio,
+        )
 
     @pytest.mark.skipif(
         not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
@@ -103,10 +108,15 @@ class TestSISNR(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_si_snr_half_gpu(self, preds, target, sk_metric):
-        self.run_precision_test_gpu(preds=preds, target=target, metric_module=SI_SNR, metric_functional=si_snr)
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=ScaleInvariantSignalNoiseRatio,
+            metric_functional=scale_invariant_signal_noise_ratio,
+        )
 
 
-def test_error_on_different_shape(metric_class=SI_SNR):
+def test_error_on_different_shape(metric_class=ScaleInvariantSignalNoiseRatio):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

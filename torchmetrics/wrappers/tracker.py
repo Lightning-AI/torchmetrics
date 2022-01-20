@@ -48,7 +48,7 @@ class MetricTracker(nn.ModuleList):
         ...     for batch_idx in range(5):
         ...         preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))
         ...         tracker.update(preds, target)
-        ...     print(f"current acc={tracker.compute()}")  # doctest: +NORMALIZE_WHITESPACE
+        ...     print(f"current acc={tracker.compute()}")
         current acc=0.1120000034570694
         current acc=0.08799999952316284
         current acc=0.12600000202655792

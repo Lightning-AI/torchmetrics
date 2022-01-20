@@ -14,10 +14,18 @@
 from torchmetrics.text.bleu import BLEUScore  # noqa: F401
 from torchmetrics.text.cer import CharErrorRate  # noqa: F401
 from torchmetrics.text.chrf import CHRFScore  # noqa: F401
+from torchmetrics.text.eed import ExtendedEditDistance  # noqa: F401
 from torchmetrics.text.mer import MatchErrorRate  # noqa: F401
 from torchmetrics.text.sacre_bleu import SacreBLEUScore  # noqa: F401
 from torchmetrics.text.squad import SQuAD  # noqa: F401
-from torchmetrics.text.ter import TER  # noqa: F401
-from torchmetrics.text.wer import WER  # noqa: F401
+from torchmetrics.text.ter import TranslationEditRate  # noqa: F401
+from torchmetrics.text.wer import WordErrorRate  # noqa: F401
 from torchmetrics.text.wil import WordInfoLost  # noqa: F401
 from torchmetrics.text.wip import WordInfoPreserved  # noqa: F401
+from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE
+
+if _TRANSFORMERS_AUTO_AVAILABLE:
+    from torchmetrics.text.bert import BERTScore  # noqa: F401
+
+if _NLTK_AVAILABLE:
+    from torchmetrics.text.rouge import ROUGEScore  # noqa: F401

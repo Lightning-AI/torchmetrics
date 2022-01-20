@@ -3,15 +3,15 @@ from typing import List, Union
 import pytest
 from jiwer import wil
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.text.wil import WordInfoLost
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 
-def _compute_wil_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return wil(reference, prediction)
+def _compute_wil_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    return wil(target, preds)
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
@@ -34,7 +34,6 @@ class TestWordInfoLost(TextTester):
             metric_class=WordInfoLost,
             sk_metric=_compute_wil_metric_jiwer,
             dist_sync_on_step=dist_sync_on_step,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_wil_functional(self, preds, targets):
@@ -44,7 +43,6 @@ class TestWordInfoLost(TextTester):
             targets,
             metric_functional=word_information_lost,
             sk_metric=_compute_wil_metric_jiwer,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )
 
     def test_wil_differentiability(self, preds, targets):
@@ -54,5 +52,4 @@ class TestWordInfoLost(TextTester):
             targets=targets,
             metric_module=WordInfoLost,
             metric_functional=word_information_lost,
-            input_order=INPUT_ORDER.PREDS_FIRST,
         )

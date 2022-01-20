@@ -25,6 +25,7 @@ from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
 from torchmetrics.detection.map import MAPMetricResults
+from torchmetrics.utilities.data import apply_to_collection
 
 try:
     set_start_method("spawn")
@@ -164,10 +165,8 @@ def _class_test(
 
     # move to device
     metric = metric.to(device)
-
-    if isinstance(preds, torch.Tensor):
-        preds = preds.to(device)
-        target = target.to(device)
+    preds = apply_to_collection(preds, Tensor, lambda x: x.to(device))
+    target = apply_to_collection(target, Tensor, lambda x: x.to(device))
 
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
