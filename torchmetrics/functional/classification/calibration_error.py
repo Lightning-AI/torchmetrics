@@ -18,7 +18,7 @@ from torch import Tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
 
 
 def _binning_with_loop(
@@ -105,7 +105,7 @@ def _ce_compute(
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
 
-    if _TORCH_GREATER_EQUAL_1_6:
+    if _TORCH_GREATER_EQUAL_1_8:
         acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
     else:
         acc_bin, conf_bin, prop_bin = _binning_with_loop(confidences, accuracies, bin_boundaries)
