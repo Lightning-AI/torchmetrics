@@ -31,5 +31,6 @@ from torchmetrics.classification.matthews_corrcoef import MatthewsCorrCoef, Matt
 from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.roc import ROC  # noqa: F401
+from torchmetrics.classification.ranking import CoverageError, LabelRankingAveragePrecisionScore, LabelRankingLoss  # noqa: F401
 from torchmetrics.classification.specificity import Specificity  # noqa: F401
 from torchmetrics.classification.stat_scores import StatScores  # noqa: F401

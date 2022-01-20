@@ -30,3 +30,4 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
+from torchmetrics.functional.classification.ranking import coverage_error, label_ranking_average_precision, label_ranking_loss  # noqa: F401

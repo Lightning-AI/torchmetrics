@@ -38,6 +38,7 @@ from torchmetrics.classification import (  # noqa: E402, F401
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
+    CoverageError,
     F1Score,
     FBeta,
     FBetaScore,
@@ -47,6 +48,8 @@ from torchmetrics.classification import (  # noqa: E402, F401
     IoU,
     JaccardIndex,
     KLDivergence,
+    LabelRankingAveragePrecisionScore,
+    LabelRankingLoss,
     MatthewsCorrcoef,
     MatthewsCorrCoef,
     Precision,
@@ -54,6 +57,7 @@ from torchmetrics.classification import (  # noqa: E402, F401
     Recall,
     Specificity,
     StatScores,
+    
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
@@ -121,6 +125,7 @@ __all__ = [
     "CohenKappa",
     "ConfusionMatrix",
     "CosineSimilarity",
+    "CoverageError",
     "TweedieDevianceScore",
     "ExplainedVariance",
     "ExtendedEditDistance",
@@ -133,6 +138,8 @@ __all__ = [
     "HingeLoss",
     "JaccardIndex",
     "KLDivergence",
+    "LabelRankingAveragePrecisionScore",
+    "LabelRankingLoss",
     "MatthewsCorrcoef",
     "MatthewsCorrCoef",
     "MaxMetric",
