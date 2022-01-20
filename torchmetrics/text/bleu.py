@@ -16,8 +16,8 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-import warnings
 from typing import Any, Callable, Optional, Sequence
+from warnings import warn
 
 import torch
 from torch import Tensor, tensor
@@ -46,10 +46,11 @@ class BLEUScore(Metric):
             will be used to perform the allgather.
 
     Example:
-        >>> translate_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> from torchmetrics import BLEUScore
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = BLEUScore()
-        >>> metric(translate_corpus, reference_corpus)
+        >>> metric(preds, target)
         tensor(0.7598)
 
     References:
@@ -62,8 +63,8 @@ class BLEUScore(Metric):
 
     is_differentiable = False
     higher_is_better = True
-    trans_len: Tensor
-    ref_len: Tensor
+    preds_len: Tensor
+    target_len: Tensor
     numerator: Tensor
     denominator: Tensor
 
@@ -82,35 +83,32 @@ class BLEUScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        warnings.warn(
+        warn(
             "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
             " Warning will be removed in v0.8."
         )
         self.n_gram = n_gram
         self.smooth = smooth
 
-        self.add_state("trans_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
-        self.add_state("ref_len", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("preds_len", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("target_len", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    def update(  # type: ignore
-        self, translate_corpus: Sequence[str], reference_corpus: Sequence[Sequence[str]]
-    ) -> None:
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
-            translate_corpus: An iterable of machine translated corpus
-            reference_corpus: An iterable of iterables of reference corpus
+            preds: An iterable of machine translated corpus
+            target: An iterable of iterables of reference corpus
         """
-
-        self.trans_len, self.ref_len = _bleu_score_update(
-            translate_corpus,
-            reference_corpus,
+        self.preds_len, self.target_len = _bleu_score_update(
+            preds,
+            target,
             self.numerator,
             self.denominator,
-            self.trans_len,
-            self.ref_len,
+            self.preds_len,
+            self.target_len,
             self.n_gram,
             _tokenize_fn,
         )
@@ -122,5 +120,5 @@ class BLEUScore(Metric):
             Tensor with BLEU Score
         """
         return _bleu_score_compute(
-            self.trans_len, self.ref_len, self.numerator, self.denominator, self.n_gram, self.smooth
+            self.preds_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.smooth
         )

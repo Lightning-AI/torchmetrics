@@ -1,1 +1,1 @@
-torchvision
+torchvision>=0.8

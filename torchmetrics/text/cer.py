@@ -57,10 +57,10 @@ class CharErrorRate(Metric):
         Character error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
         >>> metric = CharErrorRate()
-        >>> metric(predictions, references)
+        >>> metric(preds, target)
         tensor(0.3415)
     """
     is_differentiable = False
@@ -84,14 +84,14 @@ class CharErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Character Error Rate scores.
 
         Args:
-            predictions: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
         """
-        errors, total = _cer_update(predictions, references)
+        errors, total = _cer_update(preds, target)
         self.errors += errors
         self.total += total
 

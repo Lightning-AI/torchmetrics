@@ -29,7 +29,7 @@ from tests.retrieval.helpers import (
     _errors_test_functional_metric_parameters_k,
 )
 from torchmetrics.functional.retrieval.precision import retrieval_precision
-from torchmetrics.retrieval.retrieval_precision import RetrievalPrecision
+from torchmetrics.retrieval.precision import RetrievalPrecision
 
 seed_all(42)
 

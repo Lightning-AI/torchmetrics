@@ -27,7 +27,7 @@ from tests.retrieval.helpers import (
     _errors_test_functional_metric_parameters_default,
 )
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
-from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
+from torchmetrics.retrieval.average_precision import RetrievalMAP
 
 seed_all(42)
 

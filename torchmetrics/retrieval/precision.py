@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from torch import Tensor, tensor
 
 from torchmetrics.functional.retrieval.precision import retrieval_precision
-from torchmetrics.retrieval.retrieval_metric import RetrievalMetric
+from torchmetrics.retrieval.base import RetrievalMetric
 
 
 class RetrievalPrecision(RetrievalMetric):

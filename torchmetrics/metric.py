@@ -15,10 +15,9 @@ import functools
 import inspect
 import operator as op
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor

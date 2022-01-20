@@ -14,8 +14,10 @@
 from typing import Optional, Tuple, Union
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor, tensor
 
+from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import DataType, EnumStr
@@ -154,7 +156,7 @@ def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
     return measure / total
 
 
-def hinge(
+def hinge_loss(
     preds: Tensor,
     target: Tensor,
     squared: bool = False,
@@ -209,16 +211,48 @@ def hinge(
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics.functional import hinge
+        >>> from torchmetrics.functional import hinge_loss
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge(preds, target)
+        >>> hinge_loss(preds, target)
         tensor(0.3000)
 
     Example (default / multiclass case):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge(preds, target)
+        >>> hinge_loss(preds, target)
+        tensor(2.9000)
+
+    Example (multiclass example, one vs all mode):
+        >>> target = torch.tensor([0, 1, 2])
+        >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
+        >>> hinge_loss(preds, target, multiclass_mode="one-vs-all")
+        tensor([2.2333, 1.5000, 1.2333])
+    """
+    measure, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
+    return _hinge_compute(measure, total)
+
+
+@deprecated(target=hinge_loss, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
+def hinge(
+    preds: Tensor,
+    target: Tensor,
+    squared: bool = False,
+    multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
+) -> Tensor:
+    r"""
+    Computes the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
+
+    .. deprecated:: v0.7
+        Use :func:`torchmetrics.functional.hinge_loss`. Will be removed in v0.8.
+
+    Example (binary case):
+        >>> import torch
+        >>> hinge(torch.tensor([-2.2, 2.4, 0.1]), torch.tensor([0, 1, 1]))
+        tensor(0.3000)
+
+    Example (default / multiclass case):
+        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
         tensor(2.9000)
 
     Example (multiclass example, one vs all mode):
@@ -227,5 +261,4 @@ def hinge(
         >>> hinge(preds, target, multiclass_mode="one-vs-all")
         tensor([2.2333, 1.5000, 1.2333])
     """
-    measure, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)
-    return _hinge_compute(measure, total)
+    return void(preds, target, squared, multiclass_mode)
