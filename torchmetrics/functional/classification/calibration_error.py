@@ -61,9 +61,9 @@ def _fast_binning(
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
     """
-    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
-    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
-    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device)
+    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
+    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
+    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
 
     indices = torch.bucketize(confidences, bin_boundaries) - 1
 
