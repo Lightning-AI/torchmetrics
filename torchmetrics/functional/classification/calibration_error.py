@@ -14,7 +14,7 @@
 from typing import Tuple
 
 import torch
-from torch import FloatTensor, Tensor
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
