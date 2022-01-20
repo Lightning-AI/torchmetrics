@@ -24,14 +24,16 @@ seed_all(42)
 
 
 def test_raises_error_on_wrong_input():
-    """ make sure that input type errors are raised on wrong input """
+    """make sure that input type errors are raised on wrong input."""
     with pytest.raises(TypeError, match="Metric arg need to be an instance of a .*"):
         MetricTracker([1, 2, 3])
 
     with pytest.raises(ValueError, match="Argument `maximize` should either be a single bool or list of bool"):
         MetricTracker(MeanAbsoluteError(), maximize=2)
 
-    with pytest.raises(ValueError, match="The len of argument `maximize` should match the length of the metric collection"):
+    with pytest.raises(
+        ValueError, match="The len of argument `maximize` should match the length of the metric collection"
+    ):
         MetricTracker(MetricCollection([MeanAbsoluteError(), MeanSquaredError()]), maximize=[False, False, False])
 
 
@@ -79,7 +81,7 @@ def test_raises_error_if_increment_not_called(method, method_input):
     ],
 )
 def test_tracker(base_metric, metric_input, maximize):
-    """ Test that arguments gets passed correctly to child modules"""
+    """Test that arguments gets passed correctly to child modules."""
     tracker = MetricTracker(base_metric, maximize=maximize)
     for i in range(5):
         tracker.increment()

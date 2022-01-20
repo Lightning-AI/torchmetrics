@@ -35,9 +35,9 @@ class MetricTracker(nn.ModuleList):
         -``MetricTracker.best_metric()``: returns the best value
 
     Args:
-        metric: instance of a `torchmetrics.Metric` or `torchmetrics.MetricCollection` to keep track 
+        metric: instance of a `torchmetrics.Metric` or `torchmetrics.MetricCollection` to keep track
             of at each timestep.
-        maximize: either single bool or list of bool indicating if higher metric values are 
+        maximize: either single bool or list of bool indicating if higher metric values are
             better (`True`) or lower is better (`False`).
 
     Example (single metric):
