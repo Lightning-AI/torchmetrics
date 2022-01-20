@@ -13,7 +13,7 @@ To implement your own custom metric, subclass the base :class:`~torchmetrics.Met
 We provide the remaining interface, such as ``reset()`` that will make sure to correctly reset all metric
 states that have been added using ``add_state``. You should therefore not implement ``reset()`` yourself.
 Additionally, adding metric states with ``add_state`` will make sure that states are correctly synchronized
-in distributed settings (DDP). To see how metric states are synchronized across distributed processes, 
+in distributed settings (DDP). To see how metric states are synchronized across distributed processes,
 refer to ``add_state()`` docs from the base ``Metric`` class.
 
 Example implementation:
