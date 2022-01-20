@@ -394,7 +394,10 @@ class Metric(Module, ABC):
         distributed backend."""
 
     def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
-        """This method automatically resets the metric state variables to their default value."""
+        """This method automatically resets the metric state variables to their default value.
+        Args:
+            exclude_stetes: sequence of strings indicating metric states that should not be reset.
+        """
         self._update_called = False
         self._forward_cache = None
         # lower lightning versions requires this implicitly to log metric objects correctly in self.log

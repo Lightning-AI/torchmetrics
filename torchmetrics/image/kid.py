@@ -241,10 +241,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-        if reset_real_features:
-            exclude_states = ()
-        else:
-            exclude_states = ("real_features",)
+        exclude_states = () if reset_real_features else ("real_features", )
 
         self._reset_excluded_states = exclude_states
 
