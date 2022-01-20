@@ -104,7 +104,7 @@ class AssistantCLI:
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:
-            logging.error("No data was received.")
+            logging.debug("WARNING: No data was received.")
             return "tests"
         files = [d["filename"] for d in data]
         # filter only package files and skip inits
