@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import OrderedDict, Iterable
+from collections import Iterable, OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
 
@@ -137,6 +137,7 @@ class MetricCollection(nn.ModuleDict):
                 m_kwargs = m._filter_kwargs(**kwargs)
                 m.update(*args, **m_kwargs)
             import pdb
+
             pdb.set_trace()
             n_groups = len(self._groups)
             for k, cg in self._groups.copy().items():
@@ -146,13 +147,15 @@ class MetricCollection(nn.ModuleDict):
                         # if the states do not match we need to divide the compute group
                         s1 = getattr(self[member1], state)
                         s2 = getattr(self[member2], state)
-                        if (isinstance(s1, Tensor) and isinstance(s2, Tensor) and not torch.allclose(s1, s2)) or \
-                            (isinstance(s1, list) and isinstance(s2, list) and not s1 == s2) or\
-                            (type(s1) != type(s2)):
+                        if (
+                            (isinstance(s1, Tensor) and isinstance(s2, Tensor) and not torch.allclose(s1, s2))
+                            or (isinstance(s1, list) and isinstance(s2, list) and not s1 == s2)
+                            or (type(s1) != type(s2))
+                        ):
 
                             # split member2 into its own computational group
                             n_groups += 1
-                            self._groups[f'cg{n_groups}'] = [member2]
+                            self._groups[f"cg{n_groups}"] = [member2]
                             self._groups[k].pop(i + 1)
                             break
 
@@ -234,10 +237,12 @@ class MetricCollection(nn.ModuleDict):
             self._find_compute_groups()
 
     def _find_compute_groups(self):
-        """ Find group of metrics that shares the same underlying states. If such metrics exist, only one should be updated
-            and the rest should just copy the state
+        """Find group of metrics that shares the same underlying states.
+
+        If such metrics exist, only one should be updated and the rest should just copy the state
         """
         from torchmetrics import _COMPUTE_GROUP_REGISTRY
+
         self._groups = {}
 
         # Duplicates of the same metric belongs to the same compute group
@@ -256,10 +261,10 @@ class MetricCollection(nn.ModuleDict):
                     for kk, vv in compare_dict.items():
                         if kk in cg:  # found another metric in compute group
                             self._groups[k] = [*self._groups[k], *compare_dict[kk]]
-                            self._groups.pop(kk)                               
+                            self._groups.pop(kk)
 
         # Rename groups
-        self._groups = {f'cg{i}': v for i, v in enumerate(self._groups.values())}
+        self._groups = {f"cg{i}": v for i, v in enumerate(self._groups.values())}
 
         self._groups_checked = False
 

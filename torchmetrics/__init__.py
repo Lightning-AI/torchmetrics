@@ -2,7 +2,7 @@ r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *  # noqa: F401, F403
+from torchmetrics.__about__ import *  # noqa: F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -25,7 +25,7 @@ from torchmetrics.audio import (  # noqa: E402
     SignalDistortionRatio,
     SignalNoiseRatio,
 )
-from torchmetrics.classification import (  # noqa: E402, F401
+from torchmetrics.classification import (  # noqa: E402
     AUC,
     AUROC,
     F1,
@@ -112,7 +112,7 @@ def register_compute_group(*metrics):
     for m in metrics:
         if not issubclass(m, Metric):
             raise ValueError(
-                'Expected all metrics in compute group to be subclass of `torchmetrics.Metric` but got {m}'
+                "Expected all metrics in compute group to be subclass of `torchmetrics.Metric` but got {m}"
             )
     _COMPUTE_GROUP_REGISTRY.append(tuple(m.__name__ for m in metrics))
 
@@ -126,7 +126,6 @@ register_compute_group(FID, KID)
 register_compute_group(
     RetrievalMAP, RetrievalMRR, RetrievalFallOut, RetrievalNormalizedDCG, RetrievalPrecision, RetrievalRecall
 )
-
 
 
 __all__ = [
@@ -218,4 +217,3 @@ __all__ = [
     "WordInfoLost",
     "WordInfoPreserved",
 ]
-
