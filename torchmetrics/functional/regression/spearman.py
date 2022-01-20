@@ -79,7 +79,7 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-        eps: Avoids ZeroDivisionError. default: 1e-6
+        eps: Avoids ZeroDivisionError.
 
     Example:
         >>> target = torch.tensor([3, -0.5, 2, 7])

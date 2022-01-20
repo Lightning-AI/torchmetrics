@@ -43,24 +43,24 @@ class CharErrorRate(Metric):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
 
     Returns:
-        (Tensor) Character error rate
+        Character error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
         >>> metric = CharErrorRate()
-        >>> metric(predictions, references)
+        >>> metric(preds, target)
         tensor(0.3415)
     """
     is_differentiable = False
@@ -84,14 +84,14 @@ class CharErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Character Error Rate scores.
 
         Args:
-            predictions: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
         """
-        errors, total = _cer_update(predictions, references)
+        errors, total = _cer_update(preds, target)
         self.errors += errors
         self.total += total
 
@@ -99,6 +99,6 @@ class CharErrorRate(Metric):
         """Calculate the character error rate.
 
         Returns:
-            (Tensor) Character error rate
+           Character error rate score
         """
         return _cer_compute(self.errors, self.total)

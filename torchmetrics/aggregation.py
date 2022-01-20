@@ -35,13 +35,12 @@ class BaseAggregator(Metric):
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is
-            set to False. default: True
+            set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
@@ -107,7 +106,7 @@ class BaseAggregator(Metric):
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value.squeeze() if isinstance(self.value, Tensor) else self.value
+        return self.value
 
 
 class MaxMetric(BaseAggregator):
@@ -122,13 +121,12 @@ class MaxMetric(BaseAggregator):
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is
-            set to False. default: True
+            set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
@@ -188,13 +186,12 @@ class MinMetric(BaseAggregator):
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is
-            set to False. default: True
+            set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
@@ -254,13 +251,12 @@ class SumMetric(BaseAggregator):
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is
-            set to False. default: True
+            set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
@@ -287,7 +283,7 @@ class SumMetric(BaseAggregator):
         dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            "sum", torch.zeros(1), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
+            "sum", torch.tensor(0.0), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
         )
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
@@ -313,13 +309,12 @@ class CatMetric(BaseAggregator):
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is
-            set to False. default: True
+            set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
@@ -377,13 +372,12 @@ class MeanMetric(BaseAggregator):
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is
-            set to False. default: True
+            set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state.
             When `None`, DDP will be used to perform the allgather.
@@ -398,7 +392,7 @@ class MeanMetric(BaseAggregator):
         >>> metric.update(1)
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
-        tensor([2.])
+        tensor(2.)
     """
 
     def __init__(
@@ -410,9 +404,9 @@ class MeanMetric(BaseAggregator):
         dist_sync_fn: Callable = None,
     ):
         super().__init__(
-            "sum", torch.zeros(1), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
+            "sum", torch.tensor(0.0), nan_strategy, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn
         )
-        self.add_state("weight", default=torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:  # type: ignore
         """Update state with data.

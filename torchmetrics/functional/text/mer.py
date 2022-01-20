@@ -17,54 +17,34 @@ from typing import List, Tuple, Union
 import torch
 from torch import Tensor, tensor
 
-
-def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
-    """Standard dynamic programming algorithm to compute the edit distance.
-
-    Args:
-        prediction_tokens: A tokenized predicted sentence
-        reference_tokens: A tokenized reference sentence
-
-    Returns:
-        Editing distance between the predicted sentence and the reference sentence
-    """
-    dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
-    dp[:][0] = list(range(len(prediction_tokens) + 1))
-    dp[0][:] = list(range(len(reference_tokens) + 1))
-    for i in range(1, len(prediction_tokens) + 1):
-        for j in range(1, len(reference_tokens) + 1):
-            if prediction_tokens[i - 1] == reference_tokens[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]
-            else:
-                dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1
-    return dp[-1][-1]
+from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _mer_update(
-    predictions: Union[str, List[str]],
-    references: Union[str, List[str]],
+    preds: Union[str, List[str]],
+    target: Union[str, List[str]],
 ) -> Tuple[Tensor, Tensor]:
     """Update the mer score with the current set of references and predictions.
 
     Args:
-        predictions: Transcription(s) to score as a string or list of strings
-        references: Reference(s) for each speech input as a string or list of strings
+        preds: Transcription(s) to score as a string or list of strings
+        target: Reference(s) for each speech input as a string or list of strings
 
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
-        Number of words over all references
+        Number of words overall references
     """
-    if isinstance(predictions, str):
-        predictions = [predictions]
-    if isinstance(references, str):
-        references = [references]
+    if isinstance(preds, str):
+        preds = [preds]
+    if isinstance(target, str):
+        target = [target]
     errors = tensor(0, dtype=torch.float)
     total = tensor(0, dtype=torch.float)
-    for prediction, reference in zip(predictions, references):
-        prediction_tokens = prediction.split()
-        reference_tokens = reference.split()
-        errors += _edit_distance(prediction_tokens, reference_tokens)
-        total += max(len(reference_tokens), len(prediction_tokens))
+    for pred, tgt in zip(preds, target):
+        pred_tokens = pred.split()
+        tgt_tokens = tgt.split()
+        errors += _edit_distance(pred_tokens, tgt_tokens)
+        total += max(len(tgt_tokens), len(pred_tokens))
 
     return errors, total
 
@@ -74,36 +54,37 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
-        total: Number of words over all references
+        total: Number of words overall references
 
     Returns:
-        (Tensor) Match error rate
+        Match error rate score
     """
     return errors / total
 
 
 def match_error_rate(
-    predictions: Union[str, List[str]],
-    references: Union[str, List[str]],
+    preds: Union[str, List[str]],
+    target: Union[str, List[str]],
 ) -> Tensor:
     """Match error rate is a metric of the performance of an automatic speech recognition system. This value
     indicates the percentage of words that were incorrectly predicted and inserted. The lower the value, the better
     the performance of the ASR system with a MatchErrorRate of 0 being a perfect score.
 
     Args:
-        predictions: Transcription(s) to score as a string or list of strings
-        references: Reference(s) for each speech input as a string or list of strings
-
+        preds: Transcription(s) to score as a string or list of strings
+        target: Reference(s) for each speech input as a string or list of strings
 
     Returns:
         Match error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
-        >>> match_error_rate(predictions=predictions, references=references)
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
+        >>> match_error_rate(preds=preds, target=target)
         tensor(0.4444)
     """
-
-    errors, total = _mer_update(predictions, references)
+    errors, total = _mer_update(
+        preds,
+        target,
+    )
     return _mer_compute(errors, total)

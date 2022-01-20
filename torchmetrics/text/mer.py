@@ -46,7 +46,7 @@ class MatchErrorRate(Metric):
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
@@ -55,10 +55,10 @@ class MatchErrorRate(Metric):
         Match error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
         >>> metric = MatchErrorRate()
-        >>> metric(predictions, references)
+        >>> metric(preds, target)
         tensor(0.4444)
     """
     is_differentiable = False
@@ -82,14 +82,21 @@ class MatchErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
+    def update(  # type: ignore
+        self,
+        preds: Union[str, List[str]],
+        target: Union[str, List[str]],
+    ) -> None:
         """Store references/predictions for computing Match Error Rate scores.
 
         Args:
-            predictions: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
         """
-        errors, total = _mer_update(predictions, references)
+        errors, total = _mer_update(
+            preds,
+            target,
+        )
         self.errors += errors
         self.total += total
 

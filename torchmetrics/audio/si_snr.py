@@ -13,60 +13,27 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
-from torch import Tensor, tensor
+from deprecate import deprecated, void
+from torch import Tensor
 
-from torchmetrics.functional.audio.si_snr import si_snr
-from torchmetrics.metric import Metric
+from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
+from torchmetrics.utilities import _future_warning
 
 
-class SI_SNR(Metric):
+class SI_SNR(ScaleInvariantSignalNoiseRatio):
     """Scale-invariant signal-to-noise ratio (SI-SNR).
 
-    Forward accepts
-
-    - ``preds``: ``shape [...,time]``
-    - ``target``: ``shape [...,time]``
-
-    Args:
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
-
-    Raises:
-        TypeError:
-            if target and preds have a different shape
-
-    Returns:
-        average si-snr value
+    .. deprecated:: v0.7
+        Use :class:`torchmetrics.ScaleInvariantSignalNoiseRatio`. Will be removed in v0.8.
 
     Example:
         >>> import torch
-        >>> from torchmetrics import SI_SNR
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_snr = SI_SNR()
-        >>> si_snr_val = si_snr(preds, target)
-        >>> si_snr_val
+        >>> si_snr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
         tensor(15.0918)
-
-    References:
-        [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech
-        Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
-        696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
 
-    is_differentiable = True
-    sum_si_snr: Tensor
-    total: Tensor
-    higher_is_better = True
-
+    @deprecated(target=ScaleInvariantSignalNoiseRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         compute_on_step: bool = True,
@@ -74,28 +41,4 @@ class SI_SNR(Metric):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
-
-        self.add_state("sum_si_snr", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        si_snr_batch = si_snr(preds=preds, target=target)
-
-        self.sum_si_snr += si_snr_batch.sum()
-        self.total += si_snr_batch.numel()
-
-    def compute(self) -> Tensor:
-        """Computes average SI-SNR."""
-        return self.sum_si_snr / self.total
+        void(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

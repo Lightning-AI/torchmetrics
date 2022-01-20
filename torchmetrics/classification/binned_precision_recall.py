@@ -62,12 +62,12 @@ class BinnedPrecisionRecallCurve(Metric):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:
@@ -94,19 +94,19 @@ class BinnedPrecisionRecallCurve(Metric):
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> pr_curve = BinnedPrecisionRecallCurve(num_classes=5, thresholds=3)
         >>> precision, recall, thresholds = pr_curve(pred, target)
-        >>> precision   # doctest: +NORMALIZE_WHITESPACE
+        >>> precision
         [tensor([0.2500, 1.0000, 1.0000, 1.0000]),
         tensor([0.2500, 1.0000, 1.0000, 1.0000]),
         tensor([2.5000e-01, 1.0000e-06, 1.0000e+00, 1.0000e+00]),
         tensor([2.5000e-01, 1.0000e-06, 1.0000e+00, 1.0000e+00]),
         tensor([2.5000e-07, 1.0000e+00, 1.0000e+00, 1.0000e+00])]
-        >>> recall   # doctest: +NORMALIZE_WHITESPACE
+        >>> recall
         [tensor([1.0000, 1.0000, 0.0000, 0.0000]),
         tensor([1.0000, 1.0000, 0.0000, 0.0000]),
         tensor([1.0000, 0.0000, 0.0000, 0.0000]),
         tensor([1.0000, 0.0000, 0.0000, 0.0000]),
         tensor([0., 0., 0., 0.])]
-        >>> thresholds   # doctest: +NORMALIZE_WHITESPACE
+        >>> thresholds
         [tensor([0.0000, 0.5000, 1.0000]),
         tensor([0.0000, 0.5000, 1.0000]),
         tensor([0.0000, 0.5000, 1.0000]),
@@ -210,9 +210,9 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:
@@ -262,9 +262,9 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and return None if this is set to False.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Raises:
         ValueError:
@@ -285,7 +285,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> average_precision = BinnedRecallAtFixedPrecision(num_classes=5, thresholds=10, min_precision=0.5)
-        >>> average_precision(pred, target)   # doctest: +NORMALIZE_WHITESPACE
+        >>> average_precision(pred, target)
         (tensor([1.0000, 1.0000, 0.0000, 0.0000, 0.0000]),
         tensor([6.6667e-01, 6.6667e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
     """

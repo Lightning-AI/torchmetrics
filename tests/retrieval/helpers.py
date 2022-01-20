@@ -31,6 +31,7 @@ from tests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_in
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
 from tests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
 from tests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
+from tests.retrieval.inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
 from tests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 
 seed_all(42)
@@ -72,6 +73,7 @@ def _compute_sklearn_metric(
     indexes: np.ndarray = None,
     metric: Callable = None,
     empty_target_action: str = "skip",
+    ignore_index: int = None,
     reverse: bool = False,
     **kwargs,
 ) -> Tensor:
@@ -89,6 +91,10 @@ def _compute_sklearn_metric(
     assert isinstance(indexes, np.ndarray)
     assert isinstance(preds, np.ndarray)
     assert isinstance(target, np.ndarray)
+
+    if ignore_index is not None:
+        valid_positions = target != ignore_index
+        indexes, preds, target = indexes[valid_positions], preds[valid_positions], target[valid_positions]
 
     indexes = indexes.flatten()
     preds = preds.flatten()
@@ -196,6 +202,14 @@ _errors_test_class_metric_parameters_with_nonbinary = dict(
             "`empty_target_action` received a wrong value `casual_argument`.",
             dict(empty_target_action="casual_argument"),
         ),
+        # check ignore_index is valid
+        (
+            _irs.indexes,
+            _irs.preds,
+            _irs.target,
+            "Argument `ignore_index` must be an integer or None.",
+            dict(ignore_index=-100.0),
+        ),
         # check input shapes are consistent
         (
             _irs_mis_sz.indexes,
@@ -241,6 +255,14 @@ _errors_test_class_metric_parameters_default = dict(
             _irs.target,
             "`empty_target_action` received a wrong value `casual_argument`.",
             dict(empty_target_action="casual_argument"),
+        ),
+        # check ignore_index is valid
+        (
+            _irs.indexes,
+            _irs.preds,
+            _irs.target,
+            "Argument `ignore_index` must be an integer or None.",
+            dict(ignore_index=-100.0),
         ),
         # check input shapes are consistent
         (
@@ -289,6 +311,13 @@ _default_metric_class_input_arguments = dict(
         (_irs.indexes, _irs.preds, _irs.target),
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
+    ],
+)
+
+_default_metric_class_input_arguments_ignore_index = dict(
+    argnames="indexes,preds,target",
+    argvalues=[
+        (_irs_ii.indexes, _irs_ii.preds, _irs_ii.target),
     ],
 )
 
@@ -444,7 +473,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={"empty_target_action": "neg"},
-            indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to the retrieval metric and _sk_metric_adapted
         )
 
     def run_precision_test_gpu(
@@ -467,7 +496,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={"empty_target_action": "neg"},
-            indexes=indexes,  # every additional argument will be passed to RetrievalMAP and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to retrieval metric and _sk_metric_adapted
         )
 
     @staticmethod

@@ -12,62 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple, Union
-from warnings import warn
+from typing import List, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
 
-
-def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
-    """Standard dynamic programming algorithm to compute the edit distance.
-
-    Args:
-        prediction_tokens: A tokenized predicted sentence
-        reference_tokens: A tokenized reference sentence
-
-    Returns:
-        (int) Edit distance between the predicted sentence and the reference sentence
-    """
-    dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
-    for i in range(len(prediction_tokens) + 1):
-        dp[i][0] = i
-    for j in range(len(reference_tokens) + 1):
-        dp[0][j] = j
-    for i in range(1, len(prediction_tokens) + 1):
-        for j in range(1, len(reference_tokens) + 1):
-            if prediction_tokens[i - 1] == reference_tokens[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]
-            else:
-                dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1
-    return dp[-1][-1]
+from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _wer_update(
-    predictions: Union[str, List[str]],
-    references: Union[str, List[str]],
+    preds: Union[str, List[str]],
+    target: Union[str, List[str]],
 ) -> Tuple[Tensor, Tensor]:
     """Update the wer score with the current set of references and predictions.
 
     Args:
-        predictions: Transcription(s) to score as a string or list of strings
-        references: Reference(s) for each speech input as a string or list of strings
+        preds: Transcription(s) to score as a string or list of strings
+        target: Reference(s) for each speech input as a string or list of strings
 
     Returns:
-        (Tensor) Number of edit operations to get from the reference to the prediction, summed over all samples
-        (Tensor) Number of words over all references
+        Number of edit operations to get from the reference to the prediction, summed over all samples
+        Number of words overall references
     """
-    if isinstance(predictions, str):
-        predictions = [predictions]
-    if isinstance(references, str):
-        references = [references]
+    if isinstance(preds, str):
+        preds = [preds]
+    if isinstance(target, str):
+        target = [target]
     errors = tensor(0, dtype=torch.float)
     total = tensor(0, dtype=torch.float)
-    for prediction, reference in zip(predictions, references):
-        prediction_tokens = prediction.split()
-        reference_tokens = reference.split()
-        errors += _edit_distance(prediction_tokens, reference_tokens)
-        total += len(reference_tokens)
+    for pred, tgt in zip(preds, target):
+        pred_tokens = pred.split()
+        tgt_tokens = tgt.split()
+        errors += _edit_distance(pred_tokens, tgt_tokens)
+        total += len(tgt_tokens)
     return errors, total
 
 
@@ -76,39 +53,31 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
-        total: Number of words over all references
+        total: Number of words overall references
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
     """
     return errors / total
 
 
-def wer(
-    predictions: Union[str, List[str]],
-    references: Union[str, List[str]],
-    concatenate_texts: Optional[bool] = None,  # TODO: remove in v0.7
-) -> Tensor:
-    """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
-    performance of the ASR system with a WER of 0 being a perfect score.
+def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+    """Word error rate (WordErrorRate_) is a common metric of the performance of an automatic speech recognition
+    system. This value indicates the percentage of words that were incorrectly predicted. The lower the value, the
+    better the performance of the ASR system with a WER of 0 being a perfect score.
 
     Args:
-        predictions: Transcription(s) to score as a string or list of strings
-        references: Reference(s) for each speech input as a string or list of strings
-        concatenate_texts: Whether to concatenate all input texts or compute WER iteratively
-            This argument is deprecated in v0.6 and it will be removed in v0.7.
+        preds: Transcription(s) to score as a string or list of strings
+        target: Reference(s) for each speech input as a string or list of strings
 
     Returns:
-        (Tensor) Word error rate
+        Word error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
-        >>> wer(predictions=predictions, references=references)
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
+        >>> word_error_rate(preds=preds, target=target)
         tensor(0.5000)
     """
-    if concatenate_texts is not None:
-        warn("`concatenate_texts` has been deprecated in v0.6 and it will be removed in v0.7", DeprecationWarning)
-    errors, total = _wer_update(predictions, references)
+    errors, total = _wer_update(preds, target)
     return _wer_compute(errors, total)
