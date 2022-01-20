@@ -4,14 +4,14 @@ Quick Start
 
 TorchMetrics is a collection of 60+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
-* A standardized interface to increase reproducability
+* A standardized interface to increase reproducibility
 * Reduces Boilerplate
-* Distrubuted-training compatible
+* Distributed-training compatible
 * Rigorously tested
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
-You can use TorchMetrics in any PyTorch model, or with in `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
+You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
 
 * This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
@@ -96,7 +96,7 @@ The code below shows how to use the class-based interface:
 Implementing your own metric
 ****************************
 
-Implementing your own metric is as easy as subclassing an :class:`torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
+Implementing your own metric is as easy as subclassing a :class:`torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
 
 1. Implement ``__init__`` where you call ``self.add_state`` for every internal state that is needed for the metrics computations
 2. Implement ``update`` method, where all logic that is necessary for updating metric states go
