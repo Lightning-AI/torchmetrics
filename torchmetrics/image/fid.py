@@ -255,7 +255,7 @@ class FrechetInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-        exclude_states = () if reset_real_features else ("real_features", )
+        exclude_states = () if reset_real_features else ("real_features",)
 
         self._reset_excluded_states = exclude_states
 
@@ -296,6 +296,7 @@ class FrechetInceptionDistance(Metric):
 
     def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
         super().reset({*self._reset_excluded_states, *exclude_states})
+
 
 class FID(FrechetInceptionDistance):
     r"""

@@ -395,6 +395,7 @@ class Metric(Module, ABC):
 
     def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
         """This method automatically resets the metric state variables to their default value.
+
         Args:
             exclude_stetes: sequence of strings indicating metric states that should not be reset.
         """
