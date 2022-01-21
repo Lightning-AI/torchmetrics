@@ -104,10 +104,14 @@ class MinMaxMetric(Metric):
         self.min_val = val if self.min_val > val else self.min_val
         return {"raw": val, "max": self.max_val, "min": self.min_val}
 
-    def reset(self) -> None:
-        """Sets ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
-        super().reset()
-        self._base_metric.reset()
+    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
+        """Sets ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric.
+
+        Args:
+            exclude_states: sequence of strings indicating metric states that should not be reset.
+        """
+        super().reset(exclude_states)
+        self._base_metric.reset(exclude_states)
 
     @staticmethod
     def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:

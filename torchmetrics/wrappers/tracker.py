@@ -98,9 +98,13 @@ class MetricTracker(nn.ModuleList):
         self._check_for_increment("compute_all")
         return torch.stack([metric.compute() for i, metric in enumerate(self) if i != 0], dim=0)
 
-    def reset(self) -> None:
-        """Resets the current metric being tracked."""
-        self[-1].reset()
+    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
+        """Resets the current metric being tracked.
+
+        Args:
+            exclude_states: sequence of strings indicating metric states that should not be reset.
+        """
+        self[-1].reset(exclude_states)
 
     def reset_all(self) -> None:
         """Resets all metrics being tracked."""

@@ -124,10 +124,14 @@ class MetricCollection(nn.ModuleDict):
     def compute(self) -> Dict[str, Any]:
         return {k: m.compute() for k, m in self.items()}
 
-    def reset(self) -> None:
-        """Iteratively call reset for each metric."""
+    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
+        """Iteratively call reset for each metric.
+
+        Args:
+            exclude_states: sequence of strings indicating metric states that should not be reset.
+        """
         for _, m in self.items(keep_base=True):
-            m.reset()
+            m.reset(exclude_states=exclude_states)
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MetricCollection":
         """Make a copy of the metric collection

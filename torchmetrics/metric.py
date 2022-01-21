@@ -397,7 +397,7 @@ class Metric(Module, ABC):
         """This method automatically resets the metric state variables to their default value.
 
         Args:
-            exclude_stetes: sequence of strings indicating metric states that should not be reset.
+            exclude_states: sequence of strings indicating metric states that should not be reset.
         """
         self._update_called = False
         self._forward_cache = None

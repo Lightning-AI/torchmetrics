@@ -160,7 +160,11 @@ class MultioutputWrapper(Metric):
             return None
         return results
 
-    def reset(self) -> None:
-        """Reset all underlying metrics."""
+    def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
+        """Reset all underlying metrics.
+
+        Args:
+            exclude_states: sequence of strings indicating metric states that should not be reset.
+        """
         for metric in self.metrics:
-            metric.reset()
+            metric.reset(exclude_states)
