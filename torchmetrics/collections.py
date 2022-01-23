@@ -15,7 +15,7 @@ from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn

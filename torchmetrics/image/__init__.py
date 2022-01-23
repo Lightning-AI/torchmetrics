@@ -24,8 +24,8 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torchmetrics.image.fid import FID, FrechetInceptionDistance  # noqa: F401
     from torchmetrics.image.inception import IS, InceptionScore  # noqa: F401
     from torchmetrics.image.kid import KID, KernelInceptionDistance  # noqa: F401
-    
-    register_compute_group(FrechetInceptionDistance, KernelInceptionDistance)  # todo: what 
+
+    register_compute_group(FrechetInceptionDistance, KernelInceptionDistance)  # todo: what
 
 if _LPIPS_AVAILABLE:
     from torchmetrics.image.lpip import LPIPS, LearnedPerceptualImagePatchSimilarity  # noqa: F401

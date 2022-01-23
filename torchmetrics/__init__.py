@@ -102,9 +102,8 @@ from torchmetrics.text import (  # noqa: E402
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
-
 from torchmetrics.utilities.registry import register_compute_group
+from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
 
 register_compute_group(F1, FBeta, Recall, Precision, Specificity, StatScores)
 register_compute_group(AUROC, AveragePrecision, PrecisionRecallCurve, ROC)

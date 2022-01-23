@@ -13,22 +13,20 @@
 # limitations under the License.
 from torchmetrics.metric import Metric
 
-
 # define compute groups for metric collection
 _COMPUTE_GROUP_REGISTRY = []
 
 
 def register_compute_group(*metrics):
-    """ Register a compute group of metrics
-    
+    """Register a compute group of metrics.
+
     A compute group consist of metrics that share the underlying metric state meaning that only their
     `compute` method should differ. Compute groups are used in connection with MetricCollection to
     reduce the computational cost of metrics that share the underlying same metric state. Registered
     compute groups can found in the global variable `_COMPUTE_GROUP_REGISTRY`.
-    
+
     Args:
         *metrics: An iterable of metrics
-
     """
     for m in metrics:
         if not issubclass(m, Metric):
