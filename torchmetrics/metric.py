@@ -14,6 +14,7 @@
 import functools
 import inspect
 import operator as op
+import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -82,7 +83,7 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -96,8 +97,10 @@ class Metric(Module, ABC):
         self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
         self._device = torch.device("cpu")
 
+        if compute_on_step is not None:
+            warnings.warn("Argument `decimal_places` is deprecated in v0.8 and will be removed in v0.9")
+
         self.dist_sync_on_step = dist_sync_on_step
-        self.compute_on_step = compute_on_step
         self.process_group = process_group
         self.dist_sync_fn = dist_sync_fn
         self._to_sync = True
@@ -204,29 +207,28 @@ class Metric(Module, ABC):
         with torch.no_grad():
             self.update(*args, **kwargs)
 
-        if self.compute_on_step:
-            self._to_sync = self.dist_sync_on_step
-            # skip restore cache operation from compute as cache is stored below.
-            self._should_unsync = False
+        self._to_sync = self.dist_sync_on_step
+        # skip restore cache operation from compute as cache is stored below.
+        self._should_unsync = False
 
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults}
+        # save context before switch
+        cache = {attr: getattr(self, attr) for attr in self._defaults}
 
-            # call reset, update, compute, on single batch
-            self.reset()
-            self.update(*args, **kwargs)
-            self._forward_cache = self.compute()
+        # call reset, update, compute, on single batch
+        self.reset()
+        self.update(*args, **kwargs)
+        self._forward_cache = self.compute()
 
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._is_synced = False
+        # restore context
+        for attr, val in cache.items():
+            setattr(self, attr, val)
+        self._is_synced = False
 
-            self._should_unsync = True
-            self._to_sync = True
-            self._computed = None
+        self._should_unsync = True
+        self._to_sync = True
+        self._computed = None
 
-            return self._forward_cache
+        return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}

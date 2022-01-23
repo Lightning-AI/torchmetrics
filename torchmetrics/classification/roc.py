@@ -116,7 +116,7 @@ class ROC(Metric):
         self,
         num_classes: Optional[int] = None,
         pos_label: Optional[int] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,

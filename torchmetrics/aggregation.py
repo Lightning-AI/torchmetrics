@@ -59,7 +59,7 @@ class BaseAggregator(Metric):
         fn: Union[Callable, str],
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -147,7 +147,7 @@ class MaxMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -212,7 +212,7 @@ class MinMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -277,7 +277,7 @@ class SumMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -335,7 +335,7 @@ class CatMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -398,7 +398,7 @@ class MeanMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,

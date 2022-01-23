@@ -78,7 +78,7 @@ class PeakSignalNoiseRatio(Metric):
         base: float = 10.0,
         reduction: str = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
@@ -168,7 +168,7 @@ class PSNR(PeakSignalNoiseRatio):
         base: float = 10.0,
         reduction: str = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:

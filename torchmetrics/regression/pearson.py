@@ -100,7 +100,7 @@ class PearsonCorrCoef(Metric):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
@@ -160,7 +160,7 @@ class PearsonCorrcoef(PearsonCorrCoef):
     @deprecated(target=PearsonCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:

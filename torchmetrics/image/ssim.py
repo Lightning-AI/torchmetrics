@@ -64,7 +64,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
@@ -131,7 +131,7 @@ class SSIM(StructuralSimilarityIndexMeasure):
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
@@ -191,7 +191,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Optional[Literal["relu", "simple"]] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
