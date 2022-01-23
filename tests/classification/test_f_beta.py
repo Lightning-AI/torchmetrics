@@ -462,3 +462,43 @@ def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_inde
 
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
+
+@pytest.mark.parametrize(
+    "metric_class, metric_fn",
+    [
+        (F1Score, f1_score_pl),
+    ],
+)
+@pytest.mark.parametrize(
+    "preds, target, average, ignore_index, num_classes, expected",
+    [
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", None, None, torch.tensor(0.6)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", 0, None, torch.tensor(1.)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", 1, None, torch.tensor(0.5)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", 2, None, torch.tensor(0.5)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", None, 3, torch.tensor(0.5556)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", 0, 3, torch.tensor(1.)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", 1, 3, torch.tensor(0.5)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", 2, 3, torch.tensor(0.3333)),
+    ],
+)
+def test_f1_ignore_index(
+    metric_class,
+    metric_fn,
+    preds: Tensor,
+    target: Tensor,
+    average: str,
+    ignore_index: int,
+    num_classes: int,
+    expected: Tensor,
+):
+    """A simple test to check that ignore_index works as expected."""
+
+    cl_metric = metric_class(average=average, ignore_index=ignore_index, num_classes=num_classes)
+    cl_metric(preds, target)
+
+    result_cl = cl_metric.compute()
+    result_fn = metric_fn(preds, target, average=average, ignore_index=ignore_index, num_classes=num_classes)
+
+    assert torch.allclose(expected, result_cl, atol=1e-04)
+    assert torch.allclose(expected, result_fn, atol=1e-04)

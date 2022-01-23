@@ -24,6 +24,10 @@ def _del_column(data: Tensor, idx: int) -> Tensor:
     """Delete the column at index."""
     return torch.cat([data[:, :idx], data[:, (idx + 1) :]], 1)
 
+def _del_rows(data: Tensor, mask: Tensor) -> Tensor:
+    """Delete the rows by mask."""
+    return data[torch.logical_not(mask)]
+
 
 def _stat_scores(
     preds: Tensor,
@@ -127,6 +131,13 @@ def _stat_scores_update(
         if mdmc_reduce == "global":
             preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
             target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
+
+
+    # Delete what (row) is related with ignore_index:
+    if ignore_index is not None:
+        ignore_mask = target[:, ignore_index] == 1
+        preds = _del_rows(preds, ignore_mask)
+        target = _del_rows(target, ignore_mask)
 
     # Delete what is in ignore_index, if applicable (and classes don't matter):
     if ignore_index is not None and reduce != "macro":
