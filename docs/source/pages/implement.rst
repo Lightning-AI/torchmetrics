@@ -64,7 +64,7 @@ The cache is first emptied on the next call to ``update``.
 
 ``forward`` serves the dual purpose of both returning the metric on the current data and updating the internal
 metric state for accumulating over multiple batches. The ``forward()`` method achieves this by combining calls
-to ``update`` and ``compute`` in the following way (assuming metric is initialized with ``compute_on_step=True``):
+to ``update`` and ``compute`` in the following way:
 
 1. Calls ``update()`` to update the global metric state (for accumulation over multiple batches)
 2. Caches the global state.
