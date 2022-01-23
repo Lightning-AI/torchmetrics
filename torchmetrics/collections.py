@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from collections import Iterable, OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
 
 import torch
-from torch import nn
-from torch.functional import Tensor
+from torch import nn, Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -46,6 +43,13 @@ class MetricCollection(nn.ModuleDict):
         prefix: a string to append in front of the keys of the output dict
 
         postfix: a string to append after the keys of the output dict
+
+        enable_compute_groups:
+            By defualt the MetricCollection will try to reduce the computations needed for the metrics in the collection
+            by checking if they belong to the same *compute group*. All metrics in a compute group share the same metric
+            state and are therefore only different in their compute step e.g. accuracy, precision and recall can all be
+            computed from the true positives/negatives and false positives/nagatives. Set this argument to `False` for
+            disabling this behaviour.
 
     Raises:
         ValueError:
