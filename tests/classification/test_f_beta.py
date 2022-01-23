@@ -463,6 +463,7 @@ def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_inde
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
 
+
 @pytest.mark.parametrize(
     "metric_class, metric_fn",
     [
@@ -473,11 +474,11 @@ def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_inde
     "preds, target, average, ignore_index, num_classes, expected",
     [
         (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", None, None, torch.tensor(0.6)),
-        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", 0, None, torch.tensor(1.)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", 0, None, torch.tensor(1.0)),
         (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", 1, None, torch.tensor(0.5)),
         (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "micro", 2, None, torch.tensor(0.5)),
         (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", None, 3, torch.tensor(0.5556)),
-        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", 0, 3, torch.tensor(1.)),
+        (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", 0, 3, torch.tensor(1.0)),
         (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", 1, 3, torch.tensor(0.5)),
         (torch.tensor([1, 1, 1, 2, 1]), torch.tensor([0, 1, 1, 2, 0]), "macro", 2, 3, torch.tensor(0.3333)),
     ],
