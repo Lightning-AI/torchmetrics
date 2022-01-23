@@ -40,7 +40,9 @@ class SignalNoiseRatio(Metric):
         zero_mean:
             if to zero mean target and preds or not
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is
+            set to False. Argument has no use anymore. Deprecated in v0.8 and
+            will be removed v0.9.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -148,7 +150,9 @@ class ScaleInvariantSignalNoiseRatio(Metric):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is
+            set to False. Argument has no use anymore. Deprecated in v0.8 and
+            will be removed v0.9.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.

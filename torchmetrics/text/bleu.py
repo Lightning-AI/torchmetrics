@@ -33,9 +33,11 @@ class BLEUScore(Metric):
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
-            Whether or not to apply smoothing – see [2]
+            Whether or not to apply smoothing, see [2]
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is
+            set to False. Argument has no use anymore. Deprecated in v0.8 and
+            will be removed v0.9.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.

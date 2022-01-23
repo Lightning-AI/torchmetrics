@@ -62,7 +62,9 @@ class BinnedPrecisionRecallCurve(Metric):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is
+            set to False. Argument has no use anymore. Deprecated in v0.8 and
+            will be removed v0.9.
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -210,7 +212,9 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is
+            set to False. Argument has no use anymore. Deprecated in v0.8 and
+            will be removed v0.9.
         process_group:
             Specify the process group on which synchronization is called.
 
@@ -262,7 +266,9 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is
+            set to False. Argument has no use anymore. Deprecated in v0.8 and
+            will be removed v0.9.
         process_group:
             Specify the process group on which synchronization is called.
 
