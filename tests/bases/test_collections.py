@@ -18,9 +18,9 @@ import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
-from torchmetrics import Metric
-from torchmetrics.classification import Accuracy
-from torchmetrics.collections import MetricCollection
+from torchmetrics import Accuracy, ConfusionMatrix, CohenKappa, F1, Metric, MetricCollection, Precision, Recall
+import torchmetrics
+
 
 seed_all(42)
 
@@ -278,3 +278,66 @@ def test_collection_filtering():
     mc2 = MetricCollection([MyAccuracy(), DummyMetric()])
     mc(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg")
     mc2(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg", kwarg2="kwarg2")
+
+
+def test_non_empty_registry():
+    """ Check that the compute group registry is non-empty """
+    assert torchmetrics.utilities.registry._COMPUTE_GROUP_REGISTRY
+
+
+@pytest.mark.parametrize("metrics, expected",
+    [
+        # single metric forms its own compute group
+        (Accuracy(), {'cg0': ['Accuracy']}),
+        # two metrics of same class forms a compute group
+        ({'acc0': Accuracy(), 'acc1': Accuracy()}, {'cg0': ['acc0', 'acc1']}),
+        # two metrics from registry froms a compute group
+        ([Precision(), Recall()], {'cg0': ['Precision', 'Recall']}),
+        # two metrics from different classes gives two compute groups
+        ([ConfusionMatrix(2), Recall()], {'cg0': ['ConfusionMatrix'], 'cg1': ['Recall']}),
+        # multi group multi metric
+        ([ConfusionMatrix(2), CohenKappa(2), Recall(), Precision()], {'cg0': ['ConfusionMatrix', 'CohenKappa'], 'cg1': ['Recall', 'Precision']}),
+    ]
+)
+@pytest.mark.parametrize("enable_compute_groups", [True, False])
+def test_check_compute_groups(metrics, expected, enable_compute_groups):
+    """ Check that compute groups are formed after initialization """ 
+    m = MetricCollection(metrics, enable_compute_groups=enable_compute_groups)
+
+    if enable_compute_groups:
+        assert m.compute_groups == expected
+    else:
+        # If disabled, return empty dict
+        assert m.compute_groups == {}
+
+
+@pytest.mark.parametrize("metrics, expected_pre_update, expected_post_update",
+    [
+        ({
+            "acc": Accuracy(num_classes=5),
+            "acc2": Accuracy(num_classes=5),
+             # this should move to own group after update
+            "acc3": Accuracy(num_classes=5, average="macro"),
+            "f1": F1(num_classes=5),
+            "recall": Recall(num_classes=5),
+            "confmat": ConfusionMatrix(num_classes=5),
+        }, 
+        {'cg0': ['acc3', 'acc2', 'acc'], 'cg1': ['confmat'], 'cg2': ['f1', 'recall']}, 
+        {'cg0': ['acc2', 'acc3', 'acc'], 'cg1': ['confmat'], 'cg2': ['f1', 'recall']})
+    ]
+)
+def test_check_compute_groups_after_update(metrics, expected_pre_update, expected_post_update):
+    """ The first update is still performed for all metrics, which we afterwards check that
+        the size of the metric states matches between all members in a compute group. Else
+        we further divide
+    """
+    m = MetricCollection(metrics)
+
+    #assert m.compute_groups == expected_pre_update
+
+    preds = torch.randn(10, 5).softmax(dim=-1)
+    target = torch.randint(5, (10,))
+    m.update(preds, target)
+
+    assert m.compute_groups == expected_post_update
+
