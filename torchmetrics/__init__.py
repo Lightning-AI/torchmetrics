@@ -2,7 +2,7 @@ r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *  # noqa: F403
+from torchmetrics.__about__ import * # noqa: F401, F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -25,7 +25,7 @@ from torchmetrics.audio import (  # noqa: E402
     SignalDistortionRatio,
     SignalNoiseRatio,
 )
-from torchmetrics.classification import (  # noqa: E402
+from torchmetrics.classification import ( # noqa: E402, F401
     AUC,
     AUROC,
     F1,
@@ -196,7 +196,6 @@ __all__ = [
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
-    "WER",
     "TranslationEditRate",
     "WordErrorRate",
     "CharErrorRate",
