@@ -103,11 +103,7 @@ class CohenKappa(Metric):
         if self.weights not in allowed_weights:
             raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
 
-        self.add_state(
-            "confmat", 
-            default=torch.zeros(num_classes, num_classes, dtype=torch.long), 
-            dist_reduce_fx="sum"
-        )
+        self.add_state("confmat", default=torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.

@@ -16,11 +16,10 @@ import pickle
 import pytest
 import torch
 
+import torchmetrics
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
-from torchmetrics import Accuracy, ConfusionMatrix, CohenKappa, F1, Metric, MetricCollection, Precision, Recall
-import torchmetrics
-
+from torchmetrics import F1, Accuracy, CohenKappa, ConfusionMatrix, Metric, MetricCollection, Precision, Recall
 
 seed_all(42)
 
@@ -280,35 +279,41 @@ def test_collection_filtering():
     mc2(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg", kwarg2="kwarg2")
 
 
-@pytest.mark.parametrize("metrics, expected",
+@pytest.mark.parametrize(
+    "metrics, expected",
     [
         # single metric forms its own compute group
-        (Accuracy(3), {0: ['Accuracy']}),
+        (Accuracy(3), {0: ["Accuracy"]}),
         # two metrics of same class forms a compute group
-        ({'acc0': Accuracy(3), 'acc1': Accuracy(3)}, {0: ['acc0', 'acc1']}),
+        ({"acc0": Accuracy(3), "acc1": Accuracy(3)}, {0: ["acc0", "acc1"]}),
         # two metrics from registry froms a compute group
-        ([Precision(3), Recall(3)], {0: ['Precision', 'Recall']}),
+        ([Precision(3), Recall(3)], {0: ["Precision", "Recall"]}),
         # two metrics from different classes gives two compute groups
-        ([ConfusionMatrix(3), Recall(3)], {0: ['ConfusionMatrix'], 1: ['Recall']}),
+        ([ConfusionMatrix(3), Recall(3)], {0: ["ConfusionMatrix"], 1: ["Recall"]}),
         # multi group multi metric
-        ([ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)], {0: ['ConfusionMatrix', 'CohenKappa'], 2: ['Recall', 'Precision']}),
+        (
+            [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
+            {0: ["ConfusionMatrix", "CohenKappa"], 2: ["Recall", "Precision"]},
+        ),
         # Complex example
-        ({
-            "acc": Accuracy(3),
-            "acc2": Accuracy(3),
-            "acc3": Accuracy(num_classes=3, average="macro"),
-            "f1": F1(3),
-            "recall": Recall(3),
-            "confmat": ConfusionMatrix(3),
-        }, {0: ['acc', 'acc2'], 2: ['acc3'], 3: ['confmat'], 4: ['f1', 'recall']})
-
-    ]
+        (
+            {
+                "acc": Accuracy(3),
+                "acc2": Accuracy(3),
+                "acc3": Accuracy(num_classes=3, average="macro"),
+                "f1": F1(3),
+                "recall": Recall(3),
+                "confmat": ConfusionMatrix(3),
+            },
+            {0: ["acc", "acc2"], 2: ["acc3"], 3: ["confmat"], 4: ["f1", "recall"]},
+        ),
+    ],
 )
 @pytest.mark.parametrize("enable_compute_groups", [True, False])
 def test_check_compute_groups(metrics, expected, enable_compute_groups):
-    """ Check that compute groups are formed after initialization """ 
+    """Check that compute groups are formed after initialization."""
     m = MetricCollection(metrics, enable_compute_groups=enable_compute_groups)
-    
+
     if enable_compute_groups:
         assert len(m.compute_groups) == len(m)
     else:
