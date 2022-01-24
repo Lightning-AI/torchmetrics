@@ -123,8 +123,8 @@ class MetricCollection(nn.ModuleDict):
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Iteratively call update for each metric.
 
-        Positional arguments (args) will be passed to every metric in the collection, while 
-        keyword arguments (kwargs) will be filtered based on the signature of the individual metric.
+        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
+        will be filtered based on the signature of the individual metric.
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
@@ -147,27 +147,28 @@ class MetricCollection(nn.ModuleDict):
                 self._groups_checked = True
 
     def _merge_compute_groups(self):
-        """ Iterates over the collection of metrics, checking if the state of each metric
-        matches another. If so, their compute groups will be merged into one
+        """Iterates over the collection of metrics, checking if the state of each metric matches another.
+
+        If so, their compute groups will be merged into one
         """
         n_groups = len(self._groups)
-        while True:    
+        while True:
             for cg_idx1, cg_members1 in self._groups.copy().items():
                 for cg_idx2, cg_members2 in self._groups.copy().items():
                     if cg_idx1 == cg_idx2:
                         continue
-                    
+
                     metric1 = getattr(self, cg_members1[0])
                     metric2 = getattr(self, cg_members2[0])
 
                     if self._equal_metric_states(metric1, metric2):
                         self._groups[cg_idx1].extend(self._groups.pop(cg_idx2))
                         break
-                
+
                 # Start over if we merged groups
                 if len(self._groups) != n_groups:
                     break
-            
+
             # Stop when we iterate over everything and do not merge any groups
             if len(self._groups) == n_groups:
                 break
@@ -175,7 +176,7 @@ class MetricCollection(nn.ModuleDict):
                 n_groups = len(self._groups)
 
     def _equal_metric_states(self, metric1, metric2):
-        """ Check if the metric state of two metrics are the same """
+        """Check if the metric state of two metrics are the same."""
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
 
@@ -201,7 +202,7 @@ class MetricCollection(nn.ModuleDict):
         return True
 
     def compute(self) -> Dict[str, Any]:
-        """ Compute the result for each metric in the collection """
+        """Compute the result for each metric in the collection."""
         return {k: m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
@@ -282,11 +283,11 @@ class MetricCollection(nn.ModuleDict):
 
     @property
     def compute_groups(self):
-        """ Return a dict with the current compute groups in the collection """
+        """Return a dict with the current compute groups in the collection."""
         return self._groups
 
     def _set_name(self, base: str) -> str:
-        """ Adjust name of metric with both prefix and postfix """
+        """Adjust name of metric with both prefix and postfix."""
         name = base if self.prefix is None else self.prefix + base
         name = name if self.postfix is None else name + self.postfix
         return name
