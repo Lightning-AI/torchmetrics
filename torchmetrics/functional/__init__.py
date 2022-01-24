@@ -37,10 +37,9 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
-    ssim,
     structural_similarity_index_measure,
 )
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
@@ -128,7 +127,6 @@ __all__ = [
     "precision_recall",
     "precision_recall_curve",
     "peak_signal_noise_ratio",
-    "psnr",
     "r2_score",
     "recall",
     "retrieval_average_precision",
@@ -153,7 +151,6 @@ __all__ = [
     "spearman_corrcoef",
     "specificity",
     "squad",
-    "ssim",
     "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
