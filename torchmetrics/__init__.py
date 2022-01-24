@@ -25,7 +25,7 @@ from torchmetrics.audio import (  # noqa: E402
     SignalDistortionRatio,
     SignalNoiseRatio,
 )
-from torchmetrics.classification import (  # noqa: E402
+from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
     F1,
@@ -102,18 +102,7 @@ from torchmetrics.text import (  # noqa: E402
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.utilities.registry import register_compute_group
 from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
-
-register_compute_group(F1, FBeta, Recall, Precision, Specificity, StatScores)
-register_compute_group(AUROC, AveragePrecision, PrecisionRecallCurve, ROC)
-register_compute_group(BinnedPrecisionRecallCurve, BinnedAveragePrecision)
-register_compute_group(CohenKappa, ConfusionMatrix, IoU, MatthewsCorrcoef)
-register_compute_group(CosineSimilarity, SpearmanCorrcoef)
-register_compute_group(
-    RetrievalMAP, RetrievalMRR, RetrievalFallOut, RetrievalNormalizedDCG, RetrievalPrecision, RetrievalRecall
-)
-
 
 __all__ = [
     "functional",
