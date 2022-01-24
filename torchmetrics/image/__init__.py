@@ -19,9 +19,9 @@ from torchmetrics.image.ssim import (  # noqa: F401
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
+    from torchmetrics.image.fid import FrechetInceptionDistance  # noqa: F401
     from torchmetrics.image.inception import InceptionScore  # noqa: F401
     from torchmetrics.image.kid import KernelInceptionDistance  # noqa: F401
-    from torchmetrics.image.fid import FrechetInceptionDistance  # noqa: F401
 
 if _LPIPS_AVAILABLE:
     from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity  # noqa: F401
