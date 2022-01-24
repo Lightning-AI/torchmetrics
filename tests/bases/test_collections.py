@@ -16,7 +16,6 @@ import pickle
 import pytest
 import torch
 
-import torchmetrics
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
 from torchmetrics import F1, Accuracy, CohenKappa, ConfusionMatrix, Metric, MetricCollection, Precision, Recall
