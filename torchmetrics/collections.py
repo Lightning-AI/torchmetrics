@@ -107,7 +107,7 @@ class MetricCollection(nn.ModuleDict):
 
         self.prefix = self._check_arg(prefix, "prefix")
         self.postfix = self._check_arg(postfix, "postfix")
-        self.enable_compute_groups = enable_compute_groups
+        self._enable_compute_groups = enable_compute_groups
 
         self.add_metrics(metrics, *additional_metrics)
 
@@ -123,10 +123,10 @@ class MetricCollection(nn.ModuleDict):
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Iteratively call update for each metric.
 
-        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
-        will be filtered based on the signature of the individual metric.
+        Positional arguments (args) will be passed to every metric in the collection, while 
+        keyword arguments (kwargs) will be filtered based on the signature of the individual metric.
         """
-
+        # Use compute groups if already initialized and checked
         if self._groups_checked:
             for _, cg in self._groups.items():
                 m0 = getattr(self, cg[0])
@@ -137,54 +137,71 @@ class MetricCollection(nn.ModuleDict):
                     for state in m0._defaults:
                         setattr(mi, state, getattr(m0, state))
 
-        else:  # the first update we do it per metric to make sure the states matches
-            
+        else:  # the first update always do per metric to form compute groups
             for _, m in self.items(keep_base=True):
                 m_kwargs = m._filter_kwargs(**kwargs)
                 m.update(*args, **m_kwargs)
 
-            n_groups = len(self._groups)
-            while True:  # keep splitting until we do not find any differences in states
-                for cg_name, cg_members in self._groups.copy().items():
-                    member1 = cg_members[0]  # check the first against all other
-                    for cg_idx, member2 in enumerate(cg_members[1:]):
-                        for state_name in self[member1]._defaults.keys():
-                            # if the states do not match we need to divide the compute group
-                            s1 = getattr(self[member1], state_name)
-                            s2 = getattr(self[member2], state_name)
-                            if (
-                                (isinstance(s1, Tensor) and isinstance(s2, Tensor) and not torch.allclose(s1, s2))
-                                or (isinstance(s1, list) and isinstance(s2, list) and not s1 == s2)
-                                or (type(s1) != type(s2))
-                            ):
-                                # split member1 into its own computational group
-                                self._groups[f"cg{n_groups+1}"] = [member1]
-                                self._groups[cg_name].pop(0)
-                                break
-                        
-                        if len(self._groups) != n_groups:
-                            break
+            if self._enable_compute_groups:
+                self._merge_compute_groups()
+                self._groups_checked = True
+
+    def _merge_compute_groups(self):
+        """ Iterates over the collection of metrics, checking if the state of each metric
+        matches another. If so, their compute groups will be merged into one
+        """
+        n_groups = len(self._groups)
+        while True:    
+            for cg_idx1, cg_members1 in self._groups.copy().items():
+                for cg_idx2, cg_members2 in self._groups.copy().items():
+                    if cg_idx1 == cg_idx2:
+                        continue
+                    
+                    metric1 = getattr(self, cg_members1[0])
+                    metric2 = getattr(self, cg_members2[0])
+
+                    if self._equal_metric_states(metric1, metric2):
+                        self._groups[cg_idx1].extend(self._groups.pop(cg_idx2))
+                        break
                 
-                if len(self._groups) == n_groups:
+                # Start over if we merged groups
+                if len(self._groups) != n_groups:
                     break
-                else:
-                    n_groups = len(self._groups)
+            
+            # Stop when we iterate over everything and do not merge any groups
+            if len(self._groups) == n_groups:
+                break
+            else:
+                n_groups = len(self._groups)
 
-            self._groups_checked = True
+    def _equal_metric_states(self, metric1, metric2):
+        """ Check if the metric state of two metrics are the same """
+        if metric1._defaults.keys() != metric2._defaults.keys():
+            return False
 
-    def _match_state(self, state1, state2):
-        if type(state1) != type(state2):
-            return False
-        if isinstance(state1, Tensor) and isinstance(state1, Tensor):
-            if state1.shape == state2.shape:
+        for key in metric1._defaults.keys():
+            state1 = getattr(metric1, key)
+            state2 = getattr(metric2, key)
+
+            if type(state1) != type(state2):
                 return False
-            if not torch.allclose(state1, state2):
-                return False
-        if isinstance(state1, list) and isinstance(state2, list) and not state1 == state2:
-            return False
+
+            if isinstance(state1, Tensor) and isinstance(state2, Tensor):
+                if state1.shape != state2.shape:
+                    return False
+                if not torch.allclose(state1, state2):
+                    return False
+
+            if isinstance(state1, list) and isinstance(state2, list):
+                if any(s1.shape != s2.shape for s1, s2 in zip(state1, state2)):
+                    return False
+                if any(torch.allclose(s1, s2) for s1, s2 in zip(state1, state2)):
+                    return False
+
         return True
 
     def compute(self) -> Dict[str, Any]:
+        """ Compute the result for each metric in the collection """
         return {k: m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
@@ -256,48 +273,20 @@ class MetricCollection(nn.ModuleDict):
         else:
             raise ValueError("Unknown input to MetricCollection.")
 
-        if self.enable_compute_groups:
-            self._find_compute_groups()
+        self._groups_checked = False
+        if self._enable_compute_groups:
+            # Initialize all metrics as their own compute group
+            self._groups = {i: [k] for i, k in enumerate(self.keys(keep_base=False))}
         else:
             self._groups = {}
 
-    def _find_compute_groups(self):
-        """Find group of metrics that shares the same underlying states.
-
-        If such metrics exist, only one should be updated and the rest should just copy the state
-        """
-        from torchmetrics.utilities.registry import _COMPUTE_GROUP_REGISTRY
-
-        self._groups = {}
-
-        # Duplicates of the same metric belongs to the same compute group
-        for k, v in self.items(keep_base=False):
-            self._groups.setdefault(v.__class__.__name__, set()).add(k)
-        for k, v in self._groups.items():
-            self._groups[k] = list(v)
-
-        # Find compute groups for remaining based on registry
-        for k, v in self._groups.copy().items():
-            for cg in _COMPUTE_GROUP_REGISTRY:
-                if k in cg and k in self._groups:  # found one metric in compute group
-                    # prevent we compare the metric to itself
-                    compare_dict = self._groups.copy()
-                    compare_dict.pop(k)
-                    for kk, vv in compare_dict.items():
-                        if kk in cg:  # found another metric in compute group
-                            self._groups[k] = [*self._groups[k], *compare_dict[kk]]
-                            self._groups.pop(kk)
-
-        # Rename groups
-        self._groups = {f"cg{i}": v for i, v in enumerate(self._groups.values())}
-
-        self._groups_checked = False
-
     @property
     def compute_groups(self):
+        """ Return a dict with the current compute groups in the collection """
         return self._groups
 
     def _set_name(self, base: str) -> str:
+        """ Adjust name of metric with both prefix and postfix """
         name = base if self.prefix is None else self.prefix + base
         name = name if self.postfix is None else name + self.postfix
         return name
