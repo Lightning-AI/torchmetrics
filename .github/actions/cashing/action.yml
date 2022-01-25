@@ -5,12 +5,17 @@ inputs:
   os:
     description: operation system
     required: true
-  requires:
-    description: define oldest or latest
-    required: true
   python-version:
     description: Python version
     required: true
+  requires:
+    description: define oldest or latest
+    required: false
+    default: ""
+  offset:
+    description: some extra hash for pip cache
+    required: false
+    default: "pip"
 
 runs:
   using: "composite"
@@ -41,8 +46,8 @@ runs:
     uses: actions/cache@v2
     with:
       path: ${{ steps.pip-cache.outputs.dir }}
-      key: ${{ inputs.os }}-py${{ inputs.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}
-      restore-keys: ${{ inputs.os }}-py${{ inputs.python-version }}-td${{ steps.times.outputs.period }}-pip-
+      key: ${{ inputs.os }}-${{ inputs.offset }}-py${{ inputs.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}
+      restore-keys: ${{ inputs.os }}-${{ inputs.offset }}-py${{ inputs.python-version }}-td${{ steps.times.outputs.period }}-pip-
 
   - name: HF cache
     uses: actions/cache@v2
