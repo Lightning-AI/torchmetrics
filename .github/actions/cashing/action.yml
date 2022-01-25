@@ -1,5 +1,5 @@
 name: Compelex caching
-description: some more compex caching
+description: some more complex caching - pip & conda & hf
 
 inputs:
   os:
