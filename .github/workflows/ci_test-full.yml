@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   check-diff:
-    uses: PyTorchLightning/metrics/.github/workflows/focus-diff.yml
+    uses: ./.github/workflows/focus-diff.yml
 
   pytest:
     runs-on: ${{ matrix.os }}
