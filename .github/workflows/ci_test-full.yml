@@ -17,7 +17,6 @@ defaults:
     shell: bash
 
 jobs:
-  # ToDo: consider unifying in a single workflow and distributing outputs to all others depending ones
   check-diff:
     runs-on: ubuntu-20.04
     if: github.event.pull_request.draft == false
@@ -26,19 +25,9 @@ jobs:
     outputs:
       focus: ${{ steps.diff-domains.outputs.focus }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: "./.github/actions/focus-diff.yml"
       with:
-        python-version: 3.8
-
-    - name: Get PR diff
-      id: diff-domains
-      env:
-        PR_NUMBER: "${{ github.event.pull_request.number }}"
-      run: |
-        pip install fire requests
-        # python actions/assistant.py list_runtimes $PR_NUMBER
-        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+        pr-number: ${{ github.event.pull_request.number }}
     - run: echo "${{ steps.diff-domains.outputs.focus }}"
 
   pytest:

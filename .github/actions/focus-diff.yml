@@ -1,0 +1,24 @@
+name: Evaluate diff
+
+inputs:
+  pr-number:
+    description: number of PR if any
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - uses: actions/checkout@v2
+  - uses: actions/setup-python@v2
+    with:
+      python-version: 3.8
+
+  - name: Get PR diff
+    id: diff-domains
+    env:
+      PR_NUMBER: "${{ inputs.pr-number }}"
+    run: |
+      echo $PR_NUMBER
+      pip install fire requests
+      # python actions/assistant.py list_runtimes $PR_NUMBER
+      echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
