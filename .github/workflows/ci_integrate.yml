@@ -12,10 +12,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
   cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
 
   pytest:
-
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -29,7 +32,6 @@ jobs:
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
-      TRANSFORMERS_CACHE: ci-cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
@@ -59,15 +61,7 @@ jobs:
         pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         pip list
-      shell: bash
-
-    - name: HF cache
-      uses: actions/cache@v2
-      with:
-        path: $TRANSFORMERS_CACHE
-        key: cache-transformers
 
     - name: Integrations
       run: |
         python -m pytest integrations -v --durations=25
-      shell: bash

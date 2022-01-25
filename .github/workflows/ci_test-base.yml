@@ -7,9 +7,13 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
   pull_request:
     branches: [master, "release/*"]
 
-jobs:
-  doctest:
+defaults:
+  run:
+    shell: bash
 
+jobs:
+
+  doctest:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -19,7 +23,6 @@ jobs:
     env:
       PYTEST_ARTEFACT: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
-
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 20
 
@@ -30,10 +33,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Update Pip
-      run: |
-        pip install "pip>=20.1" --upgrade --user  # needed for get pip cacher folder
-
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
     - name: Setup macOS
       if: runner.os == 'macOS'
@@ -43,7 +42,7 @@ jobs:
     - uses: ./.github/actions/cashing
       with:
         os: ${{ runner.os }}
-        offset: "tiny-pip"
+        offset: "tiny"
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
@@ -54,7 +53,6 @@ jobs:
         pip install --requirement requirements/test.txt --upgrade --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         pip list
-      shell: bash
 
     - name: Test Package [only]
       run: |

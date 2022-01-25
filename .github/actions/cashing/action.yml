@@ -15,7 +15,7 @@ inputs:
   offset:
     description: some extra hash for pip cache
     required: false
-    default: "pip"
+    default: ""
 
 runs:
   using: "composite"
@@ -46,8 +46,16 @@ runs:
     uses: actions/cache@v2
     with:
       path: ${{ steps.pip-cache.outputs.dir }}
-      key: ${{ inputs.os }}-${{ inputs.offset }}-py${{ inputs.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}
-      restore-keys: ${{ inputs.os }}-${{ inputs.offset }}-py${{ inputs.python-version }}-td${{ steps.times.outputs.period }}-pip-
+      key: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${{ steps.times.outputs.period }}-${{ inputs.offset }}-${{ hashFiles('requirements.txt') }}
+      restore-keys: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${{ steps.times.outputs.period }}-${{ inputs.offset }}-
+
+  - name: Cache conda
+    uses: actions/cache@v2
+    if: inputs.os == 'Linux'
+    with:
+      path: ~/conda_pkgs_dir
+      key: py${{ inputs.python-version }}-conda-td${{ steps.times.outputs.period }}-${{ inputs.offset }}
+      restore-keys: py${{ inputs.python-version }}-conda-td${{ steps.times.outputs.period }}-${{ inputs.offset }}
 
   - name: HF cache
     uses: actions/cache@v2
