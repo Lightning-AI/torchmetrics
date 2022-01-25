@@ -4,7 +4,7 @@ on:
     outputs:
       test-dirs:
         description: "Test folders"
-        value: ${{ jobs.check-diff.outputs.focus }}
+        value: ${{ jobs.eval-diff.outputs.focus }}
 
 defaults:
   run:
@@ -12,7 +12,7 @@ defaults:
 
 jobs:
 
-  check-diff:
+  eval-diff:
     runs-on: ubuntu-20.04
     timeout-minutes: 5
     # Map the job outputs to step outputs
