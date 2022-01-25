@@ -34,9 +34,11 @@ class BaseAggregator(Metric):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False. Argument has no use anymore. Deprecated in v0.8 and
-            will be removed v0.9.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -121,9 +123,11 @@ class MaxMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False. Argument has no use anymore. Deprecated in v0.8 and
-            will be removed v0.9.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -187,9 +191,11 @@ class MinMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False. Argument has no use anymore. Deprecated in v0.8 and
-            will be removed v0.9.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -253,9 +259,11 @@ class SumMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False. Argument has no use anymore. Deprecated in v0.8 and
-            will be removed v0.9.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -312,9 +320,11 @@ class CatMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False. Argument has no use anymore. Deprecated in v0.8 and
-            will be removed v0.9.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -376,9 +386,11 @@ class MeanMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False. Argument has no use anymore. Deprecated in v0.8 and
-            will be removed v0.9.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.

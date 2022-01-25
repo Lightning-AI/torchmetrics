@@ -56,9 +56,11 @@ class MultioutputWrapper(Metric):
             This is sometimes unnecessary but harmless for metrics such as `R2Score` but useful
             for certain classification metrics that can't handle additional 1-item dimensions.
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False. Argument has no use anymore. Deprecated in v0.8 and
-            will be removed v0.9.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Required for distributed training support.
         process_group:
