@@ -25,6 +25,7 @@ jobs:
     outputs:
       focus: ${{ steps.diff-domains.outputs.focus }}
     steps:
+    - uses: actions/checkout@v2
     - uses: "./.github/actions/focus-diff"
       with:
         pr-number: ${{ github.event.pull_request.number }}

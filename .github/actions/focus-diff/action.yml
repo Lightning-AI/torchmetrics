@@ -1,4 +1,5 @@
 name: Evaluate diff
+description: Determine if there is just diff in a particular domain
 
 inputs:
   pr-number:
@@ -10,8 +11,8 @@ runs:
   steps:
   - uses: actions/checkout@v2
   - uses: actions/setup-python@v2
-    with:
-      python-version: 3.8
+    #with:
+    #  python-version: 3.8
 
   - name: Get PR diff
     id: diff-domains
@@ -22,3 +23,4 @@ runs:
       pip install fire requests
       # python actions/assistant.py list_runtimes $PR_NUMBER
       echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+    shell: bash
