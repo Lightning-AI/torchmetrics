@@ -97,7 +97,6 @@ jobs:
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip list
-      shell: bash
 
     - name: Tests
       env:

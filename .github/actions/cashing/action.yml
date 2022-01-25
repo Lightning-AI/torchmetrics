@@ -18,10 +18,12 @@ runs:
 
   - name: PIP install assitant's deps
     run: pip install fire requests
+    shell: bash
 
   - name: Set min. dependencies
     if: inputs.requires == 'oldest'
     run: python .github/assistant.py set-oldest-versions
+    shell: bash
 
   - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
     if: inputs.requires == 'latest'
@@ -32,8 +34,8 @@ runs:
   # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
   - name: Get pip cache
     id: pip-cache
-    run: |
-      python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
+    run: python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
+    shell: bash
 
   - name: Cache pip
     uses: actions/cache@v2
