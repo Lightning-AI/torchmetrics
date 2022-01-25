@@ -1,5 +1,4 @@
 name: Evaluate diff
-description: Determine if there is just diff in a particular domain
 
 on:
   workflow_call:
