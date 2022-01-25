@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   check-diff:
-    uses: ./.github/workflows/focus-diff.yml@${{ github.ref }}
+    uses: ./.github/workflows/focus-diff.yml@ci/reuse-workflow
 
   pytest:
     runs-on: ${{ matrix.os }}
