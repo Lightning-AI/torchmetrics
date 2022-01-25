@@ -18,7 +18,8 @@ defaults:
 
 jobs:
   check-diff:
-    uses: "./.github/workflows/focus-diff.yml"
+    if: github.event.pull_request.draft == false
+    uses: ./.github/workflows/focus-diff.yml
 
   pytest:
     runs-on: ${{ matrix.os }}

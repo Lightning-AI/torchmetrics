@@ -1,6 +1,7 @@
 name: Evaluate diff
 
 on:
+  push: {}  # fixme
   workflow_call:
     # Map the workflow outputs to job outputs
     outputs:
@@ -12,7 +13,6 @@ jobs:
 
   check-diff:
     runs-on: ubuntu-20.04
-    if: github.event.pull_request.draft == false
     timeout-minutes: 5
     # Map the job outputs to step outputs
     outputs:
