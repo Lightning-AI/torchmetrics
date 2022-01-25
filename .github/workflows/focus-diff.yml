@@ -9,7 +9,7 @@ on:
         description: "Test folders"
         value: ${{ jobs.check-diff.outputs.focus }}
 
-runs:
+jobs:
 
   check-diff:
     runs-on: ubuntu-20.04
