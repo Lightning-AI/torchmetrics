@@ -1,7 +1,6 @@
 name: Evaluate diff
 
 on:
-  push: {}  # fixme
   workflow_call:
     # Map the workflow outputs to job outputs
     outputs:
@@ -16,7 +15,7 @@ jobs:
     timeout-minutes: 5
     # Map the job outputs to step outputs
     outputs:
-      output1: ${{ steps.diff-domains.outputs.focus }}
+      focus: ${{ steps.diff-domains.outputs.focus }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
