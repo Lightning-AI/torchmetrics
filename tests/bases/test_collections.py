@@ -314,7 +314,7 @@ def test_check_compute_groups(metrics, expected):
     m = MetricCollection(deepcopy(metrics), enable_compute_groups=True)
     # Construct without for comparison
     m2 = MetricCollection(deepcopy(metrics), enable_compute_groups=False)
- 
+
     assert len(m.compute_groups) == len(m)
     assert m2.compute_groups == {}
 
