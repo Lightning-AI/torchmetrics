@@ -43,7 +43,7 @@ jobs:
 
     steps:
     # fixme
-    - run: echo "${{ needs.check-diff.outputs.test-dirs }}"
+    #- run: echo "${{ needs.check-diff.outputs.test-dirs }}"
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2

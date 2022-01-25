@@ -1,3 +1,5 @@
+name: Evaluate diff
+
 on:
   workflow_call:
     # Map the workflow outputs to job outputs
@@ -5,10 +7,6 @@ on:
       test-dirs:
         description: "Test folders"
         value: ${{ jobs.eval-diff.outputs.focus }}
-
-defaults:
-  run:
-    shell: bash
 
 jobs:
 

@@ -1,0 +1,14 @@
+name: Call a reusable workflow and use its outputs
+
+on:
+  - pull_request
+
+jobs:
+  job1:
+    uses: ./.github/workflows/ttt1.yml
+
+  job2:
+    runs-on: ubuntu-latest
+    needs: job1
+    steps:
+      - run: echo ${{ needs.job1.outputs.first-word }} ${{ needs.job1.outputs.second-word }}
