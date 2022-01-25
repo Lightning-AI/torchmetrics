@@ -25,7 +25,7 @@ jobs:
     outputs:
       focus: ${{ steps.diff-domains.outputs.focus }}
     steps:
-    - uses: "./.github/actions/focus-diff/action.yml"
+    - uses: "./.github/actions/focus-diff"
       with:
         pr-number: ${{ github.event.pull_request.number }}
     - run: echo "${{ steps.diff-domains.outputs.focus }}"
