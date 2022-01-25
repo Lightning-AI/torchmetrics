@@ -52,20 +52,20 @@ pip install torchmetrics
 Install using conda
 
 ```bash
-conda install torchmetrics
+conda install -c conda-forge torchmetrics
 ```
 
 Pip from source
 
 ```bash
 # with git
-pip install git+https://github.com/PytorchLightning/metrics.git@master
+pip install git+https://github.com/PytorchLightning/metrics.git@release/latest
 ```
 
 Pip from archive
 
 ```bash
-pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
+pip install https://github.com/PyTorchLightning/metrics/archive/refs/heads/release/latest.zip
 ```
 
 Extra dependencies for specialized metrics:
@@ -75,6 +75,12 @@ pip install torchmetrics[audio]
 pip install torchmetrics[image]
 pip install torchmetrics[text]
 pip install torchmetrics[all]  # install all of the above
+```
+
+Install latest developer version
+
+```bash
+pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
 
 </details>
