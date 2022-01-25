@@ -1,0 +1,38 @@
+name: Evaluate diff
+description: Determine if there is just diff in a particular domain
+
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      dirs:
+        description: "Test folders"
+        value: ${{ jobs.check-diff.outputs.focus }}
+
+runs:
+
+  check-diff:
+    runs-on: ubuntu-20.04
+    if: github.event.pull_request.draft == false
+    timeout-minutes: 5
+    # Map the job outputs to step outputs
+    outputs:
+      output1: ${{ steps.diff-domains.outputs.focus }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      #with:
+      #  python-version: 3.8
+
+    - name: Get PR diff
+      id: diff-domains
+      env:
+        PR_NUMBER: "${{ github.event.pull_request.number }}"
+      run: |
+        echo $PR_NUMBER
+        pip install fire requests
+        # python actions/assistant.py list_runtimes $PR_NUMBER
+        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
+      shell: bash
+
+    - run: echo "${{ steps.diff-domains.outputs.focus }}"

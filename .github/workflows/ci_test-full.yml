@@ -18,18 +18,7 @@ defaults:
 
 jobs:
   check-diff:
-    runs-on: ubuntu-20.04
-    if: github.event.pull_request.draft == false
-    timeout-minutes: 5
-    # Map a step output to a job output
-    outputs:
-      focus: ${{ steps.diff-domains.outputs.focus }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: "./.github/actions/focus-diff"
-      with:
-        pr-number: ${{ github.event.pull_request.number }}
-    - run: echo "${{ steps.diff-domains.outputs.focus }}"
+    uses: PyTorchLightning/metrics/.github/workflows/focus-diff.yml
 
   pytest:
     runs-on: ${{ matrix.os }}
@@ -52,6 +41,8 @@ jobs:
     timeout-minutes: 95
 
     steps:
+    # fixme
+    - run: echo "${{ needs.check-diff.outputs.dirs }}"
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -100,7 +91,7 @@ jobs:
 
     - name: Tests
       env:
-        TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
+        TEST_DIRS: "${{ needs.check-diff.outputs.dirs }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
         python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
