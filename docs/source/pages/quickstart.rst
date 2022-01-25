@@ -23,7 +23,10 @@ You can install TorchMetrics using pip or conda:
 
 .. code-block:: bash
 
+    # Python Package Index (PyPI)
     pip install torchmetrics
+    # Conda
+    conda install -c conda-forge torchmetrics
 
 
 Using TorchMetrics
