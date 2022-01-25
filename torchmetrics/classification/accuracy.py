@@ -202,9 +202,6 @@ class Accuracy(StatScores):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
@@ -214,6 +211,10 @@ class Accuracy(StatScores):
         self.subset_accuracy = subset_accuracy
         self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
+
+        if self.subset_accuracy:
+            self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
