@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
+from copy import deepcopy
 
 import pytest
 import torch
@@ -308,21 +309,31 @@ def test_collection_filtering():
         ),
     ],
 )
-@pytest.mark.parametrize("enable_compute_groups", [True, False])
-def test_check_compute_groups(metrics, expected, enable_compute_groups):
+def test_check_compute_groups(metrics, expected):
     """Check that compute groups are formed after initialization."""
-    m = MetricCollection(metrics, enable_compute_groups=enable_compute_groups)
-
-    if enable_compute_groups:
-        assert len(m.compute_groups) == len(m)
-    else:
-        assert m.compute_groups == {}
+    m = MetricCollection(deepcopy(metrics), enable_compute_groups=True)
+    # Construct without for comparison
+    m2 = MetricCollection(deepcopy(metrics), enable_compute_groups=False)
+ 
+    assert len(m.compute_groups) == len(m)
+    assert m2.compute_groups == {}
 
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
     m.update(preds, target)
+    m2.update(preds, target)
 
-    if enable_compute_groups:
-        assert m.compute_groups == expected
-    else:
-        assert m.compute_groups == {}
+    assert m.compute_groups == expected
+    assert m2.compute_groups == {}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    # compute groups should kick in here
+    m.update(preds, target)
+    m2.update(preds, target)
+
+    # compare results for correctness
+    res_cg = m.compute()
+    res_without_cg = m2.compute()
+    for key in res_cg.keys():
+        assert torch.allclose(res_cg[key], res_without_cg[key])
