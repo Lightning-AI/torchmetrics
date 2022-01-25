@@ -55,7 +55,7 @@ jobs:
       TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 65
+    timeout-minutes: 75
     steps:
     - uses: actions/checkout@v2
 
