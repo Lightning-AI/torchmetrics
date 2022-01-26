@@ -322,15 +322,15 @@ class MeanAveragePrecision(Metric):
         for item in preds:
             boxes = _fix_empty_tensors(item["boxes"])
             boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
-            self.detection_boxes.append(boxes.cpu())
-            self.detection_labels.append(item["labels"].cpu())
-            self.detection_scores.append(item["scores"].cpu())
+            self.detection_boxes.append(boxes)
+            self.detection_labels.append(item["labels"])
+            self.detection_scores.append(item["scores"])
 
         for item in target:
             boxes = _fix_empty_tensors(item["boxes"])
             boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
-            self.groundtruth_boxes.append(boxes.cpu())
-            self.groundtruth_labels.append(item["labels"].cpu())
+            self.groundtruth_boxes.append(boxes)
+            self.groundtruth_labels.append(item["labels"])
 
     def _get_classes(self) -> List:
         """Returns a list of unique classes found in ground truth and detection data."""
@@ -685,6 +685,13 @@ class MeanAveragePrecision(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
+
+        # move everything to CPU, as we are faster here
+        self.detection_boxes = [box.cpu() for box in self.detection_boxes]
+        self.detection_labels = [label.cpu() for label in self.detection_labels]
+        self.detection_scores = [score.cpu() for score in self.detection_scores]
+        self.groundtruth_boxes = [box.cpu() for box in self.groundtruth_boxes]
+        self.groundtruth_labels = [label.cpu() for label in self.groundtruth_labels]
 
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
