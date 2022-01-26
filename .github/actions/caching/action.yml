@@ -57,8 +57,12 @@ runs:
       key: py${{ inputs.python-version }}-conda-td${{ steps.times.outputs.period }}-${{ inputs.offset }}
       restore-keys: py${{ inputs.python-version }}-conda-td${{ steps.times.outputs.period }}-${{ inputs.offset }}
 
-  - name: HF cache
+  - name: HF cache dir
+    run: python -c "import os ; print('TRANSFORMERS_CACHE=' + os.path.join($GITHUB_WORKSPACE, 'ci-cache_huggingface'))" >> $GITHUB_ENV
+    shell: bash
+
+  - name: Cache HF
     uses: actions/cache@v2
     with:
-      path: ci-cache/huggingface/
+      path: $TRANSFORMERS_CACHE
       key: cache-transformers
