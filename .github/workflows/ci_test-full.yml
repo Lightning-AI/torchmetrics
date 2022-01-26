@@ -83,7 +83,7 @@ jobs:
       run: |
         choco install ffmpeg
 
-    - uses: ./.github/actions/cashing
+    - uses: ./.github/actions/caching
       with:
         os: ${{ runner.os }}
         requires: ${{ matrix.requires }}

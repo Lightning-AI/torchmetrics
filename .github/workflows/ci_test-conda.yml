@@ -59,7 +59,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - uses: ./.github/actions/cashing
+    - uses: ./.github/actions/caching
       with:
         os: ${{ runner.os }}
         python-version: ${{ matrix.python-version }}
