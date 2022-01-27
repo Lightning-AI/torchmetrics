@@ -16,7 +16,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import torch
 from deprecate import deprecated, void
-from torch import IntTensor, Size, Tensor
+from torch import IntTensor, Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import _future_warning
