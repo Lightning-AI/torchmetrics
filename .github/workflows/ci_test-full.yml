@@ -89,9 +89,6 @@ jobs:
         requires: ${{ matrix.requires }}
         python-version: ${{ matrix.python-version }}
 
-    # FIXME
-    - run: echo "$TRANSFORMERS_CACHE"
-
     - name: Install dependencies
       run: |
         pip --version

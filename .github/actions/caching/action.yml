@@ -21,7 +21,7 @@ runs:
   using: "composite"
   steps:
 
-  - name: PIP install assitant's deps
+  - name: install assitant's deps
     run: pip install fire requests
     shell: bash
 
@@ -32,20 +32,20 @@ runs:
 
   - run: python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(f'TIME_PERIOD={int(days / 7)}')" >> $GITHUB_ENV
     if: inputs.requires == 'latest'
-    id: times
     shell: bash
 
   # Note: This uses an internal pip API and may not always work
   # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
-  - name: Get pip cache
-    id: pip-cache
-    run: python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
+  - name: Determine caches
+    run: |
+      python -c "from pip._internal.locations import USER_CACHE_DIR; print('PIP_CACHE_DIR=' + USER_CACHE_DIR)" >> $GITHUB_ENV
+      python -c "import os ; print('TRANSFORMERS_CACHE=' + os.path.join('$GITHUB_WORKSPACE', 'ci-cache_huggingface'))" >> $GITHUB_ENV
     shell: bash
 
   - name: Cache pip
     uses: actions/cache@v2
     with:
-      path: ${{ steps.pip-cache.outputs.dir }}
+      path: $PIP_CACHE_DIR
       key: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-${{ hashFiles('requirements.txt') }}
       restore-keys: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-
 
@@ -56,10 +56,6 @@ runs:
       path: ~/conda_pkgs_dir
       key: py${{ inputs.python-version }}-conda-td${TIME_PERIOD}-${{ inputs.offset }}
       restore-keys: py${{ inputs.python-version }}-conda-td${TIME_PERIOD}-${{ inputs.offset }}
-
-  - name: HF cache dir
-    run: python -c "import os ; print('TRANSFORMERS_CACHE=' + os.path.join('$GITHUB_WORKSPACE', 'ci-cache_huggingface'))" >> $GITHUB_ENV
-    shell: bash
 
   - name: Cache HF
     uses: actions/cache@v2
