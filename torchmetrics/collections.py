@@ -45,7 +45,7 @@ class MetricCollection(nn.ModuleDict):
         postfix: a string to append after the keys of the output dict
 
         enable_compute_groups:
-            By defualt the MetricCollection will try to reduce the computations needed for the metrics in the collection
+            By default the MetricCollection will try to reduce the computations needed for the metrics in the collection
             by checking if they belong to the same *compute group*. All metrics in a compute group share the same metric
             state and are therefore only different in their compute step e.g. accuracy, precision and recall can all be
             computed from the true positives/negatives and false positives/nagatives. Set this argument to `False` for
@@ -187,16 +187,10 @@ class MetricCollection(nn.ModuleDict):
                 return False
 
             if isinstance(state1, Tensor) and isinstance(state2, Tensor):
-                if state1.shape != state2.shape:
-                    return False
-                if not torch.allclose(state1, state2):
-                    return False
+                return state1.shape == state2.shape and torch.allclose(state1, state2)
 
             if isinstance(state1, list) and isinstance(state2, list):
-                if any(s1.shape != s2.shape for s1, s2 in zip(state1, state2)):
-                    return False
-                if any(torch.allclose(s1, s2) for s1, s2 in zip(state1, state2)):
-                    return False
+                return all(s1.shape == s2.shape and torch.allclose(s1, s2) for s1, s2 in zip(state1, state2))
 
         return True
 
