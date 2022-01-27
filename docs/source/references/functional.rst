@@ -41,7 +41,7 @@ scale_invariant_signal_distortion_ratio [func]
 scale_invariant_signal_noise_ratio [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.si_snr
+.. autofunction:: torchmetrics.functional.scale_invariant_signal_noise_ratio
     :noindex:
 
 

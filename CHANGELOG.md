@@ -27,6 +27,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `WER`
 
 
+- Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/PyTorchLightning/metrics/pull/804))
+  * `MAP`
+  * `functional.pairwise.manhatten`
+
+
+- Removed deprecated functions, and warnings in Audio ([#805](https://github.com/PyTorchLightning/metrics/pull/805))
+  * `PESQ`
+  * `PIT`
+  * `SDR`
+  * `SNR`
+  * `STOI`
+  * `functional.audio.pesq`
+  * `functional.audio.pit`
+  * `functional.audio.sdr`
+  * `functional.audio.snr`
+  * `functional.audio.stoi`
+  * `functional.audio.si_sdr`
+  * `functional.audio.si_snr`
+
+
 ### Fixed
 
 - Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
