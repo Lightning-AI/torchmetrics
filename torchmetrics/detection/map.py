@@ -15,18 +15,16 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import torch
-from deprecate import deprecated, void
 from torch import IntTensor, Size, Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
-    __doctest_skip__ = ["MeanAveragePrecision", "MAP"]
+    __doctest_skip__ = ["MeanAveragePrecision"]
 
 log = logging.getLogger(__name__)
 
@@ -735,73 +733,3 @@ class MeanAveragePrecision(Metric):
         metrics.map_per_class = map_per_class_values
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
         return metrics
-
-
-class MAP(MeanAveragePrecision):
-    r"""
-    Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
-    <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_
-    for object detection tasks.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.detection.MeanAveragePrecision`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> preds = [
-        ...   dict(
-        ...     boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
-        ...     scores=torch.Tensor([0.536]),
-        ...     labels=torch.IntTensor([0]),
-        ...   )
-        ... ]
-        >>> target = [
-        ...   dict(
-        ...     boxes=torch.Tensor([[214.0, 41.0, 562.0, 285.0]]),
-        ...     labels=torch.IntTensor([0]),
-        ...   )
-        ... ]
-        >>> metric = MAP()
-        >>> metric.update(preds, target)
-        >>> from pprint import pprint
-        >>> pprint(metric.compute())
-        {'map': tensor(0.6000),
-         'map_50': tensor(1.),
-         'map_75': tensor(1.),
-         'map_large': tensor(0.6000),
-         'map_medium': tensor(-1.),
-         'map_per_class': tensor(-1.),
-         'map_small': tensor(-1.),
-         'mar_1': tensor(0.6000),
-         'mar_10': tensor(0.6000),
-         'mar_100': tensor(0.6000),
-         'mar_100_per_class': tensor(-1.),
-         'mar_large': tensor(0.6000),
-         'mar_medium': tensor(-1.),
-         'mar_small': tensor(-1.)}
-    """
-
-    @deprecated(target=MeanAveragePrecision, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        box_format: str = "xyxy",
-        iou_thresholds: Optional[List[float]] = None,
-        rec_thresholds: Optional[List[float]] = None,
-        max_detection_thresholds: Optional[List[int]] = None,
-        class_metrics: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:  # type: ignore
-        void(
-            box_format,
-            iou_thresholds,
-            rec_thresholds,
-            max_detection_thresholds,
-            class_metrics,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
-        )
