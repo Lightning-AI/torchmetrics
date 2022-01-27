@@ -56,11 +56,11 @@ class PermutationInvariantTraining(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics import PermutationInvariantTraining
-        >>> from torchmetrics.functional import si_snr
+        >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PermutationInvariantTraining(si_snr, 'max')
+        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
         >>> pit(preds, target)
         tensor(-2.1065)
 
