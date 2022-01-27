@@ -30,7 +30,7 @@ runs:
     run: python .github/assistant.py set-oldest-versions
     shell: bash
 
-  - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
+  - run: python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(f'TIME_PERIOD={int(days / 7)}')" >> $GITHUB_ENV
     if: inputs.requires == 'latest'
     id: times
     shell: bash
@@ -46,19 +46,19 @@ runs:
     uses: actions/cache@v2
     with:
       path: ${{ steps.pip-cache.outputs.dir }}
-      key: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${{ steps.times.outputs.period }}-${{ inputs.offset }}-${{ hashFiles('requirements.txt') }}
-      restore-keys: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${{ steps.times.outputs.period }}-${{ inputs.offset }}-
+      key: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-${{ hashFiles('requirements.txt') }}
+      restore-keys: ${{ inputs.os }}-py${{ inputs.python-version }}-pip-td${TIME_PERIOD}-${{ inputs.offset }}-
 
   - name: Cache conda
     uses: actions/cache@v2
     if: inputs.os == 'Linux'
     with:
       path: ~/conda_pkgs_dir
-      key: py${{ inputs.python-version }}-conda-td${{ steps.times.outputs.period }}-${{ inputs.offset }}
-      restore-keys: py${{ inputs.python-version }}-conda-td${{ steps.times.outputs.period }}-${{ inputs.offset }}
+      key: py${{ inputs.python-version }}-conda-td${TIME_PERIOD}-${{ inputs.offset }}
+      restore-keys: py${{ inputs.python-version }}-conda-td${TIME_PERIOD}-${{ inputs.offset }}
 
   - name: HF cache dir
-    run: python -c "import os ; print('TRANSFORMERS_CACHE=' + os.path.join($GITHUB_WORKSPACE, 'ci-cache_huggingface'))" >> $GITHUB_ENV
+    run: python -c "import os ; print('TRANSFORMERS_CACHE=' + os.path.join('$GITHUB_WORKSPACE', 'ci-cache_huggingface'))" >> $GITHUB_ENV
     shell: bash
 
   - name: Cache HF
