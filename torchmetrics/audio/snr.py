@@ -13,12 +13,10 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, snr
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 
 
 class SignalNoiseRatio(Metric):
@@ -102,7 +100,7 @@ class SignalNoiseRatio(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        snr_batch = snr(preds=preds, target=target, zero_mean=self.zero_mean)
+        snr_batch = signal_noise_ratio(preds=preds, target=target, zero_mean=self.zero_mean)
 
         self.sum_snr += snr_batch.sum()
         self.total += snr_batch.numel()
@@ -110,32 +108,6 @@ class SignalNoiseRatio(Metric):
     def compute(self) -> Tensor:
         """Computes average SNR."""
         return self.sum_snr / self.total
-
-
-class SNR(SignalNoiseRatio):
-    r"""Signal-to-noise ratio (SNR_):
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.SignalNoiseRatio`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> snr = SNR()
-        >>> snr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
-        tensor(16.1805)
-
-    """
-
-    @deprecated(target=SignalNoiseRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        zero_mean: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
-    ) -> None:
-        void(zero_mean, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
