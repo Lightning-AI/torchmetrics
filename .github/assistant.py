@@ -92,31 +92,43 @@ class AssistantCLI:
 
     @staticmethod
     def changed_domains(
-        pr: int,
+        pr: Optional[int] = None,
         auth_token: Optional[str] = None,
         as_list: bool = False,
         general_sub_pkgs: Tuple[str] = _PKG_WIDE_SUBPACKAGES,
     ) -> Union[str, List[str]]:
         """Determine what domains were changed in particular PR."""
+        if not pr:
+            return "tests"
         url = f"https://api.github.com/repos/PyTorchLightning/metrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:
-            logging.error("No data was received.")
+            logging.debug("WARNING: No data was received -> test everything.")
             return "tests"
         files = [d["filename"] for d in data]
+
+        # filter only docs files
+        files_docs = [fn for fn in files if fn.startswith("docs")]
+        if len(files) == len(files_docs):
+            logging.debug("Only docs was changed so not reason for deep testing...")
+            return ""
+
         # filter only package files and skip inits
-        _filter = lambda fn: (fn.startswith("torchmetrics") and "__init__.py" not in fn) or fn.startswith("tests")
-        files = [fn for fn in files if _filter(fn)]
-        if not files:
+        _filter_pkg = lambda fn: (fn.startswith("torchmetrics") and "__init__.py" not in fn) or fn.startswith("tests")
+        files_pkg = [fn for fn in files if _filter_pkg(fn)]
+        if not files_pkg:
             return "tests"
+
         # parse domains
-        files = [fn.replace("torchmetrics/", "").replace("tests/", "").replace("functional/", "") for fn in files]
+        _crop_path = lambda fn: fn.replace("torchmetrics/", "").replace("tests/", "").replace("functional/", "")
+        files_pkg = [_crop_path(fn) for fn in files_pkg]
         # filter domain names
-        tm_modules = [fn.split("/")[0] for fn in files if "/" in fn]
+        tm_modules = [fn.split("/")[0] for fn in files_pkg if "/" in fn]
         # filter general (used everywhere) sub-packages
         tm_modules = [md for md in tm_modules if md not in general_sub_pkgs]
-        if len(files) > len(tm_modules):
+        if len(files_pkg) > len(tm_modules):
+            logging.debug("Some more files was changed -> rather test everything...")
             return "tests"
         # keep only unique
         tm_modules = set(tm_modules)
