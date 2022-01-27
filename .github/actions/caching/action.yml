@@ -61,4 +61,4 @@ runs:
     uses: actions/cache@v2
     with:
       path: $TRANSFORMERS_CACHE
-      key: cache-transformers
+      key: ${{ inputs.os }}-cache-transformers
