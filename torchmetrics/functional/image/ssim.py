@@ -42,7 +42,7 @@ def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.
     return (gauss / gauss.sum()).unsqueeze(dim=0)  # (1, kernel_size)
 
 
-def _gaussian_kernel(
+def _2d_gaussian_kernel(
     channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
 ) -> Tensor:
     """Computes 2D gaussian kernel.
@@ -55,7 +55,7 @@ def _gaussian_kernel(
         device: device of the output tensor
 
     Example:
-        >>> _gaussian_kernel(1, (5,5), (1,1), torch.float, "cpu")
+        >>> _2d_gaussian_kernel(1, (5,5), (1,1), torch.float, "cpu")
         tensor([[[[0.0030, 0.0133, 0.0219, 0.0133, 0.0030],
                   [0.0133, 0.0596, 0.0983, 0.0596, 0.0133],
                   [0.0219, 0.0983, 0.1621, 0.0983, 0.0219],
@@ -70,7 +70,29 @@ def _gaussian_kernel(
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1])
 
 
-def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+
+def _3d_gaussian_kernel(
+    channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
+) -> Tensor:
+    """Computes 3D gaussian kernel.
+
+    Args:
+        channel: number of channels in the image
+        kernel_size: size of the gaussian kernel as a tuple (h, w, d)
+        sigma: Standard deviation of the gaussian kernel
+        dtype: data type of the output tensor
+        device: device of the output tensor
+    """
+
+    gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
+    gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
+    gaussian_kernel_z = _gaussian(kernel_size[2], sigma[2], dtype, device)
+    kernel_xy = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_z)  # (kernel_size, 1) * (1, kernel_size)
+    kernel = torch.mul(kernel_xy, gaussian_kernel_z.expand(11,11,11))
+    return kernel.expand(channel, 1, kernel_size[0], kernel_size[1], kernel_size[2])
+
+
+def _ssim_update(preds: Tensor, target: Tensor, kernel_dimension: int) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
     and type of the input tensors.
 
@@ -85,9 +107,14 @@ def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
             f" Got preds: {preds.dtype} and target: {target.dtype}."
         )
     _check_same_shape(preds, target)
-    if len(preds.shape) != 4:
+    if kernel_dimension==2 and len(preds.shape) != 4:
         raise ValueError(
-            "Expected `preds` and `target` to have BxCxHxW shape."
+            "2D kernel is used. Expected `preds` and `target` to have BxCxHxW shape."
+            f" Got preds: {preds.shape} and target: {target.shape}."
+        )
+    if kernel_dimension==3 and len(preds.shape) != 5:
+        raise ValueError(
+            "3D kernel is used. Expected `preds` and `target` to have BxCxHxWxD shape."
             f" Got preds: {preds.shape} and target: {target.shape}."
         )
     return preds, target
@@ -128,11 +155,17 @@ def _ssim_compute(
         >>> _ssim_compute(preds, target)
         tensor(0.9219)
     """
-    if len(kernel_size) != 2 or len(sigma) != 2:
+    if len(kernel_size) != len(sigma):
         raise ValueError(
-            "Expected `kernel_size` and `sigma` to have the length of two."
-            f" Got kernel_size: {len(kernel_size)} and sigma: {len(sigma)}."
+            "Expected `kernel_size` and `sigma` to have the same length."
+            f" Kernel_size dimensionality: {len(kernel_size)}, sigma dimensionality: {len(sigma)}."
         )
+    if len(kernel_size) not in (2,3):
+        raise ValueError(
+            "Expected `kernel_size` dimension to be 2 or 3"
+            f" Kernel_size dimensionality: {len(kernel_size)}"
+        )
+    is3D = len(kernel_size)==3
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):
         raise ValueError(f"Expected `kernel_size` to have odd positive number. Got {kernel_size}.")
@@ -149,15 +182,27 @@ def _ssim_compute(
 
     channel = preds.size(1)
     dtype = preds.dtype
-    kernel = _gaussian_kernel(channel, kernel_size, sigma, dtype, device)
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
-    preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-    target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    if is3D:
+        pad_d = (kernel_size[2] - 1) // 2
+        preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
+        target = F.pad(target, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
+        kernel = _3d_gaussian_kernel(channel, kernel_size, sigma, dtype, device)
+
+    else:
+        preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+        target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+        kernel = _2d_gaussian_kernel(channel, kernel_size, sigma, dtype, device)
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
-    outputs = F.conv2d(input_list, kernel, groups=channel)
+
+    if is3D:
+        outputs = F.conv3d(input_list, kernel, groups=channel)
+    else:
+        outputs = F.conv2d(input_list, kernel, groups=channel)
+
     output_list = outputs.split(preds.shape[0])
 
     mu_pred_sq = output_list[0].pow(2)

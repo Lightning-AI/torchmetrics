@@ -95,7 +95,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _ssim_update(preds, target)
+        preds, target = _ssim_update(preds, target, len(self.kernel_size))
         self.preds.append(preds)
         self.target.append(target)
 
