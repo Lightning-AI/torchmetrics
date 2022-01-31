@@ -163,7 +163,7 @@ def _ssim_compute(
         raise ValueError(
             "Expected `kernel_size` dimension to be 2 or 3" f" Kernel_size dimensionality: {len(kernel_size)}"
         )
-    is3D = len(kernel_size) == 3
+    is_3d = len(kernel_size) == 3
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):
         raise ValueError(f"Expected `kernel_size` to have odd positive number. Got {kernel_size}.")
