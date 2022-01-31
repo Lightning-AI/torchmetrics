@@ -196,7 +196,7 @@ def _ssim_compute(
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
-    if is3D:
+    if is_3d:
         outputs = F.conv3d(input_list, kernel, groups=channel)
     else:
         outputs = F.conv2d(input_list, kernel, groups=channel)
