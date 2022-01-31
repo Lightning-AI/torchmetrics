@@ -98,16 +98,7 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
-def _segm_iou(mask1, mask2):
-
-    intersection = (mask1 * mask2).sum()
-    if intersection == 0:
-        return 0.0
-    union = torch.logical_or(mask1, mask2).to(torch.int).sum()
-    return (intersection / union).unsqueeze(0)
-
-
-def segm_iou(inputs, targets, smooth=1e-5):
+def segm_iou(inputs, targets, smooth=1):
 
     n_inputs = inputs.shape[0]
     n_targets = targets.shape[0]
@@ -277,6 +268,8 @@ class MeanAveragePrecision(Metric):
     detection_labels: List[Tensor]
     groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
+    groundtruth_masks: List[Tensor]
+    detection_masks: List[Tensor]
 
     def __init__(
         self,
@@ -325,6 +318,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruth_masks", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
@@ -374,6 +368,8 @@ class MeanAveragePrecision(Metric):
             self.detections.append(detections)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
+            if "masks" in item:
+                self.detection_masks.append(item["masks"])
 
         for item in target:
             groundtruths = self._get_safe_item_values(item)
