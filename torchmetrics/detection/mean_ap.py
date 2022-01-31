@@ -80,6 +80,27 @@ class COCOMetricResults(BaseMetricResults):
     )
 
 
+def segm_iou(inputs, targets, smooth=1):
+
+    n_inputs = inputs.shape[0]
+    n_targets = targets.shape[0]
+    # flatten label and prediction tensors
+    inputs = inputs.view(n_inputs, -1).repeat_interleave(n_targets, 0)
+    targets = targets.view(n_targets, -1).repeat(n_inputs, 1)
+
+    # i1 * t1
+    # i1 * t2
+    # i2 * t1
+    # i2 * t2
+
+    # intersection is equivalent to True Positive count
+    # union is the mutually inclusive area of all labels & predictions
+    intersections = (inputs * targets).sum(1, keepdims=True)
+    unions = (inputs + targets).sum(1, keepdims=True)
+
+    return ((intersections + smooth) / (unions + smooth)).view(n_inputs, n_targets)
+
+
 def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]]) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
     if not isinstance(preds, Sequence):
@@ -223,10 +244,13 @@ class MeanAveragePrecision(Metric):
     detection_labels: List[Tensor]
     groundtruth_boxes: List[Tensor]
     groundtruth_labels: List[Tensor]
+    groundtruth_masks: List[Tensor]
+    detection_masks: List[Tensor]
 
     def __init__(
         self,
         box_format: str = "xyxy",
+        iou_type: str = "bbox",
         iou_thresholds: Optional[List[float]] = None,
         rec_thresholds: Optional[List[float]] = None,
         max_detection_thresholds: Optional[List[int]] = None,
@@ -243,6 +267,7 @@ class MeanAveragePrecision(Metric):
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
+        allowed_iou_types = ("segm", "bbox")
         if box_format not in allowed_box_formats:
             raise ValueError(f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}")
         self.box_format = box_format
@@ -250,11 +275,14 @@ class MeanAveragePrecision(Metric):
         self.rec_thresholds = rec_thresholds or torch.linspace(0.0, 1.00, round(1.00 / 0.01) + 1).tolist()
         max_det_thr, _ = torch.sort(IntTensor(max_detection_thresholds or [1, 10, 100]))
         self.max_detection_thresholds = max_det_thr.tolist()
+        if iou_type not in allowed_iou_types:
+            raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
+        self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (0 ** 2, int(1e5 ** 2)),
+            "small": (0 ** 2, 32 ** 2),
+            "medium": (32 ** 2, 96 ** 2),
+            "large": (96 ** 2, int(1e5 ** 2)),
         }
 
         if not isinstance(class_metrics, bool):
@@ -264,8 +292,10 @@ class MeanAveragePrecision(Metric):
         self.add_state("detection_boxes", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
+        self.add_state("detection_masks", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_boxes", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruth_masks", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
@@ -316,12 +346,16 @@ class MeanAveragePrecision(Metric):
             self.detection_boxes.append(boxes)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
+            if "masks" in item:
+                self.detection_masks.append(item["masks"])
 
         for item in target:
             boxes = _fix_empty_tensors(item["boxes"])
             boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
             self.groundtruth_boxes.append(boxes)
             self.groundtruth_labels.append(item["labels"])
+            if "masks" in item:
+                self.groundtruth_masks.append(item["masks"])
 
     def _get_classes(self) -> List:
         """Returns a list of unique classes found in ground truth and detection data."""
@@ -329,7 +363,17 @@ class MeanAveragePrecision(Metric):
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
 
-    def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
+    def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
+        if self.iou_type == "segm":
+            return self._compute_iou_impl(id, self.groundtruth_masks, self.detection_masks, class_id, max_det, segm_iou)
+        elif self.iou_type == "bbox":
+            return self._compute_iou_impl(id, self.groundtruth_boxes, self.detection_boxes, class_id, max_det, box_iou)
+        else:
+            raise Exception(f"IOU type {self.iou_type} is not supported")
+
+    def _compute_iou_impl(
+        self, id: int, ground_truths, detections, class_id: int, max_det: int, compute_iou: Callable
+    ) -> Tensor:
         """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
@@ -341,10 +385,13 @@ class MeanAveragePrecision(Metric):
             max_det:
                 Maximum number of evaluated detection bounding boxes
         """
-        gt = self.groundtruth_boxes[idx]
-        det = self.detection_boxes[idx]
-        gt_label_mask = self.groundtruth_labels[idx] == class_id
-        det_label_mask = self.detection_labels[idx] == class_id
+
+        gt = ground_truths[id]
+        det = detections[id]
+
+        gt_label_mask = self.groundtruth_labels[id] == class_id
+        det_label_mask = self.detection_labels[id] == class_id
+
         if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
         gt = gt[gt_label_mask]
@@ -360,8 +407,7 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
 
-        # generalized_box_iou
-        ious = box_iou(det, gt)
+        ious = compute_iou(det, gt)
         return ious
 
     def __evaluate_image_gt_no_preds(
@@ -764,6 +810,14 @@ class MeanAveragePrecision(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
+
+        # move everything to CPU, as we are faster here
+        self.detections = [box.cpu() for box in self.detection_boxes]
+        self.detection_labels = [label.cpu() for label in self.detection_labels]
+        self.detection_scores = [score.cpu() for score in self.detection_scores]
+        self.groundtruths = [box.cpu() for box in self.groundtruth_boxes]
+        self.groundtruth_labels = [label.cpu() for label in self.groundtruth_labels]
+
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
         map_val, mar_val = self._summarize_results(precisions, recalls)
