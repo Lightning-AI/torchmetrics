@@ -220,7 +220,8 @@ def test_metric_lightning_log(tmpdir):
 
 
 def test_metric_collection_lightning_log(tmpdir):
-    """ Test that MetricCollection works with Lightning modules. """
+    """Test that MetricCollection works with Lightning modules."""
+
     class TestModel(BoringModel):
         def __init__(self):
             super().__init__()
@@ -258,7 +259,8 @@ def test_metric_collection_lightning_log(tmpdir):
 
 
 def test_scriptable(tmpdir):
-    """ Test that lightning modules can still be scripted even if metrics cannot. """
+    """Test that lightning modules can still be scripted even if metrics cannot."""
+
     class TestModel(BoringModel):
         def __init__(self):
             super().__init__()
@@ -266,12 +268,14 @@ def test_scriptable(tmpdir):
             # so the module should be exportable to TorchScript
             self.metric = SumMetric()
             self.sum = 0.0
+
         def training_step(self, batch, batch_idx):
             x = batch
             self.metric(x.sum())
             self.sum += x.sum()
             self.log("sum", self.metric, on_epoch=True, on_step=False)
             return self.step(x)
+
     model = TestModel()
     trainer = Trainer(
         default_root_dir=tmpdir,
