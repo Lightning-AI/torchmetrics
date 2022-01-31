@@ -69,7 +69,7 @@ class MetricCollection(nn.ModuleDict):
     Example (input as list):
         >>> import torch
         >>> from pprint import pprint
-        >>> from torchmetrics import MetricCollection, Accuracy, ConfusionMatrix, Precision, Recall
+        >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall, MeanSquaredError
         >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
         >>> metrics = MetricCollection([Accuracy(),
@@ -92,17 +92,16 @@ class MetricCollection(nn.ModuleDict):
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
         >>> pprint(same_metric(preds, target))
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
-        >>> metrics.persistent()
 
     Example (specification of compute groups):
         >>> metrics = MetricCollection(
         ...     Accuracy(),
         ...     Precision(num_classes=3, average='macro'),
-        ...     ConfusionMatrix(num_classes=3),
-        ...     compute_groups=[['Accuracy', Precision], ['ConfusionMatrix']]
+        ...     MeanSquaredError(),
+        ...     compute_groups=[['Accuracy', 'Precision'], ['MeanSquaredError']]
         ... )
-        >>> metrics(preds, target)
-        {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
+        >>> pprint(metrics(preds, target))
+        {'Accuracy': tensor(0.1250), 'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667)}
     """
 
     def __init__(
