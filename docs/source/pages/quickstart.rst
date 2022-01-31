@@ -28,6 +28,19 @@ You can install TorchMetrics using pip or conda:
     # Conda
     conda install -c conda-forge torchmetrics
 
+Eventually if there is missing PyTorch wheel for your OS or Python version you can simply compile `PyTorch from source`_:
+
+.. code-block:: bash
+
+    # Optional ig you do nt need compile GPU support
+    export USE_CUDA=0  # just to keep it simple
+    # you can install the latest state from master
+    pip install git+https://github.com/pytorch/pytorch.git
+    # OR set a particular PyTorch release
+    pip install git+https://github.com/pytorch/pytorch.git@<release-tag>
+    # and finalize with installing TorchMetrics
+    pip install torchmetrics
+
 
 Using TorchMetrics
 ******************

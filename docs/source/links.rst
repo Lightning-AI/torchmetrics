@@ -1,4 +1,5 @@
 
+.. _PyTorch from source: https://github.com/pytorch/pytorch#from-source
 .. _scikit-learn's implementation of SMAPE: https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197
 .. _scikit-learn's implementation of MAPE: https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197
 .. _Mean Average Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision
