@@ -458,6 +458,24 @@ class MeanAveragePrecision(Metric):
     def _find_best_gt_match(
         thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
     ) -> int:
+        """Return id of best ground truth match with current detection.
+
+        Args:
+            thr:
+                Current threshold value.
+            nb_gt:
+                Number of ground truth elements.
+            gt_matches:
+                Tensor showing if a ground truth matches for threshold ``t`` exists.
+            idx_iou:
+                Id of threshold ``t``.
+            gt_ignore:
+                Tensor showing if ground truth should be ignored.
+            ious:
+                IoUs for all combinations of detection and ground truth.
+            idx_det:
+                Id of current detection.
+        """
         previously_matched = gt_matches[idx_iou]
         # Remove previously matched or ignored gts
         remove_mask = previously_matched | gt_ignore
@@ -545,7 +563,6 @@ class MeanAveragePrecision(Metric):
         scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs))
 
         # move tensors if necessary
-        # self.max_detection_thresholds = self.max_detection_thresholds.to(self.device)
         rec_thresholds_tensor = Tensor(self.rec_thresholds)
 
         # retrieve E at each category, area range, and max number of detections
