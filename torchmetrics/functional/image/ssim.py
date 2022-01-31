@@ -150,7 +150,7 @@ def _ssim_compute(
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> preds, target = _ssim_update(preds, target)
+        >>> preds, target = _ssim_update(preds, target, 2)
         >>> _ssim_compute(preds, target)
         tensor(0.9219)
     """
@@ -274,7 +274,7 @@ def structural_similarity_index_measure(
         >>> structural_similarity_index_measure(preds, target)
         tensor(0.9219)
     """
-    preds, target = _ssim_update(preds, target)
+    preds, target = _ssim_update(preds, target, len(kernel_size))
     return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
 
 
@@ -482,5 +482,5 @@ def multiscale_structural_similarity_index_measure(
     if normalize and normalize not in ("relu", "simple"):
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
-    preds, target = _ssim_update(preds, target)
+    preds, target = _ssim_update(preds, target, len(kernel_size))
     return _multiscale_ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
