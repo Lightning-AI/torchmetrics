@@ -21,8 +21,8 @@ from torch import Tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.audio import SI_SDR
-from torchmetrics.functional import si_sdr
+from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
+from torchmetrics.functional import scale_invariant_signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -84,7 +84,7 @@ class TestSISDR(MetricTester):
             ddp,
             preds,
             target,
-            SI_SDR,
+            ScaleInvariantSignalDistortionRatio,
             sk_metric=partial(average_metric, metric_func=sk_metric),
             dist_sync_on_step=dist_sync_on_step,
             metric_args=dict(zero_mean=zero_mean),
@@ -94,7 +94,7 @@ class TestSISDR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            si_sdr,
+            scale_invariant_signal_distortion_ratio,
             sk_metric,
             metric_args=dict(zero_mean=zero_mean),
         )
@@ -103,8 +103,8 @@ class TestSISDR(MetricTester):
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=SI_SDR,
-            metric_functional=si_sdr,
+            metric_module=ScaleInvariantSignalDistortionRatio,
+            metric_functional=scale_invariant_signal_distortion_ratio,
             metric_args={"zero_mean": zero_mean},
         )
 
@@ -119,13 +119,13 @@ class TestSISDR(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
-            metric_module=SI_SDR,
-            metric_functional=si_sdr,
+            metric_module=ScaleInvariantSignalDistortionRatio,
+            metric_functional=scale_invariant_signal_distortion_ratio,
             metric_args={"zero_mean": zero_mean},
         )
 
 
-def test_error_on_different_shape(metric_class=SI_SDR):
+def test_error_on_different_shape(metric_class=ScaleInvariantSignalDistortionRatio):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

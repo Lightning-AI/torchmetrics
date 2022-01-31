@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 
 from torchmetrics.classification.jaccard import JaccardIndex
+from torchmetrics.utilities import _future_warning
 
 
 class IoU(JaccardIndex):
@@ -37,6 +38,7 @@ class IoU(JaccardIndex):
 
     """
 
+    @deprecated(target=JaccardIndex, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         num_classes: int,
@@ -48,14 +50,13 @@ class IoU(JaccardIndex):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
-        warn("`IoU` was renamed to `JaccardIndex` in v0.7 and it will be removed in v0.8", DeprecationWarning)
-        super().__init__(
-            num_classes=num_classes,
-            ignore_index=ignore_index,
-            absent_score=absent_score,
-            threshold=threshold,
-            reduction=reduction,
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
+        void(
+            num_classes,
+            ignore_index,
+            absent_score,
+            threshold,
+            reduction,
+            compute_on_step,
+            dist_sync_on_step,
+            process_group,
         )

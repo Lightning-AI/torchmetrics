@@ -37,9 +37,10 @@ jobs:
         working-directory: ./docs
         run: |
           # First run the same pipeline as Read-The-Docs
-          apt-get update && sudo apt-get install -y cmake
+          sudo apt-get update && sudo apt-get install -y cmake
           make doctest
           make coverage
+        shell: bash
 
   make-docs:
     runs-on: ubuntu-20.04
@@ -76,7 +77,7 @@ jobs:
         working-directory: ./docs
         run: |
           make clean
-          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going" -b linkcheck
+          make html --debug SPHINXOPTS="-W --keep-going" -b linkcheck
 
       - name: Upload built docs
         uses: actions/upload-artifact@v2

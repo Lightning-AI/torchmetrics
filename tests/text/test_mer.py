@@ -15,8 +15,8 @@ from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.text.mer import MatchErrorRate
 
 
-def _compute_mer_metric_jiwer(prediction: Union[str, List[str]], reference: Union[str, List[str]]):
-    return compute_measures(reference, prediction)["mer"]
+def _compute_mer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    return compute_measures(target, preds)["mer"]
 
 
 @pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")

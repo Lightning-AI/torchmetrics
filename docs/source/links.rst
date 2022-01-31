@@ -28,7 +28,7 @@
 .. _sklearn averaging methods: https://scikit-learn.org/stable/modules/model_evaluation.html#multiclass-and-multilabel-classification
 .. _Cosine Similarity: https://en.wikipedia.org/wiki/Cosine_similarity
 .. _spearmans rank correlation coefficient: https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
-.. _WER: https://en.wikipedia.org/wiki/Word_error_rate
+.. _WordErrorRate: https://en.wikipedia.org/wiki/Word_error_rate
 .. _FID: https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance
 .. _mean-squared-error: https://en.wikipedia.org/wiki/Mean_squared_error
 .. _SSIM: https://en.wikipedia.org/wiki/Structural_similarity
@@ -76,3 +76,5 @@
 .. _chrF score: https://aclanthology.org/W15-3049.pdf
 .. _chrF++ score: https://aclanthology.org/W17-4770.pdf
 .. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
+.. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
+.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf

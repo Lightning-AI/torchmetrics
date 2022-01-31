@@ -13,7 +13,13 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
-from torchmetrics.audio import PIT, SDR, SI_SDR, SI_SNR, SNR  # noqa: E402
+from torchmetrics.audio import (  # noqa: E402
+    PermutationInvariantTraining,
+    ScaleInvariantSignalDistortionRatio,
+    ScaleInvariantSignalNoiseRatio,
+    SignalDistortionRatio,
+    SignalNoiseRatio,
+)
 from torchmetrics.classification import (  # noqa: E402, F401
     AUC,
     AUROC,
@@ -27,9 +33,12 @@ from torchmetrics.classification import (  # noqa: E402, F401
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
+    F1Score,
     FBeta,
+    FBetaScore,
     HammingDistance,
     Hinge,
+    HingeLoss,
     IoU,
     JaccardIndex,
     KLDivergence,
@@ -41,9 +50,15 @@ from torchmetrics.classification import (  # noqa: E402, F401
     Specificity,
     StatScores,
 )
-from torchmetrics.image import PSNR, SSIM  # noqa: E402
+from torchmetrics.collections import MetricCollection  # noqa: E402
+from torchmetrics.image import (  # noqa: E402
+    PSNR,
+    SSIM,
+    MultiScaleStructuralSimilarityIndexMeasure,
+    PeakSignalNoiseRatio,
+    StructuralSimilarityIndexMeasure,
+)
 from torchmetrics.metric import Metric  # noqa: E402
-from torchmetrics.metric_collections import MetricCollection  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     CosineSimilarity,
     ExplainedVariance,
@@ -70,10 +85,10 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
-    WER,
     BLEUScore,
     CharErrorRate,
     CHRFScore,
+    ExtendedEditDistance,
     MatchErrorRate,
     SacreBLEUScore,
     SQuAD,
@@ -103,10 +118,14 @@ __all__ = [
     "CosineSimilarity",
     "TweedieDevianceScore",
     "ExplainedVariance",
+    "ExtendedEditDistance",
     "F1",
+    "F1Score",
     "FBeta",
+    "FBetaScore",
     "HammingDistance",
     "Hinge",
+    "HingeLoss",
     "JaccardIndex",
     "KLDivergence",
     "MatthewsCorrcoef",
@@ -123,12 +142,14 @@ __all__ = [
     "MinMaxMetric",
     "MinMetric",
     "MultioutputWrapper",
+    "MultiScaleStructuralSimilarityIndexMeasure",
     "PearsonCorrcoef",
     "PearsonCorrCoef",
-    "PIT",
+    "PermutationInvariantTraining",
     "Precision",
     "PrecisionRecallCurve",
     "PSNR",
+    "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
     "RetrievalFallOut",
@@ -141,20 +162,20 @@ __all__ = [
     "RetrievalRPrecision",
     "ROC",
     "SacreBLEUScore",
-    "SDR",
-    "SI_SDR",
-    "SI_SNR",
-    "SNR",
+    "SignalDistortionRatio",
+    "ScaleInvariantSignalDistortionRatio",
+    "ScaleInvariantSignalNoiseRatio",
+    "SignalNoiseRatio",
     "SpearmanCorrcoef",
     "SpearmanCorrCoef",
     "Specificity",
     "SQuAD",
     "SSIM",
+    "StructuralSimilarityIndexMeasure",
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
-    "WER",
     "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",

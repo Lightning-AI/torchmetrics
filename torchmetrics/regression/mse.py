@@ -16,18 +16,15 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.mean_squared_log_error import (
-    _mean_squared_log_error_compute,
-    _mean_squared_log_error_update,
-)
+from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update
 from torchmetrics.metric import Metric
 
 
-class MeanSquaredLogError(Metric):
+class MeanSquaredError(Metric):
     r"""
-    Computes `mean squared logarithmic error`_ (MSLE):
+    Computes `mean squared error`_ (MSE):
 
-    .. math:: \text{MSLE} = \frac{1}{N}\sum_i^N (\log_e(1 + y_i) - \log_e(1 + \hat{y_i}))^2
+    .. math:: \text{MSE} = \frac{1}{N}\sum_i^N(y_i - \hat{y_i})^2
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -39,22 +36,21 @@ class MeanSquaredLogError(Metric):
             before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
+        squared:
+            If True returns MSE value, if False returns RMSE value.
 
     Example:
-        >>> from torchmetrics import MeanSquaredLogError
-        >>> target = torch.tensor([2.5, 5, 4, 8])
-        >>> preds = torch.tensor([3, 5, 2.5, 7])
-        >>> mean_squared_log_error = MeanSquaredLogError()
-        >>> mean_squared_log_error(preds, target)
-        tensor(0.0397)
-
-    .. note::
-        Half precision is only support on GPU for this metric
+        >>> from torchmetrics import MeanSquaredError
+        >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
+        >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
+        >>> mean_squared_error = MeanSquaredError()
+        >>> mean_squared_error(preds, target)
+        tensor(0.8750)
 
     """
     is_differentiable = True
     higher_is_better = False
-    sum_squared_log_error: Tensor
+    sum_squared_error: Tensor
     total: Tensor
 
     def __init__(
@@ -63,6 +59,7 @@ class MeanSquaredLogError(Metric):
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        squared: bool = True,
     ) -> None:
         super().__init__(
             compute_on_step=compute_on_step,
@@ -71,8 +68,9 @@ class MeanSquaredLogError(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("sum_squared_log_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.squared = squared
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -81,11 +79,11 @@ class MeanSquaredLogError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
+        sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
 
-        self.sum_squared_log_error += sum_squared_log_error
+        self.sum_squared_error += sum_squared_error
         self.total += n_obs
 
     def compute(self) -> Tensor:
-        """Compute mean squared logarithmic error over state."""
-        return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)
+        """Computes mean squared error over state."""
+        return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)

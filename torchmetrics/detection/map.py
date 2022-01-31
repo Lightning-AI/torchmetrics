@@ -18,12 +18,13 @@ import torch
 from torch import IntTensor, Size, Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
+if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
+    __doctest_skip__ = ["MeanAveragePrecision"]
 
 log = logging.getLogger(__name__)
 
@@ -129,7 +130,7 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
     return boxes
 
 
-class MAP(Metric):
+class MeanAveragePrecision(Metric):
     r"""
     Computes the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
     <https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173>`_
@@ -181,7 +182,7 @@ class MAP(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.detection.map import MAP
+        >>> from torchmetrics.detection.map import MeanAveragePrecision
         >>> preds = [
         ...   dict(
         ...     boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -195,28 +196,27 @@ class MAP(Metric):
         ...     labels=torch.IntTensor([0]),
         ...   )
         ... ]
-        >>> metric = MAP()  # doctest: +SKIP
-        >>> metric.update(preds, target)  # doctest: +SKIP
+        >>> metric = MeanAveragePrecision()
+        >>> metric.update(preds, target)
         >>> from pprint import pprint
-        >>> pprint(metric.compute())  # doctest: +SKIP
+        >>> pprint(metric.compute())
         {'map': tensor(0.6000),
          'map_50': tensor(1.),
          'map_75': tensor(1.),
-         'map_small': tensor(-1.),
-         'map_medium': tensor(-1.),
          'map_large': tensor(0.6000),
+         'map_medium': tensor(-1.),
+         'map_per_class': tensor(-1.),
+         'map_small': tensor(-1.),
          'mar_1': tensor(0.6000),
          'mar_10': tensor(0.6000),
          'mar_100': tensor(0.6000),
-         'mar_small': tensor(-1.),
-         'mar_medium': tensor(-1.),
+         'mar_100_per_class': tensor(-1.),
          'mar_large': tensor(0.6000),
-         'map_per_class': tensor(-1.),
-         'mar_100_per_class': tensor(-1.)
-        }
+         'mar_medium': tensor(-1.),
+         'mar_small': tensor(-1.)}
 
     Raises:
-        ImportError:
+        ModuleNotFoundError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ValueError:
             If ``class_metrics`` is not a boolean
@@ -241,10 +241,10 @@ class MAP(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-        if not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8):
-            raise ImportError(
-                "`MAP` metric requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision` or `pip install torchmetrics[detection]`"
+        if not _TORCHVISION_GREATER_EQUAL_0_8:
+            raise ModuleNotFoundError(
+                "`MeanAveragePrecision` metric requires that `torchvision` version 0.8.0 or newer is installed."
+                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
@@ -430,7 +430,9 @@ class MAP(Metric):
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det in range(nb_det):
-                    m = MAP._find_best_gt_match(t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det)
+                    m = MeanAveragePrecision._find_best_gt_match(
+                        t, nb_gt, gt_matches, idx_iou, gt_ignore, ious, idx_det
+                    )
                     if m != -1:
                         det_ignore[idx_iou, idx_det] = gt_ignore[m]
                         det_matches[idx_iou, idx_det] = True
@@ -573,7 +575,7 @@ class MAP(Metric):
         for idx_cls in range(nb_classes):
             for idx_bbox_area in range(nb_bbox_areas):
                 for idx_max_det_thrs, max_det in enumerate(self.max_detection_thresholds):
-                    recall, precision, scores = MAP.__calculate_recall_precision_scores(
+                    recall, precision, scores = MeanAveragePrecision.__calculate_recall_precision_scores(
                         recall,
                         precision,
                         scores,

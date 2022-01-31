@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Callable, List, Optional
-from warnings import warn
 
 import torch
+from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities import _future_warning, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -110,6 +110,7 @@ class SpearmanCorrcoef(SpearmanCorrCoef):
         Renamed in favor of :class:`torchmetrics.SpearmanCorrCoef`. Will be removed in v0.8.
     """
 
+    @deprecated(target=SpearmanCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
     def __init__(
         self,
         compute_on_step: bool = True,
@@ -117,9 +118,4 @@ class SpearmanCorrcoef(SpearmanCorrCoef):
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable] = None,
     ) -> None:
-        warn(
-            "`SpearmanCorrcoef` was renamed to `SpearmanCorrCoef` in v0.7 and it will be removed in v0.8",
-            DeprecationWarning,
-        )
-
-        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
+        void(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
