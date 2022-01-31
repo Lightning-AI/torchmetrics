@@ -25,8 +25,9 @@ authors:
   - name: Changsheng Quan
     affiliation: '6'
   - name: Maxim Grechkin
+    affiliation: '7'
   - name: William Falcon
-    affiliation: '1,7'
+    affiliation: '1,8'
 affiliations:
   - name: Grid AI Labs
     index: 1
@@ -40,8 +41,10 @@ affiliations:
     index: 5
   - name: Zhejiang University
     index: 6
-  - name: New York University
+  - name: Independent Researcher
     index: 7
+  - name: New York University
+    index: 8
 date: 08 Dec 2021
 bibliography: paper.bib
 ---
