@@ -113,7 +113,7 @@ def _ssim_update(preds: Tensor, target: Tensor, kernel_dimension: int) -> Tuple[
         )
     if kernel_dimension == 3 and len(preds.shape) != 5:
         raise ValueError(
-            "3D kernel is used. Expected `preds` and `target` to have BxCxHxWxD shape."
+            "3D kernel is used. Expected `preds` and `target` to have BxCxDxHxW shape."
             f" Got preds: {preds.shape} and target: {target.shape}."
         )
     return preds, target
