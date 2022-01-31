@@ -152,8 +152,8 @@ class MetricCollection(nn.ModuleDict):
         """
         n_groups = len(self._groups)
         while True:
-            for cg_idx1, cg_members1 in self._groups.copy().items():
-                for cg_idx2, cg_members2 in self._groups.copy().items():
+            for cg_idx1, cg_members1 in deepcopy(self._groups).items():
+                for cg_idx2, cg_members2 in deepcopy(self._groups).items():
                     if cg_idx1 == cg_idx2:
                         continue
 
@@ -173,6 +173,12 @@ class MetricCollection(nn.ModuleDict):
                 break
             else:
                 n_groups = len(self._groups)
+
+        # Re-index groups
+        temp = deepcopy(self._groups)
+        self._groups = {}
+        for idx, values in enumerate(temp.values()):
+            self._groups[idx] = values
 
     def _equal_metric_states(self, metric1, metric2):
         """Check if the metric state of two metrics are the same."""

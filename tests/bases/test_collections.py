@@ -293,7 +293,7 @@ def test_collection_filtering():
         # multi group multi metric
         (
             [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
-            {0: ["ConfusionMatrix", "CohenKappa"], 2: ["Recall", "Precision"]},
+            {0: ["ConfusionMatrix", "CohenKappa"], 1: ["Recall", "Precision"]},
         ),
         # Complex example
         (
@@ -305,7 +305,7 @@ def test_collection_filtering():
                 "recall": Recall(3),
                 "confmat": ConfusionMatrix(3),
             },
-            {0: ["acc", "acc2"], 2: ["acc3"], 3: ["confmat"], 4: ["f1", "recall"]},
+            {0: ["acc", "acc2", "f1", "recall"], 1: ["acc3"], 2: ["confmat"]},
         ),
     ],
 )
