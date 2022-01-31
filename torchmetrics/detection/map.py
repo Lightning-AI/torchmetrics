@@ -222,6 +222,12 @@ class MeanAveragePrecision(Metric):
             If ``class_metrics`` is not a boolean
     """
 
+    detection_boxes: List[Tensor]
+    detection_scores: List[Tensor]
+    detection_labels: List[Tensor]
+    groundtruth_boxes: List[Tensor]
+    groundtruth_labels: List[Tensor]
+
     def __init__(
         self,
         box_format: str = "xyxy",
