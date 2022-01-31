@@ -41,7 +41,7 @@ scale_invariant_signal_distortion_ratio [func]
 scale_invariant_signal_noise_ratio [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.si_snr
+.. autofunction:: torchmetrics.functional.scale_invariant_signal_noise_ratio
     :noindex:
 
 
@@ -507,10 +507,10 @@ translation_edit_rate [func]
 .. autofunction:: torchmetrics.functional.translation_edit_rate
     :noindex:
 
-wer [func]
-~~~~~~~~~~
+word_error_rate [func]
+~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.wer
+.. autofunction:: torchmetrics.functional.word_error_rate
     :noindex:
 
 word_information_lost [func]

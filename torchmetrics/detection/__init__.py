@@ -11,4 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+<<<<<<< HEAD
 from torchmetrics.detection.box_iou import IOU  # noqa: F401
+=======
+from torchmetrics.detection.iou import IOU  # noqa: F401
+>>>>>>> 962251feff0895a4197283022f535c8b9a728127

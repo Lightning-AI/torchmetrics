@@ -11,17 +11,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
 
 ### Changed
 
+- Used `torch.bucketize` in calibration error when `torch>1.8` for faster computations ([#769](https://github.com/PyTorchLightning/metrics/pull/769))
 
 ### Deprecated
 
 
 ### Removed
 
+- Removed deprecated functions, and warnings in Text ([#773](https://github.com/PyTorchLightning/metrics/pull/773))
+  * `functional.wer`
+  * `WER`
+
+
+- Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/PyTorchLightning/metrics/pull/804))
+  * `MAP`
+  * `functional.pairwise.manhatten`
+
+
+- Removed deprecated functions, and warnings in Audio ([#805](https://github.com/PyTorchLightning/metrics/pull/805))
+  * `PESQ`
+  * `PIT`
+  * `SDR`
+  * `SNR`
+  * `STOI`
+  * `functional.audio.pesq`
+  * `functional.audio.pit`
+  * `functional.audio.sdr`
+  * `functional.audio.snr`
+  * `functional.audio.stoi`
+  * `functional.audio.si_sdr`
+  * `functional.audio.si_snr`
+
 
 ### Fixed
+
+- Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
+
+
+- Fixed Matthews correlation coefficient when the denominator is 0 ([#781](https://github.com/PyTorchLightning/metrics/pull/781))
+
+
+- Improve mAP performance ([#742](https://github.com/PyTorchLightning/metrics/pull/742))
 
 
 ## [0.7.0] - 2022-01-17
@@ -56,8 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
 - Renamed text WER metric ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
- * `functional.wer` -> `functional.word_error_rate`
- * `WER` -> `WordErrorRate`
+  * `functional.wer` -> `functional.word_error_rate`
+  * `WER` -> `WordErrorRate`
 - Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
   * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
@@ -79,27 +113,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SNR` -> `SignalNoiseRatio`
   * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
 - Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731), [#740](https://github.com/PyTorchLightning/metrics/pull/740))
-  *  `functional.f1` ->  `functional.f1_score`
-  *  `F1` ->  `F1Score`
-  *  `functional.fbeta` ->  `functional.fbeta_score`
-  *  `FBeta` ->  `FBetaScore`
+  * `functional.f1` ->  `functional.f1_score`
+  * `F1` ->  `F1Score`
+  * `functional.fbeta` ->  `functional.fbeta_score`
+  * `FBeta` ->  `FBetaScore`
 - Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
-  *  `functional.hinge` ->  `functional.hinge_loss`
-  *  `Hinge` ->  `HingeLoss`
+  * `functional.hinge` ->  `functional.hinge_loss`
+  * `Hinge` ->  `HingeLoss`
 - Renamed image PSNR metrics ([#732](https://github.com/PyTorchLightning/metrics/pull/732))
   * `functional.psnr` -> `functional.peak_signal_noise_ratio`
   * `PSNR` -> `PeakSignalNoiseRatio`
 - Renamed image PIT metric: ([#737](https://github.com/PyTorchLightning/metrics/pull/737))
-  *  `functional.pit` ->  `functional.permutation_invariant_training`
-  *  `PIT` ->  `PermutationInvariantTraining`
+  * `functional.pit` ->  `functional.permutation_invariant_training`
+  * `PIT` ->  `PermutationInvariantTraining`
 - Renamed image SSIM metric: ([#747](https://github.com/PyTorchLightning/metrics/pull/747))
-  *  `functional.ssim` ->  `functional.scale_invariant_signal_noise_ratio`
-  *  `SSIM` ->  `StructuralSimilarityIndexMeasure`
+  * `functional.ssim` ->  `functional.scale_invariant_signal_noise_ratio`
+  * `SSIM` ->  `StructuralSimilarityIndexMeasure`
 - Renamed detection `MAP` to `MeanAveragePrecision` metric ([#754](https://github.com/PyTorchLightning/metrics/pull/754))
 - Renamed Fidelity & LPIPS image metric: ([#752](https://github.com/PyTorchLightning/metrics/pull/752))
-  *  `image.FID` ->  `image.FrechetInceptionDistance`
-  *  `image.KID` ->  `image.KernelInceptionDistance`
-  *  `image.LPIPS` ->  `image.LearnedPerceptualImagePatchSimilarity`
+  * `image.FID` ->  `image.FrechetInceptionDistance`
+  * `image.KID` ->  `image.KernelInceptionDistance`
+  * `image.LPIPS` ->  `image.LearnedPerceptualImagePatchSimilarity`
 
 ### Removed
 

@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import torch
 from torch import Tensor, nn
 
+from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
 
 
 class MetricTracker(nn.ModuleList):
-    """A wrapper class that can help keeping track of a metric over time and implement useful methods. The wrapper
-    implements the standard `update`, `compute`, `reset` methods that just calls corresponding method of the
-    currently tracked metric. However, the following additional methods are provided:
+    """A wrapper class that can help keeping track of a metric or metric collection over time and implement useful
+    methods. The wrapper implements the standard `update`, `compute`, `reset` methods that just calls corresponding
+    method of the currently tracked metric. However, the following additional methods are provided:
 
         -``MetricTracker.n_steps``: number of metrics being tracked
 
@@ -34,12 +35,12 @@ class MetricTracker(nn.ModuleList):
         -``MetricTracker.best_metric()``: returns the best value
 
     Args:
-        metric: instance of a torchmetric modular to keep track of at each timestep.
-        maximize: bool indicating if higher metric values are better (`True`) or lower
-            is better (`False`)
+        metric: instance of a `torchmetrics.Metric` or `torchmetrics.MetricCollection` to keep track
+            of at each timestep.
+        maximize: either single bool or list of bool indicating if higher metric values are
+            better (`True`) or lower is better (`False`).
 
-    Example:
-
+    Example (single metric):
         >>> from torchmetrics import Accuracy, MetricTracker
         >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(Accuracy(num_classes=10))
@@ -55,15 +56,52 @@ class MetricTracker(nn.ModuleList):
         current acc=0.07999999821186066
         current acc=0.10199999809265137
         >>> best_acc, which_epoch = tracker.best_metric(return_step=True)
+        >>> best_acc  # doctest: +ELLIPSIS
+        0.1260...
+        >>> which_epoch
+        2
         >>> tracker.compute_all()
         tensor([0.1120, 0.0880, 0.1260, 0.0800, 0.1020])
+
+    Example (multiple metrics using MetricCollection):
+        >>> from torchmetrics import MetricTracker, MetricCollection, MeanSquaredError, ExplainedVariance
+        >>> _ = torch.manual_seed(42)
+        >>> tracker = MetricTracker(MetricCollection([MeanSquaredError(), ExplainedVariance()]), maximize=[False, True])
+        >>> for epoch in range(5):
+        ...     tracker.increment()
+        ...     for batch_idx in range(5):
+        ...         preds, target = torch.randn(100), torch.randn(100)
+        ...         tracker.update(preds, target)
+        ...     print(f"current stats={tracker.compute()}")  # doctest: +NORMALIZE_WHITESPACE
+        current stats={'MeanSquaredError': tensor(1.8218), 'ExplainedVariance': tensor(-0.8969)}
+        current stats={'MeanSquaredError': tensor(2.0268), 'ExplainedVariance': tensor(-1.0206)}
+        current stats={'MeanSquaredError': tensor(1.9491), 'ExplainedVariance': tensor(-0.8298)}
+        current stats={'MeanSquaredError': tensor(1.9800), 'ExplainedVariance': tensor(-0.9199)}
+        current stats={'MeanSquaredError': tensor(2.2481), 'ExplainedVariance': tensor(-1.1622)}
+        >>> from pprint import pprint
+        >>> best_res, which_epoch = tracker.best_metric(return_step=True)
+        >>> pprint(best_res)  # doctest: +ELLIPSIS
+        {'ExplainedVariance': -0.829...,
+         'MeanSquaredError': 1.821...}
+        >>> which_epoch
+        {'MeanSquaredError': 0, 'ExplainedVariance': 2}
+        >>> pprint(tracker.compute_all())
+        {'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622]),
+         'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481])}
     """
 
-    def __init__(self, metric: Metric, maximize: bool = True) -> None:
+    def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
         super().__init__()
-        if not isinstance(metric, Metric):
-            raise TypeError("metric arg need to be an instance of a torchmetrics metric" f" but got {metric}")
+        if not isinstance(metric, (Metric, MetricCollection)):
+            raise TypeError(
+                "Metric arg need to be an instance of a torchmetrics"
+                f" `Metric` or `MetricCollection` but got {metric}"
+            )
         self._base_metric = metric
+        if not isinstance(maximize, (bool, list)):
+            raise ValueError("Argument `maximize` should either be a single bool or list of bool")
+        if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
+            raise ValueError("The len of argument `maximize` should match the length of the metric collection")
         self.maximize = maximize
 
         self._increment_called = False
@@ -96,7 +134,12 @@ class MetricTracker(nn.ModuleList):
     def compute_all(self) -> Tensor:
         """Compute the metric value for all tracked metrics."""
         self._check_for_increment("compute_all")
-        return torch.stack([metric.compute() for i, metric in enumerate(self) if i != 0], dim=0)
+        # The i!=0 accounts for the self._base_metric should be ignored
+        res = [metric.compute() for i, metric in enumerate(self) if i != 0]
+        if isinstance(self._base_metric, MetricCollection):
+            keys = res[0].keys()
+            return {k: torch.stack([r[k] for r in res], dim=0) for k in keys}
+        return torch.stack(res, dim=0)
 
     def reset(self) -> None:
         """Resets the current metric being tracked."""
@@ -107,7 +150,9 @@ class MetricTracker(nn.ModuleList):
         for metric in self:
             metric.reset()
 
-    def best_metric(self, return_step: bool = False) -> Union[float, Tuple[int, float]]:
+    def best_metric(
+        self, return_step: bool = False
+    ) -> Union[float, Tuple[int, float], Dict[str, float], Tuple[Dict[str, int], Dict[str, float]]]:
         """Returns the highest metric out of all tracked.
 
         Args:
@@ -116,11 +161,24 @@ class MetricTracker(nn.ModuleList):
         Returns:
             The best metric value, and optionally the timestep.
         """
-        fn = torch.max if self.maximize else torch.min
-        idx, max = fn(self.compute_all(), 0)
-        if return_step:
-            return idx.item(), max.item()
-        return max.item()
+        if isinstance(self._base_metric, Metric):
+            fn = torch.max if self.maximize else torch.min
+            idx, best = fn(self.compute_all(), 0)
+            if return_step:
+                return idx.item(), best.item()
+            return best.item()
+        else:
+            res = self.compute_all()
+            maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
+            idx, best = {}, {}
+            for i, (k, v) in enumerate(res.items()):
+                fn = torch.max if maximize[i] else torch.min
+                out = fn(v, 0)
+                idx[k], best[k] = out[0].item(), out[1].item()
+
+            if return_step:
+                return idx, best
+            return best
 
     def _check_for_increment(self, method: str) -> None:
         if not self._increment_called:
