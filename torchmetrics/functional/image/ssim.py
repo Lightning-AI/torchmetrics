@@ -183,7 +183,7 @@ def _ssim_compute(
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
-    if is3D:
+    if is_3d:
         pad_d = (kernel_size[2] - 1) // 2
         preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
         target = F.pad(target, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
