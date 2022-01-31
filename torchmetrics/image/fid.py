@@ -31,6 +31,8 @@ else:
     class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
         pass
 
+    __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
+
 
 if _SCIPY_AVAILABLE:
     import scipy
@@ -193,13 +195,13 @@ class FrechetInceptionDistance(Metric):
         >>> import torch
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics.image.fid import FrechetInceptionDistance
-        >>> fid = FrechetInceptionDistance(feature=64)  # doctest: +SKIP
+        >>> fid = FrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> fid.update(imgs_dist1, real=True)  # doctest: +SKIP
-        >>> fid.update(imgs_dist2, real=False)  # doctest: +SKIP
-        >>> fid.compute()  # doctest: +SKIP
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> fid.update(imgs_dist1, real=True)
+        >>> fid.update(imgs_dist2, real=False)
+        >>> fid.compute()
         tensor(12.7202)
 
     """
@@ -295,13 +297,13 @@ class FID(FrechetInceptionDistance):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> fid = FID(feature=64)  # doctest: +SKIP
+        >>> fid = FID(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> fid.update(imgs_dist1, real=True)  # doctest: +SKIP
-        >>> fid.update(imgs_dist2, real=False)  # doctest: +SKIP
-        >>> fid.compute()  # doctest: +SKIP
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> fid.update(imgs_dist1, real=True)
+        >>> fid.update(imgs_dist2, real=False)
+        >>> fid.compute()
         tensor(12.7202)
 
     """

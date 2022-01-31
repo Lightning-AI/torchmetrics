@@ -19,18 +19,22 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE
 
 if _TRANSFORMERS_AUTO_AVAILABLE:
     from transformers.models.auto import AutoModel, AutoTokenizer
+else:
+    __doctest_skip__ = ["bert_score"]
 
 if _TQDM_AVAILABLE:
     import tqdm
+
+
+# Default model recommended in the original implementation.
+_DEFAULT_MODEL = "roberta-large"
 
 
 def _preprocess_text(
@@ -451,13 +455,6 @@ def _rescale_metrics_with_baseline(
     return all_metrics[..., 0], all_metrics[..., 1], all_metrics[..., 2]
 
 
-@deprecated(
-    args_mapping={"predictions": "preds", "references": "target"},
-    target=True,
-    deprecated_in="0.7",
-    remove_in="0.8",
-    stream=_future_warning,
-)
 def bert_score(
     preds: Union[List[str], Dict[str, Tensor]],
     target: Union[List[str], Dict[str, Tensor]],
@@ -543,13 +540,6 @@ def bert_score(
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
 
-    .. deprecated:: v0.7
-        Args:
-            predictions:
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            references:
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
-
     Raises:
         ValueError:
             If `len(preds) != len(target)`.
@@ -566,10 +556,11 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> bert_score(preds, target, lang="en")  # doctest: +SKIP
-        {'precision': [0.99..., 0.99...],
-         'recall': [0.99..., 0.99...],
-         'f1': [0.99..., 0.99...]}
+        >>> from pprint import pprint
+        >>> pprint(bert_score(preds, target)) # doctest: +ELLIPSIS
+        {'f1': [0.999..., 0.996...],
+         'precision': [0.999..., 0.996...],
+         'recall': [0.999..., 0.996...]}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
@@ -585,8 +576,14 @@ def bert_score(
                 "`bert_score` metric with default models requires `transformers` package be installed."
                 " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
             )
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-        model = AutoModel.from_pretrained(model_name_or_path)
+        if model_name_or_path is None:
+            warn(
+                "The argument `model_name_or_path` was not specified while it is required when default"
+                " `transformers` model are used."
+                f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
+            )
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
+        model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
     else:
         tokenizer = user_tokenizer
     model.eval()

@@ -14,17 +14,15 @@
 from typing import Any, Callable, List, Optional, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wer import _wer_compute, _wer_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 
 
 class WordErrorRate(Metric):
     r"""
-    Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
+    Word error rate (WordErrorRate_) is a common metric of the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
     Word error rate can then be computed as:
@@ -84,26 +82,12 @@ class WordErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    @deprecated(
-        args_mapping={"predictions": "preds", "references": "target"},
-        target=True,
-        deprecated_in="0.7",
-        remove_in="0.8",
-        stream=_future_warning,
-    )
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Word Error Rate scores.
 
         Args:
             preds: Transcription(s) to score as a string or list of strings
             target: Reference(s) for each speech input as a string or list of strings
-
-        .. deprecated:: v0.7
-            Args:
-                predictions:
-                    This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-                references:
-                    This argument is deprecated in favor of  `target` and will be removed in v0.8.
         """
         errors, total = _wer_update(preds, target)
         self.errors += errors
@@ -116,29 +100,3 @@ class WordErrorRate(Metric):
             Word error rate score
         """
         return _wer_compute(self.errors, self.total)
-
-
-class WER(WordErrorRate):
-    r"""
-    Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.WordErrorRate`. Will be removed in v0.8.
-
-    Examples:
-        >>> preds = ["this is the prediction", "there is an other sample"]
-        >>> target = ["this is the reference", "there is another one"]
-        >>> metric = WER()
-        >>> metric(preds, target)
-        tensor(0.5000)
-    """
-
-    @deprecated(target=WordErrorRate, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

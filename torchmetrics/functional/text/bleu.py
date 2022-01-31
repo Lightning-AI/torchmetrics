@@ -18,13 +18,9 @@
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
 from typing import Callable, Sequence, Tuple, Union
-from warnings import warn
 
 import torch
-from deprecate import deprecated
 from torch import Tensor, tensor
-
-from torchmetrics.utilities import _future_warning
 
 
 def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
@@ -146,13 +142,6 @@ def _bleu_score_compute(
     return bleu
 
 
-@deprecated(
-    args_mapping={"translate_corpus": "preds", "reference_corpus": "target"},
-    target=True,
-    deprecated_in="0.7",
-    remove_in="0.8",
-    stream=_future_warning,
-)
 def bleu_score(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
@@ -174,13 +163,6 @@ def bleu_score(
     Return:
         Tensor with BLEU Score
 
-    .. deprecated:: v0.7
-        Args:
-            translate_corpus:
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            reference_corpus:
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
-
     Example:
         >>> from torchmetrics.functional import bleu_score
         >>> preds = ['the cat is on the mat']
@@ -195,11 +177,6 @@ def bleu_score(
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
-    warn(
-        "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
-        " Warning will be removed in v0.8."
-    )
-
     preds_ = [preds] if isinstance(preds, str) else preds
     target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]
 

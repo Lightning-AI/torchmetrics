@@ -15,11 +15,9 @@
 from typing import List, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
-from torchmetrics.utilities import _future_warning
 
 
 def _wer_update(
@@ -63,17 +61,10 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-@deprecated(
-    args_mapping={"predictions": "preds", "references": "target"},
-    target=True,
-    deprecated_in="0.7",
-    remove_in="0.8",
-    stream=_future_warning,
-)
 def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
-    """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
-    performance of the ASR system with a WER of 0 being a perfect score.
+    """Word error rate (WordErrorRate_) is a common metric of the performance of an automatic speech recognition
+    system. This value indicates the percentage of words that were incorrectly predicted. The lower the value, the
+    better the performance of the ASR system with a WER of 0 being a perfect score.
 
     Args:
         preds: Transcription(s) to score as a string or list of strings
@@ -81,13 +72,6 @@ def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]])
 
     Returns:
         Word error rate score
-
-    .. deprecated:: v0.7
-        Args:
-            predictions:
-                This argument is deprecated in favor of  `preds` and will be removed in v0.8.
-            references:
-                This argument is deprecated in favor of  `target` and will be removed in v0.8.
 
     Examples:
         >>> preds = ["this is the prediction", "there is an other sample"]
@@ -97,22 +81,3 @@ def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]])
     """
     errors, total = _wer_update(preds, target)
     return _wer_compute(errors, total)
-
-
-@deprecated(target=word_error_rate, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-def wer(
-    predictions: Union[str, List[str]],
-    references: Union[str, List[str]],
-) -> Tensor:
-    """Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
-
-    .. deprecated:: v0.7
-        Use :func:`torchmetrics.fuctional.word_error_rate`. Will be removed in v0.8.
-
-    Examples:
-        >>> preds = ["this is the prediction", "there is an other sample"]
-        >>> target = ["this is the reference", "there is another one"]
-        >>> wer(preds=preds, target=target)
-        tensor(0.5000)
-    """
-    return void(predictions, references)

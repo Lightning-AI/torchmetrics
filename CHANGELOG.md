@@ -7,7 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [0.7.0] - 2022-01-DD
+## [UnReleased] - 2022-MM-DD
+
+### Added
+
+- Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
+
+### Changed
+
+- Used `torch.bucketize` in calibration error when `torch>1.8` for faster computations ([#769](https://github.com/PyTorchLightning/metrics/pull/769))
+
+### Deprecated
+
+
+### Removed
+
+- Removed deprecated functions, and warnings in Text ([#773](https://github.com/PyTorchLightning/metrics/pull/773))
+  * `functional.wer`
+  * `WER`
+
+
+- Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/PyTorchLightning/metrics/pull/804))
+  * `MAP`
+  * `functional.pairwise.manhatten`
+
+
+- Removed deprecated functions, and warnings in Audio ([#805](https://github.com/PyTorchLightning/metrics/pull/805))
+  * `PESQ`
+  * `PIT`
+  * `SDR`
+  * `SNR`
+  * `STOI`
+  * `functional.audio.pesq`
+  * `functional.audio.pit`
+  * `functional.audio.sdr`
+  * `functional.audio.snr`
+  * `functional.audio.stoi`
+  * `functional.audio.si_sdr`
+  * `functional.audio.si_snr`
+
+
+### Fixed
+
+- Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
+
+
+- Fixed Matthews correlation coefficient when the denominator is 0 ([#781](https://github.com/PyTorchLightning/metrics/pull/781))
+
+
+- Improve mAP performance ([#742](https://github.com/PyTorchLightning/metrics/pull/742))
+
+
+## [0.7.0] - 2022-01-17
 
 ### Added
 
@@ -31,21 +82,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Metrics having third party dependencies removed from global import ([#463](https://github.com/PyTorchLightning/metrics/pull/463))
 - Untokenized for `BLEUScore` input stay consistent with all the other text metrics ([#640](https://github.com/PyTorchLightning/metrics/pull/640))
 - Arguments reordered for `TER`, `BLEUScore`, `SacreBLEUScore`, `CHRFScore` now expect input order as predictions first and target second ([#696](https://github.com/PyTorchLightning/metrics/pull/696))
-- Changed dtype of metric state from `torch.float` to `torch.long` in `ConfusionMatrix` to accommodate larger values ([#708](https://github.com/PyTorchLightning/metrics/issues/708))
-- Unify `preds`, `target` input argument's naming across all text metrics ([#723](https://github.com/PyTorchLightning/metrics/issues/723), [#727](https://github.com/PyTorchLightning/metrics/issues/727))
+- Changed dtype of metric state from `torch.float` to `torch.long` in `ConfusionMatrix` to accommodate larger values ([#715](https://github.com/PyTorchLightning/metrics/pull/715))
+- Unify `preds`, `target` input argument's naming across all text metrics ([#723](https://github.com/PyTorchLightning/metrics/pull/723), [#727](https://github.com/PyTorchLightning/metrics/pull/727))
   * `bert`, `bleu`, `chrf`, `sacre_bleu`, `wip`, `wil`, `cer`, `ter`, `wer`, `mer`, `rouge`, `squad`
 
 ### Deprecated
 
 - Renamed IoU -> Jaccard Index ([#662](https://github.com/PyTorchLightning/metrics/pull/662))
-- Renamed `WER` -> `WordErrorRate` and `wer` -> `word_error_rate` ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+- Renamed text WER metric ([#714](https://github.com/PyTorchLightning/metrics/pull/714))
+  * `functional.wer` -> `functional.word_error_rate`
+  * `WER` -> `WordErrorRate`
 - Renamed correlation coefficient classes: ([#710](https://github.com/PyTorchLightning/metrics/pull/710))
   * `MatthewsCorrcoef` -> `MatthewsCorrCoef`
   * `PearsonCorrcoef` -> `PearsonCorrCoef`
   * `SpearmanCorrcoef` -> `SpearmanCorrCoef`
 - Renamed audio STOI metric: ([#753](https://github.com/PyTorchLightning/metrics/pull/753), [#758](https://github.com/PyTorchLightning/metrics/pull/758))
-  * `audio.STOI` to `audio.ShortTermObjectiveIntelligibility`
-  * `functional.audio.stoi` to `functional.audio.short_term_objective_intelligibility`
+  * `audio.STOI` to `audio.ShortTimeObjectiveIntelligibility`
+  * `functional.audio.stoi` to `functional.audio.short_time_objective_intelligibility`
 - Renamed audio PESQ metrics: ([#751](https://github.com/PyTorchLightning/metrics/pull/751))
   * `functional.audio.pesq` -> `functional.audio.perceptual_evaluation_speech_quality`
   * `audio.PESQ` -> `audio.PerceptualEvaluationSpeechQuality`
@@ -60,27 +113,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `SNR` -> `SignalNoiseRatio`
   * `SI_SNR` -> `ScaleInvariantSignalNoiseRatio`
 - Renamed F-score metrics: ([#731](https://github.com/PyTorchLightning/metrics/pull/731), [#740](https://github.com/PyTorchLightning/metrics/pull/740))
-  * `torchmetrics.functional.f1` -> `torchmetrics.functional.f1_score`
-  * `torchmetrics.F1` -> `torchmetrics.F1Score`
-  * `torchmetrics.functional.fbeta` -> `torchmetrics.functional.fbeta_score`
-  * `torchmetrics.FBeta` -> `torchmetrics.FBetaScore`
+  * `functional.f1` ->  `functional.f1_score`
+  * `F1` ->  `F1Score`
+  * `functional.fbeta` ->  `functional.fbeta_score`
+  * `FBeta` ->  `FBetaScore`
 - Renamed Hinge metric: ([#734](https://github.com/PyTorchLightning/metrics/pull/734))
-  * `torchmetrics.functional.hinge` -> `torchmetrics.functional.hinge_loss`
-  * `torchmetrics.Hinge` -> `torchmetrics.HingeLoss`
+  * `functional.hinge` ->  `functional.hinge_loss`
+  * `Hinge` ->  `HingeLoss`
 - Renamed image PSNR metrics ([#732](https://github.com/PyTorchLightning/metrics/pull/732))
   * `functional.psnr` -> `functional.peak_signal_noise_ratio`
   * `PSNR` -> `PeakSignalNoiseRatio`
 - Renamed image PIT metric: ([#737](https://github.com/PyTorchLightning/metrics/pull/737))
-  * `torchmetrics.functional.pit` -> `torchmetrics.functional.permutation_invariant_training`
-  * `torchmetrics.PIT` -> `torchmetrics.PermutationInvariantTraining`
+  * `functional.pit` ->  `functional.permutation_invariant_training`
+  * `PIT` ->  `PermutationInvariantTraining`
 - Renamed image SSIM metric: ([#747](https://github.com/PyTorchLightning/metrics/pull/747))
-  * `torchmetrics.functional.ssim` -> `torchmetrics.functional.scale_invariant_signal_noise_ratio`
-  * `torchmetrics.SSIM` -> `torchmetrics.StructuralSimilarityIndexMeasure`
+  * `functional.ssim` ->  `functional.scale_invariant_signal_noise_ratio`
+  * `SSIM` ->  `StructuralSimilarityIndexMeasure`
 - Renamed detection `MAP` to `MeanAveragePrecision` metric ([#754](https://github.com/PyTorchLightning/metrics/pull/754))
 - Renamed Fidelity & LPIPS image metric: ([#752](https://github.com/PyTorchLightning/metrics/pull/752))
-  * `torchmetrics.image.FID` -> `torchmetrics.image.FrechetInceptionDistance`
-  * `torchmetrics.image.KID` -> `torchmetrics.image.KernelInceptionDistance`
-  * `torchmetrics.image.LPIPS` -> `torchmetrics.image.LearnedPerceptualImagePatchSimilarity`
+  * `image.FID` ->  `image.FrechetInceptionDistance`
+  * `image.KID` ->  `image.KernelInceptionDistance`
+  * `image.LPIPS` ->  `image.LearnedPerceptualImagePatchSimilarity`
 
 ### Removed
 
@@ -122,7 +175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added audio metrics:
   - Perceptual Evaluation of Speech Quality (PESQ) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
-  - Short Term Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
+  - Short-Time Objective Intelligibility (STOI) ([#353](https://github.com/PyTorchLightning/metrics/pull/353))
 - Added Information retrieval metrics:
   - `RetrievalRPrecision` ([#577](https://github.com/PyTorchLightning/metrics/pull/577))
   - `RetrievalHitRate` ([#576](https://github.com/PyTorchLightning/metrics/pull/576))
@@ -156,7 +209,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
-- Deprecated `torchmetrics.functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
+- Deprecated  `functional.self_supervised.embedding_similarity` in favour of new pairwise submodule
 
 ### Removed
 

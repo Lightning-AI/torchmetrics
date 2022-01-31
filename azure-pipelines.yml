@@ -19,7 +19,7 @@ pr:
 jobs:
   - job: pytest
     # how long to run the job before automatically cancelling
-    timeoutInMinutes: "45"
+    timeoutInMinutes: "55"
     # how much time to give 'run always even if cancelled tasks' before stopping them
     cancelTimeoutInMinutes: "2"
 
@@ -92,6 +92,18 @@ jobs:
     #    reportDirectory: '$(Build.SourcesDirectory)/htmlcov'
     #    testRunTitle: '$(Agent.OS) - $(Build.BuildNumber)[$(Agent.JobName)] - Python $(python.version)'
     #  condition: succeededOrFailed()
+
+    - bash: |
+        set -e
+        pip install .
+        FILES="tm_examples/*.py"
+        for fn in $FILES
+        do
+          echo "Processing $fn example..."
+          python $fn
+        done
+        pip uninstall -y torchmetrics
+      displayName: 'Examples'
 
     - bash: |
         pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed

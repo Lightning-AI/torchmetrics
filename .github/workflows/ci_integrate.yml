@@ -1,4 +1,4 @@
-name: CI testing - complete
+name: CI integrations
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
@@ -13,38 +13,15 @@ concurrency:
   cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
 jobs:
-  # ToDo: consider unifying in a single workflow and distributing outputs to all others depending ones
-  check-diff:
-    runs-on: ubuntu-20.04
-    if: github.event.pull_request.draft == false
-    timeout-minutes: 5
-    # Map a step output to a job output
-    outputs:
-      focus: ${{ steps.diff-domains.outputs.focus }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-
-    - name: Get PR diff
-      id: diff-domains
-      env:
-        PR_NUMBER: "${{ github.event.pull_request.number }}"
-      run: |
-        pip install fire requests
-        # python actions/assistant.py list_runtimes $PR_NUMBER
-        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
-    - run: echo "${{ steps.diff-domains.outputs.focus }}"
 
   pytest:
+
     runs-on: ${{ matrix.os }}
-    needs: check-diff
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.6, 3.8, 3.9]
+        python-version: [3.6, 3.9]
         requires: ['oldest', 'latest']
         exclude:
           - {python-version: 3.6, requires: 'latest'}
@@ -56,7 +33,7 @@ jobs:
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
-    timeout-minutes: 85
+    timeout-minutes: 45
 
     steps:
     - uses: actions/checkout@v2
@@ -64,21 +41,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-
-    # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
-    - name: Setup macOS
-      if: runner.os == 'macOS'
-      run: |
-        brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
-    - name: Setup Linux
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt update --fix-missing
-        sudo apt install -y ffmpeg
-    - name: Setup Windows
-      if: runner.os == 'windows'
-      run: |
-        choco install ffmpeg
 
     - name: PIP install assitant's deps
       run: pip install fire requests
@@ -112,6 +74,8 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
+        pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed --find-links $PYTORCH_URL
+        pip uninstall -y torchmetrics
         pip list
       shell: bash
 
@@ -121,36 +85,7 @@ jobs:
         path: $TRANSFORMERS_CACHE
         key: cache-transformers
 
-    - name: Tests
-      env:
-        TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
+    - name: Integrations
       run: |
-        phmdoctest README.md --outfile tests/test_readme.py
-        python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
-
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: $PYTEST_ARTEFACT
-        path: "junit/$PYTEST_ARTEFACT"
-      if: failure()
-
-    - name: Statistics
-      if: success()
-      run: |
-        coverage xml
-        coverage report
-
-    - run: |
-        echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
-      id: info
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
-        flags: cpu,pytest,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
-        env_vars: OS,PYTHON
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        python -m pytest integrations -v --durations=25
+      shell: bash

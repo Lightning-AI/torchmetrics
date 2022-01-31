@@ -14,11 +14,6 @@ _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
 from torchmetrics.audio import (  # noqa: E402
-    PIT,
-    SDR,
-    SI_SDR,
-    SI_SNR,
-    SNR,
     PermutationInvariantTraining,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
@@ -90,7 +85,6 @@ from torchmetrics.retrieval import (  # noqa: E402
     RetrievalRPrecision,
 )
 from torchmetrics.text import (  # noqa: E402
-    WER,
     BLEUScore,
     CharErrorRate,
     CHRFScore,
@@ -152,7 +146,6 @@ __all__ = [
     "PearsonCorrcoef",
     "PearsonCorrCoef",
     "PermutationInvariantTraining",
-    "PIT",
     "Precision",
     "PrecisionRecallCurve",
     "PSNR",
@@ -169,14 +162,10 @@ __all__ = [
     "RetrievalRPrecision",
     "ROC",
     "SacreBLEUScore",
-    "SDR",
     "SignalDistortionRatio",
     "ScaleInvariantSignalDistortionRatio",
-    "SI_SDR",
-    "SI_SNR",
     "ScaleInvariantSignalNoiseRatio",
     "SignalNoiseRatio",
-    "SNR",
     "SpearmanCorrcoef",
     "SpearmanCorrCoef",
     "Specificity",
@@ -187,7 +176,6 @@ __all__ = [
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
-    "WER",
     "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",
