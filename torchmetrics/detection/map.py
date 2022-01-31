@@ -666,7 +666,7 @@ class MeanAveragePrecision(Metric):
             diff_zero = torch.zeros((1,))
             diff = torch.ones((1,))
             while not torch.all(diff == 0):
-                diff = torch.clamp(torch.cat((torch.diff(pr), diff_zero), 0), min=0)
+                diff = torch.clamp(torch.cat((pr[1:] - pr[:-1], diff_zero), 0), min=0)
                 pr += diff
 
             inds = torch.searchsorted(rc, rec_thresholds, right=False)
