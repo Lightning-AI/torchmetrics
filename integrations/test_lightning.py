@@ -13,7 +13,6 @@
 # limitations under the License.
 from unittest import mock
 
-import pytest
 import torch
 from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
