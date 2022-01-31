@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Matthews correlation coefficient when the denominator is 0 ([#781](https://github.com/PyTorchLightning/metrics/pull/781))
 
 
+- Improve mAP performance ([#742](https://github.com/PyTorchLightning/metrics/pull/742))
+
+
 ## [0.7.0] - 2022-01-17
 
 ### Added
