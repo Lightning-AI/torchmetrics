@@ -311,9 +311,9 @@ def test_collection_filtering():
 )
 def test_check_compute_groups(metrics, expected):
     """Check that compute groups are formed after initialization."""
-    m = MetricCollection(deepcopy(metrics), enable_compute_groups=True)
+    m = MetricCollection(deepcopy(metrics), compute_groups=True)
     # Construct without for comparison
-    m2 = MetricCollection(deepcopy(metrics), enable_compute_groups=False)
+    m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 
     assert len(m.compute_groups) == len(m)
     assert m2.compute_groups == {}
@@ -337,3 +337,27 @@ def test_check_compute_groups(metrics, expected):
     res_without_cg = m2.compute()
     for key in res_cg.keys():
         assert torch.allclose(res_cg[key], res_without_cg[key])
+
+
+def test_compute_group_define_by_user():
+    """Check that user can provide compute groups."""
+    m = MetricCollection(
+        ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Precision"]]
+    )
+
+    # Check that we are not going to check the groups in the first update
+    assert m._groups_checked
+    assert m.compute_groups == {0: ["ConfusionMatrix"], 1: ["Recall", "Precision"]}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    m.update(preds, target)
+    assert m.compute()
+
+
+def test_error_on_wrong_specified_compute_groups():
+    """Test that error is raised if user mis-specify the compute groups."""
+    with pytest.raises(ValueError, match="Input Accuracy in `compute_groups`.*"):
+        MetricCollection(
+            ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Accuracy"]]
+        )

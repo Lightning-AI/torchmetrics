@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, nn
@@ -44,12 +44,13 @@ class MetricCollection(nn.ModuleDict):
 
         postfix: a string to append after the keys of the output dict
 
-        enable_compute_groups:
+        compute_groups:
             By defualt the MetricCollection will try to reduce the computations needed for the metrics in the collection
             by checking if they belong to the same *compute group*. All metrics in a compute group share the same metric
             state and are therefore only different in their compute step e.g. accuracy, precision and recall can all be
-            computed from the true positives/negatives and false positives/nagatives. Set this argument to `False` for
-            disabling this behaviour.
+            computed from the true positives/negatives and false positives/nagatives. By default this argument is `True`
+            which enables this feature. Set this argument to `False` for disabling this behaviour. Can also be set to
+            a list of list of metrics for setting the compute groups yourself.
 
     Raises:
         ValueError:
@@ -68,7 +69,7 @@ class MetricCollection(nn.ModuleDict):
     Example (input as list):
         >>> import torch
         >>> from pprint import pprint
-        >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall
+        >>> from torchmetrics import MetricCollection, Accuracy, ConfusionMatrix, Precision, Recall
         >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
         >>> metrics = MetricCollection([Accuracy(),
@@ -92,6 +93,16 @@ class MetricCollection(nn.ModuleDict):
         >>> pprint(same_metric(preds, target))
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
         >>> metrics.persistent()
+
+    Example (specification of compute groups):
+        >>> metrics = MetricCollection(
+        ...     Accuracy(),
+        ...     Precision(num_classes=3, average='macro'),
+        ...     ConfusionMatrix(num_classes=3),
+        ...     compute_groups=[['Accuracy', Precision], ['ConfusionMatrix']]
+        ... )
+        >>> metrics(preds, target)
+        {'Accuracy': tensor(0.1250), 'Precision': tensor(0.0667), 'Recall': tensor(0.1111)}
     """
 
     def __init__(
@@ -100,13 +111,13 @@ class MetricCollection(nn.ModuleDict):
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
-        enable_compute_groups: bool = True,
+        compute_groups: Union[bool, List[List[str]]] = True,
     ) -> None:
         super().__init__()
 
         self.prefix = self._check_arg(prefix, "prefix")
         self.postfix = self._check_arg(postfix, "postfix")
-        self._enable_compute_groups = enable_compute_groups
+        self._enable_compute_groups = compute_groups
 
         self.add_metrics(metrics, *additional_metrics)
 
@@ -281,10 +292,24 @@ class MetricCollection(nn.ModuleDict):
 
         self._groups_checked = False
         if self._enable_compute_groups:
-            # Initialize all metrics as their own compute group
-            self._groups = {i: [k] for i, k in enumerate(self.keys(keep_base=False))}
+            self._add_compute_groups()
         else:
             self._groups = {}
+
+    def _add_compute_groups(self):
+        if isinstance(self._enable_compute_groups, list):
+            self._groups = {i: k for i, k in enumerate(self._enable_compute_groups)}
+            for v in self._groups.values():
+                for metric in v:
+                    if metric not in self:
+                        raise ValueError(
+                            f"Input {metric} in `compute_groups` argument does not match a metric in the collection."
+                            f" Please make sure that {self._enable_compute_groups} matches {self.keys(keep_base=True)}"
+                        )
+            self._groups_checked = True
+        else:
+            # Initialize all metrics as their own compute group
+            self._groups = {i: [k] for i, k in enumerate(self.keys(keep_base=False))}
 
     @property
     def compute_groups(self):
