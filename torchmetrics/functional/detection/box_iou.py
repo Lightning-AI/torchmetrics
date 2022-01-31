@@ -15,7 +15,6 @@ import torch
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
-
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_iou
 

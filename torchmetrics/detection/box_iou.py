@@ -79,11 +79,11 @@ class BoxIntersectionOverUnion(Metric):
                 "`MeanAveragePrecision` metric requires that `torchvision` version 0.8.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
             )
-        
+
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
         if box_format not in allowed_box_formats:
             raise ValueError(f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}")
-        
+
         self.box_format = box_format
         self.iou_threshold = iou_threshold
         self.class_metrics = class_metrics
@@ -154,13 +154,11 @@ class BoxIntersectionOverUnion(Metric):
             self.groundtruth_boxes.append(_fix_empty_tensors(gt_boxes))
             self.groundtruth_labels.append(item["labels"])
 
-
     def compute(self) -> Tensor:
         """Computes IOU based on inputs passed in to ``update`` previously."""
         self.classes = []
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             self.classes = torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
-        
-        
+
         _calculate()
         return _box_iou_compute(self.x)
