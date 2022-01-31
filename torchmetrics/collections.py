@@ -104,6 +104,8 @@ class MetricCollection(nn.ModuleDict):
         {'Accuracy': tensor(0.1250), 'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667)}
     """
 
+    _groups: Dict[int, List[str]]
+
     def __init__(
         self,
         metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
@@ -117,6 +119,7 @@ class MetricCollection(nn.ModuleDict):
         self.prefix = self._check_arg(prefix, "prefix")
         self.postfix = self._check_arg(postfix, "postfix")
         self._enable_compute_groups = compute_groups
+        self._groups_checked: bool = False
 
         self.add_metrics(metrics, *additional_metrics)
 
@@ -155,7 +158,7 @@ class MetricCollection(nn.ModuleDict):
                 self._merge_compute_groups()
                 self._groups_checked = True
 
-    def _merge_compute_groups(self):
+    def _merge_compute_groups(self) -> None:
         """Iterates over the collection of metrics, checking if the state of each metric matches another.
 
         If so, their compute groups will be merged into one
@@ -289,7 +292,7 @@ class MetricCollection(nn.ModuleDict):
         else:
             self._groups = {}
 
-    def _add_compute_groups(self):
+    def _add_compute_groups(self) -> None:
         if isinstance(self._enable_compute_groups, list):
             self._groups = {i: k for i, k in enumerate(self._enable_compute_groups)}
             for v in self._groups.values():
@@ -305,7 +308,7 @@ class MetricCollection(nn.ModuleDict):
             self._groups = {i: [k] for i, k in enumerate(self.keys(keep_base=False))}
 
     @property
-    def compute_groups(self):
+    def compute_groups(self) -> Dict[int, List[str]]:
         """Return a dict with the current compute groups in the collection."""
         return self._groups
 
