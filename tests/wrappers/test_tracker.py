@@ -11,21 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import partial
 
 import pytest
 import torch
 
 from tests.helpers import seed_all
-from torchmetrics import Accuracy, MeanAbsoluteError, MeanSquaredError, Precision, Recall
+from torchmetrics import Accuracy, MeanAbsoluteError, MeanSquaredError, MetricCollection, Precision, Recall
 from torchmetrics.wrappers import MetricTracker
 
 seed_all(42)
 
 
 def test_raises_error_on_wrong_input():
-    with pytest.raises(TypeError, match="metric arg need to be an instance of a torchmetrics metric .*"):
+    """Make sure that input type errors are raised on the wrong input."""
+    with pytest.raises(TypeError, match="Metric arg need to be an instance of a .*"):
         MetricTracker([1, 2, 3])
+
+    with pytest.raises(ValueError, match="Argument `maximize` should either be a single bool or list of bool"):
+        MetricTracker(MeanAbsoluteError(), maximize=2)
+
+    with pytest.raises(
+        ValueError, match="The len of argument `maximize` should match the length of the metric collection"
+    ):
+        MetricTracker(MetricCollection([MeanAbsoluteError(), MeanSquaredError()]), maximize=[False, False, False])
 
 
 @pytest.mark.parametrize(
@@ -48,15 +56,32 @@ def test_raises_error_if_increment_not_called(method, method_input):
 @pytest.mark.parametrize(
     "base_metric, metric_input, maximize",
     [
-        (partial(Accuracy, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (partial(Precision, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (partial(Recall, num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
-        (MeanSquaredError, (torch.randn(50), torch.randn(50)), False),
-        (MeanAbsoluteError, (torch.randn(50), torch.randn(50)), False),
+        (Accuracy(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (Precision(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (Recall(num_classes=10), (torch.randint(10, (50,)), torch.randint(10, (50,))), True),
+        (MeanSquaredError(), (torch.randn(50), torch.randn(50)), False),
+        (MeanAbsoluteError(), (torch.randn(50), torch.randn(50)), False),
+        (
+            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            (torch.randint(10, (50,)), torch.randint(10, (50,))),
+            True,
+        ),
+        (
+            MetricCollection([Accuracy(num_classes=10), Precision(num_classes=10), Recall(num_classes=10)]),
+            (torch.randint(10, (50,)), torch.randint(10, (50,))),
+            [True, True, True],
+        ),
+        (MetricCollection([MeanSquaredError(), MeanAbsoluteError()]), (torch.randn(50), torch.randn(50)), False),
+        (
+            MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+            (torch.randn(50), torch.randn(50)),
+            [False, False],
+        ),
     ],
 )
 def test_tracker(base_metric, metric_input, maximize):
-    tracker = MetricTracker(base_metric(), maximize=maximize)
+    """Test that arguments gets passed correctly to child modules."""
+    tracker = MetricTracker(base_metric, maximize=maximize)
     for i in range(5):
         tracker.increment()
         # check both update and forward works
@@ -65,12 +90,30 @@ def test_tracker(base_metric, metric_input, maximize):
         for _ in range(5):
             tracker(*metric_input)
 
+        # Make sure we have computed something
         val = tracker.compute()
-        assert val != 0.0
+        if isinstance(val, dict):
+            for v in val.values():
+                assert v != 0.0
+        else:
+            assert val != 0.0
         assert tracker.n_steps == i + 1
 
+    # Assert that compute all returns all values
     assert tracker.n_steps == 5
-    assert tracker.compute_all().shape[0] == 5
+    all_computed_val = tracker.compute_all()
+    if isinstance(all_computed_val, dict):
+        for v in all_computed_val.values():
+            assert v.numel() == 5
+    else:
+        assert all_computed_val.numel() == 5
+
+    # Assert that best_metric returns both index and value
     val, idx = tracker.best_metric(return_step=True)
-    assert val != 0.0
-    assert idx in list(range(5))
+    if isinstance(val, dict):
+        for v, i in zip(val.values(), idx.values()):
+            assert v != 0.0
+            assert i in list(range(5))
+    else:
+        assert val != 0.0
+        assert idx in list(range(5))
