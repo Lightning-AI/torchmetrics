@@ -203,16 +203,10 @@ class MetricCollection(nn.ModuleDict):
                 return False
 
             if isinstance(state1, Tensor) and isinstance(state2, Tensor):
-                if state1.shape != state2.shape:
-                    return False
-                if not torch.allclose(state1, state2):
-                    return False
+                return state1.shape == state2.shape and torch.allclose(state1, state2)
 
             if isinstance(state1, list) and isinstance(state2, list):
-                if any(s1.shape != s2.shape for s1, s2 in zip(state1, state2)):
-                    return False
-                if any(torch.allclose(s1, s2) for s1, s2 in zip(state1, state2)):
-                    return False
+                return all(s1.shape == s2.shape and torch.allclose(s1, s2) for s1, s2 in zip(state1, state2))
 
         return True
 
