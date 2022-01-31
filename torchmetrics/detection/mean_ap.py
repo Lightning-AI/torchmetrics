@@ -113,9 +113,6 @@ def segm_iou(inputs, targets, smooth=1e-5):
     n_targets = targets.shape[0]
     # flatten label and prediction tensors
 
-    inputs = inputs.reshape(n_inputs, -1).repeat_interleave(n_targets, 0)
-    targets = targets.reshape(n_targets, -1).repeat(n_inputs, 1)
-
     # i1 * t1
     # i1 * t2
     # i2 * t1
@@ -271,6 +268,8 @@ class MeanAveragePrecision(Metric):
     detection_labels: List[Tensor]
     groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
+    groundtruth_masks: List[Tensor]
+    detection_masks: List[Tensor]
 
     def __init__(
         self,
@@ -303,10 +302,10 @@ class MeanAveragePrecision(Metric):
             raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (0 ** 2, int(1e5 ** 2)),
+            "small": (0 ** 2, 32 ** 2),
+            "medium": (32 ** 2, 96 ** 2),
+            "large": (96 ** 2, int(1e5 ** 2)),
         }
 
         if not isinstance(class_metrics, bool):
@@ -316,8 +315,10 @@ class MeanAveragePrecision(Metric):
         self.add_state("detections", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
+
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
-        self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
+        self.add_state("detection_masks", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruth_boxes", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
@@ -367,6 +368,8 @@ class MeanAveragePrecision(Metric):
             self.detections.append(detections)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
+            if "masks" in item:
+                self.detection_masks.append(item["masks"])
 
         for item in target:
             groundtruths = self._get_safe_item_values(item)
@@ -847,11 +850,6 @@ class MeanAveragePrecision(Metric):
         """
 
         # move everything to CPU, as we are faster here
-        self.detections = [box.cpu() for box in self.detections]
-        self.detection_labels = [label.cpu() for label in self.detection_labels]
-        self.detection_scores = [score.cpu() for score in self.detection_scores]
-        self.groundtruths = [box.cpu() for box in self.groundtruths]
-        self.groundtruth_labels = [label.cpu() for label in self.groundtruth_labels]
 
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
