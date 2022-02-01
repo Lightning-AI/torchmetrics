@@ -106,7 +106,7 @@ def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
             f" Got preds: {preds.dtype} and target: {target.dtype}."
         )
     _check_same_shape(preds, target)
-    if len(preds.shape) not in (4,5):
+    if len(preds.shape) not in (4, 5):
         raise ValueError(
             "Expected `preds` and `target` to have BxCxHxW or BxCxDxHxW shape."
             f" Got preds: {preds.shape} and target: {target.shape}."
@@ -167,7 +167,7 @@ def _ssim_compute(
         else:
             sigma = [sigma, sigma]
 
-    if len(kernel_size) != len(target.shape)-2:
+    if len(kernel_size) != len(target.shape) - 2:
         raise ValueError(
             f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, which is: {len(target.shape)}"
         )
@@ -180,7 +180,6 @@ def _ssim_compute(
         raise ValueError(
             f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
         )
-
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):
         raise ValueError(f"Expected `kernel_size` to have odd positive number. Got {kernel_size}.")
