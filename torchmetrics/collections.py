@@ -45,7 +45,7 @@ class MetricCollection(nn.ModuleDict):
         postfix: a string to append after the keys of the output dict
 
         compute_groups:
-            By defualt the MetricCollection will try to reduce the computations needed for the metrics in the collection
+            By default the MetricCollection will try to reduce the computations needed for the metrics in the collection
             by checking if they belong to the same *compute group*. All metrics in a compute group share the same metric
             state and are therefore only different in their compute step e.g. accuracy, precision and recall can all be
             computed from the true positives/negatives and false positives/nagatives. By default this argument is `True`
