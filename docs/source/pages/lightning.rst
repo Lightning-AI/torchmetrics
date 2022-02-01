@@ -12,9 +12,8 @@ TorchMetrics in PyTorch Lightning
 TorchMetrics was originaly created as part of `PyTorch Lightning <https://github.com/PyTorchLightning/pytorch-lightning>`_, a powerful deep learning research framework designed for scaling models without boilerplate.
 
 ..note::
-    TorchMetrics version v0.8 or higher officially only supports v1.5 and higher of Pytorch Lightning, but we recommend to always keeping both
-    frameworks up-to-date for the best experience. If you are using PyTorch Lightning v1.3 or v1.4 they are compatible with Torchmetrics
-    v0.6 and v0.7.
+    TorchMetrics always offer compatibility with the last 2 major PyTorch Lightning versions, but we recommend to always keep both frameworks
+    up-to-date for the best experience.
 
 While TorchMetrics was built to be used with native PyTorch, using TorchMetrics with Lightning offers additional benefits:
 
