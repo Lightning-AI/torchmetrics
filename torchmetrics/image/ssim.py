@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import torch
 from deprecate import deprecated, void
@@ -58,8 +58,8 @@ class StructuralSimilarityIndexMeasure(Metric):
 
     def __init__(
         self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
+        kernel_size: Union[int, Sequence[int]] = 11,
+        sigma: Union[float, Sequence[float]] = 1.5,
         reduction: str = "elementwise_mean",
         data_range: Optional[float] = None,
         k1: float = 0.01,
@@ -95,7 +95,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _ssim_update(preds, target, len(self.kernel_size))
+        preds, target = _ssim_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 

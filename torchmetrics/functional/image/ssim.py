@@ -87,11 +87,11 @@ def _3d_gaussian_kernel(
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
     gaussian_kernel_z = _gaussian(kernel_size[2], sigma[2], dtype, device)
     kernel_xy = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_z)  # (kernel_size, 1) * (1, kernel_size)
-    kernel = torch.mul(kernel_xy, gaussian_kernel_z.expand(11, 11, 11))
+    kernel = torch.mul(kernel_xy, gaussian_kernel_z.expand(kernel_size[0], kernel_size[1], kernel_size[2]))
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1], kernel_size[2])
 
 
-def _ssim_update(preds: Tensor, target: Tensor, kernel_dimension: int) -> Tuple[Tensor, Tensor]:
+def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Structural Similarity Index Measure. Checks for same shape
     and type of the input tensors.
 
@@ -106,14 +106,9 @@ def _ssim_update(preds: Tensor, target: Tensor, kernel_dimension: int) -> Tuple[
             f" Got preds: {preds.dtype} and target: {target.dtype}."
         )
     _check_same_shape(preds, target)
-    if kernel_dimension == 2 and len(preds.shape) != 4:
+    if len(preds.shape) not in (4,5):
         raise ValueError(
-            "2D kernel is used. Expected `preds` and `target` to have BxCxHxW shape."
-            f" Got preds: {preds.shape} and target: {target.shape}."
-        )
-    if kernel_dimension == 3 and len(preds.shape) != 5:
-        raise ValueError(
-            "3D kernel is used. Expected `preds` and `target` to have BxCxDxHxW shape."
+            "Expected `preds` and `target` to have BxCxHxW or BxCxDxHxW shape."
             f" Got preds: {preds.shape} and target: {target.shape}."
         )
     return preds, target
@@ -122,8 +117,8 @@ def _ssim_update(preds: Tensor, target: Tensor, kernel_dimension: int) -> Tuple[
 def _ssim_compute(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
+    kernel_size: Union[int, Sequence[int]] = 11,
+    sigma: Union[float, Sequence[float]] = 1.5,
     reduction: str = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
@@ -154,6 +149,28 @@ def _ssim_compute(
         >>> _ssim_compute(preds, target)
         tensor(0.9219)
     """
+    print("Starting....")
+    shape = preds.shape
+    print(preds.shape)
+    is_3d = len(preds.shape) == 5
+    if is_3d:
+        print("##################### IS 3D ##################### IS 3D")
+
+    if not isinstance(kernel_size, Sequence):
+        if is_3d:
+            kernel_size = [kernel_size, kernel_size, kernel_size]
+        else:
+            kernel_size = [kernel_size, kernel_size]
+    if not isinstance(sigma, Sequence):
+        if is_3d:
+            sigma = [sigma, sigma, sigma]
+        else:
+            sigma = [sigma, sigma]
+
+    if len(kernel_size) != len(target.shape)-2:
+        raise ValueError(
+            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, which is: {len(target.shape)}"
+        )
     if len(kernel_size) != len(sigma):
         raise ValueError(
             "Expected `kernel_size` and `sigma` to have the same length."
@@ -161,9 +178,9 @@ def _ssim_compute(
         )
     if len(kernel_size) not in (2, 3):
         raise ValueError(
-            "Expected `kernel_size` dimension to be 2 or 3" f" Kernel_size dimensionality: {len(kernel_size)}"
+            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
         )
-    is_3d = len(kernel_size) == 3
+
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):
         raise ValueError(f"Expected `kernel_size` to have odd positive number. Got {kernel_size}.")
@@ -222,6 +239,7 @@ def _ssim_compute(
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
         return reduce(ssim_idx, reduction), reduce(contrast_sensitivity, reduction)
 
+    print("ENDDDDDD")
     return reduce(ssim_idx, reduction)
 
 
@@ -274,7 +292,7 @@ def structural_similarity_index_measure(
         >>> structural_similarity_index_measure(preds, target)
         tensor(0.9219)
     """
-    preds, target = _ssim_update(preds, target, len(kernel_size))
+    preds, target = _ssim_update(preds, target)
     return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
 
 
