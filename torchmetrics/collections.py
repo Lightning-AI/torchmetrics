@@ -141,14 +141,9 @@ class MetricCollection(nn.ModuleDict):
         # Use compute groups if already initialized and checked
         if self._groups_checked:
             for _, cg in self._groups.items():
+                # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
-                # copy the state to the remaining metrics in the compute group
-                for i in range(1, len(cg)):
-                    mi = getattr(self, cg[i])
-                    for state in m0._defaults:
-                        setattr(mi, state, getattr(m0, state))
-
         else:  # the first update always do per metric to form compute groups
             for _, m in self.items(keep_base=True):
                 m_kwargs = m._filter_kwargs(**kwargs)
@@ -215,6 +210,15 @@ class MetricCollection(nn.ModuleDict):
 
     def compute(self) -> Dict[str, Any]:
         """Compute the result for each metric in the collection."""
+        if self._enable_compute_groups and self._groups_checked:
+            for _, cg in self._groups.items():
+                m0 = getattr(self, cg[0])
+                # copy the state to the remaining metrics in the compute group
+                for i in range(1, len(cg)):
+                    mi = getattr(self, cg[i])
+                    for state in m0._defaults:
+                        setattr(mi, state, getattr(m0, state))
+
         return {k: m.compute() for k, m in self.items()}
 
     def reset(self) -> None:
