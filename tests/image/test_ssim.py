@@ -34,11 +34,19 @@ for size, channel, coef, multichannel, dtype in [
     (14, 1, 0.7, False, torch.double),
     (15, 3, 0.6, True, torch.float64),
 ]:
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
+    preds2d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(
         Input(
-            preds=preds,
-            target=preds * coef,
+            preds=preds2d,
+            target=preds2d * coef,
+            multichannel=multichannel,
+        )
+    )
+    preds3d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, size, dtype=dtype)
+    _inputs.append(
+        Input(
+            preds=preds3d,
+            target=preds3d * coef,
             multichannel=multichannel,
         )
     )
@@ -52,16 +60,19 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
         sk_preds = sk_preds[:, :, :, 0]
         sk_target = sk_target[:, :, :, 0]
 
-    return structural_similarity(
-        sk_target,
-        sk_preds,
-        data_range=data_range,
-        multichannel=multichannel,
-        gaussian_weights=True,
-        win_size=kernel_size,
-        sigma=1.5,
-        use_sample_covariance=False,
-    )
+    results = torch.zeros(sk_preds.shape[0])
+    for i in range(sk_preds.shape[0]):
+        results[i] = structural_similarity(
+            sk_target[i],
+            sk_preds[i],
+            data_range=data_range,
+            multichannel=multichannel,
+            gaussian_weights=True,
+            win_size=kernel_size,
+            sigma=1.5,
+            use_sample_covariance=False,
+        )
+    return results
 
 
 @pytest.mark.parametrize(
@@ -70,7 +81,6 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
 )
 @pytest.mark.parametrize("kernel_size", [5, 11])
 class TestSSIM(MetricTester):
-    atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
@@ -81,7 +91,7 @@ class TestSSIM(MetricTester):
             target,
             StructuralSimilarityIndexMeasure,
             partial(_sk_ssim, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
+            metric_args={"data_range": 1.0, "kernel_size": kernel_size},
             dist_sync_on_step=dist_sync_on_step,
         )
 
@@ -91,7 +101,7 @@ class TestSSIM(MetricTester):
             target,
             structural_similarity_index_measure,
             partial(_sk_ssim, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
+            metric_args={"data_range": 1.0, "kernel_size": kernel_size},
         )
 
     # SSIM half + cpu does not work due to missing support in torch.log

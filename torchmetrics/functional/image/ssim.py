@@ -86,7 +86,7 @@ def _3d_gaussian_kernel(
     gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
     gaussian_kernel_z = _gaussian(kernel_size[2], sigma[2], dtype, device)
-    kernel_xy = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_z)  # (kernel_size, 1) * (1, kernel_size)
+    kernel_xy = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
     kernel = torch.mul(kernel_xy, gaussian_kernel_z.expand(kernel_size[0], kernel_size[1], kernel_size[2]))
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1], kernel_size[2])
 
@@ -149,12 +149,7 @@ def _ssim_compute(
         >>> _ssim_compute(preds, target)
         tensor(0.9219)
     """
-    print("Starting....")
-    shape = preds.shape
-    print(preds.shape)
     is_3d = len(preds.shape) == 5
-    if is_3d:
-        print("##################### IS 3D ##################### IS 3D")
 
     if not isinstance(kernel_size, Sequence):
         if is_3d:
@@ -238,7 +233,6 @@ def _ssim_compute(
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
         return reduce(ssim_idx, reduction), reduce(contrast_sensitivity, reduction)
 
-    print("ENDDDDDD")
     return reduce(ssim_idx, reduction)
 
 
