@@ -33,7 +33,7 @@ except RuntimeError:
     pass
 
 NUM_PROCESSES = 2
-NUM_BATCHES = 10
+NUM_BATCHES = 8
 BATCH_SIZE = 32
 NUM_CLASSES = 5
 EXTRA_DIM = 3
@@ -545,7 +545,7 @@ class MetricTester:
         metric = metric_module(**metric_args)
         if preds.is_floating_point():
             preds.requires_grad = True
-            out = metric(preds[0], target[0])
+            out = metric(preds[0, 0], target[0, 0])
 
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
@@ -553,7 +553,7 @@ class MetricTester:
             if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args), (preds[0].double(), target[0])
+                    partial(metric_functional, **metric_args), (preds[0, 0].double(), target[0, 0])
                 )
 
             # reset as else it will carry over to other tests
