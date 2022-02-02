@@ -26,7 +26,7 @@ jobs:
     pool: azure-gpus-spot
 
     container:
-      image: "pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime"
+      image: "pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel"
       options: "--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all --name ci-container -v /usr/bin/docker:/tmp/docker:ro"
 
     workspace:
