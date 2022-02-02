@@ -26,7 +26,7 @@ jobs:
     pool: azure-gpus-spot
 
     container:
-      image: "pytorch/pytorch:1.8.1-cuda10.2-cudnn7-runtime"
+      image: "pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime"
       options: "--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all --name ci-container -v /usr/bin/docker:/tmp/docker:ro"
 
     workspace:
@@ -52,8 +52,8 @@ jobs:
 
     - bash: |
         set -ex
-        sudo apt-get update
-        sudo apt-get install -y gcc cmake ffmpeg git libsndfile1
+        sudo apt-get update -qq --fix-missing
+        sudo apt-get install -y gcc cmake ffmpeg git libsndfile1 --no-install-recommends
         # python -m pip install "pip==20.1"
         pip install --requirement ./requirements/devel.txt --upgrade-strategy only-if-needed
         pip install mkl-service==2.4.0  # needed for the gpu multiprocessing
