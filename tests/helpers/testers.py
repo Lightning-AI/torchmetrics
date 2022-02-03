@@ -33,7 +33,7 @@ except RuntimeError:
     pass
 
 NUM_PROCESSES = 2
-NUM_BATCHES = 8
+NUM_BATCHES = 8  # Need to be divisible with the number of processes
 BATCH_SIZE = 32
 NUM_CLASSES = 5
 EXTRA_DIM = 3
