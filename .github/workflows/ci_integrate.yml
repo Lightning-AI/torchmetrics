@@ -52,6 +52,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
         offset: "integrate"
 
+    - name: Freeze Numpy (hotfix)
+      if: matrix.requires == 'latest'
+      run: pip install -q "numpy==1.20.0"  # temp fix for cypesq
+
     - name: Install dependencies
       run: |
         pip --version
