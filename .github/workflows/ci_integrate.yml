@@ -65,7 +65,8 @@ jobs:
       run: |
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
-        pip install --requirement requirements/devel.txt  -r requirements/integrate.txt --upgrade --find-links $PYTORCH_URL
+        pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
+        pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed --find-links $PYTORCH_URL
         pip uninstall -y torchmetrics
         pip list
 
