@@ -41,10 +41,7 @@ from torchmetrics.functional.image.ssim import (
     ssim,
     structural_similarity_index_measure,
 )
-from torchmetrics.functional.image.uqi import (
-    uqi,
-    universal_image_quality_index,
-)
+from torchmetrics.functional.image.uqi import universal_image_quality_index, uqi
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
