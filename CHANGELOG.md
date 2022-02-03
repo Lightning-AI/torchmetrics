@@ -7,30 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2022-MM-DD
-
-### Added
-
+## [0.7.1] - 2022-02-03
 
 ### Changed
 
 - Used `torch.bucketize` in calibration error when `torch>1.8` for faster computations ([#769](https://github.com/PyTorchLightning/metrics/pull/769))
-
-### Deprecated
-
-
-### Removed
-
+- Improve mAP performance ([#742](https://github.com/PyTorchLightning/metrics/pull/742))
 
 ### Fixed
 
 - Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
-
-
 - Fixed Matthews correlation coefficient when the denominator is 0 ([#781](https://github.com/PyTorchLightning/metrics/pull/781))
-
-
-- Improve mAP performance ([#742](https://github.com/PyTorchLightning/metrics/pull/742))
 
 
 ## [0.7.0] - 2022-01-17
