@@ -145,8 +145,8 @@ class TestPIT(MetricTester):
             return permutation_invariant_training(preds, target, metric_func, eval_func)[0]
 
         self.run_differentiability_test(
-            preds=preds,
-            target=target,
+            preds=preds.unsqueeze(0),
+            target=target.unsqueeze(0),
             metric_module=PermutationInvariantTraining,
             metric_functional=pit_diff,
             metric_args={"metric_func": metric_func, "eval_func": eval_func},
