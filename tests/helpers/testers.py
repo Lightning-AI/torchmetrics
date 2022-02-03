@@ -59,7 +59,7 @@ def setup_ddp(rank, world_size):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-6, key: Optional[str] = None) -> None:
+def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-5, key: Optional[str] = None) -> None:
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(pl_result, Tensor):
