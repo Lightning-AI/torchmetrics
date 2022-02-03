@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple, Union
 
 import torch
 from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import functional as F
-from typing_extensions import Literal
 
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
@@ -209,7 +208,7 @@ def universal_image_quality_index(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import structural_similarity_index_measure
+        >>> from torchmetrics.functional import universal_image_quality_index
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> universal_image_quality_index(preds, target)

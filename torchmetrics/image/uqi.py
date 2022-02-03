@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple
+from typing import Any, List, Optional, Sequence
 
 import torch
 from deprecate import deprecated, void
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics.functional.image.uqi import _uqi_compute, _uqi_update
 from torchmetrics.metric import Metric
@@ -47,7 +46,7 @@ class UniversalImageQualityIndex(Metric):
         >>> target = preds * 0.75
         >>> uqi = UniversalImageQualityIndex()
         >>> uqi(preds, target)
-        tensor(0.9219)
+        tensor(0.9216)
     """
 
     preds: List[Tensor]
@@ -113,7 +112,7 @@ class UQI(UniversalImageQualityIndex):
         >>> target = preds * 0.75
         >>> uqi = UQI()
         >>> uqi(preds, target)
-        tensor(0.9219)
+        tensor(0.9216)
     """
 
     @deprecated(target=UniversalImageQualityIndex, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)

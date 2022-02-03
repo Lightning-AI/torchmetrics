@@ -178,6 +178,8 @@ __all__ = [
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
+    "UQI",
+    "UniversalImageQualityIndex",
     "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",
