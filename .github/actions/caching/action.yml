@@ -63,5 +63,7 @@ runs:
       path: $TRANSFORMERS_CACHE
       key: ${{ inputs.os }}-cache-transformers
 
-  - run: ls -l $TRANSFORMERS_CACHE
+  - run: |
+      mkdir -p $TRANSFORMERS_CACHE
+      ls -l $TRANSFORMERS_CACHE
     shell: bash

@@ -98,6 +98,9 @@ jobs:
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip list
 
+    # FIXME
+    - run: echo "$TRANSFORMERS_CACHE"
+
     - name: Tests
       env:
         TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
