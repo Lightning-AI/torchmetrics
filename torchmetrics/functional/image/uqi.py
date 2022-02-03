@@ -70,8 +70,8 @@ def _gaussian_kernel(
 
 
 def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Universal Image Quality Index. Checks for same shape
-    and type of the input tensors.
+    """Updates and returns variables required to compute Universal Image Quality Index. Checks for same shape and
+    type of the input tensors.
 
     Args:
         preds: Predicted tensor
@@ -160,7 +160,7 @@ def _uqi_compute(
     sigma_target_sq = output_list[3] - mu_target_sq
     sigma_pred_target = output_list[4] - mu_pred_target
 
-    upper = 2 * sigma_pred_target 
+    upper = 2 * sigma_pred_target
     lower = sigma_pred_sq + sigma_target_sq
 
     uqi_idx = ((2 * mu_pred_target) * upper) / ((mu_pred_sq + mu_target_sq) * lower)
@@ -215,10 +215,10 @@ def universal_image_quality_index(
         tensor(0.9216)
 
     References:
-    [1] Zhou Wang and A. C. Bovik, "A universal image quality index," in IEEE Signal Processing Letters, vol. 9, 
+    [1] Zhou Wang and A. C. Bovik, "A universal image quality index," in IEEE Signal Processing Letters, vol. 9,
     no. 3, pp. 81-84, March 2002, doi: 10.1109/97.995823.
     [2] Zhou Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, "Image quality assessment: from error visibility
-    to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004, 
+    to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004,
     doi: 10.1109/TIP.2003.819861.
     """
     preds, target = _uqi_update(preds, target)
