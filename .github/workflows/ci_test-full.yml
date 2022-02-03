@@ -92,6 +92,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip --version
+        pip install -q "numpy==1.20.0"  # temp fix for cypesq
         pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
