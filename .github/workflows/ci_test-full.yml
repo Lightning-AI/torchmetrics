@@ -102,6 +102,7 @@ jobs:
       env:
         TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
       run: |
+        echo "$TRANSFORMERS_CACHE"
         phmdoctest README.md --outfile tests/test_readme.py
         python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
 
