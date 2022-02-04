@@ -97,6 +97,8 @@ jobs:
         python ./.github/assistant.py prune-packages requirements/image.txt torchvision
         python ./.github/assistant.py prune-packages requirements/detection.txt torchvision
         pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
+        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+        pip install -q "Pillow<9.0"  # It messes with torchvision
         pip install --requirement requirements.txt --quiet
         pip install --requirement requirements/devel.txt --quiet
         pip list
