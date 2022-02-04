@@ -15,7 +15,10 @@ from collections import namedtuple
 
 import torch
 
+from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
+
+seed_all(1)
 
 Input = namedtuple("Input", ["preds", "target"])
 
