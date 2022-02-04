@@ -41,7 +41,7 @@ Project Management and Decision Making
 **************************************
 
 The decision what goes into a release is governed by the :ref:`staff contributors and leaders <governance>` of
-Torchmetrics development. Whenever possible, discussion happens publicly on GitHub and includes the whole community.
+TorchMetrics development. Whenever possible, discussion happens publicly on GitHub and includes the whole community.
 When a consensus is reached, staff and core contributors assign milestones and labels to the issue and/or pull request
 and start tracking the development. It is possible that priorities change over time.
 
