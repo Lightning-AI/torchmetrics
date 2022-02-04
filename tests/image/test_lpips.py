@@ -70,7 +70,7 @@ class TestLPIPS(MetricTester):
         )
 
     # LPIPS half + cpu does not work due to missing support in torch.min
-    @pytest.mark.xfail(reason="PearsonCorrcoef metric does not support cpu + half precision")
+    @pytest.mark.xfail(reason="PearsonCorrCoef metric does not support cpu + half precision")
     def test_lpips_half_cpu(self, net_type):
         """test for half + cpu support."""
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)

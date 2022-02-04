@@ -427,6 +427,9 @@ def _errors_test_functional_metric(
 
 
 class RetrievalMetricTester(MetricTester):
+
+    atol: float = 1e-6
+
     def run_class_metric_test(
         self,
         ddp: bool,

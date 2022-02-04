@@ -73,7 +73,7 @@ def _sk_metric(preds, target):
         (_specific_input.preds, _specific_input.target),
     ],
 )
-class TestSpearmanCorrcoef(MetricTester):
+class TestSpearmanCorrCoef(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])

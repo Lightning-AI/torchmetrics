@@ -60,7 +60,7 @@ def setup_ddp(rank, world_size):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-7, key: Optional[str] = None) -> None:
+def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
     """Utility function for recursively asserting that two results are within a certain tolerance."""
     # single output compare
     if isinstance(pl_result, Tensor):
@@ -118,7 +118,7 @@ def _class_test(
     metric_args: dict = None,
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
-    atol: float = 1e-7,
+    atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
@@ -254,7 +254,7 @@ def _functional_test(
     metric_functional: Callable,
     sk_metric: Callable,
     metric_args: dict = None,
-    atol: float = 1e-7,
+    atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
     **kwargs_update,
@@ -338,7 +338,7 @@ class MetricTester:
     `self.run_metric_test` is called inside.
     """
 
-    atol = 1e-7
+    atol = 1e-8
     poolSize: int
     pool: Pool
 
