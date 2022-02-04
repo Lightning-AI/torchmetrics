@@ -49,7 +49,6 @@ def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, k: int = None):
 
 
 class TestNDCG(RetrievalMetricTester):
-
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])

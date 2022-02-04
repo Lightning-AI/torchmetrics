@@ -103,7 +103,7 @@ jobs:
         TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
-        python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50 "$PYTEST_TIMEOUT"
+        python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50 $PYTEST_TIMEOUT
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
