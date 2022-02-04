@@ -105,8 +105,8 @@ class TestAccuracies(MetricTester):
 
     def test_accuracy_differentiability(self, preds, target, subset_accuracy):
         self.run_differentiability_test(
-            preds=preds.unsqueeze(0),
-            target=target.unsqueeze(0),
+            preds=preds,
+            target=target,
             metric_module=Accuracy,
             metric_functional=accuracy,
             metric_args={"threshold": THRESHOLD, "subset_accuracy": subset_accuracy},
