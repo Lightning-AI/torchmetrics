@@ -32,7 +32,6 @@ jobs:
           - {python-version: 3.7, pytorch-version: '1.3'}
     env:
       PYTEST_ARTEFACT: test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
-      TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 75
