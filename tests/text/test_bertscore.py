@@ -41,7 +41,7 @@ _METRICS = ["precision", "recall", "f1"]
 MODEL_NAME = "albert-base-v2"
 
 
-def _assert_list(preds: Any, targets: Any, threshold: float = 1e-8):
+def _assert_list(preds: Any, targets: Any, threshold: float = 1e-7):
     """Assert two lists are equal."""
     assert np.allclose(preds, targets, atol=threshold, equal_nan=True)
 
