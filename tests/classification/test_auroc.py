@@ -86,7 +86,6 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average="macr
     )
 
 
-@pytest.mark.parametrize("average", ["macro", "weighted", "micro"])
 @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
@@ -99,6 +98,7 @@ def _sk_auroc_multilabel_multidim_prob(preds, target, num_classes, average="macr
     ],
 )
 class TestAUROC(MetricTester):
+    @pytest.mark.parametrize("average", ["macro", "weighted", "micro"])
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_auroc(self, preds, target, sk_metric, num_classes, average, max_fpr, ddp, dist_sync_on_step):
@@ -124,6 +124,7 @@ class TestAUROC(MetricTester):
             metric_args={"num_classes": num_classes, "average": average, "max_fpr": max_fpr},
         )
 
+    @pytest.mark.parametrize("average", ["macro", "weighted", "micro"])
     def test_auroc_functional(self, preds, target, sk_metric, num_classes, average, max_fpr):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:
@@ -145,7 +146,7 @@ class TestAUROC(MetricTester):
             metric_args={"num_classes": num_classes, "average": average, "max_fpr": max_fpr},
         )
 
-    def test_auroc_differentiability(self, preds, target, sk_metric, num_classes, average, max_fpr):
+    def test_auroc_differentiability(self, preds, target, sk_metric, num_classes, max_fpr):
         # max_fpr different from None is not support in multi class
         if max_fpr is not None and num_classes != 1:
             pytest.skip("max_fpr parameter not support for multi class or multi label")
@@ -154,16 +155,12 @@ class TestAUROC(MetricTester):
         if max_fpr is not None and _TORCH_LOWER_1_6:
             pytest.skip("requires torch v1.6 or higher to test max_fpr argument")
 
-        # average='micro' only supported for multilabel
-        if average == "micro" and preds.ndim > 2 and preds.ndim == target.ndim + 1:
-            pytest.skip("micro argument only support for multilabel input")
-
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=AUROC,
             metric_functional=auroc,
-            metric_args={"num_classes": num_classes, "average": average, "max_fpr": max_fpr},
+            metric_args={"num_classes": num_classes, "max_fpr": max_fpr},
         )
 
 
