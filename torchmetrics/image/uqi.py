@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Optional, Sequence, Literal
 
 import torch
 from torch import Tensor
@@ -56,7 +56,7 @@ class UniversalImageQualityIndex(Metric):
         self,
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
-        reduction: str = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
         data_range: Optional[float] = None,
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,

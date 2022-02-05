@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple, Union, Literal
 
 import torch
 from torch import Tensor
@@ -96,7 +96,7 @@ def _uqi_compute(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
     data_range: Optional[float] = None,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
@@ -173,7 +173,7 @@ def universal_image_quality_index(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
     data_range: Optional[float] = None,
 ) -> Tensor:
     """Universal Image Quality Index.
