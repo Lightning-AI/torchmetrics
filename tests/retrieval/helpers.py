@@ -369,7 +369,7 @@ def _errors_test_class_metric(
         indexes: torch tensor with indexes
         preds: torch tensor with predictions
         target: torch tensor with targets
-        metric_class: lightning metric class that should be tested
+        metric_class: metric class that should be tested
         message: message that exception should return
         metric_args: arguments for class initialization
         exception_type: callable function that is used for comparison
@@ -396,7 +396,7 @@ def _errors_test_functional_metric(
     Args:
         preds: torch tensor with predictions
         target: torch tensor with targets
-        metric_functional: lightning functional metric that should be tested
+        metric_functional: functional metric that should be tested
         message: message that exception should return
         exception_type: callable function that is used for comparison
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and

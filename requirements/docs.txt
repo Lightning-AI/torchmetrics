@@ -12,4 +12,4 @@ sphinx-togglebutton>=0.2
 sphinx-copybutton>=0.3
 
 # integrations
-pytorch-lightning>=1.1
+-r integrate.txt
