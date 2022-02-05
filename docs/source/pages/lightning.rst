@@ -50,7 +50,7 @@ The example below shows how to use a metric in your `LightningModule <https://py
 Logging TorchMetrics
 ********************
 
-:class:`~torchmetrics.Metric` objects can also be directly logged in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method. Lightning will log
+When :class:`~torchmetrics.Metric` objects, which return a scalar tensor,  are logged directly in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method. Lightning will log
 the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``.
 If ``on_epoch`` is True, the logger automatically logs the end of epoch metric value by calling
 ``.compute()``.

@@ -13,15 +13,13 @@
 # limitations under the License.
 from typing import Any, Callable, Optional
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
-__doctest_requires__ = {("SignalDistortionRatio", "SDR"): ["fast_bss_eval"]}
+__doctest_requires__ = {("SignalDistortionRatio"): ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
@@ -154,50 +152,6 @@ class SignalDistortionRatio(Metric):
     def compute(self) -> Tensor:
         """Computes average SDR."""
         return self.sum_sdr / self.total
-
-
-class SDR(SignalDistortionRatio):
-    r"""Signal to Distortion Ratio (SDR)
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.SignalDistortionRatio`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> g = torch.manual_seed(1)
-        >>> sdr = SDR()
-        >>> sdr(torch.randn(8000), torch.randn(8000))
-        tensor(-12.0589)
-        >>> # use with pit
-        >>> from torchmetrics.audio import PermutationInvariantTraining
-        >>> from torchmetrics.functional.audio import signal_distortion_ratio
-        >>> pit = PermutationInvariantTraining(signal_distortion_ratio, 'max')
-        >>> pit(torch.randn(4, 2, 8000), torch.randn(4, 2, 8000))
-        tensor(-11.6051)
-    """
-
-    @deprecated(target=SignalDistortionRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        use_cg_iter: Optional[int] = None,
-        filter_length: int = 512,
-        zero_mean: bool = False,
-        load_diag: Optional[float] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
-    ) -> None:
-        void(
-            use_cg_iter,
-            filter_length,
-            zero_mean,
-            load_diag,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
-        )
 
 
 class ScaleInvariantSignalDistortionRatio(Metric):
