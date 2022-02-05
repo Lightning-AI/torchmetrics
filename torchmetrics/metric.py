@@ -36,7 +36,6 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
@@ -98,7 +97,6 @@ class Metric(Module, ABC):
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
-        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
         self._device = torch.device("cpu")
 
         if compute_on_step is not None:
@@ -403,9 +401,7 @@ class Metric(Module, ABC):
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
-        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
-        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
-            self._computed = None
+        self._computed = None
 
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
