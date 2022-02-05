@@ -464,12 +464,7 @@ def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_inde
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
 
 
-@pytest.mark.parametrize(
-    "metric_class, metric_fn",
-    [
-        (F1Score, f1_score_pl)
-    ]
-)
+@pytest.mark.parametrize("metric_class, metric_fn", [(F1Score, f1_score_pl)])
 @pytest.mark.parametrize(
     "preds, target, average, ignore_index, num_classes, expected",
     [
