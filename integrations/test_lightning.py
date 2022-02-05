@@ -13,14 +13,12 @@
 # limitations under the License.
 from unittest import mock
 
-import pytest
 import torch
 from pytorch_lightning import LightningModule, Trainer
 from torch import tensor
 from torch.utils.data import DataLoader
 
 from integrations.lightning.boring_model import BoringModel, RandomDataset
-from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3
 from torchmetrics import Accuracy, AveragePrecision, MetricCollection, SumMetric
 
 
@@ -63,7 +61,6 @@ def test_metric_lightning(tmpdir):
     trainer.fit(model)
 
 
-@pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_1_3, reason="test requires lightning v1.3 or higher")
 def test_metrics_reset(tmpdir):
     """Tests that metrics are reset correctly after the end of the train/val/test epoch.
 
@@ -222,6 +219,8 @@ def test_metric_lightning_log(tmpdir):
 
 
 def test_metric_collection_lightning_log(tmpdir):
+    """Test that MetricCollection works with Lightning modules."""
+
     class TestModel(BoringModel):
         def __init__(self):
             super().__init__()
@@ -258,40 +257,41 @@ def test_metric_collection_lightning_log(tmpdir):
     assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff)
 
 
-# todo: need to be fixed
-# def test_scriptable(tmpdir):
-#     class TestModel(BoringModel):
-#         def __init__(self):
-#             super().__init__()
-#             # the metric is not used in the module's `forward`
-#             # so the module should be exportable to TorchScript
-#             self.metric = SumMetric()
-#             self.sum = 0.0
-#
-#         def training_step(self, batch, batch_idx):
-#             x = batch
-#             self.metric(x.sum())
-#             self.sum += x.sum()
-#             self.log("sum", self.metric, on_epoch=True, on_step=False)
-#             return self.step(x)
-#
-#     model = TestModel()
-#     trainer = Trainer(
-#         default_root_dir=tmpdir,
-#         limit_train_batches=2,
-#         limit_val_batches=2,
-#         max_epochs=1,
-#         log_every_n_steps=1,
-#         weights_summary=None,
-#         logger=False,
-#         checkpoint_callback=False,
-#     )
-#     trainer.fit(model)
-#     rand_input = torch.randn(10, 32)
-#
-#     script_model = model.to_torchscript()
-#
-#     # test that we can still do inference
-#     output = model(rand_input)
-#     script_output = script_model(rand_input)
-#     assert torch.allclose(output, script_output)
+def test_scriptable(tmpdir):
+    """Test that lightning modules can still be scripted even if metrics cannot."""
+
+    class TestModel(BoringModel):
+        def __init__(self):
+            super().__init__()
+            # the metric is not used in the module's `forward`
+            # so the module should be exportable to TorchScript
+            self.metric = SumMetric()
+            self.sum = 0.0
+
+        def training_step(self, batch, batch_idx):
+            x = batch
+            self.metric(x.sum())
+            self.sum += x.sum()
+            self.log("sum", self.metric, on_epoch=True, on_step=False)
+            return self.step(x)
+
+    model = TestModel()
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=2,
+        max_epochs=1,
+        log_every_n_steps=1,
+        weights_summary=None,
+        logger=False,
+        checkpoint_callback=False,
+    )
+    trainer.fit(model)
+    rand_input = torch.randn(10, 32)
+
+    script_model = model.to_torchscript()
+
+    # test that we can still do inference
+    output = model(rand_input)
+    script_output = script_model(rand_input)
+    assert torch.allclose(output, script_output)
