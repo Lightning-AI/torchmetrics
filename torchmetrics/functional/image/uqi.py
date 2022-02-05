@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Sequence, Tuple, Union
-from typing_extensions import Literal
 
 import torch
 from torch import Tensor
 from torch.nn import functional as F
+from typing_extensions import Literal
 
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape

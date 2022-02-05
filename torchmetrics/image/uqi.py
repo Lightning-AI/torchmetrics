@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, List, Optional, Sequence
-from typing_extensions import Literal
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.image.uqi import _uqi_compute, _uqi_update
 from torchmetrics.metric import Metric
