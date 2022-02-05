@@ -47,8 +47,6 @@ from torchmetrics.classification import (  # noqa: E402
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
-    PSNR,
-    SSIM,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     StructuralSimilarityIndexMeasure,
@@ -136,7 +134,6 @@ __all__ = [
     "PermutationInvariantTraining",
     "Precision",
     "PrecisionRecallCurve",
-    "PSNR",
     "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
@@ -157,7 +154,6 @@ __all__ = [
     "SpearmanCorrCoef",
     "Specificity",
     "SQuAD",
-    "SSIM",
     "StructuralSimilarityIndexMeasure",
     "StatScores",
     "SumMetric",
