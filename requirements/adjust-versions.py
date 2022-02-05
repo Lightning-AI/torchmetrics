@@ -21,7 +21,8 @@ from packaging.version import Version
 
 VERSIONS = [
     dict(torch="1.11.0", torchvision="0.12.0", torchtext=""),  # nightly
-    dict(torch="1.10.1", torchvision="0.11.2", torchtext="0.11.1"),  # stable
+    dict(torch="1.10.2", torchvision="0.11.3", torchtext="0.11.2"),  # stable
+    dict(torch="1.10.1", torchvision="0.11.2", torchtext="0.11.1"),
     dict(torch="1.10.0", torchvision="0.11.1", torchtext="0.11.0"),
     dict(torch="1.9.1", torchvision="0.10.1", torchtext="0.10.1"),
     dict(torch="1.9.0", torchvision="0.10.0", torchtext="0.10.0"),

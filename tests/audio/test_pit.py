@@ -24,7 +24,11 @@ from torch import Tensor
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.audio import PermutationInvariantTraining
-from torchmetrics.functional import permutation_invariant_training, scale_invariant_signal_distortion_ratio, snr
+from torchmetrics.functional import (
+    permutation_invariant_training,
+    scale_invariant_signal_distortion_ratio,
+    signal_noise_ratio,
+)
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -96,7 +100,7 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
     return metric_func(preds, target)[0].mean()
 
 
-snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=snr, eval_func="max")
+snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=signal_noise_ratio, eval_func="max")
 si_sdr_pit_scipy = partial(
     naive_implementation_pit_scipy, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max"
 )
@@ -105,9 +109,9 @@ si_sdr_pit_scipy = partial(
 @pytest.mark.parametrize(
     "preds, target, sk_metric, metric_func, eval_func",
     [
-        (inputs1.preds, inputs1.target, snr_pit_scipy, snr, "max"),
+        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "max"),
         (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, snr, "max"),
+        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, "max"),
         (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
     ],
 )
@@ -166,19 +170,19 @@ class TestPIT(MetricTester):
 
 
 def test_error_on_different_shape() -> None:
-    metric = PermutationInvariantTraining(snr, "max")
+    metric = PermutationInvariantTraining(signal_noise_ratio, "max")
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(3, 3, 10), torch.randn(3, 2, 10))
 
 
 def test_error_on_wrong_eval_func() -> None:
-    metric = PermutationInvariantTraining(snr, "xxx")
+    metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
-    metric = PermutationInvariantTraining(snr, "max")
+    metric = PermutationInvariantTraining(signal_noise_ratio, "max")
     with pytest.raises(ValueError, match="Inputs must be of shape *"):
         metric(torch.randn(3), torch.randn(3))
 

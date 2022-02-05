@@ -25,7 +25,7 @@ import requests
 
 _REQUEST_TIMEOUT = 10
 _PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
-_PKG_WIDE_SUBPACKAGES = ("utilities",)
+_PKG_WIDE_SUBPACKAGES = ("utilities", "helpers")
 LUT_PYTHON_TORCH = {
     "3.8": "1.4",
     "3.9": "1.7.1",

@@ -238,13 +238,24 @@ def test_empty_ground_truths():
 _gpu_test_condition = not torch.cuda.is_available()
 
 
+def _move_to_gpu(input):
+    for x in input:
+        for key in x.keys():
+            if torch.is_tensor(x[key]):
+                x[key] = x[key].to("cuda")
+    return input
+
+
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
 def test_map_gpu():
     """Test predictions on single gpu."""
     metric = MeanAveragePrecision()
     metric = metric.to("cuda")
-    metric.update(_inputs.preds[0], _inputs.target[0])
+    preds = _inputs.preds[0]
+    targets = _inputs.target[0]
+
+    metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
     metric.compute()
 
 

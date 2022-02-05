@@ -15,7 +15,6 @@
 from typing import Optional
 
 import torch
-from deprecate import deprecated, void
 
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE, _TORCH_GREATER_EQUAL_1_8
 
@@ -40,11 +39,11 @@ else:
     toeplitz_conjugate_gradient = None
     compute_stats = None
     _normalize = None
-    __doctest_skip__ = ["signal_distortion_ratio", "sdr"]
+    __doctest_skip__ = ["signal_distortion_ratio"]
 
 from torch import Tensor
 
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -194,29 +193,6 @@ def signal_distortion_ratio(
     ratio = coh / (1 - coh)
     val = 10.0 * torch.log10(ratio)
     return val
-
-
-@deprecated(target=signal_distortion_ratio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-def sdr(
-    preds: Tensor,
-    target: Tensor,
-    use_cg_iter: Optional[int] = None,
-    filter_length: int = 512,
-    zero_mean: bool = False,
-    load_diag: Optional[float] = None,
-) -> Tensor:
-    r"""Signal to Distortion Ratio (SDR)
-
-    .. deprecated:: v0.7
-        Use :func:`torchmetrics.functional.signal_distortion_ratio`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> g = torch.manual_seed(1)
-        >>> sdr(torch.randn(8000), torch.randn(8000))
-        tensor(-12.0589)
-    """
-    return void(preds, target, use_cg_iter, filter_length, zero_mean, load_diag)
 
 
 def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
