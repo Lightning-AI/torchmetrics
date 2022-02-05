@@ -13,11 +13,12 @@ jobs:
 
       - name: Install pkg
         run: |
-          pip install check-jsonschema
+          pip install "check-jsonschema>=0.10"
 
       - name: GH Workflows
         run: |
-          check-jsonschema .github/workflows/*.yml --schemafile "https://json.schemastore.org/github-workflow"
+          check-jsonschema .github/workflows/*.yml --builtin-schema "github-workflows"
+          check-jsonschema .github/actions/*/*.yml --builtin-schema "github-actions"
 
       - name: Azure Pipelines
         run: |
