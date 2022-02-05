@@ -21,7 +21,7 @@ from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
 from torch import Tensor
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional import signal_noise_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
@@ -32,6 +32,7 @@ TIME = 100
 
 Input = namedtuple("Input", ["preds", "target"])
 
+BATCH_SIZE = 2
 inputs = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
