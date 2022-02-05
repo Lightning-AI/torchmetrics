@@ -96,5 +96,3 @@ class UniversalImageQualityIndex(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range)
-
-

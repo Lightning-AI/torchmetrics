@@ -222,5 +222,3 @@ def universal_image_quality_index(
     """
     preds, target = _uqi_update(preds, target)
     return _uqi_compute(preds, target, kernel_size, sigma, reduction, data_range)
-
-
