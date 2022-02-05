@@ -35,6 +35,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `PSNR`
 
 
+- Removed deprecated functions, and warnings in classification and regression ([#806](https://github.com/PyTorchLightning/metrics/pull/806))
+  * `FBeta`
+  * `F1`
+  * `Hinge`
+  * `IoU`
+  * `functional.iou`
+  * `MatthewsCorrcoef`
+  * `PearsonCorrcoef`
+  * `SpearmanCorrcoef`
+  * `functional.fbeta`
+  * `functional.f1`
+  * `functional.hinge`
+
+
+
 - Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/PyTorchLightning/metrics/pull/804))
   * `MAP`
   * `functional.pairwise.manhatten`

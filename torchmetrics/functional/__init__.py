@@ -22,10 +22,9 @@ from torchmetrics.functional.classification.calibration_error import calibration
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice_score
-from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta, fbeta_score
+from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
-from torchmetrics.functional.classification.hinge import hinge, hinge_loss
-from torchmetrics.functional.classification.iou import iou  # noqa: F401
+from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
@@ -95,12 +94,9 @@ __all__ = [
     "dice_score",
     "explained_variance",
     "extended_edit_distance",
-    "f1",
     "f1_score",
-    "fbeta",
     "fbeta_score",
     "hamming_distance",
-    "hinge",
     "hinge_loss",
     "image_gradients",
     "jaccard_index",
