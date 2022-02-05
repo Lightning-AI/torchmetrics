@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pit import permutation_invariant_training, pit, pit_permutate
-from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, sdr, signal_distortion_ratio
-from torchmetrics.functional.audio.si_sdr import si_sdr
-from torchmetrics.functional.audio.si_snr import si_snr
-from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio, snr
+from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
+from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
@@ -47,7 +45,6 @@ from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
-from torchmetrics.functional.pairwise.manhatten import pairwise_manhatten_distance
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
@@ -119,10 +116,8 @@ __all__ = [
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",
     "pairwise_manhattan_distance",
-    "pairwise_manhatten_distance",
     "pearson_corrcoef",
     "permutation_invariant_training",
-    "pit",
     "pit_permutate",
     "precision",
     "precision_recall",
@@ -142,13 +137,9 @@ __all__ = [
     "roc",
     "rouge_score",
     "sacre_bleu_score",
-    "sdr",
     "signal_distortion_ratio",
-    "si_sdr",
     "scale_invariant_signal_distortion_ratio",
-    "si_snr",
     "scale_invariant_signal_noise_ratio",
-    "snr",
     "signal_noise_ratio",
     "spearman_corrcoef",
     "specificity",
