@@ -15,12 +15,11 @@ from typing import Any, Callable, List, Optional, Union
 
 import numpy as np
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from torch.autograd import Function
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_info, rank_zero_warn
+from torchmetrics.utilities import rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
@@ -289,36 +288,3 @@ class FrechetInceptionDistance(Metric):
 
         # compute fid
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
-
-
-class FID(FrechetInceptionDistance):
-    r"""
-    Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.image.FrechetInceptionDistance`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
-        >>> fid = FID(feature=64)
-        >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> fid.update(imgs_dist1, real=True)
-        >>> fid.update(imgs_dist2, real=False)
-        >>> fid.compute()
-        tensor(12.7202)
-
-    """
-
-    @deprecated(target=FrechetInceptionDistance, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        feature: Union[int, torch.nn.Module] = 2048,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
-    ) -> None:
-        void(feature, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

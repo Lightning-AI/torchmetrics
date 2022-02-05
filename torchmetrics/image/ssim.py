@@ -13,14 +13,12 @@
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Tuple
 
-import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -45,6 +43,7 @@ class StructuralSimilarityIndexMeasure(Metric):
 
     Example:
         >>> from torchmetrics import StructuralSimilarityIndexMeasure
+        >>> import torch
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure()
@@ -108,36 +107,6 @@ class StructuralSimilarityIndexMeasure(Metric):
         )
 
 
-class SSIM(StructuralSimilarityIndexMeasure):
-    """Computes Structual Similarity Index Measure (SSIM_).
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.StructuralSimilarityIndexMeasure`. Will be removed in v0.8.
-
-    Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> ssim = SSIM()
-        >>> ssim(preds, target)
-        tensor(0.9219)
-    """
-
-    @deprecated(target=StructuralSimilarityIndexMeasure, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
-        reduction: str = "elementwise_mean",
-        data_range: Optional[float] = None,
-        k1: float = 0.01,
-        k2: float = 0.03,
-        compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ) -> None:
-        void(kernel_size, sigma, reduction, data_range, k1, k2, compute_on_step, dist_sync_on_step, process_group)
-
-
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     """Computes `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure, which is a generalization of
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
@@ -165,6 +134,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     Example:
         >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+        >>> import torch
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure()

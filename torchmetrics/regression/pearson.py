@@ -14,12 +14,10 @@
 from typing import Any, List, Optional, Tuple
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute, _pearson_corrcoef_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 
 
 def _final_aggregation(
@@ -145,27 +143,3 @@ class PearsonCorrCoef(Metric):
             n_total = self.n_total
 
         return _pearson_corrcoef_compute(var_x, var_y, corr_xy, n_total)
-
-
-class PearsonCorrcoef(PearsonCorrCoef):
-    r"""
-    Computes `Pearson Correlation Coefficient`_:
-
-    Example:
-        >>> pearson = PearsonCorrcoef()
-        >>> pearson(torch.tensor([2.5, 0.0, 2, 8]), torch.tensor([3, -0.5, 2, 7]))
-        tensor(0.9849)
-
-    .. deprecated:: v0.7
-        Renamed in favor of :class:`torchmetrics.PearsonCorrCoef`. Will be removed in v0.8.
-
-    """
-
-    @deprecated(target=PearsonCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ) -> None:
-        void(compute_on_step, dist_sync_on_step, process_group)
