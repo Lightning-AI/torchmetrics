@@ -2,7 +2,7 @@ r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *  # noqa: F403
+from torchmetrics.__about__ import *  # noqa: F401, F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -146,7 +146,6 @@ __all__ = [
     "PermutationInvariantTraining",
     "Precision",
     "PrecisionRecallCurve",
-    "PSNR",
     "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
@@ -168,7 +167,6 @@ __all__ = [
     "SpearmanCorrCoef",
     "Specificity",
     "SQuAD",
-    "SSIM",
     "StructuralSimilarityIndexMeasure",
     "StatScores",
     "SumMetric",
