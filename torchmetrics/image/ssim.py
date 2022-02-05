@@ -43,6 +43,7 @@ class StructuralSimilarityIndexMeasure(Metric):
 
     Example:
         >>> from torchmetrics import StructuralSimilarityIndexMeasure
+        >>> import torch
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure()
@@ -133,6 +134,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     Example:
         >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+        >>> import torch
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure()
