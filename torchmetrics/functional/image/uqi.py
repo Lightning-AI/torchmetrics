@@ -14,7 +14,6 @@
 from typing import Optional, Sequence, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import functional as F
 
@@ -225,21 +224,3 @@ def universal_image_quality_index(
     return _uqi_compute(preds, target, kernel_size, sigma, reduction, data_range)
 
 
-@deprecated(target=universal_image_quality_index, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-def uqi(
-    preds: Tensor,
-    target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
-    data_range: Optional[float] = None,
-) -> Tensor:
-    """Computes Universal Image Quality Index.
-
-    Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> uqi(preds, target)
-        tensor(0.9216)
-    """
-    return void(preds, target, kernel_size, sigma, reduction, data_range)

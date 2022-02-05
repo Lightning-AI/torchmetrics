@@ -18,4 +18,4 @@ from torchmetrics.functional.image.ssim import (  # noqa: F401
     ssim,
     structural_similarity_index_measure,
 )
-from torchmetrics.functional.image.uqi import universal_image_quality_index, uqi  # noqa: F401
+from torchmetrics.functional.image.uqi import universal_image_quality_index  # noqa: F401
