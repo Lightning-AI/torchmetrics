@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.uqi import _uqi_compute, _uqi_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
