@@ -271,7 +271,7 @@ peak_signal_noise_ratio [func]
     :noindex:
 
 universal_image_quality_index [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.universal_image_quality_index
     :noindex:
