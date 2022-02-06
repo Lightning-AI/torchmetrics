@@ -14,12 +14,10 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 from torchmetrics.functional.image.helper import _gaussian_kernel
@@ -188,31 +186,6 @@ def structural_similarity_index_measure(
     """
     preds, target = _ssim_update(preds, target)
     return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
-
-
-@deprecated(target=structural_similarity_index_measure, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-def ssim(
-    preds: Tensor,
-    target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
-    data_range: Optional[float] = None,
-    k1: float = 0.01,
-    k2: float = 0.03,
-) -> Tensor:
-    """Computes Structural Similarity Index Measure.
-
-    .. deprecated:: v0.7
-        Use :func:`torchmetrics.functional.scale_invariant_signal_noise_ratio`. Will be removed in v0.8.
-
-    Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> ssim(preds, target)
-        tensor(0.9219)
-    """
-    return void(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
 
 
 def _get_normalized_sim_and_cs(

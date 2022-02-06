@@ -33,7 +33,7 @@ except RuntimeError:
     pass
 
 NUM_PROCESSES = 2
-NUM_BATCHES = 10
+NUM_BATCHES = 4  # Need to be divisible with the number of processes
 BATCH_SIZE = 32
 NUM_CLASSES = 5
 EXTRA_DIM = 3
@@ -123,14 +123,14 @@ def _class_test(
     check_scriptable: bool = True,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between lightning class metric and reference metric.
+    """Utility function doing the actual comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process
         worldsize: number of processes
         preds: torch tensor with predictions
         target: torch tensor with targets
-        metric_class: lightning metric class that should be tested
+        metric_class: metric class that should be tested
         sk_metric: callable function that is used for comparison
         dist_sync_on_step: bool, if true will synchronize metric state across
             processes at each ``forward()``
@@ -150,7 +150,7 @@ def _class_test(
     if not metric_args:
         metric_args = {}
 
-    # Instantiate lightning metric
+    # Instantiate metric
     metric = metric_class(
         compute_on_step=check_dist_sync_on_step or check_batch, dist_sync_on_step=dist_sync_on_step, **metric_args
     )
@@ -255,12 +255,12 @@ def _functional_test(
     fragment_kwargs: bool = False,
     **kwargs_update,
 ):
-    """Utility function doing the actual comparison between lightning functional metric and reference metric.
+    """Utility function doing the actual comparison between functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
         target: torch tensor with targets
-        metric_functional: lightning metric functional that should be tested
+        metric_functional: metric functional that should be tested
         sk_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
         device: determine which device to run on, either 'cuda' or 'cpu'
@@ -283,7 +283,7 @@ def _functional_test(
 
     for i in range(num_batches):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
-        lightning_result = metric(preds[i], target[i], **extra_kwargs)
+        tm_result = metric(preds[i], target[i], **extra_kwargs)
         extra_kwargs = {
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
@@ -291,7 +291,7 @@ def _functional_test(
         sk_result = sk_metric(preds[i].cpu(), target[i].cpu(), **extra_kwargs)
 
         # assert its the same
-        _assert_allclose(lightning_result, sk_result, atol=atol)
+        _assert_allclose(tm_result, sk_result, atol=atol)
 
 
 def _assert_half_support(
@@ -366,7 +366,7 @@ class MetricTester:
         Args:
             preds: torch tensor with predictions
             target: torch tensor with targets
-            metric_functional: lightning metric class that should be tested
+            metric_functional: metric class that should be tested
             sk_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
@@ -408,7 +408,7 @@ class MetricTester:
             ddp: bool, if running in ddp mode or not
             preds: torch tensor with predictions
             target: torch tensor with targets
-            metric_class: lightning metric class that should be tested
+            metric_class: metric class that should be tested
             sk_metric: callable function that is used for comparison
             dist_sync_on_step: bool, if true will synchronize metric state across
                 processes at each ``forward()``
@@ -545,7 +545,7 @@ class MetricTester:
         metric = metric_module(**metric_args)
         if preds.is_floating_point():
             preds.requires_grad = True
-            out = metric(preds[0], target[0])
+            out = metric(preds[0, :2], target[0, :2])
 
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
@@ -553,7 +553,7 @@ class MetricTester:
             if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args), (preds[0].double(), target[0])
+                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2])
                 )
 
             # reset as else it will carry over to other tests

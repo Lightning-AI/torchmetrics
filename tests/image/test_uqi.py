@@ -26,7 +26,7 @@ from torchmetrics.image import UniversalImageQualityIndex
 seed_all(42)
 
 # UQI is SSIM with both constants k1 and k2 as 0
-skimage_uqi = partial(structural_similarity, k1 = 0, k2 = 0)
+skimage_uqi = partial(structural_similarity, k1=0, k2=0)
 
 Input = namedtuple("Input", ["preds", "target", "multichannel"])
 

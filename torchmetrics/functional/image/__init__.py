@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr  # noqa: F401
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio  # noqa: F401
 from torchmetrics.functional.image.ssim import (  # noqa: F401
     multiscale_structural_similarity_index_measure,
-    ssim,
     structural_similarity_index_measure,
 )
-from torchmetrics.functional.image.uqi import universal_image_quality_index, uqi  # noqa: F401
+from torchmetrics.functional.image.uqi import universal_image_quality_index  # noqa: F401
