@@ -14,11 +14,9 @@
 from typing import Optional
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.enums import AverageMethod as AvgMethod
 from torchmetrics.utilities.enums import MDMCAverageMethod
 
@@ -245,32 +243,6 @@ def fbeta_score(
     return _fbeta_compute(tp, fp, tn, fn, beta, ignore_index, average, mdmc_average)
 
 
-@deprecated(target=fbeta_score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-def fbeta(
-    preds: Tensor,
-    target: Tensor,
-    beta: float = 1.0,
-    average: str = "micro",
-    mdmc_average: Optional[str] = None,
-    ignore_index: Optional[int] = None,
-    num_classes: Optional[int] = None,
-    threshold: float = 0.5,
-    top_k: Optional[int] = None,
-    multiclass: Optional[bool] = None,
-) -> Tensor:
-    r"""
-    Computes f_beta metric.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.functional.f1_score`. Will be removed in v0.8.
-
-    Example::
-        >>> fbeta(torch.tensor([0, 2, 1, 0, 0, 1]), torch.tensor([0, 1, 2, 0, 1, 2]), num_classes=3, beta=0.5)
-        tensor(0.3333)
-    """
-    return void(preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
-
-
 def f1_score(
     preds: Tensor,
     target: Tensor,
@@ -379,31 +351,3 @@ def f1_score(
     return fbeta_score(
         preds, target, 1.0, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass
     )
-
-
-@deprecated(target=f1_score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-def f1(
-    preds: Tensor,
-    target: Tensor,
-    beta: float = 1.0,
-    average: str = "micro",
-    mdmc_average: Optional[str] = None,
-    ignore_index: Optional[int] = None,
-    num_classes: Optional[int] = None,
-    threshold: float = 0.5,
-    top_k: Optional[int] = None,
-    multiclass: Optional[bool] = None,
-) -> Tensor:
-    """Computes F1 metric. F1 metrics correspond to a equally weighted average of the precision and recall scores.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.functional.f1_score`. Will be removed in v0.8.
-
-    Example:
-        >>> from torchmetrics.functional import f1
-        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
-        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1(preds, target, num_classes=3)
-        tensor(0.3333)
-    """
-    return void(preds, target, beta, average, mdmc_average, ignore_index, num_classes, threshold, top_k, multiclass)
