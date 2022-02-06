@@ -18,10 +18,10 @@ from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
+from torchmetrics.functional.image.helper import _gaussian_kernel
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
-from torchmetrics.functional.image.helper import _gaussian_kernel
 
 
 def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
