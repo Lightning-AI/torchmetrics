@@ -20,8 +20,8 @@ from skimage.metrics import structural_similarity
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional import universal_image_quality_index
-from torchmetrics.image import UniversalImageQualityIndex
+from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.image.uqi import UniversalImageQualityIndex
 
 seed_all(42)
 
