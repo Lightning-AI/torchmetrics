@@ -147,7 +147,7 @@ def universal_image_quality_index(
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Return:
-        Tensor with UQI score
+        Tensor with UniversalImageQualityIndex score
 
     Raises:
         TypeError:

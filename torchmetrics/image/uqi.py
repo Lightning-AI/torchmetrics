@@ -24,7 +24,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class UniversalImageQualityIndex(Metric):
-    """Computes Universal Image Quality Index (UQI_).
+    """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
 
     Args:
         kernel_size: size of the gaussian kernel
@@ -38,7 +38,7 @@ class UniversalImageQualityIndex(Metric):
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Return:
-        Tensor with UQI score
+        Tensor with UniversalImageQualityIndex score
 
     Example:
         >>> from torchmetrics import UniversalImageQualityIndex
@@ -69,7 +69,7 @@ class UniversalImageQualityIndex(Metric):
             process_group=process_group,
         )
         rank_zero_warn(
-            "Metric `UQI` will save all targets and"
+            "Metric `UniversalImageQualityIndex` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
             " to large memory footprint."
         )
