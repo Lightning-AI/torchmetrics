@@ -50,6 +50,7 @@ from torchmetrics.image import (  # noqa: E402
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     StructuralSimilarityIndexMeasure,
+    UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
@@ -159,6 +160,7 @@ __all__ = [
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
+    "UniversalImageQualityIndex",
     "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",
