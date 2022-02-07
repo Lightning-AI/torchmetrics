@@ -13,7 +13,6 @@
 # limitations under the License.
 import functools
 import inspect
-import operator as op
 import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
