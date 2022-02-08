@@ -25,7 +25,6 @@ from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMulti
 from torchmetrics import Metric
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
-
 seed_all(42)
 
 
