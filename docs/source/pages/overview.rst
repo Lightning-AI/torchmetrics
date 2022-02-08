@@ -294,7 +294,7 @@ inside your LightningModule
 
 An additional advantage of using the ``MetricCollection`` object is that it will
 automatically try to reduce the computations needed by finding groups of metrics
-that share the same underlying metric state. If such metrics are found only one
+that share the same underlying metric state. If such a group of metrics is found only one
 of them is actually updated and the updated state will be broadcasted to the rest
 of the metrics within the group. In the example above, this will lead to a 2x-3x lower computational
 cost compared to disabling this feature.
