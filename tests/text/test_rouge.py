@@ -18,7 +18,7 @@ from typing import Sequence
 import pytest
 import torch
 
-from tests.text.helpers import INPUT_ORDER, TextTester
+from tests.text.helpers import TextTester
 from tests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_single_reference
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
@@ -35,27 +35,27 @@ ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 
 def _compute_rouge_score(
     preds: Sequence[str],
-    targets: Sequence[Sequence[str]],
+    target: Sequence[Sequence[str]],
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
     accumulate: str,
 ):
     """Evaluates rouge scores from rouge-score package for baseline evaluation."""
-    if isinstance(targets, list) and all(isinstance(target, str) for target in targets):
-        targets = [targets] if isinstance(preds, str) else [[target] for target in targets]
+    if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
+        target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 
     if isinstance(preds, str):
         preds = [preds]
 
-    if isinstance(targets, str):
-        targets = [[targets]]
+    if isinstance(target, str):
+        target = [[target]]
 
     scorer = RougeScorer(ROUGE_KEYS, use_stemmer=use_stemmer)
     aggregator = BootstrapAggregator()
 
-    for target_raw, pred_raw in zip(targets, preds):
-        list_results = [scorer.score(target, pred_raw) for target in target_raw]
+    for target_raw, pred_raw in zip(target, preds):
+        list_results = [scorer.score(tgt, pred_raw) for tgt in target_raw]
         aggregator_avg = BootstrapAggregator()
 
         if accumulate == "best":
@@ -120,7 +120,6 @@ class TestROUGEScore(TextTester):
             sk_metric=rouge_metric,
             dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
             key=pl_rouge_metric_key,
         )
 
@@ -137,7 +136,6 @@ class TestROUGEScore(TextTester):
             metric_functional=rouge_score,
             sk_metric=rouge_metric,
             metric_args=metric_args,
-            input_order=INPUT_ORDER.PREDS_FIRST,
             key=pl_rouge_metric_key,
         )
 
@@ -146,9 +144,9 @@ def test_rouge_metric_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     if not _NLTK_AVAILABLE:
         with pytest.raises(
-            ValueError,
-            match="ROUGE metric requires that nltk is installed."
-            "Either as `pip install torchmetrics[text]` or `pip install nltk`",
+            ModuleNotFoundError,
+            match="ROUGE metric requires that `nltk` is installed."
+            " Either as `pip install torchmetrics[text]` or `pip install nltk`.",
         ):
             ROUGEScore()
 

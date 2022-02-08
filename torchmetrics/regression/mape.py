@@ -16,18 +16,18 @@ from typing import Any, Callable, Optional
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
-    _symmetric_mean_absolute_percentage_error_compute,
-    _symmetric_mean_absolute_percentage_error_update,
+from torchmetrics.functional.regression.mape import (
+    _mean_absolute_percentage_error_compute,
+    _mean_absolute_percentage_error_update,
 )
 from torchmetrics.metric import Metric
 
 
-class SymmetricMeanAbsolutePercentageError(Metric):
+class MeanAbsolutePercentageError(Metric):
     r"""
-    Computes symmetric mean absolute percentage error (`SMAPE`_).
+    Computes `Mean Absolute Percentage Error`_ (MAPE):
 
-    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n max(\frac{|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon})
+    .. math:: \text{MAPE} = \frac{1}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, y_i)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -35,24 +35,27 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         compute_on_step:
             Forward only calls ``update()`` and return None if this is set to False.
         dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()`` before returning the value at the step.
+            Synchronize metric state across processes at each ``forward()``
+            before returning the value at the step.
         process_group:
             Specify the process group on which synchronization is called.
 
     Note:
-        The epsilon value is taken from `scikit-learn's implementation of SMAPE`_.
+        The epsilon value is taken from `scikit-learn's implementation of MAPE`_.
 
     Note:
-        SMAPE output is a non-negative floating point between 0 and 1. Best result is 0.0 .
-
+        MAPE output is a non-negative floating point. Best result is 0.0 . But it is important to note that,
+        bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
+        This `MAPE implementation returns`_ a very large number instead of ``inf``.
 
     Example:
-        >>> from torchmetrics import SymmetricMeanAbsolutePercentageError
+        >>> from torchmetrics import MeanAbsolutePercentageError
         >>> target = torch.tensor([1, 10, 1e6])
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
-        >>> smape = SymmetricMeanAbsolutePercentageError()
-        >>> smape(preds, target)
-        tensor(0.2290)
+        >>> mean_abs_percentage_error = MeanAbsolutePercentageError()
+        >>> mean_abs_percentage_error(preds, target)
+        tensor(0.2667)
+
     """
     is_differentiable = True
     higher_is_better = False
@@ -83,11 +86,11 @@ class SymmetricMeanAbsolutePercentageError(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(preds, target)
+        sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
 
         self.sum_abs_per_error += sum_abs_per_error
         self.total += num_obs
 
     def compute(self) -> Tensor:
         """Computes mean absolute percentage error over state."""
-        return _symmetric_mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)
+        return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)

@@ -27,13 +27,13 @@ from torchmetrics import Metric
 from torchmetrics.functional.text.chrf import _chrf_score_compute, _chrf_score_update, _prepare_n_grams_dicts
 
 _N_GRAM_LEVELS = ("char", "word")
-_TEXT_LEVELS = ("ref", "hyp", "matching")
+_TEXT_LEVELS = ("preds", "target", "matching")
 
 _DICT_STATES_NAMES = (
-    "total_ref_char_n_grams",
-    "total_ref_word_n_grams",
-    "total_hyp_char_n_grams",
-    "total_hyp_word_n_grams",
+    "total_preds_char_n_grams",
+    "total_preds_word_n_grams",
+    "total_target_char_n_grams",
+    "total_target_word_n_grams",
     "total_matching_char_n_grams",
     "total_matching_word_n_grams",
 )
@@ -83,10 +83,11 @@ class CHRFScore(Metric):
             If ``beta`` is smaller than 0.
 
     Example:
-        >>> hypothesis_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> from torchmetrics import CHRFScore
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = CHRFScore()
-        >>> metric(reference_corpus, hypothesis_corpus)
+        >>> metric(preds, target)
         tensor(0.8640)
 
     References:
@@ -142,20 +143,18 @@ class CHRFScore(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
-    def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[str]], hypothesis_corpus: Sequence[str]
-    ) -> None:
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
-            reference_corpus:
-                An iterable of iterables of reference corpus.
-            hypothesis_corpus:
+            preds:
                 An iterable of hypothesis corpus.
+            target:
+                An iterable of iterables of reference corpus.
         """
         n_grams_dicts_tuple = _chrf_score_update(
-            reference_corpus,
-            hypothesis_corpus,
+            preds,
+            target,
             *self._convert_states_to_dicts(),
             self.n_char_order,
             self.n_word_order,

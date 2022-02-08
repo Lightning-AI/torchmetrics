@@ -32,8 +32,9 @@ from tests.classification.inputs import _input_multilabel_logits as _input_mlb_l
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_BATCHES, NUM_CLASSES, THRESHOLD, MetricTester
-from torchmetrics import F1, FBeta, Metric
-from torchmetrics.functional import f1, fbeta
+from torchmetrics import F1Score, FBetaScore, Metric
+from torchmetrics.functional import f1_score as f1_score_pl
+from torchmetrics.functional import fbeta_score as fbeta_score_pl
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import AverageMethod
 
@@ -92,8 +93,8 @@ def _sk_fbeta_f1_multidim_multiclass(
 @pytest.mark.parametrize(
     "metric_class, metric_fn",
     [
-        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-        (F1, f1),
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score_pl, beta=2.0)),
+        (F1Score, f1_score_pl),
     ],
 )
 @pytest.mark.parametrize(
@@ -128,8 +129,8 @@ def test_wrong_params(metric_class, metric_fn, average, mdmc_average, num_classe
 @pytest.mark.parametrize(
     "metric_class, metric_fn",
     [
-        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-        (F1, f1),
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score_pl, beta=2.0)),
+        (F1Score, f1_score_pl),
     ],
 )
 def test_zero_division(metric_class, metric_fn):
@@ -150,8 +151,8 @@ def test_zero_division(metric_class, metric_fn):
 @pytest.mark.parametrize(
     "metric_class, metric_fn",
     [
-        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-        (F1, f1),
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score_pl, beta=2.0)),
+        (F1Score, f1_score_pl),
     ],
 )
 def test_no_support(metric_class, metric_fn):
@@ -178,7 +179,13 @@ def test_no_support(metric_class, metric_fn):
     assert result_cl == result_fn == 0
 
 
-@pytest.mark.parametrize("metric_class, metric_fn", [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)), (F1, f1)])
+@pytest.mark.parametrize(
+    "metric_class, metric_fn",
+    [
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score_pl, beta=2.0)),
+        (F1Score, f1_score_pl),
+    ],
+)
 @pytest.mark.parametrize(
     "ignore_index, expected", [(None, torch.tensor([1.0, np.nan])), (0, torch.tensor([np.nan, np.nan]))]
 )
@@ -202,7 +209,10 @@ def test_class_not_present(metric_class, metric_fn, ignore_index, expected):
 
 @pytest.mark.parametrize(
     "metric_class, metric_fn, sk_fn",
-    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)],
+    [
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score_pl, beta=2.0), partial(fbeta_score, beta=2.0)),
+        (F1Score, f1_score_pl, f1_score),
+    ],
 )
 @pytest.mark.parametrize("average", ["micro", "macro", None, "weighted", "samples"])
 @pytest.mark.parametrize("ignore_index", [None, 0])
@@ -387,8 +397,8 @@ _ml_k_preds = torch.tensor([[0.9, 0.2, 0.75], [0.1, 0.7, 0.8], [0.6, 0.1, 0.7]])
 @pytest.mark.parametrize(
     "metric_class, metric_fn",
     [
-        (partial(FBeta, beta=2.0), partial(fbeta, beta=2.0)),
-        (F1, fbeta),
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score_pl, beta=2.0)),
+        (F1Score, fbeta_score_pl),
     ],
 )
 @pytest.mark.parametrize(
@@ -430,7 +440,10 @@ def test_top_k(
 @pytest.mark.parametrize("average", ["micro", "macro", "weighted"])
 @pytest.mark.parametrize(
     "metric_class, metric_functional, sk_fn",
-    [(partial(FBeta, beta=2.0), partial(fbeta, beta=2.0), partial(fbeta_score, beta=2.0)), (F1, f1, f1_score)],
+    [
+        (partial(FBetaScore, beta=2.0), partial(fbeta_score_pl, beta=2.0), partial(fbeta_score, beta=2.0)),
+        (F1Score, f1_score_pl, f1_score),
+    ],
 )
 def test_same_input(metric_class, metric_functional, sk_fn, average, ignore_index):
     preds = _input_miss_class.preds

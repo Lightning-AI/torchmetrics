@@ -23,7 +23,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
 from torchmetrics.metric import Metric
 
 
-class MatthewsCorrcoef(Metric):
+class MatthewsCorrCoef(Metric):
     r"""
     Calculates `Matthews correlation coefficient`_ that measures
     the general correlation or quality of a classification. In the binary case it
@@ -65,10 +65,10 @@ class MatthewsCorrcoef(Metric):
             will be used to perform the allgather
 
     Example:
-        >>> from torchmetrics import MatthewsCorrcoef
+        >>> from torchmetrics import MatthewsCorrCoef
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef = MatthewsCorrcoef(num_classes=2)
+        >>> matthews_corrcoef = MatthewsCorrCoef(num_classes=2)
         >>> matthews_corrcoef(preds, target)
         tensor(0.5774)
 

@@ -19,14 +19,14 @@ pr:
 jobs:
   - job: pytest
     # how long to run the job before automatically cancelling
-    timeoutInMinutes: "45"
+    timeoutInMinutes: "55"
     # how much time to give 'run always even if cancelled tasks' before stopping them
     cancelTimeoutInMinutes: "2"
 
     pool: azure-gpus-spot
 
     container:
-      image: "pytorch/pytorch:1.8.1-cuda10.2-cudnn7-runtime"
+      image: "pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime"
       options: "--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all --name ci-container -v /usr/bin/docker:/tmp/docker:ro"
 
     workspace:
@@ -52,12 +52,11 @@ jobs:
 
     - bash: |
         set -ex
-        sudo apt-get update
-        sudo apt-get install -y gcc cmake ffmpeg git libsndfile1
+        sudo apt-get update -qq --fix-missing
+        sudo apt-get install -y build-essential gcc g++ cmake ffmpeg git libsndfile1 --no-install-recommends
         # python -m pip install "pip==20.1"
         pip install --requirement ./requirements/devel.txt --upgrade-strategy only-if-needed
         pip install mkl-service==2.4.0  # needed for the gpu multiprocessing
-        pip uninstall -y torchmetrics
         pip list
       displayName: 'Install dependencies'
 
@@ -95,5 +94,19 @@ jobs:
     #  condition: succeededOrFailed()
 
     - bash: |
+        set -e
+        pip install .
+        FILES="tm_examples/*.py"
+        for fn in $FILES
+        do
+          echo "Processing $fn example..."
+          python $fn
+        done
+        pip uninstall -y torchmetrics
+      displayName: 'Examples'
+
+    - bash: |
+        pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed
+        pip uninstall -y torchmetrics
         python -m pytest integrations -v --durations=25
       displayName: 'Integrations'

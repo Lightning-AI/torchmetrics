@@ -20,9 +20,9 @@ from torchmetrics.functional.text.wer import _wer_compute, _wer_update
 from torchmetrics.metric import Metric
 
 
-class WER(Metric):
+class WordErrorRate(Metric):
     r"""
-    Word error rate (WER_) is a common metric of the performance of an automatic speech recognition system.
+    Word error rate (WordErrorRate_) is a common metric of the performance of an automatic speech recognition system.
     This value indicates the percentage of words that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a WER of 0 being a perfect score.
     Word error rate can then be computed as:
@@ -55,10 +55,10 @@ class WER(Metric):
         Word error rate score
 
     Examples:
-        >>> predictions = ["this is the prediction", "there is an other sample"]
-        >>> references = ["this is the reference", "there is another one"]
-        >>> metric = WER()
-        >>> metric(predictions, references)
+        >>> preds = ["this is the prediction", "there is an other sample"]
+        >>> target = ["this is the reference", "there is another one"]
+        >>> metric = WordErrorRate()
+        >>> metric(preds, target)
         tensor(0.5000)
     """
     is_differentiable = False
@@ -82,14 +82,14 @@ class WER(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, predictions: Union[str, List[str]], references: Union[str, List[str]]) -> None:  # type: ignore
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Word Error Rate scores.
 
         Args:
-            predictions: Transcription(s) to score as a string or list of strings
-            references: Reference(s) for each speech input as a string or list of strings
+            preds: Transcription(s) to score as a string or list of strings
+            target: Reference(s) for each speech input as a string or list of strings
         """
-        errors, total = _wer_update(predictions, references)
+        errors, total = _wer_update(preds, target)
         self.errors += errors
         self.total += total
 

@@ -52,7 +52,7 @@ def _final_aggregation(
     return var_x, var_y, corr_xy, nb
 
 
-class PearsonCorrcoef(Metric):
+class PearsonCorrCoef(Metric):
     r"""
     Computes `Pearson Correlation Coefficient`_:
 
@@ -77,10 +77,10 @@ class PearsonCorrcoef(Metric):
             Specify the process group on which synchronization is called.
 
     Example:
-        >>> from torchmetrics import PearsonCorrcoef
+        >>> from torchmetrics import PearsonCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> pearson = PearsonCorrcoef()
+        >>> pearson = PearsonCorrCoef()
         >>> pearson(preds, target)
         tensor(0.9849)
 

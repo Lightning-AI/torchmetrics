@@ -22,7 +22,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class SpearmanCorrcoef(Metric):
+class SpearmanCorrCoef(Metric):
     r"""
     Computes `spearmans rank correlation coefficient`_.
 
@@ -45,10 +45,10 @@ class SpearmanCorrcoef(Metric):
             will be used to perform the allgather
 
     Example:
-        >>> from torchmetrics import SpearmanCorrcoef
+        >>> from torchmetrics import SpearmanCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> spearman = SpearmanCorrcoef()
+        >>> spearman = SpearmanCorrCoef()
         >>> spearman(preds, target)
         tensor(1.0000)
 

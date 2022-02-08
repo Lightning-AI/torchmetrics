@@ -23,6 +23,8 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+__doctest_requires__ = {("KernelInceptionDistance", "KID"): ["torch_fidelity"]}
+
 
 def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
     """Adapted from `KID Score`_"""
@@ -62,7 +64,7 @@ def poly_mmd(
     return maximum_mean_discrepancy(k_11, k_12, k_22)
 
 
-class KID(Metric):
+class KernelInceptionDistance(Metric):
     r"""
     Calculates Kernel Inception Distance (KID) which is used to access the quality of generated images. Given by
 
@@ -150,16 +152,16 @@ class KID(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics.image.kid import KID
-        >>> kid = KID(subset_size=50)  # doctest: +SKIP
+        >>> from torchmetrics.image.kid import KernelInceptionDistance
+        >>> kid = KernelInceptionDistance(subset_size=50)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> kid.update(imgs_dist1, real=True)  # doctest: +SKIP
-        >>> kid.update(imgs_dist2, real=False)  # doctest: +SKIP
-        >>> kid_mean, kid_std = kid.compute()  # doctest: +SKIP
-        >>> print((kid_mean, kid_std))  # doctest: +SKIP
-        (tensor(0.0338), tensor(0.0025))
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> kid.update(imgs_dist1, real=True)
+        >>> kid.update(imgs_dist2, real=False)
+        >>> kid_mean, kid_std = kid.compute()
+        >>> print((kid_mean, kid_std))
+        (tensor(0.0337), tensor(0.0023))
 
     """
     real_features: List[Tensor]
@@ -187,17 +189,16 @@ class KID(Metric):
         )
 
         rank_zero_warn(
-            "Metric `KID` will save all extracted features in buffer."
+            "Metric `Kernel Inception Distance` will save all extracted features in buffer."
             " For large datasets this may lead to large memory footprint.",
             UserWarning,
         )
 
         if isinstance(feature, (str, int)):
             if not _TORCH_FIDELITY_AVAILABLE:
-                raise RuntimeError(
-                    "KID metric requires that Torch-fidelity is installed."
-                    " Either install as `pip install torchmetrics[image]`"
-                    " or `pip install torch-fidelity`"
+                raise ModuleNotFoundError(
+                    "Kernel Inception Distance metric requires that `Torch-fidelity` is installed."
+                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
                 )
             valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
             if feature not in valid_int_input:

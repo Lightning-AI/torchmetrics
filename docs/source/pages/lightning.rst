@@ -11,6 +11,10 @@ TorchMetrics in PyTorch Lightning
 
 TorchMetrics was originaly created as part of `PyTorch Lightning <https://github.com/PyTorchLightning/pytorch-lightning>`_, a powerful deep learning research framework designed for scaling models without boilerplate.
 
+..note::
+    TorchMetrics always offers compatibility with the last 2 major PyTorch Lightning versions, but we recommend to always keep both frameworks
+    up-to-date for the best experience.
+
 While TorchMetrics was built to be used with native PyTorch, using TorchMetrics with Lightning offers additional benefits:
 
 * Module metrics are automatically placed on the correct device when properly defined inside a LightningModule. This means that your data will always be placed on the same device as your metrics.
@@ -50,7 +54,7 @@ The example below shows how to use a metric in your `LightningModule <https://py
 Logging TorchMetrics
 ********************
 
-:class:`~torchmetrics.Metric` objects can also be directly logged in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method. Lightning will log
+When :class:`~torchmetrics.Metric` objects, which return a scalar tensor,  are logged directly in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method. Lightning will log
 the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``.
 If ``on_epoch`` is True, the logger automatically logs the end of epoch metric value by calling
 ``.compute()``.
@@ -115,7 +119,7 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
 
             def training_epoch_end(self, outputs):
                 # this will compute and reset the metric automatically at the epoch end
-                self.log('train_epoch_accuracy', self.accuracy)
+                self.log('train_epoch_accuracy', self.training_acc)
 
                 # this will not reset the metric automatically at the epoch end so you
                 # need to call it yourself

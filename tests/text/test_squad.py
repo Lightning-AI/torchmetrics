@@ -6,42 +6,26 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from tests.helpers.testers import _assert_allclose, _assert_tensor
+from tests.text.inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
 from torchmetrics.functional.text import squad
 from torchmetrics.text.squad import SQuAD
 
-SAMPLE_1 = {
-    "exact_match": 100.0,
-    "f1": 100.0,
-    "predictions": {"prediction_text": "1976", "id": "id1"},
-    "references": {"answers": {"answer_start": [97], "text": ["1976"]}, "id": "id1"},
-}
-
-SAMPLE_2 = {
-    "exact_match": 0.0,
-    "f1": 0.0,
-    "predictions": {"prediction_text": "Hello", "id": "id2"},
-    "references": {"answers": {"answer_start": [97], "text": ["World"]}, "id": "id2"},
-}
-
-BATCH = {
-    "exact_match": [100.0, 0.0],
-    "f1": [100.0, 0.0],
-    "predictions": [
-        {"prediction_text": "1976", "id": "id1"},
-        {"prediction_text": "Hello", "id": "id2"},
-    ],
-    "references": [
-        {"answers": {"answer_start": [97], "text": ["1976"]}, "id": "id1"},
-        {"answers": {"answer_start": [97], "text": ["World"]}, "id": "id2"},
-    ],
-}
-
 
 @pytest.mark.parametrize(
-    "preds,targets,exact_match,f1",
+    "preds, targets, exact_match, f1",
     [
-        (SAMPLE_1["predictions"], SAMPLE_1["references"], SAMPLE_1["exact_match"], SAMPLE_1["exact_match"]),
-        (SAMPLE_2["predictions"], SAMPLE_2["references"], SAMPLE_2["exact_match"], SAMPLE_2["exact_match"]),
+        (
+            _inputs_squad_exact_match.preds,
+            _inputs_squad_exact_match.targets,
+            _inputs_squad_exact_match.exact_match,
+            _inputs_squad_exact_match.f1,
+        ),
+        (
+            _inputs_squad_exact_mismatch.preds,
+            _inputs_squad_exact_mismatch.targets,
+            _inputs_squad_exact_mismatch.exact_match,
+            _inputs_squad_exact_mismatch.f1,
+        ),
     ],
 )
 def test_score_fn(preds, targets, exact_match, f1):
@@ -54,14 +38,21 @@ def test_score_fn(preds, targets, exact_match, f1):
 
 
 @pytest.mark.parametrize(
-    "preds,targets,exact_match,f1",
-    [(BATCH["predictions"], BATCH["references"], BATCH["exact_match"], BATCH["f1"])],
+    "preds, targets, exact_match, f1",
+    [
+        (
+            _inputs_squad_batch_match.preds,
+            _inputs_squad_batch_match.targets,
+            _inputs_squad_batch_match.exact_match,
+            _inputs_squad_batch_match.f1,
+        )
+    ],
 )
 def test_accumulation(preds, targets, exact_match, f1):
     """Tests for metric works with accumulation."""
     squad_metric = SQuAD()
     for pred, target in zip(preds, targets):
-        squad_metric.update(preds=[pred], targets=[target])
+        squad_metric.update(preds=[pred], target=[target])
     metrics_score = squad_metric.compute()
 
     _assert_tensor(metrics_score["exact_match"])
@@ -70,13 +61,13 @@ def test_accumulation(preds, targets, exact_match, f1):
     _assert_allclose(metrics_score["f1"], torch.mean(torch.tensor(f1)))
 
 
-def _squad_score_ddp(rank, world_size, pred, target, exact_match, f1):
+def _squad_score_ddp(rank, world_size, pred, targets, exact_match, f1):
     """Define a DDP process for SQuAD metric."""
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "12355"
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
     squad_metric = SQuAD()
-    squad_metric.update(pred, target)
+    squad_metric.update(pred, targets)
     metrics_score = squad_metric.compute()
     _assert_tensor(metrics_score["exact_match"])
     _assert_tensor(metrics_score["f1"])
@@ -91,8 +82,15 @@ def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
 
 
 @pytest.mark.parametrize(
-    "preds,targets,exact_match,f1",
-    [(BATCH["predictions"], BATCH["references"], BATCH["exact_match"], BATCH["f1"])],
+    "preds, targets, exact_match, f1",
+    [
+        (
+            _inputs_squad_batch_match.preds,
+            _inputs_squad_batch_match.targets,
+            _inputs_squad_batch_match.exact_match,
+            _inputs_squad_batch_match.f1,
+        )
+    ],
 )
 @pytest.mark.skipif(not dist.is_available(), reason="test requires torch distributed")
 def test_score_ddp(preds, targets, exact_match, f1):

@@ -21,7 +21,7 @@ from torchmetrics.functional.text.ter import _ter_compute, _ter_update, _TercomT
 from torchmetrics.metric import Metric
 
 
-class TER(Metric):
+class TranslationEditRate(Metric):
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references. This
     implementation follows the implmenetaions from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
@@ -50,10 +50,10 @@ class TER(Metric):
             will be used to perform the allgather
 
     Example:
-        >>> hypothesis_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = TER()
-        >>> metric(reference_corpus, hypothesis_corpus)
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> metric = TranslationEditRate()
+        >>> metric(preds, target)
         tensor(0.1538)
 
     References:
@@ -64,7 +64,7 @@ class TER(Metric):
     is_differentiable = False
     higher_is_better = False
     total_num_edits: Tensor
-    total_ref_len: Tensor
+    total_tgt_len: Tensor
     sentence_ter: Optional[List[Tensor]] = None
 
     def __init__(
@@ -98,29 +98,27 @@ class TER(Metric):
         self.return_sentence_level_score = return_sentence_level_score
 
         self.add_state("total_num_edits", tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total_ref_len", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total_tgt_len", tensor(0.0), dist_reduce_fx="sum")
         if self.return_sentence_level_score:
             self.add_state("sentence_ter", [], dist_reduce_fx="cat")
 
     def update(  # type: ignore
-        self,
-        reference_corpus: Sequence[Union[str, Sequence[str]]],
-        hypothesis_corpus: Union[str, Sequence[str]],
+        self, preds: Union[str, Sequence[str]], target: Sequence[Union[str, Sequence[str]]]
     ) -> None:
         """Update TER statistics.
 
         Args:
-            reference_corpus:
-                An iterable of iterables of reference corpus.
-            hypothesis_corpus:
+            preds:
                 An iterable of hypothesis corpus.
+            target:
+                An iterable of iterables of reference corpus.
         """
-        self.total_num_edits, self.total_ref_len, self.sentence_ter = _ter_update(
-            reference_corpus,
-            hypothesis_corpus,
+        self.total_num_edits, self.total_tgt_len, self.sentence_ter = _ter_update(
+            preds,
+            target,
             self.tokenizer,
             self.total_num_edits,
-            self.total_ref_len,
+            self.total_tgt_len,
             self.sentence_ter,
         )
 
@@ -131,7 +129,7 @@ class TER(Metric):
             A corpus-level translation edit rate (TER).
             (Optionally) A list of sentence-level translation_edit_rate (TER) if `return_sentence_level_score=True`.
         """
-        ter = _ter_compute(self.total_num_edits, self.total_ref_len)
+        ter = _ter_compute(self.total_num_edits, self.total_tgt_len)
         if self.sentence_ter is not None:
             return ter, torch.cat(self.sentence_ter)
         return ter

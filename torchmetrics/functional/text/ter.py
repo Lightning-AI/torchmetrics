@@ -206,53 +206,53 @@ def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
     return tokenizer(sentence.rstrip())
 
 
-def _find_shifted_pairs(reference_words: List[str], hypothesis_words: List[str]) -> Iterator[Tuple[int, int, int]]:
+def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Iterator[Tuple[int, int, int]]:
     """Find matching word sub-sequences in two lists of words. Ignores sub-sequences starting at the same position.
 
     Args:
-        reference_words:
-            A list of a tokenized reference sentence.
-        hypothesis_words:
+        pred_words:
             A list of a tokenized hypothesis sentence.
+        target_words:
+            A list of a tokenized reference sentence.
 
     Return:
-        Yields tuples of `(reference_start, hypothesis_start, length` such that:
-        reference_words[reference_start : reference_start + length] ==\
-            hypothesis_words[hypothesis_start : hypothesis_start + length]
+        Yields tuples of `(target_start, pred_start, length` such that:
+        target_words[target_start : target_start + length] ==\
+            pred_words[pred_start : pred_start + length]
 
-        reference_start:
-            A list of reference start indices.
-        hypothesis_start:
+        pred_start:
             A list of hypothesis start indices.
+        target_start:
+            A list of reference start indices.
         length:
             A length of a word span to be considered.
     """
-    for hypothesis_start in range(len(hypothesis_words)):
-        for reference_start in range(len(reference_words)):
+    for pred_start in range(len(pred_words)):
+        for target_start in range(len(target_words)):
             # this is slightly different from what tercom does but this should
             # really only kick in in degenerate cases
-            if abs(reference_start - hypothesis_start) > _MAX_SHIFT_DIST:
+            if abs(target_start - pred_start) > _MAX_SHIFT_DIST:
                 continue
 
             for length in range(1, _MAX_SHIFT_SIZE):
                 # Check if hypothesis and reference are equal so far
-                if hypothesis_words[hypothesis_start + length - 1] != reference_words[reference_start + length - 1]:
+                if pred_words[pred_start + length - 1] != target_words[target_start + length - 1]:
                     break
-                yield reference_start, hypothesis_start, length
+                yield pred_start, target_start, length
 
                 # Stop processing once a sequence is consumed.
-                _hyp = len(hypothesis_words) == hypothesis_start + length
-                _ref = len(reference_words) == reference_start + length
+                _hyp = len(pred_words) == pred_start + length
+                _ref = len(target_words) == target_start + length
                 if _hyp or _ref:
                     break
 
 
 def _handle_corner_cases_during_shifting(
     alignments: Dict[int, int],
-    reference_errors: List[int],
-    hypothesis_errors: List[int],
-    reference_start: int,
-    hypothesis_start: int,
+    pred_errors: List[int],
+    target_errors: List[int],
+    pred_start: int,
+    target_start: int,
     length: int,
 ) -> bool:
     """A helper function which returns `True` if any of corner cases has been met. Otherwise, `False` is returned.
@@ -260,14 +260,14 @@ def _handle_corner_cases_during_shifting(
     Args:
         alignments:
             A dictionary mapping aligned positions between a reference and a hypothesis.
-        reference_errors:
-            A list of error positions in a reference.
-        hypothesis_errors:
+        pred_errors:
             A list of error positions in a hypothesis.
-        reference_start:
-            A reference start index.
-        hypothesis_start:
+        target_errors:
+            A list of error positions in a reference.
+        pred_start:
             A hypothesis start index.
+        target_start:
+            A reference start index.
         length:
             A length of a word span to be considered.
 
@@ -276,14 +276,14 @@ def _handle_corner_cases_during_shifting(
     """
     # don't do the shift unless both the hypothesis was wrong and the
     # reference doesn't match hypothesis at the target position
-    if sum(hypothesis_errors[hypothesis_start : hypothesis_start + length]) == 0:
+    if sum(pred_errors[pred_start : pred_start + length]) == 0:
         return True
 
-    if sum(reference_errors[reference_start : reference_start + length]) == 0:
+    if sum(target_errors[target_start : target_start + length]) == 0:
         return True
 
     # don't try to shift within the subsequence
-    if hypothesis_start <= alignments[reference_start] < hypothesis_start + length:
+    if pred_start <= alignments[target_start] < pred_start + length:
         return True
 
     return False
@@ -327,8 +327,8 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
 
 
 def _shift_words(
-    reference_words: List[str],
-    hypothesis_words: List[str],
+    pred_words: List[str],
+    target_words: List[str],
     cached_edit_distance: _LevenshteinEditDistance,
     checked_candidates: int,
 ) -> Tuple[int, List[str], int]:
@@ -340,10 +340,10 @@ def _shift_words(
     choices. (The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py)
 
     Args:
-        reference_words:
-            A list of lists of tokenized reference sentences.
-        hypothesis_words:
+        pred_words:
             A list of tokenized hypothesis sentence.
+        target_words:
+            A list of lists of tokenized reference sentences.
         cached_edit_distance:
             A pre-computed edit distance between a hypothesis and a reference.
         checked_candidates:
@@ -357,24 +357,24 @@ def _shift_words(
         checked_candidates:
             A number of checked hypothesis candidates to match a provided reference.
     """
-    edit_distance, inverted_trace = cached_edit_distance(hypothesis_words)
+    edit_distance, inverted_trace = cached_edit_distance(pred_words)
     trace = _flip_trace(inverted_trace)
-    alignments, reference_errors, hypothesis_errors = _trace_to_alignment(trace)
+    alignments, target_errors, pred_errors = _trace_to_alignment(trace)
 
     best: Optional[Tuple[int, int, int, int, List[str]]] = None
 
-    for reference_start, hypothesis_start, length in _find_shifted_pairs(reference_words, hypothesis_words):
+    for pred_start, target_start, length in _find_shifted_pairs(pred_words, target_words):
         if _handle_corner_cases_during_shifting(
-            alignments, reference_errors, hypothesis_errors, reference_start, hypothesis_start, length
+            alignments, pred_errors, target_errors, pred_start, target_start, length
         ):
             continue
 
         prev_idx = -1
         for offset in range(-1, length):
-            if reference_start + offset == -1:
+            if target_start + offset == -1:
                 idx = 0
-            elif reference_start + offset in alignments:
-                idx = alignments[reference_start + offset] + 1
+            elif target_start + offset in alignments:
+                idx = alignments[target_start + offset] + 1
             # offset is out of bounds => aims past reference
             else:
                 break
@@ -384,13 +384,13 @@ def _shift_words(
 
             prev_idx = idx
 
-            shifted_words = _perform_shift(hypothesis_words, hypothesis_start, length, idx)
+            shifted_words = _perform_shift(pred_words, pred_start, length, idx)
 
             # Elements of the tuple are designed to replicate Tercom ranking of shifts:
             candidate = (
                 edit_distance - cached_edit_distance(shifted_words)[0],  # highest score first
                 length,  # then, longest match first
-                -hypothesis_start,  # then, earliest match first
+                -pred_start,  # then, earliest match first
                 -idx,  # then, earliest target position first
                 shifted_words,
             )
@@ -404,35 +404,35 @@ def _shift_words(
             break
 
     if not best:
-        return 0, hypothesis_words, checked_candidates
+        return 0, pred_words, checked_candidates
     best_score, _, _, _, shifted_words = best
     return best_score, shifted_words, checked_candidates
 
 
-def _translation_edit_rate(reference_words: List[str], hypothesis_words: List[str]) -> Tensor:
-    """Compute translation edit rate between reference and hypothesis sentences.
+def _translation_edit_rate(pred_words: List[str], target_words: List[str]) -> Tensor:
+    """Compute translation edit rate between hypothesis and reference sentences.
 
     Args:
-        reference_words:
-            A list of lists of tokenized reference sentences.
-        hypothesis_words:
+        pred_words:
             A list of a tokenized hypothesis sentence.
+        target_words:
+            A list of lists of tokenized reference sentences.
 
     Return:
         A number of required edits to match hypothesis and reference sentences.
     """
-    if len(reference_words) == 0:
+    if len(target_words) == 0:
         return tensor(0.0)
 
-    cached_edit_distance = _LevenshteinEditDistance(reference_words)
+    cached_edit_distance = _LevenshteinEditDistance(target_words)
     num_shifts = 0
     checked_candidates = 0
-    input_words = hypothesis_words
+    input_words = pred_words
 
     while True:
         # do shifts until they stop reducing the edit distance
         delta, new_input_words, checked_candidates = _shift_words(
-            reference_words, input_words, cached_edit_distance, checked_candidates
+            input_words, target_words, cached_edit_distance, checked_candidates
         )
         if checked_candidates >= _MAX_SHIFT_CANDIDATES or delta <= 0:
             break
@@ -445,50 +445,48 @@ def _translation_edit_rate(reference_words: List[str], hypothesis_words: List[st
     return tensor(total_edits)
 
 
-def _compute_sentence_statistics(
-    references_words: List[List[str]], hypothesis_words: List[str]
-) -> Tuple[Tensor, Tensor]:
+def _compute_sentence_statistics(pred_words: List[str], target_words: List[List[str]]) -> Tuple[Tensor, Tensor]:
     """Compute sentence TER statistics between hypothesis and provided references.
 
     Args:
-        reference_words:
-            A list of lists of tokenized reference sentences.
-        hypothesis_words:
+        pred_words:
             A list of tokenized hypothesis sentence.
+        target_words:
+            A list of lists of tokenized reference sentences.
 
     Return:
         best_num_edits:
             The best (lowest) number of required edits to match hypothesis and reference sentences.
-        avg_ref_len:
+        avg_tgt_len:
             Average length of tokenized reference sentences.
     """
-    ref_lengths = tensor(0.0)
+    tgt_lengths = tensor(0.0)
     best_num_edits = tensor(2e16)
 
-    for reference_words in references_words:
-        num_edits = _translation_edit_rate(reference_words, hypothesis_words)
-        ref_lengths += len(reference_words)
+    for tgt_words in target_words:
+        num_edits = _translation_edit_rate(tgt_words, pred_words)
+        tgt_lengths += len(tgt_words)
         if num_edits < best_num_edits:
             best_num_edits = num_edits
 
-    avg_ref_len = ref_lengths / len(references_words)
-    return best_num_edits, avg_ref_len
+    avg_tgt_len = tgt_lengths / len(target_words)
+    return best_num_edits, avg_tgt_len
 
 
-def _compute_ter_score_from_statistics(num_edits: Tensor, ref_length: Tensor) -> Tensor:
+def _compute_ter_score_from_statistics(num_edits: Tensor, tgt_length: Tensor) -> Tensor:
     """Compute TER score based on pre-computed a number of edits and an average reference length.
 
         num_edits:
             A number of required edits to match hypothesis and reference sentences.
-        ref_length:
+        tgt_length:
             An average length of reference sentences.
 
     Return:
         A corpus-level TER score or 1 if reference_length == 0.
     """
-    if ref_length > 0 and num_edits > 0:
-        score = num_edits / ref_length
-    elif ref_length == 0 and num_edits > 0:
+    if tgt_length > 0 and num_edits > 0:
+        score = num_edits / tgt_length
+    elif tgt_length == 0 and num_edits > 0:
         score = tensor(1.0)
     else:
         score = tensor(0.0)
@@ -496,70 +494,68 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, ref_length: Tensor) ->
 
 
 def _ter_update(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
-    hypothesis_corpus: Union[str, Sequence[str]],
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     tokenizer: _TercomTokenizer,
     total_num_edits: Tensor,
-    total_ref_length: Tensor,
+    total_tgt_length: Tensor,
     sentence_ter: Optional[List[Tensor]] = None,
 ) -> Tuple[Tensor, Tensor, Optional[List[Tensor]]]:
     """Update TER statistics.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus.
-        hypothesis_corpus:
+        preds:
             An iterable of hypothesis corpus.
+        target:
+            An iterable of iterables of reference corpus.
         tokenizer:
         total_num_edits:
             A total number of required edits to match hypothesis and reference sentences.
-        total_ref_length:
+        total_tgt_length:
             A total average length of reference sentences.
 
     Return:
         total_num_edits:
             A total number of required edits to match hypothesis and reference sentences.
-        total_ref_length:
+        total_tgt_length:
             A total average length of reference sentences.
         sentence_ter:
             (Optionally) A list of sentence-level TER.
 
     Raises:
         ValueError:
-            If length of `reference_corpus` and `hypothesis_corpus` differs.
+            If length of `preds` and `target` differs.
     """
-    reference_corpus, hypothesis_corpus = _validate_inputs(reference_corpus, hypothesis_corpus)
+    target, preds = _validate_inputs(target, preds)
 
-    for (references, hypothesis) in zip(reference_corpus, hypothesis_corpus):
-        references_words_: List[List[str]] = [
-            [word for word in _preprocess_sentence(ref, tokenizer).split()] for ref in references
-        ]
-        hypothesis_words_: List[str] = [word for word in _preprocess_sentence(hypothesis, tokenizer).split()]
-        num_edits, ref_length = _compute_sentence_statistics(references_words_, hypothesis_words_)
+    for (pred, tgt) in zip(preds, target):
+        tgt_words_: List[List[str]] = [_preprocess_sentence(_tgt, tokenizer).split() for _tgt in tgt]
+        pred_words_: List[str] = _preprocess_sentence(pred, tokenizer).split()
+        num_edits, tgt_length = _compute_sentence_statistics(pred_words_, tgt_words_)
         total_num_edits += num_edits
-        total_ref_length += ref_length
+        total_tgt_length += tgt_length
         if sentence_ter is not None:
-            sentence_ter.append(_compute_ter_score_from_statistics(num_edits, ref_length).unsqueeze(0))
-    return total_num_edits, total_ref_length, sentence_ter
+            sentence_ter.append(_compute_ter_score_from_statistics(num_edits, tgt_length).unsqueeze(0))
+    return total_num_edits, total_tgt_length, sentence_ter
 
 
-def _ter_compute(total_num_edits: Tensor, total_ref_length: Tensor) -> Tensor:
+def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
     """Compute TER based on pre-computed a total number of edits and a total average reference length.
     Args:
         total_num_edits:
             A total number of required edits to match hypothesis and reference sentences.
-        total_ref_length:
+        total_tgt_length:
             A total average length of reference sentences.
 
     Return:
         A corpus-level TER score.
     """
-    return _compute_ter_score_from_statistics(total_num_edits, total_ref_length)
+    return _compute_ter_score_from_statistics(total_num_edits, total_tgt_length)
 
 
-def ter(
-    reference_corpus: Sequence[Union[str, Sequence[str]]],
-    hypothesis_corpus: Union[str, Sequence[str]],
+def translation_edit_rate(
+    preds: Union[str, Sequence[str]],
+    target: Sequence[Union[str, Sequence[str]]],
     normalize: bool = False,
     no_punctuation: bool = False,
     lowercase: bool = True,
@@ -572,10 +568,10 @@ def ter(
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     Args:
-        reference_corpus:
-            An iterable of iterables of reference corpus.
-        hypothesis_corpus:
+        preds:
             An iterable of hypothesis corpus.
+        target:
+            An iterable of iterables of reference corpus.
         normalize:
             An indication whether a general tokenization to be applied.
         no_punctuation:
@@ -592,9 +588,9 @@ def ter(
         (Optionally) A list of sentence-level translation_edit_rate (TER) if `return_sentence_level_score=True`.
 
     Example:
-        >>> hypothesis_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> ter(reference_corpus, hypothesis_corpus)
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> translation_edit_rate(preds, target)
         tensor(0.1538)
 
     References:
@@ -613,13 +609,18 @@ def ter(
     tokenizer: _TercomTokenizer = _TercomTokenizer(normalize, no_punctuation, lowercase, asian_support)
 
     total_num_edits = tensor(0.0)
-    total_ref_length = tensor(0.0)
+    total_tgt_length = tensor(0.0)
     sentence_ter: Optional[List[Tensor]] = [] if return_sentence_level_score else None
 
-    total_num_edits, total_ref_length, sentence_ter = _ter_update(
-        reference_corpus, hypothesis_corpus, tokenizer, total_num_edits, total_ref_length, sentence_ter
+    total_num_edits, total_tgt_length, sentence_ter = _ter_update(
+        preds,
+        target,
+        tokenizer,
+        total_num_edits,
+        total_tgt_length,
+        sentence_ter,
     )
-    ter_score = _ter_compute(total_num_edits, total_ref_length)
+    ter_score = _ter_compute(total_num_edits, total_tgt_length)
 
     if sentence_ter:
         return ter_score, sentence_ter

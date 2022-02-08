@@ -20,14 +20,16 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 if _LPIPS_AVAILABLE:
-    from lpips import LPIPS as Lpips_backbone
+    from lpips import LPIPS as _LPIPS
 else:
 
-    class Lpips_backbone(torch.nn.Module):  # type: ignore
+    class _LPIPS(torch.nn.Module):  # type: ignore
         pass
 
+    __doctest_skip__ = ["LearnedPerceptualImagePatchSimilarity", "LPIPS"]
 
-class NoTrainLpips(Lpips_backbone):
+
+class NoTrainLpips(_LPIPS):
     def train(self, mode: bool) -> "NoTrainLpips":
         """the network should not be able to be switched away from evaluation mode."""
         return super().train(False)
@@ -38,7 +40,7 @@ def _valid_img(img: Tensor) -> bool:
     return img.ndim == 4 and img.shape[1] == 3 and img.min() >= -1.0 and img.max() <= 1.0
 
 
-class LPIPS(Metric):
+class LearnedPerceptualImagePatchSimilarity(Metric):
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
     two images. LPIPS essentially computes the similarity between the activations of two image patches for some
     pre-defined network. This measure have been shown to match human perseption well. A low LPIPS score means that
@@ -69,7 +71,7 @@ class LPIPS(Metric):
             will be used to perform the allgather
 
     Raises:
-        ValueError:
+        ModuleNotFoundError:
             If ``lpips`` package is not installed
         ValueError:
             If ``net_type`` is not one of ``"vgg"``, ``"alex"`` or ``"squeeze"``
@@ -79,8 +81,8 @@ class LPIPS(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics.image.lpip_similarity import LPIPS
-        >>> lpips = LPIPS(net_type='vgg')
+        >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+        >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='vgg')
         >>> img1 = torch.rand(10, 3, 100, 100)
         >>> img2 = torch.rand(10, 3, 100, 100)
         >>> lpips(img1, img2)
@@ -112,9 +114,9 @@ class LPIPS(Metric):
         )
 
         if not _LPIPS_AVAILABLE:
-            raise ValueError(
+            raise ModuleNotFoundError(
                 "LPIPS metric requires that lpips is installed."
-                "Either install as `pip install torchmetrics[image]` or `pip install lpips`"
+                " Either install as `pip install torchmetrics[image]` or `pip install lpips`."
             )
 
         valid_net_type = ("vgg", "alex", "squeeze")

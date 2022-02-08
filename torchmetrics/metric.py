@@ -13,12 +13,10 @@
 # limitations under the License.
 import functools
 import inspect
-import operator as op
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -36,7 +34,6 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
@@ -94,7 +91,6 @@ class Metric(Module, ABC):
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
-        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
         self._device = torch.device("cpu")
 
         self.dist_sync_on_step = dist_sync_on_step
@@ -426,9 +422,7 @@ class Metric(Module, ABC):
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
-        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
-        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
-            self._computed = None
+        self._computed = None
 
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
@@ -590,8 +584,14 @@ class Metric(Module, ABC):
             k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
         }
 
-        # if no kwargs filtered, return al kwargs as default
-        if not filtered_kwargs:
+        exists_var_keyword = any([v.kind == inspect.Parameter.VAR_KEYWORD for v in _sign_params.values()])
+        # if no kwargs filtered, return all kwargs as default
+        if not filtered_kwargs and not exists_var_keyword:
+            # no kwargs in update signature -> don't return any kwargs
+            filtered_kwargs = {}
+        elif exists_var_keyword:
+            # kwargs found in update signature -> return all kwargs to be sure to not omit any.
+            # filtering logic is likely implemented within the update call.
             filtered_kwargs = kwargs
         return filtered_kwargs
 

@@ -24,7 +24,7 @@ from torchmetrics.functional import (
     pairwise_cosine_similarity,
     pairwise_euclidean_distance,
     pairwise_linear_similarity,
-    pairwise_manhatten_distance,
+    pairwise_manhattan_distance,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
 
@@ -71,7 +71,7 @@ def _sk_metric(x, y, sk_fn, reduction):
     [
         (pairwise_cosine_similarity, cosine_similarity),
         (pairwise_euclidean_distance, euclidean_distances),
-        (pairwise_manhatten_distance, manhattan_distances),
+        (pairwise_manhattan_distance, manhattan_distances),
         (pairwise_linear_similarity, linear_kernel),
     ],
 )
@@ -107,7 +107,7 @@ class TestPairwise(MetricTester):
 
 
 @pytest.mark.parametrize(
-    "metric", [pairwise_cosine_similarity, pairwise_euclidean_distance, pairwise_manhatten_distance]
+    "metric", [pairwise_cosine_similarity, pairwise_euclidean_distance, pairwise_manhattan_distance]
 )
 def test_error_on_wrong_shapes(metric):
     """Test errors are raised on wrong input."""

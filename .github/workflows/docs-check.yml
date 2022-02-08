@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       # Note: This uses an internal pip API and may not always work
       # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
@@ -21,8 +21,7 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          restore-keys: ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -37,9 +36,10 @@ jobs:
         working-directory: ./docs
         run: |
           # First run the same pipeline as Read-The-Docs
-          apt-get update && sudo apt-get install -y cmake
+          sudo apt-get update && sudo apt-get install -y cmake
           make doctest
           make coverage
+        shell: bash
 
   make-docs:
     runs-on: ubuntu-20.04
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       # Note: This uses an internal pip API and may not always work
       # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
@@ -56,8 +56,7 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements/docs.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          restore-keys: ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -76,7 +75,7 @@ jobs:
         working-directory: ./docs
         run: |
           make clean
-          make html --debug --jobs 2 SPHINXOPTS="-W --keep-going" -b linkcheck
+          make html --debug SPHINXOPTS="-W --keep-going" -b linkcheck
 
       - name: Upload built docs
         uses: actions/upload-artifact@v2

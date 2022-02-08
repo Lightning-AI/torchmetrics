@@ -31,6 +31,7 @@ ______________________________________________________________________
 [![codecov](https://codecov.io/gh/PyTorchLightning/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/PyTorchLightning/metrics)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/pytorch-lightning/shared_invite/zt-pw5v393p-qRaDgEk24~EjiZNBpSQFgQ)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
+[![JOSS status](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43/status.svg)](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PyTorchLightning/metrics/master.svg)](https://results.pre-commit.ci/latest/github/PyTorchLightning/metrics/master)
 
 ______________________________________________________________________
@@ -51,28 +52,35 @@ pip install torchmetrics
 Install using conda
 
 ```bash
-conda install torchmetrics
+conda install -c conda-forge torchmetrics
 ```
 
 Pip from source
 
 ```bash
 # with git
-pip install git+https://github.com/PytorchLightning/metrics.git@master
+pip install git+https://github.com/PytorchLightning/metrics.git@release/latest
 ```
 
 Pip from archive
 
 ```bash
-pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
+pip install https://github.com/PyTorchLightning/metrics/archive/refs/heads/release/latest.zip
 ```
 
 Extra dependencies for specialized metrics:
 
 ```bash
+pip install torchmetrics[audio]
 pip install torchmetrics[image]
 pip install torchmetrics[text]
 pip install torchmetrics[all]  # install all of the above
+```
+
+Install latest developer version
+
+```bash
+pip install https://github.com/PyTorchLightning/metrics/archive/master.zip
 ```
 
 </details>
@@ -264,14 +272,14 @@ acc = torchmetrics.functional.accuracy(preds, target)
 We currently have implemented metrics within the following domains:
 
 - Audio (
-  [SI_SDR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-sdr),
-  [SI_SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#si-snr),
-  [SNR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#snr)
+  [ScaleInvariantSignalDistortionRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalDistortionRatio),
+  [ScaleInvariantSignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ScaleInvariantSignalNoiseRatio),
+  [SignalNoiseRatio](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#SignalNoiseRatio)
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#audio-metrics)
   )
 - Classification (
   [Accuracy](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#accuracy),
-  [F1](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1),
+  [F1Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1score),
   [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
   and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
   )
@@ -282,21 +290,21 @@ We currently have implemented metrics within the following domains:
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrieval)
   )
 - Image (
-  [FID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#fid),
-  [KID](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#kid),
-  [SSIM](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#ssim)
+  [FrechetInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#FrechetInceptionDistance),
+  [KernelInceptionDistance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#KernelInceptionDistance),
+  [StructuralSimilarityIndexMeasure](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#StructuralSimilarityIndexMeasure)
   and [2 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#image-metrics)
   )
 - Regression (
   [ExplainedVariance](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#explainedvariance),
-  [PearsonCorrcoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
+  [PearsonCorrCoef](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#pearsoncorrcoef),
   [R2Score](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#r2score)
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#regression-metrics)
   )
 - Text (
   [BleuScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#bleuscore),
   [RougeScore](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#rougescore),
-  [WER](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#wer)
+  [WordErrorRate](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#WordErrorRate)
   and [few more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#text)
   )
 
@@ -322,7 +330,7 @@ over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn an
 
 If you want to cite this framework feel free to use this (but only if you loved it 😊):
 
-```misc
+```bibtex
 @misc{torchmetrics,
   author = {PyTorchLightning Team},
   title = {Torchmetrics: Machine learning metrics for distributed, scalable PyTorch applications},

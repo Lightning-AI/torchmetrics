@@ -21,7 +21,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
 
-class PSNR(Metric):
+class PeakSignalNoiseRatio(Metric):
     r"""
     Computes `Computes Peak Signal-to-Noise Ratio`_ (PSNR):
 
@@ -56,8 +56,8 @@ class PSNR(Metric):
             If ``dim`` is not ``None`` and ``data_range`` is not given.
 
     Example:
-        >>> from torchmetrics import PSNR
-        >>> psnr = PSNR()
+        >>> from torchmetrics import PeakSignalNoiseRatio
+        >>> psnr = PeakSignalNoiseRatio()
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(preds, target)

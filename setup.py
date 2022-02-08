@@ -36,9 +36,14 @@ def _prepare_extras(skip_files: Tuple[str] = ("devel.txt")):
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
     # filter unwanted files
     found_req_files = [n for n in found_req_files if n not in skip_files]
-    found_req_names = [os.path.splitext(req)[0].replace("datatype_", "") for req in found_req_files]
+    found_req_names = [os.path.splitext(req)[0] for req in found_req_files]
     # define basic and extra extras
-    extras_req = {name: _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files)}
+    extras_req = {
+        name: _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files) if "_test" not in name
+    }
+    for name, fname in zip(found_req_names, found_req_files):
+        if "_test" in name:
+            extras_req["test"] += _load_req(file_name=fname)
     # filter the uniques
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible denpendencies
@@ -96,6 +101,5 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
     ],
 )
