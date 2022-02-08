@@ -404,6 +404,12 @@ StructuralSimilarityIndexMeasure
 .. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
 
+UniversalImageQualityIndex
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.UniversalImageQualityIndex
+    :noindex:
+
 *********
 Detection
 *********

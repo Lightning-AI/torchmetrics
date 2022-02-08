@@ -14,12 +14,10 @@
 from typing import Any, Callable, Optional
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.enums import AverageMethod
 
 
@@ -176,51 +174,6 @@ class FBetaScore(StatScores):
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
 
 
-class FBeta(FBetaScore):
-    r"""
-    Computes `F-score`_, specifically:
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.FBetaScore`. Will be removed in v0.8.
-
-    Example::
-        >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
-        >>> f_beta(torch.tensor([0, 2, 1, 0, 0, 1]), torch.tensor([0, 1, 2, 0, 1, 2]))
-        tensor(0.3333)
-    """
-
-    @deprecated(target=FBetaScore, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        beta: float = 1.0,
-        threshold: float = 0.5,
-        average: str = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(
-            num_classes,
-            beta,
-            threshold,
-            average,
-            mdmc_average,
-            ignore_index,
-            top_k,
-            multiclass,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
-        )
-
-
 class F1Score(FBetaScore):
     """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
 
@@ -346,49 +299,4 @@ class F1Score(FBetaScore):
             dist_sync_on_step=dist_sync_on_step,
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
-        )
-
-
-class F1(F1Score):
-    """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.F1Score`. Will be removed in v0.8.
-
-    Example:
-        >>> from torchmetrics import F1
-        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
-        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1 = F1(num_classes=3)
-        >>> f1(preds, target)
-        tensor(0.3333)
-    """
-
-    @deprecated(target=F1Score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        threshold: float = 0.5,
-        average: str = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(
-            num_classes,
-            threshold,
-            average,
-            mdmc_average,
-            ignore_index,
-            top_k,
-            multiclass,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
         )
