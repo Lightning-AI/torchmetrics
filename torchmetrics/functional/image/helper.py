@@ -23,7 +23,11 @@ def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.
 
 
 def _gaussian_kernel_2d(
-    channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: Union[torch.device, str]
+    channel: int,
+    kernel_size: Sequence[int],
+    sigma: Sequence[float],
+    dtype: torch.dtype,
+    device: Union[torch.device, str],
 ) -> Tensor:
     """Computes 2D gaussian kernel.
 
