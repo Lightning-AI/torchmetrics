@@ -85,8 +85,8 @@ def _sk_avg_prec_multidim_multiclass_prob(preds, target, num_classes=1, average=
         (_input_multilabel.preds, _input_multilabel.target, _sk_avg_prec_multilabel_prob, NUM_CLASSES),
     ],
 )
-@pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
 class TestAveragePrecision(MetricTester):
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_average_precision(self, preds, target, sk_metric, num_classes, average, ddp, dist_sync_on_step):
@@ -103,6 +103,7 @@ class TestAveragePrecision(MetricTester):
             metric_args={"num_classes": num_classes, "average": average},
         )
 
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_average_precision_functional(self, preds, target, sk_metric, num_classes, average):
         if target.max() > 1 and average == "micro":
             pytest.skip("average=micro and multiclass input cannot be used together")
@@ -115,7 +116,7 @@ class TestAveragePrecision(MetricTester):
             metric_args={"num_classes": num_classes, "average": average},
         )
 
-    def test_average_precision_differentiability(self, preds, sk_metric, target, num_classes, average):
+    def test_average_precision_differentiability(self, preds, sk_metric, target, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,

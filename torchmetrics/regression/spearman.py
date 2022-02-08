@@ -14,12 +14,11 @@
 from typing import Any, Callable, List, Optional
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.regression.spearman import _spearman_corrcoef_compute, _spearman_corrcoef_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -96,26 +95,3 @@ class SpearmanCorrCoef(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spearman_corrcoef_compute(preds, target)
-
-
-class SpearmanCorrcoef(SpearmanCorrCoef):
-    """Computes `spearmans rank correlation coefficient`_.
-
-    Example:
-        >>> spearman = SpearmanCorrCoef()
-        >>> spearman(torch.tensor([2.5, 0.0, 2, 8]), torch.tensor([3, -0.5, 2, 7]))
-        tensor(1.0000)
-
-    .. deprecated:: v0.7
-        Renamed in favor of :class:`torchmetrics.SpearmanCorrCoef`. Will be removed in v0.8.
-    """
-
-    @deprecated(target=SpearmanCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable] = None,
-    ) -> None:
-        void(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

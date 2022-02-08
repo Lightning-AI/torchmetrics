@@ -41,7 +41,7 @@ class EnumStr(str, Enum):
 
     def __hash__(self) -> int:
         # re-enable hashtable so it can be used as a dict key or in a set
-        # example: set(LightningEnum)
+        # example: set(EnumStr)
         return hash(self.name)
 
 
