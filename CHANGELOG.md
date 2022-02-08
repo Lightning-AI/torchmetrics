@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new image metric `UniversalImageQualityIndex` ([#824](https://github.com/PyTorchLightning/metrics/pull/824))
 
 
-- Added smart update of `MetricCollection` ([#718](https://github.com/PyTorchLightning/metrics/pull/709))
+- Added smart update of `MetricCollection` ([#709](https://github.com/PyTorchLightning/metrics/pull/709))
 
 
 ### Changed
