@@ -62,7 +62,11 @@ class BinnedPrecisionRecallCurve(Metric):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -122,7 +126,7 @@ class BinnedPrecisionRecallCurve(Metric):
         self,
         num_classes: int,
         thresholds: Union[int, Tensor, List[float], None] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
@@ -210,7 +214,11 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         process_group:
             Specify the process group on which synchronization is called.
 
@@ -262,7 +270,11 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
             It is used for computation will lead to more detailed curve and accurate estimates,
             but will be slower and consume more memory
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         process_group:
             Specify the process group on which synchronization is called.
 
@@ -295,7 +307,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         num_classes: int,
         min_precision: float,
         thresholds: Union[int, Tensor, List[float], None] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:

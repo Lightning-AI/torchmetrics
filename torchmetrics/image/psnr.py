@@ -44,7 +44,11 @@ class PeakSignalNoiseRatio(Metric):
             Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions and all batches.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -77,7 +81,7 @@ class PeakSignalNoiseRatio(Metric):
         base: float = 10.0,
         reduction: str = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
