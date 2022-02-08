@@ -297,8 +297,9 @@ automatically try to reduce the computations needed by finding groups of metrics
 that share the same underlying metric state. If such metrics are found only one
 of them is actually updated and the updated state will be broadcasted to the rest
 of the metrics. In the example above, this will lead to a 2x-3x lower computational
-cost compared to disabling this feature. See the `compute_groups` argument
-for more info.
+cost compared to disabling this feature. 
+However, this speedup comes with a high cost upfront, where the state-groups have to be determined after the first update. This cost can be significant for very low steps (approx. up to 100) but still leads to an overall speedup for everything beyond that. In case the groups are known beforehand, these can also be set manually to avoid the cost of the dynamic search.
+See the :param:`torchmetrics.MetricCollection.compute_groups` argument for more information on this topic.
 
 .. autoclass:: torchmetrics.MetricCollection
     :noindex:
