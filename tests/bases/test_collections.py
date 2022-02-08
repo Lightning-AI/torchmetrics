@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
+import time
 from copy import deepcopy
 
 import pytest
@@ -337,6 +338,45 @@ def test_check_compute_groups(metrics, expected):
     res_without_cg = m2.compute()
     for key in res_cg.keys():
         assert torch.allclose(res_cg[key], res_without_cg[key])
+
+
+@pytest.mark.parametrize(
+    "metrics",
+    [
+        {"acc0": Accuracy(3), "acc1": Accuracy(3)},
+        [Precision(3), Recall(3)],
+        [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
+        {
+            "acc": Accuracy(3),
+            "acc2": Accuracy(3),
+            "acc3": Accuracy(num_classes=3, average="macro"),
+            "f1": F1Score(3),
+            "recall": Recall(3),
+            "confmat": ConfusionMatrix(3),
+        },
+    ],
+)
+@pytest.mark.parametrize("steps", [100, 1000])
+def test_check_compute_groups_is_faster(metrics, steps):
+    """Check that compute groups are formed after initialization."""
+    m = MetricCollection(deepcopy(metrics), compute_groups=True)
+    # Construct without for comparison
+    m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+
+    start = time.time()
+    for _ in range(steps):
+        m.update(preds, target)
+    time_cg = time.time() - start
+
+    start = time.time()
+    for _ in range(steps):
+        m2.update(preds, target)
+    time_no_cg = time.time() - start
+
+    assert time_cg < time_no_cg, "using compute groups were not faster"
 
 
 def test_compute_group_define_by_user():
