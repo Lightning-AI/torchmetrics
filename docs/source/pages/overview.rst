@@ -27,7 +27,7 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
     from torchmetrics.classification import Accuracy
 
     train_accuracy = Accuracy()
-    valid_accuracy = Accuracy(compute_on_step=False)
+    valid_accuracy = Accuracy()
 
     for epoch in range(epochs):
         for x, y in train_data:
@@ -35,16 +35,24 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
 
             # training step accuracy
             batch_acc = train_accuracy(y_hat, y)
+            print(f"Accuracy of batch{i} is {batch_acc}")
 
         for x, y in valid_data:
             y_hat = model(x)
-            valid_accuracy(y_hat, y)
+            valid_accuracy.update(y_hat, y)
 
-    # total accuracy over all training batches
-    total_train_accuracy = train_accuracy.compute()
+        # total accuracy over all training batches
+        total_train_accuracy = train_accuracy.compute()
 
-    # total accuracy over all validation batches
-    total_valid_accuracy = valid_accuracy.compute()
+        # total accuracy over all validation batches
+        total_valid_accuracy = valid_accuracy.compute()
+
+        print(f"Training acc for epoch {epoch}: {total_train_accuracy}")
+        print(f"Validation acc for epoch {epoch}: {total_valid_accuracy}")
+
+        # Reset metric states after each epoch
+        train_accuracy.reset()
+        valid_accuracy.reset()
 
 .. note::
 

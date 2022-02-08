@@ -24,7 +24,7 @@ class _MultioutputMetric(Metric):
         self,
         base_metric_class,
         num_outputs: int = 1,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Any = None,
         dist_sync_fn: Optional[Callable] = None,
