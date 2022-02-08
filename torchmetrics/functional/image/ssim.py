@@ -18,7 +18,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel
+from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -84,15 +84,9 @@ def _ssim_compute(
     is_3d = len(preds.shape) == 5
 
     if not isinstance(kernel_size, Sequence):
-        if is_3d:
-            kernel_size = [kernel_size, kernel_size, kernel_size]
-        else:
-            kernel_size = [kernel_size, kernel_size]
+        [kernel_size, kernel_size, kernel_size] if is_3d else [kernel_size, kernel_size]
     if not isinstance(sigma, Sequence):
-        if is_3d:
-            sigma = [sigma, sigma, sigma]
-        else:
-            sigma = [sigma, sigma]
+        sigma = [sigma, sigma, sigma] if is_3d else [sigma, sigma]
 
     if len(kernel_size) != len(target.shape) - 2:
         raise ValueError(
@@ -130,12 +124,12 @@ def _ssim_compute(
         pad_d = (kernel_size[2] - 1) // 2
         preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
         target = F.pad(target, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
-        kernel = _3d_gaussian_kernel(channel, kernel_size, sigma, dtype, device)
+        kernel = _gaussian_kernel_3d(channel, kernel_size, sigma, dtype, device)
 
     else:
         preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
         target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-        kernel = _2d_gaussian_kernel(channel, kernel_size, sigma, dtype, device)
+        kernel = _gaussian_kernel_2d(channel, kernel_size, sigma, dtype, device)
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
