@@ -188,7 +188,7 @@ class MetricCollection(nn.ModuleDict):
         for idx, values in enumerate(temp.values()):
             self._groups[idx] = values
 
-    def _equal_metric_states(self, metric1, metric2):
+    def _equal_metric_states(self, metric1: Metric, metric2: Metric) -> bool:
         """Check if the metric state of two metrics are the same."""
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
@@ -314,7 +314,7 @@ class MetricCollection(nn.ModuleDict):
             self._groups_checked = True
         else:
             # Initialize all metrics as their own compute group
-            self._groups = {i: [k] for i, k in enumerate(self.keys(keep_base=False))}
+            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=False))}
 
     @property
     def compute_groups(self) -> Dict[int, List[str]]:
