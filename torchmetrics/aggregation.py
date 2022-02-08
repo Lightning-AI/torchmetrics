@@ -34,8 +34,11 @@ class BaseAggregator(Metric):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -59,7 +62,7 @@ class BaseAggregator(Metric):
         fn: Union[Callable, str],
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -120,8 +123,11 @@ class MaxMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -147,7 +153,7 @@ class MaxMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -185,8 +191,11 @@ class MinMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -212,7 +221,7 @@ class MinMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -250,8 +259,11 @@ class SumMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -277,7 +289,7 @@ class SumMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -308,8 +320,11 @@ class CatMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -335,7 +350,7 @@ class CatMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -371,8 +386,11 @@ class MeanMetric(BaseAggregator):
             - a float: if a float is provided will impude any `nan` values with this value
 
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is
-            set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -398,7 +416,7 @@ class MeanMetric(BaseAggregator):
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
