@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
+import time
+from copy import deepcopy
 
 import pytest
 import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
-from torchmetrics import Metric
-from torchmetrics.classification import Accuracy
-from torchmetrics.collections import MetricCollection
+from torchmetrics import Accuracy, CohenKappa, ConfusionMatrix, F1Score, Metric, MetricCollection, Precision, Recall
 
 seed_all(42)
 
@@ -278,3 +278,126 @@ def test_collection_filtering():
     mc2 = MetricCollection([MyAccuracy(), DummyMetric()])
     mc(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg")
     mc2(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg", kwarg2="kwarg2")
+
+
+@pytest.mark.parametrize(
+    "metrics, expected",
+    [
+        # single metric forms its own compute group
+        (Accuracy(3), {0: ["Accuracy"]}),
+        # two metrics of same class forms a compute group
+        ({"acc0": Accuracy(3), "acc1": Accuracy(3)}, {0: ["acc0", "acc1"]}),
+        # two metrics from registry froms a compute group
+        ([Precision(3), Recall(3)], {0: ["Precision", "Recall"]}),
+        # two metrics from different classes gives two compute groups
+        ([ConfusionMatrix(3), Recall(3)], {0: ["ConfusionMatrix"], 1: ["Recall"]}),
+        # multi group multi metric
+        (
+            [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
+            {0: ["ConfusionMatrix", "CohenKappa"], 1: ["Recall", "Precision"]},
+        ),
+        # Complex example
+        (
+            {
+                "acc": Accuracy(3),
+                "acc2": Accuracy(3),
+                "acc3": Accuracy(num_classes=3, average="macro"),
+                "f1": F1Score(3),
+                "recall": Recall(3),
+                "confmat": ConfusionMatrix(3),
+            },
+            {0: ["acc", "acc2", "f1", "recall"], 1: ["acc3"], 2: ["confmat"]},
+        ),
+    ],
+)
+def test_check_compute_groups(metrics, expected):
+    """Check that compute groups are formed after initialization."""
+    m = MetricCollection(deepcopy(metrics), compute_groups=True)
+    # Construct without for comparison
+    m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
+
+    assert len(m.compute_groups) == len(m)
+    assert m2.compute_groups == {}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    m.update(preds, target)
+    m2.update(preds, target)
+
+    assert m.compute_groups == expected
+    assert m2.compute_groups == {}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    # compute groups should kick in here
+    m.update(preds, target)
+    m2.update(preds, target)
+
+    # compare results for correctness
+    res_cg = m.compute()
+    res_without_cg = m2.compute()
+    for key in res_cg.keys():
+        assert torch.allclose(res_cg[key], res_without_cg[key])
+
+
+@pytest.mark.parametrize(
+    "metrics",
+    [
+        {"acc0": Accuracy(3), "acc1": Accuracy(3)},
+        [Precision(3), Recall(3)],
+        [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
+        {
+            "acc": Accuracy(3),
+            "acc2": Accuracy(3),
+            "acc3": Accuracy(num_classes=3, average="macro"),
+            "f1": F1Score(3),
+            "recall": Recall(3),
+            "confmat": ConfusionMatrix(3),
+        },
+    ],
+)
+@pytest.mark.parametrize("steps", [100, 1000])
+def test_check_compute_groups_is_faster(metrics, steps):
+    """Check that compute groups are formed after initialization."""
+    m = MetricCollection(deepcopy(metrics), compute_groups=True)
+    # Construct without for comparison
+    m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+
+    start = time.time()
+    for _ in range(steps):
+        m.update(preds, target)
+    time_cg = time.time() - start
+
+    start = time.time()
+    for _ in range(steps):
+        m2.update(preds, target)
+    time_no_cg = time.time() - start
+
+    assert time_cg < time_no_cg, "using compute groups were not faster"
+
+
+def test_compute_group_define_by_user():
+    """Check that user can provide compute groups."""
+    m = MetricCollection(
+        ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Precision"]]
+    )
+
+    # Check that we are not going to check the groups in the first update
+    assert m._groups_checked
+    assert m.compute_groups == {0: ["ConfusionMatrix"], 1: ["Recall", "Precision"]}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    m.update(preds, target)
+    assert m.compute()
+
+
+def test_error_on_wrong_specified_compute_groups():
+    """Test that error is raised if user mis-specify the compute groups."""
+    with pytest.raises(ValueError, match="Input Accuracy in `compute_groups`.*"):
+        MetricCollection(
+            ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Accuracy"]]
+        )
