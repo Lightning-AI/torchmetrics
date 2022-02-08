@@ -14,12 +14,11 @@
 from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -63,7 +62,11 @@ class InceptionScore(Metric):
         splits: integer determining how many splits the inception score calculation should be split among
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step
@@ -180,35 +183,3 @@ class InceptionScore(Metric):
 
         # return mean and std
         return kl.mean(), kl.std()
-
-
-class IS(InceptionScore):
-    r"""
-    Calculates the Inception Score (IS) which is used to access how realistic generated images are.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.image.InceptionScore`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
-        >>> inception = IS()
-        >>> # generate some images
-        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> inception.update(imgs)
-        >>> inception.compute()
-        (tensor(1.0544), tensor(0.0117))
-
-    """
-
-    @deprecated(target=InceptionScore, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        feature: Union[str, int, torch.nn.Module] = "logits_unbiased",
-        splits: int = 10,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
-    ) -> None:
-        void(feature, splits, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

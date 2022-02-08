@@ -14,7 +14,6 @@
 from typing import Any, Callable, Optional
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.functional.classification.matthews_corrcoef import (
@@ -22,7 +21,6 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     _matthews_corrcoef_update,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 
 
 class MatthewsCorrCoef(Metric):
@@ -56,7 +54,11 @@ class MatthewsCorrCoef(Metric):
         threshold:
             Threshold value for binary or multi-label probabilites.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -83,7 +85,7 @@ class MatthewsCorrCoef(Metric):
         self,
         num_classes: int,
         threshold: float = 0.5,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -112,29 +114,3 @@ class MatthewsCorrCoef(Metric):
     def compute(self) -> Tensor:
         """Computes matthews correlation coefficient."""
         return _matthews_corrcoef_compute(self.confmat)
-
-
-class MatthewsCorrcoef(MatthewsCorrCoef):
-    """Calculates `Matthews correlation coefficient`_ that measures the general correlation or quality of a
-    classification.
-
-    Example:
-        >>> matthews_corrcoef = MatthewsCorrcoef(num_classes=2)
-        >>> matthews_corrcoef(torch.tensor([0, 1, 0, 0]), torch.tensor([1, 1, 0, 0]))
-        tensor(0.5774)
-
-    .. deprecated:: v0.7
-        Renamed in favor of :class:`torchmetrics.MatthewsCorrCoef`. Will be removed in v0.8.
-    """
-
-    @deprecated(target=MatthewsCorrCoef, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        num_classes: int,
-        threshold: float = 0.5,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(num_classes, threshold, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

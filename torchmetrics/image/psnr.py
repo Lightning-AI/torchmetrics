@@ -14,12 +14,11 @@
 from typing import Any, Optional, Sequence, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 
 
 class PeakSignalNoiseRatio(Metric):
@@ -45,7 +44,11 @@ class PeakSignalNoiseRatio(Metric):
             Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
             None meaning scores will be reduced across all dimensions and all batches.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
@@ -78,7 +81,7 @@ class PeakSignalNoiseRatio(Metric):
         base: float = 10.0,
         reduction: str = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
@@ -147,29 +150,3 @@ class PeakSignalNoiseRatio(Metric):
             sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
             total = torch.cat([values.flatten() for values in self.total])
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
-
-
-class PSNR(PeakSignalNoiseRatio):
-    """Peak Signal Noise Ratio (PSNR).
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.PeakSignalNoiseRatio`. Will be removed in v0.8.
-
-    Example:
-        >>> psnr = PSNR()
-        >>> psnr(torch.tensor([[0.0, 1.0], [2.0, 3.0]]), torch.tensor([[3.0, 2.0], [1.0, 0.0]]))
-        tensor(2.5527)
-    """
-
-    @deprecated(target=PeakSignalNoiseRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        data_range: Optional[float] = None,
-        base: float = 10.0,
-        reduction: str = "elementwise_mean",
-        dim: Optional[Union[int, Tuple[int, ...]]] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ) -> None:
-        void(data_range, base, reduction, dim, compute_on_step, dist_sync_on_step, process_group)

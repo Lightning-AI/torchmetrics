@@ -14,13 +14,12 @@
 from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -117,7 +116,11 @@ class KernelInceptionDistance(Metric):
             change, the features can cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step
@@ -289,53 +292,3 @@ class KernelInceptionDistance(Metric):
 
     def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
         super().reset({*self._reset_excluded_states, *exclude_states})
-
-
-class KID(KernelInceptionDistance):
-    r"""
-    Calculates Kernel Inception Distance (KID) which is used to access the quality of generated images.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.image.KernelInceptionDistance`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
-        >>> kid = KID(subset_size=50)
-        >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> kid.update(imgs_dist1, real=True)
-        >>> kid.update(imgs_dist2, real=False)
-        >>> kid_mean, kid_std = kid.compute()
-        >>> print((kid_mean, kid_std))
-        (tensor(0.0337), tensor(0.0023))
-
-    """
-
-    @deprecated(target=KernelInceptionDistance, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        feature: Union[str, int, torch.nn.Module] = 2048,
-        subsets: int = 100,
-        subset_size: int = 1000,
-        degree: int = 3,
-        gamma: Optional[float] = None,  # type: ignore
-        coef: float = 1.0,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(
-            feature,
-            subsets,
-            subset_size,
-            degree,
-            gamma,
-            coef,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
-        )
