@@ -46,11 +46,11 @@ class MetricCollection(nn.ModuleDict):
 
         compute_groups:
             By default the MetricCollection will try to reduce the computations needed for the metrics in the collection
-            by checking if they belong to the same **compute group**. All metrics in a compute group share the same metric
-            state and are therefore only different in their compute step e.g. accuracy, precision and recall can all be
-            computed from the true positives/negatives and false positives/negatives. By default, this argument is ``True``
-            which enables this feature. Set this argument to `False` for disabling this behaviour. Can also be set to
-            a list of list of metrics for setting the compute groups yourself.
+            by checking if they belong to the same **compute group**. All metrics in a compute group share the same
+            metric state and are therefore only different in their compute step e.g. accuracy, precision and recall
+            can all be computed from the true positives/negatives and false positives/negatives. By default,
+            this argument is ``True`` which enables this feature. Set this argument to `False` for disabling
+            this behaviour. Can also be set to a list of list of metrics for setting the compute groups yourself.
 
     Raises:
         ValueError:
