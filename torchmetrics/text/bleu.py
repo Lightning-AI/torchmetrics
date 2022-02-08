@@ -99,7 +99,7 @@ class BLEUScore(Metric):
         self.add_state("numerator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
         self.add_state("denominator", torch.zeros(self.n_gram), dist_reduce_fx="sum")
 
-    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def _update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
@@ -117,7 +117,7 @@ class BLEUScore(Metric):
             _tokenize_fn,
         )
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Calculate BLEU score.
 
         Return:

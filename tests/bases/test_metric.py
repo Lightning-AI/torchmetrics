@@ -105,7 +105,7 @@ def test_reset_compute():
 
 def test_update():
     class A(DummyMetric):
-        def update(self, x):
+        def _update(self, x):
             self.x += x
 
     a = A()
@@ -121,10 +121,10 @@ def test_update():
 
 def test_compute():
     class A(DummyMetric):
-        def update(self, x):
+        def _update(self, x):
             self.x += x
 
-        def compute(self):
+        def _compute(self):
             return self.x
 
     a = A()
@@ -171,10 +171,10 @@ def test_hash():
 
 def test_forward():
     class A(DummyMetric):
-        def update(self, x):
+        def _update(self, x):
             self.x += x
 
-        def compute(self):
+        def _compute(self):
             return self.x
 
     a = A()

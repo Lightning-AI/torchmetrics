@@ -194,7 +194,7 @@ class StatScores(Metric):
         for s in ("tp", "fp", "tn", "fn"):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
         :ref:`references/modules:input types` for more information on input
         types.
@@ -236,7 +236,7 @@ class StatScores(Metric):
         fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
         return tp, fp, tn, fn
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes the stat scores based on inputs passed in to ``update`` previously.
 
         Return:

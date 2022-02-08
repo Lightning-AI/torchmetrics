@@ -114,7 +114,7 @@ class PrecisionRecallCurve(Metric):
             " For large datasets this may lead to large memory footprint."
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -129,7 +129,7 @@ class PrecisionRecallCurve(Metric):
         self.num_classes = num_classes
         self.pos_label = pos_label
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def _compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute the precision-recall curve.
 
         Returns:

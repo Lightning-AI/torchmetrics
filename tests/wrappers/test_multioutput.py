@@ -50,11 +50,11 @@ class _MultioutputMetric(Metric):
             dist_sync_fn=dist_sync_fn,
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+    def _update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
         """Update the each pair of outputs and predictions."""
         return self.metric.update(preds, target)
 
-    def compute(self) -> torch.Tensor:
+    def _compute(self) -> torch.Tensor:
         """Compute the R2 score between each pair of outputs and predictions."""
         return self.metric.compute()
 

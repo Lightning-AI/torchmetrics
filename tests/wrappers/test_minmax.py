@@ -15,7 +15,7 @@ seed_all(42)
 class TestingMinMaxMetric(MinMaxMetric):
     """wrap metric to fit testing framework."""
 
-    def compute(self):
+    def _compute(self):
         """instead of returning dict, return as list."""
         output_dict = super().compute()
         return [output_dict["raw"], output_dict["min"], output_dict["max"]]

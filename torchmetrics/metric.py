@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import functools
 import inspect
 import warnings
 from abc import ABC, abstractmethod
@@ -39,6 +38,18 @@ from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
+
+
+def is_overridden(method_name: str, instance: object, parent: object) -> bool:
+    """Tempoary needed function to make sure that users move from old interface of overwriting update and compute
+    to instead of implementing _update and _compute.
+
+    Remove in v0.9
+    """
+    instance_attr = getattr(instance, method_name)
+    parent_attr = getattr(parent, method_name)
+
+    return instance_attr.__code__ != parent_attr.__code__
 
 
 class Metric(Module, ABC):
@@ -99,7 +110,9 @@ class Metric(Module, ABC):
         self._device = torch.device("cpu")
 
         if compute_on_step is not None:
-            warnings.warn("Argument `decimal_places` is deprecated in v0.8 and will be removed in v0.9")
+            warnings.warn(
+                "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
+            )
 
         self.dist_sync_on_step = dist_sync_on_step
         self.process_group = process_group
@@ -107,9 +120,20 @@ class Metric(Module, ABC):
         self._to_sync = True
         self._should_unsync = True
 
-        self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
+        if is_overridden("update", self, Metric):
+            raise UserWarning(
+                "We detected that you have overwritten the ``update`` method, which was API"
+                " for torchmetrics v0.7 and below. Insted implement the ``_update`` method."
+                " (exact same as before just with a ``_`` infront to make the implementation private)"
+            )
+        if is_overridden("compute", self, Metric):
+            raise UserWarning(
+                "We detected that you have overwritten the ``compute`` method, which was API"
+                " for torchmetrics v0.7 and below. Insted implement the ``_compute`` method."
+                " (exact same as before just with a ``_`` infront to make the implementation private)"
+            )
+
+        self._update_signature = inspect.signature(self._update)
         self._computed = None
         self._forward_cache = None
         self._update_called = False
@@ -258,14 +282,10 @@ class Metric(Module, ABC):
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
 
-    def _wrap_update(self, update: Callable) -> Callable:
-        @functools.wraps(update)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
-            self._computed = None
-            self._update_called = True
-            return update(*args, **kwargs)
-
-        return wrapped_func
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        self._computed = None
+        self._update_called = True
+        self._update(*args, **kwargs)
 
     def sync(
         self,
@@ -359,40 +379,36 @@ class Metric(Module, ABC):
 
         self.unsync(should_unsync=self._is_synced and should_unsync)
 
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        @functools.wraps(compute)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Any:
-            if not self._update_called:
-                rank_zero_warn(
-                    f"The ``compute`` method of metric {self.__class__.__name__}"
-                    " was called before the ``update`` method which may lead to errors,"
-                    " as metric states have not yet been updated.",
-                    UserWarning,
-                )
+    def compute(self) -> Any:
+        if not self._update_called:
+            rank_zero_warn(
+                f"The ``compute`` method of metric {self.__class__.__name__}"
+                " was called before the ``update`` method which may lead to errors,"
+                " as metric states have not yet been updated.",
+                UserWarning,
+            )
 
-            # return cached value
-            if self._computed is not None:
-                return self._computed
-
-            # compute relies on the sync context manager to gather the states across processes and apply reduction
-            # if synchronization happened, the current rank accumulated states will be restored to keep
-            # accumulation going if ``should_unsync=True``,
-            with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
-            ):
-                value = compute(*args, **kwargs)
-                self._computed = _squeeze_if_scalar(value)
-
+        # return cached value
+        if self._computed is not None:
             return self._computed
 
-        return wrapped_func
+        # compute relies on the sync context manager to gather the states across processes and apply reduction
+        # if synchronization happened, the current rank accumulated states will be restored to keep
+        # accumulation going if ``should_unsync=True``,
+        with self.sync_context(
+            dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
+        ):
+            value = self._compute()
+            self._computed = _squeeze_if_scalar(value)
+
+        return self._computed
 
     @abstractmethod
-    def update(self, *_: Any, **__: Any) -> None:
+    def _update(self, *_: Any, **__: Any) -> None:
         """Override this method to update the state variables of your metric class."""
 
     @abstractmethod
-    def compute(self) -> Any:
+    def _compute(self) -> Any:
         """Override this method to compute the final metric value from state variables synchronized across the
         distributed backend."""
 
@@ -738,14 +754,14 @@ class CompositionalMetric(Metric):
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def _update(self, *args: Any, **kwargs: Any) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
         if isinstance(self.metric_b, Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
-    def compute(self) -> Any:
+    def _compute(self) -> Any:
 
         # also some parsing for kwargs?
         if isinstance(self.metric_a, Metric):

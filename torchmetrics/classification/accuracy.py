@@ -219,7 +219,7 @@ class Accuracy(StatScores):
         self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
         :ref:`references/modules:input types` for more information on input
         types.
@@ -271,7 +271,7 @@ class Accuracy(StatScores):
                 self.tn.append(tn)
                 self.fn.append(fn)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes accuracy based on inputs passed in to ``update`` previously."""
         if not self.mode:
             raise RuntimeError("You have to have determined mode.")

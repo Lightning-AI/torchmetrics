@@ -155,7 +155,7 @@ class BinnedPrecisionRecallCurve(Metric):
                 dist_reduce_fx="sum",
             )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """
         Args
             preds: (n_samples, n_classes) tensor
@@ -177,7 +177,7 @@ class BinnedPrecisionRecallCurve(Metric):
             self.FPs[:, i] += ((~target) & (predictions)).sum(dim=0)
             self.FNs[:, i] += ((target) & (~predictions)).sum(dim=0)
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def _compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Returns float tensor of size n_classes."""
         precisions = (self.TPs + METRIC_EPS) / (self.TPs + self.FPs + METRIC_EPS)
         recalls = self.TPs / (self.TPs + self.FNs + METRIC_EPS)
@@ -245,7 +245,7 @@ class BinnedAveragePrecision(BinnedPrecisionRecallCurve):
         [tensor(1.0000), tensor(1.0000), tensor(0.2500), tensor(0.2500), tensor(-0.)]
     """
 
-    def compute(self) -> Union[List[Tensor], Tensor]:  # type: ignore
+    def _compute(self) -> Union[List[Tensor], Tensor]:  # type: ignore
         precisions, recalls, _ = super().compute()
         return _average_precision_compute_with_precision_recall(precisions, recalls, self.num_classes, average=None)
 
@@ -320,7 +320,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
         )
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
+    def _compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
         """Returns float tensor of size n_classes."""
         precisions, recalls, thresholds = super().compute()
 

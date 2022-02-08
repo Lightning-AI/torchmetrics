@@ -140,13 +140,13 @@ class MultioutputWrapper(Metric):
             args_kwargs_by_output.append((selected_args, selected_kwargs))
         return args_kwargs_by_output
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def _update(self, *args: Any, **kwargs: Any) -> None:
         """Update each underlying metric with the corresponding output."""
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
             metric.update(*selected_args, **selected_kwargs)
 
-    def compute(self) -> List[torch.Tensor]:
+    def _compute(self) -> List[torch.Tensor]:
         """Compute metrics."""
         return [m.compute() for m in self.metrics]
 

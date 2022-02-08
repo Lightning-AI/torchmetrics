@@ -152,7 +152,7 @@ class InceptionScore(Metric):
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor) -> None:  # type: ignore
+    def _update(self, imgs: Tensor) -> None:  # type: ignore
         """Update the state with extracted features.
 
         Args:
@@ -161,7 +161,7 @@ class InceptionScore(Metric):
         features = self.inception(imgs)
         self.features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def _compute(self) -> Tuple[Tensor, Tensor]:
         features = dim_zero_cat(self.features)
         # random permute the features
         idx = torch.randperm(features.shape[0])

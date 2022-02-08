@@ -23,8 +23,8 @@ from torchmetrics import Accuracy, AveragePrecision, MetricCollection, SumMetric
 
 
 class DiffMetric(SumMetric):
-    def update(self, value):
-        super().update(-value)
+    def _update(self, value):
+        super()._update(-value)
 
 
 def test_metric_lightning(tmpdir):
