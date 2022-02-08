@@ -20,9 +20,9 @@ import pytest
 import torch
 from torch import Tensor, nn, tensor
 
-from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
+from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 seed_all(42)
 
@@ -100,10 +100,7 @@ def test_reset_compute():
     a.update(tensor(5))
     assert a.compute() == 5
     a.reset()
-    if not _LIGHTNING_AVAILABLE or _LIGHTNING_GREATER_EQUAL_1_3:
-        assert a.compute() == 0
-    else:
-        assert a.compute() == 5
+    assert a.compute() == 0
 
 
 def test_update():

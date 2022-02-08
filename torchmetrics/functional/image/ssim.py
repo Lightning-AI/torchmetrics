@@ -14,81 +14,13 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
-from torchmetrics.utilities import _future_warning
+from torchmetrics.functional.image.helper import _gaussian_kernel
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
-
-
-def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
-    """Computes 1D gaussian kernel.
-
-    Args:
-        kernel_size: size of the gaussian kernel
-        sigma: Standard deviation of the gaussian kernel
-        dtype: data type of the output tensor
-        device: device of the output tensor
-
-    Example:
-        >>> _gaussian(3, 1, torch.float, 'cpu')
-        tensor([[0.2741, 0.4519, 0.2741]])
-    """
-    dist = torch.arange(start=(1 - kernel_size) / 2, end=(1 + kernel_size) / 2, step=1, dtype=dtype, device=device)
-    gauss = torch.exp(-torch.pow(dist / sigma, 2) / 2)
-    return (gauss / gauss.sum()).unsqueeze(dim=0)  # (1, kernel_size)
-
-
-def _2d_gaussian_kernel(
-    channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
-) -> Tensor:
-    """Computes 2D gaussian kernel.
-
-    Args:
-        channel: number of channels in the image
-        kernel_size: size of the gaussian kernel as a tuple (h, w)
-        sigma: Standard deviation of the gaussian kernel
-        dtype: data type of the output tensor
-        device: device of the output tensor
-
-    Example:
-        >>> _2d_gaussian_kernel(1, (5,5), (1,1), torch.float, "cpu")
-        tensor([[[[0.0030, 0.0133, 0.0219, 0.0133, 0.0030],
-                  [0.0133, 0.0596, 0.0983, 0.0596, 0.0133],
-                  [0.0219, 0.0983, 0.1621, 0.0983, 0.0219],
-                  [0.0133, 0.0596, 0.0983, 0.0596, 0.0133],
-                  [0.0030, 0.0133, 0.0219, 0.0133, 0.0030]]]])
-    """
-
-    gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
-    gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
-    kernel = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
-
-    return kernel.expand(channel, 1, kernel_size[0], kernel_size[1])
-
-
-def _3d_gaussian_kernel(
-    channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
-) -> Tensor:
-    """Computes 3D gaussian kernel.
-
-    Args:
-        channel: number of channels in the image
-        kernel_size: size of the gaussian kernel as a tuple (h, w, d)
-        sigma: Standard deviation of the gaussian kernel
-        dtype: data type of the output tensor
-        device: device of the output tensor
-    """
-
-    gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
-    gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
-    gaussian_kernel_z = _gaussian(kernel_size[2], sigma[2], dtype, device)
-    kernel_xy = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
-    kernel = torch.mul(kernel_xy, gaussian_kernel_z.expand(kernel_size[0], kernel_size[1], kernel_size[2]))
-    return kernel.expand(channel, 1, kernel_size[0], kernel_size[1], kernel_size[2])
 
 
 def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
@@ -287,31 +219,6 @@ def structural_similarity_index_measure(
     """
     preds, target = _ssim_update(preds, target)
     return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
-
-
-@deprecated(target=structural_similarity_index_measure, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-def ssim(
-    preds: Tensor,
-    target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
-    data_range: Optional[float] = None,
-    k1: float = 0.01,
-    k2: float = 0.03,
-) -> Tensor:
-    """Computes Structural Similarity Index Measure.
-
-    .. deprecated:: v0.7
-        Use :func:`torchmetrics.functional.scale_invariant_signal_noise_ratio`. Will be removed in v0.8.
-
-    Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> ssim(preds, target)
-        tensor(0.9219)
-    """
-    return void(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
 
 
 def _get_normalized_sim_and_cs(

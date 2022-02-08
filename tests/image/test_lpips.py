@@ -46,6 +46,8 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, reduction: str = "mea
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
 class TestLPIPS(MetricTester):
+    atol: float = 1e-6
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
         """test modular implementation for correctness."""

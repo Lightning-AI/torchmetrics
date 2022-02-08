@@ -14,21 +14,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
 
 
+- Added new image metric `UniversalImageQualityIndex` ([#824](https://github.com/PyTorchLightning/metrics/pull/824))
+
+
 - Added support for 3D image in `StructuralSimilarityIndexMeasure` ([#818](https://github.com/PyTorchLightning/metrics/pull/818))
 
 
 ### Changed
 
-- Used `torch.bucketize` in calibration error when `torch>1.8` for faster computations ([#769](https://github.com/PyTorchLightning/metrics/pull/769))
 
 ### Deprecated
 
 
 ### Removed
 
+- Removed support for versions of Lightning lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))
+
+
 - Removed deprecated functions, and warnings in Text ([#773](https://github.com/PyTorchLightning/metrics/pull/773))
   * `functional.wer`
   * `WER`
+- Removed deprecated functions and warnings in Image ([#796](https://github.com/PyTorchLightning/metrics/pull/796))
+  * `functional.ssim`
+  * `functional.psnr`
+  * `SSIM`
+  * `PSNR`
+
+
+- Removed deprecated functions, and warnings in classification and regression ([#806](https://github.com/PyTorchLightning/metrics/pull/806))
+  * `FBeta`
+  * `F1`
+  * `Hinge`
+  * `IoU`
+  * `functional.iou`
+  * `MatthewsCorrcoef`
+  * `PearsonCorrcoef`
+  * `SpearmanCorrcoef`
+  * `functional.fbeta`
+  * `functional.f1`
+  * `functional.hinge`
+
 
 
 - Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/PyTorchLightning/metrics/pull/804))
@@ -53,16 +78,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
+- Improved testing speed ([#820](https://github.com/PyTorchLightning/metrics/pull/820))
 
 
-- Fixed Matthews correlation coefficient when the denominator is 0 ([#781](https://github.com/PyTorchLightning/metrics/pull/781))
+## [0.7.1] - 2022-02-03
 
+### Changed
 
+- Used `torch.bucketize` in calibration error when `torch>1.8` for faster computations ([#769](https://github.com/PyTorchLightning/metrics/pull/769))
 - Improve mAP performance ([#742](https://github.com/PyTorchLightning/metrics/pull/742))
 
+### Fixed
 
-- Improved testing speed ([#820](https://github.com/PyTorchLightning/metrics/pull/820))
+- Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
+- Fixed Matthews correlation coefficient when the denominator is 0 ([#781](https://github.com/PyTorchLightning/metrics/pull/781))
 
 
 ## [0.7.0] - 2022-01-17
