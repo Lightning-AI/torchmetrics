@@ -19,7 +19,7 @@ import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyMetricDiff, DummyMetricSum
-from torchmetrics import F1, Accuracy, CohenKappa, ConfusionMatrix, Metric, MetricCollection, Precision, Recall
+from torchmetrics import Accuracy, CohenKappa, ConfusionMatrix, F1Score, Metric, MetricCollection, Precision, Recall
 
 seed_all(42)
 
@@ -301,7 +301,7 @@ def test_collection_filtering():
                 "acc": Accuracy(3),
                 "acc2": Accuracy(3),
                 "acc3": Accuracy(num_classes=3, average="macro"),
-                "f1": F1(3),
+                "f1": F1Score(3),
                 "recall": Recall(3),
                 "confmat": ConfusionMatrix(3),
             },
