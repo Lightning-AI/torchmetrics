@@ -553,26 +553,3 @@ def test_compositional_metrics_update():
 
     assert compos.metric_a._num_updates == 3
     assert compos.metric_b._num_updates == 3
-
-
-@pytest.mark.parametrize("compute_on_step", [True, False])
-@pytest.mark.parametrize("metric_b", [4, DummyMetric(4)])
-def test_compositional_metrics_forward(compute_on_step, metric_b):
-    """test forward method of compositional metrics."""
-    metric_a = DummyMetric(5)
-    metric_a.compute_on_step = compute_on_step
-    compos = metric_a + metric_b
-
-    assert isinstance(compos, CompositionalMetric)
-    for _ in range(3):
-        val = compos()
-        assert val == 9 if compute_on_step else val is None
-
-    assert isinstance(compos.metric_a, DummyMetric)
-    assert compos.metric_a._num_updates == 3
-
-    if isinstance(metric_b, DummyMetric):
-        assert isinstance(compos.metric_b, DummyMetric)
-        assert compos.metric_b._num_updates == 3
-
-    compos.reset()
