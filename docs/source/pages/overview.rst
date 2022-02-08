@@ -309,8 +309,7 @@ cost compared to disabling this feature. However, this speedup comes with a high
 the state-groups have to be determined after the first update. This cost can be significant for very
 low steps (approx. up to 100) but still leads to an overall speedup for everything beyond that.
 In case the groups are known beforehand, these can also be set manually to avoid the cost of the
-dynamic search. See the :param:`torchmetrics.MetricCollection.compute_groups` argument for more
-information on this topic.
+dynamic search. See the *compute_groups* argument in the class docs below for more information on this topic.
 
 .. autoclass:: torchmetrics.MetricCollection
     :noindex:
