@@ -84,7 +84,7 @@ def _ssim_compute(
     is_3d = len(preds.shape) == 5
 
     if not isinstance(kernel_size, Sequence):
-        [kernel_size, kernel_size, kernel_size] if is_3d else [kernel_size, kernel_size]
+        kernel_size = [kernel_size, kernel_size, kernel_size] if is_3d else [kernel_size, kernel_size]
     if not isinstance(sigma, Sequence):
         sigma = [sigma, sigma, sigma] if is_3d else [sigma, sigma]
 
