@@ -21,6 +21,7 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Uni
 
 import torch
 from torch import Tensor
+from torch._C._distributed_c10d import ProcessGroup
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
@@ -70,25 +71,46 @@ class Metric(Module, ABC):
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
         process_group:
             Specify the process group on which synchronization is called.
             default: `None` (which selects the entire world)
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
+        metric_kwargs: additional keyword arguments
+
+            - dist_sync_on_step: If metric state should synchronize on ``forward()``
+            - process_group: The process group on which the synchonization is called
+            - dist_sync_fn: function that performs the allgather option on the metric state
     """
 
     __jit_ignored_attributes__ = ["device"]
     __jit_unused_properties__ = ["is_differentiable"]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
+    dist_sync_on_step: bool = False
+    process_group: Optional[ProcessGroup] = None
+    dist_sync_fn: Optional[Callable] = None
 
     def __init__(
         self,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        **metric_kwargs: Any,
     ) -> None:
         super().__init__()
 
@@ -99,20 +121,40 @@ class Metric(Module, ABC):
         self._device = torch.device("cpu")
 
         if compute_on_step is not None:
-            warnings.warn("Argument `decimal_places` is deprecated in v0.8 and will be removed in v0.9")
+            warnings.warn("Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9")
 
-        self.dist_sync_on_step = dist_sync_on_step
-        self.process_group = process_group
-        self.dist_sync_fn = dist_sync_fn
-        self._to_sync = True
-        self._should_unsync = True
+        if "dist_sync_on_step" in metric_kwargs:
+            self.dist_sync_on_step: bool = metric_kwargs.pop("dist_sync_on_step")
+            if not isinstance(self.dist_sync_on_step, bool):
+                raise ValueError(
+                    f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
+                )
 
+        if "process_group" in metric_kwargs:
+            self.process_group: Optional[ProcessGroup] = metric_kwargs.pop("process_group")
+            if not isinstance(self.process_group, ProcessGroup):
+                raise ValueError(
+                    "Expected keyword argument `process_group` to be an instance of"
+                    f" `torch._C._distributed_c10d.ProcessGroup` but got {self.process_group}"
+                )
+
+        if "dist_sync_fn" in metric_kwargs:
+            self.dist_sync_fn: Optional[bool] = metric_kwargs.pop("dist_sync_fn")
+            if not isinstance(self.dist_sync_fn, Callable):
+                raise ValueError(
+                    "Expected keyword argument `dist_sync_fn` to be an callable function"
+                    f" but got {self.dist_sync_fn}"
+                )
+
+        # initialize
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
         self._computed = None
         self._forward_cache = None
         self._update_called = False
+        self._to_sync = True
+        self._should_unsync = True
 
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
