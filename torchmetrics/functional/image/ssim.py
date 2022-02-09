@@ -395,5 +395,5 @@ def multiscale_structural_similarity_index_measure(
     if normalize and normalize not in ("relu", "simple"):
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
-    preds, target = _ssim_update(preds, target, len(kernel_size))
+    preds, target = _ssim_update(preds, target)
     return _multiscale_ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
