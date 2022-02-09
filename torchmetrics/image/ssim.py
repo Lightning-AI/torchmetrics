@@ -207,7 +207,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             preds: Predictions from model of shape `[N, C, H, W]`
             target: Ground truth values of shape `[N, C, H, W]`
         """
-        preds, target = _ssim_update(preds, target, len(self.kernel_size))
+        preds, target = _ssim_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 

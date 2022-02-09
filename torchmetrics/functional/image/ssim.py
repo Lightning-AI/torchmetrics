@@ -90,7 +90,8 @@ def _ssim_compute(
 
     if len(kernel_size) != len(target.shape) - 2:
         raise ValueError(
-            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, which is: {len(target.shape)}"
+            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, "
+            f"which is: {len(target.shape)}"
         )
     if len(kernel_size) != len(sigma):
         raise ValueError(
