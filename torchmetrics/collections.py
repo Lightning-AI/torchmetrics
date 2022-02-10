@@ -19,6 +19,7 @@ from torch import Tensor, nn
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import _flatten_dict
 
 # this is just a bypass for this module name collision with build-in one
 from torchmetrics.utilities.imports import OrderedDict
@@ -130,7 +131,7 @@ class MetricCollection(nn.ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+        return _flatten_dict({k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()})
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Iteratively call update for each metric.
@@ -218,8 +219,8 @@ class MetricCollection(nn.ModuleDict):
                     mi = getattr(self, cg[i])
                     for state in m0._defaults:
                         setattr(mi, state, getattr(m0, state))
-
-        return {k: m.compute() for k, m in self.items()}
+        res = {k: m.compute() for k, m in self.items()}
+        return _flatten_dict(res)
 
     def reset(self) -> None:
         """Iteratively call reset for each metric."""

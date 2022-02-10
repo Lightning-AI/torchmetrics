@@ -710,6 +710,12 @@ BootStrapper
 .. autoclass:: torchmetrics.BootStrapper
     :noindex:
 
+ClasswiseWrapper
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ClasswiseWrapper
+    :noindex:
+
 MetricTracker
 ~~~~~~~~~~~~~
 
