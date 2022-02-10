@@ -77,16 +77,16 @@ def _ssim_compute(
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> preds, target = _ssim_update(preds, target, 2)
+        >>> preds, target = _ssim_update(preds, target)
         >>> _ssim_compute(preds, target)
         tensor(0.9219)
     """
     is_3d = len(preds.shape) == 5
 
     if not isinstance(kernel_size, Sequence):
-        kernel_size = [kernel_size, kernel_size, kernel_size] if is_3d else [kernel_size, kernel_size]
+        kernel_size = 3*[kernel_size] if is_3d else 2*[kernel_size]
     if not isinstance(sigma, Sequence):
-        sigma = [sigma, sigma, sigma] if is_3d else [sigma, sigma]
+        sigma = 3*[sigma] if is_3d else 2*[sigma]
 
     if len(kernel_size) != len(target.shape) - 2:
         raise ValueError(
