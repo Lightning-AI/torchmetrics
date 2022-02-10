@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 from torch import Tensor
 
@@ -61,13 +61,13 @@ class ClasswiseWrapper(Metric):
         self.metric = metric
         self.labels = labels
 
-    def _convert(self, x: Tensor) -> Dict[Union[str, int], float]:
+    def _convert(self, x: Tensor) -> Dict[str, Any]:
         name = self.metric.__class__.__name__.lower()
         if self.labels is None:
             return {f"{name}_{i}": val for i, val in enumerate(x)}
         return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
 
-    def update(self, *args, **kwargs) -> None:
+    def update(self, *args: Any, **kwargs: Any) -> None:
         self.metric.update(*args, **kwargs)
 
     def compute(self) -> Dict[str, Tensor]:
