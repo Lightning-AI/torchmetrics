@@ -6,10 +6,12 @@ from torchmetrics import Metric
 
 
 class ClasswiseWrapper(Metric):
-    """Wrapper class for altering the output of classification metrics that returns multiple values.
+    """Wrapper class for altering the output of classification metrics that returns multiple values to include
+    label information.
 
     Args:
-        metric: base metric that should be wrapped
+        metric: base metric that should be wrapped. It is assumed that the metric outputs a single
+            tensor that is split along the first dimension.
 
         class_labels: list of strings indicating the different classes.
 
