@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
@@ -51,7 +51,20 @@ def dim_zero_min(x: Tensor) -> Tensor:
 
 
 def _flatten(x: Sequence) -> list:
+    """flatten list of list into single list."""
     return [item for sublist in x for item in sublist]
+
+
+def _flatten_dict(x: Dict) -> Dict:
+    """flatten dict of dicts into single dict."""
+    new_dict = {}
+    for key, value in x.items():
+        if isinstance(value, dict):
+            for k, v in value.items():
+                new_dict[k] = v
+        else:
+            new_dict[key] = value
+    return new_dict
 
 
 def to_onehot(
