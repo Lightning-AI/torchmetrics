@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional
 
 from torch import Tensor
 
@@ -13,7 +13,7 @@ class ClasswiseWrapper(Metric):
         metric: base metric that should be wrapped. It is assumed that the metric outputs a single
             tensor that is split along the first dimension.
 
-        class_labels: list of strings indicating the different classes.
+        labels: list of strings indicating the different classes.
 
     Example:
         >>> import torch
