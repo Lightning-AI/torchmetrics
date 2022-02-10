@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class StructuralSimilarityIndexMeasure(Metric):
-    """Computes Structual Similarity Index Measure (SSIM_).
+    """Computes Structual Similarity Index Measure (SSIM_). Supports both 2D and 3D images.
 
     Args:
         kernel_size: size of the gaussian kernel
