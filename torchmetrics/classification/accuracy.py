@@ -184,10 +184,9 @@ class Accuracy(StatScores):
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = None,
+        dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
-        **kwargs,
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
@@ -207,9 +206,6 @@ class Accuracy(StatScores):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
@@ -219,6 +215,10 @@ class Accuracy(StatScores):
         self.subset_accuracy = subset_accuracy
         self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
+
+        if self.subset_accuracy:
+            self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
