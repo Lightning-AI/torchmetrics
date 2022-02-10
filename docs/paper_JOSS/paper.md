@@ -55,7 +55,7 @@ A main problem with reproducing machine learning publications is the variance of
 
 There have been a few attempts at tackling the reproducibility issues. Papers With Code [@papers_with_code] links research code with its corresponding paper. Similarly, arXiv [@arxiv] recently added a code and data section that links both official and community code to papers. However, these methods rely on the paper code to be made publicly accessible which is not always possible. Our approach is to provide the de-facto reference implementation for metrics. This approach enables proprietary work to still be comparable as long as they’ve used our reference implementations.
 
-We introduce TorchMetrics, a general-purpose metrics package that covers a wide variety of tasks and domains used in the machine learning community. TorchMetrics provides standard classification and regression metrics; and domain-specific metrics for audio, computer vision, natural language processing, and information retrieval. Our process for adding a new metric is as follows, first we integrate a well-tested and established third-party library. Once we’ve verified the implementations and written tests for them, we re-implement them in native PyTorch to enable hardware acceleration and remove any bottlenecks in inter-device transfer.
+We introduce TorchMetrics, a general-purpose metrics package that covers a wide variety of tasks and domains used in the machine learning community. TorchMetrics provides standard classification and regression metrics; and domain-specific metrics for audio, computer vision, natural language processing, and information retrieval. Our process for adding a new metric is as follows, first we integrate a well-tested and established third-party library. Once we’ve verified the implementations and written tests for them, we re-implement them in native PyTorch [@pytorch] to enable hardware acceleration and remove any bottlenecks in inter-device transfer.
 
 # Statement of need
 
@@ -99,7 +99,7 @@ In addition to stateful metrics (called modular metrics in TorchMetrics), we als
 
 TorchMetrics exhibits high test coverage on the various configurations, including all three major OS platforms (Linux, macOS, and Windows), and various Python, CUDA, and PyTorch versions. We test both minimum and latest package requirements for all combinations of OS and Python versions and include additional tests for each PyTorch version from 1.3 up to future development versions. On every pull request and merge to master, we run a full test suite. All standard tests run on CPU. In addition, we run all tests on a multi-GPU setting which reflects realistic Deep Learning workloads. For usability, we have auto-generated HTML documentation (hosted at [readthedocs](https://torchmetrics.readthedocs.io/en/stable/)) from the source code which updates in real-time with new merged pull requests.
 
-TorchMetrics is released under the Apache 2.0 license. The source code is available at https://github.com/PytorchLightning/metrics.
+TorchMetrics is released under the Apache 2.0 license. The source code is available at https://github.com/PyTorchLightning/metrics.
 
 # Acknowledgement
 

@@ -21,13 +21,12 @@ from torchmetrics.classification.binned_precision_recall import BinnedRecallAtFi
 from torchmetrics.classification.calibration_error import CalibrationError  # noqa: F401
 from torchmetrics.classification.cohen_kappa import CohenKappa  # noqa: F401
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix  # noqa: F401
-from torchmetrics.classification.f_beta import F1, F1Score, FBeta, FBetaScore  # noqa: F401
+from torchmetrics.classification.f_beta import F1Score, FBetaScore  # noqa: F401
 from torchmetrics.classification.hamming import HammingDistance  # noqa: F401
-from torchmetrics.classification.hinge import Hinge, HingeLoss  # noqa: F401
-from torchmetrics.classification.iou import IoU  # noqa: F401
+from torchmetrics.classification.hinge import HingeLoss  # noqa: F401
 from torchmetrics.classification.jaccard import JaccardIndex  # noqa: F401
 from torchmetrics.classification.kl_divergence import KLDivergence  # noqa: F401
-from torchmetrics.classification.matthews_corrcoef import MatthewsCorrCoef, MatthewsCorrcoef  # noqa: F401
+from torchmetrics.classification.matthews_corrcoef import MatthewsCorrCoef  # noqa: F401
 from torchmetrics.classification.precision_recall import Precision, Recall  # noqa: F401
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.ranking import (  # noqa: F401

@@ -44,7 +44,7 @@ Internal implementation details
 -------------------------------
 
 This section briefly describes how metrics work internally. We encourage looking at the source code for more info.
-Internally, Lightning wraps the user defined ``update()`` and ``compute()`` method. We do this to automatically
+Internally, TorchMetrics wraps the user defined ``update()`` and ``compute()`` method. We do this to automatically
 synchronize and reduce metric states across multiple devices. More precisely, calling ``update()`` does the
 following internally:
 
@@ -64,7 +64,7 @@ The cache is first emptied on the next call to ``update``.
 
 ``forward`` serves the dual purpose of both returning the metric on the current data and updating the internal
 metric state for accumulating over multiple batches. The ``forward()`` method achieves this by combining calls
-to ``update`` and ``compute`` in the following way (assuming metric is initialized with ``compute_on_step=True``):
+to ``update`` and ``compute`` in the following way:
 
 1. Calls ``update()`` to update the global metric state (for accumulation over multiple batches)
 2. Caches the global state.
