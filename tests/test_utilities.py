@@ -16,7 +16,7 @@ import torch
 from torch import tensor
 
 from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn
-from torchmetrics.utilities.data import get_num_classes, to_categorical, to_onehot
+from torchmetrics.utilities.data import _flatten, _flatten_dict, get_num_classes, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 
 
@@ -102,3 +102,17 @@ def test_to_categorical():
 )
 def test_get_num_classes(preds, target, num_classes, expected_num_classes):
     assert get_num_classes(preds, target, num_classes) == expected_num_classes
+
+
+def test_flatten_list():
+    """Check that _flatten utility function works as expected."""
+    inp = [[1, 2, 3], [4, 5], [6]]
+    out = _flatten(inp)
+    assert out == [1, 2, 3, 4, 5, 6]
+
+
+def test_flatten_dict():
+    """Check that _flatten_dict utility function works as expected."""
+    inp = {"a": {"b": 1, "c": 2}, "d": 3}
+    out = _flatten_dict(inp)
+    assert out == {"b": 1, "c": 2, "d": 3}
