@@ -65,8 +65,7 @@ class ClasswiseWrapper(Metric):
         name = self.metric.__class__.__name__.lower()
         if self.labels is None:
             return {f"{name}_{i}": val for i, val in enumerate(x)}
-        else:
-            return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
+        return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
 
     def update(self, *args, **kwargs) -> None:
         self.metric.update(*args, **kwargs)
