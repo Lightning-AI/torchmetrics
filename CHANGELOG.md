@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [0.7.2] - 2022-02-10
+
+### Fixed
+
+- Minor patches in JOSS paper.
+
+
 ## [0.7.1] - 2022-02-03
 
 ### Changed

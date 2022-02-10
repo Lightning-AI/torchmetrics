@@ -18,7 +18,6 @@ jobs:
       - name: GH Workflows
         run: |
           check-jsonschema .github/workflows/*.yml --builtin-schema "github-workflows"
-          check-jsonschema .github/actions/*/*.yml --builtin-schema "github-actions"
 
       - name: Azure Pipelines
         run: |
