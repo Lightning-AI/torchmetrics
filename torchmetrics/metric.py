@@ -121,7 +121,9 @@ class Metric(Module, ABC):
         self._device = torch.device("cpu")
 
         if compute_on_step is not None:
-            warnings.warn("Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9")
+            warnings.warn(
+                "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
+            )
 
         if "dist_sync_on_step" in metric_kwargs:
             self.dist_sync_on_step: bool = metric_kwargs.pop("dist_sync_on_step")
@@ -132,15 +134,15 @@ class Metric(Module, ABC):
 
         if "process_group" in metric_kwargs:
             self.process_group: Optional[ProcessGroup] = metric_kwargs.pop("process_group")
-            if not isinstance(self.process_group, ProcessGroup):
+            if self.process_group is not None and not isinstance(self.process_group, ProcessGroup):
                 raise ValueError(
                     "Expected keyword argument `process_group` to be an instance of"
                     f" `torch._C._distributed_c10d.ProcessGroup` but got {self.process_group}"
                 )
 
         if "dist_sync_fn" in metric_kwargs:
-            self.dist_sync_fn: Optional[bool] = metric_kwargs.pop("dist_sync_fn")
-            if not isinstance(self.dist_sync_fn, Callable):
+            self.dist_sync_fn: Optional[Callable] = metric_kwargs.pop("dist_sync_fn")
+            if self.dist_sync_fn is not None and not isinstance(self.dist_sync_fn, Callable):
                 raise ValueError(
                     "Expected keyword argument `dist_sync_fn` to be an callable function"
                     f" but got {self.dist_sync_fn}"

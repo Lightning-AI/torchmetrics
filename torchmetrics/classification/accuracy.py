@@ -184,9 +184,10 @@ class Accuracy(StatScores):
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
+        dist_sync_on_step: bool = None,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
+        **kwargs,
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:

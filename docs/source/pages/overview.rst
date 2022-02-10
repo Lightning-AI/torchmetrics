@@ -337,3 +337,8 @@ In practise this means that:
     val = metric.compute() # this value cannot be back-propagated
 
 A functional metric is differentiable if its corresponding modular metric is differentiable.
+
+
+****************************
+Advance distributed settings
+****************************
