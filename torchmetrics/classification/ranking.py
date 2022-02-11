@@ -11,38 +11,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Optional
 
 import torch
 from torch import Tensor
 
-from torchmetrics.classification.ranking import _coverage_error_compute, _coverage_error_update
+from torchmetrics.functional.classification.ranking import _coverage_error_compute, _coverage_error_update
 from torchmetrics.metric import Metric
 
 
 class CoverageError(Metric):
-    def __init__(
-            self,
-        ):
-        self.add_state("coverage", torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("numel", torch.tensor(0), dist_reduce_fx="sum")
-        self.add_state("weight", torch.tensor(0), dist_reduce_fx="sum")
+
+    higher_is_better: bool = False
+    is_differentiable: bool = False
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.add_state("coverage", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
-        coverage, numel, sample_weight = _coverage_error_update(
-            preds, target, sample_weight
-        )
+        coverage, numel, sample_weight = _coverage_error_update(preds, target, sample_weight)
         self.coverage += coverage
         self.numel += numel
-        self.weight += sample_weight
+        if sample_weight is not None:
+            self.weight += sample_weight
 
     def compute(self) -> Tensor:
-        return _coverage_error_compute(self.coverage, self.numel, self.sample_weight)
+        return _coverage_error_compute(self.coverage, self.numel, self.weight)
 
 
 class LabelRankingAveragePrecisionScore(Metric):
-    def __init__(
-        self
-    )
+    def __init__(self):
+        pass
+
 
 class LabelRankingLoss(Metric):
+    pass

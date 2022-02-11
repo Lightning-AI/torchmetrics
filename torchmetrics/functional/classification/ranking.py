@@ -16,29 +16,38 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _input_format_classification
-
 
 def rank_data(x: Tensor) -> Tensor:
-    _, inverse, counts = torch.unique(
-        x, sorted=True, return_inverse=True, return_counts=True)
+    """Rank data based on values."""
+    _, inverse, counts = torch.unique(x, sorted=True, return_inverse=True, return_counts=True)
     ranks = counts.cumsum(dim=0)
     return ranks[inverse]
 
 
-def _check_ranking_input(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor
+def _check_ranking_input(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
+    if preds.ndim != 2 or target.ndim != 2:
+        raise ValueError(
+            "Expected both predictions and target to matrices of shape `[N,C]`"
+            f" but got {preds.ndim} and {target.ndim}"
+        )
+    if preds.shape != target.shape:
+        raise ValueError("Expected both predictions and target to have same shape")
+    if sample_weight is not None:
+        if sample_weight.ndim != 1 or sample_weight.shape[0] != preds.shape[0]:
+            raise ValueError(
+                "Expected sample weights to be 1 dimensional and have same size"
+                f" as the first dimension of preds and target but got {sample_weight.shape}"
+            )
+
+    return preds, target
 
 
-    return preds
-
-def _coverage_error_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tuple[Tensor, int, Optional[Tensor]]:
-    preds, target = _input_format_classification(
-        preds: Tensor,
-        target: Tensor,
-        threshold: float = 0.5,
-    )
+def _coverage_error_update(
+    preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
+) -> Tuple[Tensor, int, Optional[Tensor]]:
+    preds, target = _check_ranking_input(preds, target)
     offset = torch.zeros_like(preds)
-    offset[target == 0] = 1.1  # Any number >1 works
+    offset[target == 0] = preds.min().abs() + 10  # Any number >1 works
     preds_mod = preds + offset
     preds_min = preds_mod.min(dim=1)[0]
     coverage = (preds >= preds_min[:, None]).sum(dim=1).to(torch.float32)
@@ -49,7 +58,7 @@ def _coverage_error_update(preds: Tensor, target: Tensor, sample_weight: Optiona
 
 
 def _coverage_error_compute(coverage: Tensor, n_elements: int, sample_weight: Optional[Tensor] = None) -> Tensor:
-    if sample_weight is not None:
+    if sample_weight is not None and sample_weight != 0.0:
         return coverage / sample_weight
     return coverage / n_elements
 
@@ -59,33 +68,21 @@ def coverage_error(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor
     return _coverage_error_compute(coverage, n_elements, sample_weight)
 
 
-def coverage_error(y_pred, y_true, sample_weights=None):
-    offset = torch.zeros_like(y_pred)
-    offset[y_true == 0] = 1.1  # Any number >1 works
-    y_pred_mod = y_pred + offset
-    y_pred_min = y_pred_mod.min(dim=1)[0]
-    coverage = (y_pred >= y_pred_min[:, None]).sum(dim=1).to(torch.float32)
-
-    if sample_weights is not None:
-        coverage *= sample_weights
-        return coverage.sum() / sample_weights.sum()
-
-    return coverage.mean()
-
-
 def _label_ranking_average_precision_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None):
     # Invert so that the highest score receives rank 1
     preds = -preds
-    relevant =
+    pass
+
 
 def _label_ranking_average_precision_compute():
+    pass
 
 
 def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
+    pass
 
 
-
-def label_ranking_average_precision(y_pred, y_true, sample_weights=None):
+def sk_label_ranking_average_precision(y_pred, y_true, sample_weights=None):
     # Invert so that the highest score receives rank 1
     y_pred = -y_pred
 
@@ -112,7 +109,6 @@ def label_ranking_average_precision(y_pred, y_true, sample_weights=None):
     return score
 
 
-
 def _label_ranking_loss_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None):
     n_labels = preds.shape[1]
     relevant = target == 1
@@ -134,19 +130,18 @@ def _label_ranking_loss_update(preds: Tensor, target: Tensor, sample_weight: Opt
     denom = n_relevant * (n_labels - n_relevant)
     loss = (per_label_loss.sum(dim=1) - correction) / denom
 
-    if sample_weights is not None:
-        coverage *= sample_weights
-        return coverage.sum() / sample_weights.sum()
+    return loss
 
 
 def _label_ranking_loss_compute():
+    pass
 
 
 def label_ranking_loss(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
+    pass
 
 
-
-def label_ranking_loss(y_pred, y_true, sample_weights=None):
+def sk_label_ranking_loss(y_pred, y_true, sample_weights=None):
     n_labels = y_pred.shape[1]
     relevant = y_true == 1
     n_relevant = relevant.sum(dim=1)
