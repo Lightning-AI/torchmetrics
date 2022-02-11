@@ -166,8 +166,8 @@ def _ssim_compute(
 def structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
+    kernel_size: Union[int, Sequence[int]] = 11,
+    sigma: Union[float, Sequence[float]] = 1.5,
     reduction: str = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
@@ -219,8 +219,8 @@ def structural_similarity_index_measure(
 def _get_normalized_sim_and_cs(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
+    kernel_size: Union[int, Sequence[int]] = 11,
+    sigma: Union[float, Sequence[float]] = 1.5,
     reduction: str = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
