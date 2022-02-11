@@ -92,7 +92,7 @@ class Metric(Module, ABC):
                 Argument is deprecated and will be removed in v0.9 in favour of instead
                 passing it in as keyword argument.
 
-        metric_kwargs: additional keyword arguments
+        metric_kwargs: additional keyword arguments, see `Metric kwargs`_ for more info.
 
             - dist_sync_on_step: If metric state should synchronize on ``forward()``
             - process_group: The process group on which the synchonization is called
