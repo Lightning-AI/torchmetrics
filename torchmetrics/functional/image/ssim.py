@@ -239,8 +239,8 @@ def _get_normalized_sim_and_cs(
 def _multiscale_ssim_compute(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
+    kernel_size: Union[int, Sequence[int]] = 11,
+    sigma: Union[float, Sequence[float]] = 1.5,
     reduction: str = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
@@ -288,6 +288,13 @@ def _multiscale_ssim_compute(
     sim_list: List[Tensor] = []
     cs_list: List[Tensor] = []
 
+    is_3d = len(preds.shape) == 5
+
+    if not isinstance(kernel_size, Sequence):
+        kernel_size = 3 * [kernel_size] if is_3d else 2 * [kernel_size]
+    if not isinstance(sigma, Sequence):
+        sigma = 3 * [sigma] if is_3d else 2 * [sigma]
+
     if preds.size()[-1] < 2 ** len(betas) or preds.size()[-2] < 2 ** len(betas):
         raise ValueError(
             f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be"
@@ -312,9 +319,16 @@ def _multiscale_ssim_compute(
         )
         sim_list.append(sim)
         cs_list.append(contrast_sensitivity)
-        preds = F.avg_pool2d(preds, (2, 2))
-        target = F.avg_pool2d(target, (2, 2))
-
+        if len(kernel_size) == 2:
+            preds = F.avg_pool2d(preds, (2, 2))
+            target = F.avg_pool2d(target, (2, 2))
+        elif len(kernel_size) == 3:
+            preds = F.avg_pool3d(preds, (2, 2, 2))
+            target = F.avg_pool3d(target, (2, 2, 2))
+        else:
+            raise ValueError(
+                f"length of kernel_size is neither 2 nor 3"
+            )
     sim_stack = torch.stack(sim_list)
     cs_stack = torch.stack(cs_list)
 
@@ -330,8 +344,8 @@ def _multiscale_ssim_compute(
 def multiscale_structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Sequence[int] = (11, 11),
-    sigma: Sequence[float] = (1.5, 1.5),
+    kernel_size: Union[int, Sequence[int]] = 11,
+    sigma: Union[float, Sequence[float]] = 1.5,
     reduction: str = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,

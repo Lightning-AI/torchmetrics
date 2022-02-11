@@ -153,8 +153,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     def __init__(
         self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
+        kernel_size: Union[int, Sequence[int]] = 11,
+        sigma: Union[float, Sequence[float]] = 1.5,
         reduction: str = "elementwise_mean",
         data_range: Optional[float] = None,
         k1: float = 0.01,
@@ -179,12 +179,18 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-        all_kernel_ints = all(isinstance(ks, int) for ks in kernel_size)
-        if not isinstance(kernel_size, Sequence) or len(kernel_size) != 2 or not all_kernel_ints:
+        if not (isinstance(kernel_size, Sequence) or isinstance(kernel_size, int)):
             raise ValueError(
-                "Argument `kernel_size` expected to be an sequence of size 2 where each element is an int"
-                f" but got {kernel_size}"
+                "Argument `kernel_size` expected to be an sequence or an int."
+                f"or a single int. Got {kernel_size}"
             )
+        if isinstance(kernel_size, Sequence) and (len(kernel_size) not in (2,3) or
+                                                  not all(isinstance(ks, int) for ks in kernel_size)):
+            raise ValueError(
+                "Argument `kernel_size` expected to be an sequence of size 2 or 3 where each element is an int, "
+                f"or a single int. Got {kernel_size}"
+            )
+
         self.kernel_size = kernel_size
         self.sigma = sigma
         self.data_range = data_range
