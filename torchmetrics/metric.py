@@ -129,7 +129,7 @@ class Metric(Module, ABC):
                     f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
                 )
         else:
-            self.dist_sync_on_step: bool = False
+            self.dist_sync_on_step = False
 
         if "process_group" in metric_kwargs:
             self.process_group: Optional[ProcessGroup] = metric_kwargs.pop("process_group")
@@ -139,17 +139,17 @@ class Metric(Module, ABC):
                     f" `torch._C._distributed_c10d.ProcessGroup` but got {self.process_group}"
                 )
         else:
-            self.process_group: Optional[ProcessGroup] = None
+            self.process_group = None
 
         if "dist_sync_fn" in metric_kwargs:
             self.dist_sync_fn: Optional[Callable] = metric_kwargs.pop("dist_sync_fn")
-            if self.dist_sync_fn is not None and not isinstance(self.dist_sync_fn, Callable):
+            if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
                 raise ValueError(
                     "Expected keyword argument `dist_sync_fn` to be an callable function"
                     f" but got {self.dist_sync_fn}"
                 )
         else:
-            self.dist_sync_fn: Optional[Callable] = None
+            self.dist_sync_fn = None
 
         # initialize
         self._update_signature = inspect.signature(self.update)
@@ -164,7 +164,7 @@ class Metric(Module, ABC):
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
+        self._reductions: Dict[str, Union[str, Callable[..., Any], None]] = {}
 
         # state management
         self._is_synced = False
