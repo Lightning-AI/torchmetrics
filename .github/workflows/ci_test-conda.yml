@@ -79,7 +79,6 @@ jobs:
         pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
         # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
         pip install -q "Pillow<9.0"  # It messes with torchvision
-        # pip install --requirement requirements.txt --quiet
         pip install --requirement requirements/devel.txt --quiet
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
@@ -89,7 +88,7 @@ jobs:
         TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
-        # NOTE: run coverage on tests does not propagare faler status for Win,
+        # NOTE: run coverage on tests does not propagate failure status for Win,
         # see: https://github.com/nedbat/coveragepy/issues/1003
         python -m pytest torchmetrics $TEST_DIRS --durations=50 --junitxml=$PYTEST_ARTEFACT
 
