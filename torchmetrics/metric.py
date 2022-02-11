@@ -103,9 +103,6 @@ class Metric(Module, ABC):
     __jit_unused_properties__ = ["is_differentiable"]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
-    dist_sync_on_step: bool = False
-    process_group: Optional[ProcessGroup] = None
-    dist_sync_fn: Optional[Callable] = None
 
     def __init__(
         self,
@@ -131,6 +128,8 @@ class Metric(Module, ABC):
                 raise ValueError(
                     f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
                 )
+        else:
+            self.dist_sync_on_step: bool = False
 
         if "process_group" in metric_kwargs:
             self.process_group: Optional[ProcessGroup] = metric_kwargs.pop("process_group")
@@ -139,6 +138,8 @@ class Metric(Module, ABC):
                     "Expected keyword argument `process_group` to be an instance of"
                     f" `torch._C._distributed_c10d.ProcessGroup` but got {self.process_group}"
                 )
+        else:
+            self.process_group: Optional[ProcessGroup] = None
 
         if "dist_sync_fn" in metric_kwargs:
             self.dist_sync_fn: Optional[Callable] = metric_kwargs.pop("dist_sync_fn")
@@ -147,6 +148,8 @@ class Metric(Module, ABC):
                     "Expected keyword argument `dist_sync_fn` to be an callable function"
                     f" but got {self.dist_sync_fn}"
                 )
+        else:
+            self.dist_sync_fn: Optional[Callable] = None
 
         # initialize
         self._update_signature = inspect.signature(self.update)
