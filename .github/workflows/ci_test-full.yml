@@ -52,12 +52,12 @@ jobs:
     - name: Setup macOS
       if: runner.os == 'macOS'
       run: |
-        python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        # python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
     - name: Setup Linux
       if: runner.os == 'Linux'
       run: |
-        python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
+        # python -c "print('PYTEST_TIMEOUT=--timeout=120')" >> $GITHUB_ENV
         sudo apt update --fix-missing
         sudo apt install -y ffmpeg
     - name: Setup Windows
