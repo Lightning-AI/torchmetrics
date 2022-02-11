@@ -351,9 +351,9 @@ A functional metric is differentiable if its corresponding modular metric is dif
 
 .. _Metric kwargs:
 
-****************************
+*****************************
 Advanced distributed settings
-****************************
+*****************************
 
 If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for
