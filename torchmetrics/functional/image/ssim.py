@@ -327,7 +327,7 @@ def _multiscale_ssim_compute(
             target = F.avg_pool3d(target, (2, 2, 2))
         else:
             raise ValueError(
-                f"length of kernel_size is neither 2 nor 3"
+                "length of kernel_size is neither 2 nor 3"
             )
     sim_stack = torch.stack(sim_list)
     cs_stack = torch.stack(cs_list)
