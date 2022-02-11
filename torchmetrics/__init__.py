@@ -89,7 +89,13 @@ from torchmetrics.text import (  # noqa: E402
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
+from torchmetrics.wrappers import (  # noqa: E402
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+)
 
 __all__ = [
     "functional",
@@ -104,6 +110,7 @@ __all__ = [
     "BootStrapper",
     "CalibrationError",
     "CatMetric",
+    "ClasswiseWrapper",
     "CHRFScore",
     "CohenKappa",
     "ConfusionMatrix",
