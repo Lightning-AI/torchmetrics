@@ -181,11 +181,11 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
         if not (isinstance(kernel_size, Sequence) or isinstance(kernel_size, int)):
             raise ValueError(
-                "Argument `kernel_size` expected to be an sequence or an int."
-                f"or a single int. Got {kernel_size}"
+                "Argument `kernel_size` expected to be an sequence or an int." f"or a single int. Got {kernel_size}"
             )
-        if isinstance(kernel_size, Sequence) and (len(kernel_size) not in (2,3) or
-                                                  not all(isinstance(ks, int) for ks in kernel_size)):
+        if isinstance(kernel_size, Sequence) and (
+            len(kernel_size) not in (2, 3) or not all(isinstance(ks, int) for ks in kernel_size)
+        ):
             raise ValueError(
                 "Argument `kernel_size` expected to be an sequence of size 2 or 3 where each element is an int, "
                 f"or a single int. Got {kernel_size}"
