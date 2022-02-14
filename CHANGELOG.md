@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated method `compute_on_step` ([#792](https://github.com/PyTorchLightning/metrics/pull/792))
 
 
+- Moved particular metrics implementation from  `update` and `compute` methods to `_update` and `_compute` ([#840](https://github.com/PyTorchLightning/metrics/pull/840))
+
+
 ### Removed
 
 - Removed support for versions of Lightning lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))
