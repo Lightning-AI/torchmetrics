@@ -89,6 +89,8 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
+        normalizer: Optional[Callable[[str], str]] = None,
+        tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: bool = True,
@@ -123,6 +125,8 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
+        self.normalizer = normalizer
+        self.tokenizer = tokenizer
         self.accumulate = accumulate
 
         # Adding stated dynamically to prevent IndexError during sync function as some lists can be empty.
@@ -152,7 +156,13 @@ class ROUGEScore(Metric):
             target = [[target]]
 
         output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-            preds, target, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
+            preds,
+            target,
+            self.rouge_keys_values,
+            stemmer=self.stemmer,
+            normalizer=self.normalizer,
+            tokenizer=self.tokenizer,
+            accumulate=self.accumulate,
         )
         for rouge_key, metrics in output.items():
             for metric in metrics:

@@ -13,7 +13,7 @@
 # limitations under the License.
 import re
 from collections import Counter
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -91,7 +91,12 @@ def _lcs(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> int:
     return LCS[-1][-1]
 
 
-def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> Sequence[str]:
+def _normalize_and_tokenize_text(
+    text: str,
+    stemmer: Optional[Any] = None,
+    normalizer: Optional[Callable] = None,
+    tokenizer: Optional[Callable] = None,
+) -> Sequence[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
     score_Text Normalizition`_
@@ -102,16 +107,23 @@ def _normalize_and_tokenize_text(text: str, stemmer: Optional[Any] = None) -> Se
         stemmer:
             Porter stemmer instance to strip word suffixes to improve matching.
     """
-    # Replace any non-alpha-numeric characters with spaces.
-    text = re.sub(r"[^a-z0-9]+", " ", text.lower())
+    if tokenizer:
+        text = normalizer(text)
+    else:
+        # Replace any non-alpha-numeric characters with spaces.
+        text = re.sub(r"[^a-z0-9]+", " ", text.lower())
 
-    tokens = re.split(r"\s+", text)
+    if tokenizer:
+        tokens = tokenizer(text)
+    else:
+        tokens = re.split(r"\s+", text)
+
     if stemmer:
         # Only stem words more than 3 characters long.
         tokens = [stemmer.stem(x) if len(x) > 3 else x for x in tokens]
 
     # One final check to drop any empty or invalid tokens.
-    tokens = [x for x in tokens if (isinstance(x, str) and re.match(r"^[a-z0-9]+$", x))]
+    tokens = [x for x in tokens if isinstance(x, str)]
 
     return tokens
 
@@ -167,6 +179,8 @@ def _rouge_score_update(
     rouge_keys_values: List[Union[int, str]],
     accumulate: str,
     stemmer: Optional[Any] = None,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -214,16 +228,18 @@ def _rouge_score_update(
         result_inner: Dict[Union[int, str], Dict[str, Tensor]] = {rouge_key: {} for rouge_key in rouge_keys_values}
         result_avg: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
         list_results = []
-        pred = _normalize_and_tokenize_text(pred_raw, stemmer)
-        pred_Lsum = _normalize_and_tokenize_text(_add_newline_to_end_of_each_sentence(pred_raw), stemmer)
+        pred = _normalize_and_tokenize_text(pred_raw, stemmer, normalizer, tokenizer)
+        pred_Lsum = _normalize_and_tokenize_text(
+            _add_newline_to_end_of_each_sentence(pred_raw), stemmer, normalizer, tokenizer
+        )
 
         for target_raw_inner in target_raw:
-            tgt = _normalize_and_tokenize_text(target_raw_inner, stemmer)
+            tgt = _normalize_and_tokenize_text(target_raw_inner, stemmer, normalizer, tokenizer)
 
             if "Lsum" in rouge_keys_values:
                 # rougeLsum expects "\n" separated sentences within a summary
                 target_Lsum = _normalize_and_tokenize_text(
-                    _add_newline_to_end_of_each_sentence(target_raw_inner), stemmer
+                    _add_newline_to_end_of_each_sentence(target_raw_inner), stemmer, normalizer, tokenizer
                 )
 
             for rouge_key in rouge_keys_values:
@@ -291,6 +307,8 @@ def rouge_score(
     target: Union[str, Sequence[str], Sequence[Sequence[str]]],
     accumulate: Literal["avg", "best"] = "best",
     use_stemmer: bool = False,
+    normalizer: Optional[Callable[[str], str]] = None,
+    tokenizer: Optional[Callable[[str], str]] = None,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
