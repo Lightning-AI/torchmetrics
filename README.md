@@ -332,17 +332,21 @@ over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn an
 If you want to cite this framework feel free to use this (but only if you loved it 😊):
 
 ```bibtex
-@misc{torchmetrics,
-  author = {PyTorchLightning Team},
-  title = {Torchmetrics: Machine learning metrics for distributed, scalable PyTorch applications},
-  year = {2020},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/PyTorchLightning/metrics}},
+@article{torchmetrics2022,
+  doi = {10.21105/joss.04101},
+  url = {https://doi.org/10.21105/joss.04101},
+  year = {2022},
+  publisher = {The Open Journal},
+  volume = {7},
+  number = {70},
+  pages = {4101},
+  author = {Nicki Skafte Detlefsen and Jiri Borovec and Justus Schock and Ananya Harsh Jha and Teddy Koker and Luca Di Liello and Daniel Stancl and Changsheng Quan and Maxim Grechkin and William Falcon},
+  title = {TorchMetrics - Measuring Reproducibility in PyTorch},
+  journal = {Journal of Open Source Software}
 }
 ```
 
 ## License
 
-Please observe the Apache 2.0 license that is listed in this repository. In addition
-the Lightning framework is Patent Pending.
+Please observe the Apache 2.0 license that is listed in this repository.
+In addition, the Lightning framework is Patent Pending.
