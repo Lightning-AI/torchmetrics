@@ -30,6 +30,7 @@ doi: 10.21105/joss.04101
 license: "Apache-2.0"
 url: "https://www.pytorchlightning.ai"
 repository-code: "https://github.com/PyTorchLightning/metrics"
+date-released: 2022-02-11
 keywords:
   - machine learning
   - deep learning
