@@ -16,8 +16,11 @@ abstract: "A main problem with reproducing machine learning publications is the 
 date-released: 2019-03-30
 authors:
   - name: Nicki Skafte Detlefsen
+    orcid: "https://orcid.org/0000-0002-8133-682X"
   - name: Jiri Borovec
+    orcid: "https://orcid.org/0000-0001-7437-824X"
   - name: Justus Schock
+    orcid: "https://orcid.org/0000-0003-0512-3053"
   - name: Ananya Harsh
   - name: Teddy Koker
   - name: Luca Di Liello
