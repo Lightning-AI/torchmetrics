@@ -120,10 +120,7 @@ def _normalize_and_tokenize_text(
         # Replace any non-alpha-numeric characters with spaces.
         text = re.sub(r"[^a-z0-9]+", " ", text.lower())
 
-    if tokenizer:
-        tokens = tokenizer.tokenize(text)
-    else:
-        tokens = re.split(r"\s+", text)
+    tokens = tokenizer.tokenize(text) if tokenizer else re.split(r"\s+", text)
 
     if stemmer:
         # Only stem words more than 3 characters long.
