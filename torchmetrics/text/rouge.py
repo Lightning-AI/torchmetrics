@@ -35,6 +35,12 @@ class ROUGEScore(Metric):
     Args:
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
+        normalizer:
+            A user's own normalizer. If this method is none, `re.sub(r"[^a-z0-9]+", " ", text.lower())` is default.
+            This method must take a string and must return a string.
+        tokenizer:
+            A user's own tokenizer. If this method is none, `re.split(r"\\s+", text)` is default
+            This method must take a string and must return an iterable of sentences (`List[str]`)
         accumulate:
             Useful incase of multi-reference rouge score.
             - ``avg`` takes the avg of all references with respect to predictions

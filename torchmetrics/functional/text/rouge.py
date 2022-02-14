@@ -106,6 +106,12 @@ def _normalize_and_tokenize_text(
             An input sentence.
         stemmer:
             Porter stemmer instance to strip word suffixes to improve matching.
+        normalizer:
+            A user's own normalizer. If this method is none, `re.sub(r"[^a-z0-9]+", " ", text.lower())` is default.
+            This method must take a string and must return a string.
+        tokenizer:
+            A user's own tokenizer. If this method is none, `re.split(r"\\s+", text)` is default
+            This method must take a string and must return an iterable of sentences (`List[str]`)
     """
     if tokenizer:
         text = normalizer(text)
@@ -198,6 +204,12 @@ def _rouge_score_update(
             Allowed values are ``avg`` and ``best``.
         stemmer:
             Porter stemmer instance to strip word suffixes to improve matching.
+        normalizer:
+            A user's own normalizer. If this method is none, `re.sub(r"[^a-z0-9]+", " ", text.lower())` is default.
+            This method must take a string and must return a string.
+        tokenizer:
+            A user's own tokenizer. If this method is none, `re.split(r"\\s+", text)` is default
+            This method must take a string and must return an iterable of sentences (`List[str]`)
 
     Example:
         >>> preds = "My name is John".split()
