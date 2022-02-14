@@ -127,7 +127,11 @@ class Accuracy(StatScores):
               still applies in both cases, if set.
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step
@@ -179,7 +183,7 @@ class Accuracy(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -202,9 +206,6 @@ class Accuracy(StatScores):
             dist_sync_fn=dist_sync_fn,
         )
 
-        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
-
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
@@ -214,6 +215,10 @@ class Accuracy(StatScores):
         self.subset_accuracy = subset_accuracy
         self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
+
+        if self.subset_accuracy:
+            self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See

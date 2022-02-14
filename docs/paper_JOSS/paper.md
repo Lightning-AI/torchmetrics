@@ -55,7 +55,7 @@ A main problem with reproducing machine learning publications is the variance of
 
 There have been a few attempts at tackling the reproducibility issues. Papers With Code [@papers_with_code] links research code with its corresponding paper. Similarly, arXiv [@arxiv] recently added a code and data section that links both official and community code to papers. However, these methods rely on the paper code to be made publicly accessible which is not always possible. Our approach is to provide the de-facto reference implementation for metrics. This approach enables proprietary work to still be comparable as long as they’ve used our reference implementations.
 
-We introduce TorchMetrics, a general-purpose metrics package that covers a wide variety of tasks and domains used in the machine learning community. TorchMetrics provides standard classification and regression metrics; and domain-specific metrics for audio, computer vision, natural language processing, and information retrieval. Our process for adding a new metric is as follows, first we integrate a well-tested and established third-party library. Once we’ve verified the implementations and written tests for them, we re-implement them in native PyTorch to enable hardware acceleration and remove any bottlenecks in inter-device transfer.
+We introduce TorchMetrics, a general-purpose metrics package that covers a wide variety of tasks and domains used in the machine learning community. TorchMetrics provides standard classification and regression metrics; and domain-specific metrics for audio, computer vision, natural language processing, and information retrieval. Our process for adding a new metric is as follows, first we integrate a well-tested and established third-party library. Once we’ve verified the implementations and written tests for them, we re-implement them in native PyTorch [@pytorch] to enable hardware acceleration and remove any bottlenecks in inter-device transfer.
 
 # Statement of need
 
@@ -93,7 +93,7 @@ class Accuracy(Metric):
         return self.correct / self.total
 ```
 
-Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices such as GPUs or TPUs (see [@large_example1; @large_example2] for examples). This scale introduces the need to synchronize metrics across machines to get the correct value during training and evaluation. In distributed environments, TorchMetrics automatically accumulates across devices before reporting the calculated metric to the user.
+Another core feature of TorchMetrics is its ability to scale to multiple devices seamlessly. Modern deep learning models are often trained on hundreds of devices such as GPUs or TPUs (see @large_example1; @large_example2 for examples). This scale introduces the need to synchronize metrics across machines to get the correct value during training and evaluation. In distributed environments, TorchMetrics automatically accumulates across devices before reporting the calculated metric to the user.
 
 In addition to stateful metrics (called modular metrics in TorchMetrics), we also support a functional interface that works similar to Scikit-learn. This interface provides simple Python functions that take as input PyTorch Tensors and return the corresponding metric as a PyTorch Tensor. These can be used when metrics are evaluated on single devices, and no accumulation is needed, making them very fast to compute.
 
