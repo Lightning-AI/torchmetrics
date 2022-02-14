@@ -1,6 +1,5 @@
 cff-version: 1.2.0
 message: "If you want to cite the framework, feel free to use this (but only if you loved it 😊)"
-abbreviation: "torchmetrics2022"
 title: "TorchMetrics - Measuring Reproducibility in PyTorch"
 abstract: "A main problem with reproducing machine learning publications is the variance of metric implementations across papers.
   A lack of standardization leads to different behavior in mech- anisms such as checkpointing, learning rate schedulers or early stopping, that will influence the reported results.
