@@ -36,12 +36,12 @@ class ROUGEScore(Metric):
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         normalizer:
-            A user's own normalizer. 
-            If this method is none, `replacing any non-alpha-numeric characters with spaces` is default.
-            This method must take a string and must return a string.
+            A user's own normalizer instance.
+            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
+            This instance must have method named ``normalize``. This method must take a string and return a string.
         tokenizer:
-            A user's own tokenizer. If this method is none, `spliting by spaces` is default
-            This method must take a string and must return `List[str]`
+            A user's own tokenizer instance. If this is none, `spliting by spaces` is default
+            This instance must have method named ``tokenize``. This method must take a string and return `List[str]`
         accumulate:
             Useful incase of multi-reference rouge score.
             - ``avg`` takes the avg of all references with respect to predictions
@@ -96,8 +96,8 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
-        normalizer: Optional[Callable[[str], str]] = None,
-        tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
+        normalizer: Optional[Any] = None,
+        tokenizer: Optional[Any] = None,
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: bool = True,

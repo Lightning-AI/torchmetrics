@@ -13,7 +13,7 @@
 # limitations under the License.
 import re
 from collections import Counter
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -94,8 +94,8 @@ def _lcs(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> int:
 def _normalize_and_tokenize_text(
     text: str,
     stemmer: Optional[Any] = None,
-    normalizer: Optional[Callable] = None,
-    tokenizer: Optional[Callable] = None,
+    normalizer: Optional[Any] = None,
+    tokenizer: Optional[Any] = None,
 ) -> Sequence[str]:
     """Rouge score should be calculated only over lowercased words and digits. Optionally, Porter stemmer can be
     used to strip word suffixes to improve matching. The text normalization follows the implemantion from `Rouge
@@ -107,21 +107,21 @@ def _normalize_and_tokenize_text(
         stemmer:
             Porter stemmer instance to strip word suffixes to improve matching.
         normalizer:
-            A user's own normalizer. 
-            If this method is none, `replacing any non-alpha-numeric characters with spaces` is default.
-            This method must take a string and must return a string.
+            A user's own normalizer instance.
+            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
+            This instance must have method named ``normalize``. This method must take a string and return a string.
         tokenizer:
-            A user's own tokenizer. If this method is none, `spliting by spaces` is default
-            This method must take a string and must return `List[str]`
+            A user's own tokenizer instance. If this is none, `spliting by spaces` is default
+            This instance must have method named ``tokenize``. This method must take a string and return `List[str]`
     """
-    if tokenizer:
-        text = normalizer(text)
+    if normalizer:
+        text = normalizer.normalize(text)
     else:
         # Replace any non-alpha-numeric characters with spaces.
         text = re.sub(r"[^a-z0-9]+", " ", text.lower())
 
     if tokenizer:
-        tokens = tokenizer(text)
+        tokens = tokenizer.tokenize(text)
     else:
         tokens = re.split(r"\s+", text)
 
@@ -130,7 +130,7 @@ def _normalize_and_tokenize_text(
         tokens = [stemmer.stem(x) if len(x) > 3 else x for x in tokens]
 
     # One final check to drop any empty or invalid tokens.
-    tokens = [x for x in tokens if isinstance(x, str)]
+    tokens = [x for x in tokens if (isinstance(x, str) and len(x) > 0)]
 
     return tokens
 
@@ -186,8 +186,8 @@ def _rouge_score_update(
     rouge_keys_values: List[Union[int, str]],
     accumulate: str,
     stemmer: Optional[Any] = None,
-    normalizer: Optional[Callable[[str], str]] = None,
-    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
+    normalizer: Optional[Any] = None,
+    tokenizer: Optional[Any] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
@@ -206,12 +206,12 @@ def _rouge_score_update(
         stemmer:
             Porter stemmer instance to strip word suffixes to improve matching.
         normalizer:
-            A user's own normalizer. 
-            If this method is none, `replacing any non-alpha-numeric characters with spaces` is default.
-            This method must take a string and must return a string.
+            A user's own normalizer instance.
+            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
+            This instance must have method named ``normalize``. This method must take a string and return a string.
         tokenizer:
-            A user's own tokenizer. If this method is none, `spliting by spaces` is default
-            This method must take a string and must return `List[str]`
+            A user's own tokenizer instance. If this is none, `spliting by spaces` is default
+            This instance must have method named ``tokenize``. This method must take a string and return `List[str]`
 
     Example:
         >>> preds = "My name is John".split()
@@ -321,8 +321,8 @@ def rouge_score(
     target: Union[str, Sequence[str], Sequence[Sequence[str]]],
     accumulate: Literal["avg", "best"] = "best",
     use_stemmer: bool = False,
-    normalizer: Optional[Callable[[str], str]] = None,
-    tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
+    normalizer: Optional[Any] = None,
+    tokenizer: Optional[Any] = None,
     rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
 ) -> Dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
@@ -339,12 +339,12 @@ def rouge_score(
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         normalizer:
-            A user's own normalizer. 
-            If this method is none, `replacing any non-alpha-numeric characters with spaces` is default.
-            This method must take a string and must return a string.
+            A user's own normalizer instance.
+            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
+            This instance must have method named ``normalize``. This method must take a string and return a string.
         tokenizer:
-            A user's own tokenizer. If this method is none, `spliting by spaces` is default
-            This method must take a string and must return `List[str]`
+            A user's own tokenizer instance. If this is none, `spliting by spaces` is default
+            This instance must have method named ``tokenize``. This method must take a string and return `List[str]`
         rouge_keys:
             A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
@@ -406,9 +406,13 @@ def rouge_score(
         target = [[target]]
 
     sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-        preds, target, rouge_keys_values,
-        stemmer=stemmer, normalizer=normalizer, tokenizer=tokenizer,
-        accumulate=accumulate
+        preds,
+        target,
+        rouge_keys_values,
+        stemmer=stemmer,
+        normalizer=normalizer,
+        tokenizer=tokenizer,
+        accumulate=accumulate,
     )
 
     output: Dict[str, List[Tensor]] = {}
