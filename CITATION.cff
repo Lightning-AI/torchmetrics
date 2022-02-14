@@ -14,7 +14,6 @@ abstract: "A main problem with reproducing machine learning publications is the 
   TorchMetrics provides standard classification and regression metrics; and domain-specific metrics for audio, computer vision, natural language processing, and information retrieval.
   Our process for adding a new metric is as follows, first we integrate a well-tested and established third-party library.
   Once we’ve verified the implementations and written tests for them, we re-implement them in native PyTorch to enable hardware acceleration and remove any bottlenecks in inter-device transfer."
-date-released: 2019-03-30
 authors:
   - name: Nicki Skafte Detlefsen
     orcid: "https://orcid.org/0000-0002-8133-682X"
