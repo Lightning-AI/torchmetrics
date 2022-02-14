@@ -85,7 +85,7 @@ jobs:
         if: always()
 
   paper-JOSS:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -102,3 +102,15 @@ jobs:
           # This is the output path where Pandoc will write the compiled
           # PDF. Note, this should be the same directory as the input paper.md
           path: ./docs/paper_JOSS/paper.pdf
+
+  paper-cite:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Validate
+        run: |
+          pip install -q cffconvert
+          cffconvert --validate -i CITATION.cff
