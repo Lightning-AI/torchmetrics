@@ -50,6 +50,7 @@ from torchmetrics.image import (  # noqa: E402
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     StructuralSimilarityIndexMeasure,
+    UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
@@ -88,7 +89,13 @@ from torchmetrics.text import (  # noqa: E402
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
+from torchmetrics.wrappers import (  # noqa: E402
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+)
 
 __all__ = [
     "functional",
@@ -103,6 +110,7 @@ __all__ = [
     "BootStrapper",
     "CalibrationError",
     "CatMetric",
+    "ClasswiseWrapper",
     "CHRFScore",
     "CohenKappa",
     "ConfusionMatrix",
@@ -159,6 +167,7 @@ __all__ = [
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
+    "UniversalImageQualityIndex",
     "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",
