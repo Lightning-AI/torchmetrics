@@ -298,4 +298,5 @@ class FrechetInceptionDistance(Metric):
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
 
     def reset(self, exclude_states: Optional[Sequence[str]] = None) -> None:
+        exclude_states = exclude_states or ()
         super().reset({*self._reset_excluded_states, *exclude_states})
