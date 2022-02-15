@@ -114,16 +114,12 @@ def _normalize_and_tokenize_text(
             A user's own tokenizer instance. If this is none, `spliting by spaces` is default
             This instance must have method named ``tokenize``. This method must take a string and return `List[str]`
     """
-    if normalizer:
-        text = normalizer.normalize(text)
-    else:
-        # Replace any non-alpha-numeric characters with spaces.
-        text = re.sub(r"[^a-z0-9]+", " ", text.lower())
 
-    if tokenizer:
-        tokens = tokenizer.tokenize(text)
-    else:
-        tokens = re.split(r"\s+", text)
+    # If normalizer is none, replace any non-alpha-numeric characters with spaces.
+    text = normalizer(text) if normalizer else re.sub(r"[^a-z0-9]+", " ", text.lower())
+
+    # If tokenizer is none, spliting by spaces
+    tokens = tokenizer(text) if tokenizer else re.split(r"\s+", text)
 
     if stemmer:
         # Only stem words more than 3 characters long.
