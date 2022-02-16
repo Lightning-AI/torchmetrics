@@ -50,7 +50,7 @@ class PrecisionRecallCurve(Metric):
                 Argument has no use anymore and will be removed v0.9.
 
         kwargs:
-            Additional keyword arguments, see `Metric kwargs`_ for more info.
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary case):
         >>> from torchmetrics import PrecisionRecallCurve

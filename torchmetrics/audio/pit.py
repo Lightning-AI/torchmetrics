@@ -45,7 +45,7 @@ class PermutationInvariantTraining(Metric):
 
         kwargs:
             Additional keyword arguments for either the `metric_func` or distributed communication,
-            see `Metric kwargs`_ for more info.
+            see :ref:`Metric kwargs` for more info.
 
     Returns:
         average PermutationInvariantTraining metric
