@@ -91,7 +91,7 @@ class Metric(Module, ABC):
                 Argument is deprecated and will be removed in v0.9 in favour of instead
                 passing it in as keyword argument.
 
-        metric_kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
             - dist_sync_on_step: If metric state should synchronize on ``forward()``
             - process_group: The process group on which the synchronization is called
@@ -106,7 +106,7 @@ class Metric(Module, ABC):
     def __init__(
         self,
         compute_on_step: Optional[bool] = None,
-        **metric_kwargs: Any,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__()
 
@@ -121,8 +121,8 @@ class Metric(Module, ABC):
                 "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
             )
 
-        if "dist_sync_on_step" in metric_kwargs:
-            self.dist_sync_on_step: bool = metric_kwargs.pop("dist_sync_on_step")
+        if "dist_sync_on_step" in kwargs:
+            self.dist_sync_on_step: bool = kwargs.pop("dist_sync_on_step")
             if not isinstance(self.dist_sync_on_step, bool):
                 raise ValueError(
                     f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
@@ -130,13 +130,13 @@ class Metric(Module, ABC):
         else:
             self.dist_sync_on_step = False
 
-        if "process_group" in metric_kwargs:
-            self.process_group: Optional[Any] = metric_kwargs.pop("process_group")
+        if "process_group" in kwargs:
+            self.process_group: Optional[Any] = kwargs.pop("process_group")
         else:
             self.process_group = None
 
-        if "dist_sync_fn" in metric_kwargs:
-            self.dist_sync_fn: Optional[Callable] = metric_kwargs.pop("dist_sync_fn")
+        if "dist_sync_fn" in kwargs:
+            self.dist_sync_fn: Optional[Callable] = kwargs.pop("dist_sync_fn")
             if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
                 raise ValueError(
                     "Expected keyword argument `dist_sync_fn` to be an callable function"
