@@ -53,12 +53,13 @@ class JaccardIndex(ConfusionMatrix):
             [0, 0] for `pred`, and [0, 2] for `target`, then class 1 would be assigned the `absent_score`.
         threshold:
             Threshold value for binary or multi-label probabilities.
+        multilabel:
+            determines if data is multilabel or not.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
-
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -87,12 +88,18 @@ class JaccardIndex(ConfusionMatrix):
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
+        multilabel: bool = False,
         reduction: str = "elementwise_mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
-            num_classes=num_classes, normalize=None, threshold=threshold, compute_on_step=compute_on_step, **kwargs
+            num_classes=num_classes,
+            normalize=None,
+            threshold=threshold,
+            multilabel=multilabel,
+            compute_on_step=compute_on_step,
+            **kwargs,
         )
         self.reduction = reduction
         self.ignore_index = ignore_index
