@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from torch import Tensor, tensor
 
@@ -87,7 +87,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         fs: int,
         mode: str,
         compute_on_step: Optional[bool] = None,
-        **kwargs: Any,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         if not _PESQ_AVAILABLE:
