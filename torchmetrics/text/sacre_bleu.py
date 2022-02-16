@@ -88,7 +88,7 @@ class SacreBLEUScore(BLEUScore):
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(n_gram=n_gram, smooth=smooth, compute_on_step=compute_on_step, **kwargs)
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
