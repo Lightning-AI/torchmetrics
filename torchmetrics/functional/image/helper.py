@@ -73,3 +73,16 @@ def _gaussian_kernel_3d(
     kernel_xy = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
     kernel = torch.mul(kernel_xy, gaussian_kernel_z.expand(kernel_size[0], kernel_size[1], kernel_size[2]))
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1], kernel_size[2])
+
+
+def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
+    _max = inputs.shape[dim] - 2
+    x = torch.index_select(inputs, dim, torch.arange(pad, 0, -1))
+    y = torch.index_select(inputs, dim, torch.arange(_max, _max - pad, -1))
+    return torch.cat((x, inputs, y), dim)
+
+
+def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Tensor:
+    for dim, pad in enumerate([pad_h, pad_w, pad_d]):
+        inputs = _single_dimension_pad(inputs, dim + 2, pad)
+    return inputs

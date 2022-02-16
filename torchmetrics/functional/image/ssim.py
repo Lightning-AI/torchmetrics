@@ -18,7 +18,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d
+from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -123,10 +123,9 @@ def _ssim_compute(
 
     if is_3d:
         pad_d = (kernel_size[2] - 1) // 2
-        preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
-        target = F.pad(target, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
+        preds = _reflection_pad_3d(preds, pad_h, pad_w, pad_d)
+        target = _reflection_pad_3d(target, pad_h, pad_w, pad_d)
         kernel = _gaussian_kernel_3d(channel, kernel_size, sigma, dtype, device)
-
     else:
         preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
         target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
