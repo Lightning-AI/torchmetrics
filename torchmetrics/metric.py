@@ -21,7 +21,6 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Uni
 
 import torch
 from torch import Tensor
-from torch._C._distributed_c10d import ProcessGroup
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
@@ -77,8 +76,8 @@ class Metric(Module, ABC):
                 passing it in as keyword argument.
 
         process_group:
-            Specify the process group on which synchronization is called.
-            default: `None` (which selects the entire world)
+            Specify the process group on which synchronization is called. Defaults is `None`
+            which selects the entire world
 
             .. deprecated:: v0.8
                 Argument is deprecated and will be removed in v0.9 in favour of instead
@@ -132,12 +131,7 @@ class Metric(Module, ABC):
             self.dist_sync_on_step = False
 
         if "process_group" in metric_kwargs:
-            self.process_group: Optional[ProcessGroup] = metric_kwargs.pop("process_group")
-            if self.process_group is not None and not isinstance(self.process_group, ProcessGroup):
-                raise ValueError(
-                    "Expected keyword argument `process_group` to be an instance of"
-                    f" `torch._C._distributed_c10d.ProcessGroup` but got {self.process_group}"
-                )
+            self.process_group: Optional[Any] = metric_kwargs.pop("process_group")
         else:
             self.process_group = None
 
