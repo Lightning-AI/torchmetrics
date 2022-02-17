@@ -132,7 +132,7 @@ class Metric(Module, ABC):
         self.dist_sync_fn = kwargs.pop("dist_sync_fn", None)
         if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
             raise ValueError(
-                "Expected keyword argument `dist_sync_fn` to be an callable function" f" but got {self.dist_sync_fn}"
+                f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
             )
 
         # initialize
@@ -409,7 +409,9 @@ class Metric(Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync  # type: ignore
+                dist_sync_fn=self.dist_sync_fn,  # type: ignore
+                should_sync=self._to_sync,
+                should_unsync=self._should_unsync,
             ):
                 value = compute(*args, **kwargs)
                 self._computed = _squeeze_if_scalar(value)

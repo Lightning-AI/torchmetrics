@@ -78,7 +78,7 @@ class PermutationInvariantTraining(Metric):
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        base_kwargs = {
+        base_kwargs: Dict[str, Any] = {
             "dist_sync_on_step": kwargs.pop("dist_sync_on_step", False),
             "process_group": kwargs.pop("process_group", None),
             "dist_sync_fn": kwargs.pop("dist_sync_fn", None),
