@@ -328,8 +328,8 @@ def _multiscale_ssim_compute(
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
             preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize
         )
-        sim_list.append(sim)
-        cs_list.append(contrast_sensitivity)
+        sim_list.append(*sim)
+        cs_list.append(*contrast_sensitivity)
         if len(kernel_size) == 2:
             preds = F.avg_pool2d(preds, (2, 2))
             target = F.avg_pool2d(target, (2, 2))
