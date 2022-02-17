@@ -79,7 +79,7 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
 @pytest.mark.parametrize("kernel_size", [5, 11])
 class TestSSIM(MetricTester):
     atol = 6e-3
-    
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_ssim(self, preds, target, multichannel, kernel_size, ddp, dist_sync_on_step):
