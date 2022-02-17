@@ -5,6 +5,7 @@ from torchmetrics import Accuracy, Metric
 
 
 def test_compute_on_step():
+    """Test that setting compute_on_step flag raises deprecation error."""
     with pytest.warns(
         DeprecationWarning, match="Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9"
     ):
@@ -12,6 +13,8 @@ def test_compute_on_step():
 
 
 def test_error_overriden_update():
+    """Test that deprecation error is raised if user tries to overwrite update method."""
+
     class OldMetricAPI(Metric):
         def __init__(self):
             super().__init__()
@@ -26,11 +29,15 @@ def test_error_overriden_update():
         def _compute(self):
             return self.x
 
-    with pytest.raises(UserWarning, match=""):
+    with pytest.raises(
+        NotImplementedError, match="We detected that you have overwritten the ``update`` method, which was.*"
+    ):
         OldMetricAPI()
 
 
 def test_error_overriden_compute():
+    """Test that deprecation error is raised if user tries to overwrite compute method."""
+
     class OldMetricAPI(Metric):
         def __init__(self):
             super().__init__()
@@ -45,5 +52,7 @@ def test_error_overriden_compute():
         def _compute(self):
             return self.x
 
-    with pytest.raises(UserWarning, match=""):
+    with pytest.raises(
+        NotImplementedError, match="We detected that you have overwritten the ``compute`` method, which was.*"
+    ):
         OldMetricAPI()

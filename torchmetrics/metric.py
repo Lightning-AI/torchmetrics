@@ -121,14 +121,14 @@ class Metric(Module, ABC):
         self._should_unsync = True
 
         if is_overridden("update", self, Metric):
-            raise UserWarning(
-                "We detected that you have overwritten the ``update`` method, which was API"
+            raise NotImplementedError(
+                "We detected that you have overwritten the ``update`` method, which was the API"
                 " for torchmetrics v0.7 and below. Insted implement the ``_update`` method."
                 " (exact same as before just with a ``_`` infront to make the implementation private)"
             )
         if is_overridden("compute", self, Metric):
-            raise UserWarning(
-                "We detected that you have overwritten the ``compute`` method, which was API"
+            raise NotImplementedError(
+                "We detected that you have overwritten the ``compute`` method, which was the API"
                 " for torchmetrics v0.7 and below. Insted implement the ``_compute`` method."
                 " (exact same as before just with a ``_`` infront to make the implementation private)"
             )
