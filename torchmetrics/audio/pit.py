@@ -81,7 +81,7 @@ class PermutationInvariantTraining(Metric):
         base_kwargs = {
             "dist_sync_on_step": kwargs.pop("dist_sync_on_step", False),
             "process_group": kwargs.pop("process_group", None),
-            "dist_sync_fn" :  kwargs.pop("dist_sync_fn", None)
+            "dist_sync_fn": kwargs.pop("dist_sync_fn", None),
         }
         super().__init__(compute_on_step=compute_on_step, **base_kwargs)
         self.metric_func = metric_func
