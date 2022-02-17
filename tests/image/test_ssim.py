@@ -55,12 +55,14 @@ for size, channel, coef, multichannel, dtype in [
 
 
 def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
-    c, h, w = preds.shape[-3:]
-    sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
-    sk_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
-    if not multichannel:
-        sk_preds = sk_preds[:, :, :, 0]
-        sk_target = sk_target[:, :, :, 0]
+    is_3d = len(preds.shape) == 5
+
+    if is_3d:
+        sk_preds = preds.permute(0, 2, 3, 4, 1).squeeze(-1).numpy()
+        sk_target = target.permute(0, 2, 3, 4, 1).squeeze(-1).numpy()
+    else:
+        sk_preds = preds.permute(0, 2, 3, 1).squeeze(-1).numpy()
+        sk_target = target.permute(0, 2, 3, 1).squeeze(-1).numpy()
 
     ssim = []
     for i in range(len(sk_preds)):
