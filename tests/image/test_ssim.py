@@ -19,9 +19,11 @@ import torch
 from skimage.metrics import structural_similarity
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
+
+BATCH_SIZE = 16
 
 seed_all(42)
 
