@@ -81,7 +81,8 @@ def _ssim_compute(
         >>> target = preds * 0.75
         >>> preds, target = _ssim_update(preds, target)
         >>> _ssim_compute(preds, target)
-        tensor(0.9219)
+        tensor([0.9220, 0.9219, 0.9219, 0.9218, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219,
+            0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219])
     """
     is_3d = len(preds.shape) == 5
 
@@ -226,7 +227,8 @@ def structural_similarity_index_measure(
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> structural_similarity_index_measure(preds, target)
-        tensor(0.9219)
+        tensor([0.9218, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219,
+            0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9220])
     """
     preds, target = _ssim_update(preds, target)
     return _ssim_compute(
@@ -411,7 +413,7 @@ def multiscale_structural_similarity_index_measure(
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> multiscale_structural_similarity_index_measure(preds, target)
-        tensor(0.9558)
+        tensor(0.9226)
 
     References:
     [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
