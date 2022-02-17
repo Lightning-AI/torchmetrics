@@ -20,13 +20,14 @@ from tests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,
     _default_metric_class_input_arguments,
+    _default_metric_class_input_arguments_ignore_index,
     _default_metric_functional_input_arguments,
     _errors_test_class_metric_parameters_default,
     _errors_test_class_metric_parameters_no_pos_target,
     _errors_test_functional_metric_parameters_default,
 )
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
-from torchmetrics.retrieval.mean_average_precision import RetrievalMAP
+from torchmetrics.retrieval.average_precision import RetrievalMAP
 
 seed_all(42)
 
@@ -35,6 +36,7 @@ class TestMAP(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
+    @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
@@ -44,8 +46,35 @@ class TestMAP(RetrievalMetricTester):
         target: Tensor,
         dist_sync_on_step: bool,
         empty_target_action: str,
+        ignore_index: int,
     ):
-        metric_args = {"empty_target_action": empty_target_action}
+        metric_args = dict(empty_target_action=empty_target_action, ignore_index=ignore_index)
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            indexes=indexes,
+            preds=preds,
+            target=target,
+            metric_class=RetrievalMAP,
+            sk_metric=sk_average_precision_score,
+            dist_sync_on_step=dist_sync_on_step,
+            metric_args=metric_args,
+        )
+
+    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
+    @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
+    @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
+    def test_class_metric_ignore_index(
+        self,
+        ddp: bool,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        dist_sync_on_step: bool,
+        empty_target_action: str,
+    ):
+        metric_args = dict(empty_target_action=empty_target_action, ignore_index=-100)
 
         self.run_class_metric_test(
             ddp=ddp,

@@ -11,29 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from typing import Any, Callable, Dict, List, Optional, Union
+from warnings import warn
 
 import torch
+from torch import Tensor
 
-from torchmetrics.functional import bert_score
-from torchmetrics.functional.text.bert import _preprocess_text
+from torchmetrics.functional.text.bert import _preprocess_text, bert_score
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
-if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoTokenizer
+if _TRANSFORMERS_AUTO_AVAILABLE:
+    from transformers.models.auto import AutoTokenizer
+else:
+    __doctest_skip__ = ["BERTScore"]
 
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
 
-def _concatenate(d: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
-    """Concatenate list of tensors within a given dictionary."""
-    output_dict: Dict[str, torch.Tensor] = {}
-    for k, v in d.items():
-        output_dict[k] = torch.cat(v)
+def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
+    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
+    output_dict = {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
     return output_dict
 
 
@@ -46,9 +46,9 @@ class BERTScore(Metric):
     This implemenation follows the original implementation from `BERT_score`_.
 
     Args:
-        predictions:
+        preds:
             An iterable of predicted sentences.
-        references:
+        target:
             An iterable of target sentences.
         model_type:
             A name or a model path used to load `transformers` pretrained model.
@@ -97,12 +97,16 @@ class BERTScore(Metric):
         baseline_url:
             A url path to the user's own  csv/tsv file with the baseline scale.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When ``None``, DDP
             will be used to perform the allgather
@@ -111,17 +115,23 @@ class BERTScore(Metric):
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
 
     Example:
-        >>> predictions = ["hello there", "general kenobi"]
-        >>> references = ["hello there", "master kenobi"]
+        >>> from torchmetrics.text.bert import BERTScore
+        >>> preds = ["hello there", "general kenobi"]
+        >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> bertscore.update(predictions=predictions,references=references)
-        >>> bertscore.compute()  # doctest: +SKIP
-        {'precision': [0.99..., 0.99...],
-         'recall': [0.99..., 0.99...],
-         'f1': [0.99..., 0.99...]}
+        >>> from pprint import pprint
+        >>> pprint(bertscore(preds, target)) # doctest: +ELLIPSIS
+        {'f1': [0.999..., 0.996...],
+         'precision': [0.999..., 0.996...],
+         'recall': [0.999..., 0.996...]}
     """
 
+    is_differentiable = False
     higher_is_better = True
+    preds_input_ids: List[Tensor]
+    preds_attention_mask: List[Tensor]
+    target_input_ids: List[Tensor]
+    target_attention_mask: List[Tensor]
 
     def __init__(
         self,
@@ -142,7 +152,7 @@ class BERTScore(Metric):
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -153,7 +163,7 @@ class BERTScore(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
-        self.model_name_or_path = model_name_or_path
+        self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL
         self.num_layers = num_layers
         self.all_layers = all_layers
         self.model = model
@@ -169,58 +179,63 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
-        self.predictions: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
-        self.references: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.preds: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
+        self.target: Dict[str, List[torch.Tensor]] = {"input_ids": [], "attention_mask": []}
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
             self.user_tokenizer = True
         else:
-            if not _TRANSFORMERS_AVAILABLE:
-                raise ValueError(
-                    "`BERTScore` metric with default tokenizers requires `transformers` package be installed. "
-                    "Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`"
+            if not _TRANSFORMERS_AUTO_AVAILABLE:
+                raise ModuleNotFoundError(
+                    "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
+                    " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
                 )
-            if not model_name_or_path:
-                model_name_or_path = _DEFAULT_MODEL
-                warnings.warn(
-                    "The argument `model_name_or_path` was not specified while it is required when default "
-                    " `transformers` model are used."
-                    f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
+            if model_name_or_path is None:
+                warn(
+                    "The argument `model_name_or_path` was not specified while it is required when the default"
+                    " `transformers` model is used."
+                    f" It will use the default recommended model - {_DEFAULT_MODEL!r}."
                 )
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path)
             self.user_tokenizer = False
 
-    def update(self, predictions: List[str], references: List[str]) -> None:  # type: ignore
+        self.add_state("preds_input_ids", [], dist_reduce_fx="cat")
+        self.add_state("preds_attention_mask", [], dist_reduce_fx="cat")
+        self.add_state("target_input_ids", [], dist_reduce_fx="cat")
+        self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
+
+    def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 
         Args:
-            predictions:
+            preds:
                 An iterable of predicted sentences.
-            references:
-                An iterable of predicted sentences.
+            target:
+                An iterable of reference sentences.
         """
-        predictions_dict = _preprocess_text(
-            predictions,
+        preds_dict = _preprocess_text(
+            preds,
             self.tokenizer,
             self.max_length,
             truncation=False,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        references_dict = _preprocess_text(
-            references,
+        target_dict = _preprocess_text(
+            target,
             self.tokenizer,
             self.max_length,
             truncation=False,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
-        self.predictions["input_ids"].append(predictions_dict["input_ids"])
-        self.predictions["attention_mask"].append(predictions_dict["attention_mask"])
-        self.references["input_ids"].append(references_dict["input_ids"])
-        self.references["attention_mask"].append(references_dict["attention_mask"])
+
+        self.preds_input_ids.append(preds_dict["input_ids"])
+        self.preds_attention_mask.append(preds_dict["attention_mask"])
+        self.target_input_ids.append(target_dict["input_ids"])
+        self.target_attention_mask.append(target_dict["attention_mask"])
 
     def compute(self) -> Dict[str, Union[List[float], str]]:
         """Calculate BERT scores.
@@ -229,8 +244,8 @@ class BERTScore(Metric):
             Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
         """
         return bert_score(
-            predictions=_concatenate(self.predictions),
-            references=_concatenate(self.references),
+            preds=_get_input_dict(self.preds_input_ids, self.preds_attention_mask),
+            target=_get_input_dict(self.target_input_ids, self.target_attention_mask),
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,

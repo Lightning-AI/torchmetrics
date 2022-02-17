@@ -13,22 +13,28 @@
 # limitations under the License.
 import functools
 import inspect
-import operator as op
+import warnings
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities import apply_to_collection, rank_zero_warn
-from torchmetrics.utilities.data import _flatten, dim_zero_cat, dim_zero_max, dim_zero_mean, dim_zero_min, dim_zero_sum
+from torchmetrics.utilities.data import (
+    _flatten,
+    _squeeze_if_scalar,
+    dim_zero_cat,
+    dim_zero_max,
+    dim_zero_mean,
+    dim_zero_min,
+    dim_zero_sum,
+)
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
@@ -56,12 +62,17 @@ class Metric(Module, ABC):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
+            default: `None` (which selects the entire world)
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -74,7 +85,7 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,
@@ -85,11 +96,12 @@ class Metric(Module, ABC):
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
-        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
         self._device = torch.device("cpu")
 
+        if compute_on_step is not None:
+            warnings.warn("Argument `decimal_places` is deprecated in v0.8 and will be removed in v0.9")
+
         self.dist_sync_on_step = dist_sync_on_step
-        self.compute_on_step = compute_on_step
         self.process_group = process_group
         self.dist_sync_fn = dist_sync_fn
         self._to_sync = True
@@ -196,29 +208,28 @@ class Metric(Module, ABC):
         with torch.no_grad():
             self.update(*args, **kwargs)
 
-        if self.compute_on_step:
-            self._to_sync = self.dist_sync_on_step
-            # skip restore cache operation from compute as cache is stored below.
-            self._should_unsync = False
+        self._to_sync = self.dist_sync_on_step
+        # skip restore cache operation from compute as cache is stored below.
+        self._should_unsync = False
 
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults}
+        # save context before switch
+        cache = {attr: getattr(self, attr) for attr in self._defaults}
 
-            # call reset, update, compute, on single batch
-            self.reset()
-            self.update(*args, **kwargs)
-            self._forward_cache = self.compute()
+        # call reset, update, compute, on single batch
+        self.reset()
+        self.update(*args, **kwargs)
+        self._forward_cache = self.compute()
 
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._is_synced = False
+        # restore context
+        for attr, val in cache.items():
+            setattr(self, attr, val)
+        self._is_synced = False
 
-            self._should_unsync = True
-            self._to_sync = True
-            self._computed = None
+        self._should_unsync = True
+        self._to_sync = True
+        self._computed = None
 
-            return self._forward_cache
+        return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
@@ -269,7 +280,7 @@ class Metric(Module, ABC):
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
                 Specify the process group on which synchronization is called.
-                default: None (which selects the entire world)
+                default: `None` (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             distributed_available: Function to determine if we are running inside a distributed setting
@@ -330,7 +341,7 @@ class Metric(Module, ABC):
             dist_sync_fn: Function to be used to perform states synchronization
             process_group:
                 Specify the process group on which synchronization is called.
-                default: None (which selects the entire world)
+                default: `None` (which selects the entire world)
             should_sync: Whether to apply to state synchronization. This will have an impact
                 only when running in a distributed setting.
             should_unsync: Whether to restore the cache state so that the metrics can
@@ -369,7 +380,8 @@ class Metric(Module, ABC):
             with self.sync_context(
                 dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
             ):
-                self._computed = compute(*args, **kwargs)
+                value = compute(*args, **kwargs)
+                self._computed = _squeeze_if_scalar(value)
 
             return self._computed
 
@@ -388,9 +400,7 @@ class Metric(Module, ABC):
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
-        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
-        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
-            self._computed = None
+        self._computed = None
 
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
@@ -552,8 +562,14 @@ class Metric(Module, ABC):
             k: v for k, v in kwargs.items() if (k in _sign_params.keys() and _sign_params[k].kind not in _params)
         }
 
-        # if no kwargs filtered, return al kwargs as default
-        if not filtered_kwargs:
+        exists_var_keyword = any([v.kind == inspect.Parameter.VAR_KEYWORD for v in _sign_params.values()])
+        # if no kwargs filtered, return all kwargs as default
+        if not filtered_kwargs and not exists_var_keyword:
+            # no kwargs in update signature -> don't return any kwargs
+            filtered_kwargs = {}
+        elif exists_var_keyword:
+            # kwargs found in update signature -> return all kwargs to be sure to not omit any.
+            # filtering logic is likely implemented within the update call.
             filtered_kwargs = kwargs
         return filtered_kwargs
 
@@ -747,6 +763,35 @@ class CompositionalMetric(Metric):
 
         return self.op(val_a, val_b)
 
+    @torch.jit.unused
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+
+        val_a = (
+            self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
+            if isinstance(self.metric_a, Metric)
+            else self.metric_a
+        )
+        val_b = (
+            self.metric_b(*args, **self.metric_b._filter_kwargs(**kwargs))
+            if isinstance(self.metric_b, Metric)
+            else self.metric_b
+        )
+
+        if val_a is None:
+            # compute_on_step of metric_a is False
+            return None
+
+        if val_b is None:
+            if isinstance(self.metric_b, Metric):
+                # compute_on_step of metric_b is False
+                return None
+
+            # Unary op
+            return self.op(val_a)
+
+        # Binary op
+        return self.op(val_a, val_b)
+
     def reset(self) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.reset()
@@ -765,3 +810,6 @@ class CompositionalMetric(Metric):
         repr_str = self.__class__.__name__ + _op_metrics
 
         return repr_str
+
+    def _wrap_compute(self, compute: Callable) -> Callable:
+        return compute

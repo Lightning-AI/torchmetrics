@@ -15,12 +15,13 @@ from typing import Any, Callable, Dict, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.pit import pit
+from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 
 
-class PIT(Metric):
-    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
+class PermutationInvariantTraining(Metric):
+    """Permutation invariant training (PermutationInvariantTraining). The PermutationInvariantTraining implements
+    the famous Permutation Invariant Training method.
 
     [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
 
@@ -37,12 +38,16 @@ class PIT(Metric):
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -50,16 +55,16 @@ class PIT(Metric):
             additional args for metric_func
 
     Returns:
-        average PIT metric
+        average PermutationInvariantTraining metric
 
     Example:
         >>> import torch
-        >>> from torchmetrics import PIT
-        >>> from torchmetrics.functional import si_snr
+        >>> from torchmetrics import PermutationInvariantTraining
+        >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PIT(si_snr, 'max')
+        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
         >>> pit(preds, target)
         tensor(-2.1065)
 
@@ -77,7 +82,7 @@ class PIT(Metric):
         self,
         metric_func: Callable,
         eval_func: str = "max",
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
@@ -103,11 +108,11 @@ class PIT(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        pit_metric = pit(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
+        pit_metric = permutation_invariant_training(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
 
         self.sum_pit_metric += pit_metric.sum()
         self.total += pit_metric.numel()
 
     def compute(self) -> Tensor:
-        """Computes average PIT metric."""
+        """Computes average PermutationInvariantTraining metric."""
         return self.sum_pit_metric / self.total

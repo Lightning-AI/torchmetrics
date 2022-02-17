@@ -19,7 +19,7 @@ from torchmetrics.functional.classification.hinge import MulticlassMode, _hinge_
 from torchmetrics.metric import Metric
 
 
-class Hinge(Metric):
+class HingeLoss(Metric):
     r"""
     Computes the mean `Hinge loss`_, typically used for Support Vector
     Machines (SVMs). In the binary case it is defined as:
@@ -62,24 +62,24 @@ class Hinge(Metric):
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics import Hinge
+        >>> from torchmetrics import HingeLoss
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge = Hinge()
+        >>> hinge = HingeLoss()
         >>> hinge(preds, target)
         tensor(0.3000)
 
     Example (default / multiclass case):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge = Hinge()
+        >>> hinge = HingeLoss()
         >>> hinge(preds, target)
         tensor(2.9000)
 
     Example (multiclass example, one vs all mode):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge = Hinge(multiclass_mode="one-vs-all")
+        >>> hinge = HingeLoss(multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([2.2333, 1.5000, 1.2333])
 
@@ -93,7 +93,7 @@ class Hinge(Metric):
         self,
         squared: bool = False,
         multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Callable = None,

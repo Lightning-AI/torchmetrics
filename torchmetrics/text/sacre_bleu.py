@@ -46,12 +46,16 @@ class SacreBLEUScore(BLEUScore):
         lowercase:
             If ``True``, BLEU score over lowercased text is calculated.
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -64,10 +68,11 @@ class SacreBLEUScore(BLEUScore):
 
 
     Example:
-        >>> translate_corpus = ['the cat is on the mat']
-        >>> reference_corpus = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> from torchmetrics import SacreBLEUScore
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> metric = SacreBLEUScore()
-        >>> metric(reference_corpus, translate_corpus)
+        >>> metric(preds, target)
         tensor(0.7598)
 
     References:
@@ -86,7 +91,7 @@ class SacreBLEUScore(BLEUScore):
         smooth: bool = False,
         tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
         lowercase: bool = False,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable] = None,
@@ -103,32 +108,26 @@ class SacreBLEUScore(BLEUScore):
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
         if tokenize == "intl" and not _REGEX_AVAILABLE:
-            raise ValueError(
-                "`'intl'` tokenization requires `regex` installed. Use `pip install regex` or `pip install "
-                "torchmetrics[text]`."
+            raise ModuleNotFoundError(
+                "`'intl'` tokenization requires that `regex` is installed."
+                " Use `pip install regex` or `pip install torchmetrics[text]`."
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    def update(  # type: ignore
-        self, reference_corpus: Sequence[Sequence[str]], translate_corpus: Sequence[str]
-    ) -> None:
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
-            reference_corpus: An iterable of iterables of reference corpus
-            translate_corpus: An iterable of machine translated corpus
+            preds: An iterable of machine translated corpus
+            target: An iterable of iterables of reference corpus
         """
-        reference_corpus_: Sequence[Sequence[Sequence[str]]] = [
-            [self.tokenizer(line) for line in reference] for reference in reference_corpus
-        ]
-        translate_corpus_: Sequence[Sequence[str]] = [self.tokenizer(line) for line in translate_corpus]
-
-        self.trans_len, self.ref_len = _bleu_score_update(
-            reference_corpus_,
-            translate_corpus_,
+        self.preds_len, self.target_len = _bleu_score_update(
+            preds,
+            target,
             self.numerator,
             self.denominator,
-            self.trans_len,
-            self.ref_len,
+            self.preds_len,
+            self.target_len,
             self.n_gram,
+            self.tokenizer,
         )

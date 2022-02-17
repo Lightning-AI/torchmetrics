@@ -85,11 +85,11 @@ class TestAUC(MetricTester):
 @pytest.mark.parametrize(
     ["x", "y", "expected"],
     [
-        pytest.param([0, 1], [0, 1], 0.5),
-        pytest.param([1, 0], [0, 1], 0.5),
-        pytest.param([1, 0, 0], [0, 1, 1], 0.5),
-        pytest.param([0, 1], [1, 1], 1),
-        pytest.param([0, 0.5, 1], [0, 0.5, 1], 0.5),
+        ([0, 1], [0, 1], 0.5),
+        ([1, 0], [0, 1], 0.5),
+        ([1, 0, 0], [0, 1, 1], 0.5),
+        ([0, 1], [1, 1], 1),
+        ([0, 0.5, 1], [0, 0.5, 1], 0.5),
     ],
 )
 def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):

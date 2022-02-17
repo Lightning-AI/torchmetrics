@@ -52,7 +52,7 @@ def _final_aggregation(
     return var_x, var_y, corr_xy, nb
 
 
-class PearsonCorrcoef(Metric):
+class PearsonCorrCoef(Metric):
     r"""
     Computes `Pearson Correlation Coefficient`_:
 
@@ -69,18 +69,22 @@ class PearsonCorrcoef(Metric):
 
     Args:
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step. default: False
+            before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
 
     Example:
-        >>> from torchmetrics import PearsonCorrcoef
+        >>> from torchmetrics import PearsonCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> pearson = PearsonCorrcoef()
+        >>> pearson = PearsonCorrCoef()
         >>> pearson(preds, target)
         tensor(0.9849)
 
@@ -98,7 +102,7 @@ class PearsonCorrcoef(Metric):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
     ) -> None:
@@ -108,12 +112,12 @@ class PearsonCorrcoef(Metric):
             process_group=process_group,
         )
 
-        self.add_state("mean_x", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("mean_y", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("var_x", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("var_y", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("corr_xy", default=torch.zeros(1), dist_reduce_fx=None)
-        self.add_state("n_total", default=torch.zeros(1), dist_reduce_fx=None)
+        self.add_state("mean_x", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("mean_y", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("var_x", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("var_y", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("corr_xy", default=torch.tensor(0.0), dist_reduce_fx=None)
+        self.add_state("n_total", default=torch.tensor(0.0), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.

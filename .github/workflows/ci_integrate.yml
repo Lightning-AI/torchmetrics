@@ -1,0 +1,78 @@
+name: CI integrations
+
+# see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
+on:  # Trigger the workflow on push or pull request, but only for the master branch
+  push:
+    branches: [master, "release/*"]
+  pull_request:
+    branches: [master, "release/*"]
+    types: [opened, reopened, ready_for_review, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  pytest:
+    runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, macOS-10.15, windows-2019]
+        python-version: [3.6, 3.9]
+        requires: ['oldest', 'latest']
+        exclude:
+          - {python-version: 3.6, requires: 'latest'}
+          - {python-version: 3.9, requires: 'oldest'}
+    env:
+      PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
+      PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    # seems that MacOS jobs take much more than orger OS
+    timeout-minutes: 45
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - uses: ./.github/actions/caching
+      with:
+        os: ${{ runner.os }}
+        requires: ${{ matrix.requires }}
+        python-version: ${{ matrix.python-version }}
+        offset: "integrate"
+
+    - name: Install base dependencies
+      run: |
+        pip --version
+        pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
+
+    - name: Freeze Numpy (hotfix)
+      if: matrix.requires == 'latest'
+      run: |
+        pip install -q "numpy==1.20.0"  # temp fix for cypesq
+        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+        pip install -q "Pillow<9.0"  # It messes with torchvision
+
+    - name: Install all dependencies
+      run: |
+        python ./requirements/adjust-versions.py requirements.txt
+        python ./requirements/adjust-versions.py requirements/image.txt
+        pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
+        pip install -r requirements/integrate.txt --quiet --upgrade-strategy only-if-needed --find-links $PYTORCH_URL
+        pip uninstall -y torchmetrics
+        pip list
+
+    - name: Integrations
+      run: |
+        python -m pytest integrations -v --durations=25

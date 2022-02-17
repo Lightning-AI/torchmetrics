@@ -22,8 +22,10 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+__doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
 
-class IS(Metric):
+
+class InceptionScore(Metric):
     r"""
     Calculates the Inception Score (IS) which is used to access how realistic generated images are.
     It is defined as
@@ -60,7 +62,11 @@ class IS(Metric):
         splits: integer determining how many splits the inception score calculation should be split among
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step
@@ -91,13 +97,13 @@ class IS(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics import IS
-        >>> inception = IS()  # doctest: +SKIP
+        >>> from torchmetrics.image.inception import InceptionScore
+        >>> inception = InceptionScore()
         >>> # generate some images
-        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> inception.update(imgs)  # doctest: +SKIP
-        >>> inception.compute()  # doctest: +SKIP
-        (tensor(1.0569), tensor(0.0113))
+        >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> inception.update(imgs)
+        >>> inception.compute()
+        (tensor(1.0544), tensor(0.0117))
 
     """
     features: List
@@ -120,17 +126,16 @@ class IS(Metric):
         )
 
         rank_zero_warn(
-            "Metric `IS` will save all extracted features in buffer."
+            "Metric `InceptionScore` will save all extracted features in buffer."
             " For large datasets this may lead to large memory footprint.",
             UserWarning,
         )
 
         if isinstance(feature, (str, int)):
             if not _TORCH_FIDELITY_AVAILABLE:
-                raise ValueError(
-                    "IS metric requires that Torch-fidelity is installed."
-                    "Either install as `pip install torchmetrics[image]`"
-                    " or `pip install torch-fidelity`"
+                raise ModuleNotFoundError(
+                    "InceptionScore metric requires that `Torch-fidelity` is installed."
+                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
                 )
             valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
             if feature not in valid_int_input:

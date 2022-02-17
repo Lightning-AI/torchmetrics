@@ -33,16 +33,14 @@ from torchmetrics.functional import (
     mean_squared_error,
     mean_squared_log_error,
 )
-from torchmetrics.functional.regression.symmetric_mean_absolute_percentage_error import (
-    symmetric_mean_absolute_percentage_error,
-)
+from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.regression import (
     MeanAbsoluteError,
     MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
 )
-from torchmetrics.regression.symmetric_mean_absolute_percentage_error import SymmetricMeanAbsolutePercentageError
+from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
 
 seed_all(42)
@@ -66,8 +64,6 @@ def _single_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
-    # `sk_target` and `sk_preds` switched to fix failing tests.
-    # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
     res = sk_fn(sk_target, sk_preds)
 
     return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
@@ -77,8 +73,6 @@ def _multi_target_sk_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
 
-    # `sk_target` and `sk_preds` switched to fix failing tests.
-    # For more info, check https://github.com/PyTorchLightning/metrics/pull/248#issuecomment-841232277
     res = sk_fn(sk_target, sk_preds)
 
     return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res

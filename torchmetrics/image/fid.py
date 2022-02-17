@@ -30,6 +30,8 @@ else:
     class FeatureExtractorInceptionV3(torch.nn.Module):  # type: ignore
         pass
 
+    __doctest_skip__ = ["FrechetInceptionDistance", "FID"]
+
 
 if _SCIPY_AVAILABLE:
     import scipy
@@ -122,7 +124,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
     return diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * tr_covmean
 
 
-class FID(Metric):
+class FrechetInceptionDistance(Metric):
     r"""
     Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images. Given by
 
@@ -160,7 +162,11 @@ class FID(Metric):
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step
@@ -191,14 +197,14 @@ class FID(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics import FID
-        >>> fid = FID(feature=64)  # doctest: +SKIP
+        >>> from torchmetrics.image.fid import FrechetInceptionDistance
+        >>> fid = FrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)  # doctest: +SKIP
-        >>> fid.update(imgs_dist1, real=True)  # doctest: +SKIP
-        >>> fid.update(imgs_dist2, real=False)  # doctest: +SKIP
-        >>> fid.compute()  # doctest: +SKIP
+        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> fid.update(imgs_dist1, real=True)
+        >>> fid.update(imgs_dist2, real=False)
+        >>> fid.compute()
         tensor(12.7202)
 
     """
@@ -222,16 +228,16 @@ class FID(Metric):
         )
 
         rank_zero_warn(
-            "Metric `FID` will save all extracted features in buffer."
+            "Metric `FrechetInceptionDistance` will save all extracted features in buffer."
             " For large datasets this may lead to large memory footprint.",
             UserWarning,
         )
 
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
-                raise ValueError(
-                    "FID metric requires that Torch-fidelity is installed."
-                    "Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`"
+                raise ModuleNotFoundError(
+                    "FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
+                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
                 )
             valid_int_input = [64, 192, 768, 2048]
             if feature not in valid_int_input:

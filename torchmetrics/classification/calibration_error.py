@@ -30,20 +30,21 @@ class CalibrationError(Metric):
     L1 norm (Expected Calibration Error)
 
     .. math::
-        \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
+        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|
 
     Infinity norm (Maximum Calibration Error)
 
     .. math::
-        \text{RMSCE} =  \max_{i} (p_i - c_i)
+        \text{MCE} =  \max_{i} (p_i - c_i)
 
     L2 norm (Root Mean Square Calibration Error)
 
     .. math::
-        \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
+        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}
 
-    Where :math:`p_i` is the top-1 prediction accuracy in bin i
-    and :math:`c_i` is the average confidence of predictions in bin i.
+    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`,
+    :math:`c_i` is the average confidence of predictions in bin :math:`i`, and
+    :math:`b_i` is the fraction of data points in bin :math:`i`.
 
     .. note::
         L2-norm debiasing is not yet supported.
@@ -53,11 +54,15 @@ class CalibrationError(Metric):
         norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
         debias: Applies debiasing term, only implemented for l2 norm. Defaults to True.
-        compute_on_step:  Forward only calls ``update()`` and return None if this is set to False.
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step: Synchronize metric state across processes at each ``forward()``
             before returning the value at the step
         process_group: Specify the process group on which synchronization is called.
-            default: None (which selects the entire world)
     """
     DISTANCES = {"l1", "l2", "max"}
     higher_is_better = False

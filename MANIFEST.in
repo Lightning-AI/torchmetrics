@@ -10,6 +10,9 @@ recursive-include torchmetrics *.md
 # Include the license file
 include LICENSE
 
+# Include Citation file
+include *.cff
+
 # Include marker file for PEP 561
 include torchmetrics/py.typed
 
@@ -39,6 +42,7 @@ exclude *.yml
 exclude *.yaml
 exclude Makefile
 
+prune .devcontainer
 prune .git
 prune .github
 prune .circleci

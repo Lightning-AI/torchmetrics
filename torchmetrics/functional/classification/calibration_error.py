@@ -14,38 +14,26 @@
 from typing import Tuple
 
 import torch
-from torch import FloatTensor, Tensor
+from torch import Tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
 
 
-def _ce_compute(
-    confidences: FloatTensor,
-    accuracies: FloatTensor,
-    bin_boundaries: FloatTensor,
-    norm: str = "l1",
-    debias: bool = False,
-) -> Tensor:
-    """Computes the calibration error given the provided bin boundaries and norm.
-
+def _binning_with_loop(
+    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """
+    Compute calibration bins using for loops. Use for pytorch < 1.6
     Args:
-        confidences (FloatTensor): The confidence (i.e. predicted prob) of the top1 prediction.
-        accuracies (FloatTensor): 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries (FloatTensor): Bin boundaries separating the linspace from 0 to 1.
-        norm (str, optional): Norm function to use when computing calibration error. Defaults to "l1".
-        debias (bool, optional): Apply debiasing to L2 norm computation as in
-            `Verified Uncertainty Calibration`_. Defaults to False.
-
-    Raises:
-        ValueError: If an unsupported norm function is provided.
+        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
 
     Returns:
-        Tensor: Calibration error scalar.
+        tuple with binned accuracy, binned confidence and binned probabilities
     """
-    if norm not in {"l1", "l2", "max"}:
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
-
     conf_bin = torch.zeros_like(bin_boundaries)
     acc_bin = torch.zeros_like(bin_boundaries)
     prop_bin = torch.zeros_like(bin_boundaries)
@@ -57,6 +45,70 @@ def _ce_compute(
             acc_bin[i] = accuracies[in_bin].float().mean()
             conf_bin[i] = confidences[in_bin].mean()
             prop_bin[i] = prop_in_bin
+    return acc_bin, conf_bin, prop_bin
+
+
+def _binning_bucketize(
+    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Compute calibration bins using torch.bucketize. Use for pytorch >= 1.6.
+
+    Args:
+        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
+
+    Returns:
+        tuple with binned accuracy, binned confidence and binned probabilities
+    """
+    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
+    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
+    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
+
+    indices = torch.bucketize(confidences, bin_boundaries) - 1
+
+    count_bin.scatter_add_(dim=0, index=indices, src=torch.ones_like(confidences))
+
+    conf_bin.scatter_add_(dim=0, index=indices, src=confidences)
+    conf_bin = torch.nan_to_num(conf_bin / count_bin)
+
+    acc_bin.scatter_add_(dim=0, index=indices, src=accuracies)
+    acc_bin = torch.nan_to_num(acc_bin / count_bin)
+
+    prop_bin = count_bin / count_bin.sum()
+    return acc_bin, conf_bin, prop_bin
+
+
+def _ce_compute(
+    confidences: Tensor,
+    accuracies: Tensor,
+    bin_boundaries: Tensor,
+    norm: str = "l1",
+    debias: bool = False,
+) -> Tensor:
+    """Computes the calibration error given the provided bin boundaries and norm.
+
+    Args:
+        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
+        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+        bin_boundaries: Bin boundaries separating the linspace from 0 to 1.
+        norm: Norm function to use when computing calibration error. Defaults to "l1".
+        debias: Apply debiasing to L2 norm computation as in
+            `Verified Uncertainty Calibration`_. Defaults to False.
+
+    Raises:
+        ValueError: If an unsupported norm function is provided.
+
+    Returns:
+        Tensor: Calibration error scalar.
+    """
+    if norm not in {"l1", "l2", "max"}:
+        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
+
+    if _TORCH_GREATER_EQUAL_1_8:
+        acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
+    else:
+        acc_bin, conf_bin, prop_bin = _binning_with_loop(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
         ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
@@ -74,19 +126,19 @@ def _ce_compute(
     return ce
 
 
-def _ce_update(preds: Tensor, target: Tensor) -> Tuple[FloatTensor, FloatTensor]:
+def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
     correctness.
 
     Args:
-        preds (Tensor):  Input softmaxed predictions.
-        target (Tensor): Labels.
+        preds:  Input softmaxed predictions.
+        target: Labels.
 
     Raises:
         ValueError: If the dataset shape is not binary, multiclass, or multidimensional-multiclass.
 
     Returns:
-        Tuple[FloatTensor, FloatTensor]: [description]
+        tuple with confidences and accuracies
     """
     _, _, mode = _input_format_classification(preds, target)
 
@@ -118,29 +170,30 @@ def calibration_error(preds: Tensor, target: Tensor, n_bins: int = 15, norm: str
     L1 norm (Expected Calibration Error)
 
     .. math::
-        \text{ECE} = \frac{1}{N}\sum_i^N \|(p_i - c_i)\|
+        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|
 
     Infinity norm (Maximum Calibration Error)
 
     .. math::
-        \text{RMSCE} =  \max_{i} (p_i - c_i)
+        \text{MCE} =  \max_{i} (p_i - c_i)
 
     L2 norm (Root Mean Square Calibration Error)
 
     .. math::
-        \text{MCE} = \frac{1}{N}\sum_i^N (p_i - c_i)^2
+        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}
 
-    Where :math:`p_i` is the top-1 prediction accuracy in
-    bin i and :math:`c_i` is the average confidence of predictions in bin i.
+    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`,
+    :math:`c_i` is the average confidence of predictions in bin :math:`i`, and
+    :math:`b_i` is the fraction of data points in bin :math:`i`.
 
     .. note:
         L2-norm debiasing is not yet supported.
 
     Args:
-        preds (Tensor): Model output probabilities.
-        target (Tensor): Ground-truth target class labels.
-        n_bins (int, optional): Number of bins to use when computing t. Defaults to 15.
-        norm (str, optional): Norm used to compare empirical and expected probability bins.
+        preds: Model output probabilities.
+        target: Ground-truth target class labels.
+        n_bins: Number of bins to use when computing t. Defaults to 15.
+        norm: Norm used to compare empirical and expected probability bins.
             Defaults to "l1", or Expected Calibration Error.
     """
     if norm not in ("l1", "l2", "max"):

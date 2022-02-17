@@ -15,13 +15,15 @@ from typing import Any, Callable, Optional
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.stoi import stoi
+from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
+__doctest_requires__ = {("ShortTimeObjectiveIntelligibility"): ["pystoi"]}
 
-class STOI(Metric):
-    r"""STOI (Short Term Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
+
+class ShortTimeObjectiveIntelligibility(Metric):
+    r"""STOI (Short-Time Objective Intelligibility, see [2,3]), a wrapper for the pystoi package [1].
     Note that input will be moved to `cpu` to perform the metric calculation.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due
@@ -45,12 +47,16 @@ class STOI(Metric):
         extended:
             whether to use the extended STOI described in [4]
         compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False. default: True
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
         process_group:
-            Specify the process group on which synchronization is called. default: None (which selects the entire world)
+            Specify the process group on which synchronization is called.
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
@@ -63,12 +69,12 @@ class STOI(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> from torchmetrics.audio import STOI
+        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
         >>> import torch
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> stoi = STOI(8000, False)
+        >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
         tensor(-0.0100)
 
@@ -94,7 +100,7 @@ class STOI(Metric):
         self,
         fs: int,
         extended: bool = False,
-        compute_on_step: bool = True,
+        compute_on_step: Optional[bool] = None,
         dist_sync_on_step: bool = False,
         process_group: Optional[Any] = None,
         dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
@@ -107,8 +113,8 @@ class STOI(Metric):
         )
         if not _PYSTOI_AVAILABLE:
             raise ModuleNotFoundError(
-                "STOI metric requires that pystoi is installed."
-                " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`"
+                "STOI metric requires that `pystoi` is installed."
+                " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
             )
         self.fs = fs
         self.extended = extended
@@ -123,7 +129,9 @@ class STOI(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        stoi_batch = stoi(preds, target, self.fs, self.extended, False).to(self.sum_stoi.device)
+        stoi_batch = short_time_objective_intelligibility(preds, target, self.fs, self.extended, False).to(
+            self.sum_stoi.device
+        )
 
         self.sum_stoi += stoi_batch.sum()
         self.total += stoi_batch.numel()

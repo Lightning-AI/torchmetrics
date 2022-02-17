@@ -1,4 +1,4 @@
-name: PyTorch & Conda
+name: CI testing - PyTorch & Conda
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
@@ -7,40 +7,43 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
   pull_request:
     branches: [master, "release/*"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
+  check-diff:
+    if: github.event.pull_request.draft == false
+    uses: ./.github/workflows/focus-diff.yml
+
   conda:
     runs-on: ubuntu-20.04
+    needs: check-diff
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8"]
         pytorch-version: ["1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11"]
         include:
-          - python-version: 3.7
-            pytorch-version: '1.3'
+          - {python-version: 3.7, pytorch-version: '1.3'}
+    env:
+      PYTEST_ARTEFACT: test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
+      TRANSFORMERS_CACHE: .cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 55
+    timeout-minutes: 75
     steps:
     - uses: actions/checkout@v2
 
-    - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
-      id: times
-
-    - name: Cache conda
-      uses: actions/cache@v2
+    - uses: ./.github/actions/caching
       with:
-        path: ~/conda_pkgs_dir
-        key: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}
-        restore-keys: conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}
-
-    # Add another cache for Pip as not all packages lives in Conda env
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}-${{ hashFiles('requirements/base.txt') }}
-        restore-keys: pip-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}-td${{ steps.times.outputs.period }}-
+        os: ${{ runner.os }}
+        python-version: ${{ matrix.python-version }}
+        offset: "pt"
 
     # https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf
     # https://gist.github.com/mwouts/9842452d020c08faf9e84a3bba38a66f
@@ -70,23 +73,29 @@ jobs:
         conda list
         pip --version
         python ./requirements/adjust-versions.py requirements.txt
-        python ./.github/prune-packages.py requirements/image.txt torchvision
-        pip install --requirement requirements.txt --quiet
         pip install --requirement requirements/test.txt --quiet
+        python ./.github/assistant.py prune-packages requirements/image.txt torchvision
+        python ./.github/assistant.py prune-packages requirements/detection.txt torchvision
+        pip install -q "numpy==1.20.0"  # try to fix cocotools for PT 1.4 & 1.9
+        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+        pip install -q "Pillow<9.0"  # It messes with torchvision
+        pip install --requirement requirements/devel.txt --quiet
         pip list
         python -c "from torch import __version__ as ver; assert '.'.join(ver.split('.')[:2]) == '${{ matrix.pytorch-version }}', ver"
-      shell: bash -l {0}
 
     - name: Testing
+      env:
+        TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
       run: |
-        # NOTE: run coverage on tests does not propagare faler status for Win, https://github.com/nedbat/coveragepy/issues/1003
-        python -m pytest torchmetrics tests -v --durations=35 --junitxml=junit/test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
-      shell: bash -l {0}
+        phmdoctest README.md --outfile tests/test_readme.py
+        # NOTE: run coverage on tests does not propagate failure status for Win,
+        # see: https://github.com/nedbat/coveragepy/issues/1003
+        python -m pytest torchmetrics $TEST_DIRS --durations=50 --junitxml=$PYTEST_ARTEFACT
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@master
       with:
-        name: test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
-        path: junit/test-conda-py${{ matrix.python-version }}-pt${{ matrix.pytorch-version }}.xml
+        name: $PYTEST_ARTEFACT
+        path: $PYTEST_ARTEFACT
       # Use always() to always run this step to publish test results when there are test failures
       if: failure()

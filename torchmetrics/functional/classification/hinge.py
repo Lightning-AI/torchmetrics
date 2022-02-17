@@ -154,7 +154,7 @@ def _hinge_compute(measure: Tensor, total: Tensor) -> Tensor:
     return measure / total
 
 
-def hinge(
+def hinge_loss(
     preds: Tensor,
     target: Tensor,
     squared: bool = False,
@@ -209,22 +209,22 @@ def hinge(
 
     Example (binary case):
         >>> import torch
-        >>> from torchmetrics.functional import hinge
+        >>> from torchmetrics.functional import hinge_loss
         >>> target = torch.tensor([0, 1, 1])
         >>> preds = torch.tensor([-2.2, 2.4, 0.1])
-        >>> hinge(preds, target)
+        >>> hinge_loss(preds, target)
         tensor(0.3000)
 
     Example (default / multiclass case):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge(preds, target)
+        >>> hinge_loss(preds, target)
         tensor(2.9000)
 
     Example (multiclass example, one vs all mode):
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
-        >>> hinge(preds, target, multiclass_mode="one-vs-all")
+        >>> hinge_loss(preds, target, multiclass_mode="one-vs-all")
         tensor([2.2333, 1.5000, 1.2333])
     """
     measure, total = _hinge_update(preds, target, squared=squared, multiclass_mode=multiclass_mode)

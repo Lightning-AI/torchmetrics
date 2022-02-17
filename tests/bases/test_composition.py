@@ -24,7 +24,7 @@ from torchmetrics.metric import CompositionalMetric, Metric
 class DummyMetric(Metric):
     def __init__(self, val_to_return):
         super().__init__()
-        self._num_updates = 0
+        self.add_state("_num_updates", tensor(0), dist_reduce_fx="sum")
         self._val_to_return = val_to_return
         self._update_called = True
 
@@ -33,10 +33,6 @@ class DummyMetric(Metric):
 
     def compute(self):
         return tensor(self._val_to_return)
-
-    def reset(self):
-        self._num_updates = 0
-        return super().reset()
 
 
 @pytest.mark.parametrize(
@@ -314,10 +310,10 @@ def test_metrics_or(second_operand, expected_result):
 @pytest.mark.parametrize(
     ["second_operand", "expected_result"],
     [
-        pytest.param(DummyMetric(2), tensor(4)),
-        pytest.param(2, tensor(4)),
+        (DummyMetric(2), tensor(4)),
+        (2, tensor(4)),
         pytest.param(2.0, tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_6)),
-        pytest.param(tensor(2), tensor(4)),
+        (tensor(2), tensor(4)),
     ],
 )
 def test_metrics_pow(second_operand, expected_result):
@@ -380,8 +376,8 @@ def test_metrics_rmod(first_operand, expected_result):
 @pytest.mark.parametrize(
     "first_operand,expected_result",
     [
-        pytest.param(DummyMetric(2), tensor(4)),
-        pytest.param(2, tensor(4)),
+        (DummyMetric(2), tensor(4)),
+        (2, tensor(4)),
         pytest.param(2.0, tensor(4.0), marks=pytest.mark.skipif(**_MARK_TORCH_MIN_1_6)),
     ],
 )
@@ -544,7 +540,7 @@ def test_metrics_getitem(value, idx, expected_result):
 
 
 def test_compositional_metrics_update():
-
+    """test update method for compositional metrics."""
     compos = DummyMetric(5) + DummyMetric(4)
 
     assert isinstance(compos, CompositionalMetric)
