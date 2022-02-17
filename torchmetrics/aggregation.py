@@ -254,7 +254,11 @@ class SumMetric(BaseAggregator):
         **kwargs: Dict[str, Any],
     ):
         super().__init__(
-            "sum", torch.tensor(0.0), nan_strategy, compute_on_step, **kwargs,
+            "sum",
+            torch.tensor(0.0),
+            nan_strategy,
+            compute_on_step,
+            **kwargs,
         )
 
     def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
@@ -365,7 +369,11 @@ class MeanMetric(BaseAggregator):
         **kwargs: Dict[str, Any],
     ):
         super().__init__(
-            "sum", torch.tensor(0.0), nan_strategy, compute_on_step, *kwargs,
+            "sum",
+            torch.tensor(0.0),
+            nan_strategy,
+            compute_on_step,
+            *kwargs,
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
