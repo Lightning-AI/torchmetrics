@@ -128,12 +128,11 @@ class Metric(Module, ABC):
             )
 
         self.process_group = kwargs.pop("process_group", None)
-        
+
         self.dist_sync_fn = kwargs.pop("dist_sync_fn", None)
         if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
             raise ValueError(
-                "Expected keyword argument `dist_sync_fn` to be an callable function"
-                f" but got {self.dist_sync_fn}"
+                "Expected keyword argument `dist_sync_fn` to be an callable function" f" but got {self.dist_sync_fn}"
             )
 
         # initialize
