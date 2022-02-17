@@ -373,7 +373,7 @@ class MeanMetric(BaseAggregator):
             torch.tensor(0.0),
             nan_strategy,
             compute_on_step,
-            *kwargs,
+            **kwargs,
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
