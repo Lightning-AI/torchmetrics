@@ -1,10 +1,11 @@
 from typing import Sequence, Union
 
 import torch
-from torch import Tensor
 import torch.nn.functional as F
+from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
+
 
 def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
     """Computes 1D gaussian kernel.
