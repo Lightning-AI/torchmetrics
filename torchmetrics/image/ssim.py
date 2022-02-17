@@ -52,7 +52,8 @@ class StructuralSimilarityIndexMeasure(Metric):
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure()
         >>> ssim(preds, target)
-        tensor(0.9219)
+        tensor([0.9218, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219,
+            0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9219, 0.9220])
     """
 
     preds: List[Tensor]
