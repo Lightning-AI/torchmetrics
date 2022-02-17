@@ -60,19 +60,16 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
         sk_preds = sk_preds[:, :, :, 0]
         sk_target = sk_target[:, :, :, 0]
 
-    results = torch.zeros(sk_preds.shape[0])
-    for i in range(sk_preds.shape[0]):
-        results[i] = structural_similarity(
-            sk_target[i],
-            sk_preds[i],
-            data_range=data_range,
-            multichannel=multichannel,
-            gaussian_weights=True,
-            win_size=kernel_size,
-            sigma=1.5,
-            use_sample_covariance=False,
-        )
-    return results
+    return structural_similarity(
+        sk_target,
+        sk_preds,
+        data_range=data_range,
+        multichannel=multichannel,
+        gaussian_weights=True,
+        win_size=kernel_size,
+        sigma=1.5,
+        use_sample_covariance=False,
+    )
 
 
 @pytest.mark.parametrize(
@@ -81,6 +78,8 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
 )
 @pytest.mark.parametrize("kernel_size", [5, 11])
 class TestSSIM(MetricTester):
+    atol = 6e-3
+    
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_ssim(self, preds, target, multichannel, kernel_size, ddp, dist_sync_on_step):
