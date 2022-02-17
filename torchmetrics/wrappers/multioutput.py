@@ -112,6 +112,11 @@ class MultioutputWrapper(Metric):
             process_group=process_group,
             dist_sync_fn=dist_sync_fn,
         )
+        if not isinstance(base_metric, Metric):
+            raise ValueError(
+                "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
+            )
+
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_outputs)])
         self.output_dim = output_dim
         self.remove_nans = remove_nans

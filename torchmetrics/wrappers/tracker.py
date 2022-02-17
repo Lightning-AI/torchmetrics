@@ -121,17 +121,17 @@ class MetricTracker(nn.ModuleList):
         self._check_for_increment("forward")
         return self[-1](*args, **kwargs)
 
-    def _update(self, *args, **kwargs) -> None:  # type: ignore
+    def update(self, *args, **kwargs) -> None:  # type: ignore
         """Updates the current metric being tracked."""
         self._check_for_increment("update")
         self[-1].update(*args, **kwargs)
 
-    def _compute(self) -> Any:
+    def compute(self) -> Any:
         """Call compute of the current metric being tracked."""
         self._check_for_increment("compute")
         return self[-1].compute()
 
-    def _compute_all(self) -> Tensor:
+    def compute_all(self) -> Tensor:
         """Compute the metric value for all tracked metrics."""
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored

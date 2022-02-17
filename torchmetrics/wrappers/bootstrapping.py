@@ -175,3 +175,8 @@ class BootStrapper(Metric):
         if self.raw:
             output_dict["raw"] = computed_vals
         return output_dict
+
+    def reset(self) -> None:
+        """Reset all underlying metrics."""
+        for metric in self.metrics:
+            metric.reset()
