@@ -23,7 +23,7 @@ from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 
 seed_all(42)
 
@@ -62,16 +62,21 @@ def _sk_ssim(preds, target, data_range, multichannel, kernel_size):
         sk_preds = sk_preds[:, :, :, 0]
         sk_target = sk_target[:, :, :, 0]
 
-    return structural_similarity(
-        sk_target,
-        sk_preds,
-        data_range=data_range,
-        multichannel=multichannel,
-        gaussian_weights=True,
-        win_size=kernel_size,
-        sigma=1.5,
-        use_sample_covariance=False,
-    )
+    ssim = []
+    for i in range(len(sk_preds)):
+        ssim.append(
+            structural_similarity(
+                sk_target[i],
+                sk_preds[i],
+                data_range=data_range,
+                multichannel=multichannel,
+                gaussian_weights=True,
+                win_size=kernel_size,
+                sigma=1.5,
+                use_sample_covariance=False,
+            )
+        )
+    return torch.tensor(ssim).mean()
 
 
 @pytest.mark.parametrize(
