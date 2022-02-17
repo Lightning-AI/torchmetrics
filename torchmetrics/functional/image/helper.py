@@ -5,6 +5,7 @@ from torch import Tensor
 import torch.nn.functional as F
 
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_10
 
 def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
     """Computes 1D gaussian kernel.
@@ -85,8 +86,7 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
 
 
 def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Tensor:
-    (torch_v0, torch_v1) = torch.__version__.split(".")[:2]
-    if int(torch_v0) > 1 or int(torch_v1) >= 10:
+    if _TORCH_GREATER_EQUAL_1_10:
         inputs = F.pad(inputs, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
     else:
         rank_zero_warn(
