@@ -20,7 +20,6 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.distributed import reduce
 
 
 def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
@@ -49,12 +48,13 @@ def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 def _ssim_compute(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Union[int, Sequence[int]] = 11,
+    gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
-    reduction: str = "elementwise_mean",
+    kernel_size: Union[int, Sequence[int]] = 11,
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
+    return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Computes Structual Similarity Index Measure.
@@ -62,17 +62,19 @@ def _ssim_compute(
     Args:
         preds: estimated image
         target: ground truth image
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
+        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
+        sigma: Standard deviation of the gaussian kernel (default: 1.5), anisotropic kernels are possible.
+            Ignored if a uniform kernel is used
+        kernel_size: size of the uniform kernel (default: 11), anisotropic kernels are possible.
+            Ignored if a gaussian kernel is used
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
+        return_full_image: If true, the full ssim image is returned as a second arguments.
+            Mutually exlusive with return_contrast_sensitivity
+        return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
+            The luminance term can be obtained with luminance=ssim/contrast
+            Mutually exlusive with return_full_image
 
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
@@ -92,11 +94,6 @@ def _ssim_compute(
         raise ValueError(
             f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, "
             f"which is: {len(target.shape)}"
-        )
-    if len(kernel_size) != len(sigma):
-        raise ValueError(
-            "Expected `kernel_size` and `sigma` to have the same length."
-            f" Kernel_size dimensionality: {len(kernel_size)}, sigma dimensionality: {len(sigma)}."
         )
     if len(kernel_size) not in (2, 3):
         raise ValueError(
@@ -118,18 +115,25 @@ def _ssim_compute(
 
     channel = preds.size(1)
     dtype = preds.dtype
-    pad_h = (kernel_size[0] - 1) // 2
-    pad_w = (kernel_size[1] - 1) // 2
+    gauss_kernel_size = [int(3.5*s+0.5)*2+1 for s in sigma]
+
+    pad_h = (gauss_kernel_size[0] - 1) // 2
+    pad_w = (gauss_kernel_size[1] - 1) // 2
 
     if is_3d:
-        pad_d = (kernel_size[2] - 1) // 2
+        pad_d = (gauss_kernel_size[2] - 1) // 2
         preds = _reflection_pad_3d(preds, pad_h, pad_w, pad_d)
         target = _reflection_pad_3d(target, pad_h, pad_w, pad_d)
-        kernel = _gaussian_kernel_3d(channel, kernel_size, sigma, dtype, device)
+        if gaussian_kernel:
+            kernel = _gaussian_kernel_3d(channel, gauss_kernel_size, sigma, dtype, device)
     else:
         preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
         target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-        kernel = _gaussian_kernel_2d(channel, kernel_size, sigma, dtype, device)
+        if gaussian_kernel:
+            kernel = _gaussian_kernel_2d(channel, gauss_kernel_size, sigma, dtype, device)
+
+    if not gaussian_kernel:
+        kernel = torch.ones((1,1,*kernel_size))/torch.prod(torch.Tensor(kernel_size))
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
@@ -151,43 +155,55 @@ def _ssim_compute(
     upper = 2 * sigma_pred_target + c2
     lower = sigma_pred_sq + sigma_target_sq + c2
 
-    ssim_idx = ((2 * mu_pred_target + c1) * upper) / ((mu_pred_sq + mu_target_sq + c1) * lower)
-    ssim_idx = ssim_idx[..., pad_h:-pad_h, pad_w:-pad_w]
+    ssim_idx_full_image = ((2 * mu_pred_target + c1) * upper) / ((mu_pred_sq + mu_target_sq + c1) * lower)
+
+    if is_3d:
+        ssim_idx = ssim_idx_full_image[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
+    else:
+        ssim_idx = ssim_idx_full_image[..., pad_h:-pad_h, pad_w:-pad_w]
 
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return reduce(ssim_idx, reduction), reduce(contrast_sensitivity, reduction)
+        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), \
+               ssim_idx.reshape(contrast_sensitivity.shape[0], -1).mean(-1)
 
-    return reduce(ssim_idx, reduction)
+    elif return_full_image:
+        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx_full_image
+
+    return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1)
 
 
 def structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Union[int, Sequence[int]] = 11,
+    gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
-    reduction: str = "elementwise_mean",
+    kernel_size: Union[int, Sequence[int]] = 11,
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
+    return_full_image: bool = False,
+    return_contrast_sensitivity: bool = False,
 ) -> Tensor:
-    """Computes Structural Similarity Index Measure. Supports both 2D and 3D images.
+    """Computes Structual Similarity Index Measure.
 
     Args:
         preds: estimated image
         target: ground truth image
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
-
+        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
+        sigma: Standard deviation of the gaussian kernel (default: 1.5), anisotropic kernels are possible.
+            Ignored if a uniform kernel is used
+        kernel_size: size of the uniform kernel (default: 11), anisotropic kernels are possible.
+            Ignored if a gaussian kernel is used
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
+        return_full_image: If true, the full ssim image is returned as a second arguments.
+            Mutually exlusive with return_contrast_sensitivity
+        return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
+            The luminance term can be obtained with luminance=ssim/contrast
+            Mutually exlusive with return_full_image
 
     Return:
         Tensor with SSIM score
@@ -212,22 +228,23 @@ def structural_similarity_index_measure(
         tensor(0.9219)
     """
     preds, target = _ssim_update(preds, target)
-    return _ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2)
+    return _ssim_compute(preds, target, gaussian_kernel, sigma, kernel_size, data_range,
+                         k1, k2, return_full_image, return_contrast_sensitivity)
 
 
 def _get_normalized_sim_and_cs(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Union[int, Sequence[int]] = 11,
+    gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
-    reduction: str = "elementwise_mean",
+    kernel_size: Union[int, Sequence[int]] = 11,
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tuple[Tensor, Tensor]:
     sim, contrast_sensitivity = _ssim_compute(
-        preds, target, kernel_size, sigma, reduction, data_range, k1, k2, return_contrast_sensitivity=True
+        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, return_contrast_sensitivity=True
     )
     if normalize == "relu":
         sim = torch.relu(sim)
@@ -238,9 +255,9 @@ def _get_normalized_sim_and_cs(
 def _multiscale_ssim_compute(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Union[int, Sequence[int]] = 11,
+    gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
-    reduction: str = "elementwise_mean",
+    kernel_size: Union[int, Sequence[int]] = 11,
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -261,11 +278,6 @@ def _multiscale_ssim_compute(
         target: ground truth image
         kernel_size: size of the gaussian kernel (default: (11, 11))
         sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
@@ -314,7 +326,7 @@ def _multiscale_ssim_compute(
 
     for _ in range(len(betas)):
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
-            preds, target, kernel_size, sigma, reduction, data_range, k1, k2, normalize
+            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize
         )
         sim_list.append(sim)
         cs_list.append(contrast_sensitivity)
@@ -341,9 +353,9 @@ def _multiscale_ssim_compute(
 def multiscale_structural_similarity_index_measure(
     preds: Tensor,
     target: Tensor,
-    kernel_size: Union[int, Sequence[int]] = 11,
+    gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
-    reduction: str = "elementwise_mean",
+    kernel_size: Union[int, Sequence[int]] = 11,
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -358,11 +370,6 @@ def multiscale_structural_similarity_index_measure(
         target: Ground truth values of shape `[N, C, H, W]`
         kernel_size: size of the gaussian kernel (default: (11, 11))
         sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
@@ -407,4 +414,5 @@ def multiscale_structural_similarity_index_measure(
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
     preds, target = _ssim_update(preds, target)
-    return _multiscale_ssim_compute(preds, target, kernel_size, sigma, reduction, data_range, k1, k2, betas, normalize)
+    return _multiscale_ssim_compute(preds, target, gaussian_kernel, sigma, kernel_size, data_range,
+                                    k1, k2, betas, normalize)
