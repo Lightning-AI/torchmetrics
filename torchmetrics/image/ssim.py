@@ -111,8 +111,16 @@ class StructuralSimilarityIndexMeasure(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ssim_compute(
-            preds, target, self.gaussian_kernel, self.sigma, self.kernel_size, self.data_range, self.k1, self.k2,
-            self.return_full_image, self.return_contrast_sensitivity
+            preds,
+            target,
+            self.gaussian_kernel,
+            self.sigma,
+            self.kernel_size,
+            self.data_range,
+            self.k1,
+            self.k2,
+            self.return_full_image,
+            self.return_contrast_sensitivity,
         )
 
 
