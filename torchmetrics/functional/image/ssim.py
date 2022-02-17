@@ -115,7 +115,7 @@ def _ssim_compute(
 
     channel = preds.size(1)
     dtype = preds.dtype
-    gauss_kernel_size = [int(3.5*s+0.5)*2+1 for s in sigma]
+    gauss_kernel_size = [int(3.5 * s + 0.5) * 2 + 1 for s in sigma]
 
     pad_h = (gauss_kernel_size[0] - 1) // 2
     pad_w = (gauss_kernel_size[1] - 1) // 2
@@ -133,7 +133,7 @@ def _ssim_compute(
             kernel = _gaussian_kernel_2d(channel, gauss_kernel_size, sigma, dtype, device)
 
     if not gaussian_kernel:
-        kernel = torch.ones((1,1,*kernel_size))/torch.prod(torch.Tensor(kernel_size))
+        kernel = torch.ones((1, 1, *kernel_size)) / torch.prod(torch.Tensor(kernel_size))
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
 
@@ -165,8 +165,9 @@ def _ssim_compute(
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), \
-               ssim_idx.reshape(contrast_sensitivity.shape[0], -1).mean(-1)
+        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx.reshape(
+            contrast_sensitivity.shape[0], -1
+        ).mean(-1)
 
     elif return_full_image:
         return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx_full_image
@@ -228,8 +229,18 @@ def structural_similarity_index_measure(
         tensor(0.9219)
     """
     preds, target = _ssim_update(preds, target)
-    return _ssim_compute(preds, target, gaussian_kernel, sigma, kernel_size, data_range,
-                         k1, k2, return_full_image, return_contrast_sensitivity)
+    return _ssim_compute(
+        preds,
+        target,
+        gaussian_kernel,
+        sigma,
+        kernel_size,
+        data_range,
+        k1,
+        k2,
+        return_full_image,
+        return_contrast_sensitivity,
+    )
 
 
 def _get_normalized_sim_and_cs(
@@ -414,5 +425,6 @@ def multiscale_structural_similarity_index_measure(
         raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
 
     preds, target = _ssim_update(preds, target)
-    return _multiscale_ssim_compute(preds, target, gaussian_kernel, sigma, kernel_size, data_range,
-                                    k1, k2, betas, normalize)
+    return _multiscale_ssim_compute(
+        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalize
+    )

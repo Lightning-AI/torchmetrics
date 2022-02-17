@@ -53,11 +53,11 @@ for size, channel, coef, dtype in [
 
 
 def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_image=False, gaussian_weights=True):
-    if len(preds.shape)==4:
+    if len(preds.shape) == 4:
         c, h, w = preds.shape[-3:]
         sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
         sk_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
-    elif len(preds.shape)==5:
+    elif len(preds.shape) == 5:
         c, d, h, w = preds.shape[-4:]
         sk_preds = preds.view(-1, c, d, h, w).permute(0, 2, 3, 4, 1).numpy()
         sk_target = target.view(-1, c, d, h, w).permute(0, 2, 3, 4, 1).numpy()
@@ -93,9 +93,9 @@ def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_ima
             )
             fullimage = torch.from_numpy(fullimage).type(preds.dtype)
             if len(preds.shape) == 4:
-                fullimages[i] = fullimage.permute(2,0,1)
+                fullimages[i] = fullimage.permute(2, 0, 1)
             elif len(preds.shape) == 5:
-                fullimages[i] = fullimage.permute(3,0,1,2)
+                fullimages[i] = fullimage.permute(3, 0, 1, 2)
         return results, fullimages
 
 
@@ -106,6 +106,7 @@ def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_ima
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
 class TestSSIM(MetricTester):
     atol = 3e-04
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_ssim(self, preds, target, sigma, ddp, dist_sync_on_step):
@@ -115,7 +116,10 @@ class TestSSIM(MetricTester):
             target,
             StructuralSimilarityIndexMeasure,
             partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
-            metric_args={"data_range": 1.0, "sigma": sigma, },
+            metric_args={
+                "data_range": 1.0,
+                "sigma": sigma,
+            },
             dist_sync_on_step=dist_sync_on_step,
         )
 

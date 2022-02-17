@@ -75,8 +75,10 @@ def _gaussian_kernel_3d(
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
     gaussian_kernel_z = _gaussian(kernel_size[2], sigma[2], dtype, device)
     kernel_xy = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
-    kernel = torch.mul(kernel_xy.unsqueeze(-1).repeat(1,1,kernel_size[2]),
-                       gaussian_kernel_z.expand(kernel_size[0], kernel_size[1], kernel_size[2]))
+    kernel = torch.mul(
+        kernel_xy.unsqueeze(-1).repeat(1, 1, kernel_size[2]),
+        gaussian_kernel_z.expand(kernel_size[0], kernel_size[1], kernel_size[2]),
+    )
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1], kernel_size[2])
 
 
