@@ -121,29 +121,20 @@ class Metric(Module, ABC):
                 "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
             )
 
-        if "dist_sync_on_step" in kwargs:
-            self.dist_sync_on_step: bool = kwargs.pop("dist_sync_on_step")
-            if not isinstance(self.dist_sync_on_step, bool):
-                raise ValueError(
-                    f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
-                )
-        else:
-            self.dist_sync_on_step = False
+        self.dist_sync_on_step = kwargs.pop("dist_sync_on_step", False)
+        if not isinstance(self.dist_sync_on_step, bool):
+            raise ValueError(
+                f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
+            )
 
-        if "process_group" in kwargs:
-            self.process_group: Optional[Any] = kwargs.pop("process_group")
-        else:
-            self.process_group = None
-
-        if "dist_sync_fn" in kwargs:
-            self.dist_sync_fn: Optional[Callable] = kwargs.pop("dist_sync_fn")
-            if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
-                raise ValueError(
-                    "Expected keyword argument `dist_sync_fn` to be an callable function"
-                    f" but got {self.dist_sync_fn}"
-                )
-        else:
-            self.dist_sync_fn = None
+        self.process_group = kwargs.pop("process_group", None)
+        
+        self.dist_sync_fn = kwargs.pop("dist_sync_fn", None)
+        if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
+            raise ValueError(
+                "Expected keyword argument `dist_sync_fn` to be an callable function"
+                f" but got {self.dist_sync_fn}"
+            )
 
         # initialize
         self._update_signature = inspect.signature(self.update)
@@ -249,7 +240,7 @@ class Metric(Module, ABC):
         with torch.no_grad():
             self.update(*args, **kwargs)
 
-        self._to_sync = self.dist_sync_on_step
+        self._to_sync = self.dist_sync_on_step  # type: ignore
         # skip restore cache operation from compute as cache is stored below.
         self._should_unsync = False
 
@@ -419,7 +410,7 @@ class Metric(Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
+                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync  # type: ignore
             ):
                 value = compute(*args, **kwargs)
                 self._computed = _squeeze_if_scalar(value)
@@ -507,7 +498,7 @@ class Metric(Module, ABC):
         """
         return self
 
-    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
         """Special version of `type` for transferring all metric states to specific dtype
         Arguments:
             dst_type (type or string): the desired type
