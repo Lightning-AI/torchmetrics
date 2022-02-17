@@ -300,6 +300,17 @@ inside your LightningModule
     have the same call signature. If this is not the case, input that should be
     given to different metrics can given as keyword arguments to the collection.
 
+An additional advantage of using the ``MetricCollection`` object is that it will
+automatically try to reduce the computations needed by finding groups of metrics
+that share the same underlying metric state. If such a group of metrics is found only one
+of them is actually updated and the updated state will be broadcasted to the rest
+of the metrics within the group. In the example above, this will lead to a 2x-3x lower computational
+cost compared to disabling this feature. However, this speedup comes with a fixed cost upfront, where
+the state-groups have to be determined after the first update. This overhead can be significantly higher then gains speed-up for very
+a low number of steps (approx. up to 100) but still leads to an overall speedup for everything beyond that.
+In case the groups are known beforehand, these can also be set manually to avoid this extra cost of the
+dynamic search. See the *compute_groups* argument in the class docs below for more information on this topic.
+
 .. autoclass:: torchmetrics.MetricCollection
     :noindex:
 
