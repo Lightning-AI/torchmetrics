@@ -29,8 +29,8 @@ def test_error_overriden_update():
         def _compute(self):
             return self.x
 
-    with pytest.raises(
-        NotImplementedError, match="We detected that you have overwritten the ``update`` method, which was.*"
+    with pytest.warns(
+        DeprecationWarning, match="We detected that you have overwritten the ``update`` method, which was.*"
     ):
         OldMetricAPI()
 
@@ -52,7 +52,7 @@ def test_error_overriden_compute():
         def _compute(self):
             return self.x
 
-    with pytest.raises(
-        NotImplementedError, match="We detected that you have overwritten the ``compute`` method, which was.*"
+    with pytest.warns(
+        DeprecationWarning, match="We detected that you have overwritten the ``compute`` method, which was.*"
     ):
         OldMetricAPI()

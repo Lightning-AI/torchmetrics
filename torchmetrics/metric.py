@@ -121,16 +121,18 @@ class Metric(Module, ABC):
         self._should_unsync = True
 
         if is_overridden("update", self, Metric):
-            raise NotImplementedError(
+            warnings.warn(
                 "We detected that you have overwritten the ``update`` method, which was the API"
                 " for torchmetrics v0.7 and below. Insted implement the ``_update`` method."
-                " (exact same as before just with a ``_`` infront to make the implementation private)"
+                " (exact same as before just with a ``_`` infront to make the implementation private)",
+                DeprecationWarning,
             )
         if is_overridden("compute", self, Metric):
-            raise NotImplementedError(
+            warnings.warn(
                 "We detected that you have overwritten the ``compute`` method, which was the API"
                 " for torchmetrics v0.7 and below. Insted implement the ``_compute`` method."
-                " (exact same as before just with a ``_`` infront to make the implementation private)"
+                " (exact same as before just with a ``_`` infront to make the implementation private)",
+                DeprecationWarning,
             )
 
         self._update_signature = inspect.signature(self._update)
@@ -441,8 +443,6 @@ class Metric(Module, ABC):
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in ("higher_is_better", "is_differentiable"):
@@ -826,6 +826,3 @@ class CompositionalMetric(Metric):
         repr_str = self.__class__.__name__ + _op_metrics
 
         return repr_str
-
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        return compute
