@@ -153,7 +153,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         >>> target = preds * 0.75
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure()
         >>> ms_ssim(preds, target)
-        tensor(0.9558)
+        tensor(0.9226)
 
     References:
     [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.

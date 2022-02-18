@@ -23,7 +23,7 @@ from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 
 seed_all(42)
 
@@ -34,7 +34,7 @@ for size, channel, coef, dtype in [
     (12, 3, 0.9, torch.float),
     (13, 1, 0.8, torch.float32),
     (14, 1, 0.7, torch.double),
-    (15, 3, 0.6, torch.float64),
+    (13, 3, 0.6, torch.float32),
 ]:
     preds2d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(
@@ -105,7 +105,7 @@ def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_ima
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
 class TestSSIM(MetricTester):
-    atol = 3e-04
+    atol = 3e-03
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
@@ -149,8 +149,8 @@ class TestSSIM(MetricTester):
 @pytest.mark.parametrize(
     ["pred", "target", "kernel", "sigma"],
     [
-        ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)
+        ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], [11], [1.5, 1.5]),  # len(kernel), len(sigma)
         ([1, 1, 16, 16], [1, 1, 16, 16], [11], [1.5]),  # len(kernel), len(sigma)
         ([1, 1, 16, 16], [1, 1, 16, 16], [11, 0], [1.5, 1.5]),  # invalid kernel input
@@ -161,7 +161,7 @@ class TestSSIM(MetricTester):
     ],
 )
 def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    pred_t = torch.rand(pred)
+    pred_t = torch.rand(pred, dtype=torch.float32)
     target_t = torch.rand(target, dtype=torch.float64)
     with pytest.raises(TypeError):
         structural_similarity_index_measure(pred_t, target_t)
@@ -169,7 +169,7 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma):
     pred = torch.rand(pred)
     target = torch.rand(target)
     with pytest.raises(ValueError):
-        structural_similarity_index_measure(pred, target, kernel, sigma)
+        structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 
 def test_ssim_unequal_kernel_size():
@@ -205,5 +205,12 @@ def test_ssim_unequal_kernel_size():
         ]
     )
     # kernel order matters
-    assert structural_similarity_index_measure(preds, target, kernel_size=(3, 5)) == torch.tensor(0.10814697)
-    assert structural_similarity_index_measure(preds, target, kernel_size=(5, 3)) != torch.tensor(0.10814697)
+    assert torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.25, 0.5)),
+                         torch.tensor(0.08869550))
+    assert torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.5, 0.25)),
+                         torch.tensor(0.08869550)) == False
+
+    assert torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(3, 5)),
+                         torch.tensor(0.05131844))
+    assert torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(5, 3)),
+                         torch.tensor(0.05131844)) == False

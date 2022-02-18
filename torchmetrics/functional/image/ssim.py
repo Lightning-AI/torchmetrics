@@ -100,6 +100,15 @@ def _ssim_compute(
         raise ValueError(
             f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
         )
+    if len(sigma) != len(target.shape) - 2:
+        raise ValueError(
+            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, "
+            f"which is: {len(target.shape)}"
+        )
+    if len(sigma) not in (2, 3):
+        raise ValueError(
+            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
+        )
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):
         raise ValueError(f"Expected `kernel_size` to have odd positive number. Got {kernel_size}.")
@@ -123,13 +132,13 @@ def _ssim_compute(
 
     if is_3d:
         pad_d = (gauss_kernel_size[2] - 1) // 2
-        preds = _reflection_pad_3d(preds, pad_h, pad_w, pad_d)
-        target = _reflection_pad_3d(target, pad_h, pad_w, pad_d)
+        preds = _reflection_pad_3d(preds, pad_d, pad_w, pad_h)
+        target = _reflection_pad_3d(target, pad_d, pad_w, pad_h)
         if gaussian_kernel:
             kernel = _gaussian_kernel_3d(channel, gauss_kernel_size, sigma, dtype, device)
     else:
-        preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-        target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+        preds = F.pad(preds, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
+        target = F.pad(target, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
         if gaussian_kernel:
             kernel = _gaussian_kernel_2d(channel, gauss_kernel_size, sigma, dtype, device)
 
