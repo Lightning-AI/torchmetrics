@@ -105,7 +105,7 @@ def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_ima
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
 class TestSSIM(MetricTester):
-    atol = 3e-03
+    atol = 6e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
