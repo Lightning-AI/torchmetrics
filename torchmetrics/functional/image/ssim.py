@@ -424,7 +424,7 @@ def multiscale_structural_similarity_index_measure(
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> multiscale_structural_similarity_index_measure(preds, target)
-        tensor(0.9558)
+        tensor([0.9558])
 
     References:
     [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
