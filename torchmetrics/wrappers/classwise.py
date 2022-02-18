@@ -73,5 +73,5 @@ class ClasswiseWrapper(Metric):
     def _compute(self) -> Dict[str, Tensor]:
         return self._convert(self.metric.compute())
 
-    def reset(self):
+    def reset(self) -> None:
         self.metric.reset()
