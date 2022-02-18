@@ -205,13 +205,20 @@ def test_ssim_unequal_kernel_size():
         ]
     )
     # kernel order matters
-    assert torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.25, 0.5)),
-                         torch.tensor(0.08869550))
-    assert not torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=True,
-                                                                 sigma=(0.5, 0.25)), torch.tensor(0.08869550))
+    assert torch.isclose(
+        structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.25, 0.5)),
+        torch.tensor(0.08869550),
+    )
+    assert not torch.isclose(
+        structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.5, 0.25)),
+        torch.tensor(0.08869550),
+    )
 
-    assert torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(3, 5)),
-                         torch.tensor(0.05131844))
-    assert not torch.isclose(structural_similarity_index_measure(preds, target, gaussian_kernel=False,
-                                                                 kernel_size=(5, 3)), torch.tensor(0.05131844))
-
+    assert torch.isclose(
+        structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(3, 5)),
+        torch.tensor(0.05131844),
+    )
+    assert not torch.isclose(
+        structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(5, 3)),
+        torch.tensor(0.05131844),
+    )
