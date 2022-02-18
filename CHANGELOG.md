@@ -89,6 +89,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved testing speed ([#820](https://github.com/PyTorchLightning/metrics/pull/820))
 
 
+- Fixed compatibility of `ClasswiseWrapper` with the `prefix` argument of `MetricCollection` ([#843](https://github.com/PyTorchLightning/metrics/pull/843))
+
+
 ## [0.7.2] - 2022-02-10
 
 ### Fixed
