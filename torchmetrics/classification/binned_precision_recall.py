@@ -322,7 +322,7 @@ class BinnedRecallAtFixedPrecision(BinnedPrecisionRecallCurve):
 
     def _compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore
         """Returns float tensor of size n_classes."""
-        precisions, recalls, thresholds = super().compute()
+        precisions, recalls, thresholds = super()._compute()
 
         if self.num_classes == 1:
             return _recall_at_precision(precisions, recalls, thresholds, self.min_precision)
