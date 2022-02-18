@@ -86,6 +86,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved testing speed ([#820](https://github.com/PyTorchLightning/metrics/pull/820))
 
 
+- Fixed unsafe log operation in `TweedieDeviace` for power=1 ([#847](https://github.com/PyTorchLightning/metrics/pull/847))
+
+
 ## [0.7.2] - 2022-02-10
 
 ### Fixed
