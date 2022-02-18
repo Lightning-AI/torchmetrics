@@ -175,7 +175,7 @@ def _ssim_compute(
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx.reshape(
+        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
             contrast_sensitivity.shape[0], -1
         ).mean(-1)
 
@@ -350,8 +350,8 @@ def _multiscale_ssim_compute(
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
             preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize
         )
-        sim_list.append(*sim)
-        cs_list.append(*contrast_sensitivity)
+        sim_list.append(sim)
+        cs_list.append(contrast_sensitivity)
         if len(kernel_size) == 2:
             preds = F.avg_pool2d(preds, (2, 2))
             target = F.avg_pool2d(target, (2, 2))
@@ -367,9 +367,11 @@ def _multiscale_ssim_compute(
         sim_stack = (sim_stack + 1) / 2
         cs_stack = (cs_stack + 1) / 2
 
+    betas = torch.tensor(betas).unsqueeze(1).repeat(1, sim_stack.shape[1])
     sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
     cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
-    return torch.prod(cs_stack[:-1]) * sim_stack[-1]
+    cs_and_sim = torch.cat((cs_stack[:-1],sim_stack[-1:]), axis=0)
+    return torch.prod(cs_and_sim, axis=0)
 
 
 def multiscale_structural_similarity_index_measure(

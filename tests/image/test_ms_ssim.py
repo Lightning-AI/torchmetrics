@@ -29,8 +29,8 @@ Input = namedtuple("Input", ["preds", "target"])
 BATCH_SIZE = 1
 
 _inputs = []
-for size, coef in [(128, 0.9), (128, 0.7)]:
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, 1, size, size)
+for size, coef in [(182, 0.9), (182, 0.7)]:
+    preds = torch.rand(1, BATCH_SIZE, 1, size, size)
     _inputs.append(
         Input(
             preds=preds,
@@ -47,7 +47,9 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
     "preds, target",
     [(i.preds, i.target) for i in _inputs],
 )
-@pytest.mark.parametrize("kernel_size", [5, 7])
+# in the pytorch-msssim package, sigma is hardcoded to 1.5. We can thus only test this value, which corresponds
+# to a kernel size of 11
+@pytest.mark.parametrize("kernel_size", [11,])
 class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
     atol = 6e-3
 
