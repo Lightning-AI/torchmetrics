@@ -370,7 +370,7 @@ def _multiscale_ssim_compute(
     betas = torch.tensor(betas).unsqueeze(1).repeat(1, sim_stack.shape[1])
     sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
     cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
-    cs_and_sim = torch.cat((cs_stack[:-1],sim_stack[-1:]), axis=0)
+    cs_and_sim = torch.cat((cs_stack[:-1], sim_stack[-1:]), axis=0)
     return torch.prod(cs_and_sim, axis=0)
 
 

@@ -49,7 +49,12 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
 )
 # in the pytorch-msssim package, sigma is hardcoded to 1.5. We can thus only test this value, which corresponds
 # to a kernel size of 11
-@pytest.mark.parametrize("kernel_size", [11,])
+@pytest.mark.parametrize(
+    "kernel_size",
+    [
+        11,
+    ],
+)
 class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
     atol = 6e-3
 
