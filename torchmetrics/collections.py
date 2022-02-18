@@ -131,7 +131,9 @@ class MetricCollection(nn.ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return _flatten_dict({k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()})
+        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True)}
+        res = _flatten_dict(res)
+        return {self._set_name(k): v for k, v in res.items()}
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Iteratively call update for each metric.
@@ -219,8 +221,9 @@ class MetricCollection(nn.ModuleDict):
                     mi = getattr(self, cg[i])
                     for state in m0._defaults:
                         setattr(mi, state, getattr(m0, state))
-        res = {k: m.compute() for k, m in self.items()}
-        return _flatten_dict(res)
+        res = {k: m.compute() for k, m in self.items(keep_base=True)}
+        res = _flatten_dict(res)
+        return {self._set_name(k): v for k, v in res.items()}
 
     def reset(self) -> None:
         """Iteratively call reset for each metric."""
