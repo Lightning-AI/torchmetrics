@@ -30,7 +30,7 @@ BATCH_SIZE = 1
 
 _inputs = []
 for size, coef in [(182, 0.9), (182, 0.7)]:
-    preds = torch.rand(1, BATCH_SIZE, 1, size, size)
+    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, 1, size, size)
     _inputs.append(
         Input(
             preds=preds,
@@ -40,7 +40,7 @@ for size, coef in [(182, 0.9), (182, 0.7)]:
 
 
 def pytorch_ms_ssim(preds, target, data_range, kernel_size):
-    return ms_ssim(preds, target, data_range=data_range, win_size=kernel_size)
+    return ms_ssim(preds, target, data_range=data_range, win_size=kernel_size, size_average=False)
 
 
 @pytest.mark.parametrize(
