@@ -25,6 +25,41 @@ def _del_column(data: Tensor, idx: int) -> Tensor:
     return torch.cat([data[:, :idx], data[:, (idx + 1) :]], 1)
 
 
+def _drop_negative_ignored_indices(
+    preds: Tensor, target: Tensor, ignore_index: int, mode: DataType
+) -> Tuple[Tensor, Tensor]:
+    """Remove negative ignored indices.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        ignore_index: Specify a class (label) to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and
+            ``reduce='macro'``, the class statistics for the ignored class will all be returned
+            as ``-1``.
+        mode: Mode of the input tensors
+
+    Return:
+        Tensors of preds and target without negative ignore target values.
+    """
+    if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
+        # In case or multi-dimensional multi-class with logits
+        n_dims = len(preds.shape)
+        num_classes = preds.shape[1]
+        # move class dim to last so that we can flatten the addtional dimensions into N: [N, C, ...] -> [N, ..., C]
+        preds = preds.transpose(1, n_dims - 1)
+
+        # flatten: [N, ..., C] -> [N', C]
+        preds = preds.reshape(-1, num_classes)
+        target = target.reshape(-1)
+
+    if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
+        preds = preds[target != ignore_index]
+        target = target[target != ignore_index]
+
+    return preds, target
+
+
 def _stat_scores(
     preds: Tensor,
     target: Tensor,
@@ -113,26 +148,9 @@ def _stat_scores_update(
 
     _negative_index_dropped = False
 
-    # Here we reshape the input and target so that we can remove the negative ignored indices
-    if ignore_index is not None and mode is not None:
-        if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
-            # In case or multi-dimensional multi-class with logits
-            n_dims = len(preds.shape)
-            num_classes = preds.shape[1]
-            # move class dim to last so that we can flatten the addtional dimensions into N: [N, C, ...] -> [N, ..., C]
-            preds = preds.transpose(1, n_dims - 1)
-
-            # flatten: [N, ..., C] -> [N', C]
-            preds = preds.reshape(-1, num_classes)
-            target = target.reshape(-1)
-
-            _negative_index_dropped = True
-
-        if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
-            preds = preds[target != ignore_index]
-            target = target[target != ignore_index]
-
-            _negative_index_dropped = True
+    if ignore_index is not None and ignore_index < 0 and mode is not None:
+        preds, target = _drop_negative_ignored_indices(preds, target, ignore_index, mode)
+        _negative_index_dropped = True
 
     preds, target, _ = _input_format_classification(
         preds,
