@@ -136,7 +136,7 @@ def _stat_scores_update(
         ignore_index=ignore_index,
     )
 
-    if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
+    if ignore_index is not None and ignore_index >= preds.shape[1]:
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[1]} classes")
 
     if ignore_index is not None and preds.shape[1] == 1:
@@ -151,20 +151,7 @@ def _stat_scores_update(
             preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
             target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
-    # Delete what is in ignore_index, if applicable (and classes don't matter):
-    if ignore_index is not None and reduce != "macro":
-        preds = _del_column(preds, ignore_index)
-        target = _del_column(target, ignore_index)
-
     tp, fp, tn, fn = _stat_scores(preds, target, reduce=reduce)
-
-    # Take care of ignore_index
-    if ignore_index is not None and reduce == "macro":
-        tp[..., ignore_index] = -1
-        fp[..., ignore_index] = -1
-        tn[..., ignore_index] = -1
-        fn[..., ignore_index] = -1
-
     return tp, fp, tn, fn
 
 
