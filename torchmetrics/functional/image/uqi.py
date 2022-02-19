@@ -175,5 +175,6 @@ def universal_image_quality_index(
     to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004,
     doi: 10.1109/TIP.2003.819861.
     """
+    print(preds.shape)
     preds, target = _uqi_update(preds, target)
     return _uqi_compute(preds, target, kernel_size, sigma, reduction, data_range)

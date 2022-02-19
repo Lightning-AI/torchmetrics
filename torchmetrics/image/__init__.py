@@ -17,6 +17,7 @@ from torchmetrics.image.ssim import (  # noqa: F401
     StructuralSimilarityIndexMeasure,
 )
 from torchmetrics.image.uqi import UniversalImageQualityIndex  # noqa: F401
+from torchmetrics.image.d_lambda import SpectralDistortionIndex  # noqa: F401
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:
