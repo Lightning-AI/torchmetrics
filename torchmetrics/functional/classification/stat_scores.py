@@ -110,9 +110,12 @@ def _stat_scores_update(
             as ``-1``.
         mode: Mode of the input tensors
     """
-    # Here we reshape the input and target so that we can remove the ignored indices
-    if ignore_index is not None:
-        if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:  # type: ignore
+
+    _negative_index_dropped = False
+
+    # Here we reshape the input and target so that we can remove the negative ignored indices
+    if ignore_index is not None and mode is not None:
+        if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
             # In case or multi-dimensional multi-class with logits
             n_dims = len(preds.shape)
             num_classes = preds.shape[1]
@@ -123,9 +126,13 @@ def _stat_scores_update(
             preds = preds.reshape(-1, num_classes)
             target = target.reshape(-1)
 
-        if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:  # type: ignore
+            _negative_index_dropped = True
+
+        if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
             preds = preds[target != ignore_index]
             target = target[target != ignore_index]
+
+            _negative_index_dropped = True
 
     preds, target, _ = _input_format_classification(
         preds,
@@ -152,7 +159,20 @@ def _stat_scores_update(
             preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
             target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
+    # Delete what is in ignore_index, if applicable (and classes don't matter):
+    if ignore_index is not None and reduce != "macro" and not _negative_index_dropped:
+        preds = _del_column(preds, ignore_index)
+        target = _del_column(target, ignore_index)
+
     tp, fp, tn, fn = _stat_scores(preds, target, reduce=reduce)
+
+    # Take care of ignore_index
+    if ignore_index is not None and reduce == "macro" and not _negative_index_dropped:
+        tp[..., ignore_index] = -1
+        fp[..., ignore_index] = -1
+        tn[..., ignore_index] = -1
+        fn[..., ignore_index] = -1
+
     return tp, fp, tn, fn
 
 
