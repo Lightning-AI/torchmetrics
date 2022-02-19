@@ -108,10 +108,11 @@ def _stat_scores_update(
             to the returned score, regardless of reduction method. If an index is ignored, and
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
+        mode: Mode of the input tensors
     """
     # Here we reshape the input and target so that we can remove the ignored indices
     if ignore_index is not None:
-        if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
+        if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:  # type: ignore
             # In case or multi-dimensional multi-class with logits
             n_dims = len(preds.shape)
             num_classes = preds.shape[1]
@@ -122,7 +123,7 @@ def _stat_scores_update(
             preds = preds.reshape(-1, num_classes)
             target = target.reshape(-1)
 
-        if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
+        if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:  # type: ignore
             preds = preds[target != ignore_index]
             target = target[target != ignore_index]
 
