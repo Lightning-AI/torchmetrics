@@ -417,10 +417,10 @@ def test_same_input(average):
     ],
 )
 def test_negative_ignore_index(preds, target, ignore_index, result):
+    # We deduct -1 for an ignored index
     num_classes = len(target.unique()) - 1
 
-    # TODO: check for the propre results
-    # Test module metrics
+    # Test class
     acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
     acc_score = acc(preds, target)
     assert torch.allclose(acc_score, result)
