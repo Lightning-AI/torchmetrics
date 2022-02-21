@@ -155,6 +155,7 @@ def test_jaccard(half_ones, reduction, ignore_index, expected):
     jaccard_val = jaccard_index(
         preds=preds,
         target=target,
+        num_classes=3,
         ignore_index=ignore_index,
         reduction=reduction,
     )
@@ -233,3 +234,17 @@ def test_jaccard_ignore_index(pred, target, ignore_index, num_classes, reduction
         reduction=reduction,
     )
     assert torch.allclose(jaccard_val, tensor(expected).to(jaccard_val))
+
+
+def test_error_on_difference_in_number_of_classes():
+    """Test that warning is thrown if the detected number of classes are different from the the specified number of
+    classes."""
+    preds = torch.randn(10, 5).softmax(dim=-1)
+    target = torch.randint(5, (10,))
+    with pytest.raises(
+        RuntimeError,
+        match="You have set 3 number of classes which is"
+        " different from predicted (5) and"
+        " target (5) number of classes",
+    ):
+        jaccard_index(preds, target, num_classes=3)

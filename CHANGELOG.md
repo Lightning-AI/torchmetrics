@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Made `num_classes` in jaccard_index a required parameter ([]())
+
 
 ### Deprecated
 
