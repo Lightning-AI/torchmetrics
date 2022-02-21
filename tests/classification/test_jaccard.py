@@ -242,6 +242,6 @@ def test_warning_on_difference_in_number_of_classes():
     preds = torch.randint(3, (10,))
     target = torch.randint(3, (10,))
     with pytest.warns(
-        UserWarning,
+        RuntimeWarning,
     ):
         jaccard_index(preds, target, num_classes=4)

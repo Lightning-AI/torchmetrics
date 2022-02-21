@@ -171,7 +171,7 @@ def get_num_classes(
             f"You have set {num_classes} number of classes which is"
             f" different from predicted ({num_pred_classes}) and"
             f" target ({num_target_classes}) number of classes",
-            UserWarning,
+            RuntimeWarning,
         )
     return num_classes
 
