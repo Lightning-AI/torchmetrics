@@ -138,3 +138,13 @@ def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
 
     with pytest.raises(ValueError, match="For power=2, both 'preds' and 'targets' have to be strictly positive."):
         metric(torch.rand(3), torch.tensor([-1.0, 2.0, 3.0]))
+
+
+def test_corner_case_for_power_at_1(metric_class=TweedieDevianceScore):
+    """Test that corner case for power=1.0 produce valid result."""
+    metric = TweedieDevianceScore()
+    targets = torch.tensor([0, 1, 0, 1])
+    preds = torch.tensor([0.1, 0.1, 0.1, 0.1])
+    val = metric(preds, targets)
+    assert val != 0.0
+    assert not torch.isnan(val)
