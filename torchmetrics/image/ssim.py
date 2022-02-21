@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
-
 from torch import Tensor
 from typing_extensions import Literal
 
