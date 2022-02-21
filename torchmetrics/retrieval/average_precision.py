@@ -50,14 +50,8 @@ class RetrievalMAP(RetrievalMetric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
