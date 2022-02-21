@@ -112,6 +112,9 @@ class KernelInceptionDistance(Metric):
             Scale-length of polynomial kernel. If set to ``None`` will be automatically set to the feature size
         coef:
             Bias term in the polynomial kernel.
+        store_on_cpu: By default features will be calculated and stored on the device the metric is located on.
+            By setting this argument to `True`, features will be forced to be stored on CPU even if they are
+            extracted on GPU. Helpful for systems with not enough GPU VRAM available.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -145,6 +148,8 @@ class KernelInceptionDistance(Metric):
             If ``gamma`` is niether ``None`` or a float larger than 0
         ValueError:
             If ``coef`` is not an float larger than 0
+        TypeError:
+            If ``store_on_cpu`` is not an bool
 
     Example:
         >>> import torch
@@ -173,6 +178,7 @@ class KernelInceptionDistance(Metric):
         degree: int = 3,
         gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
+        store_on_cpu: bool = False,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -222,6 +228,10 @@ class KernelInceptionDistance(Metric):
             raise ValueError("Argument `coef` expected to be float larger than 0")
         self.coef = coef
 
+        if not isinstance(store_on_cpu, bool):
+            raise TypeError(f"Expected argument `store_on_cpu` to be a bool but got {store_on_cpu}")
+        self.store_on_cpu = store_on_cpu
+
         # states for extracted features
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
@@ -234,6 +244,9 @@ class KernelInceptionDistance(Metric):
             real: bool indicating if imgs belong to the real or the fake distribution
         """
         features = self.inception(imgs)
+
+        if self.store_on_cpu:
+            features = features.cpu()
 
         if real:
             self.real_features.append(features)

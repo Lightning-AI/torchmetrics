@@ -61,6 +61,10 @@ class InceptionScore(Metric):
 
         splits: integer determining how many splits the inception score calculation should be split among
 
+        store_on_cpu: By default features will be calculated and stored on the device the metric is located on.
+            By setting this argument to `True`, features will be forced to be stored on CPU even if they are
+            extracted on GPU. Helpful for systems with not enough GPU VRAM available.
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -86,6 +90,8 @@ class InceptionScore(Metric):
             If ``feature`` is set to an ``str`` or ``int`` and not one of ['logits_unbiased', 64, 192, 768, 2048]
         TypeError:
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
+        TypeError:
+            If ``store_on_cpu`` is not an bool
 
     Example:
         >>> import torch
@@ -106,6 +112,7 @@ class InceptionScore(Metric):
         self,
         feature: Union[str, int, torch.nn.Module] = "logits_unbiased",
         splits: int = 10,
+        store_on_cpu: bool = False,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -135,6 +142,10 @@ class InceptionScore(Metric):
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
+        if not isinstance(store_on_cpu, bool):
+            raise TypeError(f"Expected argument `store_on_cpu` to be a bool but got {store_on_cpu}")
+        self.store_on_cpu = store_on_cpu
+
         self.splits = splits
         self.add_state("features", [], dist_reduce_fx=None)
 
@@ -145,6 +156,8 @@ class InceptionScore(Metric):
             imgs: tensor with images feed to the feature extractor
         """
         features = self.inception(imgs)
+        if self.store_on_cpu:
+            features = features.cpu()
         self.features.append(features)
 
     def compute(self) -> Tuple[Tensor, Tensor]:

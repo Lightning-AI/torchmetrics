@@ -153,3 +153,28 @@ def test_compare_fid(tmpdir, feature=2048):
     tm_res = metric.compute()
 
     assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid["frechet_inception_distance"]]), atol=1e-3)
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+def test_store_on_cpu_arg(tmpdir, feature=64):
+    """Check that the store_on_cpu arg correctly keeps the states on cpu."""
+    metric = FrechetInceptionDistance(feature=feature, store_on_cpu=True).cuda()
+
+    # Generate some synthetic data
+    img1 = torch.randint(0, 180, (10, 3, 299, 299), dtype=torch.uint8)
+    img2 = torch.randint(100, 255, (10, 3, 299, 299), dtype=torch.uint8)
+
+    batch_size = 2
+    for i in range(img1.shape[0] // batch_size):
+        metric.update(img1[batch_size * i : batch_size * (i + 1)].cuda(), real=True)
+
+    for i in range(img2.shape[0] // batch_size):
+        metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
+
+    assert "cuda" in str(metric.device)
+    assert all(str(feature.device) == "cpu" for feature in metric.real_features)
+    assert all(str(feature.device) == "cpu" for feature in metric.fake_features)
+
+    val = metric.compute()
+    assert str(val.device) == "cpu"

@@ -161,6 +161,10 @@ class FrechetInceptionDistance(Metric):
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
+        store_on_cpu: By default features will be calculated and stored on the device the metric is located on.
+            By setting this argument to `True`, features will be forced to be stored on CPU even if they are
+            extracted on GPU. Helpful for systems with not enough GPU VRAM available.
+
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -186,6 +190,8 @@ class FrechetInceptionDistance(Metric):
             If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
         TypeError:
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
+        TypeError:
+            If ``store_on_cpu`` is not an bool
 
     Example:
         >>> import torch
@@ -208,6 +214,7 @@ class FrechetInceptionDistance(Metric):
     def __init__(
         self,
         feature: Union[int, torch.nn.Module] = 2048,
+        store_on_cpu: bool = False,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -237,6 +244,10 @@ class FrechetInceptionDistance(Metric):
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
+        if not isinstance(store_on_cpu, bool):
+            raise TypeError(f"Expected argument `store_on_cpu` to be a bool but got {store_on_cpu}")
+        self.store_on_cpu = store_on_cpu
+
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
@@ -248,6 +259,9 @@ class FrechetInceptionDistance(Metric):
             real: bool indicating if imgs belong to the real or the fake distribution
         """
         features = self.inception(imgs)
+
+        if self.store_on_cpu:
+            features = features.cpu()
 
         if real:
             self.real_features.append(features)
