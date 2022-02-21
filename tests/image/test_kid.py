@@ -169,7 +169,7 @@ def test_compare_kid(tmpdir, feature=2048):
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_store_on_cpu_arg(tmpdir, feature=64):
     """Check that the store_on_cpu arg correctly keeps the states on cpu."""
-    metric = KernelInceptionDistance(feature=feature, store_on_cpu=True).cuda()
+    metric = KernelInceptionDistance(feature=feature, store_on_cpu=True, subset_size=5).cuda()
 
     # Generate some synthetic data
     img1 = torch.randint(0, 180, (10, 3, 299, 299), dtype=torch.uint8)
