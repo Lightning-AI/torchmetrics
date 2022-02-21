@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -36,11 +35,21 @@ class UniversalImageQualityIndex(Metric):
             - ``'none'``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
 
     Return:
         Tensor with UniversalImageQualityIndex score
 
     Example:
+        >>> import torch
         >>> from torchmetrics import UniversalImageQualityIndex
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
@@ -59,15 +68,10 @@ class UniversalImageQualityIndex(Metric):
         sigma: Sequence[float] = (1.5, 1.5),
         reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
         data_range: Optional[float] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
             "Metric `UniversalImageQualityIndex` will save all targets and"
             " predictions in buffer. For large datasets this may lead"

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
@@ -53,23 +53,21 @@ class JaccardIndex(ConfusionMatrix):
             [0, 0] for `pred`, and [0, 2] for `target`, then class 1 would be assigned the `absent_score`.
         threshold:
             Threshold value for binary or multi-label probabilities.
+        multilabel:
+            determines if data is multilabel or not.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
-
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import JaccardIndex
@@ -90,18 +88,18 @@ class JaccardIndex(ConfusionMatrix):
         ignore_index: Optional[int] = None,
         absent_score: float = 0.0,
         threshold: float = 0.5,
+        multilabel: bool = False,
         reduction: str = "elementwise_mean",
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
             num_classes=num_classes,
             normalize=None,
             threshold=threshold,
+            multilabel=multilabel,
             compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
+            **kwargs,
         )
         self.reduction = reduction
         self.ignore_index = ignore_index

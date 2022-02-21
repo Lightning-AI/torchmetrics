@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
+
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -41,6 +42,15 @@ class StructuralSimilarityIndexMeasure(Metric):
         return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exlusive with return_full_image
+
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Tensor with SSIM score
@@ -74,11 +84,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         return_full_image: bool = False,
         return_contrast_sensitivity: bool = False,
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
             "Metric `SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -142,7 +148,14 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         normalize: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
             normalizes to improve the training stability. This `normalize` argument is out of scope of the original
             implementation [1], and it is adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
 
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     Return:
         Tensor with Multi-Scale SSIM score
 
@@ -176,14 +189,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Optional[Literal["relu", "simple"]] = None,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
             "Metric `MS_SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
