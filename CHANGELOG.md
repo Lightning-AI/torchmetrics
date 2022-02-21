@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `**kwargs` argument for passing additional arguments to base class ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
 
 
-- Added argument `store_on_cpu` to `FrechetInceptionDistance`, `KernelInceptionDistance`, `InceptionScore` to store features on cpu ([]())
+- Added argument `store_on_cpu` to `FrechetInceptionDistance`, `KernelInceptionDistance`, `InceptionScore` to store features on cpu ([#851](https://github.com/PyTorchLightning/metrics/pull/851))
 
 ### Changed
 
