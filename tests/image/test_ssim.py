@@ -64,16 +64,16 @@ def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_ima
     if not return_ssim_image:
         for i in range(sk_preds.shape[0]):
             results[i] = structural_similarity(
-                    sk_target[i],
-                    sk_preds[i],
-                    data_range=data_range,
-                    multichannel=True,
-                    gaussian_weights=gaussian_weights,
-                    win_size=kernel_size,
-                    sigma=sigma,
-                    use_sample_covariance=False,
-                    full=return_ssim_image,
-                )
+                sk_target[i],
+                sk_preds[i],
+                data_range=data_range,
+                multichannel=True,
+                gaussian_weights=gaussian_weights,
+                win_size=kernel_size,
+                sigma=sigma,
+                use_sample_covariance=False,
+                full=return_ssim_image,
+            )
         return results
     else:
         fullimages = torch.zeros(target.shape, dtype=target.dtype)

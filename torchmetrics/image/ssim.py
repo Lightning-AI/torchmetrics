@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union, Dict
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -82,7 +82,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         process_group: Optional[Any] = None,
         return_full_image: bool = False,
         return_contrast_sensitivity: bool = False,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
