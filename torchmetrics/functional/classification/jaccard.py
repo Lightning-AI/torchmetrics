@@ -124,7 +124,7 @@ def jaccard_index(
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> jaccard_index(pred, target)
+        >>> jaccard_index(pred, target, num_classes=2)
         tensor(0.9660)
     """
 
