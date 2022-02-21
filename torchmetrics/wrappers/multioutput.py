@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, List, Tuple
 
 import torch
 from torch import nn
@@ -55,19 +55,6 @@ class MultioutputWrapper(Metric):
             If true, will squeeze the 1-item dimensions left after `index_select` is applied.
             This is sometimes unnecessary but harmless for metrics such as `R2Score` but useful
             for certain classification metrics that can't handle additional 1-item dimensions.
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
-        dist_sync_on_step:
-            Required for distributed training support.
-        process_group:
-            Specify the process group on which synchronization is called.
-            The
-        dist_sync_fn:
-            Required for distributed training support.
 
     Example:
 
@@ -101,17 +88,8 @@ class MultioutputWrapper(Metric):
         output_dim: int = -1,
         remove_nans: bool = True,
         squeeze_outputs: bool = True,
-        compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
     ):
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__()
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_outputs)])
         self.output_dim = output_dim
         self.remove_nans = remove_nans
