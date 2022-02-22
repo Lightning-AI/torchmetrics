@@ -148,7 +148,7 @@ def _load_tokenizer_and_model(
         Initialized `transformers`' tokenizer and model.
     """
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-    model = AutoModelForMaskedLM.from_pretrained(model_name_or_path, output_hidden_states=True)
+    model = AutoModelForMaskedLM.from_pretrained(model_name_or_path)
     model.eval()
     model.to(device)
     return tokenizer, model

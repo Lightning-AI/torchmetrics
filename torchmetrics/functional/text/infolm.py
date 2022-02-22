@@ -1,6 +1,6 @@
 import os
 from enum import unique
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -21,9 +21,6 @@ if _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
     __doctest_skip__ = ["infolm"]
-
-
-_PAD_TOKEN_PROB = 10000
 
 
 _ALLOWED_INFORMATION_MEASURE = (
@@ -296,34 +293,45 @@ def _get_dataloader(
     return dataloader
 
 
-def _get_mlm_labels(input_ids: Tensor, mask_idx: int) -> Tensor:
-    mask = torch.zeros_like(input_ids).bool()
-    mask[:, mask_idx] = 1
-    mlm_labels = torch.where(mask, input_ids, -100)
-    return mlm_labels
+# def _get_mlm_labels(input_ids: Tensor, mask_idx: int) -> Tensor:
+#     mask = torch.zeros_like(input_ids).bool()
+#     mask[:, mask_idx] = 1
+#     mlm_labels = torch.where(mask, input_ids, -100)
+#     return mlm_labels
 
 
-def _get_pad_token_mask(
-    input_ids: Tensor, pad_token_id: int, cls_token_id: int, sep_token_id: int, mask_idx: int
-) -> Tensor:
+# def _get_pad_token_mask(
+#     input_ids: Tensor, pad_token_id: int, cls_token_id: int, sep_token_id: int, mask_idx: int, vocab_size: int
+# ) -> Tensor:
+#     """
+#     Args:
+#         input_ids:
+#         pad_token_id:
+#         cls_token_id:
+#         sep_token_id:
+#         mask_idx:
+#     """
+#     mlm_labels = _get_mlm_labels(input_ids, mask_idx)
+#     mlm_labels = mlm_labels[:, mask_idx]
+
+#     pad_token_mask = mlm_labels.eq(pad_token_id) | mlm_labels.eq(cls_token_id) | mlm_labels.eq(sep_token_id)
+#     pad_token_mask = pad_token_mask.unsqueeze(1).repeat(1, vocab_size)
+#     return pad_token_mask
+
+
+def _get_token_mask(input_ids: Tensor, pad_token_id: int, cls_token_id: int, sep_token_id: int) -> Tensor:
     """
     Args:
         input_ids:
         pad_token_id:
         cls_token_id:
         sep_token_id:
-        mask_idx:
     """
-    mlm_labels = _get_mlm_labels(input_ids, mask_idx)
-    _seq_len, mlm_labels = mlm_labels.shape[-1], mlm_labels[:, mask_idx]
-    pad_token_mask = mlm_labels.eq(pad_token_id) | mlm_labels.eq(cls_token_id) | mlm_labels.eq(sep_token_id)
-    pad_token_mask = pad_token_mask.unsqueeze(1).repeat(1, _seq_len)
-    return pad_token_mask
+    token_mask = input_ids.eq(pad_token_id) | input_ids.eq(cls_token_id) | input_ids.eq(sep_token_id)
+    return token_mask
 
 
-def _get_batch_distribution(
-    model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, max_length: int, idf: bool
-):
+def _get_batch_distribution(model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool) -> Tensor:
     """
     Args:
         model:
@@ -331,50 +339,61 @@ def _get_batch_distribution(
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
         max_length:
+            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
     """
     seq_len = batch["input_ids"].shape[1]
-    len_to_pad = max_length - seq_len
     pad_token_id, cls_token_id, sep_token_id = (
         model.config.pad_token_id,
         model.config.cls_token_id,
         model.config.sep_token_id,
     )
+    prob_distribution_batch: Union[Tensor, List[Tensor]] = []
+    token_mask = _get_token_mask(batch["input_ids"], pad_token_id, cls_token_id, sep_token_id)
 
     for mask_idx in range(seq_len):
         input_ids = batch["input_ids"].clone()
-        pad_token_mask = _get_pad_token_mask(input_ids, pad_token_id, cls_token_id, sep_token_id, mask_idx)
         input_ids[:, mask_idx] = model.config.mask_token_id
 
-        logits_distribution = model(input_ids, batch["attention_mask"])
+        logits_distribution = model(input_ids, batch["attention_mask"], use_cache=False)
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)
-        prob_distribution[pad_token_mask] = _PAD_TOKEN_PROB
-        prob_distribution = torch.cat(
-            [prob_distribution, _PAD_TOKEN_PROB * torch.ones(len_to_pad, prob_distribution.shape[-1])], dim=0
-        )
+        prob_distribution_batch.append(prob_distribution.unsqueeze(1).cpu())  # [batch_size, 1, vocab_size]
+        # Clean GPU memory
+        del input_ids, logits_distribution, prob_distribution
 
-        del input_ids
+    prob_distribution_batch = torch.cat(prob_distribution_batch, dim=1)  # [batch_size, seq_len, vocab_size]
+    prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch, token_mask)
+    prob_distribution_batch = prob_distribution_batch.sum(dim=1).transpoe() / token_mask.sum(dim=1).unsqueeze(1)
+
+    return prob_distribution_batch
 
 
 @torch.no_grad()
 def _get_data_distribution(
-    model: PreTrainedModel, dataloader: DataLoader, temperature: float, max_length: int, idf: bool, verbose: bool
-):
+    model: PreTrainedModel, dataloader: DataLoader, temperature: float, idf: bool, verbose: bool
+) -> Tensor:
     """
     Args:
         model:
         dataloader:
         temperature:
-        max_length
+            A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
+        max_length:
+            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
+            An indication of whether normalization using inverse document frequencies should be used.
         verbose:
+            An indication of whether a progress bar to be displayed during the embeddings calculation.
     """
     device = model.device
+    prob_distribution: List[Tensor] = []
 
     for batch in _get_progress_bar(dataloader, verbose):
         batch = _input_data_collator(batch, device)
-        _get_batch_distribution(model, batch, temperature, max_length, idf)
+        prob_distribution.append(_get_batch_distribution(model, batch, temperature, idf))
+
+    return torch.cat(prob_distribution, dim=0)
 
 
 def _infolm_update(
@@ -383,6 +402,18 @@ def _infolm_update(
     tokenizer: PreTrainedTokenizerBase,
     max_length: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    """
+    Args:
+        preds:
+            An iterable of hypothesis corpus.
+        target:
+            An iterable of reference corpus.
+        tokenizer:
+        max_length:
+            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+
+    Return:
+    """
     preds_input = tokenizer(preds, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
     target_input = tokenizer(target, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
 
@@ -394,18 +425,31 @@ def _infolm_compute(
     preds_dataloader: DataLoader,
     target_dataloader: DataLoader,
     temperature: float,
-    information_measure: _InformationMeasure,
-    alpha: Optional[float],
-    beta: Optional[float],
-    max_length: int,
+    idf: bool,
+    information_measure_cls: _InformationMeasure,
     verbose: bool = True,
 ):
     """
     Args:
+        model:
+        preds_dataloader:
+        target_datalaoder:
+        temperature:
+            A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
+        idf:
+            An indication of whether normalization using inverse document frequencies should be used.
+        information_measure_cls:
+        max_length:
+            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+        verbose:
+            An indication of whether a progress bar to be displayed during the embeddings calculation.
+
+    Return:
     """
-    idf = preds_dataloader.dataset.idf
     preds_distribution = _get_data_distribution(model, preds_dataloader, temperature, idf, verbose)
     target_distribution = _get_data_distribution(model, target_dataloader, temperature, idf, verbose)
+    infolm_score = information_measure_cls(preds_distribution, target_distribution)
+    return infolm_score
 
 
 def infolm(
@@ -439,6 +483,8 @@ def infolm(
     `InfoLM`_ is a family of untrained embedding-based metrics which addresses some famous flaws of standard
     string-based metrics thanks to the usage of pre-trained masked language models. This family of metrics is mainly
     designed for summarization and data-to-text tasks.
+
+    The implementation of this metric is fully based HuggingFace `transformers`' package.
 
     Args:
         preds:
@@ -497,9 +543,9 @@ def infolm(
         preds_dataloader,
         target_dataloader,
         temperature,
+        idf,
         information_measure_cls,
-        alpha,
-        beta,
+        verbose,
     )
 
     return info_lm_score
