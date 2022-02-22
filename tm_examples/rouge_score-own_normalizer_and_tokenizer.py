@@ -30,7 +30,7 @@ class UserNormalizer:
     """
 
     def __init__(self) -> None:
-        self.pat = r"[^a-z0-9]+"
+        self.pattern = r"[^a-z0-9가-힣]+"
 
     def __call__(self, text: str) -> str:
         """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
@@ -43,8 +43,7 @@ class UserNormalizer:
         Return:
             Normalized python string object
         """
-        output_text: str = ""
-        output_text = re.sub(self.pat, " ", text.lower())
+        output_text = re.sub(self.pattern, " ", text.lower())
 
         return output_text
 
@@ -56,21 +55,20 @@ class UserTokenizer:
     """
 
     def __init__(self) -> None:
-        self.pat = r"\s+"
+        self.pattern = r"\s+"
 
     def __call__(self, text: str) -> Sequence[str]:
         """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:
-            sentences:
+            text:
                 Input text. `str`
 
         Return:
             tokenized sentence
         """
-        output_tokens: Sequence[str] = None
-        output_tokens = re.split(self.pat, text)
+        output_tokens = re.split(self.pattern, text)
 
         return output_tokens
 
@@ -83,8 +81,8 @@ if __name__ == "__main__":
     normalizer = UserNormalizer()
     tokenizer = UserTokenizer()
 
-    rg = ROUGEScore(normalizer=normalizer, tokenizer=tokenizer)
+    rouge_score = ROUGEScore(normalizer=normalizer, tokenizer=tokenizer)
 
-    rg.update(_PREDS, _REFS)
+    rouge_score.update(_PREDS, _REFS)
 
-    pprint(rg.compute())
+    pprint(rouge_score.compute())

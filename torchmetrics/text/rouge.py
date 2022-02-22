@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -36,12 +36,12 @@ class ROUGEScore(Metric):
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
         normalizer:
-            A user's own normalizer instance.
+            A user's own normalizer function.
             If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
-            This instance must have method named ``normalize``. This method must take a string and return a string.
+            This function must take a `str` and return a `str`.
         tokenizer:
-            A user's own tokenizer instance. If this is none, `spliting by spaces` is default
-            This instance must have method named ``tokenize``. This method must take a string and return `List[str]`
+            A user's own tokenizer function. If this is none, `spliting by spaces` is default
+            This function must take a `str` and return `Sequence[str]`
         accumulate:
             Useful incase of multi-reference rouge score.
             - ``avg`` takes the avg of all references with respect to predictions
@@ -94,8 +94,8 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
-        normalizer: Optional[Any] = None,
-        tokenizer: Optional[Any] = None,
+        normalizer: Callable[[str], str] = None,
+        tokenizer: Callable[[str], Sequence[str]] = None,
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: Optional[bool] = None,
