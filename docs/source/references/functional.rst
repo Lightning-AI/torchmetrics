@@ -483,6 +483,11 @@ extended_edit_distance [func]
 .. autofunction:: torchmetrics.functional.extended_edit_distance
     :noindex:
 
+infolm [func]
+~~~~~~~~~~~~~
+.. autofunction:: torchmetrics.functional.text.infolm
+    :noindex:
+
 match_error_rate [func]
 ~~~~~~~~~~~~~~~~~~~~~~~
 

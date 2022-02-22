@@ -1,10 +1,61 @@
 import math
-from collections import defaultdict, Counter
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+import os
+from collections import Counter, defaultdict
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset
+
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+
+if _TRANSFORMERS_AVAILABLE:
+    from transformers.models.auto import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
+
+if _TQDM_AVAILABLE:
+    import tqdm
+
+
+def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor:
+    """Process attention mask to be zero for special [CLS] and [SEP] tokens as they're not included in a
+    calculation for BERT score.
+
+    Args:
+        attention_mask: An attention mask to be returned, for example, by a `transformers` tokenizer.
+
+    Return:
+        A processed attention mask.
+    """
+    # Make attention_mask zero for [CLS] token
+    attention_mask[:, 0] = 0
+    # Make attention_mask zero for [SEP] token
+    sep_token_position = (attention_mask - 0.1).cumsum(-1).argmax(-1)
+    attention_mask[torch.arange(attention_mask.size(0)).long(), sep_token_position] = 0
+    return attention_mask
+
+
+def _input_data_collator(
+    batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
+) -> Dict[str, Tensor]:
+    """Helper function that trims model inputs to the longest sequence within the batch and put the input on the
+    proper device."""
+    max_len = int(batch["attention_mask"].sum(1).max().item())
+    input_ids = batch["input_ids"][:, :max_len].to(device)
+    attention_mask = batch["attention_mask"][:, :max_len].to(device)
+    batch.update({"input_ids": input_ids, "attention_mask": attention_mask})
+    return batch
+
+
+def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_len: int) -> Tuple[Tensor, Tensor]:
+    """Helper function that pads the model output and attention mask to the target length."""
+    zeros_shape = list(model_output.shape)
+    zeros_shape[2] = target_len - zeros_shape[2]
+    model_output = torch.cat(
+        [model_output, torch.zeros(zeros_shape, dtype=model_output.dtype).to(model_output.device)], dim=2
+    )
+    zeros = torch.zeros(zeros_shape[0], zeros_shape[2], dtype=attention_mask.dtype).to(attention_mask.device)
+    attention_mask = torch.cat([attention_mask, zeros], dim=1)
+    return model_output, attention_mask
 
 
 def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tuple[Tensor, Tensor]:
@@ -13,6 +64,7 @@ def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tu
     input_ids = input_ids[sorted_indices]
     attention_mask = attention_mask[sorted_indices]
     return input_ids, attention_mask
+
 
 def _preprocess_text(
     text: List[str],
@@ -62,6 +114,44 @@ def _preprocess_text(
         else (tokenized_data["input_ids"], tokenized_data["attention_mask"])
     )
     return {"input_ids": input_ids, "attention_mask": attention_mask}
+
+
+def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[DataLoader, "tqdm.auto.tqdm"]:
+    """Helper function returning either the dataloader itself when `verbose = False`, or it wraps the dataloader with
+    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation."""
+    return tqdm.auto.tqdm(dataloader) if verbose else dataloader
+
+
+def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
+    """Check if the shape of the user's own model output."""
+    bs, seq_len = input_ids.shape[:2]
+    invalid_out_shape = len(output.shape) != 3 or output.shape[0] != bs or output.shape[1] != seq_len
+    if invalid_out_shape:
+        raise ValueError(
+            "The model output must be `torch.Tensor` of a shape `[batch_size, seq_len, model_dim]` "
+            f"i.e. [{bs}, {seq_len}. , `model_dim`], but got {output.shape}."
+        )
+
+
+def _load_tokenizer_and_model(
+    model_name_or_path: Union[str, os.PathLike], device: Union[str, torch.device]
+) -> Tuple[PreTrainedTokenizerBase, PreTrainedModel]:
+    """Load HuggingFace `transformers`' tokenizer and model. This function also handle a device placement.
+
+    Args:
+        model_name_or_path:
+            A name or a model path used to load `transformers` pretrained model.
+        device:
+            A device to be used for calculation.
+
+    Return:
+        Initialized `transformers`' tokenizer and model.
+    """
+    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+    model = AutoModelForMaskedLM.from_pretrained(model_name_or_path, output_hidden_states=True)
+    model.eval()
+    model.to(device)
+    return tokenizer, model
 
 
 class TextDataset(Dataset):
@@ -136,3 +226,34 @@ class TextDataset(Dataset):
     def _set_of_tokens(input_ids: Tensor) -> Set:
         """Return set of tokens from the `input_ids` `torch.Tensor`."""
         return set(input_ids.tolist())
+
+
+class TokenizedDataset(TextDataset):
+    """The child class of `TextDataset` class used with already tokenized data."""
+
+    def __init__(
+        self,
+        input_ids: Tensor,
+        attention_mask: Tensor,
+        idf: bool = False,
+        tokens_idf: Optional[Dict[int, float]] = None,
+    ) -> None:
+        """
+        Args:
+            input_ids:
+                Input ids (`torch.Tensor`).
+            attention_mask:
+                Attention mask (`torch.Tensor`).
+            idf:
+                An indication of whether calculate token inverse document frequencies to weight the model embeddings.
+            tokens_idf:
+                Inverse document frequencies (these should be calculated on reference sentences).
+        """
+        self.text = dict(zip(["input_ids", "attention_mask"], _sort_data_according_length(input_ids, attention_mask)))
+        self.text = _input_data_collator(self.text)
+        self.num_sentences = len(self.text["input_ids"])
+        self.max_length = self.text["input_ids"].shape[1]
+        self.idf = idf
+        self.tokens_idf = {}
+        if idf:
+            self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
