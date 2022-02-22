@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -24,34 +23,33 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralDistortionIndex(Metric):
-    """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
+    """Computes Spectral Distortion Index (SpectralDistortionIndex_).
 
     Args:
-        kernel_size: size of the gaussian kernel
-        sigma: Standard deviation of the gaussian kernel
+        ms: Low resolution multispectral image
+        fused: High resolution fused image
+        p: Large spectral differences (default: 1)
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Return:
-        Tensor with UniversalImageQualityIndex score
+        Tensor with SpectralDistortionIndex score
 
     Example:
-        >>> from torchmetrics import UniversalImageQualityIndex
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> uqi = UniversalImageQualityIndex()
-        >>> uqi(preds, target)
+        >>> from torchmetrics import SpectralDistortionIndex
+        >>> ms = torch.rand([16, 1, 16, 16])
+        >>> fused = ms * 0.75
+        >>> sdi = SpectralDistortionIndex()
+        >>> sdi(ms, fused)
         tensor(0.9216)
     """
 
     ms: List[Tensor]
     fused: List[Tensor]
-    p: int
     higher_is_better: bool = True
 
     def __init__(
@@ -74,20 +72,19 @@ class SpectralDistortionIndex(Metric):
 
         self.add_state("ms", default=[], dist_reduce_fx="cat")
         self.add_state("fused", default=[], dist_reduce_fx="cat")
-        self.p = 1
         self.reduction = reduction
 
-    def update(self, ms: Tensor, fused: Tensor, p: int) -> None:  # type: ignore
-        """Update state with predictions and targets.
+    def update(self, ms: Tensor, fused: Tensor, p: int = 1) -> None:  # type: ignore
+        """Update state with ms and fused.
 
         Args:
-            preds: Predictions from model
-            target: Ground truth values
+            ms: Low resolution multispectral image
+            fused: High resolution fused image
+            p: Large spectral distortion (default: 1)
         """
-        ms, fused, p = _d_lambda_update(ms, fused, p)
+        ms, fused, self.p = _d_lambda_update(ms, fused, p)
         self.ms.append(ms)
         self.fused.append(fused)
-        self.p = p
 
     def compute(self) -> Tensor:
         """Computes explained variance over state."""

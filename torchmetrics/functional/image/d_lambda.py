@@ -27,20 +27,21 @@ def _d_lambda_update(ms: Tensor, fused: Tensor, p: int) -> Tuple[Tensor, Tensor,
     type of the input tensors.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
+        ms: Low resolution multispectral image
+        fused: High resolution fused image
+        p: Large spectral differences
     """
 
     if ms.dtype != fused.dtype:
         raise TypeError(
             "Expected `ms` and `fused` to have the same data type."
-            f" Got preds: {ms.dtype} and target: {fused.dtype}."
+            f" Got ms: {ms.dtype} and fused: {fused.dtype}."
         )
     _check_same_shape(ms, fused)
     if len(ms.shape) != 4:
         raise ValueError(
             "Expected `ms` and `fused` to have BxCxHxW shape."
-            f" Got preds: {ms.shape} and target: {fused.shape}."
+            f" Got ms: {ms.shape} and fused: {fused.shape}."
         )
     if (p <= 0):
         raise ValueError(
@@ -55,37 +56,26 @@ def _d_lambda_compute(
     p: int,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Computes Universal Image Quality Index.
+    """Computes Spectral Distortion Index.
 
     Args:
-        preds: estimated image
-        target: ground truth image
+        ms: Low resolution multispectral image
+        fused: High resolution fused image
+        p: a parameter to emphasize large spectral difference (default: 1)
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> preds, target = _uqi_update(preds, target)
-        >>> _uqi_compute(preds, target)
+        >>> ms = torch.rand([16, 1, 16, 16])
+        >>> fused = ms * 0.75
+        >>> ms, target = _d_lambda_update(ms, fused)
+        >>> _d_lambda_compute(ms, fused)
         tensor(0.9216)
     """
-
-    # device = preds.device
-    # channel = preds.size(1)
-    # dtype = preds.dtype
-    # kernel = _gaussian_kernel(channel, kernel_size, sigma, dtype, device)
-    # pad_h = (kernel_size[0] - 1) // 2
-    # pad_w = (kernel_size[1] - 1) // 2
-
-    # preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-    # target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-
     L = ms.shape[1]
 
     M1 = torch.zeros((L, L))
@@ -93,9 +83,9 @@ def _d_lambda_compute(
 
     for l in range(L) :
         for r in range(l, L):
-            print(fused.shape)
-            M1[l, r] = M1[r, l] = universal_image_quality_index(fused[:, l, :, :], fused[:, r, :, :])
-            M2[l, r] = M2[r, l] = universal_image_quality_index(ms[:, l, :, :], ms[:, r, :, :])
+            print(fused.shape, l)
+            M1[l, r] = M1[r, l] = universal_image_quality_index(fused[:, l:l+1, :, :], fused[:, r:r+1, :, :])
+            M2[l, r] = M2[r, l] = universal_image_quality_index(ms[:, l:l+1, :, :], ms[:, r:r+1, :, :])
     
     diff = torch.pow(torch.abs(M1 - M2), p)
     output = torch.pow(1./(L*(L-1)) * torch.sum(diff), (1./p))
@@ -108,41 +98,34 @@ def spectral_distortion_index(
     p: int = 1,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Universal Image Quality Index.
+    """Spectral Distortion Index.
 
     Args:
-        preds: estimated image
-        target: ground truth image
-        kernel_size: size of the gaussian kernel (default: (11, 11))
-        sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
+        ms: Low resolution multispectral image
+        fused: High resolution fused image
+        p: Large spectral differences
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-
     Return:
-        Tensor with UniversalImageQualityIndex score
+        Tensor with SpectralDistortionIndex score
 
     Raises:
         TypeError:
-            If ``preds`` and ``target`` don't have the same data type.
+            If ``ms`` and ``fused`` don't have the same data type.
         ValueError:
-            If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
+            If ``ms`` and ``fused`` don't have ``BxCxHxW shape``.
         ValueError:
-            If the length of ``kernel_size`` or ``sigma`` is not ``2``.
-        ValueError:
-            If one of the elements of ``kernel_size`` is not an ``odd positive number``.
-        ValueError:
-            If one of the elements of ``sigma`` is not a ``positive number``.
+            If ``p`` is not a positive integer.
 
     Example:
-        >>> from torchmetrics.functional import universal_image_quality_index
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> universal_image_quality_index(preds, target)
+        >>> from torchmetrics.functional import spectral_distortion_index
+        >>> ms = torch.rand([16, 1, 16, 16])
+        >>> fused = ms * 0.75
+        >>> spectral_distortion_index(ms, fused)
         tensor(0.9216)    
     """
     ms, fused, p = _d_lambda_update(ms, fused, p)
