@@ -69,10 +69,10 @@ def _jaccard_from_confmat(
 def jaccard_index(
     preds: Tensor,
     target: Tensor,
+    num_classes: int,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
-    num_classes: Optional[int] = None,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
     r"""
@@ -95,6 +95,7 @@ def jaccard_index(
     Args:
         preds: tensor containing predictions from model (probabilities, or labels) with shape ``[N, d1, d2, ...]``
         target: tensor containing ground truth labels with shape ``[N, d1, d2, ...]``
+        num_classes: Specify the number of classes
         ignore_index: optional int specifying a target class to ignore. If given,
             this class index does not contribute to the returned score, regardless
             of reduction method. Has no effect if given an int that is not in the
@@ -107,8 +108,7 @@ def jaccard_index(
             assigned the `absent_score`.
         threshold:
             Threshold value for binary or multi-label probabilities.
-        num_classes:
-            Optionally specify the number of classes
+
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -124,7 +124,7 @@ def jaccard_index(
         >>> target = torch.randint(0, 2, (10, 25, 25))
         >>> pred = torch.tensor(target)
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
-        >>> jaccard_index(pred, target)
+        >>> jaccard_index(pred, target, num_classes=2)
         tensor(0.9660)
     """
 
