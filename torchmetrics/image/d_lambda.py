@@ -16,7 +16,7 @@ from typing import Any, List, Optional
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.d_lambda import _d_lambda_update, _d_lambda_compute
+from torchmetrics.functional.image.d_lambda import _d_lambda_compute, _d_lambda_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat

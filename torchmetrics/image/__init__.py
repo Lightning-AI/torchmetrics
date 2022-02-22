@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.image.d_lambda import SpectralDistortionIndex  # noqa: F401
 from torchmetrics.image.psnr import PeakSignalNoiseRatio  # noqa: F401
 from torchmetrics.image.ssim import (  # noqa: F401
     MultiScaleStructuralSimilarityIndexMeasure,
     StructuralSimilarityIndexMeasure,
 )
 from torchmetrics.image.uqi import UniversalImageQualityIndex  # noqa: F401
-from torchmetrics.image.d_lambda import SpectralDistortionIndex  # noqa: F401
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
 if _TORCH_FIDELITY_AVAILABLE:

@@ -49,9 +49,9 @@ from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    SpectralDistortionIndex,
     StructuralSimilarityIndexMeasure,
     UniversalImageQualityIndex,
-    SpectralDistortionIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
