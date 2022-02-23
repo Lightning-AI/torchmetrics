@@ -319,7 +319,7 @@ def _get_dataloader(
 #     return pad_token_mask
 
 
-def _get_token_mask(input_ids: Tensor, pad_token_id: int, cls_token_id: int, sep_token_id: int) -> Tensor:
+def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:
     """
     Args:
         input_ids:
@@ -327,11 +327,13 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, cls_token_id: int, sep
         cls_token_id:
         sep_token_id:
     """
-    token_mask = input_ids.eq(pad_token_id) | input_ids.eq(cls_token_id) | input_ids.eq(sep_token_id)
+    token_mask = input_ids.eq(pad_token_id) | input_ids.eq(sep_token_id) | input_ids.eq(cls_token_id)
     return token_mask
 
 
-def _get_batch_distribution(model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool) -> Tensor:
+def _get_batch_distribution(
+    model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int]
+) -> Tensor:
     """
     Args:
         model:
@@ -344,34 +346,42 @@ def _get_batch_distribution(model: PreTrainedModel, batch: Dict[str, Tensor], te
             An indication of whether normalization using inverse document frequencies should be used.
     """
     seq_len = batch["input_ids"].shape[1]
-    pad_token_id, cls_token_id, sep_token_id = (
-        model.config.pad_token_id,
-        model.config.cls_token_id,
-        model.config.sep_token_id,
-    )
     prob_distribution_batch: Union[Tensor, List[Tensor]] = []
-    token_mask = _get_token_mask(batch["input_ids"], pad_token_id, cls_token_id, sep_token_id)
+    token_mask = _get_token_mask(
+        batch["input_ids"],
+        special_tokens_map["pad_token_id"],
+        special_tokens_map["sep_token_id"],
+        special_tokens_map["cls_token_id"],
+    )
 
     for mask_idx in range(seq_len):
         input_ids = batch["input_ids"].clone()
-        input_ids[:, mask_idx] = model.config.mask_token_id
+        input_ids[:, mask_idx] = special_tokens_map["mask_token_id"]
 
-        logits_distribution = model(input_ids, batch["attention_mask"], use_cache=False)
+        logits_distribution = model(input_ids, batch["attention_mask"]).logits
+        logits_distribution = logits_distribution[
+            :, mask_idx, :
+        ]  # [batch_size, seq_len, vocab_size] -> [batch_size, vocab_size]
         prob_distribution = F.softmax(logits_distribution / temperature, dim=-1)
         prob_distribution_batch.append(prob_distribution.unsqueeze(1).cpu())  # [batch_size, 1, vocab_size]
-        # Clean GPU memory
+        # Clean from memory
         del input_ids, logits_distribution, prob_distribution
 
     prob_distribution_batch = torch.cat(prob_distribution_batch, dim=1)  # [batch_size, seq_len, vocab_size]
     prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch, token_mask)
-    prob_distribution_batch = prob_distribution_batch.sum(dim=1).transpoe() / token_mask.sum(dim=1).unsqueeze(1)
+    prob_distribution_batch = prob_distribution_batch.sum(dim=1) / token_mask.sum(dim=1).unsqueeze(1)
 
     return prob_distribution_batch
 
 
 @torch.no_grad()
 def _get_data_distribution(
-    model: PreTrainedModel, dataloader: DataLoader, temperature: float, idf: bool, verbose: bool
+    model: PreTrainedModel,
+    dataloader: DataLoader,
+    temperature: float,
+    idf: bool,
+    special_tokens_map: Dict[str, int],
+    verbose: bool,
 ) -> Tensor:
     """
     Args:
@@ -391,7 +401,7 @@ def _get_data_distribution(
 
     for batch in _get_progress_bar(dataloader, verbose):
         batch = _input_data_collator(batch, device)
-        prob_distribution.append(_get_batch_distribution(model, batch, temperature, idf))
+        prob_distribution.append(_get_batch_distribution(model, batch, temperature, idf, special_tokens_map))
 
     return torch.cat(prob_distribution, dim=0)
 
@@ -409,6 +419,7 @@ def _infolm_update(
         target:
             An iterable of reference corpus.
         tokenizer:
+            Initialized tokenizer from HuggingFace's `transformers package.
         max_length:
             A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
 
@@ -427,27 +438,36 @@ def _infolm_compute(
     temperature: float,
     idf: bool,
     information_measure_cls: _InformationMeasure,
+    special_tokens_map: Dict[str, int],
     verbose: bool = True,
 ):
-    """
+    """Calculate selected information measure using the pre-trained language model.
+
     Args:
         model:
+            Initialized model from HuggingFace's `transformers package.
         preds_dataloader:
+            Loader iterating over tokenizer predicted sentences.
         target_datalaoder:
+            Loader iterating over tokenizer reference sentences.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
         information_measure_cls:
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+            Information measure class containing all parameters necessary for calculating information measure values
+            using ``preds_distribution`` and ``target_distribution``.
+        special_tokens_map:
+            A dictionary mapping tokenizer special tokens into the corresponding integer values.
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
 
     Return:
     """
-    preds_distribution = _get_data_distribution(model, preds_dataloader, temperature, idf, verbose)
-    target_distribution = _get_data_distribution(model, target_dataloader, temperature, idf, verbose)
+    preds_distribution = _get_data_distribution(model, preds_dataloader, temperature, idf, special_tokens_map, verbose)
+    target_distribution = _get_data_distribution(
+        model, target_dataloader, temperature, idf, special_tokens_map, verbose
+    )
     infolm_score = information_measure_cls(preds_distribution, target_distribution)
     return infolm_score
 
@@ -531,12 +551,18 @@ def infolm(
     tokenizer, model = _load_tokenizer_and_model(model_name_or_path, device)
     information_measure_cls = _InformationMeasure(information_measure, alpha, beta)
     max_length = max_length or model.config.max_length
+    special_tokens_map: Dict[str, int] = {
+        "mask_token_id": tokenizer.mask_token_id,
+        "pad_token_id": tokenizer.pad_token_id,
+        "sep_token_id": tokenizer.sep_token_id,
+        "cls_token_id": tokenizer.cls_token_id,
+    }
 
     preds_input_ids, preds_attention_mask, target_input_ids, target_attention_mask = _infolm_update(
         preds, target, tokenizer, max_length
     )
-    preds_dataloader = _get_dataloader(preds_input_ids, preds_attention_mask, idf, batch_size)
-    target_dataloader = _get_dataloader(target_input_ids, target_attention_mask, idf, batch_size)
+    preds_dataloader = _get_dataloader(preds_input_ids, preds_attention_mask, idf, batch_size, num_threads)
+    target_dataloader = _get_dataloader(target_input_ids, target_attention_mask, idf, batch_size, num_threads)
 
     info_lm_score = _infolm_compute(
         model,
@@ -545,6 +571,7 @@ def infolm(
         temperature,
         idf,
         information_measure_cls,
+        special_tokens_map,
         verbose,
     )
 

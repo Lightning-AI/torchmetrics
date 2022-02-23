@@ -7,10 +7,12 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AUTO_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
+if _TRANSFORMERS_AUTO_AVAILABLE:
+    from transformers.models.auto import AutoModelForMaskedLM, AutoTokenizer
 if _TRANSFORMERS_AVAILABLE:
-    from transformers.models.auto import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
+    from transformers import PreTrainedModel, PreTrainedTokenizerBase
 
 if _TQDM_AVAILABLE:
     import tqdm
@@ -148,7 +150,7 @@ def _load_tokenizer_and_model(
         Initialized `transformers`' tokenizer and model.
     """
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-    model = AutoModelForMaskedLM.from_pretrained(model_name_or_path)
+    model = AutoModelForMaskedLM.from_pretrained(model_name_or_path, use_cache=False)
     model.eval()
     model.to(device)
     return tokenizer, model

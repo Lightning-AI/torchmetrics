@@ -17,7 +17,8 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.text.bert import _preprocess_text, bert_score
+from torchmetrics.functional.text.bert import bert_score
+from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TRANSFORMERS_AUTO_AVAILABLE
 
