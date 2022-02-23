@@ -4,10 +4,10 @@ Fixes #\<issue_number>
 
 ## Before submitting
 
-- [ ] Was this discussed/approved via a Github issue? (no need for typos and docs improvements)
+- [ ] Was this **discussed/approved** via a Github issue? (no need for typos and docs improvements)
 - [ ] Did you read the [contributor guideline](https://github.com/PyTorchLightning/metrics/blob/master/.github/CONTRIBUTING.md), Pull Request section?
-- [ ] Did you make sure to update the docs?
-- [ ] Did you write any new necessary tests?
+- [ ] Did you make sure to **update the docs**?
+- [ ] Did you write any new **necessary tests**?
 
 ## PR review
 
