@@ -11,17 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-__doctest_requires__ = {("ShortTimeObjectiveIntelligibility", "STOI"): ["pystoi"]}
+__doctest_requires__ = {("ShortTimeObjectiveIntelligibility"): ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
@@ -50,14 +48,12 @@ class ShortTimeObjectiveIntelligibility(Metric):
             whether to use the extended STOI described in [4]
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         average STOI value
@@ -98,17 +94,10 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self,
         fs: int,
         extended: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         if not _PYSTOI_AVAILABLE:
             raise ModuleNotFoundError(
                 "STOI metric requires that `pystoi` is installed."
@@ -137,32 +126,3 @@ class ShortTimeObjectiveIntelligibility(Metric):
     def compute(self) -> Tensor:
         """Computes average STOI."""
         return self.sum_stoi / self.total
-
-
-class STOI(ShortTimeObjectiveIntelligibility):
-    r"""STOI (Short-Time Objective Intelligibility), a wrapper for the pystoi package.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.audio.ShortTimeObjectiveIntelligibility`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
-        >>> stoi = STOI(8000, False)
-        >>> stoi(preds, target)
-        tensor(-0.0100)
-    """
-
-    @deprecated(target=ShortTimeObjectiveIntelligibility, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        fs: int,
-        extended: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
-    ) -> None:
-        void(fs, extended, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

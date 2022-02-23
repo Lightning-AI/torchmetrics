@@ -13,25 +13,110 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
 
+
+- Added new image metric `UniversalImageQualityIndex` ([#824](https://github.com/PyTorchLightning/metrics/pull/824))
+
+
+- Added smart update of `MetricCollection` ([#709](https://github.com/PyTorchLightning/metrics/pull/709))
+
+
+- Added `ClasswiseWrapper` for better logging of classification metrics with multiple output values ([#832](https://github.com/PyTorchLightning/metrics/pull/832))
+
+
+- Added `**kwargs` argument for passing additional arguments to base class ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
+
+
 ### Changed
 
-- Used `torch.bucketize` in calibration error when `torch>1.8` for faster computations ([#769](https://github.com/PyTorchLightning/metrics/pull/769))
+- Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853))
+
 
 ### Deprecated
+
+- Deprecated argument `compute_on_step` ([#792](https://github.com/PyTorchLightning/metrics/pull/792))
+
+
+- Deprecated passing in `dist_sync_on_step`, `process_group`, `dist_sync_fn` direct argument ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
 
 
 ### Removed
 
+- Removed support for versions of Lightning lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))
+
+
 - Removed deprecated functions, and warnings in Text ([#773](https://github.com/PyTorchLightning/metrics/pull/773))
   * `functional.wer`
   * `WER`
+- Removed deprecated functions and warnings in Image ([#796](https://github.com/PyTorchLightning/metrics/pull/796))
+  * `functional.ssim`
+  * `functional.psnr`
+  * `SSIM`
+  * `PSNR`
+
+
+- Removed deprecated functions, and warnings in classification and regression ([#806](https://github.com/PyTorchLightning/metrics/pull/806))
+  * `FBeta`
+  * `F1`
+  * `Hinge`
+  * `IoU`
+  * `functional.iou`
+  * `MatthewsCorrcoef`
+  * `PearsonCorrcoef`
+  * `SpearmanCorrcoef`
+  * `functional.fbeta`
+  * `functional.f1`
+  * `functional.hinge`
+
+
+
+- Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/PyTorchLightning/metrics/pull/804))
+  * `MAP`
+  * `functional.pairwise.manhatten`
+
+
+- Removed deprecated functions, and warnings in Audio ([#805](https://github.com/PyTorchLightning/metrics/pull/805))
+  * `PESQ`
+  * `PIT`
+  * `SDR`
+  * `SNR`
+  * `STOI`
+  * `functional.audio.pesq`
+  * `functional.audio.pit`
+  * `functional.audio.sdr`
+  * `functional.audio.snr`
+  * `functional.audio.stoi`
+  * `functional.audio.si_sdr`
+  * `functional.audio.si_snr`
 
 
 ### Fixed
 
+- Improved testing speed ([#820](https://github.com/PyTorchLightning/metrics/pull/820))
+
+
+- Fixed compatibility of `ClasswiseWrapper` with the `prefix` argument of `MetricCollection` ([#843](https://github.com/PyTorchLightning/metrics/pull/843))
+
+
+- Fixed unsafe log operation in `TweedieDeviace` for power=1 ([#847](https://github.com/PyTorchLightning/metrics/pull/847))
+
+
+## [0.7.2] - 2022-02-10
+
+### Fixed
+
+- Minor patches in JOSS paper.
+
+
+## [0.7.1] - 2022-02-03
+
+### Changed
+
+- Used `torch.bucketize` in calibration error when `torch>1.8` for faster computations ([#769](https://github.com/PyTorchLightning/metrics/pull/769))
+- Improve mAP performance ([#742](https://github.com/PyTorchLightning/metrics/pull/742))
+
+### Fixed
+
 - Fixed check for available modules ([#772](https://github.com/PyTorchLightning/metrics/pull/772))
-
-
 - Fixed Matthews correlation coefficient when the denominator is 0 ([#781](https://github.com/PyTorchLightning/metrics/pull/781))
 
 

@@ -16,7 +16,7 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 from warnings import warn
 
 import torch
@@ -33,17 +33,15 @@ class BLEUScore(Metric):
         n_gram:
             Gram value ranged from 1 to 4 (Default 4)
         smooth:
-            Whether or not to apply smoothing – see [2]
+            Whether or not to apply smoothing, see [2]
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import BLEUScore
@@ -72,17 +70,10 @@ class BLEUScore(Metric):
         self,
         n_gram: int = 4,
         smooth: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ):
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         warn(
             "Input order of targets and preds were changed to predictions firsts and targets second in v0.7."
             " Warning will be removed in v0.8."

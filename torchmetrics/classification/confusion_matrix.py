@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
@@ -56,12 +56,13 @@ class ConfusionMatrix(Metric):
         multilabel:
             determines if data is multilabel or not.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary data):
         >>> from torchmetrics import ConfusionMatrix
@@ -100,15 +101,10 @@ class ConfusionMatrix(Metric):
         normalize: Optional[str] = None,
         threshold: float = 0.5,
         multilabel: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.num_classes = num_classes
         self.normalize = normalize
         self.threshold = threshold

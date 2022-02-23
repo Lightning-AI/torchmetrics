@@ -11,17 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
-__doctest_requires__ = {("PerceptualEvaluationSpeechQuality", "PESQ"): ["pesq"]}
+__doctest_requires__ = {("PerceptualEvaluationSpeechQuality"): ["pesq"]}
 
 
 class PerceptualEvaluationSpeechQuality(Metric):
@@ -31,7 +29,9 @@ class PerceptualEvaluationSpeechQuality(Metric):
     to perform the metric calculation.
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install pesq``
+        torchmetrics[audio]`` or ``pip install pesq``. Note that ``pesq`` will compile with your currently
+        installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
+        most likely have to reinstall ``pesq``.
 
     Forward accepts
 
@@ -46,16 +46,13 @@ class PerceptualEvaluationSpeechQuality(Metric):
         keep_same_device:
             whether to move the pesq value to the device of preds
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
@@ -91,17 +88,10 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self,
         fs: int,
         mode: str,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         if not _PESQ_AVAILABLE:
             raise ModuleNotFoundError(
                 "PerceptualEvaluationSpeechQuality metric requires that `pesq` is installed."
@@ -134,35 +124,3 @@ class PerceptualEvaluationSpeechQuality(Metric):
     def compute(self) -> Tensor:
         """Computes average PESQ."""
         return self.sum_pesq / self.total
-
-
-class PESQ(PerceptualEvaluationSpeechQuality):
-    """Perceptual Evaluation of Speech Quality (PESQ).
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.audio.PerceptualEvaluationSpeechQuality`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
-        >>> nb_pesq = PESQ(8000, 'nb')
-        >>> nb_pesq(preds, target)
-        tensor(2.2076)
-        >>> wb_pesq = PESQ(16000, 'wb')
-        >>> wb_pesq(preds, target)
-        tensor(1.7359)
-    """
-
-    @deprecated(target=PerceptualEvaluationSpeechQuality, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        fs: int,
-        mode: str,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
-    ) -> None:
-        void(fs, mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you want to cite the framework, feel free to use this (but only if you loved it 😊)"
+title: "TorchMetrics - Measuring Reproducibility in PyTorch"
+abstract: "A main problem with reproducing machine learning publications is the variance of metric implementations across papers.
+  A lack of standardization leads to different behavior in mech- anisms such as checkpointing, learning rate schedulers or early stopping, that will influence the reported results.
+  For example, a complex metric such as Fréchet inception distance (FID) for synthetic image quality evaluation will differ based on the specific interpolation method used.
+  There have been a few attempts at tackling the reproducibility issues.
+  Papers With Code links research code with its corresponding paper. Similarly, arXiv recently added a code and data section that links both official and community code to papers.
+  However, these methods rely on the paper code to be made publicly accessible which is not always possible.
+  Our approach is to provide the de-facto reference implementation for metrics.
+  This approach enables proprietary work to still be comparable as long as they’ve used our reference implementations.
+  We introduce TorchMetrics, a general-purpose metrics package that covers a wide variety of tasks and domains used in the machine learning community.
+  TorchMetrics provides standard classification and regression metrics; and domain-specific metrics for audio, computer vision, natural language processing, and information retrieval.
+  Our process for adding a new metric is as follows, first we integrate a well-tested and established third-party library.
+  Once we’ve verified the implementations and written tests for them, we re-implement them in native PyTorch to enable hardware acceleration and remove any bottlenecks in inter-device transfer."
+authors:
+  - name: Nicki Skafte Detlefsen
+    orcid: "https://orcid.org/0000-0002-8133-682X"
+  - name: Jiri Borovec
+    orcid: "https://orcid.org/0000-0001-7437-824X"
+  - name: Justus Schock
+    orcid: "https://orcid.org/0000-0003-0512-3053"
+  - name: Ananya Harsh
+  - name: Teddy Koker
+  - name: Luca Di Liello
+  - name: Daniel Stancl
+  - name: Changsheng Quan
+  - name: Maxim Grechkin
+  - name: William Falcon
+
+doi: 10.21105/joss.04101
+license: "Apache-2.0"
+url: "https://www.pytorchlightning.ai"
+repository-code: "https://github.com/PyTorchLightning/metrics"
+date-released: 2022-02-11
+keywords:
+  - machine learning
+  - deep learning
+  - artificial intelligence
+  - metrics
+  - pytorch

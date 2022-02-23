@@ -12,30 +12,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
   cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
-jobs:
-  # ToDo: consider unifying in a single workflow and distributing outputs to all others depending ones
-  check-diff:
-    runs-on: ubuntu-20.04
-    if: github.event.pull_request.draft == false
-    timeout-minutes: 5
-    # Map a step output to a job output
-    outputs:
-      focus: ${{ steps.diff-domains.outputs.focus }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+defaults:
+  run:
+    shell: bash
 
-    - name: Get PR diff
-      id: diff-domains
-      env:
-        PR_NUMBER: "${{ github.event.pull_request.number }}"
-      run: |
-        pip install fire requests
-        # python actions/assistant.py list_runtimes $PR_NUMBER
-        echo "::set-output name=focus::$(python .github/assistant.py changed_domains $PR_NUMBER 2>&1)"
-    - run: echo "${{ steps.diff-domains.outputs.focus }}"
+jobs:
+  check-diff:
+    if: github.event.pull_request.draft == false
+    uses: ./.github/workflows/focus-diff.yml
 
   pytest:
     runs-on: ${{ matrix.os }}
@@ -52,11 +36,10 @@ jobs:
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
-      TRANSFORMERS_CACHE: ci-cache/huggingface/
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
-    timeout-minutes: 85
+    timeout-minutes: 95
 
     steps:
     - uses: actions/checkout@v2
@@ -80,50 +63,34 @@ jobs:
       run: |
         choco install ffmpeg
 
-    - name: PIP install assitant's deps
-      run: pip install fire requests
-
-    - name: Set min. dependencies
-      if: matrix.requires == 'oldest'
-      run: python .github/assistant.py set-oldest-versions
-
-    - run: echo "::set-output name=period::$(python -c 'import time ; days = time.time() / 60 / 60 / 24 ; print(int(days / 7))' 2>&1)"
-      if: matrix.requires == 'latest'
-      id: times
-
-    # Note: This uses an internal pip API and may not always work
-    # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
-    - name: Get pip cache
-      id: pip-cache
-      run: |
-        python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
-
-    - name: Cache pip
-      uses: actions/cache@v2
+    - uses: ./.github/actions/caching
       with:
-        path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-
+        os: ${{ runner.os }}
+        requires: ${{ matrix.requires }}
+        python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install base dependencies
       run: |
         pip --version
         pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
+
+    - name: Freeze Numpy (hotfix)
+      if: matrix.requires == 'latest'
+      run: |
+        pip install -q "numpy==1.20.0"  # temp fix for cypesq
+        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+        pip install -q "Pillow<9.0"  # It messes with torchvision
+
+    - name: Install all dependencies
+      run: |
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip list
-      shell: bash
-
-    - name: HF cache
-      uses: actions/cache@v2
-      with:
-        path: $TRANSFORMERS_CACHE
-        key: cache-transformers
 
     - name: Tests
       env:
-        TEST_DIRS: "${{ needs.check-diff.outputs.focus }}"
+        TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
       run: |
         phmdoctest README.md --outfile tests/test_readme.py
         python -m pytest torchmetrics $TEST_DIRS --cov=torchmetrics --junitxml="junit/$PYTEST_ARTEFACT" --durations=50
@@ -141,8 +108,7 @@ jobs:
         coverage xml
         coverage report
 
-    - run: |
-        echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
+    - run: echo "::set-output name=TORCH::$(python -c 'import torch ; print(torch.__version__)' 2>&1)"
       id: info
 
     - name: Upload coverage to Codecov

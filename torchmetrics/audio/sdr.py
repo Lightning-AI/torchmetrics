@@ -11,17 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
-__doctest_requires__ = {("SignalDistortionRatio", "SDR"): ["fast_bss_eval"]}
+__doctest_requires__ = {("SignalDistortionRatio"): ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
@@ -51,14 +49,12 @@ class SignalDistortionRatio(Metric):
             signals may sometimes be zero
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
@@ -112,22 +108,15 @@ class SignalDistortionRatio(Metric):
         filter_length: int = 512,
         zero_mean: bool = False,
         load_diag: Optional[float] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         if not _FAST_BSS_EVAL_AVAILABLE:
             raise ModuleNotFoundError(
                 "SDR metric requires that `fast-bss-eval` is installed."
                 " Either install as `pip install torchmetrics[audio]` or `pip install fast-bss-eval`."
             )
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.use_cg_iter = use_cg_iter
         self.filter_length = filter_length
@@ -156,50 +145,6 @@ class SignalDistortionRatio(Metric):
         return self.sum_sdr / self.total
 
 
-class SDR(SignalDistortionRatio):
-    r"""Signal to Distortion Ratio (SDR)
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.SignalDistortionRatio`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> g = torch.manual_seed(1)
-        >>> sdr = SDR()
-        >>> sdr(torch.randn(8000), torch.randn(8000))
-        tensor(-12.0589)
-        >>> # use with pit
-        >>> from torchmetrics.audio import PermutationInvariantTraining
-        >>> from torchmetrics.functional.audio import signal_distortion_ratio
-        >>> pit = PermutationInvariantTraining(signal_distortion_ratio, 'max')
-        >>> pit(torch.randn(4, 2, 8000), torch.randn(4, 2, 8000))
-        tensor(-11.6051)
-    """
-
-    @deprecated(target=SignalDistortionRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        use_cg_iter: Optional[int] = None,
-        filter_length: int = 512,
-        zero_mean: bool = False,
-        load_diag: Optional[float] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
-    ) -> None:
-        void(
-            use_cg_iter,
-            filter_length,
-            zero_mean,
-            load_diag,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
-        )
-
-
 class ScaleInvariantSignalDistortionRatio(Metric):
     """Scale-invariant signal-to-distortion ratio (SI-SDR). The SI-SDR value is in general considered an overall
     measure of how good a source sound.
@@ -214,14 +159,12 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             if to zero mean target and preds or not
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
@@ -252,17 +195,10 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     def __init__(
         self,
         zero_mean: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.zero_mean = zero_mean
 
         self.add_state("sum_si_sdr", default=tensor(0.0), dist_reduce_fx="sum")

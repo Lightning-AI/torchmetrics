@@ -20,18 +20,29 @@ import pytest
 import torch
 from torch import Tensor, nn, tensor
 
-from tests.helpers import _LIGHTNING_GREATER_EQUAL_1_3, seed_all
+from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _TORCH_LOWER_1_6
+from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 seed_all(42)
 
 
+def test_error_on_wrong_input():
+    """Test that base metric class raises error on wrong input types."""
+    with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_on_step` to be an `bool` but.*"):
+        DummyMetric(dist_sync_on_step=None)
+
+    with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
+        DummyMetric(dist_sync_fn=[2, 3])
+
+
 def test_inherit():
+    """Test that metric that inherits can be instanciated."""
     DummyMetric()
 
 
 def test_add_state():
+    """Test that add state method works as expected."""
     a = DummyMetric()
 
     a.add_state("a", tensor(0), "sum")
@@ -100,10 +111,7 @@ def test_reset_compute():
     a.update(tensor(5))
     assert a.compute() == 5
     a.reset()
-    if not _LIGHTNING_AVAILABLE or _LIGHTNING_GREATER_EQUAL_1_3:
-        assert a.compute() == 0
-    else:
-        assert a.compute() == 5
+    assert a.compute() == 0
 
 
 def test_update():

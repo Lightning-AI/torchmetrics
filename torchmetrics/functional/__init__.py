@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.audio.pit import permutation_invariant_training, pit, pit_permutate
-from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, sdr, signal_distortion_ratio
-from torchmetrics.functional.audio.si_sdr import si_sdr
-from torchmetrics.functional.audio.si_snr import si_snr
-from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio, snr
+from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
+from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.functional.classification.accuracy import accuracy
 from torchmetrics.functional.classification.auc import auc
 from torchmetrics.functional.classification.auroc import auroc
@@ -24,10 +22,9 @@ from torchmetrics.functional.classification.calibration_error import calibration
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice_score
-from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta, fbeta_score
+from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
-from torchmetrics.functional.classification.hinge import hinge, hinge_loss
-from torchmetrics.functional.classification.iou import iou  # noqa: F401
+from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
@@ -37,17 +34,16 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
-    ssim,
     structural_similarity_index_measure,
 )
+from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
 from torchmetrics.functional.pairwise.manhattan import pairwise_manhattan_distance
-from torchmetrics.functional.pairwise.manhatten import pairwise_manhatten_distance
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.log_mse import mean_squared_log_error
@@ -99,12 +95,9 @@ __all__ = [
     "dice_score",
     "explained_variance",
     "extended_edit_distance",
-    "f1",
     "f1_score",
-    "fbeta",
     "fbeta_score",
     "hamming_distance",
-    "hinge",
     "hinge_loss",
     "image_gradients",
     "jaccard_index",
@@ -119,16 +112,13 @@ __all__ = [
     "pairwise_euclidean_distance",
     "pairwise_linear_similarity",
     "pairwise_manhattan_distance",
-    "pairwise_manhatten_distance",
     "pearson_corrcoef",
     "permutation_invariant_training",
-    "pit",
     "pit_permutate",
     "precision",
     "precision_recall",
     "precision_recall_curve",
     "peak_signal_noise_ratio",
-    "psnr",
     "r2_score",
     "recall",
     "retrieval_average_precision",
@@ -142,22 +132,18 @@ __all__ = [
     "roc",
     "rouge_score",
     "sacre_bleu_score",
-    "sdr",
     "signal_distortion_ratio",
-    "si_sdr",
     "scale_invariant_signal_distortion_ratio",
-    "si_snr",
     "scale_invariant_signal_noise_ratio",
-    "snr",
     "signal_noise_ratio",
     "spearman_corrcoef",
     "specificity",
     "squad",
-    "ssim",
     "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",
+    "universal_image_quality_index",
     "word_error_rate",
     "char_error_rate",
     "match_error_rate",

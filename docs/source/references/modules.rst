@@ -69,12 +69,6 @@ the metric will be computed over the ``time`` dimension.
     >>> snr = SignalNoiseRatio()
     >>> snr(preds, target)
     tensor(16.1805)
-    >>> from torchmetrics import SNR
-    >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-    >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
-    >>> snr = SignalNoiseRatio()
-    >>> snr(preds, target)
-    tensor(16.1805)
 
 PerceptualEvaluationSpeechQuality
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -410,6 +404,12 @@ StructuralSimilarityIndexMeasure
 .. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
 
+UniversalImageQualityIndex
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.UniversalImageQualityIndex
+    :noindex:
+
 *********
 Detection
 *********
@@ -708,6 +708,12 @@ BootStrapper
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BootStrapper
+    :noindex:
+
+ClasswiseWrapper
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ClasswiseWrapper
     :noindex:
 
 MetricTracker

@@ -13,12 +13,10 @@
 # limitations under the License.
 from typing import Any, Callable, Dict, Optional
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 
 
 class PermutationInvariantTraining(Metric):
@@ -41,16 +39,13 @@ class PermutationInvariantTraining(Metric):
             or the larger the better.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         kwargs:
-            additional args for metric_func
+            Additional keyword arguments for either the `metric_func` or distributed communication,
+            see :ref:`Metric kwargs` for more info.
 
     Returns:
         average PermutationInvariantTraining metric
@@ -58,11 +53,11 @@ class PermutationInvariantTraining(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics import PermutationInvariantTraining
-        >>> from torchmetrics.functional import si_snr
+        >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PermutationInvariantTraining(si_snr, 'max')
+        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
         >>> pit(preds, target)
         tensor(-2.1065)
 
@@ -80,18 +75,15 @@ class PermutationInvariantTraining(Metric):
         self,
         metric_func: Callable,
         eval_func: str = "max",
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        base_kwargs: Dict[str, Any] = {
+            "dist_sync_on_step": kwargs.pop("dist_sync_on_step", False),
+            "process_group": kwargs.pop("process_group", None),
+            "dist_sync_fn": kwargs.pop("dist_sync_fn", None),
+        }
+        super().__init__(compute_on_step=compute_on_step, **base_kwargs)
         self.metric_func = metric_func
         self.eval_func = eval_func
         self.kwargs = kwargs
@@ -114,39 +106,3 @@ class PermutationInvariantTraining(Metric):
     def compute(self) -> Tensor:
         """Computes average PermutationInvariantTraining metric."""
         return self.sum_pit_metric / self.total
-
-
-class PIT(PermutationInvariantTraining):
-    """Permutation invariant training (PIT). The PIT implements the famous Permutation Invariant Training method.
-
-    [1] in speech separation field in order to calculate audio metrics in a permutation invariant way.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.audio.PermutationInvariantTraining`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> from torchmetrics.functional import si_snr
-        >>> _ = torch.manual_seed(42)
-        >>> pit = PIT(si_snr, 'max')
-        >>> pit(torch.randn(3, 2, 5), torch.randn(3, 2, 5))
-        tensor(-2.1065)
-
-    Reference:
-        [1]	D. Yu, M. Kolbaek, Z.-H. Tan, J. Jensen, Permutation invariant training of deep models for
-        speaker-independent multi-talker speech separation, in: 2017 IEEE Int. Conf. Acoust. Speech
-        Signal Process. ICASSP, IEEE, New Orleans, LA, 2017: pp. 241–245. https://doi.org/10.1109/ICASSP.2017.7952154.
-    """
-
-    @deprecated(target=PermutationInvariantTraining, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        metric_func: Callable,
-        eval_func: str = "max",
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
-        **kwargs: Dict[str, Any],
-    ) -> None:
-        void(metric_func, eval_func, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn, **kwargs)

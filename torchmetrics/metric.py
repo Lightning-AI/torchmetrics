@@ -13,7 +13,7 @@
 # limitations under the License.
 import functools
 import inspect
-import operator as op
+import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -35,7 +35,6 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
@@ -64,15 +63,39 @@ class Metric(Module, ABC):
     Args:
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
         process_group:
-            Specify the process group on which synchronization is called.
-            default: `None` (which selects the entire world)
+            Specify the process group on which synchronization is called. Defaults is `None`
+            which selects the entire world
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
+        kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+            - dist_sync_on_step: If metric state should synchronize on ``forward()``
+            - process_group: The process group on which the synchronization is called
+            - dist_sync_fn: function that performs the allgather option on the metric state
     """
 
     __jit_ignored_attributes__ = ["device"]
@@ -82,10 +105,8 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__()
 
@@ -93,27 +114,41 @@ class Metric(Module, ABC):
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
-        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
         self._device = torch.device("cpu")
 
-        self.dist_sync_on_step = dist_sync_on_step
-        self.compute_on_step = compute_on_step
-        self.process_group = process_group
-        self.dist_sync_fn = dist_sync_fn
-        self._to_sync = True
-        self._should_unsync = True
+        if compute_on_step is not None:
+            warnings.warn(
+                "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
+            )
 
+        self.dist_sync_on_step = kwargs.pop("dist_sync_on_step", False)
+        if not isinstance(self.dist_sync_on_step, bool):
+            raise ValueError(
+                f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
+            )
+
+        self.process_group = kwargs.pop("process_group", None)
+
+        self.dist_sync_fn = kwargs.pop("dist_sync_fn", None)
+        if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
+            raise ValueError(
+                f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
+            )
+
+        # initialize
         self._update_signature = inspect.signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
         self._computed = None
         self._forward_cache = None
         self._update_called = False
+        self._to_sync = True
+        self._should_unsync = True
 
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
+        self._reductions: Dict[str, Union[str, Callable[..., Any], None]] = {}
 
         # state management
         self._is_synced = False
@@ -204,29 +239,28 @@ class Metric(Module, ABC):
         with torch.no_grad():
             self.update(*args, **kwargs)
 
-        if self.compute_on_step:
-            self._to_sync = self.dist_sync_on_step
-            # skip restore cache operation from compute as cache is stored below.
-            self._should_unsync = False
+        self._to_sync = self.dist_sync_on_step  # type: ignore
+        # skip restore cache operation from compute as cache is stored below.
+        self._should_unsync = False
 
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults}
+        # save context before switch
+        cache = {attr: getattr(self, attr) for attr in self._defaults}
 
-            # call reset, update, compute, on single batch
-            self.reset()
-            self.update(*args, **kwargs)
-            self._forward_cache = self.compute()
+        # call reset, update, compute, on single batch
+        self.reset()
+        self.update(*args, **kwargs)
+        self._forward_cache = self.compute()
 
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._is_synced = False
+        # restore context
+        for attr, val in cache.items():
+            setattr(self, attr, val)
+        self._is_synced = False
 
-            self._should_unsync = True
-            self._to_sync = True
-            self._computed = None
+        self._should_unsync = True
+        self._to_sync = True
+        self._computed = None
 
-            return self._forward_cache
+        return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
@@ -375,7 +409,9 @@ class Metric(Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
+                dist_sync_fn=self.dist_sync_fn,  # type: ignore
+                should_sync=self._to_sync,
+                should_unsync=self._should_unsync,
             ):
                 value = compute(*args, **kwargs)
                 self._computed = _squeeze_if_scalar(value)
@@ -397,9 +433,7 @@ class Metric(Module, ABC):
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
-        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
-        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
-            self._computed = None
+        self._computed = None
 
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
@@ -465,7 +499,7 @@ class Metric(Module, ABC):
         """
         return self
 
-    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
         """Special version of `type` for transferring all metric states to specific dtype
         Arguments:
             dst_type (type or string): the desired type

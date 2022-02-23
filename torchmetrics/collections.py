@@ -11,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import _flatten_dict
 
 # this is just a bypass for this module name collision with build-in one
 from torchmetrics.utilities.imports import OrderedDict
@@ -45,6 +45,14 @@ class MetricCollection(nn.ModuleDict):
 
         postfix: a string to append after the keys of the output dict
 
+        compute_groups:
+            By default the MetricCollection will try to reduce the computations needed for the metrics in the collection
+            by checking if they belong to the same **compute group**. All metrics in a compute group share the same
+            metric state and are therefore only different in their compute step e.g. accuracy, precision and recall
+            can all be computed from the true positives/negatives and false positives/negatives. By default,
+            this argument is ``True`` which enables this feature. Set this argument to `False` for disabling
+            this behaviour. Can also be set to a list of list of metrics for setting the compute groups yourself.
+
     Raises:
         ValueError:
             If one of the elements of ``metrics`` is not an instance of ``pl.metrics.Metric``.
@@ -62,7 +70,7 @@ class MetricCollection(nn.ModuleDict):
     Example (input as list):
         >>> import torch
         >>> from pprint import pprint
-        >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall
+        >>> from torchmetrics import MetricCollection, Accuracy, Precision, Recall, MeanSquaredError
         >>> target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
         >>> metrics = MetricCollection([Accuracy(),
@@ -85,8 +93,19 @@ class MetricCollection(nn.ModuleDict):
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
         >>> pprint(same_metric(preds, target))
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
-        >>> metrics.persistent()
+
+    Example (specification of compute groups):
+        >>> metrics = MetricCollection(
+        ...     Accuracy(),
+        ...     Precision(num_classes=3, average='macro'),
+        ...     MeanSquaredError(),
+        ...     compute_groups=[['Accuracy', 'Precision'], ['MeanSquaredError']]
+        ... )
+        >>> pprint(metrics(preds, target))
+        {'Accuracy': tensor(0.1250), 'MeanSquaredError': tensor(2.3750), 'Precision': tensor(0.0667)}
     """
+
+    _groups: Dict[int, List[str]]
 
     def __init__(
         self,
@@ -94,13 +113,16 @@ class MetricCollection(nn.ModuleDict):
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
+        compute_groups: Union[bool, List[List[str]]] = True,
     ) -> None:
         super().__init__()
 
-        self.add_metrics(metrics, *additional_metrics)
-
         self.prefix = self._check_arg(prefix, "prefix")
         self.postfix = self._check_arg(postfix, "postfix")
+        self._enable_compute_groups = compute_groups
+        self._groups_checked: bool = False
+
+        self.add_metrics(metrics, *additional_metrics)
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
@@ -109,7 +131,9 @@ class MetricCollection(nn.ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        return {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items()}
+        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True)}
+        res = _flatten_dict(res)
+        return {self._set_name(k): v for k, v in res.items()}
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Iteratively call update for each metric.
@@ -117,12 +141,89 @@ class MetricCollection(nn.ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        for _, m in self.items(keep_base=True):
-            m_kwargs = m._filter_kwargs(**kwargs)
-            m.update(*args, **m_kwargs)
+        # Use compute groups if already initialized and checked
+        if self._groups_checked:
+            for _, cg in self._groups.items():
+                # only update the first member
+                m0 = getattr(self, cg[0])
+                m0.update(*args, **m0._filter_kwargs(**kwargs))
+        else:  # the first update always do per metric to form compute groups
+            for _, m in self.items(keep_base=True):
+                m_kwargs = m._filter_kwargs(**kwargs)
+                m.update(*args, **m_kwargs)
+
+            if self._enable_compute_groups:
+                self._merge_compute_groups()
+                self._groups_checked = True
+
+    def _merge_compute_groups(self) -> None:
+        """Iterates over the collection of metrics, checking if the state of each metric matches another.
+
+        If so, their compute groups will be merged into one
+        """
+        n_groups = len(self._groups)
+        while True:
+            for cg_idx1, cg_members1 in deepcopy(self._groups).items():
+                for cg_idx2, cg_members2 in deepcopy(self._groups).items():
+                    if cg_idx1 == cg_idx2:
+                        continue
+
+                    metric1 = getattr(self, cg_members1[0])
+                    metric2 = getattr(self, cg_members2[0])
+
+                    if self._equal_metric_states(metric1, metric2):
+                        self._groups[cg_idx1].extend(self._groups.pop(cg_idx2))
+                        break
+
+                # Start over if we merged groups
+                if len(self._groups) != n_groups:
+                    break
+
+            # Stop when we iterate over everything and do not merge any groups
+            if len(self._groups) == n_groups:
+                break
+            else:
+                n_groups = len(self._groups)
+
+        # Re-index groups
+        temp = deepcopy(self._groups)
+        self._groups = {}
+        for idx, values in enumerate(temp.values()):
+            self._groups[idx] = values
+
+    def _equal_metric_states(self, metric1: Metric, metric2: Metric) -> bool:
+        """Check if the metric state of two metrics are the same."""
+        if metric1._defaults.keys() != metric2._defaults.keys():
+            return False
+
+        for key in metric1._defaults.keys():
+            state1 = getattr(metric1, key)
+            state2 = getattr(metric2, key)
+
+            if type(state1) != type(state2):
+                return False
+
+            if isinstance(state1, Tensor) and isinstance(state2, Tensor):
+                return state1.shape == state2.shape and torch.allclose(state1, state2)
+
+            if isinstance(state1, list) and isinstance(state2, list):
+                return all(s1.shape == s2.shape and torch.allclose(s1, s2) for s1, s2 in zip(state1, state2))
+
+        return True
 
     def compute(self) -> Dict[str, Any]:
-        return {k: m.compute() for k, m in self.items()}
+        """Compute the result for each metric in the collection."""
+        if self._enable_compute_groups and self._groups_checked:
+            for _, cg in self._groups.items():
+                m0 = getattr(self, cg[0])
+                # copy the state to the remaining metrics in the compute group
+                for i in range(1, len(cg)):
+                    mi = getattr(self, cg[i])
+                    for state in m0._defaults:
+                        setattr(mi, state, getattr(m0, state))
+        res = {k: m.compute() for k, m in self.items(keep_base=True)}
+        res = _flatten_dict(res)
+        return {self._set_name(k): v for k, v in res.items()}
 
     def reset(self) -> None:
         """Iteratively call reset for each metric."""
@@ -193,7 +294,39 @@ class MetricCollection(nn.ModuleDict):
         else:
             raise ValueError("Unknown input to MetricCollection.")
 
+        self._groups_checked = False
+        if self._enable_compute_groups:
+            self._init_compute_groups()
+        else:
+            self._groups = {}
+
+    def _init_compute_groups(self) -> None:
+        """Initialize compute groups.
+
+        If user provided a list, we check that all metrics in the list are also in the collection. If set to `True` we
+        simply initialize each metric in the collection as its own group
+        """
+        if isinstance(self._enable_compute_groups, list):
+            self._groups = {i: k for i, k in enumerate(self._enable_compute_groups)}
+            for v in self._groups.values():
+                for metric in v:
+                    if metric not in self:
+                        raise ValueError(
+                            f"Input {metric} in `compute_groups` argument does not match a metric in the collection."
+                            f" Please make sure that {self._enable_compute_groups} matches {self.keys(keep_base=True)}"
+                        )
+            self._groups_checked = True
+        else:
+            # Initialize all metrics as their own compute group
+            self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=False))}
+
+    @property
+    def compute_groups(self) -> Dict[int, List[str]]:
+        """Return a dict with the current compute groups in the collection."""
+        return self._groups
+
     def _set_name(self, base: str) -> str:
+        """Adjust name of metric with both prefix and postfix."""
         name = base if self.prefix is None else self.prefix + base
         name = name if self.postfix is None else name + self.postfix
         return name

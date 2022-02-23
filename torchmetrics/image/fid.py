@@ -11,16 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from torch.autograd import Function
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_info, rank_zero_warn
+from torchmetrics.utilities import rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
@@ -163,16 +162,13 @@ class FrechetInceptionDistance(Metric):
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Rethinking the Inception Architecture for Computer Vision
@@ -212,17 +208,10 @@ class FrechetInceptionDistance(Metric):
     def __init__(
         self,
         feature: Union[int, torch.nn.Module] = 2048,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         rank_zero_warn(
             "Metric `FrechetInceptionDistance` will save all extracted features in buffer."
@@ -285,36 +274,3 @@ class FrechetInceptionDistance(Metric):
 
         # compute fid
         return _compute_fid(mean1, cov1, mean2, cov2).to(orig_dtype)
-
-
-class FID(FrechetInceptionDistance):
-    r"""
-    Calculates Fréchet inception distance (FID_) which is used to access the quality of generated images.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.image.FrechetInceptionDistance`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
-        >>> fid = FID(feature=64)
-        >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> fid.update(imgs_dist1, real=True)
-        >>> fid.update(imgs_dist2, real=False)
-        >>> fid.compute()
-        tensor(12.7202)
-
-    """
-
-    @deprecated(target=FrechetInceptionDistance, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        feature: Union[int, torch.nn.Module] = 2048,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
-    ) -> None:
-        void(feature, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

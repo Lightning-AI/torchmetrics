@@ -11,14 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, snr
+from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 
 
 class SignalNoiseRatio(Metric):
@@ -41,14 +39,12 @@ class SignalNoiseRatio(Metric):
             if to zero mean target and preds or not
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
@@ -79,17 +75,10 @@ class SignalNoiseRatio(Metric):
     def __init__(
         self,
         zero_mean: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.zero_mean = zero_mean
 
         self.add_state("sum_snr", default=tensor(0.0), dist_reduce_fx="sum")
@@ -102,7 +91,7 @@ class SignalNoiseRatio(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        snr_batch = snr(preds=preds, target=target, zero_mean=self.zero_mean)
+        snr_batch = signal_noise_ratio(preds=preds, target=target, zero_mean=self.zero_mean)
 
         self.sum_snr += snr_batch.sum()
         self.total += snr_batch.numel()
@@ -110,32 +99,6 @@ class SignalNoiseRatio(Metric):
     def compute(self) -> Tensor:
         """Computes average SNR."""
         return self.sum_snr / self.total
-
-
-class SNR(SignalNoiseRatio):
-    r"""Signal-to-noise ratio (SNR_):
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.SignalNoiseRatio`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> snr = SNR()
-        >>> snr(torch.tensor([2.5, 0.0, 2.0, 8.0]), torch.tensor([3.0, -0.5, 2.0, 7.0]))
-        tensor(16.1805)
-
-    """
-
-    @deprecated(target=SignalNoiseRatio, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        zero_mean: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
-    ) -> None:
-        void(zero_mean, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
@@ -149,14 +112,12 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     Args:
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
@@ -187,17 +148,10 @@ class ScaleInvariantSignalNoiseRatio(Metric):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.add_state("sum_si_snr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
