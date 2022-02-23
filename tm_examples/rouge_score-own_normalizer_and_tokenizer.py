@@ -52,6 +52,7 @@ class UserTokenizer:
 
     The user's defined tokenizer is expected to return ``Sequence[str]`` that are fed into the rouge score.
     """
+
     pattern = r"\s+"
 
     def __call__(self, text: str) -> Sequence[str]:
