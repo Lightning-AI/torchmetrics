@@ -36,7 +36,9 @@ def perceptual_evaluation_speech_quality(
     to perform the metric calculation.
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install pesq``
+        torchmetrics[audio]`` or ``pip install pesq``. Note that ``pesq`` will compile with your currently
+        installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
+        most likely have to reinstall ``pesq``.
 
     Args:
         preds:
