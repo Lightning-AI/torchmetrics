@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -35,6 +35,13 @@ class ROUGEScore(Metric):
     Args:
         use_stemmer:
             Use Porter stemmer to strip word suffixes to improve matching.
+        normalizer:
+            A user's own normalizer function.
+            If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
+            This function must take a `str` and return a `str`.
+        tokenizer:
+            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+            This function must take a `str` and return `Sequence[str]`
         accumulate:
             Useful incase of multi-reference rouge score.
             - ``avg`` takes the avg of all references with respect to predictions
@@ -87,6 +94,8 @@ class ROUGEScore(Metric):
     def __init__(
         self,
         use_stemmer: bool = False,
+        normalizer: Callable[[str], str] = None,
+        tokenizer: Callable[[str], Sequence[str]] = None,
         accumulate: Literal["avg", "best"] = "best",
         rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),  # type: ignore
         compute_on_step: Optional[bool] = None,
@@ -114,6 +123,8 @@ class ROUGEScore(Metric):
         self.rouge_keys = rouge_keys
         self.rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
         self.stemmer = nltk.stem.porter.PorterStemmer() if use_stemmer else None
+        self.normalizer = normalizer
+        self.tokenizer = tokenizer
         self.accumulate = accumulate
 
         # Adding stated dynamically to prevent IndexError during sync function as some lists can be empty.
@@ -143,7 +154,13 @@ class ROUGEScore(Metric):
             target = [[target]]
 
         output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
-            preds, target, self.rouge_keys_values, stemmer=self.stemmer, accumulate=self.accumulate
+            preds,
+            target,
+            self.rouge_keys_values,
+            stemmer=self.stemmer,
+            normalizer=self.normalizer,
+            tokenizer=self.tokenizer,
+            accumulate=self.accumulate,
         )
         for rouge_key, metrics in output.items():
             for metric in metrics:
