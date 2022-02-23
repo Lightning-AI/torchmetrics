@@ -54,8 +54,8 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
 .. note::
 
-    Modular metrics contain internal states which should belong to only one DataLoader/Dataset. In case you are using multiple dataloaders, it is recommended to initialize a
-    separate modular metric instance for each dataloader and use them separately.
+    Modular metrics contain internal states that belong to only one DataLoader/Dataset. In case you are using multiple dataloaders, it is recommended to initialize a
+    separate modular metric instances for each dataloader and use them separately.
 
     .. testcode:: python
 
@@ -188,8 +188,8 @@ If ``on_epoch`` is True, the logger automatically logs the end of epoch metric v
 .. note::
 
     When using any Modular metric, calling ``self.metric(...)`` or ``self.metric.forward(...)`` serves the dual purpose of calling ``self.metric.update()``
-    on its input and simultaneously returning the value of the metric over the provided input. So if you are logging a metric on epoch-level, it
-    is recommended to call ``self.metric.update()`` directly, to avoid the extra computation.
+    on its input and simultaneously returning the metric value over the provided input. So if you are logging a metric on epoch-level, it
+    is recommended to call ``self.metric.update()`` directly to avoid the extra computation.
 
     .. testcode:: python
 
