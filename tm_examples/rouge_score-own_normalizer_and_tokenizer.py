@@ -37,8 +37,7 @@ class UserNormalizer:
         should obey the input/output arguments structure described below.
 
         Args:
-            text:
-                Input text. `str`
+            text: Input text.
 
         Return:
             Normalized python string object
@@ -51,19 +50,16 @@ class UserNormalizer:
 class UserTokenizer:
     """The `UserNormalizer` class is required to tokenize a non-alphabet language text input.
 
-    The user's defined tokenizer is expected to return `Sequence[str]` that are fed into the rouge score.
+    The user's defined tokenizer is expected to return ``Sequence[str]`` that are fed into the rouge score.
     """
-
-    def __init__(self) -> None:
-        self.pattern = r"\s+"
+    pattern = r"\s+"
 
     def __call__(self, text: str) -> Sequence[str]:
         """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:
-            text:
-                Input text. `str`
+            text: Input text.
 
         Return:
             tokenized sentence

@@ -208,5 +208,4 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     )
     metrics_score = Scorer.compute()
 
-    threshold = 1e-08
-    np.isclose(metrics_score[rouge_level + "_" + metric], original_score, atol=threshold, equal_nan=True)
+    np.isclose(metrics_score[rouge_level + "_" + metric], original_score, atol=1e-8, equal_nan=True)

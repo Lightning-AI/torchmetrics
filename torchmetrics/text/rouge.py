@@ -37,11 +37,9 @@ class ROUGEScore(Metric):
             Use Porter stemmer to strip word suffixes to improve matching.
         normalizer:
             A user's own normalizer function.
-            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
-            This function must take a `str` and return a `str`.
+            If this is `None``, replacing any non-alpha-numeric characters with space` is the default.
         tokenizer:
-            A user's own tokenizer function. If this is none, `spliting by spaces` is default
-            This function must take a `str` and return `Sequence[str]`
+            A user's own tokenizer function. If this is ``None``, splitting by spaces is the default.
         accumulate:
             Useful incase of multi-reference rouge score.
             - ``avg`` takes the avg of all references with respect to predictions
