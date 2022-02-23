@@ -66,7 +66,7 @@ class UserTokenizer:
                 Input text. `str`
 
         Return:
-            tokenized sentence
+            Tokenized sentence
         """
         output_tokens = re.split(self.pattern, text)
 

@@ -108,10 +108,10 @@ def _normalize_and_tokenize_text(
             Porter stemmer instance to strip word suffixes to improve matching.
         normalizer:
             A user's own normalizer function.
-            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
+            If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a `str` and return a `str`.
         tokenizer:
-            A user's own tokenizer function. If this is none, `spliting by spaces` is default
+            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
             This function must take a `str` and return `Sequence[str]`
     """
 
@@ -203,10 +203,10 @@ def _rouge_score_update(
             Porter stemmer instance to strip word suffixes to improve matching.
         normalizer:
             A user's own normalizer function.
-            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
+            If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a `str` and return a `str`.
         tokenizer:
-            A user's own tokenizer function. If this is none, `spliting by spaces` is default
+            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
             This function must take a `str` and return `Sequence[str]`
 
     Example:
@@ -336,10 +336,10 @@ def rouge_score(
             Use Porter stemmer to strip word suffixes to improve matching.
         normalizer:
             A user's own normalizer function.
-            If this is none, `replacing any non-alpha-numeric characters with spaces` is default.
+            If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a `str` and return a `str`.
         tokenizer:
-            A user's own tokenizer function. If this is none, `spliting by spaces` is default
+            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
             This function must take a `str` and return `Sequence[str]`
         rouge_keys:
             A list of rouge types to calculate.
