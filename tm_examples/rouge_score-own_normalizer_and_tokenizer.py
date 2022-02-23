@@ -30,7 +30,7 @@ class UserNormalizer:
     """
 
     def __init__(self) -> None:
-        self.pattern = r"[^a-z0-9가-힣]+"
+        self.pattern = r"[^a-z0-9]+"
 
     def __call__(self, text: str) -> str:
         """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
