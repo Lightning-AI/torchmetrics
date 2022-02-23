@@ -82,7 +82,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         process_group: Optional[Any] = None,
         return_full_image: bool = False,
         return_contrast_sensitivity: bool = False,
-        **kwargs
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
