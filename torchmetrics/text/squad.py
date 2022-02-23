@@ -46,8 +46,8 @@ class SQuAD(Metric):
         >>> from torchmetrics import SQuAD
         >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
         >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
-        >>> sqaud = SQuAD()
-        >>> sqaud(preds, target)
+        >>> squad = SQuAD()
+        >>> squad(preds, target)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
 
     References:
