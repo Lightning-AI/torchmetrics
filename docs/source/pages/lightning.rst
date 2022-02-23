@@ -54,8 +54,8 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
 .. note::
 
-    Modular metrics contain internal states that belong to only one DataLoader/Dataset. In case you are using multiple dataloaders, it is recommended to initialize a
-    separate modular metric instances for each dataloader and use them separately.
+    Modular metrics contain internal states that should belong to only one DataLoader. In case you are using multiple DataLoaders,
+    it is recommended to initialize a separate modular metric instances for each DataLoader and use them separately.
 
     .. testcode:: python
 
