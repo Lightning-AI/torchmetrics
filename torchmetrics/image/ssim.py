@@ -157,6 +157,14 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     Return:
         Tensor with Multi-Scale SSIM score
 
+    Raises:
+        ValueError:
+            If ``kernel_size`` is not an int or a Sequence of ints with size 2 or 3.
+        ValueError:
+            If ``betas`` is not a tuple of floats with lengt 2.
+        ValueError:
+            If ``normalize`` is neither `None`, `ReLU` nor `simple`.
+
     Example:
         >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
         >>> import torch
@@ -201,7 +209,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
         if not (isinstance(kernel_size, Sequence) or isinstance(kernel_size, int)):
             raise ValueError(
-                "Argument `kernel_size` expected to be an sequence or an int." f"or a single int. Got {kernel_size}"
+                f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}"
             )
         if isinstance(kernel_size, Sequence) and (
             len(kernel_size) not in (2, 3) or not all(isinstance(ks, int) for ks in kernel_size)
