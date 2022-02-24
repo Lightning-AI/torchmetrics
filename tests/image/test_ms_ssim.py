@@ -47,7 +47,6 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
     "preds, target",
     [(i.preds, i.target) for i in _inputs],
 )
-
 class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
     atol = 6e-3
 
