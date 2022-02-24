@@ -47,40 +47,35 @@ def pytorch_ms_ssim(preds, target, data_range, kernel_size):
     "preds, target",
     [(i.preds, i.target) for i in _inputs],
 )
-# in the pytorch-msssim package, sigma is hardcoded to 1.5. We can thus only test this value, which corresponds
-# to a kernel size of 11
-@pytest.mark.parametrize(
-    "kernel_size",
-    [
-        11,
-    ],
-)
+
 class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
     atol = 6e-3
 
+    # in the pytorch-msssim package, sigma is hardcoded to 1.5. We can thus only test this value, which corresponds
+    # to a kernel size of 11
+
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_ms_ssim(self, preds, target, kernel_size, ddp, dist_sync_on_step):
+    def test_ms_ssim(self, preds, target, ddp, dist_sync_on_step):
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             MultiScaleStructuralSimilarityIndexMeasure,
-            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=kernel_size),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
+            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=11),
             dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_ms_ssim_functional(self, preds, target, kernel_size):
+    def test_ms_ssim_functional(self, preds, target):
         self.run_functional_metric_test(
             preds,
             target,
             multiscale_structural_similarity_index_measure,
-            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=kernel_size),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
+            partial(pytorch_ms_ssim, data_range=1.0, kernel_size=11),
+            metric_args={"data_range": 1.0, "kernel_size": 11},
         )
 
-    def test_ms_ssim_differentiability(self, preds, target, kernel_size):
+    def test_ms_ssim_differentiability(self, preds, target):
         # We need to minimize this example to make the test tractable
         single_beta = (1.0,)
         _preds = preds[:, :, :, :16, :16]
@@ -93,7 +88,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
             metric_module=MultiScaleStructuralSimilarityIndexMeasure,
             metric_args={
                 "data_range": 1.0,
-                "kernel_size": (kernel_size, kernel_size),
+                "kernel_size": 11,
                 "betas": single_beta,
             },
         )
