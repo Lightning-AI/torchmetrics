@@ -78,8 +78,6 @@ class StructuralSimilarityIndexMeasure(Metric):
         k1: float = 0.01,
         k2: float = 0.03,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
         return_full_image: bool = False,
         return_contrast_sensitivity: bool = False,
         **kwargs: Dict[str, Any],
