@@ -229,7 +229,7 @@ class KernelInceptionDistance(Metric):
         self.coef = coef
 
         if not isinstance(store_on_cpu, bool):
-            raise TypeError(f"Expected argument `store_on_cpu` to be a bool but got {store_on_cpu}")
+            raise TypeError(f"Expected argument `store_on_cpu` to be a bool but got {store_on_cpu!r}.")
         self.store_on_cpu = store_on_cpu
 
         # states for extracted features
