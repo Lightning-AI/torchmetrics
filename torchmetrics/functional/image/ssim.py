@@ -196,7 +196,7 @@ def structural_similarity_index_measure(
     k2: float = 0.03,
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
-) -> Tensor:
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Computes Structual Similarity Index Measure.
 
     Args:
