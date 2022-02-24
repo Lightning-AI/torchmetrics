@@ -162,7 +162,7 @@ class FrechetInceptionDistance(Metric):
               an ``[N,d]`` matrix where ``N`` is the batch size and ``d`` is the feature size.
 
         store_on_cpu: By default features will be calculated and stored on the device the metric is located on.
-            By setting this argument to `True`, features will be forced to be stored on CPU even if they are
+            By setting this argument to ``True``, features will be forced to be stored on the CPU even if they are
             extracted on GPU. Helpful for systems with not enough GPU VRAM available.
 
         compute_on_step:

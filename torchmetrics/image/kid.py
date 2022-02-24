@@ -113,7 +113,7 @@ class KernelInceptionDistance(Metric):
         coef:
             Bias term in the polynomial kernel.
         store_on_cpu: By default features will be calculated and stored on the device the metric is located on.
-            By setting this argument to `True`, features will be forced to be stored on CPU even if they are
+            By setting this argument to ``True``, features will be forced to be stored on the CPU even if they are
             extracted on GPU. Helpful for systems with not enough GPU VRAM available.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
