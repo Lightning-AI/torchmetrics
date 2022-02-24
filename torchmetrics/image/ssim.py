@@ -23,7 +23,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class StructuralSimilarityIndexMeasure(Metric):
-    """Computes Structual Similarity Index Measure.
+    """Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
         preds: estimated image
