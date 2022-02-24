@@ -63,8 +63,7 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
             def __init__(self):
                 ...
-                self.val_acc_dl_0 = torchmetrics.Accuracy()
-                self.val_acc_dl_1 = torchmetrics.Accuracy()
+                self.val_acc = nn.ModuleList([torchmetrics.Accuracy() for _ in range(2)])
 
             def val_dataloader(self):
                 return [DataLoader(...), DataLoader(...)]
@@ -73,13 +72,8 @@ The example below shows how to use a metric in your `LightningModule <https://py
                 x, y = batch
                 preds = self(x)
                 ...
-
-                if dataloader_idx == 0:
-                    self.val_acc_dl_0(preds, y)
-                    self.log('val_acc', self.val_acc_dl_0)
-                elif dataloader_idx == 1:
-                    self.val_acc_dl_1(preds, y)
-                    self.log('val_acc', self.val_acc_dl_1)
+                self.val_acc[dataloader_idx](preds, y)
+                self.log('val_acc', self.val_acc[dataloader_idx])
 
 
 ********************
