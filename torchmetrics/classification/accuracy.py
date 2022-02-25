@@ -204,6 +204,7 @@ class Accuracy(StatScores):
         self.subset_accuracy = subset_accuracy
         self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
+        self.ignore_index = ignore_index
 
         if self.subset_accuracy:
             self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
@@ -219,7 +220,7 @@ class Accuracy(StatScores):
             target: Ground truth labels
         """
         """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
-        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
+        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass, self.ignore_index)
 
         if not self.mode:
             self.mode = mode
@@ -230,7 +231,9 @@ class Accuracy(StatScores):
             self.subset_accuracy = False
 
         if self.subset_accuracy:
-            correct, total = _subset_accuracy_update(preds, target, threshold=self.threshold, top_k=self.top_k)
+            correct, total = _subset_accuracy_update(
+                preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index
+            )
             self.correct += correct
             self.total += total
         else:
