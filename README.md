@@ -329,20 +329,9 @@ For help or questions, join our huge community on [Slack](https://join.slack.com
 We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
-If you want to cite this framework feel free to use this (but only if you loved it 😊):
-
-```bibtex
-@misc{torchmetrics,
-  author = {PyTorchLightning Team},
-  title = {Torchmetrics: Machine learning metrics for distributed, scalable PyTorch applications},
-  year = {2020},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/PyTorchLightning/metrics}},
-}
-```
+If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/PyTorchLightning/metrics/blolb/master/CITATION.cff)(but only if you loved it 😊).
 
 ## License
 
-Please observe the Apache 2.0 license that is listed in this repository. In addition
-the Lightning framework is Patent Pending.
+Please observe the Apache 2.0 license that is listed in this repository.
+In addition, the Lightning framework is Patent Pending.
