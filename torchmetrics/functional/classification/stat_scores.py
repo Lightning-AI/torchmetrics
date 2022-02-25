@@ -136,7 +136,7 @@ def _stat_scores_update(
     # Delete what (row) is related with ignore_index:
     if ignore_index is not None:
         ignore_mask = target[:, ignore_index] == 1
-        preds = _del_rows(preds, ignore_mask)
+        preds = _del_rows(preds, ignore_mask.repeat(1, preds.shape[1], 1))
         target = _del_rows(target, ignore_mask)
 
     # Delete what is in ignore_index, if applicable (and classes don't matter):
