@@ -35,15 +35,15 @@ def _d_lambda_update(ms: Tensor, fused: Tensor, p: int = 1) -> Tuple[Tensor, Ten
 
     if ms.dtype != fused.dtype:
         raise TypeError(
-            "Expected `ms` and `fused` to have the same data type." f" Got ms: {ms.dtype} and fused: {fused.dtype}."
+            f"Expected `ms` and `fused` to have the same data type. Got ms: {ms.dtype} and fused: {fused.dtype}."
         )
     _check_same_shape(ms, fused)
     if len(ms.shape) != 4:
         raise ValueError(
-            "Expected `ms` and `fused` to have BxCxHxW shape." f" Got ms: {ms.shape} and fused: {fused.shape}."
+            f"Expected `ms` and `fused` to have BxCxHxW shape. Got ms: {ms.shape} and fused: {fused.shape}."
         )
     if p <= 0:
-        raise ValueError("Expected `p` to be a positive integer." f" Got p: {p}.")
+        raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
     return (ms, fused, p)
 
 
