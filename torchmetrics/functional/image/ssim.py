@@ -63,18 +63,18 @@ def _ssim_compute(
         preds: estimated image
         target: ground truth image
         gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
-        sigma: Standard deviation of the gaussian kernel (default: 1.5), anisotropic kernels are possible.
+        sigma: Standard deviation of the gaussian kernel, anisotropic kernels are possible.
             Ignored if a uniform kernel is used
-        kernel_size: size of the uniform kernel (default: 11), anisotropic kernels are possible.
-            Ignored if a gaussian kernel is used
+        kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
+            Ignored if a Gaussian kernel is used
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
-        return_full_image: If true, the full ssim image is returned as a second arguments.
-            Mutually exlusive with return_contrast_sensitivity
+        return_full_image: If true, the full ``ssim`` image is returned as a second argument.
+            Mutually exlusive with ``return_contrast_sensitivity``
         return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
-            Mutually exlusive with return_full_image
+            Mutually exclusive with ``return_full_image``
 
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
@@ -93,8 +93,8 @@ def _ssim_compute(
 
     if len(kernel_size) != len(target.shape) - 2:
         raise ValueError(
-            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, "
-            f"which is: {len(target.shape)}"
+            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality,"
+            f" which is: {len(target.shape)}"
         )
     if len(kernel_size) not in (2, 3):
         raise ValueError(
@@ -102,8 +102,8 @@ def _ssim_compute(
         )
     if len(sigma) != len(target.shape) - 2:
         raise ValueError(
-            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality, "
-            f"which is: {len(target.shape)}"
+            f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality,"
+            f" which is: {len(target.shape)}"
         )
     if len(sigma) not in (2, 3):
         raise ValueError(
@@ -203,18 +203,18 @@ def structural_similarity_index_measure(
         preds: estimated image
         target: ground truth image
         gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
-        sigma: Standard deviation of the gaussian kernel (default: 1.5), anisotropic kernels are possible.
+        sigma: Standard deviation of the gaussian kernel, anisotropic kernels are possible.
             Ignored if a uniform kernel is used
-        kernel_size: size of the uniform kernel (default: 11), anisotropic kernels are possible.
-            Ignored if a gaussian kernel is used
+        kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
+            Ignored if a Gaussian kernel is used
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
-        return_full_image: If true, the full ssim image is returned as a second arguments.
-            Mutually exlusive with return_contrast_sensitivity
-        return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
+        return_full_image: If true, the full ``ssim`` image is returned as a second argument.
+            Mutually exclusive with ``return_contrast_sensitivity``
+        return_contrast_sensitivity: If true, the constant term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
-            Mutually exlusive with return_full_image
+            Mutually exclusive with ``return_full_image``
 
     Return:
         Tensor with SSIM score
