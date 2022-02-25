@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List, Tuple
+
 import torch
 from torch import Tensor
-from typing import List, Tuple
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.uqi import universal_image_quality_index
@@ -23,8 +24,8 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _d_lambda_update(ms: Tensor, fused: Tensor, p: int = 1) -> Tuple[Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute Spectral Distortion Index. Checks for same shape and
-    type of the input tensors. 
+    """Updates and returns variables required to compute Spectral Distortion Index. Checks for same shape and type
+    of the input tensors.
 
     Args:
         ms: Low resolution multispectral image
@@ -34,21 +35,17 @@ def _d_lambda_update(ms: Tensor, fused: Tensor, p: int = 1) -> Tuple[Tensor, Ten
 
     if ms.dtype != fused.dtype:
         raise TypeError(
-            "Expected `ms` and `fused` to have the same data type."
-            f" Got ms: {ms.dtype} and fused: {fused.dtype}."
+            "Expected `ms` and `fused` to have the same data type." f" Got ms: {ms.dtype} and fused: {fused.dtype}."
         )
     _check_same_shape(ms, fused)
     if len(ms.shape) != 4:
         raise ValueError(
-            "Expected `ms` and `fused` to have BxCxHxW shape."
-            f" Got ms: {ms.shape} and fused: {fused.shape}."
+            "Expected `ms` and `fused` to have BxCxHxW shape." f" Got ms: {ms.shape} and fused: {fused.shape}."
         )
-    if (p <= 0):
-        raise ValueError(
-            "Expected `p` to be a positive integer."
-            f" Got p: {p}."
-        )
+    if p <= 0:
+        raise ValueError("Expected `p` to be a positive integer." f" Got p: {p}.")
     return (ms, fused, p)
+
 
 def _d_lambda_compute(
     ms: Tensor,
@@ -76,7 +73,7 @@ def _d_lambda_compute(
         tensor(0.9216)
 
     References:
-    [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini, Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193. 
+    [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini, Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
 
     L = ms.shape[1]
@@ -84,15 +81,15 @@ def _d_lambda_compute(
     M1 = torch.zeros((L, L))
     M2 = torch.zeros((L, L))
 
-    for l in range(L) :
+    for l in range(L):
         for r in range(l, L):
             if r == 1:
                 continue
-            M1[l, r] = M1[r, l] = universal_image_quality_index(fused[:, l:l+1, :, :], fused[:, r:r+1, :, :])
-            M2[l, r] = M2[r, l] = universal_image_quality_index(ms[:, l:l+1, :, :], ms[:, r:r+1, :, :])
-    
+            M1[l, r] = M1[r, l] = universal_image_quality_index(fused[:, l : l + 1, :, :], fused[:, r : r + 1, :, :])
+            M2[l, r] = M2[r, l] = universal_image_quality_index(ms[:, l : l + 1, :, :], ms[:, r : r + 1, :, :])
+
     diff = torch.pow(torch.abs(M1 - M2), p)
-    output = torch.pow(1./(L*(L-1)) * torch.sum(diff), (1./p))
+    output = torch.pow(1.0 / (L * (L - 1)) * torch.sum(diff), (1.0 / p))
     return reduce(output, reduction)
 
 
@@ -130,7 +127,7 @@ def spectral_distortion_index(
         >>> ms = torch.rand([16, 1, 16, 16])
         >>> fused = ms * 0.75
         >>> spectral_distortion_index(ms, fused)
-        tensor(0.9216)    
+        tensor(0.9216)
     """
     ms, fused, p = _d_lambda_update(ms, fused, p)
     return _d_lambda_compute(ms, fused, p, reduction)
