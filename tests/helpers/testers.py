@@ -563,8 +563,8 @@ class MetricTester:
 class DummyMetric(Metric):
     name = "Dummy"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx=None)
 
     def update(self):
