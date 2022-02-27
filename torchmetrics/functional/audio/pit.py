@@ -18,7 +18,6 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 # _ps_dict: cache of permutations
