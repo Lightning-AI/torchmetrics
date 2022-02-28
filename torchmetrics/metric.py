@@ -123,7 +123,11 @@ class Metric(Module, ABC):
                 "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
             )
 
-        self.compute_on_cpu = kwargs.pop("compute_on_cpu", None)
+        self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
+        if not isinstance(self.compute_on_cpu, bool):
+            raise ValueError(
+                f"Expected keyword argument `compute_on_cpu` to be an `bool` but got {self.compute_on_cpu}"
+            )
         self.dist_sync_on_step = kwargs.pop("dist_sync_on_step", False)
         if not isinstance(self.dist_sync_on_step, bool):
             raise ValueError(
@@ -131,7 +135,6 @@ class Metric(Module, ABC):
             )
 
         self.process_group = kwargs.pop("process_group", None)
-
         self.dist_sync_fn = kwargs.pop("dist_sync_fn", None)
         if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
             raise ValueError(
