@@ -27,11 +27,22 @@ from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 seed_all(42)
 
 
+def test_error_on_wrong_input():
+    """Test that base metric class raises error on wrong input types."""
+    with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_on_step` to be an `bool` but.*"):
+        DummyMetric(dist_sync_on_step=None)
+
+    with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
+        DummyMetric(dist_sync_fn=[2, 3])
+
+
 def test_inherit():
+    """Test that metric that inherits can be instanciated."""
     DummyMetric()
 
 
 def test_add_state():
+    """Test that add state method works as expected."""
     a = DummyMetric()
 
     a.add_state("a", tensor(0), "sum")

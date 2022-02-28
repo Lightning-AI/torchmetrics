@@ -1,11 +1,11 @@
 import pytest
+
 import torch
 
 from torchmetrics import Accuracy, Metric
 
-
 def test_compute_on_step():
-    """Test that setting compute_on_step flag raises deprecation error."""
+
     with pytest.warns(
         DeprecationWarning, match="Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9"
     ):

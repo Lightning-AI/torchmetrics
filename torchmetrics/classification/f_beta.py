@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
-import torch
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
@@ -112,21 +111,15 @@ class FBetaScore(StatScores):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather.
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``, ``None``.
 
     Example:
+        >>> import torch
         >>> from torchmetrics import FBetaScore
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
@@ -147,9 +140,7 @@ class FBetaScore(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         self.beta = beta
         allowed_average = list(AverageMethod)
@@ -165,9 +156,7 @@ class FBetaScore(StatScores):
             multiclass=multiclass,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+            **kwargs,
         )
 
         self.average = average
@@ -257,18 +246,12 @@ class F1Score(FBetaScore):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather.
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
 
     Example:
+        >>> import torch
         >>> from torchmetrics import F1Score
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
@@ -290,9 +273,7 @@ class F1Score(FBetaScore):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
             num_classes=num_classes,
@@ -304,7 +285,5 @@ class F1Score(FBetaScore):
             top_k=top_k,
             multiclass=multiclass,
             compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+            **kwargs,
         )

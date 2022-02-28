@@ -23,12 +23,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ClasswiseWrapper` for better logging of classification metrics with multiple output values ([#832](https://github.com/PyTorchLightning/metrics/pull/832))
 
 
+- Added `**kwargs` argument for passing additional arguments to base class ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
+
+
+- Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
+
+
 ### Changed
+
+- Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853))
 
 
 ### Deprecated
 
-- Deprecated method `compute_on_step` ([#792](https://github.com/PyTorchLightning/metrics/pull/792))
+- Deprecated argument `compute_on_step` ([#792](https://github.com/PyTorchLightning/metrics/pull/792))
+
+
+- Deprecated passing in `dist_sync_on_step`, `process_group`, `dist_sync_fn` direct argument ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
 
 
 - Moved particular metrics implementation from  `update` and `compute` methods to `_update` and `_compute` ([#840](https://github.com/PyTorchLightning/metrics/pull/840))
@@ -90,6 +101,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed compatibility of `ClasswiseWrapper` with the `prefix` argument of `MetricCollection` ([#843](https://github.com/PyTorchLightning/metrics/pull/843))
+
+
+- Fixed unsafe log operation in `TweedieDeviace` for power=1 ([#847](https://github.com/PyTorchLightning/metrics/pull/847))
 
 
 ## [0.7.2] - 2022-02-10

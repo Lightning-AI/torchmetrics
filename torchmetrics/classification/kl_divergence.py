@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
@@ -42,6 +42,15 @@ class KLDivergence(Metric):
             - ``'mean'`` [default]: Averages score across samples
             - ``'sum'``: Sum score across samples
             - ``'none'`` or ``None``: Returns score per sample
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
 
     Raises:
         TypeError:
@@ -72,16 +81,9 @@ class KLDivergence(Metric):
         log_prob: bool = False,
         reduction: Optional[str] = "mean",
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         if not isinstance(log_prob, bool):
             raise TypeError(f"Expected argument `log_prob` to be bool but got {log_prob}")
         self.log_prob = log_prob
