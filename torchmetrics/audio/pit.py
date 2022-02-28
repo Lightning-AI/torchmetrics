@@ -43,16 +43,9 @@ class PermutationInvariantTraining(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
         kwargs:
-            additional args for metric_func
+            Additional keyword arguments for either the `metric_func` or distributed communication,
+            see :ref:`Metric kwargs` for more info.
 
     Returns:
         average PermutationInvariantTraining metric
@@ -83,17 +76,14 @@ class PermutationInvariantTraining(Metric):
         metric_func: Callable,
         eval_func: str = "max",
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        base_kwargs: Dict[str, Any] = {
+            "dist_sync_on_step": kwargs.pop("dist_sync_on_step", False),
+            "process_group": kwargs.pop("process_group", None),
+            "dist_sync_fn": kwargs.pop("dist_sync_fn", None),
+        }
+        super().__init__(compute_on_step=compute_on_step, **base_kwargs)
         self.metric_func = metric_func
         self.eval_func = eval_func
         self.kwargs = kwargs

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -47,6 +47,54 @@ def _bootstrap_sampler(
 
 
 class BootStrapper(Metric):
+    r"""
+    Using `Turn a Metric into a Bootstrapped`_
+    That can automate the process of getting confidence intervals for metric values. This wrapper
+    class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
+    ``forward`` is called, all input tensors are resampled (with replacement) along the first dimension.
+
+    Args:
+        base_metric:
+            base metric class to wrap
+        num_bootstraps:
+            number of copies to make of the base metric for bootstrapping
+        mean:
+            if ``True`` return the mean of the bootstraps
+        std:
+            if ``True`` return the standard diviation of the bootstraps
+        quantile:
+            if given, returns the quantile of the bootstraps. Can only be used with
+            pytorch version 1.6 or higher
+        raw:
+            if ``True``, return all bootstrapped values
+        sampling_strategy:
+            Determines how to produce bootstrapped samplings. Either ``'poisson'`` or ``multinomial``.
+            If ``'possion'`` is chosen, the number of times each sample will be included in the bootstrap
+            will be given by :math:`n\sim Poisson(\lambda=1)`, which approximates the true bootstrap distribution
+            when the number of samples is large. If ``'multinomial'`` is chosen, we will apply true bootstrapping
+            at the batch level to approximate bootstrapping over the hole dataset.
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example::
+        >>> from pprint import pprint
+        >>> from torchmetrics import Accuracy, BootStrapper
+        >>> _ = torch.manual_seed(123)
+        >>> base_metric = Accuracy()
+        >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
+        >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
+        >>> output = bootstrap.compute()
+        >>> pprint(output)
+        {'mean': tensor(0.2205), 'std': tensor(0.0859)}
+
+    """
+
     def __init__(
         self,
         base_metric: Metric,
@@ -57,65 +105,9 @@ class BootStrapper(Metric):
         raw: bool = False,
         sampling_strategy: str = "poisson",
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        r"""
-        Using `Turn a Metric into a Bootstrapped`_
-        That can automate the process of getting confidence intervals for metric values. This wrapper
-        class basically keeps multiple copies of the same base metric in memory and whenever ``update`` or
-        ``forward`` is called, all input tensors are resampled (with replacement) along the first dimension.
-
-        Args:
-            base_metric:
-                base metric class to wrap
-            num_bootstraps:
-                number of copies to make of the base metric for bootstrapping
-            mean:
-                if ``True`` return the mean of the bootstraps
-            std:
-                if ``True`` return the standard diviation of the bootstraps
-            quantile:
-                if given, returns the quantile of the bootstraps. Can only be used with
-                pytorch version 1.6 or higher
-            raw:
-                if ``True``, return all bootstrapped values
-            sampling_strategy:
-                Determines how to produce bootstrapped samplings. Either ``'poisson'`` or ``multinomial``.
-                If ``'possion'`` is chosen, the number of times each sample will be included in the bootstrap
-                will be given by :math:`n\sim Poisson(\lambda=1)`, which approximates the true bootstrap distribution
-                when the number of samples is large. If ``'multinomial'`` is chosen, we will apply true bootstrapping
-                at the batch level to approximate bootstrapping over the hole dataset.
-            compute_on_step:
-                Forward only calls ``update()`` and returns None if this is set to False.
-
-                .. deprecated:: v0.8
-                    Argument has no use anymore and will be removed v0.9.
-
-            dist_sync_on_step:
-                Synchronize metric state across processes at each ``forward()``
-                before returning the value at the step
-            process_group:
-                Specify the process group on which synchronization is called.
-                default: ``None`` (which selects the entire world)
-            dist_sync_fn:
-                Callback that performs the allgather operation on the metric state. When ``None``, DDP
-                will be used to perform the allgather.
-
-        Example::
-            >>> from pprint import pprint
-            >>> from torchmetrics import Accuracy, BootStrapper
-            >>> _ = torch.manual_seed(123)
-            >>> base_metric = Accuracy()
-            >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
-            >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
-            >>> output = bootstrap.compute()
-            >>> pprint(output)
-            {'mean': tensor(0.2205), 'std': tensor(0.0859)}
-
-        """
-        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
                 "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
