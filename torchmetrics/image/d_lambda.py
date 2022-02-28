@@ -53,7 +53,9 @@ class SpectralDistortionIndex(Metric):
     fused: List[Tensor]
     higher_is_better: bool = True
 
-    def __init__(self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs) -> None:
+    def __init__(
+        self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs
+    ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpectralDistortionIndex` will save all targets and"

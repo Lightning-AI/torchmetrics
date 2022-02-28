@@ -16,9 +16,9 @@ from functools import partial
 
 import pytest
 import torch
-from tests.helpers.non_sklearn_metrics import d_lambda
 
 from tests.helpers import seed_all
+from tests.helpers.non_sklearn_metrics import d_lambda
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
@@ -26,7 +26,7 @@ from torchmetrics.image.d_lambda import SpectralDistortionIndex
 seed_all(42)
 
 
-Input = namedtuple("Input", ["ms", "fused","p"])
+Input = namedtuple("Input", ["ms", "fused", "p"])
 
 _inputs = []
 for size, channel, p, dtype in [
@@ -50,7 +50,7 @@ def _np_d_lambda(ms, fused, p):
     c, h, w = ms.shape[-3:]
     np_ms = ms.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     np_fused = fused.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
-    
+
     return d_lambda(
         np_ms,
         np_fused,
@@ -90,15 +90,11 @@ class TestD_Lambda(MetricTester):
     # UQI half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="Spectral Distortion Index metric does not support cpu + half precision")
     def test_d_lambda_half_cpu(self, ms, fused, p):
-        self.run_precision_test_cpu(
-            ms, fused, SpectralDistortionIndex, spectral_distortion_index, {"p": p} 
-        )
+        self.run_precision_test_cpu(ms, fused, SpectralDistortionIndex, spectral_distortion_index, {"p": p})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_d_lambda_half_gpu(self, ms, fused, p):
-        self.run_precision_test_gpu(
-            ms, fused, SpectralDistortionIndex, spectral_distortion_index, {"p": p}
-        )
+        self.run_precision_test_gpu(ms, fused, SpectralDistortionIndex, spectral_distortion_index, {"p": p})
 
 
 @pytest.mark.parametrize(
@@ -106,7 +102,7 @@ class TestD_Lambda(MetricTester):
     [
         ([1, 16, 16], [1, 16, 16], 1),  # len(shape)
         ([1, 1, 16, 16], [1, 1, 16, 16], 0),  # invalid p
-        ([1, 1, 16, 16], [1, 1, 16, 16], -1),  # invalid p 
+        ([1, 1, 16, 16], [1, 1, 16, 16], -1),  # invalid p
     ],
 )
 def test_d_lambda_invalid_inputs(ms, fused, p):
@@ -118,4 +114,3 @@ def test_d_lambda_invalid_inputs(ms, fused, p):
     fused_t = torch.rand(fused)
     with pytest.raises(ValueError):
         spectral_distortion_index(ms_t, fused_t, p)
-       
