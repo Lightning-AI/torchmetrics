@@ -28,6 +28,22 @@ from torchmetrics.metric import Metric
 
 
 class CoverageError(Metric):
+    """Computes multilabel coverage error. The score measure how far we need to go through the ranked scores to
+    cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
+
+    Args:
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> from torchmetrics import CoverageError
+        >>> _ = torch.manual_seed(42)
+        >>> preds = torch.rand(10, 5)
+        >>> target = torch.randint(2, (10, 5))
+        >>> metric = CoverageError()
+        >>> metric(preds, target)
+        tensor(3.9000)
+    """
 
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -39,6 +55,15 @@ class CoverageError(Metric):
         self.add_state("weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+        """
+        Args:
+            preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
+                of labels. Should either be probabilities of the positive class or corresponding logits
+            target: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
+                of labels. Should only contain binary labels.
+            sample_weight: tensor of shape ``N`` where ``N`` is the number of samples. How much each sample
+                should be weighted in the final score.
+        """
         coverage, numel, sample_weight = _coverage_error_update(preds, target, sample_weight)
         self.coverage += coverage
         self.numel += numel
@@ -46,12 +71,30 @@ class CoverageError(Metric):
             self.weight += sample_weight
 
     def compute(self) -> Tensor:
+        """Computes the multilabel coverage error."""
         return _coverage_error_compute(self.coverage, self.numel, self.weight)
 
 
 class LabelRankingAveragePrecisionScore(Metric):
+    """Computes label ranking average precision score for multilabel data. The score is the average over each
+    ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
+    is 1.
 
-    higher_is_better: bool = False
+    Args:
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> from torchmetrics import LabelRankingAveragePrecisionScore
+        >>> _ = torch.manual_seed(42)
+        >>> preds = torch.rand(10, 5)
+        >>> target = torch.randint(2, (10, 5))
+        >>> metric = LabelRankingAveragePrecisionScore()
+        >>> metric(preds, target)
+        tensor(0.7744)
+    """
+
+    higher_is_better: bool = True
     is_differentiable: bool = False
 
     def __init__(self, **kwargs) -> None:
@@ -61,6 +104,15 @@ class LabelRankingAveragePrecisionScore(Metric):
         self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+        """
+        Args:
+            preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
+                of labels. Should either be probabilities of the positive class or corresponding logits
+            target: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
+                of labels. Should only contain binary labels.
+            sample_weight: tensor of shape ``N`` where ``N`` is the number of samples. How much each sample
+                should be weighted in the final score.
+        """
         score, numel, sample_weight = _label_ranking_average_precision_update(preds, target, sample_weight)
         self.score += score
         self.numel += numel
@@ -68,10 +120,29 @@ class LabelRankingAveragePrecisionScore(Metric):
             self.sample_weight += sample_weight
 
     def compute(self) -> Tensor:
+        """Computes the label ranking average precision score."""
         return _label_ranking_average_precision_compute(self.score, self.numel, self.sample_weight)
 
 
 class LabelRankingLoss(Metric):
+    """Computes the label ranking loss for multilabel data. The score is corresponds to the average number of label
+    pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the number
+    of labels not in the label set. The best score is 0.
+
+    Args:
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> from torchmetrics import LabelRankingLoss
+        >>> _ = torch.manual_seed(42)
+        >>> preds = torch.rand(10, 5)
+        >>> target = torch.randint(2, (10, 5))
+        >>> metric = LabelRankingLoss()
+        >>> metric(preds, target)
+        tensor(0.4167)
+    """
+
     higher_is_better: bool = False
     is_differentiable: bool = False
 
@@ -82,6 +153,15 @@ class LabelRankingLoss(Metric):
         self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+        """
+        Args:
+            preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
+                of labels. Should either be probabilities of the positive class or corresponding logits
+            target: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
+                of labels. Should only contain binary labels.
+            sample_weight: tensor of shape ``N`` where ``N`` is the number of samples. How much each sample
+                should be weighted in the final score.
+        """
         loss, numel, sample_weight = _label_ranking_loss_update(preds, target, sample_weight)
         self.loss += loss
         self.numel += numel
@@ -89,4 +169,5 @@ class LabelRankingLoss(Metric):
             self.sample_weight += sample_weight
 
     def compute(self) -> Tensor:
+        """Computes the label ranking loss."""
         return _label_ranking_loss_compute(self.loss, self.numel, self.sample_weight)
