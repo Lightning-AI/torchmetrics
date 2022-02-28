@@ -26,8 +26,6 @@ class SpectralDistortionIndex(Metric):
     """Computes Spectral Distortion Index (SpectralDistortionIndex_).
 
     Args:
-        ms: Low resolution multispectral image
-        fused: High resolution fused image
         p: Large spectral differences (default: 1)
         reduction: a method to reduce metric score over labels.
 
@@ -57,6 +55,7 @@ class SpectralDistortionIndex(Metric):
 
     def __init__(
         self,
+        p: int = 1,
         reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
         compute_on_step: bool = True,
         dist_sync_on_step: bool = False,
@@ -75,17 +74,17 @@ class SpectralDistortionIndex(Metric):
 
         self.add_state("ms", default=[], dist_reduce_fx="cat")
         self.add_state("fused", default=[], dist_reduce_fx="cat")
+        self.p = p
         self.reduction = reduction
 
-    def update(self, ms: Tensor, fused: Tensor, p: int = 1) -> None:  # type: ignore
+    def update(self, ms: Tensor, fused: Tensor) -> None:  # type: ignore
         """Update state with ms and fused.
 
         Args:
             ms: Low resolution multispectral image
             fused: High resolution fused image
-            p: Large spectral distortion (default: 1)
         """
-        ms, fused, self.p = _d_lambda_update(ms, fused, p)
+        ms, fused = _d_lambda_update(ms, fused)
         self.ms.append(ms)
         self.fused.append(fused)
 

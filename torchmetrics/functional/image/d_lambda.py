@@ -23,14 +23,13 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _d_lambda_update(ms: Tensor, fused: Tensor, p: int = 1) -> Tuple[Tensor, Tensor, Tensor]:
+def _d_lambda_update(ms: Tensor, fused: Tensor) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Spectral Distortion Index. Checks for same shape and type
     of the input tensors.
 
     Args:
         ms: Low resolution multispectral image
         fused: High resolution fused image
-        p: Parameter to emphasize large spectral differences (default: 1)
     """
 
     if ms.dtype != fused.dtype:
@@ -42,9 +41,7 @@ def _d_lambda_update(ms: Tensor, fused: Tensor, p: int = 1) -> Tuple[Tensor, Ten
         raise ValueError(
             "Expected `ms` and `fused` to have BxCxHxW shape." f" Got ms: {ms.shape} and fused: {fused.shape}."
         )
-    if p <= 0:
-        raise ValueError("Expected `p` to be a positive integer." f" Got p: {p}.")
-    return (ms, fused, p)
+    return ms, fused
 
 
 def _d_lambda_compute(
@@ -75,6 +72,8 @@ def _d_lambda_compute(
     References:
     [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini, Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
+    if p <= 0:
+        raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
 
     L = ms.shape[1]
 
@@ -83,13 +82,15 @@ def _d_lambda_compute(
 
     for l in range(L):
         for r in range(l, L):
-            if r == 1:
-                continue
             M1[l, r] = M1[r, l] = universal_image_quality_index(fused[:, l : l + 1, :, :], fused[:, r : r + 1, :, :])
             M2[l, r] = M2[r, l] = universal_image_quality_index(ms[:, l : l + 1, :, :], ms[:, r : r + 1, :, :])
 
     diff = torch.pow(torch.abs(M1 - M2), p)
-    output = torch.pow(1.0 / (L * (L - 1)) * torch.sum(diff), (1.0 / p))
+    # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
+    if L == 1:
+        output = torch.pow(diff, (1.0 / p))
+    else:
+        output = torch.pow(1.0 / (L * (L - 1)) * torch.sum(diff), (1.0 / p))
     return reduce(output, reduction)
 
 
@@ -129,5 +130,5 @@ def spectral_distortion_index(
         >>> spectral_distortion_index(ms, fused)
         tensor(0.9216)
     """
-    ms, fused, p = _d_lambda_update(ms, fused, p)
+    ms, fused = _d_lambda_update(ms, fused)
     return _d_lambda_compute(ms, fused, p, reduction)

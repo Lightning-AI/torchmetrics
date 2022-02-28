@@ -4,6 +4,7 @@ from typing import Optional, Union
 import numpy as np
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
+from torchmetrics.functional.image.uqi import universal_image_quality_index
 
 
 def symmetric_mean_absolute_percentage_error(
@@ -185,3 +186,41 @@ def calibration_error(
             loss += np.sum(np.nan_to_num(debias))
         loss = np.sqrt(max(loss, 0.0))
     return loss
+
+
+def d_lambda(ms, fused, p = 1):
+    """
+    A NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics
+    """
+    import torch
+
+    fused, ms = torch.from_numpy(fused), torch.from_numpy(ms)
+    # To convert to BxHxWxC
+    # fused, ms = fused[None, ...], ms[None, ...]
+    # breakpoint()
+    # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
+    fused = torch.permute(fused, (0, 3, 1, 2))
+    ms = torch.permute(ms, (0, 3, 1, 2))
+
+    L = ms.shape[1]
+
+    M1 = np.zeros((L, L), dtype=np.float32)
+    M2 = np.zeros((L, L), dtype=np.float32)
+
+    # Convert fused and ms to Torch Tensors, pass them to metrics UQI
+    # this is mainly because reference repo (sewar) uses uniform distribution
+    # in their implementation of UQI, and we use gaussian distribution
+    # and they have different default values for some kwargs like window size.
+    for l in range(L):
+        for r in range(l, L):
+            print("HELLO  ")
+            M1[l, r] = M1[r, l] = universal_image_quality_index(fused[:, l:l+1, :, :], fused[:, r:r+1, :, :])
+            M2[l, r] = M2[r, l] = universal_image_quality_index(ms[:, l:l+1, :, :], ms[:, r:r+1, :, :])
+    diff = np.abs(M1 - M2) ** p
+    print (diff)
+    print(M1, M2)
+    # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
+    if L == 1:
+        return diff[0][0] ** (1./p)
+    else:
+        return ((1./(L * (L - 1)) * np.sum(diff)) ** (1./p))
