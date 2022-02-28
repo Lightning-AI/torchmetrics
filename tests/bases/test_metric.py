@@ -22,6 +22,7 @@ from torch import Tensor, nn, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 seed_all(42)
@@ -34,6 +35,24 @@ def test_error_on_wrong_input():
 
     with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
         DummyMetric(dist_sync_fn=[2, 3])
+
+
+def test_error_on_not_implemented_methods():
+    """Test that error is raised if _update or _compute is not implemented."""
+
+    class TempMetric(Metric):
+        def _compute(self):
+            return None
+
+    with pytest.raises(NotImplementedError, match="Expected method `_update` to be implemented in subclass."):
+        TempMetric()
+
+    class TempMetric(Metric):
+        def _update(self):
+            pass
+
+    with pytest.raises(NotImplementedError, match="Expected method `_compute` to be implemented in subclass."):
+        TempMetric()
 
 
 def test_inherit():
