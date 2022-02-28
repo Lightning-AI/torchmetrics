@@ -456,7 +456,7 @@ class Metric(Module, ABC):
 
         return wrapped_func
 
-    def update(self, *args: Any, **kwargs) -> None:
+    def update(self, *args: Any, **kwargs: Any) -> None:
         self._computed = None
         self._update_called = True
         self._update(*args, **kwargs)
