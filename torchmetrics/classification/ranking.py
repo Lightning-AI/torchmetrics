@@ -16,7 +16,14 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.classification.ranking import _coverage_error_compute, _coverage_error_update
+from torchmetrics.functional.classification.ranking import (
+    _coverage_error_compute,
+    _coverage_error_update,
+    _label_ranking_average_precision_compute,
+    _label_ranking_average_precision_update,
+    _label_ranking_loss_compute,
+    _label_ranking_loss_update,
+)
 from torchmetrics.metric import Metric
 
 
@@ -43,9 +50,43 @@ class CoverageError(Metric):
 
 
 class LabelRankingAveragePrecisionScore(Metric):
-    def __init__(self):
-        pass
+
+    higher_is_better: bool = False
+    is_differentiable: bool = False
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+        score, numel, sample_weight = _label_ranking_average_precision_update(preds, target, sample_weight)
+        self.score += score
+        self.numel += numel
+        if sample_weight is not None:
+            self.sample_weight += sample_weight
+
+    def compute(self) -> Tensor:
+        return _label_ranking_average_precision_compute(self.score, self.numel, self.sample_weight)
 
 
 class LabelRankingLoss(Metric):
-    pass
+    higher_is_better: bool = False
+    is_differentiable: bool = False
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.add_state("loss", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+        loss, numel, sample_weight = _label_ranking_loss_update(preds, target, sample_weight)
+        self.loss += loss
+        self.numel += numel
+        if sample_weight is not None:
+            self.sample_weight += sample_weight
+
+    def compute(self) -> Tensor:
+        return _label_ranking_loss_compute(self.loss, self.numel, self.sample_weight)
