@@ -274,6 +274,12 @@ ConfusionMatrix
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
+CoverageError
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CoverageError
+    :noindex:
+
 F1Score
 ~~~~~~~
 
@@ -308,6 +314,18 @@ KLDivergence
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.KLDivergence
+    :noindex:
+
+LabelRankingAveragePrecisionScore
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.LabelRankingAveragePrecisionScore
+    :noindex:
+
+LabelRankingLoss
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.LabelRankingLoss
     :noindex:
 
 MatthewsCorrCoef
