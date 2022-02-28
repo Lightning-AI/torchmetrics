@@ -53,19 +53,8 @@ class SpectralDistortionIndex(Metric):
     fused: List[Tensor]
     higher_is_better: bool = True
 
-    def __init__(
-        self,
-        p: int = 1,
-        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+    def __init__(self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs) -> None:
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpectralDistortionIndex` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -75,6 +64,9 @@ class SpectralDistortionIndex(Metric):
         self.add_state("ms", default=[], dist_reduce_fx="cat")
         self.add_state("fused", default=[], dist_reduce_fx="cat")
         self.p = p
+        allowed_reduction = ["elementwise_mean", "sum", "none"]
+        if reduction not in allowed_reduction:
+            raise ValueError(f"Expected argument `reduction` be one of {allowed_reduction} but got {reduction}")
         self.reduction = reduction
 
     def update(self, ms: Tensor, fused: Tensor) -> None:  # type: ignore

@@ -102,14 +102,8 @@ class BERTScore(Metric):
             .. deprecated:: v0.8
                 Argument has no use anymore and will be removed v0.9.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
@@ -153,16 +147,9 @@ class BERTScore(Metric):
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
         compute_on_step: Optional[bool] = None,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        **kwargs: Dict[str, Any],
     ):
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL
         self.num_layers = num_layers
         self.all_layers = all_layers

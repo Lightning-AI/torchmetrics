@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 from functools import partial
-from typing import Sequence
+from typing import Callable, Sequence
 
+import numpy as np
 import pytest
 import torch
 
@@ -164,3 +166,46 @@ def test_rouge_metric_wrong_key_value_error():
             rouge_keys=key,
             accumulate="best",
         )
+
+
+@pytest.mark.parametrize(
+    "pl_rouge_metric_key",
+    [
+        ("rouge1_precision"),
+        ("rouge1_recall"),
+        ("rouge1_fmeasure"),
+        ("rouge2_precision"),
+        ("rouge2_recall"),
+        ("rouge2_fmeasure"),
+        ("rougeL_precision"),
+        ("rougeL_recall"),
+        ("rougeL_fmeasure"),
+        ("rougeLsum_precision"),
+        ("rougeLsum_recall"),
+        ("rougeLsum_fmeasure"),
+    ],
+)
+def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
+    normalizer: Callable[[str], str] = lambda text: re.sub(r"[^a-z0-9]+", " ", text.lower())
+    tokenizer: Callable[[str], Sequence[str]] = lambda text: re.split(r"\s+", text)
+
+    rouge_level, metric = pl_rouge_metric_key.split("_")
+    original_score = _compute_rouge_score(
+        preds=_inputs_single_sentence_single_reference.preds,
+        target=_inputs_single_sentence_single_reference.targets,
+        rouge_level=rouge_level,
+        metric=metric,
+        accumulate="best",
+        use_stemmer=False,
+    )
+
+    Scorer = ROUGEScore(
+        normalizer=normalizer, tokenizer=tokenizer, rouge_keys=rouge_level, accumulate="best", use_stemmer=False
+    )
+    Scorer.update(
+        _inputs_single_sentence_single_reference.preds,
+        _inputs_single_sentence_single_reference.targets,
+    )
+    metrics_score = Scorer.compute()
+
+    np.isclose(metrics_score[rouge_level + "_" + metric], original_score, atol=1e-8, equal_nan=True)
