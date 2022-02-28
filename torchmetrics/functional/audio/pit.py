@@ -18,7 +18,6 @@ from warnings import warn
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 # _ps_dict: cache of permutations
@@ -145,7 +144,10 @@ def permutation_invariant_training(
     Reference:
         [1]	`Permutation Invariant Training of Deep Models`_
     """
-    _check_same_shape(preds, target)
+    if preds.shape[0:2] != target.shape[0:2]:
+        raise RuntimeError(
+            "Predictions and targets are expected to have the same shape at the batch and speaker dimensions"
+        )
     if eval_func not in ["max", "min"]:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
     if target.ndim < 2:
