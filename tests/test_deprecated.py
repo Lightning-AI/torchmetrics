@@ -1,8 +1,8 @@
 import pytest
-
 import torch
 
 from torchmetrics import Accuracy, Metric
+
 
 def test_compute_on_step():
 

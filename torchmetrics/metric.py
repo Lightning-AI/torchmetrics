@@ -409,7 +409,6 @@ class Metric(Module, ABC):
 
         self.unsync(should_unsync=self._is_synced and should_unsync)
 
-
     def compute(self) -> Any:
         if not self._update_called:
             rank_zero_warn(
