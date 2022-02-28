@@ -164,6 +164,7 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.parametrize("compute_on_cpu", [True, False])
 class TestMAP(MetricTester):
     """Test the MAP metric for object detection predictions.
 
@@ -175,7 +176,7 @@ class TestMAP(MetricTester):
     atol = 1e-1
 
     @pytest.mark.parametrize("ddp", [False, True])
-    def test_map(self, ddp):
+    def test_map(self, compute_on_cpu, ddp):
         """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -185,7 +186,7 @@ class TestMAP(MetricTester):
             sk_metric=_compare_fn,
             dist_sync_on_step=False,
             check_batch=False,
-            metric_args={"class_metrics": True},
+            metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
         )
 
 

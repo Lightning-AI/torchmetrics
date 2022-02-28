@@ -415,10 +415,10 @@ class MeanAveragePrecision(Metric):
         nb_iou_thrs = len(self.iou_thresholds)
         nb_gt = len(gt)
         nb_det = len(det)
-        gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool)
-        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=gt.device)
+        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=gt.device)
         gt_ignore = ignore_area_sorted
-        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool)
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=gt.device)
 
         if torch.numel(ious) > 0:
             for idx_iou, t in enumerate(self.iou_thresholds):
@@ -653,13 +653,13 @@ class MeanAveragePrecision(Metric):
             recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
 
             # Remove zigzags for AUC
-            diff_zero = torch.zeros((1,))
-            diff = torch.ones((1,))
+            diff_zero = torch.zeros((1,), device=pr.device)
+            diff = torch.ones((1,), device=pr.device)
             while not torch.all(diff == 0):
                 diff = torch.clamp(torch.cat((pr[1:] - pr[:-1], diff_zero), 0), min=0)
                 pr += diff
 
-            inds = torch.searchsorted(rc, rec_thresholds, right=False)
+            inds = torch.searchsorted(rc, rec_thresholds.to(rc.device), right=False)
             num_inds = inds.argmax() if inds.max() >= nd else nb_rec_thrs
             inds = inds[:num_inds]
             prec[:num_inds] = pr[inds]
