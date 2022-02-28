@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
@@ -48,13 +48,13 @@ class CoverageError(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("coverage", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
         """
         Args:
             preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
@@ -97,13 +97,13 @@ class LabelRankingAveragePrecisionScore(Metric):
     higher_is_better: bool = True
     is_differentiable: bool = False
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
         """
         Args:
             preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
@@ -146,13 +146,13 @@ class LabelRankingLoss(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("loss", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
         """
         Args:
             preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number

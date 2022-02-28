@@ -160,7 +160,9 @@ def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight
     return _label_ranking_average_precision_compute(score, n_elements, sample_weight)
 
 
-def _label_ranking_loss_update(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None):
+def _label_ranking_loss_update(
+    preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None
+) -> Tuple[Tensor, int, Optional[Tensor]]:
     """Accumulate state for label ranking loss
     Args:
         preds: tensor with predictions
