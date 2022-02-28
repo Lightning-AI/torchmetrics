@@ -696,14 +696,6 @@ class MeanAveragePrecision(Metric):
             - map_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
             - mar_100_per_class: ``torch.Tensor`` (-1 if class metrics are disabled)
         """
-
-        # move everything to CPU, as we are faster here
-        self.detection_boxes = [box.cpu() for box in self.detection_boxes]
-        self.detection_labels = [label.cpu() for label in self.detection_labels]
-        self.detection_scores = [score.cpu() for score in self.detection_scores]
-        self.groundtruth_boxes = [box.cpu() for box in self.groundtruth_boxes]
-        self.groundtruth_labels = [label.cpu() for label in self.groundtruth_labels]
-
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
         map, mar = self._summarize_results(precisions, recalls)
