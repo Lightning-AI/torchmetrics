@@ -158,9 +158,9 @@ class Metric(Module, ABC):
             self._update_signature = inspect.signature(self.update)
             self.update: Callable = self._wrap_update(self.update)  # type: ignore
         else:
-            self._update_signature = inspect.signature(self._update)
             if not hasattr(self, "_update"):
                 raise NotImplementedError("Expected method `_update` to be implemented in subclass.")
+            self._update_signature = inspect.signature(self._update)
 
         if is_overridden("compute", self, Metric):
             warnings.warn(
