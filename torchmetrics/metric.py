@@ -299,7 +299,7 @@ class Metric(Module, ABC):
             self._update_called = True
             update(*args, **kwargs)
             if self.compute_on_cpu:
-                self._move_list_states()
+                self._move_list_states_to_cpu()
 
         return wrapped_func
 
