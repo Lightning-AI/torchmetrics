@@ -301,16 +301,17 @@ class Metric(Module, ABC):
 
     def _wrap_update(self, update: Callable) -> Callable:
         @functools.wraps(update)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
+        def wrapped_func(*args: Any, **kwargs: Any) -> None:
             self._computed = None
             self._update_called = True
             update(*args, **kwargs)
             if self.compute_on_cpu:
                 self._move_list_states_to_cpu()
+            return
 
         return wrapped_func
 
-    def _move_list_states_to_cpu(self):
+    def _move_list_states_to_cpu(self) -> None:
         """Move list states to cpu to save GPU memory."""
         for key in self._defaults.keys():
             current_val = getattr(self, key)
