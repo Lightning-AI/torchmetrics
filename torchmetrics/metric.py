@@ -245,6 +245,9 @@ class Metric(Module, ABC):
         self._to_sync = self.dist_sync_on_step  # type: ignore
         # skip restore cache operation from compute as cache is stored below.
         self._should_unsync = False
+        # skip computing on cpu for the batch
+        _temp_compute_on_cpu = self.compute_on_cpu
+        self.compute_on_cpu = False
 
         # save context before switch
         cache = {attr: getattr(self, attr) for attr in self._defaults}
@@ -262,6 +265,7 @@ class Metric(Module, ABC):
         self._should_unsync = True
         self._to_sync = True
         self._computed = None
+        self.compute_on_cpu = _temp_compute_on_cpu
 
         return self._forward_cache
 
