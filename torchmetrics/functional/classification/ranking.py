@@ -183,7 +183,7 @@ def _label_ranking_loss_update(
 
     # Nothing is relevant
     if len(preds) == 0:
-        return torch.tensor(0.0, device=preds.device), 1
+        return torch.tensor(0.0, device=preds.device), 1, sample_weight
 
     inverse = preds.argsort(dim=1).argsort(dim=1)
     per_label_loss = ((n_labels - inverse) * relevant).to(torch.float32)
