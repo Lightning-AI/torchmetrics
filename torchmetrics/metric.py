@@ -155,8 +155,10 @@ class Metric(Module, ABC):
                 " Implementing `update` directly was deprecated in v0.8 and will be removed in v0.9.",
                 DeprecationWarning,
             )
+            self._update_signature = inspect.signature(self.update)
             self.update: Callable = self._wrap_update(self.update)  # type: ignore
         else:
+            self._update_signature = inspect.signature(self._update)
             if not hasattr(self, "_update"):
                 raise NotImplementedError("Expected method `_update` to be implemented in subclass.")
 
@@ -174,7 +176,6 @@ class Metric(Module, ABC):
                 raise NotImplementedError("Expected method `_compute` to be implemented in subclass.")
 
         # initialize
-        self._update_signature = inspect.signature(self.update)
         self._computed = None
         self._forward_cache = None
         self._update_called = False
