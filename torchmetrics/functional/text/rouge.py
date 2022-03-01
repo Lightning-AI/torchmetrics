@@ -81,14 +81,14 @@ def _lcs(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> int:
         target_toknes:
             A tokenized target sentence.
     """
-    LCS = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
+    lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
         for j in range(1, len(pred_tokens) + 1):
             if target_tokens[i - 1] == pred_tokens[j - 1]:
-                LCS[i][j] = LCS[i - 1][j - 1] + 1
+                lcs[i][j] = lcs[i - 1][j - 1] + 1
             else:
-                LCS[i][j] = max(LCS[i - 1][j], LCS[i][j - 1])
-    return LCS[-1][-1]
+                lcs[i][j] = max(lcs[i - 1][j], lcs[i][j - 1])
+    return lcs[-1][-1]
 
 
 def _normalize_and_tokenize_text(
@@ -239,7 +239,7 @@ def _rouge_score_update(
         result_avg: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
         list_results = []
         pred = _normalize_and_tokenize_text(pred_raw, stemmer, normalizer, tokenizer)
-        pred_Lsum = _normalize_and_tokenize_text(
+        pred_lsum = _normalize_and_tokenize_text(
             _add_newline_to_end_of_each_sentence(pred_raw), stemmer, normalizer, tokenizer
         )
 
@@ -248,7 +248,7 @@ def _rouge_score_update(
 
             if "Lsum" in rouge_keys_values:
                 # rougeLsum expects "\n" separated sentences within a summary
-                target_Lsum = _normalize_and_tokenize_text(
+                target_lsum = _normalize_and_tokenize_text(
                     _add_newline_to_end_of_each_sentence(target_raw_inner), stemmer, normalizer, tokenizer
                 )
 
@@ -257,8 +257,8 @@ def _rouge_score_update(
                     score = _rouge_n_score(pred, tgt, rouge_key)
                 else:
                     score = _rouge_l_score(
-                        pred if rouge_key != "Lsum" else pred_Lsum,
-                        tgt if rouge_key != "Lsum" else target_Lsum,
+                        pred if rouge_key != "Lsum" else pred_lsum,
+                        tgt if rouge_key != "Lsum" else target_lsum,
                     )
                 result_inner[rouge_key] = score
                 result_avg[rouge_key].append(score)
@@ -413,12 +413,12 @@ def rouge_score(
 
     output: Dict[str, List[Tensor]] = {}
     for rouge_key in rouge_keys_values:
-        for type in ["fmeasure", "precision", "recall"]:
-            output[f"rouge{rouge_key}_{type}"] = []
+        for tp in ["fmeasure", "precision", "recall"]:
+            output[f"rouge{rouge_key}_{tp}"] = []
 
     for rouge_key, metrics in sentence_results.items():
         for metric in metrics:
-            for type, value in metric.items():
-                output[f"rouge{rouge_key}_{type}"].append(value)
+            for tp, value in metric.items():
+                output[f"rouge{rouge_key}_{tp}"].append(value)
 
     return _rouge_score_compute(output)

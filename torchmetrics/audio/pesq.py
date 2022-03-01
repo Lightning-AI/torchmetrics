@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_qual
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
-__doctest_requires__ = {("PerceptualEvaluationSpeechQuality"): ["pesq"]}
+__doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
 
 class PerceptualEvaluationSpeechQuality(Metric):

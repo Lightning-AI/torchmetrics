@@ -26,33 +26,22 @@ def test_invalid_input_img_type():
         image_gradients(invalid_dummy_input)
 
 
-def test_invalid_input_ndims():
+def test_invalid_input_ndims(batch_size=1, height=5, width=5, channels=1):
     """Test whether the module successfully handles invalid number of dimensions of input tensor."""
-
-    BATCH_SIZE = 1
-    HEIGHT = 5
-    WIDTH = 5
-    CHANNELS = 1
-
-    image = torch.arange(0, BATCH_SIZE * HEIGHT * WIDTH * CHANNELS, dtype=torch.float32)
-    image = torch.reshape(image, (HEIGHT, WIDTH))
+    image = torch.arange(0, batch_size * height * width * channels, dtype=torch.float32)
+    image = torch.reshape(image, (height, width))
 
     with pytest.raises(RuntimeError):
         image_gradients(image)
 
 
-def test_multi_batch_image_gradients():
+def test_multi_batch_image_gradients(batch_size=5, height=5, width=5, channels=1):
     """Test whether the module correctly calculates gradients for known input with non-unity batch size.Example
     input-output pair taken from TF's implementation of i mage-gradients."""
 
-    BATCH_SIZE = 5
-    HEIGHT = 5
-    WIDTH = 5
-    CHANNELS = 1
-
-    single_channel_img = torch.arange(0, 1 * HEIGHT * WIDTH * CHANNELS, dtype=torch.float32)
-    single_channel_img = torch.reshape(single_channel_img, (CHANNELS, HEIGHT, WIDTH))
-    image = torch.stack([single_channel_img for _ in range(BATCH_SIZE)], dim=0)
+    single_channel_img = torch.arange(0, 1 * height * width * channels, dtype=torch.float32)
+    single_channel_img = torch.reshape(single_channel_img, (channels, height, width))
+    image = torch.stack([single_channel_img for _ in range(batch_size)], dim=0)
 
     true_dy = [
         [5.0, 5.0, 5.0, 5.0, 5.0],
@@ -65,25 +54,19 @@ def test_multi_batch_image_gradients():
 
     dy, dx = image_gradients(image)
 
-    for batch_id in range(BATCH_SIZE):
+    for batch_id in range(batch_size):
         assert torch.allclose(dy[batch_id, 0, :, :], true_dy)
-    assert dy.shape == (BATCH_SIZE, 1, HEIGHT, WIDTH)
-    assert dx.shape == (BATCH_SIZE, 1, HEIGHT, WIDTH)
+    assert dy.shape == (batch_size, 1, height, width)
+    assert dx.shape == (batch_size, 1, height, width)
 
 
-def test_image_gradients():
+def test_image_gradients(batch_size=1, height=5, width=5, channels=1):
     """Test whether the module correctly calculates gradients for known input.
 
     Example input-output pair taken from TF's implementation of image- gradients
     """
-
-    BATCH_SIZE = 1
-    HEIGHT = 5
-    WIDTH = 5
-    CHANNELS = 1
-
-    image = torch.arange(0, BATCH_SIZE * HEIGHT * WIDTH * CHANNELS, dtype=torch.float32)
-    image = torch.reshape(image, (BATCH_SIZE, CHANNELS, HEIGHT, WIDTH))
+    image = torch.arange(0, batch_size * height * width * channels, dtype=torch.float32)
+    image = torch.reshape(image, (batch_size, channels, height, width))
 
     true_dy = [
         [5.0, 5.0, 5.0, 5.0, 5.0],

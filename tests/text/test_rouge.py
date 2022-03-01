@@ -171,18 +171,18 @@ def test_rouge_metric_wrong_key_value_error():
 @pytest.mark.parametrize(
     "pl_rouge_metric_key",
     [
-        ("rouge1_precision"),
-        ("rouge1_recall"),
-        ("rouge1_fmeasure"),
-        ("rouge2_precision"),
-        ("rouge2_recall"),
-        ("rouge2_fmeasure"),
-        ("rougeL_precision"),
-        ("rougeL_recall"),
-        ("rougeL_fmeasure"),
-        ("rougeLsum_precision"),
-        ("rougeLsum_recall"),
-        ("rougeLsum_fmeasure"),
+        "rouge1_precision",
+        "rouge1_recall",
+        "rouge1_fmeasure",
+        "rouge2_precision",
+        "rouge2_recall",
+        "rouge2_fmeasure",
+        "rougeL_precision",
+        "rougeL_recall",
+        "rougeL_fmeasure",
+        "rougeLsum_precision",
+        "rougeLsum_recall",
+        "rougeLsum_fmeasure",
     ],
 )
 def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
@@ -199,13 +199,13 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
         use_stemmer=False,
     )
 
-    Scorer = ROUGEScore(
+    scorer = ROUGEScore(
         normalizer=normalizer, tokenizer=tokenizer, rouge_keys=rouge_level, accumulate="best", use_stemmer=False
     )
-    Scorer.update(
+    scorer.update(
         _inputs_single_sentence_single_reference.preds,
         _inputs_single_sentence_single_reference.targets,
     )
-    metrics_score = Scorer.compute()
+    metrics_score = scorer.compute()
 
     np.isclose(metrics_score[rouge_level + "_" + metric], original_score, atol=1e-8, equal_nan=True)
