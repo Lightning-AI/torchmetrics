@@ -19,7 +19,9 @@ from torch import Tensor
 
 def _rank_data(x: Tensor) -> Tensor:
     """Rank data based on values."""
-    _, inverse, counts = torch.unique(x, sorted=True, return_inverse=True, return_counts=True)
+    # torch.unique does not support input that requires grad
+    with torch.no_grad():
+        _, inverse, counts = torch.unique(x, sorted=True, return_inverse=True, return_counts=True)
     ranks = counts.cumsum(dim=0)
     return ranks[inverse]
 
