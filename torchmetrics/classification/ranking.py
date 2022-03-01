@@ -75,7 +75,7 @@ class CoverageError(Metric):
         return _coverage_error_compute(self.coverage, self.numel, self.weight)
 
 
-class LabelRankingAveragePrecisionScore(Metric):
+class LabelRankingAveragePrecision(Metric):
     """Computes label ranking average precision score for multilabel data. The score is the average over each
     ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
     is 1.
@@ -85,11 +85,11 @@ class LabelRankingAveragePrecisionScore(Metric):
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import LabelRankingAveragePrecisionScore
+        >>> from torchmetrics import LabelRankingAveragePrecision
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
-        >>> metric = LabelRankingAveragePrecisionScore()
+        >>> metric = LabelRankingAveragePrecision()
         >>> metric(preds, target)
         tensor(0.7744)
     """

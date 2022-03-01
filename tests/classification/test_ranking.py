@@ -21,7 +21,7 @@ from tests.classification.inputs import _input_multilabel_logits as _input_mlb_l
 from tests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.classification.ranking import CoverageError, LabelRankingAveragePrecisionScore, LabelRankingLoss
+from torchmetrics.classification.ranking import CoverageError, LabelRankingAveragePrecision, LabelRankingLoss
 from torchmetrics.functional.classification.ranking import (
     coverage_error,
     label_ranking_average_precision,
@@ -53,7 +53,7 @@ def _sk_label_ranking_loss(preds, target, sample_weight=None):
     "metric, functional_metric, sk_metric",
     [
         (CoverageError, coverage_error, _sk_coverage_error),
-        (LabelRankingAveragePrecisionScore, label_ranking_average_precision, _sk_label_ranking),
+        (LabelRankingAveragePrecision, label_ranking_average_precision, _sk_label_ranking),
         (LabelRankingLoss, label_ranking_loss, _sk_label_ranking_loss),
     ],
 )

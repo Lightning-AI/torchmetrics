@@ -31,7 +31,7 @@ from torchmetrics.classification.precision_recall import Precision, Recall  # no
 from torchmetrics.classification.precision_recall_curve import PrecisionRecallCurve  # noqa: F401
 from torchmetrics.classification.ranking import (  # noqa: F401
     CoverageError,
-    LabelRankingAveragePrecisionScore,
+    LabelRankingAveragePrecision,
     LabelRankingLoss,
 )
 from torchmetrics.classification.roc import ROC  # noqa: F401
