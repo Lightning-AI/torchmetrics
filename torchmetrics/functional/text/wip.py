@@ -75,7 +75,7 @@ def word_information_preserved(
     Args:
         preds:
             Transcription(s) to score as a string or list of strings
-        total:
+        target:
             Reference(s) for each speech input as a string or list of strings
 
     Returns:

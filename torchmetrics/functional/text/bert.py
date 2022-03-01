@@ -76,8 +76,8 @@ def _preprocess_text(
     else:
         try:
             tokenized_data = tokenizer(text, max_length)
-        except BaseException as e:
-            raise BaseException(f"Tokenization was not successful: {e}")
+        except BaseException as ex:
+            raise BaseException(f"Tokenization was not successful: {ex}")
 
     input_ids, attention_mask = (
         _sort_data_according_length(tokenized_data["input_ids"], tokenized_data["attention_mask"])
