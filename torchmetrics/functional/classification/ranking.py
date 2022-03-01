@@ -158,7 +158,7 @@ def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
         >>> label_ranking_average_precision(preds, target)
-        tensor(0.7744)¨
+        tensor(0.7744)
 
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
