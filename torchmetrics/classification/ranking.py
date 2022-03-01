@@ -54,7 +54,7 @@ class CoverageError(Metric):
         self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
         """
         Args:
             preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
@@ -70,7 +70,7 @@ class CoverageError(Metric):
         if sample_weight is not None:
             self.weight += sample_weight
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes the multilabel coverage error."""
         return _coverage_error_compute(self.coverage, self.numel, self.weight)
 
@@ -103,7 +103,7 @@ class LabelRankingAveragePrecisionScore(Metric):
         self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
         """
         Args:
             preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
@@ -119,7 +119,7 @@ class LabelRankingAveragePrecisionScore(Metric):
         if sample_weight is not None:
             self.sample_weight += sample_weight
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes the label ranking average precision score."""
         return _label_ranking_average_precision_compute(self.score, self.numel, self.sample_weight)
 
@@ -152,7 +152,7 @@ class LabelRankingLoss(Metric):
         self.add_state("numel", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sample_weight", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> None:  # type: ignore
         """
         Args:
             preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
@@ -168,6 +168,6 @@ class LabelRankingLoss(Metric):
         if sample_weight is not None:
             self.sample_weight += sample_weight
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes the label ranking loss."""
         return _label_ranking_loss_compute(self.loss, self.numel, self.sample_weight)
