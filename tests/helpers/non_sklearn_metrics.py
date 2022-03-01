@@ -210,14 +210,12 @@ def d_lambda(ms, fused, p=1):
     # this is mainly because reference repo (sewar) uses uniform distribution
     # in their implementation of UQI, and we use gaussian distribution
     # and they have different default values for some kwargs like window size.
-    for l in range(L):
-        for r in range(l, L):
-            print("HELLO  ")
-            M1[l, r] = M1[r, l] = universal_image_quality_index(fused[:, l : l + 1, :, :], fused[:, r : r + 1, :, :])
-            M2[l, r] = M2[r, l] = universal_image_quality_index(ms[:, l : l + 1, :, :], ms[:, r : r + 1, :, :])
+    for k in range(L):
+        for r in range(k, L):
+            M1[k, r] = M1[r, k] = universal_image_quality_index(fused[:, k : k + 1, :, :], fused[:, r : r + 1, :, :])
+            M2[k, r] = M2[r, k] = universal_image_quality_index(ms[:, k : k + 1, :, :], ms[:, r : r + 1, :, :])
     diff = np.abs(M1 - M2) ** p
-    print(diff)
-    print(M1, M2)
+
     # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
     if L == 1:
         return diff[0][0] ** (1.0 / p)

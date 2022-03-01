@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional
+from typing import List
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -38,6 +38,7 @@ class SpectralDistortionIndex(Metric):
         Tensor with SpectralDistortionIndex score
 
     Example:
+        >>> import torch
         >>> from torchmetrics import SpectralDistortionIndex
         >>> ms = torch.rand([16, 3, 16, 16])
         >>> fused = torch.rand([16, 3, 16, 16])
@@ -46,7 +47,10 @@ class SpectralDistortionIndex(Metric):
         tensor(0.9216)
 
     References:
-    [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini, Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
+    [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
+        Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
+        Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
+        and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
 
     ms: List[Tensor]
