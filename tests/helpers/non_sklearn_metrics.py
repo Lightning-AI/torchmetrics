@@ -2,6 +2,7 @@
 from typing import Optional, Union
 
 import numpy as np
+import torch
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
 
@@ -189,10 +190,8 @@ def calibration_error(
     return loss
 
 
-def d_lambda(ms, fused, p=1):
+def d_lambda(ms: np.ndarray, fused: np.ndarray, p: int = 1) -> float:
     """A NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
-    import torch
-
     fused, ms = torch.from_numpy(fused), torch.from_numpy(ms)
     # To convert to BxHxWxC
     # fused, ms = fused[None, ...], ms[None, ...]
