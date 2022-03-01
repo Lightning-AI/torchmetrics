@@ -28,7 +28,7 @@ from torchmetrics.metric import Metric
 
 
 class CoverageError(Metric):
-    """Computes multilabel coverage error. The score measure how far we need to go through the ranked scores to
+    """Computes multilabel coverage error [1]. The score measure how far we need to go through the ranked scores to
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
     Args:
@@ -43,6 +43,10 @@ class CoverageError(Metric):
         >>> metric = CoverageError()
         >>> metric(preds, target)
         tensor(3.9000)
+
+    References:
+        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
+            knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     higher_is_better: bool = False
@@ -76,7 +80,7 @@ class CoverageError(Metric):
 
 
 class LabelRankingAveragePrecision(Metric):
-    """Computes label ranking average precision score for multilabel data. The score is the average over each
+    """Computes label ranking average precision score for multilabel data [1]. The score is the average over each
     ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
     is 1.
 
@@ -92,6 +96,10 @@ class LabelRankingAveragePrecision(Metric):
         >>> metric = LabelRankingAveragePrecision()
         >>> metric(preds, target)
         tensor(0.7744)
+
+    References:
+        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
+            knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     higher_is_better: bool = True
@@ -125,9 +133,9 @@ class LabelRankingAveragePrecision(Metric):
 
 
 class LabelRankingLoss(Metric):
-    """Computes the label ranking loss for multilabel data. The score is corresponds to the average number of label
-    pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the number
-    of labels not in the label set. The best score is 0.
+    """Computes the label ranking loss for multilabel data [1]. The score is corresponds to the average number of
+    label pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the
+    number of labels not in the label set. The best score is 0.
 
     Args:
         kwargs:
@@ -141,6 +149,10 @@ class LabelRankingLoss(Metric):
         >>> metric = LabelRankingLoss()
         >>> metric(preds, target)
         tensor(0.4167)
+
+    References:
+        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
+            knowledge discovery handbook (pp. 667-685). Springer US.
     """
 
     higher_is_better: bool = False

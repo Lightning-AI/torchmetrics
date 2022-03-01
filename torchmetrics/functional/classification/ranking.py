@@ -70,7 +70,7 @@ def _coverage_error_compute(coverage: Tensor, n_elements: int, sample_weight: Op
 
 
 def coverage_error(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
-    """Computes multilabel coverage error. The score measure how far we need to go through the ranked scores to
+    """Computes multilabel coverage error [1]. The score measure how far we need to go through the ranked scores to
     cover all true labels. The best value is equal to the average number of labels in the target tensor per sample.
 
     Args:
@@ -88,6 +88,10 @@ def coverage_error(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor
         >>> target = torch.randint(2, (10, 5))
         >>> coverage_error(preds, target)
         tensor(3.9000)
+
+    References:
+        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
+            knowledge discovery handbook (pp. 667-685). Springer US.
     """
     coverage, n_elements, sample_weight = _coverage_error_update(preds, target, sample_weight)
     return _coverage_error_compute(coverage, n_elements, sample_weight)
@@ -136,7 +140,7 @@ def _label_ranking_average_precision_compute(
 
 
 def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
-    """Computes label ranking average precision score for multilabel data. The score is the average over each
+    """Computes label ranking average precision score for multilabel data [1]. The score is the average over each
     ground truth label assigned to each sample of the ratio of true vs. total labels with lower score. Best score
     is 1.
 
@@ -154,7 +158,11 @@ def label_ranking_average_precision(preds: Tensor, target: Tensor, sample_weight
         >>> preds = torch.rand(10, 5)
         >>> target = torch.randint(2, (10, 5))
         >>> label_ranking_average_precision(preds, target)
-        tensor(0.7744)
+        tensor(0.7744)¨
+
+    References:
+        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
+            knowledge discovery handbook (pp. 667-685). Springer US.
     """
     score, n_elements, sample_weight = _label_ranking_average_precision_update(preds, target, sample_weight)
     return _label_ranking_average_precision_compute(score, n_elements, sample_weight)
@@ -204,9 +212,9 @@ def _label_ranking_loss_compute(loss: torch.Tensor, n_elements: int, sample_weig
 
 
 def label_ranking_loss(preds: Tensor, target: Tensor, sample_weight: Optional[Tensor] = None) -> Tensor:
-    """Computes the label ranking loss for multilabel data. The score is corresponds to the average number of label
-    pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the number
-    of labels not in the label set. The best score is 0.
+    """Computes the label ranking loss for multilabel data [1]. The score is corresponds to the average number of
+    label pairs that are incorrectly ordered given some predictions weighted by the size of the label set and the
+    number of labels not in the label set. The best score is 0.
 
     Args:
         preds: tensor of shape ``[N,L]`` where ``N`` is the number of samples and ``L`` is the number
@@ -223,6 +231,10 @@ def label_ranking_loss(preds: Tensor, target: Tensor, sample_weight: Optional[Te
         >>> target = torch.randint(2, (10, 5))
         >>> label_ranking_loss(preds, target)
         tensor(0.4167)
+
+    References:
+        [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
+            knowledge discovery handbook (pp. 667-685). Springer US.
     """
     loss, n_element, sample_weight = _label_ranking_loss_update(preds, target, sample_weight)
     return _label_ranking_loss_compute(loss, n_element, sample_weight)
