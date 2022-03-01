@@ -118,7 +118,7 @@ def _label_ranking_average_precision_update(
         ranking = _rank_data(neg_preds[i][relevant])
         if len(ranking) > 0 and len(ranking) < n_labels:
             rank = _rank_data(neg_preds[i])[relevant]
-            score_idx = (ranking / rank).mean()
+            score_idx = (ranking / rank).float().mean()
         else:
             score_idx = 1.0
 
