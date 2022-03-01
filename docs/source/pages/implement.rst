@@ -4,11 +4,12 @@
 Implementing a Metric
 *********************
 
-To implement your own custom metric, subclass the base :class:`~torchmetrics.Metric` class and implement the following methods:
+To implement your own custom metric, subclass the base :class:`~torchmetrics.Metric` class and
+implement the following methods:
 
 - ``__init__()``: Each state variable should be called using ``self.add_state(...)``.
-- ``update()``: Any code needed to update the state given any inputs to the metric.
-- ``compute()``: Computes a final value from the state of the metric.
+- ``_update()``: Any code needed to update the state given any inputs to the metric.
+- ``_compute()``: Computes a final value from the state of the metric.
 
 We provide the remaining interface, such as ``reset()`` that will make sure to correctly reset all metric
 states that have been added using ``add_state``. You should therefore not implement ``reset()`` yourself.
@@ -29,14 +30,14 @@ Example implementation:
             self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
             self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-        def update(self, preds: torch.Tensor, target: torch.Tensor):
+        def _update(self, preds: torch.Tensor, target: torch.Tensor):
             preds, target = self._input_format(preds, target)
             assert preds.shape == target.shape
 
             self.correct += torch.sum(preds == target)
             self.total += target.numel()
 
-        def compute(self):
+        def _compute(self):
             return self.correct.float() / self.total
 
 
@@ -44,18 +45,18 @@ Internal implementation details
 -------------------------------
 
 This section briefly describes how metrics work internally. We encourage looking at the source code for more info.
-Internally, TorchMetrics wraps the user defined ``update()`` and ``compute()`` method. We do this to automatically
-synchronize and reduce metric states across multiple devices. More precisely, calling ``update()`` does the
-following internally:
+Whenever the public ``update`` or ``compute`` method is called they will internally try to synchronize  and reduce
+metric states across multiple device before calling the actual implementation provided in the private methods
+`_update()` and `_compute`. More precisely, calling ``update()`` does the following internally:
 
 1. Clears computed cache.
-2. Calls user-defined ``update()``.
+2. Calls user-defined ``_update()``.
 
 Similarly, calling ``compute()`` does the following internally:
 
 1. Syncs metric states between processes.
 2. Reduce gathered metric states.
-3. Calls the user defined ``compute()`` method on the gathered metric states.
+3. Calls the user defined ``_compute()`` method on the gathered metric states.
 4. Cache computed result.
 
 From a user's standpoint this has one important side-effect: computed results are cached. This means that no
@@ -76,7 +77,6 @@ to ``update`` and ``compute`` in the following way:
 This procedure has the consequence of calling the user defined ``update`` **twice** during a single
 forward call (one to update global statistics and one for getting the batch statistics).
 
-
 ---------
 
 .. autoclass:: torchmetrics.Metric
@@ -95,7 +95,8 @@ and tests gets formatted in the following way:
    metric (classification, regression, nlp etc) and ``new_metric`` is the name of the metric. In this file, there should be the
    following three functions:
 
-  1. ``_new_metric_update(...)``: everything that has to do with type/shape checking and all logic required before distributed syncing need to go here.
+  1. ``_new_metric_update(...)``: everything that has to do with type/shape checking and all logic required before distributed
+     syncing need to go here.
   2. ``_new_metric_compute(...)``: all remaining logic.
   3. ``new_metric(...)``: essentially wraps the ``_update`` and ``_compute`` private functions into one public function that
      makes up the functional interface for the metric.
@@ -109,8 +110,8 @@ and tests gets formatted in the following way:
   1. Create a new module metric by subclassing ``torchmetrics.Metric``.
   2. In the ``__init__`` of the module call ``self.add_state`` for as many metric states are needed for the metric to
      proper accumulate metric statistics.
-  3. The module interface should essentially call the private ``_new_metric_update(...)`` in its `update` method and similarly the
-     ``_new_metric_compute(...)`` function in its ``compute``. No logic should really be implemented in the module interface.
+  3. The module interface should essentially call the private ``_new_metric_update(...)`` in its `_update` method and similarly the
+     ``_new_metric_compute(...)`` function in its ``_compute``. No logic should really be implemented in the module interface.
      We do this to not have duplicate code to maintain.
 
    .. note::

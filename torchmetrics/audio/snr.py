@@ -84,7 +84,7 @@ class SignalNoiseRatio(Metric):
         self.add_state("sum_snr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -96,7 +96,7 @@ class SignalNoiseRatio(Metric):
         self.sum_snr += snr_batch.sum()
         self.total += snr_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average SNR."""
         return self.sum_snr / self.total
 
@@ -156,7 +156,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         self.add_state("sum_si_snr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -168,6 +168,6 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         self.sum_si_snr += si_snr_batch.sum()
         self.total += si_snr_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average SI-SNR."""
         return self.sum_si_snr / self.total

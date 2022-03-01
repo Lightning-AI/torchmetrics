@@ -131,7 +131,7 @@ class BootStrapper(Metric):
             )
         self.sampling_strategy = sampling_strategy
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def _update(self, *args: Any, **kwargs: Any) -> None:
         """Updates the state of the base metric.
 
         Any tensor passed in will be bootstrapped along dimension 0
@@ -150,7 +150,7 @@ class BootStrapper(Metric):
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
-    def compute(self) -> Dict[str, Tensor]:
+    def _compute(self) -> Dict[str, Tensor]:
         """Computes the bootstrapped metric values.
 
         Allways returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
@@ -167,3 +167,8 @@ class BootStrapper(Metric):
         if self.raw:
             output_dict["raw"] = computed_vals
         return output_dict
+
+    def reset(self) -> None:
+        """Reset all underlying metrics."""
+        for metric in self.metrics:
+            metric.reset()

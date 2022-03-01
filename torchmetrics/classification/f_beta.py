@@ -161,7 +161,7 @@ class FBetaScore(StatScores):
 
         self.average = average
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes fbeta over state."""
         tp, fp, tn, fn = self._get_final_stats()
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)

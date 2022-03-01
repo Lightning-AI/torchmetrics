@@ -134,7 +134,7 @@ class CHRFScore(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def _update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
@@ -159,7 +159,7 @@ class CHRFScore(Metric):
         if self.sentence_chrf_score is not None:
             self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def _compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate chrF/chrF++ score.
 
         Return:

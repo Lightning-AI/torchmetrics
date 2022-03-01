@@ -97,7 +97,7 @@ class ExtendedEditDistance(Metric):
 
         self.add_state("sentence_eed", [], dist_reduce_fx="cat")
 
-    def update(  # type: ignore
+    def _update(  # type: ignore
         self,
         preds: Union[str, Sequence[str]],
         target: Sequence[Union[str, Sequence[str]]],
@@ -119,7 +119,7 @@ class ExtendedEditDistance(Metric):
             self.sentence_eed,
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def _compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate extended edit distance score.
 
         Return:
