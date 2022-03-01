@@ -171,7 +171,10 @@ class TestPIT(MetricTester):
 
 def test_error_on_different_shape() -> None:
     metric = PermutationInvariantTraining(signal_noise_ratio, "max")
-    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+    with pytest.raises(
+        RuntimeError,
+        match="Predictions and targets are expected to have the same shape at the batch and speaker dimensions",
+    ):
         metric(torch.randn(3, 3, 10), torch.randn(3, 2, 10))
 
 

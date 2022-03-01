@@ -20,18 +20,32 @@ from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
 
+def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
+    if preds.numel() == target.numel() == 0:
+        return True
+    return False
+
+
 def _check_same_shape(preds: Tensor, target: Tensor) -> None:
     """Check that predictions and target have the same shape, else raise error."""
     if preds.shape != target.shape:
         raise RuntimeError("Predictions and targets are expected to have the same shape")
 
 
-def _basic_input_validation(preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool]) -> None:
+def _basic_input_validation(
+    preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int]
+) -> None:
     """Perform basic validation of inputs that does not require deducing any information of the type of inputs."""
+    # Skip all other checks if both preds and target are empty tensors
+    if _check_for_empty_tensors(preds, target):
+        return
 
     if target.is_floating_point():
         raise ValueError("The `target` has to be an integer tensor.")
-    if target.min() < 0:
+
+    if ignore_index is None and target.min() < 0:
+        raise ValueError("The `target` has to be a non-negative tensor.")
+    elif ignore_index is not None and ignore_index >= 0 and target.min() < 0:
         raise ValueError("The `target` has to be a non-negative tensor.")
 
     preds_float = preds.is_floating_point()
@@ -65,7 +79,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
                 "The `preds` and `target` should have the same shape,",
                 f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}.",
             )
-        if preds_float and target.max() > 1:
+        if preds_float and target.numel() > 0 and target.max() > 1:
             raise ValueError(
                 "If `preds` and `target` are of shape (N, ...) and `preds` are floats, `target` should be binary."
             )
@@ -79,8 +93,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
             case = DataType.MULTILABEL
         else:
             case = DataType.MULTIDIM_MULTICLASS
-
-        implied_classes = preds[0].numel()
+        implied_classes = preds[0].numel() if preds.numel() > 0 else 0
 
     elif preds.ndim == target.ndim + 1:
         if not preds_float:
@@ -91,7 +104,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
                 " (N, C, ...), and the shape of `target` should be (N, ...)."
             )
 
-        implied_classes = preds.shape[1]
+        implied_classes = preds.shape[1] if preds.numel() > 0 else 0
 
         if preds.ndim == 2:
             case = DataType.MULTICLASS
@@ -149,7 +162,7 @@ def _check_num_classes_mc(
                 " should be either None or the product of the size of extra dimensions (...)."
                 " See Input Types in Metrics documentation."
             )
-        if num_classes <= target.max():
+        if target.numel() > 0 and num_classes <= target.max():
             raise ValueError("The highest label in `target` should be smaller than `num_classes`.")
         if preds.shape != target.shape and num_classes != implied_classes:
             raise ValueError("The size of C dimension of `preds` does not match `num_classes`.")
@@ -194,6 +207,7 @@ def _check_classification_inputs(
     num_classes: Optional[int],
     multiclass: Optional[bool],
     top_k: Optional[int],
+    ignore_index: Optional[int] = None,
 ) -> DataType:
     """Performs error checking on inputs for classification.
 
@@ -248,7 +262,7 @@ def _check_classification_inputs(
     """
 
     # Basic validation (that does not need case/type information)
-    _basic_input_validation(preds, target, threshold, multiclass)
+    _basic_input_validation(preds, target, threshold, multiclass, ignore_index)
 
     # Check that shape/types fall into one of the cases
     case, implied_classes = _check_shape_and_type_consistency(preds, target)
@@ -300,6 +314,7 @@ def _input_format_classification(
     top_k: Optional[int] = None,
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
+    ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, DataType]:
     """Convert preds and target tensors into common format.
 
@@ -396,6 +411,7 @@ def _input_format_classification(
         num_classes=num_classes,
         multiclass=multiclass,
         top_k=top_k,
+        ignore_index=ignore_index,
     )
 
     if case in (DataType.BINARY, DataType.MULTILABEL) and not top_k:
@@ -418,12 +434,13 @@ def _input_format_classification(
         if multiclass is False:
             preds, target = preds[:, 1, ...], target[:, 1, ...]
 
-    if (case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and multiclass is not False) or multiclass:
-        target = target.reshape(target.shape[0], target.shape[1], -1)
-        preds = preds.reshape(preds.shape[0], preds.shape[1], -1)
-    else:
-        target = target.reshape(target.shape[0], -1)
-        preds = preds.reshape(preds.shape[0], -1)
+    if not _check_for_empty_tensors(preds, target):
+        if (case in (DataType.MULTICLASS, DataType.MULTIDIM_MULTICLASS) and multiclass is not False) or multiclass:
+            target = target.reshape(target.shape[0], target.shape[1], -1)
+            preds = preds.reshape(preds.shape[0], preds.shape[1], -1)
+        else:
+            target = target.reshape(target.shape[0], -1)
+            preds = preds.reshape(preds.shape[0], -1)
 
     # Some operations above create an extra dimension for MC/binary case - this removes it
     if preds.ndim > 2:
