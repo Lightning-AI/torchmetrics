@@ -66,7 +66,7 @@ class MeanSquaredError(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.squared = squared
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -78,6 +78,6 @@ class MeanSquaredError(Metric):
         self.sum_squared_error += sum_squared_error
         self.total += n_obs
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes mean squared error over state."""
         return _mean_squared_error_compute(self.sum_squared_error, self.total, squared=self.squared)

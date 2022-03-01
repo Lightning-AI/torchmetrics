@@ -240,7 +240,7 @@ class FrechetInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def _update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
 
         Args:
@@ -254,7 +254,7 @@ class FrechetInceptionDistance(Metric):
         else:
             self.fake_features.append(features)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)

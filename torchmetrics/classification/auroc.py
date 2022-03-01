@@ -147,7 +147,7 @@ class AUROC(Metric):
             " For large datasets this may lead to large memory footprint."
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -166,7 +166,7 @@ class AUROC(Metric):
             )
         self.mode = mode
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes AUROC based on inputs passed in to ``update`` previously."""
         if not self.mode:
             raise RuntimeError("You have to have determined mode.")

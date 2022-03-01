@@ -42,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated passing in `dist_sync_on_step`, `process_group`, `dist_sync_fn` direct argument ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
 
 
+- Moved particular metrics implementation from  `update` and `compute` methods to `_update` and `_compute` ([#840](https://github.com/PyTorchLightning/metrics/pull/840))
+
+
 ### Removed
 
 - Removed support for versions of Lightning lower than v1.5 ([#788](https://github.com/PyTorchLightning/metrics/pull/788))

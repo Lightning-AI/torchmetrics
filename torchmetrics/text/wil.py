@@ -74,7 +74,7 @@ class WordInfoLost(Metric):
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
+    def _update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store predictions/references for computing Word Information Lost scores.
 
         Args:
@@ -88,7 +88,7 @@ class WordInfoLost(Metric):
         self.target_total += target_total
         self.preds_total += preds_total
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Calculate the Word Information Lost.
 
         Returns:

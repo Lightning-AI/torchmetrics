@@ -97,7 +97,7 @@ class RetrievalFallOut(RetrievalMetric):
             raise ValueError("`k` has to be a positive integer or None")
         self.k = k
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """First concat state `indexes`, `preds` and `target` since they were stored as lists.
 
         After that, compute list of groups that will help in keeping together predictions about the same query. Finally,

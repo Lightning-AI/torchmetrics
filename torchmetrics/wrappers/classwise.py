@@ -67,8 +67,11 @@ class ClasswiseWrapper(Metric):
             return {f"{name}_{i}": val for i, val in enumerate(x)}
         return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def _update(self, *args: Any, **kwargs: Any) -> None:
         self.metric.update(*args, **kwargs)
 
-    def compute(self) -> Dict[str, Tensor]:
+    def _compute(self) -> Dict[str, Tensor]:
         return self._convert(self.metric.compute())
+
+    def reset(self) -> None:
+        self.metric.reset()
