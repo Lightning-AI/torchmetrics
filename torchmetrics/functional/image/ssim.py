@@ -100,7 +100,7 @@ def _ssim_compute(
     c2 = pow(k2 * data_range, 2)
     device = preds.device
 
-    channel = preds.size()[1]
+    channel = preds.size(1)
     dtype = preds.dtype
     kernel = _gaussian_kernel(channel, kernel_size, sigma, dtype, device)
     pad_h = (kernel_size[0] - 1) // 2

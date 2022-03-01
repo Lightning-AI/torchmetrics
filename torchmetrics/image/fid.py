@@ -117,7 +117,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor, eps: 
     # Product might be almost singular
     if not torch.isfinite(covmean).all():
         rank_zero_info(f"FID calculation produces singular product; adding {eps} to diagonal of covariance estimates")
-        offset = torch.eye(sigma1.size()[0], device=mu1.device, dtype=mu1.dtype) * eps
+        offset = torch.eye(sigma1.size(0), device=mu1.device, dtype=mu1.dtype) * eps
         covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
 
     tr_covmean = torch.trace(covmean)

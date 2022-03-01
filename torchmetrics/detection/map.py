@@ -109,17 +109,17 @@ def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[
         raise ValueError("Expected all labels in `target` to be of type Tensor")
 
     for i, item in enumerate(targets):
-        if item["boxes"].size()[0] != item["labels"].size()[0]:
+        if item["boxes"].size(0) != item["labels"].size(0):
             raise ValueError(
                 f"Input boxes and labels of sample {i} in targets have a"
-                f" different length (expected {item['boxes'].size()[0]} labels, got {item['labels'].size()[0]})"
+                f" different length (expected {item['boxes'].size(0)} labels, got {item['labels'].size(0)})"
             )
     for i, item in enumerate(preds):
-        if not (item["boxes"].size()[0] == item["labels"].size()[0] == item["scores"].size()[0]):
+        if not (item["boxes"].size(0) == item["labels"].size(0) == item["scores"].size(0)):
             raise ValueError(
                 f"Input boxes, labels and scores of sample {i} in predictions have a"
-                f" different length (expected {item['boxes'].size()[0]} labels and scores,"
-                f" got {item['labels'].size()[0]} labels and {item['scores'].size()[0]})"
+                f" different length (expected {item['boxes'].size(0)} labels and scores,"
+                f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
             )
 
 
