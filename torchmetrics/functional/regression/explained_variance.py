@@ -30,7 +30,7 @@ def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tens
 
     _check_same_shape(preds, target)
 
-    n_obs = preds.size(0)
+    n_obs = preds.size()[0]
     sum_error = torch.sum(target - preds, dim=0)
     diff = target - preds
     sum_squared_error = torch.sum(diff * diff, dim=0)

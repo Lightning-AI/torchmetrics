@@ -39,7 +39,7 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
     sum_squared_obs = torch.sum(target * target, dim=0)
     residual = target - preds
     rss = torch.sum(residual * residual, dim=0)
-    n_obs = target.size(0)
+    n_obs = target.size()[0]
 
     return sum_squared_obs, sum_obs, rss, n_obs
 

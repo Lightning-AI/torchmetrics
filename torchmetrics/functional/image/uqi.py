@@ -93,7 +93,7 @@ def _uqi_compute(
         data_range = max(preds.max() - preds.min(), target.max() - target.min())
 
     device = preds.device
-    channel = preds.size(1)
+    channel = preds.size()[1]
     dtype = preds.dtype
     kernel = _gaussian_kernel(channel, kernel_size, sigma, dtype, device)
     pad_h = (kernel_size[0] - 1) // 2
