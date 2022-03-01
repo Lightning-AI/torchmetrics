@@ -166,8 +166,8 @@ class BinnedPrecisionRecallCurve(Metric):
         for i in range(self.num_thresholds):
             predictions = preds >= self.thresholds[i]
             self.TPs[:, i] += (target & predictions).sum(dim=0)
-            self.FPs[:, i] += ((~target) & (predictions)).sum(dim=0)
-            self.FNs[:, i] += ((target) & (~predictions)).sum(dim=0)
+            self.FPs[:, i] += ((~target) & predictions).sum(dim=0)
+            self.FNs[:, i] += (target & (~predictions)).sum(dim=0)
 
     def _compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Returns float tensor of size n_classes."""

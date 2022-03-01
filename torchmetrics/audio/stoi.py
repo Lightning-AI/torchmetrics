@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.stoi import short_time_objective_intelligibil
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-__doctest_requires__ = {("ShortTimeObjectiveIntelligibility"): ["pystoi"]}
+__doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
