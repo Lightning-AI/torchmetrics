@@ -70,12 +70,6 @@ def _d_lambda_compute(
         >>> ms, target = _d_lambda_update(ms, fused)
         >>> _d_lambda_compute(ms, fused)
         tensor(3.4769e-08)
-
-    References:
-    [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
-        Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
-        Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
-        and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
     if p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
@@ -136,6 +130,12 @@ def spectral_distortion_index(
         >>> fused = ms * 0.75
         >>> spectral_distortion_index(ms, fused)
         tensor(3.4769e-08)
+
+    References:
+        [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
+            Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
+            Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
+            and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
     ms, fused = _d_lambda_update(ms, fused)
     return _d_lambda_compute(ms, fused, p, reduction)
