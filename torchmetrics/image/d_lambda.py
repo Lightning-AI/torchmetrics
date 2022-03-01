@@ -41,12 +41,13 @@ class SpectralDistortionIndex(Metric):
 
     Example:
         >>> import torch
+        >>> _ = torch.manual_seed(42)
         >>> from torchmetrics import SpectralDistortionIndex
         >>> ms = torch.rand([16, 3, 16, 16])
         >>> fused = torch.rand([16, 3, 16, 16])
         >>> sdi = SpectralDistortionIndex()
         >>> sdi(ms, fused)
-        tensor(0.9216)
+        tensor(0.0234)
 
     References:
     [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
