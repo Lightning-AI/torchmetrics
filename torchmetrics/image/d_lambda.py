@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List
+from typing import Any, List
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -33,6 +33,8 @@ class SpectralDistortionIndex(Metric):
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
 
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Tensor with SpectralDistortionIndex score
@@ -58,7 +60,7 @@ class SpectralDistortionIndex(Metric):
     higher_is_better: bool = True
 
     def __init__(
-        self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs
+        self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(
@@ -75,7 +77,7 @@ class SpectralDistortionIndex(Metric):
             raise ValueError(f"Expected argument `reduction` be one of {allowed_reduction} but got {reduction}")
         self.reduction = reduction
 
-    def update(self, ms: Tensor, fused: Tensor) -> None:  # type: ignore
+    def _update(self, ms: Tensor, fused: Tensor) -> None:  # type: ignore
         """Update state with ms and fused.
 
         Args:
@@ -86,7 +88,7 @@ class SpectralDistortionIndex(Metric):
         self.ms.append(ms)
         self.fused.append(fused)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes explained variance over state."""
         ms = dim_zero_cat(self.ms)
         fused = dim_zero_cat(self.fused)
