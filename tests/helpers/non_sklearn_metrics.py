@@ -193,12 +193,9 @@ def calibration_error(
 def d_lambda(ms: np.ndarray, fused: np.ndarray, p: int = 1) -> float:
     """A NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
     fused, ms = torch.from_numpy(fused), torch.from_numpy(ms)
-    # To convert to BxHxWxC
-    # fused, ms = fused[None, ...], ms[None, ...]
-    # breakpoint()
     # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
-    fused = torch.permute(fused, (0, 3, 1, 2))
-    ms = torch.permute(ms, (0, 3, 1, 2))
+    fused = fused.permute(0, 3, 1, 2)
+    ms = ms.permute(0, 3, 1, 2)
 
     L = ms.shape[1]
 
