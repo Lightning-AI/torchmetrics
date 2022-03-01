@@ -316,10 +316,10 @@ KLDivergence
 .. autoclass:: torchmetrics.KLDivergence
     :noindex:
 
-LabelRankingAveragePrecisionScore
+LabelRankingAveragePrecision
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.LabelRankingAveragePrecisionScore
+.. autoclass:: torchmetrics.LabelRankingAveragePrecision
     :noindex:
 
 LabelRankingLoss
