@@ -85,7 +85,7 @@ class UniversalImageQualityIndex(Metric):
         self.data_range = data_range
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -96,7 +96,7 @@ class UniversalImageQualityIndex(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)

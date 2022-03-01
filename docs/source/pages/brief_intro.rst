@@ -79,7 +79,7 @@ Implementing a metric
             self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
             self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-        def update(self, preds: torch.Tensor, target: torch.Tensor):
+        def _update(self, preds: torch.Tensor, target: torch.Tensor):
             # update metric states
             preds, target = self._input_format(preds, target)
             assert preds.shape == target.shape
@@ -87,6 +87,6 @@ Implementing a metric
             self.correct += torch.sum(preds == target)
             self.total += target.numel()
 
-        def compute(self):
+        def _compute(self):
             # compute final result
             return self.correct.float() / self.total

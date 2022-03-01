@@ -192,7 +192,7 @@ class BERTScore(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
+    def _update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 
@@ -224,7 +224,7 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> Dict[str, Union[List[float], str]]:
+    def _compute(self) -> Dict[str, Union[List[float], str]]:
         """Calculate BERT scores.
 
         Return:

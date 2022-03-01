@@ -73,7 +73,7 @@ class MeanAbsolutePercentageError(Metric):
         self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -85,6 +85,6 @@ class MeanAbsolutePercentageError(Metric):
         self.sum_abs_per_error += sum_abs_per_error
         self.total += num_obs
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes mean absolute percentage error over state."""
         return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)

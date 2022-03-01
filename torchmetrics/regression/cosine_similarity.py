@@ -78,7 +78,7 @@ class CosineSimilarity(Metric):
         self.add_state("preds", [], dist_reduce_fx="cat")
         self.add_state("target", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update metric states with predictions and targets.
 
         Args:
@@ -90,7 +90,7 @@ class CosineSimilarity(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _cosine_similarity_compute(preds, target, self.reduction)

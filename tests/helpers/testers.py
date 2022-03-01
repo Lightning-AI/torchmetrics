@@ -567,10 +567,10 @@ class DummyMetric(Metric):
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx=None)
 
-    def update(self):
+    def _update(self):
         pass
 
-    def compute(self):
+    def _compute(self):
         pass
 
 
@@ -581,29 +581,29 @@ class DummyListMetric(Metric):
         super().__init__()
         self.add_state("x", [], dist_reduce_fx=None)
 
-    def update(self):
+    def _update(self):
         pass
 
-    def compute(self):
+    def _compute(self):
         pass
 
 
 class DummyMetricSum(DummyMetric):
-    def update(self, x):
+    def _update(self, x):
         self.x += x
 
-    def compute(self):
+    def _compute(self):
         return self.x
 
 
 class DummyMetricDiff(DummyMetric):
-    def update(self, y):
+    def _update(self, y):
         self.x -= y
 
-    def compute(self):
+    def _compute(self):
         return self.x
 
 
 class DummyMetricMultiOutput(DummyMetricSum):
-    def compute(self):
+    def _compute(self):
         return [self.x, self.x]

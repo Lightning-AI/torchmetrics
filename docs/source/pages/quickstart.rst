@@ -115,16 +115,18 @@ Implementing your own metric
 Implementing your own metric is as easy as subclassing a :class:`torch.nn.Module`. Simply, subclass :class:`~torchmetrics.Metric` and do the following:
 
 1. Implement ``__init__`` where you call ``self.add_state`` for every internal state that is needed for the metrics computations
-2. Implement ``update`` method, where all logic that is necessary for updating metric states go
-3. Implement ``compute`` method, where the final metric computations happens
+2. Implement ``_update`` method, where all logic that is necessary for updating metric states go
+3. Implement ``_compute`` method, where the final metric computations happens
 
 For practical examples and more info about implementing a metric, please see this :ref:`page <implement>`.
-
 
 Development Environment
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-TorchMetrics provides a `Devcontainer <https://code.visualstudio.com/docs/remote/containers>`_ configuration for `Visual Studio Code <https://code.visualstudio.com/>`_ to use a `Docker container <https://www.docker.com/>`_ as a pre-configured development environment.
+TorchMetrics provides a `Devcontainer <https://code.visualstudio.com/docs/remote/containers>`_ configuration for
+`Visual Studio Code <https://code.visualstudio.com/>`_ to use a `Docker container <https://www.docker.com/>`_ as a
+pre-configured development environment.
 This avoids struggles setting up a development environment and makes them reproducible and consistent.
-Please follow the `installation instructions <https://code.visualstudio.com/docs/remote/containers#_installation>`_ and make yourself familiar with the `container tutorials <https://code.visualstudio.com/docs/remote/containers-tutorial>`_ if you want to use them.
-In order to use GPUs, you can enable them within the ``.devcontainer/devcontainer.json`` file.
+Please follow the `installation instructions <https://code.visualstudio.com/docs/remote/containers#_installation>`_
+and make yourself familiar with the `container tutorials <https://code.visualstudio.com/docs/remote/containers-tutorial>`_
+if you want to use them. In order to use GPUs, you can enable them within the ``.devcontainer/devcontainer.json`` file.
