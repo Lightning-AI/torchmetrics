@@ -167,17 +167,8 @@ def _accuracy_compute(
         >>> reduce = average = 'micro'
         >>> mdmc_average = 'global'
         >>> mode = _mode(preds, target, threshold, top_k, num_classes=None, multiclass=None)
-        >>> tp, fp, tn, fn = _accuracy_update(
-        ...                     preds,
-        ...                     target,
-        ...                     reduce,
-        ...                     mdmc_average,
-        ...                     threshold,
-        ...                     num_classes=None,
-        ...                     top_k=top_k,
-        ...                     multiclass=None,
-        ...                     ignore_index=None,
-        ...                     mode=mode)
+        >>> tp, fp, tn, fn = _accuracy_update(preds, target, reduce, mdmc_average, threshold,
+        ...     num_classes=None, top_k=top_k, multiclass=None, ignore_index=None, mode=mode)
         >>> _accuracy_compute(tp, fp, tn, fn, average, mdmc_average, mode)
         tensor(0.6667)
     """
@@ -190,16 +181,17 @@ def _accuracy_compute(
         numerator = tp
         denominator = tp + fn
 
-    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        cond = tp + fp + fn == 0
-        numerator = numerator[~cond]
-        denominator = denominator[~cond]
+    if mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        if average == AverageMethod.MACRO:
+            cond = tp + fp + fn == 0
+            numerator = numerator[~cond]
+            denominator = denominator[~cond]
 
-    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
-        numerator[meaningless_indeces, ...] = -1
-        denominator[meaningless_indeces, ...] = -1
+        if average == AverageMethod.NONE:
+            # a class is not present if there exists no TPs, no FPs, and no FNs
+            meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
+            numerator[meaningless_indeces, ...] = -1
+            denominator[meaningless_indeces, ...] = -1
 
     return _reduce_stat_scores(
         numerator=numerator,

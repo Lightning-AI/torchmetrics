@@ -191,7 +191,8 @@ class MetricCollection(nn.ModuleDict):
         for idx, values in enumerate(temp.values()):
             self._groups[idx] = values
 
-    def _equal_metric_states(self, metric1: Metric, metric2: Metric) -> bool:
+    @staticmethod
+    def _equal_metric_states(metric1: Metric, metric2: Metric) -> bool:
         """Check if the metric state of two metrics are the same."""
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False

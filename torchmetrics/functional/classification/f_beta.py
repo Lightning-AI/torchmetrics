@@ -143,6 +143,7 @@ def fbeta_score(
     Args:
         preds: Predictions from model (probabilities, logits or labels)
         target: Ground truth values
+        beta: beta coefficient
         average:
             Defines the reduction that is applied. Should be one of the following:
 
@@ -273,6 +274,7 @@ def f1_score(
     Args:
         preds: Predictions from model (probabilities, logits or labels)
         target: Ground truth values
+        beta: it is ignored
         average:
             Defines the reduction that is applied. Should be one of the following:
 

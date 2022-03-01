@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
-__doctest_requires__ = {("SignalDistortionRatio"): ["fast_bss_eval"]}
+__doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
