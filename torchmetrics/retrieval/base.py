@@ -99,7 +99,7 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:  # type: ignore
         """Check shape, check and convert dtypes, flatten and add to accumulators."""
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
@@ -112,7 +112,7 @@ class RetrievalMetric(Metric, ABC):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
 
         After that, compute list of groups that will help in keeping together predictions about the same query. Finally,

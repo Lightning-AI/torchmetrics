@@ -75,7 +75,7 @@ class CharErrorRate(Metric):
         self.add_state("errors", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("total", tensor(0, dtype=torch.float), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
+    def _update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
         """Store references/predictions for computing Character Error Rate scores.
 
         Args:
@@ -86,7 +86,7 @@ class CharErrorRate(Metric):
         self.errors += errors
         self.total += total
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Calculate the character error rate.
 
         Returns:
