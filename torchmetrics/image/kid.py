@@ -226,7 +226,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def _update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
 
         Args:
@@ -240,7 +240,7 @@ class KernelInceptionDistance(Metric):
         else:
             self.fake_features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def _compute(self) -> Tuple[Tensor, Tensor]:
         """Calculate KID score based on accumulated extracted features from the two distributions. Returns a tuple
         of mean and standard deviation of KID scores calculated on subsets of extracted features.
 

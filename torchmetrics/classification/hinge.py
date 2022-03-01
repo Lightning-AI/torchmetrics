@@ -120,11 +120,11 @@ class HingeLoss(Metric):
         self.squared = squared
         self.multiclass_mode = multiclass_mode
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
         self.measure = measure + self.measure
         self.total = total + self.total
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         return _hinge_compute(self.measure, self.total)

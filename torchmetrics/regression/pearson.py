@@ -111,7 +111,7 @@ class PearsonCorrCoef(Metric):
         self.add_state("corr_xy", default=torch.tensor(0.0), dist_reduce_fx=None)
         self.add_state("n_total", default=torch.tensor(0.0), dist_reduce_fx=None)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -122,7 +122,7 @@ class PearsonCorrCoef(Metric):
             preds, target, self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
         )
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes pearson correlation coefficient over state."""
         if self.mean_x.numel() > 1:  # multiple devices, need further reduction
             var_x, var_y, corr_xy, n_total = _final_aggregation(

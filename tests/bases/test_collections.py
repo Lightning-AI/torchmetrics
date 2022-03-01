@@ -258,20 +258,20 @@ def test_collection_filtering():
         def __init__(self):
             super().__init__()
 
-        def update(self, *args, kwarg):
+        def _update(self, *args, kwarg):
             print("Entered DummyMetric")
 
-        def compute(self):
+        def _compute(self):
             return
 
     class MyAccuracy(Metric):
         def __init__(self):
             super().__init__()
 
-        def update(self, preds, target, kwarg2):
+        def _update(self, preds, target, kwarg2):
             print("Entered MyAccuracy")
 
-        def compute(self):
+        def _compute(self):
             return
 
     mc = MetricCollection([Accuracy(), DummyMetric()])

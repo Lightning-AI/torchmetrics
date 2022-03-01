@@ -28,10 +28,10 @@ class DummyMetric(Metric):
         self._val_to_return = val_to_return
         self._update_called = True
 
-    def update(self, *args, **kwargs) -> None:
+    def _update(self, *args, **kwargs) -> None:
         self._num_updates += 1
 
-    def compute(self):
+    def _compute(self):
         return tensor(self._val_to_return)
 
 

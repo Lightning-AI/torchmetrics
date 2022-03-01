@@ -268,7 +268,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruth_boxes", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
+    def _update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
 
         Args:
@@ -669,7 +669,7 @@ class MeanAveragePrecision(Metric):
 
         return recall, precision, scores
 
-    def compute(self) -> dict:
+    def _compute(self) -> dict:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
 
         Note:
