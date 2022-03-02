@@ -20,6 +20,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.distributed import reduce
 
 
 def _ssim_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
@@ -51,6 +52,7 @@ def _ssim_compute(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
+    reduction: str = 'none',
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -67,6 +69,10 @@ def _ssim_compute(
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
+        reduction: a method to reduce metric score over labels.
+            - ``'none'``: no reduction will be applied (default)
+            - ``'elementwise_mean'``: takes the mean
+            - ``'sum'``: takes the sum
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
@@ -182,7 +188,7 @@ def _ssim_compute(
     elif return_full_image:
         return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx_full_image
 
-    return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1)
+    return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction)
 
 
 def structural_similarity_index_measure(
@@ -191,6 +197,7 @@ def structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
+    reduction: str = 'none',
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -207,6 +214,10 @@ def structural_similarity_index_measure(
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
+        reduction: a method to reduce metric score over labels.
+            - ``'none'``: no reduction will be applied (default)
+            - ``'elementwise_mean'``: takes the mean
+            - ``'sum'``: takes the sum
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
@@ -246,6 +257,7 @@ def structural_similarity_index_measure(
         gaussian_kernel,
         sigma,
         kernel_size,
+        reduction,
         data_range,
         k1,
         k2,
@@ -260,13 +272,14 @@ def _get_normalized_sim_and_cs(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
+    reduction: str = 'none',
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tuple[Tensor, Tensor]:
     sim, contrast_sensitivity = _ssim_compute(
-        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, return_contrast_sensitivity=True
+        preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, return_contrast_sensitivity=True
     )
     if normalize == "relu":
         sim = torch.relu(sim)
@@ -280,6 +293,7 @@ def _multiscale_ssim_compute(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
+    reduction: str = 'none',
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -300,7 +314,10 @@ def _multiscale_ssim_compute(
         target: ground truth image
         kernel_size: size of the gaussian kernel (default: (11, 11))
         sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-
+        reduction: a method to reduce metric score over labels.
+            - ``'none'``: no reduction will be applied (default)
+            - ``'elementwise_mean'``: takes the mean
+            - ``'sum'``: takes the sum
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
@@ -348,7 +365,7 @@ def _multiscale_ssim_compute(
 
     for _ in range(len(betas)):
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
-            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize
+            preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, normalize=normalize
         )
         sim_list.append(sim)
         cs_list.append(contrast_sensitivity)
@@ -380,6 +397,7 @@ def multiscale_structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
+    reduction: str = 'none',
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -394,7 +412,10 @@ def multiscale_structural_similarity_index_measure(
         target: Ground truth values of shape `[N, C, H, W]`
         kernel_size: size of the gaussian kernel (default: (11, 11))
         sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
-
+        reduction: a method to reduce metric score over labels.
+            - ``'none'``: no reduction will be applied (default)
+            - ``'elementwise_mean'``: takes the mean
+            - ``'sum'``: takes the sum
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
@@ -439,5 +460,5 @@ def multiscale_structural_similarity_index_measure(
 
     preds, target = _ssim_update(preds, target)
     return _multiscale_ssim_compute(
-        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalize
+        preds, target, gaussian_kernel, sigma, kernel_size, reduction, data_range, k1, k2, betas, normalize
     )

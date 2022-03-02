@@ -33,6 +33,10 @@ class StructuralSimilarityIndexMeasure(Metric):
             Ignored if a uniform kernel is used
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
+        reduction: a method to reduce metric score over labels.
+            - ``'none'``: no reduction will be applied (default)
+            - ``'elementwise_mean'``: takes the mean
+            - ``'sum'``: takes the sum
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
@@ -74,6 +78,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         gaussian_kernel: bool = True,
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
+        reduction: str = 'none',
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
@@ -94,6 +99,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.gaussian_kernel = gaussian_kernel
         self.sigma = sigma
         self.kernel_size = kernel_size
+        self.reduction = reduction
         self.data_range = data_range
         self.k1 = k1
         self.k2 = k2
@@ -121,6 +127,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             self.gaussian_kernel,
             self.sigma,
             self.kernel_size,
+            self.reduction,
             self.data_range,
             self.k1,
             self.k2,
@@ -137,7 +144,10 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
         kernel_size: size of the gaussian kernel
         sigma: Standard deviation of the gaussian kernel
-
+        reduction: a method to reduce metric score over labels.
+            - ``'none'``: no reduction will be applied (default)
+            - ``'elementwise_mean'``: takes the mean
+            - ``'sum'``: takes the sum
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
@@ -189,6 +199,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         gaussian_kernel: bool = True,
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
+        reduction: str = 'none',
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
@@ -222,6 +233,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.gaussian_kernel = gaussian_kernel
         self.sigma = sigma
         self.kernel_size = kernel_size
+        self.reduction = reduction
         self.data_range = data_range
         self.k1 = k1
         self.k2 = k2
@@ -255,6 +267,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             self.gaussian_kernel,
             self.sigma,
             self.kernel_size,
+            self.reduction,
             self.data_range,
             self.k1,
             self.k2,
