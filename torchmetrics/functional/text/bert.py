@@ -556,11 +556,11 @@ def bert_score(
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
+        >>> score = bert_score(preds, target)
         >>> from pprint import pprint
-        >>> pprint(bert_score(preds, target)) # doctest: +ELLIPSIS
-        {'f1': [0.999..., 0.996...],
-         'precision': [0.999..., 0.996...],
-         'recall': [0.999..., 0.996...]}
+        >>> rounded_score = {k: [round(v, 3) for v in vv] for k, vv in score.items()}
+        >>> pprint(rounded_score)
+        {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
