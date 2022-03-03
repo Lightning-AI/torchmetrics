@@ -17,6 +17,7 @@ from functools import partial
 import pytest
 import torch
 from skimage.metrics import structural_similarity
+import numpy as np
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
@@ -74,7 +75,7 @@ def _sk_ssim(preds, target, data_range, sigma, kernel_size=None, return_ssim_ima
                 use_sample_covariance=False,
                 full=return_ssim_image,
             )
-            results[i] = torch.from_numpy(res).type(preds.dtype)
+            results[i] = torch.from_numpy(np.asarray(res)).type(preds.dtype)
         return results
     else:
         fullimages = torch.zeros(target.shape, dtype=target.dtype)

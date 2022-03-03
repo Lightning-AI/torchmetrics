@@ -63,6 +63,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
             MultiScaleStructuralSimilarityIndexMeasure,
             partial(pytorch_ms_ssim, data_range=1.0, kernel_size=11),
             dist_sync_on_step=dist_sync_on_step,
+            metric_args={"data_range": 1.0, "kernel_size": 11},
         )
 
     def test_ms_ssim_functional(self, preds, target):
