@@ -14,10 +14,10 @@
 from collections import namedtuple
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
 from skimage.metrics import structural_similarity
-import numpy as np
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
