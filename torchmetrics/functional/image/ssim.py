@@ -181,12 +181,14 @@ def _ssim_compute(
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), \
-               reduce(contrast_sensitivity.reshape(contrast_sensitivity.shape[0], -1).mean(-1), reduction)
+        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), reduce(
+            contrast_sensitivity.reshape(contrast_sensitivity.shape[0], -1).mean(-1), reduction
+        )
 
     elif return_full_image:
-        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), \
-               reduce(ssim_idx_full_image, reduction)
+        return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction), reduce(
+            ssim_idx_full_image, reduction
+        )
 
     return reduce(ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), reduction)
 
