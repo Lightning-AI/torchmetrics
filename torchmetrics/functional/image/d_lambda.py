@@ -63,11 +63,12 @@ def _d_lambda_compute(
             - ``'none'``: no reduction will be applied
 
     Example:
-        >>> ms = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
-        >>> fused = ms * 0.75
-        >>> ms, target = _d_lambda_update(ms, fused)
+        >>> _ = torch.manual_seed(42)
+        >>> ms = torch.rand([16, 3, 16, 16])
+        >>> fused = torch.rand([16, 3, 16, 16])
+        >>> ms, fused = _d_lambda_update(ms, fused)
         >>> _d_lambda_compute(ms, fused)
-        tensor(3.4769e-08)
+        tensor(0.0234)
     """
     if p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
@@ -122,10 +123,11 @@ def spectral_distortion_index(
 
     Example:
         >>> from torchmetrics.functional import spectral_distortion_index
-        >>> ms = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
-        >>> fused = ms * 0.75
+        >>> _ = torch.manual_seed(42)
+        >>> ms = torch.rand([16, 3, 16, 16])
+        >>> fused = torch.rand([16, 3, 16, 16])
         >>> spectral_distortion_index(ms, fused)
-        tensor(3.4769e-08)
+        tensor(0.0234)
 
     References:
         [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
