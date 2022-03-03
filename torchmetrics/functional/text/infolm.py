@@ -288,44 +288,62 @@ class _InformationMeasure:
 def _get_dataloader(
     input_ids: Tensor, attention_mask: Tensor, idf: bool, batch_size: int, num_workers: int
 ) -> DataLoader:
+    """Prepare dataloader.
+
+    Args:
+        input_ids:
+            Indices of input sequence tokens in the vocabulary.
+        attention_mask:
+            Mask to avoid performing attention on padding token indices.
+        idf:
+            A batch size used for model processing.
+        num_threads:
+            A number of workers to use for a dataloader.
+
+    Return:
+        An instance of ``torch.utils.data.DataLoader`` used for iterating over examples.
+    """
     dataset = TokenizedDataset(input_ids, attention_mask, idf)
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
     return dataloader
 
 
-# def _get_mlm_labels(input_ids: Tensor, mask_idx: int) -> Tensor:
-#     mask = torch.zeros_like(input_ids).bool()
-#     mask[:, mask_idx] = 1
-#     mlm_labels = torch.where(mask, input_ids, -100)
-#     return mlm_labels
+def _get_special_tokens_map(tokenizer: PreTrainedModel) -> Dict[str, int]:
+    """Build a dictionary of model/tokenizer special tokens.
 
+    Args:
+        tokenizer:
+            Initialized tokenizer from HuggingFace's `transformers package.
 
-# def _get_pad_token_mask(
-#     input_ids: Tensor, pad_token_id: int, cls_token_id: int, sep_token_id: int, mask_idx: int, vocab_size: int
-# ) -> Tensor:
-#     """
-#     Args:
-#         input_ids:
-#         pad_token_id:
-#         cls_token_id:
-#         sep_token_id:
-#         mask_idx:
-#     """
-#     mlm_labels = _get_mlm_labels(input_ids, mask_idx)
-#     mlm_labels = mlm_labels[:, mask_idx]
-
-#     pad_token_mask = mlm_labels.eq(pad_token_id) | mlm_labels.eq(cls_token_id) | mlm_labels.eq(sep_token_id)
-#     pad_token_mask = pad_token_mask.unsqueeze(1).repeat(1, vocab_size)
-#     return pad_token_mask
+    Return:
+        A dictionary containing: mask_token_id, pad_token_id, sep_token_id and cls_token_id.
+    """
+    special_tokens_maps = {
+        "mask_token_id": tokenizer.mask_token_id,
+        "pad_token_id": tokenizer.pad_token_id,
+        "sep_token_id": tokenizer.sep_token_id,
+        "cls_token_id": tokenizer.cls_token_id,
+    }
+    return special_tokens_maps
 
 
 def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls_token_id: int) -> Tensor:
-    """
+    """Generate a token mask for differentiating all special tokens in the input batch.
+
     Args:
         input_ids:
+            Indices of input sequence tokens in the vocabulary.
         pad_token_id:
+            An id of ``<PAD>`` tokens that are used to make arrays of tokens the same size for batching purpose
         cls_token_id:
+            An id of ``<CLS>`` token that represents the class of the input. (It might be ``<BOS>`` token for some
+            models.)
         sep_token_id:
+            An id of ``<SEP>`` token that separates two different sentences in the same input. (It might be ``<EOS>``
+            token for some models.)
+
+    Return:
+        Tensor mask of 0s and 1s that masks all special tokens in the ``input_ids`` tensor.
     """
     token_mask = input_ids.eq(pad_token_id) | input_ids.eq(sep_token_id) | input_ids.eq(cls_token_id)
     return token_mask
@@ -334,16 +352,23 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
 def _get_batch_distribution(
     model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int]
 ) -> Tensor:
-    """
+    """Calculate a discrete probability distribution for a batch of examples according to the methodology described
+    in `InfoLM`_.
+
     Args:
         model:
+            Initialized model from HuggingFace's `transformers package.
         batch:
+            An input batch dictionary containing ``input_ids`` and ``attention_mask``.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
         max_length:
             A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
+
+    Return:
+        A discrete probability distribution.
     """
     seq_len = batch["input_ids"].shape[1]
     prob_distribution_batch: Union[Tensor, List[Tensor]] = []
@@ -383,10 +408,12 @@ def _get_data_distribution(
     special_tokens_map: Dict[str, int],
     verbose: bool,
 ) -> Tensor:
-    """
+    """Calculate a discrete probability distribution according to the methodology described in `InfoLM`_.
     Args:
         model:
+            Initialized model from HuggingFace's `transformers package.
         dataloader:
+            An instance of `torch.utils.data.DataLoader` used for iterating over examples.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
         max_length:
@@ -395,6 +422,9 @@ def _get_data_distribution(
             An indication of whether normalization using inverse document frequencies should be used.
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
+
+    Return:
+        A discrete probability distribution.
     """
     device = model.device
     prob_distribution: List[Tensor] = []
@@ -412,7 +442,8 @@ def _infolm_update(
     tokenizer: PreTrainedTokenizerBase,
     max_length: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """
+    """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
+
     Args:
         preds:
             An iterable of hypothesis corpus.
@@ -424,6 +455,7 @@ def _infolm_update(
             A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
 
     Return:
+        Tokenizerd ``preds`` and ``target`` sentences represented with ``input_ids`` and ``attention_mask`` tensors.
     """
     preds_input = tokenizer(preds, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
     target_input = tokenizer(target, padding="max_length", max_length=max_length, truncation=True, return_tensors="pt")
@@ -463,6 +495,7 @@ def _infolm_compute(
             An indication of whether a progress bar to be displayed during the embeddings calculation.
 
     Return:
+        A corpus-level InfoLM score.
     """
     preds_distribution = _get_data_distribution(model, preds_dataloader, temperature, idf, special_tokens_map, verbose)
     target_distribution = _get_data_distribution(
@@ -486,6 +519,7 @@ def infolm(
     batch_size: int = 64,
     num_threads: int = 4,
     verbose: bool = True,
+    return_sentence_level_score: bool = False,
 ) -> Tensor:
     """
     Calculate `InfoLM`_ [1] - i.e. calculate a distance/divergence between predicted and reference sentence discrete
@@ -535,13 +569,17 @@ def infolm(
             A number of threads to use for a dataloader.
         verbose:
             An indication of whether a progress bar to be displayed during the embeddings calculation.
+        return_sentence_level_score:
+            An indication whether a sentence-level chrF/chrF++ score to be returned.
 
-    Return:
+    Returns:
+        A corpus-level InfoLM score.
+        (Optionally) A list of sentence-level InfoLM scores if `return_sentence_level_score=True`.
 
     Example:
         >>> from torchmetrics.functional.text.infolm import infolm
-        >>> preds = []
-        >>> target = []
+        >>> preds = ['the cat is on the mat']
+        >>> target = ['there is a cat on the mat']
         >>> infolm(preds, target)
 
     References:
@@ -551,12 +589,7 @@ def infolm(
     tokenizer, model = _load_tokenizer_and_model(model_name_or_path, device)
     information_measure_cls = _InformationMeasure(information_measure, alpha, beta)
     max_length = max_length or model.config.max_length
-    special_tokens_map: Dict[str, int] = {
-        "mask_token_id": tokenizer.mask_token_id,
-        "pad_token_id": tokenizer.pad_token_id,
-        "sep_token_id": tokenizer.sep_token_id,
-        "cls_token_id": tokenizer.cls_token_id,
-    }
+    special_tokens_map = _get_special_tokens_map(tokenizer)
 
     preds_input_ids, preds_attention_mask, target_input_ids, target_attention_mask = _infolm_update(
         preds, target, tokenizer, max_length
