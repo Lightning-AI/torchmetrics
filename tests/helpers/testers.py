@@ -334,7 +334,9 @@ class MetricTester:
     `self.run_metric_test` is called inside.
     """
 
-    atol = 1e-8
+    atol: float = 1e-8
+    poolSize: int
+    pool: Pool
 
     def setup_class(self):
         """Setup the metric class.
@@ -418,6 +420,7 @@ class MetricTester:
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+            check_scriptable:
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
         """
@@ -538,6 +541,7 @@ class MetricTester:
             preds: torch tensor with predictions
             target: torch tensor with targets
             metric_module: the metric module to test
+            metric_functional:
             metric_args: dict with additional arguments used for class initialization
         """
         metric_args = metric_args or {}
@@ -567,10 +571,10 @@ class DummyMetric(Metric):
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx=None)
 
-    def update(self):
+    def _update(self):
         pass
 
-    def compute(self):
+    def _compute(self):
         pass
 
 
@@ -581,29 +585,29 @@ class DummyListMetric(Metric):
         super().__init__()
         self.add_state("x", [], dist_reduce_fx=None)
 
-    def update(self):
+    def _update(self):
         pass
 
-    def compute(self):
+    def _compute(self):
         pass
 
 
 class DummyMetricSum(DummyMetric):
-    def update(self, x):
+    def _update(self, x):
         self.x += x
 
-    def compute(self):
+    def _compute(self):
         return self.x
 
 
 class DummyMetricDiff(DummyMetric):
-    def update(self, y):
+    def _update(self, y):
         self.x -= y
 
-    def compute(self):
+    def _compute(self):
         return self.x
 
 
 class DummyMetricMultiOutput(DummyMetricSum):
-    def compute(self):
+    def _compute(self):
         return [self.x, self.x]

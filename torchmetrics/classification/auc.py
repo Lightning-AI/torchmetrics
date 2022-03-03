@@ -63,7 +63,7 @@ class AUC(Metric):
             " For large datasets this may lead to large memory footprint."
         )
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -75,7 +75,7 @@ class AUC(Metric):
         self.x.append(x)
         self.y.append(y)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes AUC based on inputs passed in to ``update`` previously."""
         x = dim_zero_cat(self.x)
         y = dim_zero_cat(self.y)

@@ -132,7 +132,7 @@ class ROUGEScore(Metric):
             for score in ["fmeasure", "precision", "recall"]:
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
-    def update(  # type: ignore
+    def _update(  # type: ignore
         self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
     ) -> None:
         """Compute rouge scores.
@@ -164,10 +164,10 @@ class ROUGEScore(Metric):
         )
         for rouge_key, metrics in output.items():
             for metric in metrics:
-                for type, value in metric.items():
-                    getattr(self, f"rouge{rouge_key}_{type}").append(value.to(self.device))
+                for tp, value in metric.items():
+                    getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))
 
-    def compute(self) -> Dict[str, Tensor]:
+    def _compute(self) -> Dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score.
 
         Return:
@@ -175,8 +175,8 @@ class ROUGEScore(Metric):
         """
         update_output = {}
         for rouge_key in self.rouge_keys_values:
-            for type in ["fmeasure", "precision", "recall"]:
-                update_output[f"rouge{rouge_key}_{type}"] = getattr(self, f"rouge{rouge_key}_{type}")
+            for tp in ["fmeasure", "precision", "recall"]:
+                update_output[f"rouge{rouge_key}_{tp}"] = getattr(self, f"rouge{rouge_key}_{tp}")
 
         return _rouge_score_compute(update_output)
 

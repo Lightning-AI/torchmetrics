@@ -108,7 +108,7 @@ class PeakSignalNoiseRatio(Metric):
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -128,7 +128,7 @@ class PeakSignalNoiseRatio(Metric):
             self.sum_squared_error.append(sum_squared_error)
             self.total.append(n_obs)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
         if self.data_range is not None:
             data_range = self.data_range

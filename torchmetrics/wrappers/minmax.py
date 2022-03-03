@@ -76,11 +76,11 @@ class MinMaxMetric(Metric):
         self.register_buffer("min_val", torch.tensor(float("inf")))
         self.register_buffer("max_val", torch.tensor(float("-inf")))
 
-    def update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+    def _update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
         """Updates the underlying metric."""
         self._base_metric.update(*args, **kwargs)
 
-    def compute(self) -> Dict[str, Tensor]:  # type: ignore
+    def _compute(self) -> Dict[str, Tensor]:  # type: ignore
         """Computes the underlying metric as well as max and min values for this metric.
 
         Returns a dictionary that consists of the computed value (``raw``), as well as the minimum (``min``) and maximum

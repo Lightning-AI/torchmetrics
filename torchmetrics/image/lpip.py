@@ -122,7 +122,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
+    def _update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
         """Update internal states with lpips score.
 
         Args:
@@ -141,7 +141,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.sum_scores += loss.sum()
         self.total += img1.shape[0]
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Compute final perceptual similarity metric."""
         if self.reduction == "mean":
             return self.sum_scores / self.total

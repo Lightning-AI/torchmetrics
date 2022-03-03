@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
-__doctest_requires__ = {("SignalDistortionRatio"): ["fast_bss_eval"]}
+__doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
 
 class SignalDistortionRatio(Metric):
@@ -126,7 +126,7 @@ class SignalDistortionRatio(Metric):
         self.add_state("sum_sdr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -140,7 +140,7 @@ class SignalDistortionRatio(Metric):
         self.sum_sdr += sdr_batch.sum()
         self.total += sdr_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average SDR."""
         return self.sum_sdr / self.total
 
@@ -204,7 +204,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         self.add_state("sum_si_sdr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -216,6 +216,6 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         self.sum_si_sdr += si_sdr_batch.sum()
         self.total += si_sdr_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average SI-SDR."""
         return self.sum_si_sdr / self.total

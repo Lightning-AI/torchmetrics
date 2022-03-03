@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.stoi import short_time_objective_intelligibil
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-__doctest_requires__ = {("ShortTimeObjectiveIntelligibility"): ["pystoi"]}
+__doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
 
 class ShortTimeObjectiveIntelligibility(Metric):
@@ -109,7 +109,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self.add_state("sum_stoi", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -123,6 +123,6 @@ class ShortTimeObjectiveIntelligibility(Metric):
         self.sum_stoi += stoi_batch.sum()
         self.total += stoi_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average STOI."""
         return self.sum_stoi / self.total

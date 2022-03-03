@@ -268,7 +268,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruth_boxes", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
+    def _update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
 
         Args:
@@ -332,22 +332,22 @@ class MeanAveragePrecision(Metric):
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
 
-    def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
+    def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
         """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
         Args:
-            id:
+            idx:
                 Image Id, equivalent to the index of supplied samples
             class_id:
                 Class Id of the supplied ground truth and detection labels
             max_det:
                 Maximum number of evaluated detection bounding boxes
         """
-        gt = self.groundtruth_boxes[id]
-        det = self.detection_boxes[id]
-        gt_label_mask = self.groundtruth_labels[id] == class_id
-        det_label_mask = self.detection_labels[id] == class_id
+        gt = self.groundtruth_boxes[idx]
+        det = self.detection_boxes[idx]
+        gt_label_mask = self.groundtruth_labels[idx] == class_id
+        det_label_mask = self.detection_labels[idx] == class_id
         if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
         gt = gt[gt_label_mask]
@@ -356,8 +356,8 @@ class MeanAveragePrecision(Metric):
             return Tensor([])
 
         # Sort by scores and use only max detections
-        scores = self.detection_scores[id]
-        scores_filtered = scores[self.detection_labels[id] == class_id]
+        scores = self.detection_scores[idx]
+        scores_filtered = scores[self.detection_labels[idx] == class_id]
         inds = torch.argsort(scores_filtered, descending=True)
         det = det[inds]
         if len(det) > max_det:
@@ -368,12 +368,12 @@ class MeanAveragePrecision(Metric):
         return ious
 
     def _evaluate_image(
-        self, id: int, class_id: int, area_range: Tuple[int, int], max_det: int, ious: dict
+        self, idx: int, class_id: int, area_range: Tuple[int, int], max_det: int, ious: dict
     ) -> Optional[dict]:
         """Perform evaluation for single class and image.
 
         Args:
-            id:
+            idx:
                 Image Id, equivalent to the index of supplied samples.
             class_id:
                 Class Id of the supplied ground truth and detection labels.
@@ -384,10 +384,10 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-        gt = self.groundtruth_boxes[id]
-        det = self.detection_boxes[id]
-        gt_label_mask = self.groundtruth_labels[id] == class_id
-        det_label_mask = self.detection_labels[id] == class_id
+        gt = self.groundtruth_boxes[idx]
+        det = self.detection_boxes[idx]
+        gt_label_mask = self.groundtruth_labels[idx] == class_id
+        det_label_mask = self.detection_labels[idx] == class_id
         if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return None
         gt = gt[gt_label_mask]
@@ -403,14 +403,14 @@ class MeanAveragePrecision(Metric):
         # Convert to uint8 temporarily and back to bool, because "Sort currently does not support bool dtype on CUDA"
         ignore_area_sorted = ignore_area_sorted.to(torch.bool)
         gt = gt[gtind]
-        scores = self.detection_scores[id]
+        scores = self.detection_scores[idx]
         scores_filtered = scores[det_label_mask]
         scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
         det = det[dtind]
         if len(det) > max_det:
             det = det[:max_det]
         # load computed ious
-        ious = ious[id, class_id][:, gtind] if len(ious[id, class_id]) > 0 else ious[id, class_id]
+        ious = ious[idx, class_id][:, gtind] if len(ious[idx, class_id]) > 0 else ious[idx, class_id]
 
         nb_iou_thrs = len(self.iou_thresholds)
         nb_gt = len(gt)
@@ -532,7 +532,9 @@ class MeanAveragePrecision(Metric):
         area_ranges = self.bbox_area_ranges.values()
 
         ious = {
-            (id, class_id): self._compute_iou(id, class_id, max_detections) for id in img_ids for class_id in class_ids
+            (idx, class_id): self._compute_iou(idx, class_id, max_detections)
+            for idx in img_ids
+            for class_id in class_ids
         }
 
         eval_imgs = [
@@ -669,7 +671,7 @@ class MeanAveragePrecision(Metric):
 
         return recall, precision, scores
 
-    def compute(self) -> dict:
+    def _compute(self) -> dict:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
 
         Note:
@@ -706,7 +708,7 @@ class MeanAveragePrecision(Metric):
 
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
-        map, mar = self._summarize_results(precisions, recalls)
+        map_val, mar_val = self._summarize_results(precisions, recalls)
 
         # if class mode is enabled, evaluate metrics per class
         map_per_class_values: Tensor = Tensor([-1])
@@ -726,8 +728,8 @@ class MeanAveragePrecision(Metric):
             mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list)
 
         metrics = COCOMetricResults()
-        metrics.update(map)
-        metrics.update(mar)
+        metrics.update(map_val)
+        metrics.update(mar_val)
         metrics.map_per_class = map_per_class_values
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
         return metrics

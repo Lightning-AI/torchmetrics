@@ -151,7 +151,7 @@ class Specificity(StatScores):
 
         self.average = average
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes the specificity score based on inputs passed in to ``update`` previously.
 
         Return:
