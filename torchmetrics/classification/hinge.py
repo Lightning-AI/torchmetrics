@@ -11,14 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Union
+from typing import Any, Dict, Optional, Union
 
-from deprecate import deprecated, void
 from torch import Tensor, tensor
 
 from torchmetrics.functional.classification.hinge import MulticlassMode, _hinge_compute, _hinge_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 
 
 class HingeLoss(Metric):
@@ -56,6 +54,15 @@ class HingeLoss(Metric):
             Which approach to use for multi-class inputs (has no effect in the binary case). ``None`` (default),
             ``MulticlassMode.CRAMMER_SINGER`` or ``"crammer-singer"``, uses the Crammer Singer multi-class hinge loss.
             ``MulticlassMode.ONE_VS_ALL`` or ``"one-vs-all"`` computes the hinge loss in a one-vs-all fashion.
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
 
     Raises:
         ValueError:
@@ -95,17 +102,10 @@ class HingeLoss(Metric):
         self,
         squared: bool = False,
         multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.add_state("measure", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
@@ -120,49 +120,11 @@ class HingeLoss(Metric):
         self.squared = squared
         self.multiclass_mode = multiclass_mode
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         measure, total = _hinge_update(preds, target, squared=self.squared, multiclass_mode=self.multiclass_mode)
 
         self.measure = measure + self.measure
         self.total = total + self.total
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         return _hinge_compute(self.measure, self.total)
-
-
-class Hinge(HingeLoss):
-    r"""
-    Computes the mean `Hinge loss`_, typically used for Support Vector Machines (SVMs).
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.HingeLoss`. Will be removed in v0.8.
-
-    Example (binary case):
-        >>> import torch
-        >>> hinge = Hinge()
-        >>> hinge(torch.tensor([-2.2, 2.4, 0.1]), torch.tensor([0, 1, 1]))
-        tensor(0.3000)
-
-    Example (default / multiclass case):
-        >>> hinge = Hinge()
-        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
-        tensor(2.9000)
-
-    Example (multiclass example, one vs all mode):
-        >>> hinge = Hinge(multiclass_mode="one-vs-all")
-        >>> hinge(torch.tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]]), torch.tensor([0, 1, 2]))
-        tensor([2.2333, 1.5000, 1.2333])
-
-    """
-
-    @deprecated(target=HingeLoss, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        squared: bool = False,
-        multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(squared, multiclass_mode, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

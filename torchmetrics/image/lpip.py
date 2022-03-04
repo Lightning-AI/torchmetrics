@@ -11,14 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional
+from typing import Any, Dict, List, Optional
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 if _LPIPS_AVAILABLE:
@@ -61,16 +59,13 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
         reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
@@ -103,17 +98,10 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self,
         net_type: str = "alex",
         reduction: str = "mean",
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         if not _LPIPS_AVAILABLE:
             raise ModuleNotFoundError(
@@ -134,7 +122,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
+    def _update(self, img1: Tensor, img2: Tensor) -> None:  # type: ignore
         """Update internal states with lpips score.
 
         Args:
@@ -153,42 +141,9 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.sum_scores += loss.sum()
         self.total += img1.shape[0]
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Compute final perceptual similarity metric."""
         if self.reduction == "mean":
             return self.sum_scores / self.total
         if self.reduction == "sum":
             return self.sum_scores
-
-
-class LPIPS(LearnedPerceptualImagePatchSimilarity):
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) is used to judge the perceptual similarity between
-    two images. LPIPS essentially computes the similarity between the activations of two image patches for some
-    pre-defined network.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.image.LearnedPerceptualImagePatchSimilarity`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
-        >>> lpips = LPIPS(net_type='vgg')
-        >>> img1 = torch.rand(10, 3, 100, 100)
-        >>> img2 = torch.rand(10, 3, 100, 100)
-        >>> lpips(img1, img2)
-        tensor(0.3566, grad_fn=<SqueezeBackward0>)
-    """
-
-    @deprecated(
-        target=LearnedPerceptualImagePatchSimilarity, deprecated_in="0.7", remove_in="0.8", stream=_future_warning
-    )
-    def __init__(
-        self,
-        net_type: str = "alex",
-        reduction: str = "mean",
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable[[Tensor], List[Tensor]] = None,
-    ) -> None:
-        void(net_type, reduction, compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)

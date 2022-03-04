@@ -11,16 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.ssim import _multiscale_ssim_compute, _ssim_compute, _ssim_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -40,11 +38,21 @@ class StructuralSimilarityIndexMeasure(Metric):
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
 
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
     Return:
         Tensor with SSIM score
 
     Example:
         >>> from torchmetrics import StructuralSimilarityIndexMeasure
+        >>> import torch
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure()
@@ -64,15 +72,10 @@ class StructuralSimilarityIndexMeasure(Metric):
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
             "Metric `SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -88,7 +91,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.k2 = k2
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -99,43 +102,13 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ssim_compute(
             preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
         )
-
-
-class SSIM(StructuralSimilarityIndexMeasure):
-    """Computes Structual Similarity Index Measure (SSIM_).
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.StructuralSimilarityIndexMeasure`. Will be removed in v0.8.
-
-    Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> ssim = SSIM()
-        >>> ssim(preds, target)
-        tensor(0.9219)
-    """
-
-    @deprecated(target=StructuralSimilarityIndexMeasure, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
-        reduction: str = "elementwise_mean",
-        data_range: Optional[float] = None,
-        k1: float = 0.01,
-        k2: float = 0.03,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-    ) -> None:
-        void(kernel_size, sigma, reduction, data_range, k1, k2, compute_on_step, dist_sync_on_step, process_group)
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
@@ -159,12 +132,20 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         normalize: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
             normalizes to improve the training stability. This `normalize` argument is out of scope of the original
             implementation [1], and it is adapted from https://github.com/jorge-pessoa/pytorch-msssim instead.
+        compute_on_step:
+            Forward only calls ``update()`` and returns None if this is set to False.
 
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     Return:
         Tensor with Multi-Scale SSIM score
 
     Example:
         >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+        >>> import torch
         >>> preds = torch.rand([1, 1, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure()
@@ -191,15 +172,10 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         k2: float = 0.03,
         betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Optional[Literal["relu", "simple"]] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
             "Metric `MS_SSIM` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -230,7 +206,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
         self.normalize = normalize
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -241,7 +217,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)

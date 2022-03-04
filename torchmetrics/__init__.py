@@ -20,10 +20,9 @@ from torchmetrics.audio import (  # noqa: E402
     SignalDistortionRatio,
     SignalNoiseRatio,
 )
-from torchmetrics.classification import (  # noqa: E402, F401
+from torchmetrics.classification import (  # noqa: E402
     AUC,
     AUROC,
-    F1,
     ROC,
     Accuracy,
     AveragePrecision,
@@ -34,15 +33,11 @@ from torchmetrics.classification import (  # noqa: E402, F401
     CohenKappa,
     ConfusionMatrix,
     F1Score,
-    FBeta,
     FBetaScore,
     HammingDistance,
-    Hinge,
     HingeLoss,
-    IoU,
     JaccardIndex,
     KLDivergence,
-    MatthewsCorrcoef,
     MatthewsCorrCoef,
     Precision,
     PrecisionRecallCurve,
@@ -52,11 +47,10 @@ from torchmetrics.classification import (  # noqa: E402, F401
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
-    PSNR,
-    SSIM,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     StructuralSimilarityIndexMeasure,
+    UniversalImageQualityIndex,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
@@ -66,10 +60,8 @@ from torchmetrics.regression import (  # noqa: E402
     MeanAbsolutePercentageError,
     MeanSquaredError,
     MeanSquaredLogError,
-    PearsonCorrcoef,
     PearsonCorrCoef,
     R2Score,
-    SpearmanCorrcoef,
     SpearmanCorrCoef,
     SymmetricMeanAbsolutePercentageError,
     TweedieDevianceScore,
@@ -97,7 +89,13 @@ from torchmetrics.text import (  # noqa: E402
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.wrappers import BootStrapper, MetricTracker, MinMaxMetric, MultioutputWrapper  # noqa: E402
+from torchmetrics.wrappers import (  # noqa: E402
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+)
 
 __all__ = [
     "functional",
@@ -112,6 +110,7 @@ __all__ = [
     "BootStrapper",
     "CalibrationError",
     "CatMetric",
+    "ClasswiseWrapper",
     "CHRFScore",
     "CohenKappa",
     "ConfusionMatrix",
@@ -119,16 +118,12 @@ __all__ = [
     "TweedieDevianceScore",
     "ExplainedVariance",
     "ExtendedEditDistance",
-    "F1",
     "F1Score",
-    "FBeta",
     "FBetaScore",
     "HammingDistance",
-    "Hinge",
     "HingeLoss",
     "JaccardIndex",
     "KLDivergence",
-    "MatthewsCorrcoef",
     "MatthewsCorrCoef",
     "MaxMetric",
     "MeanAbsoluteError",
@@ -143,12 +138,10 @@ __all__ = [
     "MinMetric",
     "MultioutputWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
-    "PearsonCorrcoef",
     "PearsonCorrCoef",
     "PermutationInvariantTraining",
     "Precision",
     "PrecisionRecallCurve",
-    "PSNR",
     "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
@@ -166,16 +159,15 @@ __all__ = [
     "ScaleInvariantSignalDistortionRatio",
     "ScaleInvariantSignalNoiseRatio",
     "SignalNoiseRatio",
-    "SpearmanCorrcoef",
     "SpearmanCorrCoef",
     "Specificity",
     "SQuAD",
-    "SSIM",
     "StructuralSimilarityIndexMeasure",
     "StatScores",
     "SumMetric",
     "SymmetricMeanAbsolutePercentageError",
     "TranslationEditRate",
+    "UniversalImageQualityIndex",
     "WordErrorRate",
     "CharErrorRate",
     "MatchErrorRate",

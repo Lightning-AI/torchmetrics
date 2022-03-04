@@ -12,12 +12,7 @@ assignees: ''
 
 ### To Reproduce
 
-Steps to reproduce the behavior:
-
-1. Go to '...'
-1. Run '....'
-1. Scroll down to '....'
-1. See error
+Steps to reproduce the behavior...
 
 <!-- If you have a code sample, error messages, stack traces, please provide it here as well -->
 
@@ -32,13 +27,9 @@ Minimal means having the shortest code but still preserving the bug. -->
 
 ### Environment
 
-- PyTorch Version (e.g., 1.0):
 - OS (e.g., Linux):
-- How you installed PyTorch (`conda`, `pip`, source):
-- Build command you used (if compiling from source):
-- Python version:
-- CUDA/cuDNN version:
-- GPU models and configuration:
+- Python & PyTorch Version (e.g., 1.0):
+- How you installed PyTorch (`conda`, `pip`, build command if you used source):
 - Any other relevant information:
 
 ### Additional context

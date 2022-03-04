@@ -1,6 +1,5 @@
 from collections import namedtuple
 from functools import partial
-from typing import Any, Callable, Optional
 
 import pytest
 import torch
@@ -24,37 +23,19 @@ class _MultioutputMetric(Metric):
         self,
         base_metric_class,
         num_outputs: int = 1,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Any = None,
-        dist_sync_fn: Optional[Callable] = None,
-        **base_metric_kwargs,
+        **kwargs,
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(**kwargs)
         self.metric = MultioutputWrapper(
-            base_metric_class(
-                compute_on_step=compute_on_step,
-                dist_sync_on_step=dist_sync_on_step,
-                process_group=process_group,
-                dist_sync_fn=dist_sync_fn,
-                **base_metric_kwargs,
-            ),
+            base_metric_class(**kwargs),
             num_outputs=num_outputs,
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            dist_sync_fn=dist_sync_fn,
         )
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+    def _update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
         """Update the each pair of outputs and predictions."""
         return self.metric.update(preds, target)
 
-    def compute(self) -> torch.Tensor:
+    def _compute(self) -> torch.Tensor:
         """Compute the R2 score between each pair of outputs and predictions."""
         return self.metric.compute()
 

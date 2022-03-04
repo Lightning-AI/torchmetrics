@@ -11,16 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
-from deprecate import deprecated, void
 from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import _future_warning, rank_zero_warn
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -114,16 +113,13 @@ class KernelInceptionDistance(Metric):
         coef:
             Bias term in the polynomial kernel.
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     References:
         [1] Demystifying MMD GANs
@@ -177,17 +173,10 @@ class KernelInceptionDistance(Metric):
         degree: int = 3,
         gamma: Optional[float] = None,  # type: ignore
         coef: float = 1.0,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         rank_zero_warn(
             "Metric `Kernel Inception Distance` will save all extracted features in buffer."
@@ -237,7 +226,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def _update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
 
         Args:
@@ -251,7 +240,7 @@ class KernelInceptionDistance(Metric):
         else:
             self.fake_features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def _compute(self) -> Tuple[Tensor, Tensor]:
         """Calculate KID score based on accumulated extracted features from the two distributions. Returns a tuple
         of mean and standard deviation of KID scores calculated on subsets of extracted features.
 
@@ -278,53 +267,3 @@ class KernelInceptionDistance(Metric):
             kid_scores_.append(o)
         kid_scores = torch.stack(kid_scores_)
         return kid_scores.mean(), kid_scores.std(unbiased=False)
-
-
-class KID(KernelInceptionDistance):
-    r"""
-    Calculates Kernel Inception Distance (KID) which is used to access the quality of generated images.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.image.KernelInceptionDistance`. Will be removed in v0.8.
-
-    Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
-        >>> kid = KID(subset_size=50)
-        >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> kid.update(imgs_dist1, real=True)
-        >>> kid.update(imgs_dist2, real=False)
-        >>> kid_mean, kid_std = kid.compute()
-        >>> print((kid_mean, kid_std))
-        (tensor(0.0337), tensor(0.0023))
-
-    """
-
-    @deprecated(target=KernelInceptionDistance, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        feature: Union[str, int, torch.nn.Module] = 2048,
-        subsets: int = 100,
-        subset_size: int = 1000,
-        degree: int = 3,
-        gamma: Optional[float] = None,  # type: ignore
-        coef: float = 1.0,
-        compute_on_step: bool = False,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(
-            feature,
-            subsets,
-            subset_size,
-            degree,
-            gamma,
-            coef,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
-        )

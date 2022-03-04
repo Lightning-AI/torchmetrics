@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -91,16 +91,13 @@ class StatScores(Metric):
             for a more detailed explanation and examples.
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -143,17 +140,10 @@ class StatScores(Metric):
         ignore_index: Optional[int] = None,
         mdmc_reduce: Optional[str] = None,
         multiclass: Optional[bool] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.reduce = reduce
         self.mdmc_reduce = mdmc_reduce
@@ -172,7 +162,7 @@ class StatScores(Metric):
         if reduce == "macro" and (not num_classes or num_classes < 1):
             raise ValueError("When you set `reduce` as 'macro', you have to provide the number of classes.")
 
-        if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
+        if num_classes and ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
         default: Callable = lambda: []
@@ -190,7 +180,7 @@ class StatScores(Metric):
         for s in ("tp", "fp", "tn", "fn"):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
         :ref:`references/modules:input types` for more information on input
         types.
@@ -232,7 +222,7 @@ class StatScores(Metric):
         fn = torch.cat(self.fn) if isinstance(self.fn, list) else self.fn
         return tp, fp, tn, fn
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes the stat scores based on inputs passed in to ``update`` previously.
 
         Return:

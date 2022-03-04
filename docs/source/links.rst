@@ -78,3 +78,4 @@
 .. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
+.. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823

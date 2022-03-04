@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
 from torch import Tensor, tensor
 
@@ -39,14 +39,12 @@ class SignalNoiseRatio(Metric):
             if to zero mean target and preds or not
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
@@ -77,23 +75,16 @@ class SignalNoiseRatio(Metric):
     def __init__(
         self,
         zero_mean: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.zero_mean = zero_mean
 
         self.add_state("sum_snr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -105,7 +96,7 @@ class SignalNoiseRatio(Metric):
         self.sum_snr += snr_batch.sum()
         self.total += snr_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average SNR."""
         return self.sum_snr / self.total
 
@@ -121,14 +112,12 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     Args:
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         TypeError:
@@ -159,22 +148,15 @@ class ScaleInvariantSignalNoiseRatio(Metric):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.add_state("sum_si_snr", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -186,6 +168,6 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         self.sum_si_snr += si_snr_batch.sum()
         self.total += si_snr_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average SI-SNR."""
         return self.sum_si_snr / self.total

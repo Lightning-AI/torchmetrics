@@ -97,15 +97,13 @@ class BERTScore(Metric):
         baseline_url:
             A url path to the user's own  csv/tsv file with the baseline scale.
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
         Python dictionary containing the keys `precision`, `recall` and `f1` with corresponding values.
@@ -115,11 +113,11 @@ class BERTScore(Metric):
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
+        >>> score = bertscore(preds, target)
         >>> from pprint import pprint
-        >>> pprint(bertscore(preds, target)) # doctest: +ELLIPSIS
-        {'f1': [0.999..., 0.996...],
-         'precision': [0.999..., 0.996...],
-         'recall': [0.999..., 0.996...]}
+        >>> rounded_score = {k: [round(v, 3) for v in vv] for k, vv in score.items()}
+        >>> pprint(rounded_score)
+        {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
     """
 
     is_differentiable = False
@@ -148,17 +146,10 @@ class BERTScore(Metric):
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ):
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.model_name_or_path = model_name_or_path or _DEFAULT_MODEL
         self.num_layers = num_layers
         self.all_layers = all_layers
@@ -201,7 +192,7 @@ class BERTScore(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    def update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
+    def _update(self, preds: List[str], target: List[str]) -> None:  # type: ignore
         """Store predictions/references for computing BERT scores. It is necessary to store sentences in a
         tokenized form to ensure the DDP mode working.
 
@@ -233,7 +224,7 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> Dict[str, Union[List[float], str]]:
+    def _compute(self) -> Dict[str, Union[List[float], str]]:
         """Calculate BERT scores.
 
         Return:

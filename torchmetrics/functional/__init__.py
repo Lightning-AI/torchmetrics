@@ -22,10 +22,9 @@ from torchmetrics.functional.classification.calibration_error import calibration
 from torchmetrics.functional.classification.cohen_kappa import cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 from torchmetrics.functional.classification.dice import dice_score
-from torchmetrics.functional.classification.f_beta import f1, f1_score, fbeta, fbeta_score
+from torchmetrics.functional.classification.f_beta import f1_score, fbeta_score
 from torchmetrics.functional.classification.hamming import hamming_distance
-from torchmetrics.functional.classification.hinge import hinge, hinge_loss
-from torchmetrics.functional.classification.iou import iou  # noqa: F401
+from torchmetrics.functional.classification.hinge import hinge_loss
 from torchmetrics.functional.classification.jaccard import jaccard_index
 from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
@@ -35,12 +34,12 @@ from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
-from torchmetrics.functional.image.psnr import peak_signal_noise_ratio, psnr
+from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
-    ssim,
     structural_similarity_index_measure,
 )
+from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
@@ -96,12 +95,9 @@ __all__ = [
     "dice_score",
     "explained_variance",
     "extended_edit_distance",
-    "f1",
     "f1_score",
-    "fbeta",
     "fbeta_score",
     "hamming_distance",
-    "hinge",
     "hinge_loss",
     "image_gradients",
     "jaccard_index",
@@ -123,7 +119,6 @@ __all__ = [
     "precision_recall",
     "precision_recall_curve",
     "peak_signal_noise_ratio",
-    "psnr",
     "r2_score",
     "recall",
     "retrieval_average_precision",
@@ -144,11 +139,11 @@ __all__ = [
     "spearman_corrcoef",
     "specificity",
     "squad",
-    "ssim",
     "structural_similarity_index_measure",
     "stat_scores",
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",
+    "universal_image_quality_index",
     "word_error_rate",
     "char_error_rate",
     "match_error_rate",

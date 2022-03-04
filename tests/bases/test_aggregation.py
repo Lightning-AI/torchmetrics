@@ -31,33 +31,33 @@ def compare_max(values, weights):
 class WrappedMinMetric(MinMetric):
     """Wrapped min metric."""
 
-    def update(self, values, weights):
+    def _update(self, values, weights):
         """only pass values on."""
-        super().update(values)
+        super()._update(values)
 
 
 class WrappedMaxMetric(MaxMetric):
     """Wrapped max metric."""
 
-    def update(self, values, weights):
+    def _update(self, values, weights):
         """only pass values on."""
-        super().update(values)
+        super()._update(values)
 
 
 class WrappedSumMetric(SumMetric):
     """Wrapped min metric."""
 
-    def update(self, values, weights):
+    def _update(self, values, weights):
         """only pass values on."""
-        super().update(values)
+        super()._update(values)
 
 
 class WrappedCatMetric(CatMetric):
     """Wrapped cat metric."""
 
-    def update(self, values, weights):
+    def _update(self, values, weights):
         """only pass values on."""
-        super().update(values)
+        super()._update(values)
 
 
 @pytest.mark.parametrize(

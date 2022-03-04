@@ -13,8 +13,8 @@
 # limitations under the License.
 import functools
 import inspect
-import operator as op
-from abc import ABC, abstractmethod
+import warnings
+from abc import ABC
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
@@ -35,11 +35,24 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _LIGHTNING_AVAILABLE, _compare_version
 
 
 def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
+
+
+def is_overridden(method_name: str, instance: object, parent: object) -> bool:
+    """Tempoary needed function to make sure that users move from old interface of overwriting update and compute
+    to instead of implementing _update and _compute.
+
+    Remove in v0.9
+    """
+    instance_attr = getattr(instance, method_name, None)
+    parent_attr = getattr(parent, method_name)
+    if instance_attr is None:
+        return False
+
+    return instance_attr.__code__ != parent_attr.__code__
 
 
 class Metric(Module, ABC):
@@ -64,15 +77,39 @@ class Metric(Module, ABC):
     Args:
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
         dist_sync_on_step:
             Synchronize metric state across processes at each ``forward()``
             before returning the value at the step.
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
         process_group:
-            Specify the process group on which synchronization is called.
-            default: `None` (which selects the entire world)
+            Specify the process group on which synchronization is called. Defaults is `None`
+            which selects the entire world
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
         dist_sync_fn:
             Callback that performs the allgather operation on the metric state. When `None`, DDP
             will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument is deprecated and will be removed in v0.9 in favour of instead
+                passing it in as keyword argument.
+
+        kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+            - dist_sync_on_step: If metric state should synchronize on ``forward()``
+            - process_group: The process group on which the synchronization is called
+            - dist_sync_fn: function that performs the allgather option on the metric state
     """
 
     __jit_ignored_attributes__ = ["device"]
@@ -82,10 +119,8 @@ class Metric(Module, ABC):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__()
 
@@ -93,27 +128,64 @@ class Metric(Module, ABC):
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
-        self._LIGHTNING_GREATER_EQUAL_1_3 = _compare_version("pytorch_lightning", op.ge, "1.3.0")
         self._device = torch.device("cpu")
 
-        self.dist_sync_on_step = dist_sync_on_step
-        self.compute_on_step = compute_on_step
-        self.process_group = process_group
-        self.dist_sync_fn = dist_sync_fn
-        self._to_sync = True
-        self._should_unsync = True
+        if compute_on_step is not None:
+            warnings.warn(
+                "Argument `compute_on_step` is deprecated in v0.8 and will be removed in v0.9", DeprecationWarning
+            )
+        self.dist_sync_on_step = kwargs.pop("dist_sync_on_step", False)
+        if not isinstance(self.dist_sync_on_step, bool):
+            raise ValueError(
+                f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
+            )
+        self.process_group = kwargs.pop("process_group", None)
+        self.dist_sync_fn = kwargs.pop("dist_sync_fn", None)
+        if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
+            raise ValueError(
+                f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
+            )
 
-        self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
+        # check update and compute format
+        if is_overridden("update", self, Metric):
+            warnings.warn(
+                "We detected that you have overwritten the ``update`` method, which was the API"
+                " for torchmetrics v0.7 and below. Insted implement the ``_update`` method."
+                " (exact same as before just with a ``_`` infront to make the implementation private)"
+                " Implementing `update` directly was deprecated in v0.8 and will be removed in v0.9.",
+                DeprecationWarning,
+            )
+            self._update_signature = inspect.signature(self.update)
+            self.update: Callable = self._wrap_update(self.update)  # type: ignore
+        else:
+            if not hasattr(self, "_update"):
+                raise NotImplementedError("Expected method `_update` to be implemented in subclass.")
+            self._update_signature = inspect.signature(self._update)
+
+        if is_overridden("compute", self, Metric):
+            warnings.warn(
+                "We detected that you have overwritten the ``compute`` method, which was the API"
+                " for torchmetrics v0.7 and below. Insted implement the ``_compute`` method."
+                " (exact same as before just with a ``_`` infront to make the implementation private)"
+                " Implementing `compute` directly was deprecated in v0.8 and will be removed in v0.9.",
+                DeprecationWarning,
+            )
+            self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
+        else:
+            if not hasattr(self, "_compute"):
+                raise NotImplementedError("Expected method `_compute` to be implemented in subclass.")
+
+        # initialize
         self._computed = None
         self._forward_cache = None
         self._update_called = False
+        self._to_sync = True
+        self._should_unsync = True
 
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
         self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[[Union[List[Tensor], Tensor]], Tensor], None]] = {}
+        self._reductions: Dict[str, Union[str, Callable[..., Any], None]] = {}
 
         # state management
         self._is_synced = False
@@ -204,29 +276,28 @@ class Metric(Module, ABC):
         with torch.no_grad():
             self.update(*args, **kwargs)
 
-        if self.compute_on_step:
-            self._to_sync = self.dist_sync_on_step
-            # skip restore cache operation from compute as cache is stored below.
-            self._should_unsync = False
+        self._to_sync = self.dist_sync_on_step  # type: ignore
+        # skip restore cache operation from compute as cache is stored below.
+        self._should_unsync = False
 
-            # save context before switch
-            cache = {attr: getattr(self, attr) for attr in self._defaults}
+        # save context before switch
+        cache = {attr: getattr(self, attr) for attr in self._defaults}
 
-            # call reset, update, compute, on single batch
-            self.reset()
-            self.update(*args, **kwargs)
-            self._forward_cache = self.compute()
+        # call reset, update, compute, on single batch
+        self.reset()
+        self.update(*args, **kwargs)
+        self._forward_cache = self.compute()
 
-            # restore context
-            for attr, val in cache.items():
-                setattr(self, attr, val)
-            self._is_synced = False
+        # restore context
+        for attr, val in cache.items():
+            setattr(self, attr, val)
+        self._is_synced = False
 
-            self._should_unsync = True
-            self._to_sync = True
-            self._computed = None
+        self._should_unsync = True
+        self._to_sync = True
+        self._computed = None
 
-            return self._forward_cache
+        return self._forward_cache
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
@@ -254,15 +325,6 @@ class Metric(Module, ABC):
                 raise TypeError("reduction_fn must be callable or None")
             reduced = reduction_fn(output_dict[attr]) if reduction_fn is not None else output_dict[attr]
             setattr(self, attr, reduced)
-
-    def _wrap_update(self, update: Callable) -> Callable:
-        @functools.wraps(update)
-        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
-            self._computed = None
-            self._update_called = True
-            return update(*args, **kwargs)
-
-        return wrapped_func
 
     def sync(
         self,
@@ -356,6 +418,15 @@ class Metric(Module, ABC):
 
         self.unsync(should_unsync=self._is_synced and should_unsync)
 
+    def _wrap_update(self, update: Callable) -> Callable:
+        @functools.wraps(update)
+        def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
+            self._computed = None
+            self._update_called = True
+            return update(*args, **kwargs)
+
+        return wrapped_func
+
     def _wrap_compute(self, compute: Callable) -> Callable:
         @functools.wraps(compute)
         def wrapped_func(*args: Any, **kwargs: Any) -> Any:
@@ -375,7 +446,9 @@ class Metric(Module, ABC):
             # if synchronization happened, the current rank accumulated states will be restored to keep
             # accumulation going if ``should_unsync=True``,
             with self.sync_context(
-                dist_sync_fn=self.dist_sync_fn, should_sync=self._to_sync, should_unsync=self._should_unsync
+                dist_sync_fn=self.dist_sync_fn,  # type: ignore
+                should_sync=self._to_sync,
+                should_unsync=self._should_unsync,
             ):
                 value = compute(*args, **kwargs)
                 self._computed = _squeeze_if_scalar(value)
@@ -384,22 +457,42 @@ class Metric(Module, ABC):
 
         return wrapped_func
 
-    @abstractmethod
-    def update(self, *_: Any, **__: Any) -> None:
-        """Override this method to update the state variables of your metric class."""
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        self._computed = None
+        self._update_called = True
+        self._update(*args, **kwargs)
 
-    @abstractmethod
     def compute(self) -> Any:
-        """Override this method to compute the final metric value from state variables synchronized across the
-        distributed backend."""
+        if not self._update_called:
+            rank_zero_warn(
+                f"The ``compute`` method of metric {self.__class__.__name__}"
+                " was called before the ``update`` method which may lead to errors,"
+                " as metric states have not yet been updated.",
+                UserWarning,
+            )
+
+        # return cached value
+        if self._computed is not None:
+            return self._computed
+
+        # compute relies on the sync context manager to gather the states across processes and apply reduction
+        # if synchronization happened, the current rank accumulated states will be restored to keep
+        # accumulation going if ``should_unsync=True``,
+        with self.sync_context(
+            dist_sync_fn=self.dist_sync_fn,  # type: ignore
+            should_sync=self._to_sync,
+            should_unsync=self._should_unsync,
+        ):
+            value = self._compute()
+            self._computed = _squeeze_if_scalar(value)
+
+        return self._computed
 
     def reset(self) -> None:
         """This method automatically resets the metric state variables to their default value."""
         self._update_called = False
         self._forward_cache = None
-        # lower lightning versions requires this implicitly to log metric objects correctly in self.log
-        if not _LIGHTNING_AVAILABLE or self._LIGHTNING_GREATER_EQUAL_1_3:
-            self._computed = None
+        self._computed = None
 
         for attr, default in self._defaults.items():
             current_val = getattr(self, attr)
@@ -424,8 +517,6 @@ class Metric(Module, ABC):
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in ("higher_is_better", "is_differentiable"):
@@ -465,7 +556,7 @@ class Metric(Module, ABC):
         """
         return self
 
-    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> None:
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
         """Special version of `type` for transferring all metric states to specific dtype
         Arguments:
             dst_type (type or string): the desired type
@@ -737,14 +828,14 @@ class CompositionalMetric(Metric):
         # No syncing required here. syncing will be done in metric_a and metric_b
         pass
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def _update(self, *args: Any, **kwargs: Any) -> None:
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
         if isinstance(self.metric_b, Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
-    def compute(self) -> Any:
+    def _compute(self) -> Any:
 
         # also some parsing for kwargs?
         if isinstance(self.metric_a, Metric):
@@ -809,6 +900,3 @@ class CompositionalMetric(Metric):
         repr_str = self.__class__.__name__ + _op_metrics
 
         return repr_str
-
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        return compute

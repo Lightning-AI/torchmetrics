@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
 from torch import Tensor, tensor
 
@@ -127,16 +127,13 @@ class Accuracy(StatScores):
               still applies in both cases, if set.
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -179,10 +176,8 @@ class Accuracy(StatScores):
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
         subset_accuracy: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
         if average not in allowed_average:
@@ -197,13 +192,8 @@ class Accuracy(StatScores):
             multiclass=multiclass,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+            **kwargs,
         )
-
-        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
         if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
             raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
@@ -214,8 +204,13 @@ class Accuracy(StatScores):
         self.subset_accuracy = subset_accuracy
         self.mode: DataType = None  # type: ignore
         self.multiclass = multiclass
+        self.ignore_index = ignore_index
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        if self.subset_accuracy:
+            self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
         :ref:`references/modules:input types` for more information on input
         types.
@@ -225,7 +220,7 @@ class Accuracy(StatScores):
             target: Ground truth labels
         """
         """ returns the mode of the data (binary, multi label, multi class, multi-dim multi class) """
-        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass)
+        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass, self.ignore_index)
 
         if not self.mode:
             self.mode = mode
@@ -236,7 +231,9 @@ class Accuracy(StatScores):
             self.subset_accuracy = False
 
         if self.subset_accuracy:
-            correct, total = _subset_accuracy_update(preds, target, threshold=self.threshold, top_k=self.top_k)
+            correct, total = _subset_accuracy_update(
+                preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index
+            )
             self.correct += correct
             self.total += total
         else:
@@ -267,7 +264,7 @@ class Accuracy(StatScores):
                 self.tn.append(tn)
                 self.fn.append(fn)
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes accuracy based on inputs passed in to ``update`` previously."""
         if not self.mode:
             raise RuntimeError("You have to have determined mode.")

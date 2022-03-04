@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, List, Tuple
 
 import torch
 from torch import nn
@@ -55,15 +55,6 @@ class MultioutputWrapper(Metric):
             If true, will squeeze the 1-item dimensions left after `index_select` is applied.
             This is sometimes unnecessary but harmless for metrics such as `R2Score` but useful
             for certain classification metrics that can't handle additional 1-item dimensions.
-        compute_on_step:
-            Whether to recompute the metric value on each update step.
-        dist_sync_on_step:
-            Required for distributed training support.
-        process_group:
-            Specify the process group on which synchronization is called.
-            The
-        dist_sync_fn:
-            Required for distributed training support.
 
     Example:
 
@@ -97,17 +88,12 @@ class MultioutputWrapper(Metric):
         output_dim: int = -1,
         remove_nans: bool = True,
         squeeze_outputs: bool = True,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
     ):
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__()
+        if not isinstance(base_metric, Metric):
+            raise ValueError(
+                "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
+            )
         self.metrics = nn.ModuleList([deepcopy(base_metric) for _ in range(num_outputs)])
         self.output_dim = output_dim
         self.remove_nans = remove_nans
@@ -136,13 +122,13 @@ class MultioutputWrapper(Metric):
             args_kwargs_by_output.append((selected_args, selected_kwargs))
         return args_kwargs_by_output
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def _update(self, *args: Any, **kwargs: Any) -> None:
         """Update each underlying metric with the corresponding output."""
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
             metric.update(*selected_args, **selected_kwargs)
 
-    def compute(self) -> List[torch.Tensor]:
+    def _compute(self) -> List[torch.Tensor]:
         """Compute metrics."""
         return [m.compute() for m in self.metrics]
 

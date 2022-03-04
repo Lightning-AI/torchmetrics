@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
@@ -59,14 +59,13 @@ class CohenKappa(Metric):
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
 
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
+            Forward only calls ``update()`` and returns None if this is set to False.
 
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
 
-        process_group:
-            Specify the process group on which synchronization is called.
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import CohenKappa
@@ -86,15 +85,10 @@ class CohenKappa(Metric):
         num_classes: int,
         weights: Optional[str] = None,
         threshold: float = 0.5,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         self.num_classes = num_classes
         self.weights = weights
         self.threshold = threshold
@@ -103,9 +97,9 @@ class CohenKappa(Metric):
         if self.weights not in allowed_weights:
             raise ValueError(f"Argument weights needs to one of the following: {allowed_weights}")
 
-        self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
+        self.add_state("confmat", default=torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -115,6 +109,6 @@ class CohenKappa(Metric):
         confmat = _cohen_kappa_update(preds, target, self.num_classes, self.threshold)
         self.confmat += confmat
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes cohen kappa score."""
         return _cohen_kappa_compute(self.confmat, self.weights)

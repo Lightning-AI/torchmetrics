@@ -404,6 +404,12 @@ StructuralSimilarityIndexMeasure
 .. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
     :noindex:
 
+UniversalImageQualityIndex
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.UniversalImageQualityIndex
+    :noindex:
+
 *********
 Detection
 *********
@@ -540,8 +546,8 @@ the set of pairs ``(Q_i, D_j)`` having the same query ``Q_i``.
     >>> preds = torch.tensor([0.8, -0.4, 1.0, 1.4, 0.0])
     >>> target = torch.tensor([0, 1, 0, 1, 1])
 
-    >>> map = RetrievalMAP() # or some other retrieval metric
-    >>> map(preds, target, indexes=indexes)
+    >>> rmap = RetrievalMAP() # or some other retrieval metric
+    >>> rmap(preds, target, indexes=indexes)
     tensor(0.6667)
 
     >>> # the previous instruction is roughly equivalent to
@@ -702,6 +708,12 @@ BootStrapper
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.BootStrapper
+    :noindex:
+
+ClasswiseWrapper
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.ClasswiseWrapper
     :noindex:
 
 MetricTracker

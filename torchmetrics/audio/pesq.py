@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
 from torch import Tensor, tensor
 
@@ -19,7 +19,7 @@ from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_qual
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
-__doctest_requires__ = {("PerceptualEvaluationSpeechQuality"): ["pesq"]}
+__doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
 
 class PerceptualEvaluationSpeechQuality(Metric):
@@ -29,7 +29,9 @@ class PerceptualEvaluationSpeechQuality(Metric):
     to perform the metric calculation.
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install pesq``
+        torchmetrics[audio]`` or ``pip install pesq``. Note that ``pesq`` will compile with your currently
+        installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
+        most likely have to reinstall ``pesq``.
 
     Forward accepts
 
@@ -44,16 +46,13 @@ class PerceptualEvaluationSpeechQuality(Metric):
         keep_same_device:
             whether to move the pesq value to the device of preds
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
@@ -89,17 +88,10 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self,
         fs: int,
         mode: str,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable[[Tensor], Tensor]] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         if not _PESQ_AVAILABLE:
             raise ModuleNotFoundError(
                 "PerceptualEvaluationSpeechQuality metric requires that `pesq` is installed."
@@ -115,7 +107,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.add_state("sum_pesq", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -129,6 +121,6 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.sum_pesq += pesq_batch.sum()
         self.total += pesq_batch.numel()
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes average PESQ."""
         return self.sum_pesq / self.total

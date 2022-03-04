@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor, tensor
@@ -59,12 +59,13 @@ class R2Score(Metric):
             * ``'variance_weighted'`` scores are weighted by their individual variances
 
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -99,17 +100,10 @@ class R2Score(Metric):
         num_outputs: int = 1,
         adjusted: int = 0,
         multioutput: str = "uniform_average",
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.num_outputs = num_outputs
 
@@ -129,7 +123,7 @@ class R2Score(Metric):
         self.add_state("residual", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -143,7 +137,7 @@ class R2Score(Metric):
         self.residual += residual
         self.total += total
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes r2 score over the metric states."""
         return _r2_score_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput

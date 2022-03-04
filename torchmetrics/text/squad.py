@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
@@ -33,21 +33,19 @@ class SQuAD(Metric):
     Args:
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torchmetrics import SQuAD
         >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
         >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]}, "id": "56e10a3be3433e1400422b22"}]
-        >>> sqaud = SQuAD()
-        >>> sqaud(preds, target)
+        >>> squad = SQuAD()
+        >>> squad(preds, target)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
 
     References:
@@ -64,23 +62,16 @@ class SQuAD(Metric):
 
     def __init__(
         self,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ):
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         self.add_state(name="f1_score", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state(name="exact_match", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state(name="total", default=torch.tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
-    def update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:  # type: ignore
+    def _update(self, preds: PREDS_TYPE, target: TARGETS_TYPE) -> None:  # type: ignore
         """Compute F1 Score and Exact Match for a collection of predictions and references.
 
         Args:
@@ -127,7 +118,7 @@ class SQuAD(Metric):
         self.exact_match += exact_match
         self.total += total
 
-    def compute(self) -> Dict[str, Tensor]:
+    def _compute(self) -> Dict[str, Tensor]:
         """Aggregate the F1 Score and Exact match for the batch.
 
         Return:

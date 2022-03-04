@@ -27,7 +27,7 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
     from torchmetrics.classification import Accuracy
 
     train_accuracy = Accuracy()
-    valid_accuracy = Accuracy(compute_on_step=False)
+    valid_accuracy = Accuracy()
 
     for epoch in range(epochs):
         for x, y in train_data:
@@ -35,16 +35,24 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
 
             # training step accuracy
             batch_acc = train_accuracy(y_hat, y)
+            print(f"Accuracy of batch{i} is {batch_acc}")
 
         for x, y in valid_data:
             y_hat = model(x)
-            valid_accuracy(y_hat, y)
+            valid_accuracy.update(y_hat, y)
 
-    # total accuracy over all training batches
-    total_train_accuracy = train_accuracy.compute()
+        # total accuracy over all training batches
+        total_train_accuracy = train_accuracy.compute()
 
-    # total accuracy over all validation batches
-    total_valid_accuracy = valid_accuracy.compute()
+        # total accuracy over all validation batches
+        total_valid_accuracy = valid_accuracy.compute()
+
+        print(f"Training acc for epoch {epoch}: {total_train_accuracy}")
+        print(f"Validation acc for epoch {epoch}: {total_valid_accuracy}")
+
+        # Reset metric states after each epoch
+        train_accuracy.reset()
+        valid_accuracy.reset()
 
 .. note::
 
@@ -292,6 +300,17 @@ inside your LightningModule
     have the same call signature. If this is not the case, input that should be
     given to different metrics can given as keyword arguments to the collection.
 
+An additional advantage of using the ``MetricCollection`` object is that it will
+automatically try to reduce the computations needed by finding groups of metrics
+that share the same underlying metric state. If such a group of metrics is found only one
+of them is actually updated and the updated state will be broadcasted to the rest
+of the metrics within the group. In the example above, this will lead to a 2x-3x lower computational
+cost compared to disabling this feature. However, this speedup comes with a fixed cost upfront, where
+the state-groups have to be determined after the first update. This overhead can be significantly higher then gains speed-up for very
+a low number of steps (approx. up to 100) but still leads to an overall speedup for everything beyond that.
+In case the groups are known beforehand, these can also be set manually to avoid this extra cost of the
+dynamic search. See the *compute_groups* argument in the class docs below for more information on this topic.
+
 .. autoclass:: torchmetrics.MetricCollection
     :noindex:
 
@@ -329,3 +348,24 @@ In practise this means that:
     val = metric.compute() # this value cannot be back-propagated
 
 A functional metric is differentiable if its corresponding modular metric is differentiable.
+
+.. _Metric kwargs:
+
+*****************************
+Advanced distributed settings
+*****************************
+
+If you are running in a distributed environment, ``TorchMetrics`` will automatically take care of the distributed
+synchronization for you. However, the following three keyword arguments can be given to any metric class for
+further control over the distributed aggregation:
+
+- ``dist_sync_on_step``: This argument is ``bool`` that indicates if the metric should syncronize between
+  different devices every time ``forward`` is called. Setting this to ``True`` is in general not recommended
+  as syncronization is an expensive operation to do after each batch.
+
+- ``process_group``: By default we syncronize across the *world* i.e. all proceses being computed on. You
+  can provide an ``torch._C._distributed_c10d.ProcessGroup`` in this argument to specify exactly what
+  devices should be syncronized over.
+
+- ``dist_sync_fn``: By default we use :func:`torch.distributed.all_gather` to perform the synchronization between
+  devices. Provide another callable function for this argument to perform custom distributed synchronization.

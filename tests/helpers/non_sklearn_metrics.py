@@ -114,12 +114,12 @@ def calibration_error(
 
     labels = np.unique(y_true)
     if len(labels) > 2:
-        raise ValueError("Only binary classification is supported. " "Provided labels %s." % labels)
+        raise ValueError(f"Only binary classification is supported. Provided labels {labels}.")
 
     if pos_label is None:
         pos_label = y_true.max()
     if pos_label not in labels:
-        raise ValueError("pos_label=%r is not a valid label: " "%r" % (pos_label, labels))
+        raise ValueError(f"pos_label={pos_label} is not a valid label: {labels}")
     y_true = np.array(y_true == pos_label, int)
 
     norm_options = ("l1", "l2", "max")

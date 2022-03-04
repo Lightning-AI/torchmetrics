@@ -18,7 +18,7 @@
 # Link:
 
 import itertools
-from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
@@ -65,14 +65,12 @@ class CHRFScore(Metric):
             An indication whether a sentence-level chrF/chrF++ score to be returned.
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When `None`, DDP
-            will be used to perform the allgather.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -107,17 +105,10 @@ class CHRFScore(Metric):
         lowercase: bool = False,
         whitespace: bool = False,
         return_sentence_level_score: bool = False,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Optional[Callable] = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ):
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
 
         if not isinstance(n_char_order, int) or n_char_order < 1:
             raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
@@ -143,7 +134,7 @@ class CHRFScore(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
+    def _update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
         """Compute Precision Scores.
 
         Args:
@@ -168,7 +159,7 @@ class CHRFScore(Metric):
         if self.sentence_chrf_score is not None:
             self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def _compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate chrF/chrF++ score.
 
         Return:

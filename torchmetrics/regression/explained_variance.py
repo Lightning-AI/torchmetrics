@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
@@ -51,12 +51,13 @@ class ExplainedVariance(Metric):
             * `'variance_weighted'` scores are weighted by their individual variances
 
         compute_on_step:
-            Forward only calls ``update()`` and return None if this is set to False.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step.
-        process_group:
-            Specify the process group on which synchronization is called.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -88,17 +89,10 @@ class ExplainedVariance(Metric):
     def __init__(
         self,
         multioutput: str = "uniform_average",
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(
-            compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
+        super().__init__(compute_on_step=compute_on_step, **kwargs)
         allowed_multioutput = ("raw_values", "uniform_average", "variance_weighted")
         if multioutput not in allowed_multioutput:
             raise ValueError(
@@ -111,7 +105,7 @@ class ExplainedVariance(Metric):
         self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -125,7 +119,7 @@ class ExplainedVariance(Metric):
         self.sum_target = self.sum_target + sum_target
         self.sum_squared_target = self.sum_squared_target + sum_squared_target
 
-    def compute(self) -> Union[Tensor, Sequence[Tensor]]:
+    def _compute(self) -> Union[Tensor, Sequence[Tensor]]:
         """Computes explained variance over state."""
         return _explained_variance_compute(
             self.n_obs,

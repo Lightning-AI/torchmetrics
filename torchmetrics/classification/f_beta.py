@@ -11,15 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
-import torch
-from deprecate import deprecated, void
 from torch import Tensor
 
 from torchmetrics.classification.stat_scores import StatScores
 from torchmetrics.functional.classification.f_beta import _fbeta_compute
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.enums import AverageMethod
 
 
@@ -109,22 +106,20 @@ class FBetaScore(StatScores):
             for a more detailed explanation and examples.
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``, ``None``.
 
     Example:
+        >>> import torch
         >>> from torchmetrics import FBetaScore
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
@@ -144,10 +139,8 @@ class FBetaScore(StatScores):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         self.beta = beta
         allowed_average = list(AverageMethod)
@@ -163,62 +156,15 @@ class FBetaScore(StatScores):
             multiclass=multiclass,
             ignore_index=ignore_index,
             compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
+            **kwargs,
         )
 
         self.average = average
 
-    def compute(self) -> Tensor:
+    def _compute(self) -> Tensor:
         """Computes fbeta over state."""
         tp, fp, tn, fn = self._get_final_stats()
         return _fbeta_compute(tp, fp, tn, fn, self.beta, self.ignore_index, self.average, self.mdmc_reduce)
-
-
-class FBeta(FBetaScore):
-    r"""
-    Computes `F-score`_, specifically:
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.FBetaScore`. Will be removed in v0.8.
-
-    Example::
-        >>> f_beta = FBetaScore(num_classes=3, beta=0.5)
-        >>> f_beta(torch.tensor([0, 2, 1, 0, 0, 1]), torch.tensor([0, 1, 2, 0, 1, 2]))
-        tensor(0.3333)
-    """
-
-    @deprecated(target=FBetaScore, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        beta: float = 1.0,
-        threshold: float = 0.5,
-        average: str = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(
-            num_classes,
-            beta,
-            threshold,
-            average,
-            mdmc_average,
-            ignore_index,
-            top_k,
-            multiclass,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
-        )
 
 
 class F1Score(FBetaScore):
@@ -295,19 +241,17 @@ class F1Score(FBetaScore):
             for a more detailed explanation and examples.
 
         compute_on_step:
-            Forward only calls ``update()`` and return ``None`` if this is set to ``False``.
-        dist_sync_on_step:
-            Synchronize metric state across processes at each ``forward()``
-            before returning the value at the step
-        process_group:
-            Specify the process group on which synchronization is called.
-            default: ``None`` (which selects the entire world)
-        dist_sync_fn:
-            Callback that performs the allgather operation on the metric state. When ``None``, DDP
-            will be used to perform the allgather.
+            Forward only calls ``update()`` and returns None if this is set to False.
+
+            .. deprecated:: v0.8
+                Argument has no use anymore and will be removed v0.9.
+
+        kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
 
     Example:
+        >>> import torch
         >>> from torchmetrics import F1Score
         >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
         >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
@@ -328,10 +272,8 @@ class F1Score(FBetaScore):
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         multiclass: Optional[bool] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
+        compute_on_step: Optional[bool] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(
             num_classes=num_classes,
@@ -343,52 +285,5 @@ class F1Score(FBetaScore):
             top_k=top_k,
             multiclass=multiclass,
             compute_on_step=compute_on_step,
-            dist_sync_on_step=dist_sync_on_step,
-            process_group=process_group,
-            dist_sync_fn=dist_sync_fn,
-        )
-
-
-class F1(F1Score):
-    """Computes F1 metric. F1 metrics correspond to a harmonic mean of the precision and recall scores.
-
-    .. deprecated:: v0.7
-        Use :class:`torchmetrics.F1Score`. Will be removed in v0.8.
-
-    Example:
-        >>> from torchmetrics import F1
-        >>> target = torch.tensor([0, 1, 2, 0, 1, 2])
-        >>> preds = torch.tensor([0, 2, 1, 0, 0, 1])
-        >>> f1 = F1(num_classes=3)
-        >>> f1(preds, target)
-        tensor(0.3333)
-    """
-
-    @deprecated(target=F1Score, deprecated_in="0.7", remove_in="0.8", stream=_future_warning)
-    def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        threshold: float = 0.5,
-        average: str = "micro",
-        mdmc_average: Optional[str] = None,
-        ignore_index: Optional[int] = None,
-        top_k: Optional[int] = None,
-        multiclass: Optional[bool] = None,
-        compute_on_step: bool = True,
-        dist_sync_on_step: bool = False,
-        process_group: Optional[Any] = None,
-        dist_sync_fn: Callable = None,
-    ) -> None:
-        void(
-            num_classes,
-            threshold,
-            average,
-            mdmc_average,
-            ignore_index,
-            top_k,
-            multiclass,
-            compute_on_step,
-            dist_sync_on_step,
-            process_group,
-            dist_sync_fn,
+            **kwargs,
         )
