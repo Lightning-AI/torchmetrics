@@ -79,3 +79,4 @@
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823
+.. _RelativeAverageSpectralError: https://www.researchgate.net/publication/280892682_Data_Fusion_Definitions_and_Architectures_-_Fusion_of_Images_of_Different_Spatial_Resolutions

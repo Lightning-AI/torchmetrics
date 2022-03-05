@@ -13,6 +13,8 @@
 # limitations under the License.
 from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio  # noqa: F401
+from torchmetrics.functional.image.rase import relative_average_spectral_error  # noqa: F401
+from torchmetrics.functional.image.rmse_sw import root_mean_squared_error_using_sliding_window  # noqa: F401
 from torchmetrics.functional.image.ssim import (  # noqa: F401
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,

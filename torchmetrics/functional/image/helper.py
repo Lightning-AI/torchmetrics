@@ -1,7 +1,8 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 
 import torch
 from torch import Tensor
+from torch.nn import functional as F
 
 
 def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
@@ -48,3 +49,60 @@ def _gaussian_kernel(
     kernel = torch.matmul(gaussian_kernel_x.t(), gaussian_kernel_y)  # (kernel_size, 1) * (1, kernel_size)
 
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1])
+
+
+def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
+    """Applies uniform filtew with a window of a given size over the input image.
+
+    Args:
+        inputs: Input image
+        window_size: Sliding window used for rmse calculation
+        kernel_weight:
+
+
+    Return:
+        Image transformed with the uniform input
+    """
+
+    def _get_uniform_weight_and_bias_for_conv2d(inputs: Tensor, window_size: int) -> Tuple[Tensor, Tensor]:
+        _channels = inputs.shape[1]
+        kernel_weight = torch.ones(1, _channels, window_size, window_size, dtype=inputs.dtype, device=inputs.device)
+        kernel_weight /= _channels * window_size * window_size
+        kernel_bias = torch.tensor([0.0], dtype=inputs.dtype, device=inputs.device)
+        return kernel_weight, kernel_bias
+
+    def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
+        """Applies single-dimension reflection padding to match scipy implementation:
+
+        Args:
+            inputs: Input image
+            dim: A dimension the image should be padded over
+            pad: Number of pads
+
+        Return:
+            Image padded over a single dimension
+        """
+        _max = inputs.shape[dim] - 2
+        x = torch.index_select(inputs, dim, torch.arange(pad - 1, -1, -1))
+        y = torch.index_select(inputs, dim, torch.arange(_max - 1, _max - pad, -1))
+        return torch.cat((x, inputs, y), dim)
+
+    def _reflection_pad2d(inputs: Tensor, pad: int) -> Tensor:
+        """Applies reflection padding to the input image.
+
+        Args:
+            inputs: Input image
+            dim: A dimension the image should be padded over
+            pad: Number of pads
+
+        Return:
+            Padded image
+        """
+        for dim in [2, 3]:
+            inputs = _single_dimension_pad(inputs, dim, pad)
+        return inputs
+
+    inputs = _reflection_pad2d(inputs, window_size // 2)
+    kernel_weight, kernel_bias = _get_uniform_weight_and_bias_for_conv2d(inputs, window_size)
+    inputs = F.conv2d(inputs, kernel_weight, kernel_bias)
+    return inputs

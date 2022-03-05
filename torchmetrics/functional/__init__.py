@@ -35,6 +35,8 @@ from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
+from torchmetrics.functional.image.rase import relative_average_spectral_error
+from torchmetrics.functional.image.rmse_sw import root_mean_squared_error_using_sliding_window
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
@@ -121,6 +123,7 @@ __all__ = [
     "peak_signal_noise_ratio",
     "r2_score",
     "recall",
+    "relative_average_spectral_error",
     "retrieval_average_precision",
     "retrieval_fall_out",
     "retrieval_hit_rate",
@@ -130,6 +133,7 @@ __all__ = [
     "retrieval_recall",
     "retrieval_reciprocal_rank",
     "roc",
+    "root_mean_squared_error_using_sliding_window",
     "rouge_score",
     "sacre_bleu_score",
     "signal_distortion_ratio",

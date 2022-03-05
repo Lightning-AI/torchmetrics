@@ -270,6 +270,18 @@ peak_signal_noise_ratio [func]
 .. autofunction:: torchmetrics.functional.peak_signal_noise_ratio
     :noindex:
 
+relative_average_spectral_error [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.relative_average_spectral_error
+    :noindex:
+
+root_mean_squared_error_using_sliding_window [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.root_mean_squared_error_using_sliding_window
+    :noindex:
+
 universal_image_quality_index [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

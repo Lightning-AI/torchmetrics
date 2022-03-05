@@ -398,6 +398,17 @@ PeakSignalNoiseRatio
 .. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
+RelativeAverageSpectralError
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.RelativeAverageSpectralError
+    :noindex:
+
+RootMeanSquaredErrorUsingSlidingWindow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: torchmetrics.RootMeanSquaredErrorUsingSlidingWindow
+    :noindex:
+
 StructuralSimilarityIndexMeasure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

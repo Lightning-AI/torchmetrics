@@ -49,6 +49,8 @@ from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
+    RelativeAverageSpectralError,
+    RootMeanSquaredErrorUsingSlidingWindow,
     StructuralSimilarityIndexMeasure,
     UniversalImageQualityIndex,
 )
@@ -145,6 +147,7 @@ __all__ = [
     "PeakSignalNoiseRatio",
     "R2Score",
     "Recall",
+    "RelativeAverageSpectralError",
     "RetrievalFallOut",
     "RetrievalHitRate",
     "RetrievalMAP",
@@ -154,6 +157,7 @@ __all__ = [
     "RetrievalRecall",
     "RetrievalRPrecision",
     "ROC",
+    "RootMeanSquaredErrorUsingSlidingWindow",
     "SacreBLEUScore",
     "SignalDistortionRatio",
     "ScaleInvariantSignalDistortionRatio",
