@@ -26,7 +26,7 @@ class SpectralDistortionIndex(Metric):
     """Computes Spectral Distortion Index (SpectralDistortionIndex_).
 
     Args:
-        p: Large spectral differences (default: 1)
+        p: Large spectral differences
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
