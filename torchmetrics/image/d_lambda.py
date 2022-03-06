@@ -32,7 +32,7 @@ class SpectralDistortionIndex(Metric):
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
-    
+
     kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
