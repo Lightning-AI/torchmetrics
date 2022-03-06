@@ -55,7 +55,7 @@ def _d_lambda_compute(
     Args:
         preds: Low resolution multispectral image
         target: High resolution fused image
-        p: a parameter to emphasize large spectral difference (default: 1)
+        p: a parameter to emphasize large spectral difference
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
