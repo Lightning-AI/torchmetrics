@@ -277,7 +277,7 @@ spectral_distortion_index [func]
 .. autofunction:: torchmetrics.functional.spectral_distortion_index
     :noindex:
 
-    
+
 universal_image_quality_index [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
