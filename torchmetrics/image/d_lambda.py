@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List
+from typing import Any, List
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -61,7 +61,7 @@ class SpectralDistortionIndex(Metric):
     higher_is_better: bool = True
 
     def __init__(
-        self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs
+        self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(
