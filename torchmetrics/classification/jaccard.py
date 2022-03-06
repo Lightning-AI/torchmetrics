@@ -122,5 +122,9 @@ class JaccardIndex(ConfusionMatrix):
     def _compute(self) -> Tensor:
         """Computes intersection over union (IoU)"""
         return _jaccard_from_confmat(
-            self.confmat, self.num_classes, self.average, self.ignore_index, self.absent_score,
+            self.confmat,
+            self.num_classes,
+            self.average,
+            self.ignore_index,
+            self.absent_score,
         )

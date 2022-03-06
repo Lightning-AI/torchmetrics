@@ -18,6 +18,7 @@ from torch import Tensor
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
 from torchmetrics.utilities.data import get_num_classes
+
 # from torchmetrics.utilities.distributed import reduce
 
 
@@ -81,18 +82,20 @@ def _jaccard_from_confmat(
                 ]
             )
         return scores
-    elif average == 'macro':
-        scores = _jaccard_from_confmat(confmat, num_classes, average='none',
-                                       ignore_index=ignore_index, absent_score=absent_score)
+    elif average == "macro":
+        scores = _jaccard_from_confmat(
+            confmat, num_classes, average="none", ignore_index=ignore_index, absent_score=absent_score
+        )
         return torch.mean(scores)
-    elif average == 'micro':
+    elif average == "micro":
         intersection = torch.sum(torch.diag(confmat))
         union = torch.sum(torch.sum(confmat, dim=1) + torch.sum(confmat, dim=0) - torch.diag(confmat))
         return intersection.float() / union.float()
     else:
         weights = torch.sum(confmat, dim=1) / torch.sum(confmat)
-        scores = _jaccard_from_confmat(confmat, num_classes, average='none',
-                                       ignore_index=ignore_index, absent_score=absent_score)
+        scores = _jaccard_from_confmat(
+            confmat, num_classes, average="none", ignore_index=ignore_index, absent_score=absent_score
+        )
         return torch.sum(weights * scores)
 
 
