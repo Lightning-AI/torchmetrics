@@ -103,7 +103,7 @@ def spectral_distortion_index(
     Args:
         preds: Low resolution multispectral image
         target: High resolution fused image
-        p: Large spectral differences (default: 1)
+        p: Large spectral differences
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
