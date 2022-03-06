@@ -32,7 +32,9 @@ class SpectralDistortionIndex(Metric):
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'``: no reduction will be applied
-
+    
+    kwargs:
+            Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
         Tensor with SpectralDistortionIndex score
@@ -45,7 +47,7 @@ class SpectralDistortionIndex(Metric):
         >>> target = torch.rand([16, 3, 16, 16])
         >>> sdi = SpectralDistortionIndex()
         >>> sdi(preds, target)
-        tensor(0.9216)
+        tensor(0.0234)
 
     References:
         [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
