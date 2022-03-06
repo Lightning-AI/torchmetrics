@@ -87,7 +87,7 @@ def _sk_jaccard_multidim_multiclass(preds, target, average=None):
     return sk_jaccard_score(y_true=sk_target, y_pred=sk_preds, average=average)
 
 
-@pytest.mark.parametrize("reduction", ["elementwise_mean", "none"])
+@pytest.mark.parametrize("average", [None, "macro", "micro", "weighted"])
 @pytest.mark.parametrize(
     "preds, target, sk_metric, num_classes",
     [
@@ -104,8 +104,8 @@ def _sk_jaccard_multidim_multiclass(preds, target, average=None):
 class TestJaccardIndex(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_jaccard(self, reduction, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
-        average = "macro" if reduction == "elementwise_mean" else None  # convert tags
+    def test_jaccard(self, average, preds, target, sk_metric, num_classes, ddp, dist_sync_on_step):
+        # average = "macro" if reduction == "elementwise_mean" else None  # convert tags
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -113,41 +113,41 @@ class TestJaccardIndex(MetricTester):
             metric_class=JaccardIndex,
             sk_metric=partial(sk_metric, average=average),
             dist_sync_on_step=dist_sync_on_step,
-            metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
+            metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "average": average},
         )
 
-    def test_jaccard_functional(self, reduction, preds, target, sk_metric, num_classes):
-        average = "macro" if reduction == "elementwise_mean" else None  # convert tags
+    def test_jaccard_functional(self, average, preds, target, sk_metric, num_classes):
+        # average = "macro" if reduction == "elementwise_mean" else None  # convert tags
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=jaccard_index,
             sk_metric=partial(sk_metric, average=average),
-            metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
+            metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "average": average},
         )
 
-    def test_jaccard_differentiability(self, reduction, preds, target, sk_metric, num_classes):
+    def test_jaccard_differentiability(self, average, preds, target, sk_metric, num_classes):
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=JaccardIndex,
             metric_functional=jaccard_index,
-            metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "reduction": reduction},
+            metric_args={"num_classes": num_classes, "threshold": THRESHOLD, "average": average},
         )
 
 
 @pytest.mark.parametrize(
-    ["half_ones", "reduction", "ignore_index", "expected"],
+    ["half_ones", "average", "ignore_index", "expected"],
     [
         (False, "none", None, Tensor([1, 1, 1])),
-        (False, "elementwise_mean", None, Tensor([1])),
+        (False, "macro", None, Tensor([1])),
         (False, "none", 0, Tensor([1, 1])),
         (True, "none", None, Tensor([0.5, 0.5, 0.5])),
-        (True, "elementwise_mean", None, Tensor([0.5])),
+        (True, "macro", None, Tensor([0.5])),
         (True, "none", 0, Tensor([2 / 3, 1 / 2])),
     ],
 )
-def test_jaccard(half_ones, reduction, ignore_index, expected):
+def test_jaccard(half_ones, average, ignore_index, expected):
     preds = (torch.arange(120) % 3).view(-1, 1)
     target = (torch.arange(120) % 3).view(-1, 1)
     if half_ones:
@@ -155,9 +155,10 @@ def test_jaccard(half_ones, reduction, ignore_index, expected):
     jaccard_val = jaccard_index(
         preds=preds,
         target=target,
+        average=average,
         num_classes=3,
         ignore_index=ignore_index,
-        reduction=reduction,
+        # reduction=reduction,
     )
     assert torch.allclose(jaccard_val, expected, atol=1e-9)
 
@@ -199,10 +200,11 @@ def test_jaccard_absent_score(pred, target, ignore_index, absent_score, num_clas
     jaccard_val = jaccard_index(
         preds=tensor(pred),
         target=tensor(target),
+        average=None,
         ignore_index=ignore_index,
         absent_score=absent_score,
         num_classes=num_classes,
-        reduction="none",
+        # reduction="none",
     )
     assert torch.allclose(jaccard_val, tensor(expected).to(jaccard_val))
 
@@ -210,7 +212,7 @@ def test_jaccard_absent_score(pred, target, ignore_index, absent_score, num_clas
 # example data taken from
 # https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/tests/test_ranking.py
 @pytest.mark.parametrize(
-    ["pred", "target", "ignore_index", "num_classes", "reduction", "expected"],
+    ["pred", "target", "ignore_index", "num_classes", "average", "expected"],
     [
         # Ignoring an index outside of [0, num_classes-1] should have no effect.
         ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], None, 3, "none", [1, 1 / 2, 2 / 3]),
@@ -221,17 +223,18 @@ def test_jaccard_absent_score(pred, target, ignore_index, absent_score, num_clas
         ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 1, 3, "none", [1, 2 / 3]),
         ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 2, 3, "none", [1, 1]),
         # When reducing to mean or sum, the ignored index does not contribute to the output.
-        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "elementwise_mean", [7 / 12]),
-        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "sum", [7 / 6]),
+        ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "macro", [7 / 12]),
+        # ([0, 1, 1, 2, 2], [0, 1, 2, 2, 2], 0, 3, "sum", [7 / 6]),
     ],
 )
-def test_jaccard_ignore_index(pred, target, ignore_index, num_classes, reduction, expected):
+def test_jaccard_ignore_index(pred, target, ignore_index, num_classes, average, expected):
     jaccard_val = jaccard_index(
         preds=tensor(pred),
         target=tensor(target),
+        average=average,
         ignore_index=ignore_index,
         num_classes=num_classes,
-        reduction=reduction,
+        # reduction=reduction,
     )
     assert torch.allclose(jaccard_val, tensor(expected).to(jaccard_val))
 
