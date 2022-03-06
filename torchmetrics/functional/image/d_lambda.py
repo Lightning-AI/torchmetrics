@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple
+from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -34,7 +34,7 @@ def _d_lambda_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 
     if preds.dtype != target.dtype:
         raise TypeError(
-            f"Expected `preds` and `target` to have the same data type. Got preds: {preds.dtype} and target: {target.dtype}."
+            f"Expected `ms` and `fused` to have the same data type. Got ms: {preds.dtype} and fused: {target.dtype}."
         )
     _check_same_shape(preds, target)
     if len(preds.shape) != 4:
@@ -68,10 +68,7 @@ def _d_lambda_compute(
         >>> target = torch.rand([16, 3, 16, 16])
         >>> preds, target = _d_lambda_update(preds, target)
         >>> _d_lambda_compute(preds, target)
-        tensor(0.9216)
-
-    References:
-    [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini, Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
+        tensor(0.0234)
     """
     if p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
@@ -81,10 +78,10 @@ def _d_lambda_compute(
     M1 = torch.zeros((L, L))
     M2 = torch.zeros((L, L))
 
-    for l in range(L):
-        for r in range(l, L):
-            M1[l, r] = M1[r, l] = universal_image_quality_index(target[:, l : l + 1, :, :], target[:, r : r + 1, :, :])
-            M2[l, r] = M2[r, l] = universal_image_quality_index(preds[:, l : l + 1, :, :], preds[:, r : r + 1, :, :])
+    for k in range(L):
+        for r in range(k, L):
+            M1[k, r] = M1[r, k] = universal_image_quality_index(target[:, k : k + 1, :, :], target[:, r : r + 1, :, :])
+            M2[k, r] = M2[r, k] = universal_image_quality_index(preds[:, k : k + 1, :, :], preds[:, r : r + 1, :, :])
 
     diff = torch.pow(torch.abs(M1 - M2), p)
     # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
@@ -130,7 +127,7 @@ def spectral_distortion_index(
         >>> preds = torch.rand([16, 3, 16, 16])
         >>> target = torch.rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
-        tensor(0.9216)
+        tensor(0.0234)
     """
     preds, target = _d_lambda_update(preds, target)
     return _d_lambda_compute(preds, target, p, reduction)
