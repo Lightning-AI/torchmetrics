@@ -38,6 +38,8 @@ class SpectralDistortionIndex(Metric):
         Tensor with SpectralDistortionIndex score
 
     Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
         >>> from torchmetrics import SpectralDistortionIndex
         >>> preds = torch.rand([16, 3, 16, 16])
         >>> target = torch.rand([16, 3, 16, 16])

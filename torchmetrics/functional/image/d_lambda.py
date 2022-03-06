@@ -63,6 +63,7 @@ def _d_lambda_compute(
             - ``'none'``: no reduction will be applied
 
     Example:
+        >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 16, 16])
         >>> target = torch.rand([16, 3, 16, 16])
         >>> preds, target = _d_lambda_update(preds, target)
@@ -125,8 +126,9 @@ def spectral_distortion_index(
 
     Example:
         >>> from torchmetrics.functional import spectral_distortion_index
+        >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 16, 16])
-        >>> target = preds * 0.75
+        >>> target = torch.rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
         tensor(0.9216)
     """
