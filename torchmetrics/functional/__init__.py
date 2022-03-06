@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio
@@ -138,6 +139,7 @@ __all__ = [
     "signal_noise_ratio",
     "spearman_corrcoef",
     "specificity",
+    "spectral_distortion_index",
     "squad",
     "structural_similarity_index_measure",
     "stat_scores",

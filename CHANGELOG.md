@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
 
 
+Added `SpectralDistortionIndex` metric to image domain ([#855](https://github.com/PyTorchLightning/metrics/pull/855))
+
+
 ### Changed
 
 - Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853))
