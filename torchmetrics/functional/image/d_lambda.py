@@ -128,6 +128,12 @@ def spectral_distortion_index(
         >>> target = torch.rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
         tensor(0.0234)
+
+    References:
+        [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
+            Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
+            Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
+            and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
     preds, target = _d_lambda_update(preds, target)
     return _d_lambda_compute(preds, target, p, reduction)
