@@ -88,7 +88,7 @@ class MatthewsCorrCoef(Metric):
 
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -98,6 +98,6 @@ class MatthewsCorrCoef(Metric):
         confmat = _matthews_corrcoef_update(preds, target, self.num_classes, self.threshold)
         self.confmat += confmat
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes matthews correlation coefficient."""
         return _matthews_corrcoef_compute(self.confmat)
