@@ -241,7 +241,7 @@ MetricCollection
 
 In many cases it is beneficial to evaluate the model output by multiple metrics.
 In this case the ``MetricCollection`` class may come in handy. It accepts a sequence
-of metrics and wraps theses into a single callable metric class, with the same
+of metrics and wraps these into a single callable metric class, with the same
 interface as any other metric.
 
 Example:
