@@ -414,7 +414,7 @@ class MeanAveragePrecision(Metric):
                 "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
                 "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
                 "gtIgnore": gt_ignore,
-                "dtIgnore": det_ignore
+                "dtIgnore": det_ignore,
             }
 
         # Some predictions but no GT
@@ -443,7 +443,7 @@ class MeanAveragePrecision(Metric):
                 "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
                 "dtScores": scores_sorted,
                 "gtIgnore": gt_ignore,
-                "dtIgnore": det_ignore
+                "dtIgnore": det_ignore,
             }
 
         gt = gt[gt_label_mask]
