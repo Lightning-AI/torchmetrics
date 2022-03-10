@@ -388,11 +388,67 @@ class MeanAveragePrecision(Metric):
         det = self.detection_boxes[idx]
         gt_label_mask = self.groundtruth_labels[idx] == class_id
         det_label_mask = self.detection_labels[idx] == class_id
-        if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
+
+        # No Gt and No predictions --> ignore image
+        if len(gt_label_mask) == 0 and len(det_label_mask) == 0:
             return None
+
+        nb_iou_thrs = len(self.iou_thresholds)
+
+        # Some GT but no predictions
+        if len(gt_label_mask) > 0 and len(det_label_mask) == 0:
+            # GTs
+            gt = gt[gt_label_mask]
+            nb_gt = len(gt)
+            areas = box_area(gt)
+            ignore_area = (areas < area_range[0]) | (areas > area_range[1])
+            gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8))
+            gt_ignore = gt_ignore.to(torch.bool)
+
+            # Detections
+            nb_det = 0
+            det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
+
+            return {
+                "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
+                "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
+                "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
+                "gtIgnore": gt_ignore,
+                "dtIgnore": det_ignore
+            }
+
+        # Some predictions but no GT
+        if len(gt_label_mask) == 0 and len(det_label_mask) >= 0:
+
+            # GTs
+            nb_gt = 0
+            gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=self.device)
+
+            # Detections
+            det = det[det_label_mask]
+            scores = self.detection_scores[id]
+            scores_filtered = scores[det_label_mask]
+            scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
+            det = det[dtind]
+            if len(det) > max_det:
+                det = det[:max_det]
+            nb_det = len(det)
+            det_areas = box_area(det).to(self.device)
+            det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
+            ar = det_ignore_area.reshape((1, nb_det))
+            det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
+
+            return {
+                "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
+                "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
+                "dtScores": scores_sorted,
+                "gtIgnore": gt_ignore,
+                "dtIgnore": det_ignore
+            }
+
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
-        if len(gt) == 0 and len(det) == 0:
+        if gt.numel() == 0 and det.numel() == 0:
             return None
 
         areas = box_area(gt)
