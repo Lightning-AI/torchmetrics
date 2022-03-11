@@ -162,6 +162,7 @@ __all__ = [
     "SignalNoiseRatio",
     "SpearmanCorrCoef",
     "Specificity",
+    "SpectralAngleMapper",
     "SQuAD",
     "StructuralSimilarityIndexMeasure",
     "StatScores",

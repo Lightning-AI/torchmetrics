@@ -145,6 +145,7 @@ __all__ = [
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",
     "universal_image_quality_index",
+    "universal_spectral_angle_mapper",
     "word_error_rate",
     "char_error_rate",
     "match_error_rate",
