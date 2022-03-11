@@ -410,6 +410,12 @@ UniversalImageQualityIndex
 .. autoclass:: torchmetrics.UniversalImageQualityIndex
     :noindex:
 
+SpectralAngleMapper
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpectralAngleMapper
+    :noindex:
+
 *********
 Detection
 *********
