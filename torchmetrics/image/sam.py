@@ -83,7 +83,7 @@ class SpectralAngleMapper(Metric):
         self.target.append(target)
 
     def _compute(self) -> Tensor:
-        """Computes explained variance over state."""
+        """Computes spectra over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _sam_compute(preds, target, self.reduction)
