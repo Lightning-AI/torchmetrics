@@ -70,10 +70,10 @@ jobs:
         requires: ${{ matrix.requires }}
         python-version: ${{ matrix.python-version }}
 
-    - name: Freeze NumPY (hotfix)
+    - name: Freeze Numba (hotfix)
       if: matrix.requires == 'latest'
       # ImportError: Numba needs NumPy 1.21 or less
-      run: echo "PIP_NUMPY=numpy==1.21.*" >> $GITHUB_ENV
+      run: echo "PIP_NUMBA=numpy==1.21.* numba==0.55.*" >> $GITHUB_ENV
 
     - name: Freeze PIL (hotfix)
       # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
@@ -88,7 +88,7 @@ jobs:
       run: |
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
-        pip install --requirement requirements/devel.txt $PIP_NUMPY --upgrade --find-links $PYTORCH_URL
+        pip install --requirement requirements/devel.txt $PIP_NUMBA --upgrade --find-links $PYTORCH_URL
         pip install --force-reinstall pypesq
         pip list
 
