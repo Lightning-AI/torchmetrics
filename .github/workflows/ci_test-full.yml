@@ -52,7 +52,8 @@ jobs:
     - name: Setup macOS
       if: runner.os == 'macOS'
       run: |
-        brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
+        # https://github.com/pytorch/pytorch/issues/20030
+        brew install gcc libomp ffmpeg openblas
     - name: Setup Linux
       if: runner.os == 'Linux'
       run: |
