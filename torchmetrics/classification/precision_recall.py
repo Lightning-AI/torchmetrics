@@ -150,7 +150,7 @@ class Precision(StatScores):
 
         self.average = average
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes the precision score based on inputs passed in to ``update`` previously.
 
         Return:
@@ -295,7 +295,7 @@ class Recall(StatScores):
 
         self.average = average
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes the recall score based on inputs passed in to ``update`` previously.
 
         Return:

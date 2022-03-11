@@ -107,7 +107,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.add_state("sum_pesq", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -121,6 +121,6 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.sum_pesq += pesq_batch.sum()
         self.total += pesq_batch.numel()
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes average PESQ."""
         return self.sum_pesq / self.total
