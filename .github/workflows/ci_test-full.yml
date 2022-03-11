@@ -64,10 +64,9 @@ jobs:
       run: |
         choco install ffmpeg
 
-    - name: Freeze Numpy/PIL (hotfix)
+    - name: Freeze PIL (hotfix)
       if: matrix.requires == 'latest'
       run: |
-        # pip install -q "numpy==1.20.0" # temp fix for cypesq
         # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
         pip install -q "Pillow<9.0"  # It messes with torchvision
 
