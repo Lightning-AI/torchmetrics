@@ -31,8 +31,9 @@ jobs:
         python-version: ["3.7", "3.8", "3.10"]
         requires: ['oldest', 'latest']
         exclude:
-          - {python-version: "3.7", requires: 'latest'}
+          - {python-version: "3.8", requires: 'oldest'}
           - {python-version: "3.10", requires: 'oldest'}
+          - {python-version: "3.7", requires: 'latest'}
     env:
       PYTEST_ARTEFACT: test-results-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.requires }}.xml
       PYTORCH_URL: https://download.pytorch.org/whl/cpu/torch_stable.html
@@ -89,7 +90,7 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt $PIP_NUMBA --upgrade --find-links $PYTORCH_URL
-        pip install --force-reinstall pypesq $PIP_NUMBA -r requirements.txt
+        pip install --force-reinstall pypesq  --upgrade-strategy only-if-needed
         pip list
 
     - name: Pull testing data from S3
