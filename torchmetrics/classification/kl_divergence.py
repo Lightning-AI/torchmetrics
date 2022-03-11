@@ -99,7 +99,7 @@ class KLDivergence(Metric):
             self.add_state("measures", [], dist_reduce_fx="cat")
         self.add_state("total", torch.tensor(0), dist_reduce_fx="sum")
 
-    def _update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
+    def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
             self.measures.append(measures)
@@ -107,6 +107,6 @@ class KLDivergence(Metric):
             self.measures += measures.sum()
             self.total += total
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
         return _kld_compute(measures, self.total, self.reduction)

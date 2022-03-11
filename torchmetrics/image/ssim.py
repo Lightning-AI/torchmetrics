@@ -106,7 +106,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.return_full_image = return_full_image
         self.return_contrast_sensitivity = return_contrast_sensitivity
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -117,7 +117,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
@@ -246,7 +246,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             raise ValueError("Argument `normalize` to be expected either `None` or one of 'relu' or 'simple'")
         self.normalize = normalize
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -257,7 +257,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)

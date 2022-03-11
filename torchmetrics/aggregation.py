@@ -90,11 +90,11 @@ class BaseAggregator(Metric):
 
         return x.float()
 
-    def _update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
         """Overwrite in child class."""
         pass
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Compute the aggregated value."""
         return self.value
 
@@ -145,7 +145,7 @@ class MaxMetric(BaseAggregator):
             **kwargs,
         )
 
-    def _update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
         """Update state with data.
 
         Args:
@@ -203,7 +203,7 @@ class MinMetric(BaseAggregator):
             **kwargs,
         )
 
-    def _update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
         """Update state with data.
 
         Args:
@@ -261,7 +261,7 @@ class SumMetric(BaseAggregator):
             **kwargs,
         )
 
-    def _update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
         """Update state with data.
 
         Args:
@@ -312,7 +312,7 @@ class CatMetric(BaseAggregator):
     ):
         super().__init__("cat", [], nan_strategy, compute_on_step, **kwargs)
 
-    def _update(self, value: Union[float, Tensor]) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor]) -> None:  # type: ignore
         """Update state with data.
 
         Args:
@@ -323,7 +323,7 @@ class CatMetric(BaseAggregator):
         if any(value.flatten()):
             self.value.append(value)
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Compute the aggregated value."""
         if isinstance(self.value, list) and self.value:
             return dim_zero_cat(self.value)
@@ -377,7 +377,7 @@ class MeanMetric(BaseAggregator):
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
-    def _update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:  # type: ignore
+    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:  # type: ignore
         """Update state with data.
 
         Args:
@@ -403,6 +403,6 @@ class MeanMetric(BaseAggregator):
         self.value += (value * weight).sum()
         self.weight += weight.sum()
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Compute the aggregated value."""
         return self.value / self.weight
