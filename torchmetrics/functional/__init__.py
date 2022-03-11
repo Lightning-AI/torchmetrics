@@ -35,12 +35,12 @@ from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
+from torchmetrics.functional.image.sam import universal_spectral_angle_mapper
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
 )
 from torchmetrics.functional.image.uqi import universal_image_quality_index
-from torchmetrics.functional.image.sam import universal_spectral_angle_mapper
 from torchmetrics.functional.pairwise.cosine import pairwise_cosine_similarity
 from torchmetrics.functional.pairwise.euclidean import pairwise_euclidean_distance
 from torchmetrics.functional.pairwise.linear import pairwise_linear_similarity
