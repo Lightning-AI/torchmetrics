@@ -78,7 +78,7 @@ jobs:
     - name: Freeze Numpy (hotfix)
       if: matrix.requires == 'latest'
       run: |
-        pip install -q "numpy==1.21.0"  # temp fix for cypesq
+        pip install -q "numpy==1.21.0" --only-binary :all: # temp fix for cypesq
         # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
         pip install -q "Pillow<9.0"  # It messes with torchvision
 
