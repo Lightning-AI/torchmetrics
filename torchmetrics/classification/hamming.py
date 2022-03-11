@@ -82,7 +82,7 @@ class HammingDistance(Metric):
 
         self.threshold = threshold
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets. See
         :ref:`references/modules:input types` for more information on input
         types.
@@ -96,6 +96,6 @@ class HammingDistance(Metric):
         self.correct += correct
         self.total += total
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes hamming distance based on inputs passed in to ``update`` previously."""
         return _hamming_distance_compute(self.correct, self.total)
