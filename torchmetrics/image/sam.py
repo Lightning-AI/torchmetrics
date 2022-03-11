@@ -25,7 +25,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 class SpectralAngleMapper(Metric):
     """Spectral Angle Mapper determine thespectral similarity between image spectra and reference spectra by
     calculating the angle between thespectra, where small angles between the two spectrums indicate high similarity
-    and high angles indicate low similarity
+    and high angles indicate low similarity.
 
     Args:
         reduction: a method to reduce metric score over labels.
@@ -87,5 +87,3 @@ class SpectralAngleMapper(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _sam_compute(preds, target, self.reduction)
-
-

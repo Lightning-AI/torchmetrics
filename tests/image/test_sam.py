@@ -35,12 +35,7 @@ for size, channel, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(
-        Input(
-            preds=preds,
-            target=target
-        )
-    )
+    _inputs.append(Input(preds=preds, target=target))
 
 
 def _sk_sam(preds, target, reduction):
@@ -96,14 +91,15 @@ class TestSpectralAngleMapper(MetricTester):
     @pytest.mark.xfail(reason="SAM metric does not support cpu + half precision")
     def test_sam_half_cpu(self, reduction, preds, target):
         self.run_precision_test_cpu(
-            preds, target, SpectralAngleMapper, universal_spectral_angle_mapper,
+            preds,
+            target,
+            SpectralAngleMapper,
+            universal_spectral_angle_mapper,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, reduction, preds, target):
-        self.run_precision_test_gpu(
-            preds, target, SpectralAngleMapper, universal_spectral_angle_mapper
-        )
+        self.run_precision_test_gpu(preds, target, SpectralAngleMapper, universal_spectral_angle_mapper)
 
 
 def test_error_on_different_shape(metric_class=SpectralAngleMapper):

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Sequence, Tuple, Union
+
 import torch
 from torch import Tensor
 from typing_extensions import Literal
@@ -22,8 +23,8 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _sam_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Spectral Angle Mapper. Checks for same shape and
-    type of the input tensors.
+    """Updates and returns variables required to compute Spectral Angle Mapper. Checks for same shape and type of
+    the input tensors.
 
     Args:
         preds: Predicted tensor
@@ -45,9 +46,9 @@ def _sam_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def _sam_compute(
-        preds: Tensor,
-        target: Tensor,
-        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+    preds: Tensor,
+    target: Tensor,
+    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Computes Spectral Angle Mapper.
 
