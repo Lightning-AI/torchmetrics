@@ -51,6 +51,7 @@ from torchmetrics.image import (  # noqa: E402
     PeakSignalNoiseRatio,
     StructuralSimilarityIndexMeasure,
     UniversalImageQualityIndex,
+    SpectralAngleMapper,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
