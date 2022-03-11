@@ -43,11 +43,11 @@ class SpectralAngleMapper(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics import SpectralAngleMapper
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = torch.rand([16, 1, 16, 16])
+        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> target = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(123))
         >>> sam = SpectralAngleMapper()
         >>> sam(preds, target)
-        tensor(0.7542)
+        tensor(0.7377)
     """
 
     preds: List[Tensor]

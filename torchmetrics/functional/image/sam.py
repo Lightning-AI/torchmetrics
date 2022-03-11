@@ -62,11 +62,11 @@ def _sam_compute(
             - ``'none'``: no reduction will be applied
 
     Example:
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = torch.rand([16, 1, 16, 16])
+        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> target = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(123))
         >>> preds, target = _sam_update(preds, target)
         >>> _sam_compute(preds, target)
-        tensor(0.7542)
+        tensor(0.7377)
     """
     B, C, H, W = preds.shape
     preds = preds.reshape(B, C, H * W)
@@ -102,10 +102,10 @@ def universal_spectral_angle_mapper(
 
     Example:
         >>> from torchmetrics.functional import universal_spectral_angle_mapper
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = torch.rand([16, 1, 16, 16])
+        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> target = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(123))
         >>> universal_spectral_angle_mapper(preds, target)
-        tensor(0.7542)
+        tensor(0.7377)
 
     References: Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid
     landscape endmembers using the Spectral Angle Mapper (SAM) algorithm" in PL, Summaries of the Third Annual JPL
