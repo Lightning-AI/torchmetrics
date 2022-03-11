@@ -64,10 +64,10 @@ jobs:
       run: |
         choco install ffmpeg
 
-    - name: Freeze Numpy (hotfix)
+    - name: Freeze Numpy/PIL (hotfix)
       if: matrix.requires == 'latest'
       run: |
-        pip install -q "numpy==1.21.*" # temp fix for cypesq
+        # pip install -q "numpy==1.20.0" # temp fix for cypesq
         # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
         pip install -q "Pillow<9.0"  # It messes with torchvision
 
@@ -87,6 +87,7 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
+        pip install --force-reinstall pypesq
         pip list
 
     - name: Pull testing data from S3

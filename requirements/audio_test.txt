@@ -1,3 +1,3 @@
-pypesq
+pypesq>=1.2
 mir_eval>=0.6
 speechmetrics @ https://github.com/aliutkus/speechmetrics/archive/refs/heads/master.zip
