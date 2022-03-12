@@ -77,9 +77,9 @@ jobs:
         pip install -q "Pillow<9.0"  # It messes with torchvision
         # ImportError: Numba needs NumPy 1.21 or less
         if [[ ${{ matrix.python-version }} == '3.10' ]]; then
-          pip install -U "numpy==1.20.0" --no-cache-dir --no-binary :all:
+          pip install -U "numpy==1.20.*" --no-cache-dir --no-binary :all:
         fi
-        echo "PIP_NUMPY=numpy==1.20.0" >> $GITHUB_ENV
+        echo "PIP_NUMPY=numpy==1.20.*" >> $GITHUB_ENV
 
     - name: Install base dependencies
       run: |
