@@ -84,14 +84,14 @@ jobs:
     - name: Install base dependencies
       run: |
         pip --version
-        pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
+        pip install --requirement requirements.txt $PIP_NUMPY --upgrade --find-links $PYTORCH_URL
 
     - name: Install all dependencies
       run: |
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt $PIP_NUMPY --upgrade --find-links $PYTORCH_URL
-        pip install --force-reinstall pypesq resampy $PIP_NUMPY --no-cache-dir
+        pip install --force-reinstall pypesq $PIP_NUMPY --no-cache-dir --no-binary :pypesq: --no-cache-dir
         pip list
 
     - name: Pull testing data from S3
