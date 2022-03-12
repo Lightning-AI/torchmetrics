@@ -71,14 +71,12 @@ jobs:
         requires: ${{ matrix.requires }}
         python-version: ${{ matrix.python-version }}
 
-    - name: Freeze Numba (hotfix)
-      if: matrix.requires == 'latest'
-      # ImportError: Numba needs NumPy 1.21 or less
-      run: echo "PIP_NUMBA=numpy==1.21.* numba==0.55.*" >> $GITHUB_ENV
-
-    - name: Freeze PIL (hotfix)
-      # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
-      run: pip install -q "Pillow<9.0"  # It messes with torchvision
+    - name: Freeze Numba/PIL (hotfix)
+      run: |
+        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+        pip install -q "Pillow<9.0"  # It messes with torchvision
+        # ImportError: Numba needs NumPy 1.21 or less
+        [[ ${{ matrix.requires }} == 'latest' ]] && echo "PIP_NUMBA=numpy==1.21.* numba==0.55.*" || echo "PIP_NUMBA=numpy==1.20.*" >> $GITHUB_ENV
 
     - name: Install base dependencies
       run: |
@@ -90,7 +88,7 @@ jobs:
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt $PIP_NUMBA --upgrade --find-links $PYTORCH_URL
-        pip install --force-reinstall pypesq  --upgrade-strategy only-if-needed
+        pip install --force-reinstall pypesq resampy $PIP_NUMBA --upgrade-strategy only-if-needed
         pip list
 
     - name: Pull testing data from S3
