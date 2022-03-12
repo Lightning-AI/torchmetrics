@@ -76,7 +76,10 @@ jobs:
         # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
         pip install -q "Pillow<9.0"  # It messes with torchvision
         # ImportError: Numba needs NumPy 1.21 or less
-        [[ ${{ matrix.requires }} == 'latest' ]] && echo "PIP_NUMBA=numpy==1.21.* numba==0.55.*" || echo "PIP_NUMBA=numpy==1.20.*" >> $GITHUB_ENV
+        if [[ ${{ matrix.python-version }} == '3.10' ]]; then
+          pip install -U "numpy==1.20.0" --no-cache-dir --no-binary :all:
+        fi
+        echo "PIP_NUMPY=numpy==1.20.0" >> $GITHUB_ENV
 
     - name: Install base dependencies
       run: |
@@ -87,8 +90,8 @@ jobs:
       run: |
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
-        pip install --requirement requirements/devel.txt $PIP_NUMBA --upgrade --find-links $PYTORCH_URL
-        pip install --force-reinstall pypesq resampy $PIP_NUMBA --upgrade-strategy only-if-needed
+        pip install --requirement requirements/devel.txt $PIP_NUMPY --upgrade --find-links $PYTORCH_URL
+        pip install --force-reinstall pypesq resampy $PIP_NUMPY --no-cache-dir
         pip list
 
     - name: Pull testing data from S3
