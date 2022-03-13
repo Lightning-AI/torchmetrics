@@ -19,7 +19,7 @@ import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
-from torchmetrics.functional.image.sam import universal_spectral_angle_mapper
+from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
 
 seed_all(42)
@@ -28,9 +28,9 @@ Input = namedtuple("Input", ["preds", "target"])
 
 _inputs = []
 for size, channel, dtype in [
-    (12, 1, torch.float),
+    (12, 3, torch.float),
     (13, 3, torch.float32),
-    (14, 1, torch.double),
+    (14, 3, torch.double),
     (15, 3, torch.float64),
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
@@ -42,7 +42,9 @@ def _sk_sam(preds, target, reduction):
     # reshape to (batch_size, channel, height*width)
     B, C, H, W = preds.shape
     sk_preds = preds.reshape(B, C, H * W)
+    sk_preds = torch.movedim(sk_preds, 1, -1)
     sk_target = target.reshape(B, C, H * W)
+    sk_target = torch.movedim(sk_target, 1, -1)
     # compute arccos of cosine similarity
     dot_product = (sk_preds * sk_target).sum(dim=-1)
     preds_norm = sk_preds.norm(dim=-1)
@@ -82,7 +84,7 @@ class TestSpectralAngleMapper(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            universal_spectral_angle_mapper,
+            spectral_angle_mapper,
             partial(_sk_sam, reduction=reduction),
             metric_args=dict(reduction=reduction),
         )
@@ -94,12 +96,12 @@ class TestSpectralAngleMapper(MetricTester):
             preds,
             target,
             SpectralAngleMapper,
-            universal_spectral_angle_mapper,
+            spectral_angle_mapper,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, reduction, preds, target):
-        self.run_precision_test_gpu(preds, target, SpectralAngleMapper, universal_spectral_angle_mapper)
+        self.run_precision_test_gpu(preds, target, SpectralAngleMapper, spectral_angle_mapper)
 
 
 def test_error_on_different_shape(metric_class=SpectralAngleMapper):
@@ -118,3 +120,9 @@ def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
     metric = metric_class()
     with pytest.raises(TypeError):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))
+
+
+def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
+    metric = metric_class()
+    with pytest.raises(ValueError):
+        metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

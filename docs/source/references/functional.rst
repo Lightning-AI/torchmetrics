@@ -281,7 +281,7 @@ universal_image_quality_index [func]
 universal_spectral_angle_mapper [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: torchmetrics.functional.universal_spectral_angle_mapper
+.. autofunction:: torchmetrics.functional.spectral_angle_mapper
     :noindex:
 
 
