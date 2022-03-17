@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Dict, Optional
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor
@@ -89,7 +90,7 @@ class JaccardIndex(ConfusionMatrix):
         absent_score: float = 0.0,
         threshold: float = 0.5,
         multilabel: bool = False,
-        reduction: Optional[str] = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:

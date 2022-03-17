@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Optional, Tuple
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor
@@ -47,7 +48,7 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
     return measures, total
 
 
-def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "mean") -> Tensor:
+def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["_mean", "sum", "none", None] = "mean") -> Tensor:
     """Computes the KL divergenece based on the type of reduction.
 
     Args:
@@ -77,7 +78,7 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Optional[str] = "me
     return measures / total
 
 
-def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[str] = "mean") -> Tensor:
+def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Literal["mean", "sum", "none", None] = "mean") -> Tensor:
     r"""Computes `KL divergence`_
 
     .. math::

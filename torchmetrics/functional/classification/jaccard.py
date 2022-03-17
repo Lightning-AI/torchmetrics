@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor
@@ -26,7 +27,7 @@ def _jaccard_from_confmat(
     num_classes: int,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
-    reduction: Optional[str] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Computes the intersection over union from confusion matrix.
 
@@ -73,7 +74,7 @@ def jaccard_index(
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
-    reduction: Optional[str] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     r"""
     Computes `Jaccard index`_

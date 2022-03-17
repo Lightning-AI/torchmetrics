@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor, tensor
@@ -76,7 +77,7 @@ class PeakSignalNoiseRatio(Metric):
         self,
         data_range: Optional[float] = None,
         base: float = 10.0,
-        reduction: Optional[str] = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],

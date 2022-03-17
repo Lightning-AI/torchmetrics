@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Dict, Optional
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor
@@ -79,7 +80,7 @@ class KLDivergence(Metric):
     def __init__(
         self,
         log_prob: bool = False,
-        reduction: Optional[str] = "mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:

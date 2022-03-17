@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Dict, List, Optional
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor
@@ -97,7 +98,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     def __init__(
         self,
         net_type: str = "alex",
-        reduction: str = "mean",
+        reduction: Literal["sum", "mean"] = "mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:

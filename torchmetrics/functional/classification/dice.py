@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Tuple, Optional
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor
@@ -64,7 +65,7 @@ def dice_score(
     bg: bool = False,
     nan_score: float = 0.0,
     no_fg_score: float = 0.0,
-    reduction: Optional[str] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Compute dice score from prediction scores.
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional, Tuple, Union
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor, tensor
@@ -24,7 +25,7 @@ def _psnr_compute(
     n_obs: Tensor,
     data_range: Tensor,
     base: float = 10.0,
-    reduction: Optional[str] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Computes peak signal-to-noise ratio.
 
@@ -96,7 +97,7 @@ def peak_signal_noise_ratio(
     target: Tensor,
     data_range: Optional[float] = None,
     base: float = 10.0,
-    reduction: Optional[str] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
     """Computes the peak signal-to-noise ratio.

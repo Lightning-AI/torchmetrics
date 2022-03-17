@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
+from typing_extensions import Literal
 
 from torch import Tensor
 
@@ -37,7 +38,7 @@ def _pairwise_manhattan_distance_update(
 
 
 def pairwise_manhattan_distance(
-    x: Tensor, y: Optional[Tensor] = None, reduction: Optional[str] = None, zero_diagonal: Optional[bool] = None
+    x: Tensor, y: Optional[Tensor] = None, reduction: Literal["mean", "sum", "none", None] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     r"""
     Calculates pairwise manhattan distance:
