@@ -378,6 +378,26 @@ def test_missing_gt():
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+def test_segm_iou_empty_mask():
+    """Test empty ground truths."""
+    metric = MeanAveragePrecision(iou_type="segm")
+
+    metric.update(
+        [
+            dict(
+                masks=torch.randint(0, 1, (1, 10, 10)),
+                scores=torch.Tensor([0.5]),
+                labels=torch.IntTensor([4]),
+            ),
+        ],
+        [
+            dict(masks=torch.Tensor([]), labels=torch.IntTensor([])),
+        ],
+    )
+    metric.compute()
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_input():
     """Test class input validation."""
     metric = MeanAveragePrecision()
