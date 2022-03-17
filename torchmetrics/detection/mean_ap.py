@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+n  # Copyright The PyTorch Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -368,8 +368,7 @@ class MeanAveragePrecision(Metric):
             self.detections.append(detections)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
-            if "masks" in item:
-                self.detection_masks.append(item["masks"])
+            self.detection_masks.append(masks)
 
         for item in target:
             groundtruths = self._get_safe_item_values(item)
