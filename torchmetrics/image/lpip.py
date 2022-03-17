@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Dict, List, Optional
-from typing_extensions import Literal
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
