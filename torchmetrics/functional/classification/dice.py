@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Optional
 
 import torch
 from torch import Tensor
@@ -64,7 +64,7 @@ def dice_score(
     bg: bool = False,
     nan_score: float = 0.0,
     no_fg_score: float = 0.0,
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
 ) -> Tensor:
     """Compute dice score from prediction scores.
 
@@ -78,7 +78,7 @@ def dice_score(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
         Tensor containing dice score

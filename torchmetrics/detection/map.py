@@ -14,6 +14,7 @@
 import logging
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+import numpy as np
 import torch
 from torch import IntTensor, Tensor
 

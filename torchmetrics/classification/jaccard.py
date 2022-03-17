@@ -89,7 +89,7 @@ class JaccardIndex(ConfusionMatrix):
         absent_score: float = 0.0,
         threshold: float = 0.5,
         multilabel: bool = False,
-        reduction: str = "elementwise_mean",
+        reduction: Optional[str] = "elementwise_mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:

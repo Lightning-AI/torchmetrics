@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Optional
 
 import torch
 from torch import Tensor
@@ -37,7 +37,7 @@ def _cosine_similarity_update(
     return preds, target
 
 
-def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = "sum") -> Tensor:
+def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
     """Computes Cosine Similarity.
 
     Args:
@@ -67,7 +67,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: str = "
     return reduction_mapping[reduction](similarity)
 
 
-def cosine_similarity(preds: Tensor, target: Tensor, reduction: str = "sum") -> Tensor:
+def cosine_similarity(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
     r"""
     Computes the `Cosine Similarity`_
     between targets and predictions:

@@ -26,7 +26,7 @@ def _jaccard_from_confmat(
     num_classes: int,
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
 ) -> Tensor:
     """Computes the intersection over union from confusion matrix.
 
@@ -41,7 +41,7 @@ def _jaccard_from_confmat(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
     """
 
     # Remove the ignored class index from the scores.
@@ -73,7 +73,7 @@ def jaccard_index(
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
 ) -> Tensor:
     r"""
     Computes `Jaccard index`_
@@ -113,7 +113,7 @@ def jaccard_index(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
         IoU score: Tensor containing single value if reduction is

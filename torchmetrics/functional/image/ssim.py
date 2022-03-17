@@ -51,7 +51,7 @@ def _ssim_compute(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -68,7 +68,7 @@ def _ssim_compute(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
@@ -140,7 +140,7 @@ def structural_similarity_index_measure(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -156,7 +156,7 @@ def structural_similarity_index_measure(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
@@ -193,7 +193,7 @@ def _get_normalized_sim_and_cs(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -213,7 +213,7 @@ def _multiscale_ssim_compute(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -238,7 +238,7 @@ def _multiscale_ssim_compute(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
@@ -304,7 +304,7 @@ def multiscale_structural_similarity_index_measure(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: str = "elementwise_mean",
+    reduction: Optional[str] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -323,7 +323,7 @@ def multiscale_structural_similarity_index_measure(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
