@@ -48,7 +48,7 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
     return measures, total
 
 
-def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["_mean", "sum", "none", None] = "mean") -> Tensor:
+def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["mean", "sum", "none", None] = "mean") -> Tensor:
     """Computes the KL divergenece based on the type of reduction.
 
     Args:
