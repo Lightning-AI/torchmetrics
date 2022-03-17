@@ -242,13 +242,11 @@ class MeanAveragePrecision(Metric):
             If ``class_metrics`` is not a boolean
     """
 
-    detection_boxes: List[Tensor]
+    detections: List[Tensor]
     detection_scores: List[Tensor]
     detection_labels: List[Tensor]
-    groundtruth_boxes: List[Tensor]
+    groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
-    groundtruth_masks: List[Tensor]
-    detection_masks: List[Tensor]
 
     def __init__(
         self,
@@ -292,13 +290,11 @@ class MeanAveragePrecision(Metric):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
 
         self.class_metrics = class_metrics
-        self.add_state("detection_boxes", default=[], dist_reduce_fx=None)
+        self.add_state("detections", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
-        self.add_state("groundtruth_boxes", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
-        self.add_state("detection_masks", default=[], dist_reduce_fx=None)
-        self.add_state("groundtruth_masks", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
@@ -341,32 +337,29 @@ class MeanAveragePrecision(Metric):
             ValueError:
                 If any score is not type float and of length 1
         """
-        _input_validator(preds, target)
+        _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-            boxes, masks = self._get_safe_item_values(item)
-            self.detection_boxes.append(boxes)
+            detections = self._get_safe_item_values(item)
+            self.detections.append(detections)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
-            self.detection_masks.append(masks)
 
         for item in target:
-            boxes, masks = self._get_safe_item_values(item)
-            self.groundtruth_boxes.append(boxes)
+            groundtruths = self._get_safe_item_values(item)
+            self.groundtruths.append(groundtruths)
             self.groundtruth_labels.append(item["labels"])
-            self.groundtruth_masks.append(masks)
 
     def _get_safe_item_values(self, item):
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
-            masks = _fix_empty_tensors(torch.Tensor())
-        elif self.iou_type == "masks":
+            return boxes
+        elif self.iou_type == "segm":
             masks = _fix_empty_tensors(item["masks"])
-            boxes = _fix_empty_tensors(torch.Tensor())
+            return masks
         else:
             raise Exception(f"IOU type {self.iou_type} is not supported")
-        return boxes, masks
 
     def _get_classes(self) -> List:
         """Returns a list of unique classes found in ground truth and detection data."""
@@ -375,18 +368,11 @@ class MeanAveragePrecision(Metric):
         return []
 
     def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
-        return self._compute_iou_impl(id, self.groundtruth_boxes, self.detection_boxes, class_id, max_det, box_iou)
+        iou_func = box_iou if self.iou_type == "bbox" else segm_iou
 
-        # if self.iou_type == "segm":
-        #     return self._compute_iou_impl(id, self.groundtruth_masks, self.detection_masks, class_id, max_det, segm_iou)
-        # elif self.iou_type == "bbox":
+        return self._compute_iou_impl(id, class_id, max_det, iou_func)
 
-        # else:
-        #     raise Exception(f"IOU type {self.iou_type} is not supported")
-
-    def _compute_iou_impl(
-        self, id: int, ground_truths, detections, class_id: int, max_det: int, compute_iou: Callable
-    ) -> Tensor:
+    def _compute_iou_impl(self, id: int, class_id: int, max_det: int, compute_iou: Callable) -> Tensor:
         """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
@@ -399,8 +385,9 @@ class MeanAveragePrecision(Metric):
                 Maximum number of evaluated detection bounding boxes
         """
 
-        gt = ground_truths[id]
-        det = detections[id]
+        # if self.iou_type == "bbox":
+        gt = self.groundtruths[id]
+        det = self.detections[id]
 
         gt_label_mask = self.groundtruth_labels[id] == class_id
         det_label_mask = self.detection_labels[id] == class_id
@@ -413,14 +400,14 @@ class MeanAveragePrecision(Metric):
             return Tensor([])
 
         # Sort by scores and use only max detections
-        scores = self.detection_scores[idx]
-        scores_filtered = scores[self.detection_labels[idx] == class_id]
+        scores = self.detection_scores[id]
+        scores_filtered = scores[self.detection_labels[id] == class_id]
         inds = torch.argsort(scores_filtered, descending=True)
         det = det[inds]
         if len(det) > max_det:
             det = det[:max_det]
 
-        ious = box_iou(det, gt)
+        ious = compute_iou(det, gt)
         return ious
 
     def __evaluate_image_gt_no_preds(
@@ -494,8 +481,9 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-        gt = self.groundtruth_boxes[idx]
-        det = self.detection_boxes[idx]
+
+        gt = self.groundtruths[idx]
+        det = self.detections[idx]
         gt_label_mask = self.groundtruth_labels[idx] == class_id
         det_label_mask = self.detection_labels[idx] == class_id
 
@@ -649,7 +637,7 @@ class MeanAveragePrecision(Metric):
             class_ids:
                 List of label class Ids.
         """
-        img_ids = range(len(self.groundtruth_boxes))
+        img_ids = range(len(self.groundtruths))
         max_detections = self.max_detection_thresholds[-1]
         area_ranges = self.bbox_area_ranges.values()
 
@@ -825,10 +813,10 @@ class MeanAveragePrecision(Metric):
         """
 
         # move everything to CPU, as we are faster here
-        self.detections = [box.cpu() for box in self.detection_boxes]
+        self.detections = [box.cpu() for box in self.detections]
         self.detection_labels = [label.cpu() for label in self.detection_labels]
         self.detection_scores = [score.cpu() for score in self.detection_scores]
-        self.groundtruths = [box.cpu() for box in self.groundtruth_boxes]
+        self.groundtruths = [box.cpu() for box in self.groundtruths]
         self.groundtruth_labels = [label.cpu() for label in self.groundtruth_labels]
 
         classes = self._get_classes()
