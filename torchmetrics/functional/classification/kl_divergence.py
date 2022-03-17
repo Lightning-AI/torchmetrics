@@ -13,10 +13,10 @@
 # limitations under the License.
 
 from typing import Optional, Tuple
-from typing_extensions import Literal
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.data import METRIC_EPS
@@ -78,7 +78,9 @@ def _kld_compute(measures: Tensor, total: Tensor, reduction: Literal["_mean", "s
     return measures / total
 
 
-def kl_divergence(p: Tensor, q: Tensor, log_prob: bool = False, reduction: Literal["mean", "sum", "none", None] = "mean") -> Tensor:
+def kl_divergence(
+    p: Tensor, q: Tensor, log_prob: bool = False, reduction: Literal["mean", "sum", "none", None] = "mean"
+) -> Tensor:
     r"""Computes `KL divergence`_
 
     .. math::

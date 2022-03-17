@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, List, Optional
-from typing_extensions import Literal
 
 import torch
 import torch.nn.functional as F
 from torch import Tensor
+from typing_extensions import Literal
 
 
 def reduce(to_reduce: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None]) -> Tensor:
@@ -41,7 +41,12 @@ def reduce(to_reduce: Tensor, reduction: Literal["elementwise_mean", "sum", "non
     raise ValueError("Reduction parameter unknown.")
 
 
-def class_reduce(num: Tensor, denom: Tensor, weights: Tensor, class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none") -> Tensor:
+def class_reduce(
+    num: Tensor,
+    denom: Tensor,
+    weights: Tensor,
+    class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none",
+) -> Tensor:
     """
     Function used to reduce classification metrics of the form `num / denom * weights`.
     For example for calculating standard accuracy the num would be number of
