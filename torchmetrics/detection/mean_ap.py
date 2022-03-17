@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+n  # Copyright The PyTorch Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,7 +101,9 @@ def segm_iou(inputs, targets, smooth=1):
     return ((intersections + smooth) / (unions + smooth)).view(n_inputs, n_targets)
 
 
-def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]]) -> None:
+def _input_validator(
+    preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox"
+) -> None:
     """Ensure the correct input format of `preds` and `targets`"""
     if not isinstance(preds, Sequence):
         raise ValueError("Expected argument `preds` to be of type Sequence")
@@ -109,37 +111,38 @@ def _input_validator(preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[
         raise ValueError("Expected argument `target` to be of type Sequence")
     if len(preds) != len(targets):
         raise ValueError("Expected argument `preds` and `target` to have the same length")
+    iou_attribute = "boxes" if iou_type == "bbox" else "masks"
 
-    for k in ["boxes", "scores", "labels"]:
+    for k in [iou_attribute, "scores", "labels"]:
         if any(k not in p for p in preds):
             raise ValueError(f"Expected all dicts in `preds` to contain the `{k}` key")
 
-    for k in ["boxes", "labels"]:
+    for k in [iou_attribute, "labels"]:
         if any(k not in p for p in targets):
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
-    if any(type(pred["boxes"]) is not Tensor for pred in preds):
-        raise ValueError("Expected all boxes in `preds` to be of type Tensor")
+    if any(type(pred[iou_attribute]) is not Tensor for pred in preds):
+        raise ValueError(f"Expected all {iou_attribute} in `preds` to be of type Tensor")
     if any(type(pred["scores"]) is not Tensor for pred in preds):
         raise ValueError("Expected all scores in `preds` to be of type Tensor")
     if any(type(pred["labels"]) is not Tensor for pred in preds):
         raise ValueError("Expected all labels in `preds` to be of type Tensor")
-    if any(type(target["boxes"]) is not Tensor for target in targets):
-        raise ValueError("Expected all boxes in `target` to be of type Tensor")
+    if any(type(target[iou_attribute]) is not Tensor for target in targets):
+        raise ValueError(f"Expected all {iou_attribute} in `target` to be of type Tensor")
     if any(type(target["labels"]) is not Tensor for target in targets):
         raise ValueError("Expected all labels in `target` to be of type Tensor")
 
     for i, item in enumerate(targets):
-        if item["boxes"].size(0) != item["labels"].size(0):
+        if item[iou_attribute].size(0) != item["labels"].size(0):
             raise ValueError(
-                f"Input boxes and labels of sample {i} in targets have a"
-                f" different length (expected {item['boxes'].size(0)} labels, got {item['labels'].size(0)})"
+                f"Input {iou_attribute} and labels of sample {i} in targets have a"
+                f" different length (expected {item[iou_attribute].size(0)} labels, got {item['labels'].size(0)})"
             )
     for i, item in enumerate(preds):
-        if not (item["boxes"].size(0) == item["labels"].size(0) == item["scores"].size(0)):
+        if not (item[iou_attribute].size(0) == item["labels"].size(0) == item["scores"].size(0)):
             raise ValueError(
-                f"Input boxes, labels and scores of sample {i} in predictions have a"
-                f" different length (expected {item['boxes'].size(0)} labels and scores,"
+                f"Input {iou_attribute}, labels and scores of sample {i} in predictions have a"
+                f" different length (expected {item[iou_attribute].size(0)} labels and scores,"
                 f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
             )
 
@@ -285,9 +288,9 @@ class MeanAveragePrecision(Metric):
         self.add_state("detection_boxes", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
-        self.add_state("detection_masks", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_boxes", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
+        self.add_state("detection_masks", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_masks", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
@@ -334,21 +337,29 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target)
 
         for item in preds:
-            boxes = _fix_empty_tensors(item["boxes"])
-            boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            boxes, masks = self._get_safe_item_values(item)
             self.detection_boxes.append(boxes)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
-            if "masks" in item:
-                self.detection_masks.append(item["masks"])
+            self.detection_masks.append(masks)
 
         for item in target:
-            boxes = _fix_empty_tensors(item["boxes"])
-            boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            boxes, masks = self._get_safe_item_values(item)
             self.groundtruth_boxes.append(boxes)
             self.groundtruth_labels.append(item["labels"])
-            if "masks" in item:
-                self.groundtruth_masks.append(item["masks"])
+            self.groundtruth_masks.append(masks)
+
+    def _get_safe_item_values(self, item):
+        if self.iou_type == "bbox":
+            boxes = _fix_empty_tensors(item["boxes"])
+            boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+            masks = _fix_empty_tensors(torch.Tensor())
+        elif self.iou_type == "masks":
+            masks = _fix_empty_tensors(item["masks"])
+            boxes = _fix_empty_tensors(torch.Tensor())
+        else:
+            raise Exception(f"IOU type {self.iou_type} is not supported")
+        return boxes, masks
 
     def _get_classes(self) -> List:
         """Returns a list of unique classes found in ground truth and detection data."""
@@ -357,12 +368,14 @@ class MeanAveragePrecision(Metric):
         return []
 
     def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
-        if self.iou_type == "segm":
-            return self._compute_iou_impl(id, self.groundtruth_masks, self.detection_masks, class_id, max_det, segm_iou)
-        elif self.iou_type == "bbox":
-            return self._compute_iou_impl(id, self.groundtruth_boxes, self.detection_boxes, class_id, max_det, box_iou)
-        else:
-            raise Exception(f"IOU type {self.iou_type} is not supported")
+        return self._compute_iou_impl(id, self.groundtruth_boxes, self.detection_boxes, class_id, max_det, box_iou)
+
+        # if self.iou_type == "segm":
+        #     return self._compute_iou_impl(id, self.groundtruth_masks, self.detection_masks, class_id, max_det, segm_iou)
+        # elif self.iou_type == "bbox":
+
+        # else:
+        #     raise Exception(f"IOU type {self.iou_type} is not supported")
 
     def _compute_iou_impl(
         self, id: int, ground_truths, detections, class_id: int, max_det: int, compute_iou: Callable
@@ -400,7 +413,7 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
 
-        ious = compute_iou(det, gt)
+        ious = box_iou(det, gt)
         return ious
 
     def __evaluate_image_gt_no_preds(
