@@ -268,8 +268,6 @@ class MeanAveragePrecision(Metric):
     detection_labels: List[Tensor]
     groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
-    groundtruth_masks: List[Tensor]
-    detection_masks: List[Tensor]
 
     def __init__(
         self,
@@ -317,8 +315,6 @@ class MeanAveragePrecision(Metric):
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
-        self.add_state("detection_masks", default=[], dist_reduce_fx=None)
-        self.add_state("groundtruth_masks", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
@@ -368,7 +364,6 @@ class MeanAveragePrecision(Metric):
             self.detections.append(detections)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
-            self.detection_masks.append(masks)
 
         for item in target:
             groundtruths = self._get_safe_item_values(item)
@@ -433,7 +428,6 @@ class MeanAveragePrecision(Metric):
             det = det[:max_det]
 
         ious = compute_iou(det, gt)
-
         return ious
 
     def __evaluate_image_gt_no_preds(
