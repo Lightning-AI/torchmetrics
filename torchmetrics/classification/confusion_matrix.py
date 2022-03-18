@@ -120,7 +120,7 @@ class ConfusionMatrix(Metric):
             default = torch.zeros(num_classes, num_classes, dtype=torch.long)
         self.add_state("confmat", default=default, dist_reduce_fx="sum")
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -130,7 +130,7 @@ class ConfusionMatrix(Metric):
         confmat = _confusion_matrix_update(preds, target, self.num_classes, self.threshold, self.multilabel)
         self.confmat += confmat
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes confusion matrix.
 
         Returns:

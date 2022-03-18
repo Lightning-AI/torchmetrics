@@ -268,7 +268,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruth_boxes", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
 
-    def _update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
+    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Add detections and ground truth to the metric.
 
         Args:
@@ -414,7 +414,7 @@ class MeanAveragePrecision(Metric):
                 "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
                 "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
                 "gtIgnore": gt_ignore,
-                "dtIgnore": det_ignore
+                "dtIgnore": det_ignore,
             }
 
         # Some predictions but no GT
@@ -443,7 +443,7 @@ class MeanAveragePrecision(Metric):
                 "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
                 "dtScores": scores_sorted,
                 "gtIgnore": gt_ignore,
-                "dtIgnore": det_ignore
+                "dtIgnore": det_ignore,
             }
 
         gt = gt[gt_label_mask]
@@ -727,7 +727,7 @@ class MeanAveragePrecision(Metric):
 
         return recall, precision, scores
 
-    def _compute(self) -> dict:
+    def compute(self) -> dict:
         """Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)` scores.
 
         Note:
