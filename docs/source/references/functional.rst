@@ -279,7 +279,7 @@ universal_image_quality_index [func]
 
 
 error_relative_global_dimensionless_synthesis [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.error_relative_global_dimensionless_synthesis
     :noindex:
