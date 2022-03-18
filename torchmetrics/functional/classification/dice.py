@@ -15,6 +15,7 @@ from typing import Tuple
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.data import to_categorical
 from torchmetrics.utilities.distributed import reduce
@@ -64,7 +65,7 @@ def dice_score(
     bg: bool = False,
     nan_score: float = 0.0,
     no_fg_score: float = 0.0,
-    reduction: str = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Compute dice score from prediction scores.
 
@@ -78,7 +79,7 @@ def dice_score(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
         Tensor containing dice score

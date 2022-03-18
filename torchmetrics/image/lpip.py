@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
@@ -97,7 +98,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     def __init__(
         self,
         net_type: str = "alex",
-        reduction: str = "mean",
+        reduction: Literal["sum", "mean"] = "mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
