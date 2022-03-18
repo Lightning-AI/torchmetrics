@@ -197,23 +197,22 @@ def d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
     target = target.permute(0, 3, 1, 2)
     preds = preds.permute(0, 3, 1, 2)
 
-    L = preds.shape[1]
-
-    M1 = np.zeros((L, L), dtype=np.float32)
-    M2 = np.zeros((L, L), dtype=np.float32)
+    length = preds.shape[1]
+    m1 = np.zeros((length, length), dtype=np.float32)
+    m2 = np.zeros((length, length), dtype=np.float32)
 
     # Convert target and preds to Torch Tensors, pass them to metrics UQI
     # this is mainly because reference repo (sewar) uses uniform distribution
     # in their implementation of UQI, and we use gaussian distribution
     # and they have different default values for some kwargs like window size.
-    for k in range(L):
-        for r in range(k, L):
-            M1[k, r] = M1[r, k] = universal_image_quality_index(target[:, k : k + 1, :, :], target[:, r : r + 1, :, :])
-            M2[k, r] = M2[r, k] = universal_image_quality_index(preds[:, k : k + 1, :, :], preds[:, r : r + 1, :, :])
-    diff = np.abs(M1 - M2) ** p
+    for k in range(length):
+        for r in range(k, length):
+            m1[k, r] = m1[r, k] = universal_image_quality_index(target[:, k : k + 1, :, :], target[:, r : r + 1, :, :])
+            m2[k, r] = m2[r, k] = universal_image_quality_index(preds[:, k : k + 1, :, :], preds[:, r : r + 1, :, :])
+    diff = np.abs(m1 - m2) ** p
 
     # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
-    if L == 1:
+    if length == 1:
         return diff[0][0] ** (1.0 / p)
     else:
-        return (1.0 / (L * (L - 1)) * np.sum(diff)) ** (1.0 / p)
+        return (1.0 / (length * (length - 1)) * np.sum(diff)) ** (1.0 / p)
