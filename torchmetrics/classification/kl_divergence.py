@@ -80,7 +80,7 @@ class KLDivergence(Metric):
     def __init__(
         self,
         log_prob: bool = False,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "mean",
+        reduction: Literal["mean", "sum", "none", None] = "mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
