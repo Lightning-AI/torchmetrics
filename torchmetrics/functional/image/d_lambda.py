@@ -73,22 +73,21 @@ def _d_lambda_compute(
     if p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
 
-    L = preds.shape[1]
+    length = preds.shape[1]
+    m1 = torch.zeros((length, length))
+    m2 = torch.zeros((length, length))
 
-    M1 = torch.zeros((L, L))
-    M2 = torch.zeros((L, L))
+    for k in range(length):
+        for r in range(k, length):
+            m1[k, r] = m1[r, k] = universal_image_quality_index(target[:, k : k + 1, :, :], target[:, r : r + 1, :, :])
+            m2[k, r] = m2[r, k] = universal_image_quality_index(preds[:, k : k + 1, :, :], preds[:, r : r + 1, :, :])
 
-    for k in range(L):
-        for r in range(k, L):
-            M1[k, r] = M1[r, k] = universal_image_quality_index(target[:, k : k + 1, :, :], target[:, r : r + 1, :, :])
-            M2[k, r] = M2[r, k] = universal_image_quality_index(preds[:, k : k + 1, :, :], preds[:, r : r + 1, :, :])
-
-    diff = torch.pow(torch.abs(M1 - M2), p)
+    diff = torch.pow(torch.abs(m1 - m2), p)
     # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
-    if L == 1:
+    if length == 1:
         output = torch.pow(diff, (1.0 / p))
     else:
-        output = torch.pow(1.0 / (L * (L - 1)) * torch.sum(diff), (1.0 / p))
+        output = torch.pow(1.0 / (length * (length - 1)) * torch.sum(diff), (1.0 / p))
     return reduce(output, reduction)
 
 
