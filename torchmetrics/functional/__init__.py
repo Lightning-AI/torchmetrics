@@ -33,6 +33,7 @@ from torchmetrics.functional.classification.precision_recall_curve import precis
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
+from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
 from torchmetrics.functional.image.ssim import (
@@ -93,6 +94,7 @@ __all__ = [
     "cosine_similarity",
     "tweedie_deviance_score",
     "dice_score",
+    "error_relative_global_dimensionless_synthesis",
     "explained_variance",
     "extended_edit_distance",
     "f1_score",

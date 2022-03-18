@@ -47,6 +47,7 @@ from torchmetrics.classification import (  # noqa: E402
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
+    ErrorRelativeGlobalDimensionlessSynthesis,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     StructuralSimilarityIndexMeasure,
@@ -116,6 +117,7 @@ __all__ = [
     "ConfusionMatrix",
     "CosineSimilarity",
     "TweedieDevianceScore",
+    "ErrorRelativeGlobalDimensionlessSynthesis",
     "ExplainedVariance",
     "ExtendedEditDistance",
     "F1Score",
