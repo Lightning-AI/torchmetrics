@@ -426,7 +426,7 @@ class MeanAveragePrecision(Metric):
 
             # Detections
             det = det[det_label_mask]
-            scores = self.detection_scores[id]
+            scores = self.detection_scores[idx]
             scores_filtered = scores[det_label_mask]
             scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
             det = det[dtind]
