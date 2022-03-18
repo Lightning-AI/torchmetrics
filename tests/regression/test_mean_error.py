@@ -23,8 +23,8 @@ from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 
 from tests.helpers import seed_all
-from tests.helpers.non_sklearn_metrics import (
-    symmetric_mean_absolute_percentage_error as sk_sym_mean_abs_percentage_error,
+from tests.helpers.reference_metrics import (
+    _symmetric_mean_absolute_percentage_error as sk_sym_mean_abs_percentage_error,
 )
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional import (

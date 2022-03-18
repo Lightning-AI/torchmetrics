@@ -6,7 +6,7 @@ from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
 
 
-def symmetric_mean_absolute_percentage_error(
+def _symmetric_mean_absolute_percentage_error(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
@@ -62,7 +62,7 @@ def symmetric_mean_absolute_percentage_error(
 # sklearn reference function from
 # https://github.com/samronsin/scikit-learn/blob/calibration-loss/sklearn/metrics/_classification.py.
 # TODO: when the PR into sklearn is accepted, update this to use the official function.
-def calibration_error(
+def _calibration_error(
     y_true: np.ndarray,
     y_prob: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
