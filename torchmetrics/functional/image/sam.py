@@ -53,7 +53,7 @@ def _sam_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 def _sam_compute(
     preds: Tensor,
     target: Tensor,
-    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Computes Spectral Angle Mapper.
 
@@ -64,7 +64,7 @@ def _sam_compute(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
         >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
@@ -85,7 +85,7 @@ def _sam_compute(
 def spectral_angle_mapper(
     preds: Tensor,
     target: Tensor,
-    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Universal Spectral Angle Mapper.
 
@@ -96,7 +96,7 @@ def spectral_angle_mapper(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
         Tensor with Spectral Angle Mapper score

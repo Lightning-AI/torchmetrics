@@ -23,15 +23,15 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class SpectralAngleMapper(Metric):
-    """Spectral Angle Mapper determine thespectral similarity between image spectra and reference spectra by
-    calculating the angle between thespectra, where small angles between the two spectrums indicate high similarity
+    """Spectral Angle Mapper determine the spectral similarity between image spectra and reference spectra by
+    calculating the angle between the spectra, where small angles between the two spectrums indicate high similarity
     and high angles indicate low similarity.
 
     Args:
         reduction: a method to reduce metric score over labels.
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -62,9 +62,8 @@ class SpectralAngleMapper(Metric):
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
         rank_zero_warn(
-            "Metric `SpectralAngleMapper` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
+            "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer."
+            " For large datasets, this may lead to a large memory footprint."
         )
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")

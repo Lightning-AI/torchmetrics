@@ -411,7 +411,7 @@ UniversalImageQualityIndex
     :noindex:
 
 SpectralAngleMapper
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.SpectralAngleMapper
     :noindex:
