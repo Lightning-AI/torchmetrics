@@ -51,7 +51,7 @@ def _uqi_compute(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     data_range: Optional[float] = None,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
@@ -66,7 +66,7 @@ def _uqi_compute(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
@@ -128,7 +128,7 @@ def universal_image_quality_index(
     target: Tensor,
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
-    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     data_range: Optional[float] = None,
 ) -> Tensor:
     """Universal Image Quality Index.
@@ -142,7 +142,7 @@ def universal_image_quality_index(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
