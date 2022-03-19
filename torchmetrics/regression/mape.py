@@ -27,7 +27,7 @@ class MeanAbsolutePercentageError(Metric):
     r"""
     Computes `Mean Absolute Percentage Error`_ (MAPE):
 
-    .. math:: \text{MAPE} = \frac{1}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, y_i)}
+    .. math:: \text{MAPE} = \frac{1}{n}\sum_{i=1}^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, | y_i |)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
