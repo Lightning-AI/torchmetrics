@@ -49,7 +49,11 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         >>> target = preds * 0.75
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
         >>> ergas(preds, target)
-        tensor(115.4314)
+        tensor(153.9085)
+
+    References: Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
+    Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
+    15 October 2007, doi: 10.1109/LGRS.2007.896328.
     """
 
     preds: List[Tensor]
