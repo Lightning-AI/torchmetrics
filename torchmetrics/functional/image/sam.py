@@ -75,9 +75,9 @@ def _sam_compute(
     """
     B, C, H, W = preds.shape
     preds = preds.reshape(B, C, H * W)
-    preds = torch.movedim(preds, 1, -1)
+    preds = torch.permute(preds, (0, 2, 1))
     target = target.reshape(B, C, H * W)
-    target = torch.movedim(target, 1, -1)
+    target = torch.permute(target, (0, 2, 1))
     sam_score = torch.clip(cosine_similarity(preds, target, reduction="none"), -1, 1).arccos()
     return reduce(sam_score, reduction)
 

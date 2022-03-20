@@ -42,9 +42,9 @@ def _sk_sam(preds, target, reduction):
     # reshape to (batch_size, channel, height*width)
     B, C, H, W = preds.shape
     sk_preds = preds.reshape(B, C, H * W)
-    sk_preds = torch.movedim(sk_preds, 1, -1)
+    sk_preds = torch.permute(sk_preds, (0, 2, 1))
     sk_target = target.reshape(B, C, H * W)
-    sk_target = torch.movedim(sk_target, 1, -1)
+    sk_target = torch.permute(sk_target, (0, 2, 1))
     # compute arccos of cosine similarity
     dot_product = (sk_preds * sk_target).sum(dim=-1)
     preds_norm = sk_preds.norm(dim=-1)
