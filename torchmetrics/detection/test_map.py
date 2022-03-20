@@ -96,7 +96,3 @@ class TestMap(unittest.TestCase):
 
         result = self._compute_metric(gts, preds)
         self.assertLess(result["map"], 1)
-
-
-if __name__ == "__main__":
-    unittest.main()
