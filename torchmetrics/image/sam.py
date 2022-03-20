@@ -48,6 +48,10 @@ class SpectralAngleMapper(Metric):
         >>> sam = SpectralAngleMapper()
         >>> sam(preds, target)
         tensor(0.5943)
+
+    References: Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid
+    landscape endmembers using the Spectral Angle Mapper (SAM) algorithm" in PL, Summaries of the Third Annual JPL
+    Airborne Geoscience Workshop, vol. 1, June 1, 1992.
     """
 
     preds: List[Tensor]
