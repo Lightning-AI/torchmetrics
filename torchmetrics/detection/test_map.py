@@ -15,37 +15,30 @@ class TestMap(unittest.TestCase):
 
     def test_basic_correct_detection(self):
         """Basic test, 1 ground truth, 1 good prediction."""
-        gts = [dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0]))]
-
-        preds = [
-            dict(
+        gt = dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0]))
+        pred = dict(
                 boxes=torch.Tensor([[10, 20, 15, 25]]),
                 scores=torch.Tensor([0.9]),
                 labels=torch.IntTensor([0]),
             )
-        ]
 
-        result = self._compute_metric(gts, preds)
+        result = self._compute_metric([gt], [pred])
         self.assertEqual(result["map"], 1)
 
     def test_no_gt_no_pred(self):
         """Image should be ignored, so map result is -1 (the default value)"""
-        gts = [
-            dict(
+        gt = dict(
                 boxes=torch.Tensor([]),  # Empty GT
                 labels=torch.IntTensor([]),
             )
-        ]
 
-        preds = [
-            dict(
+        pred = dict(
                 boxes=torch.Tensor([]),
                 scores=torch.Tensor([]),
                 labels=torch.IntTensor([]),  # Empty prediction
             )
-        ]
 
-        result = self._compute_metric(gts, preds)
+        result = self._compute_metric([gt], [pred])
         self.assertEqual(result["map"], -1)
 
     def test_missing_pred(self):
@@ -58,7 +51,6 @@ class TestMap(unittest.TestCase):
             dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0])),
             dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0])),
         ]
-
         preds = [
             dict(
                 boxes=torch.Tensor([[10, 20, 15, 25]]),
