@@ -32,7 +32,7 @@ class UniversalImageQualityIndex(Metric):
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         compute_on_step:
@@ -66,7 +66,7 @@ class UniversalImageQualityIndex(Metric):
         self,
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
-        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         data_range: Optional[float] = None,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],

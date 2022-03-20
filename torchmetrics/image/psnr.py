@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.image.psnr import _psnr_compute, _psnr_update
 from torchmetrics.metric import Metric
@@ -38,7 +39,7 @@ class PeakSignalNoiseRatio(Metric):
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         dim:
             Dimensions to reduce PSNR scores over, provided as either an integer or a list of integers. Default is
@@ -76,7 +77,7 @@ class PeakSignalNoiseRatio(Metric):
         self,
         data_range: Optional[float] = None,
         base: float = 10.0,
-        reduction: str = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         dim: Optional[Union[int, Tuple[int, ...]]] = None,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
