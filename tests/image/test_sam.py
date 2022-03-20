@@ -47,7 +47,7 @@ def _sk_sam(preds, target, reduction):
     dot_product = (sk_preds * sk_target).sum(dim=1)
     preds_norm = sk_preds.norm(dim=1)
     target_norm = sk_target.norm(dim=1)
-    similarity = torch.clip(dot_product / (preds_norm * target_norm), -1, 1)
+    similarity = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1)
     sam_score = similarity.arccos()
     # reduction
     if reduction == "sum":

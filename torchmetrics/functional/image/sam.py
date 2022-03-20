@@ -78,7 +78,7 @@ def _sam_compute(
     dot_product = (preds * target).sum(dim=1)
     preds_norm = preds.norm(dim=1)
     target_norm = target.norm(dim=1)
-    sam_score = torch.clip(dot_product / (preds_norm * target_norm), -1, 1).arccos()
+    sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).arccos()
     return reduce(sam_score, reduction)
 
 
