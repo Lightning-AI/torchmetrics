@@ -52,7 +52,7 @@ def _ssim_compute(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: str = "none",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -70,9 +70,10 @@ def _ssim_compute(
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
         reduction: a method to reduce metric score over labels.
-            - ``'none'``: no reduction will be applied (default)
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
+            - ``'none'`` or ``None``: no reduction will be applied
+
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
@@ -199,7 +200,7 @@ def structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: str = "none",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -217,9 +218,10 @@ def structural_similarity_index_measure(
         kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
             Ignored if a Gaussian kernel is used
         reduction: a method to reduce metric score over labels.
-            - ``'none'``: no reduction will be applied (default)
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
+            - ``'none'`` or ``None``: no reduction will be applied
+
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
@@ -274,7 +276,7 @@ def _get_normalized_sim_and_cs(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: str = "none",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -304,7 +306,7 @@ def _multiscale_ssim_compute(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: str = "none",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -326,9 +328,10 @@ def _multiscale_ssim_compute(
         kernel_size: size of the gaussian kernel (default: (11, 11))
         sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
         reduction: a method to reduce metric score over labels.
-            - ``'none'``: no reduction will be applied (default)
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
+            - ``'none'`` or ``None``: no reduction will be applied
+
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
@@ -408,7 +411,7 @@ def multiscale_structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: str = "none",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     data_range: Optional[float] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -424,9 +427,10 @@ def multiscale_structural_similarity_index_measure(
         kernel_size: size of the gaussian kernel (default: (11, 11))
         sigma: Standard deviation of the gaussian kernel (default: (1.5, 1.5))
         reduction: a method to reduce metric score over labels.
-            - ``'none'``: no reduction will be applied (default)
             - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
+            - ``'none'`` or ``None``: no reduction will be applied
+
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.

@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.kl_divergence import _kld_compute, _kld_update
 from torchmetrics.metric import Metric
@@ -79,7 +80,7 @@ class KLDivergence(Metric):
     def __init__(
         self,
         log_prob: bool = False,
-        reduction: Optional[str] = "mean",
+        reduction: Literal["mean", "sum", "none", None] = "mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
