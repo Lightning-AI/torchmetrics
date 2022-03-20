@@ -11,7 +11,7 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.helpers import seed_all
 
 # TODO: replace this with official sklearn implementation after next sklearn release
-from tests.helpers.non_sklearn_metrics import calibration_error as sk_calib
+from tests.helpers.reference_metrics import _calibration_error as sk_calib
 from tests.helpers.testers import THRESHOLD, MetricTester
 from torchmetrics import CalibrationError
 from torchmetrics.functional import calibration_error

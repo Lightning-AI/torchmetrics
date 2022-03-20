@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.kl_divergence import _kld_compute, _kld_update
 from torchmetrics.metric import Metric
@@ -79,7 +80,7 @@ class KLDivergence(Metric):
     def __init__(
         self,
         log_prob: bool = False,
-        reduction: Optional[str] = "mean",
+        reduction: Literal["mean", "sum", "none", None] = "mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -99,7 +100,7 @@ class KLDivergence(Metric):
             self.add_state("measures", [], dist_reduce_fx="cat")
         self.add_state("total", torch.tensor(0), dist_reduce_fx="sum")
 
-    def _update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
+    def update(self, p: Tensor, q: Tensor) -> None:  # type: ignore
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
             self.measures.append(measures)
@@ -107,6 +108,6 @@ class KLDivergence(Metric):
             self.measures += measures.sum()
             self.total += total
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         measures = dim_zero_cat(self.measures) if self.reduction is None or self.reduction == "none" else self.measures
         return _kld_compute(measures, self.total, self.reduction)

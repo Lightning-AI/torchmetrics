@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
@@ -67,11 +68,6 @@ class JaccardIndex(ConfusionMatrix):
             Threshold value for binary or multi-label probabilities.
         multilabel:
             determines if data is multilabel or not.
-        # reduction: a method to reduce metric score over labels.
-        #
-        #     - ``'elementwise_mean'``: takes the mean (default)
-        #     - ``'sum'``: takes the sum
-        #     - ``'none'``: no reduction will be applied
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
 
@@ -102,7 +98,6 @@ class JaccardIndex(ConfusionMatrix):
         absent_score: float = 0.0,
         threshold: float = 0.5,
         multilabel: bool = False,
-        # reduction: str = "elementwise_mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -119,7 +114,7 @@ class JaccardIndex(ConfusionMatrix):
         self.ignore_index = ignore_index
         self.absent_score = absent_score
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes intersection over union (IoU)"""
         return _jaccard_from_confmat(
             self.confmat,

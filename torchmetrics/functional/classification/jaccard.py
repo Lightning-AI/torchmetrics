@@ -15,6 +15,7 @@ from typing import Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
 from torchmetrics.utilities.data import get_num_classes
@@ -28,7 +29,6 @@ def _jaccard_from_confmat(
     average: str = "macro",
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
-    # reduction: str = "elementwise_mean",
 ) -> Tensor:
     """Computes the intersection over union from confusion matrix.
 
@@ -51,12 +51,6 @@ def _jaccard_from_confmat(
             to the returned score, regardless of reduction method.
         absent_score: score to use for an individual class, if no instances of the class index were present in `pred`
             AND no instances of the class index were present in `target`.
-
-        # reduction: a method to reduce metric score over labels.
-        #
-        #     - ``'elementwise_mean'``: takes the mean (default)
-        #     - ``'sum'``: takes the sum
-        #     - ``'none'``: no reduction will be applied
     """
     allowed_average = ["micro", "macro", "weighted", "none", None]
     if average not in allowed_average:
@@ -107,7 +101,6 @@ def jaccard_index(
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
     threshold: float = 0.5,
-    # reduction: str = "elementwise_mean",
 ) -> Tensor:
     r"""
     Computes `Jaccard index`_
@@ -154,12 +147,6 @@ def jaccard_index(
             assigned the `absent_score`.
         threshold:
             Threshold value for binary or multi-label probabilities.
-
-        # reduction: a method to reduce metric score over labels.
-        #
-        #     - ``'elementwise_mean'``: takes the mean (default)
-        #     - ``'sum'``: takes the sum
-        #     - ``'none'``: no reduction will be applied
 
     Return:
         The shape of the returned tensor depends on the ``average`` parameter

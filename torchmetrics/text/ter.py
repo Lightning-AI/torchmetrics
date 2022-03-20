@@ -93,7 +93,7 @@ class TranslationEditRate(Metric):
         if self.return_sentence_level_score:
             self.add_state("sentence_ter", [], dist_reduce_fx="cat")
 
-    def _update(  # type: ignore
+    def update(  # type: ignore
         self, preds: Union[str, Sequence[str]], target: Sequence[Union[str, Sequence[str]]]
     ) -> None:
         """Update TER statistics.
@@ -113,7 +113,7 @@ class TranslationEditRate(Metric):
             self.sentence_ter,
         )
 
-    def _compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate the translate error rate (TER).
 
         Return:
