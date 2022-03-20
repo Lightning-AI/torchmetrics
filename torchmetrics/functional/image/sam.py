@@ -17,7 +17,6 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -75,10 +74,11 @@ def _sam_compute(
     """
     B, C, H, W = preds.shape
     preds = preds.reshape(B, C, H * W)
-    preds = torch.permute(preds, (0, 2, 1))
     target = target.reshape(B, C, H * W)
-    target = torch.permute(target, (0, 2, 1))
-    sam_score = torch.clip(cosine_similarity(preds, target, reduction="none"), -1, 1).arccos()
+    dot_product = (preds * target).sum(dim=1)
+    preds_norm = preds.norm(dim=1)
+    target_norm = target.norm(dim=1)
+    sam_score = torch.clip(dot_product / (preds_norm * target_norm), -1, 1).arccos()
     return reduce(sam_score, reduction)
 
 
