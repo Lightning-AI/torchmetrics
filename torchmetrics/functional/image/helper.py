@@ -83,6 +83,16 @@ def _gaussian_kernel_3d(
 
 
 def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
+    """Reflective padding of input along a specific dimension.
+
+    Args:
+        inputs: tensor to pad
+        dim: integer, dimension to pad along
+        pad: integer, amount of padding to add
+
+    Returns:
+        padded input
+    """
     _max = inputs.shape[dim] - 2
     x = torch.index_select(inputs, dim, torch.arange(pad, 0, -1))
     y = torch.index_select(inputs, dim, torch.arange(_max, _max - pad, -1))
@@ -90,6 +100,17 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
 
 
 def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Tensor:
+    """Reflective padding of 3d input.
+
+    Args:
+        inputs: tensor to pad, should be a 3D tensor of shape ``[N, C, H, W, D]``
+        pad_w: amount of padding in the height dimension
+        pad_h: amount of padding in the width dimension
+        pad_d: amount of padding in the depth dimension
+
+    Returns:
+        padded input tensor
+    """
     if _TORCH_GREATER_EQUAL_1_10:
         inputs = F.pad(inputs, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
     else:
