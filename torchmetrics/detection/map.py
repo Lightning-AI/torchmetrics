@@ -392,7 +392,7 @@ class MeanAveragePrecision(Metric):
         }
 
     def __evaluate_image_preds_no_gt(
-        self, det: int, idx: Tensor, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int
+        self, det: Tensor, idx: int, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int
     ) -> Dict[str, Any]:
         """Some predictions but no GT."""
         # GTs
