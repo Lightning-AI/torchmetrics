@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List
+from typing import Any, List
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -61,9 +61,9 @@ class SpectralAngleMapper(Metric):
     def __init__(
         self,
         reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
-        super().__init__(compute_on_step=None, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer."
             " For large datasets, this may lead to a large memory footprint."
