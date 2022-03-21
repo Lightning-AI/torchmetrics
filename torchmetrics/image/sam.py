@@ -32,8 +32,6 @@ class SpectralAngleMapper(Metric):
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
 
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
