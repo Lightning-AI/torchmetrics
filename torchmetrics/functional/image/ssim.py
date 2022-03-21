@@ -398,11 +398,16 @@ def _multiscale_ssim_compute(
         sim_stack = (sim_stack + 1) / 2
         cs_stack = (cs_stack + 1) / 2
 
-    betas = torch.tensor(betas).unsqueeze(1).repeat(1, sim_stack.shape[1])
-    sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
-    cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
-    cs_and_sim = torch.cat((cs_stack[:-1], sim_stack[-1:]), axis=0)
-    return torch.prod(cs_and_sim, axis=0)
+    if reduction is None or reduction == "none":
+        betas = torch.tensor(betas).unsqueeze(1).repeat(1, sim_stack.shape[0])
+        sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
+        cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
+        cs_and_sim = torch.cat((cs_stack[:-1], sim_stack[-1:]), axis=0)
+        return torch.prod(cs_and_sim, axis=0)
+    else:
+        sim_stack = sim_stack ** torch.tensor(betas, device=sim_stack.device)
+        cs_stack = cs_stack ** torch.tensor(betas, device=cs_stack.device)
+        return torch.prod(cs_stack[:-1]) * sim_stack[-1]
 
 
 def multiscale_structural_similarity_index_measure(
