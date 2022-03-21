@@ -389,7 +389,7 @@ class MeanAveragePrecision(Metric):
             "dtIgnore": det_ignore,
         }
 
-    def __evaluate_image_preds_no_gt(self, det, det_label_mask, max_det, area_range, nb_iou_thrs):
+    def __evaluate_image_preds_no_gt(self, idx, det, det_label_mask, max_det, area_range, nb_iou_thrs):
         """Some predictions but no GT."""
         # GTs
         nb_gt = 0
@@ -451,7 +451,7 @@ class MeanAveragePrecision(Metric):
 
         # Some predictions but no GT
         if len(gt_label_mask) == 0 and len(det_label_mask) >= 0:
-            return self.__evaluate_image_preds_no_gt(det, det_label_mask, max_det, area_range, nb_iou_thrs)
+            return self.__evaluate_image_preds_no_gt(det, idx, det_label_mask, max_det, area_range, nb_iou_thrs)
 
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
