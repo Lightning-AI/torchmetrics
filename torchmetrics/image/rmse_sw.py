@@ -69,7 +69,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         self.window_size = window_size
         self.return_rmse_map = return_rmse_map
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Updates intermediate rmse values and map.
 
         Args:
@@ -84,7 +84,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
             preds, target, self.window_size, self.rmse_val_sum, self.rmse_map, self.add_total_images
         )
 
-    def _compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Computes Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
         rmse, rmse_map = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)
         if self.return_rmse_map:

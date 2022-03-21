@@ -67,7 +67,7 @@ class RelativeAverageSpectralError(Metric):
         self.window_size = window_size
         self.return_rmse_map = return_rmse_map
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Updates intermediate rmse and target maps.
 
         Args:
@@ -83,6 +83,6 @@ class RelativeAverageSpectralError(Metric):
             preds, target, self.window_size, self.rmse_map, self.target_sum, self.add_total_images
         )
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes Relative Average Spectral Error (RASE)"""
         return _rase_compute(self.rmse_map, self.target_sum, self.total_images, self.window_size)
