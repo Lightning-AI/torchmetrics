@@ -13,8 +13,9 @@
 # limitations under the License.
 """File for non sklearn metrics that are to be used for reference for tests."""
 from typing import Optional, Union
-import torch
+
 import numpy as np
+import torch
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
 
