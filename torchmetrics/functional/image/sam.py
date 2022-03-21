@@ -43,7 +43,7 @@ def _sam_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
         )
     if (preds.shape[1] <= 1) or (target.shape[1] <= 1):
         raise ValueError(
-            "Expected dimension `preds` and `target` is larger than 1."
+            "Expected channel dimension of `preds` and `target` to be larger than 1."
             f" Got preds: {preds.shape[1]} and target: {target.shape[1]}."
         )
     return preds, target
