@@ -59,10 +59,9 @@ class SpectralAngleMapper(Metric):
     def __init__(
         self,
         reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
-        compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer."
             " For large datasets, this may lead to a large memory footprint."
