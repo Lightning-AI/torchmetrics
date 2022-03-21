@@ -55,6 +55,7 @@ class SpectralAngleMapper(Metric):
     preds: List[Tensor]
     target: List[Tensor]
     higher_is_better: bool = False
+    is_differentiable: bool = False
 
     def __init__(
         self,
