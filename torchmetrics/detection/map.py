@@ -368,6 +368,7 @@ class MeanAveragePrecision(Metric):
         return ious
 
     def __evaluate_image_gt_no_preds(self, gt, gt_label_mask, area_range, nb_iou_thrs):
+        """Some GT but no predictions."""
         # GTs
         gt = gt[gt_label_mask]
         nb_gt = len(gt)
@@ -389,6 +390,7 @@ class MeanAveragePrecision(Metric):
         }
 
     def __evaluate_image_preds_no_gt(self, det, det_label_mask, max_det, area_range, nb_iou_thrs):
+        """Some predictions but no GT."""
         # GTs
         nb_gt = 0
         gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=self.device)
