@@ -40,6 +40,7 @@ from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
+from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
@@ -152,6 +153,7 @@ __all__ = [
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",
     "universal_image_quality_index",
+    "spectral_angle_mapper",
     "word_error_rate",
     "char_error_rate",
     "match_error_rate",
