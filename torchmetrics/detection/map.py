@@ -367,6 +367,54 @@ class MeanAveragePrecision(Metric):
         ious = box_iou(det, gt)
         return ious
 
+    def __evaluate_image_gt_no_preds(self, gt, gt_label_mask, area_range, nb_iou_thrs):
+        # GTs
+        gt = gt[gt_label_mask]
+        nb_gt = len(gt)
+        areas = box_area(gt)
+        ignore_area = (areas < area_range[0]) | (areas > area_range[1])
+        gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8))
+        gt_ignore = gt_ignore.to(torch.bool)
+
+        # Detections
+        nb_det = 0
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
+
+        return {
+            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
+            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
+            "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
+            "gtIgnore": gt_ignore,
+            "dtIgnore": det_ignore,
+        }
+
+    def __evaluate_image_preds_no_gt(self, det, det_label_mask, max_det, area_range, nb_iou_thrs):
+        # GTs
+        nb_gt = 0
+        gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=self.device)
+
+        # Detections
+        det = det[det_label_mask]
+        scores = self.detection_scores[idx]
+        scores_filtered = scores[det_label_mask]
+        scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
+        det = det[dtind]
+        if len(det) > max_det:
+            det = det[:max_det]
+        nb_det = len(det)
+        det_areas = box_area(det).to(self.device)
+        det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
+        ar = det_ignore_area.reshape((1, nb_det))
+        det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
+
+        return {
+            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
+            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
+            "dtScores": scores_sorted,
+            "gtIgnore": gt_ignore,
+            "dtIgnore": det_ignore,
+        }
+
     def _evaluate_image(
         self, idx: int, class_id: int, area_range: Tuple[int, int], max_det: int, ious: dict
     ) -> Optional[dict]:
@@ -397,54 +445,11 @@ class MeanAveragePrecision(Metric):
 
         # Some GT but no predictions
         if len(gt_label_mask) > 0 and len(det_label_mask) == 0:
-            # GTs
-            gt = gt[gt_label_mask]
-            nb_gt = len(gt)
-            areas = box_area(gt)
-            ignore_area = (areas < area_range[0]) | (areas > area_range[1])
-            gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8))
-            gt_ignore = gt_ignore.to(torch.bool)
-
-            # Detections
-            nb_det = 0
-            det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
-
-            return {
-                "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
-                "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
-                "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
-                "gtIgnore": gt_ignore,
-                "dtIgnore": det_ignore,
-            }
+            return self.__evaluate_image_gt_no_preds(gt, gt_label_mask, area_range, nb_iou_thrs)
 
         # Some predictions but no GT
         if len(gt_label_mask) == 0 and len(det_label_mask) >= 0:
-
-            # GTs
-            nb_gt = 0
-            gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=self.device)
-
-            # Detections
-            det = det[det_label_mask]
-            scores = self.detection_scores[idx]
-            scores_filtered = scores[det_label_mask]
-            scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
-            det = det[dtind]
-            if len(det) > max_det:
-                det = det[:max_det]
-            nb_det = len(det)
-            det_areas = box_area(det).to(self.device)
-            det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
-            ar = det_ignore_area.reshape((1, nb_det))
-            det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
-
-            return {
-                "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
-                "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
-                "dtScores": scores_sorted,
-                "gtIgnore": gt_ignore,
-                "dtIgnore": det_ignore,
-            }
+            return self.__evaluate_image_preds_no_gt(det, det_label_mask, max_det, area_range, nb_iou_thrs)
 
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
@@ -480,10 +485,11 @@ class MeanAveragePrecision(Metric):
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det, _ in enumerate(det):
                     m = MeanAveragePrecision._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
-                    if m != -1:
-                        det_ignore[idx_iou, idx_det] = gt_ignore[m]
-                        det_matches[idx_iou, idx_det] = 1
-                        gt_matches[idx_iou, m] = 1
+                    if m == -1:
+                        continue
+                    det_ignore[idx_iou, idx_det] = gt_ignore[m]
+                    det_matches[idx_iou, idx_det] = 1
+                    gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
         det_areas = box_area(det)
