@@ -48,7 +48,9 @@ class CoverageError(Metric):
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
             knowledge discovery handbook (pp. 667-685). Springer US.
     """
-
+        coverage: Tensor
+        numel: Tensor
+        weight: Tensor
     higher_is_better: bool = False
     is_differentiable: bool = False
 
@@ -101,7 +103,9 @@ class LabelRankingAveragePrecision(Metric):
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
             knowledge discovery handbook (pp. 667-685). Springer US.
     """
-
+        score: Tensor
+        numel: Tensor
+        sample_weight: Tensor
     higher_is_better: bool = True
     is_differentiable: bool = False
 
@@ -154,7 +158,9 @@ class LabelRankingLoss(Metric):
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
             knowledge discovery handbook (pp. 667-685). Springer US.
     """
-
+        loss: Tensor
+        numel: Tensor
+        sample_weight: Tensor
     higher_is_better: bool = False
     is_differentiable: bool = False
 
