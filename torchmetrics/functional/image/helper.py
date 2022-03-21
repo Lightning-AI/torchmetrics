@@ -80,8 +80,8 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
         Image padded over a single dimension
     """
     _max = inputs.shape[dim] - 2
-    x = torch.index_select(inputs, dim, torch.arange(pad - 1, -1, -1))
-    y = torch.index_select(inputs, dim, torch.arange(_max - 1, _max - pad, -1))
+    x = torch.index_select(inputs, dim, torch.arange(pad - 1, -1, -1).to(inputs.device))
+    y = torch.index_select(inputs, dim, torch.arange(_max - 1, _max - pad, -1).to(inputs.device))
     return torch.cat((x, inputs, y), dim)
 
 

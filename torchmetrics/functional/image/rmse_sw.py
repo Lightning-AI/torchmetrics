@@ -128,7 +128,7 @@ def root_mean_squared_error_using_sliding_window(
         raise ValueError("Argument `window_size` is expected to be a positive integer.")
 
     _img_shape = target.shape[1:]  # channels, width, height
-    rmse_val_sum = torch.tensor(0.0)
+    rmse_val_sum = torch.tensor(0.0, device=target.device)
     rmse_map = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
     total_images = torch.tensor(0.0, device=target.device)
 
