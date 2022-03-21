@@ -30,11 +30,17 @@ from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
+from torchmetrics.functional.classification.ranking import (
+    coverage_error,
+    label_ranking_average_precision,
+    label_ranking_loss,
+)
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
+from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
@@ -91,6 +97,7 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
+    "coverage_error",
     "tweedie_deviance_score",
     "dice_score",
     "explained_variance",
@@ -102,6 +109,8 @@ __all__ = [
     "image_gradients",
     "jaccard_index",
     "kl_divergence",
+    "label_ranking_average_precision",
+    "label_ranking_loss",
     "matthews_corrcoef",
     "mean_absolute_error",
     "mean_absolute_percentage_error",
@@ -144,6 +153,7 @@ __all__ = [
     "symmetric_mean_absolute_percentage_error",
     "translation_edit_rate",
     "universal_image_quality_index",
+    "spectral_angle_mapper",
     "word_error_rate",
     "char_error_rate",
     "match_error_rate",
