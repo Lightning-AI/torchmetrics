@@ -203,12 +203,12 @@ def _calibration_error(
 
 
 def _sk_ergas(
-  preds: torch.Tensor, 
-  target: torch.Tensor, 
-  ratio: Union[int, float] = 4, 
+  preds: torch.Tensor,
+  target: torch.Tensor,
+  ratio: Union[int, float] = 4,
   reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean"
 ) -> torch.Tensor:
-  """ Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse """
+  """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
     # reshape to (batch_size, channel, height*width)
     b, c, h, w = preds.shape
     sk_preds = preds.reshape(b, c, h * w)
@@ -231,11 +231,11 @@ def _sk_ergas(
 
 
 def _sk_sam(
-  preds: torch.Tensor, 
-  target: torch.Tensor, 
+  preds: torch.Tensor,
+  target: torch.Tensor,
   reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean"
 ) -> torch.Tensor:
-  """ Reference implementation of spectral angle mapper. """
+  """Reference implementation of spectral angle mapper."""
     similarity = F.cosine_similarity(preds, target)
     sam_score = torch.clamp(similarity, -1, 1).acos()
     # reduction
