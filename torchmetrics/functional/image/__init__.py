@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio  # noqa: F401
+from torchmetrics.functional.image.sam import spectral_angle_mapper  # noqa: F401
 from torchmetrics.functional.image.ssim import (  # noqa: F401
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
