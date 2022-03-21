@@ -14,6 +14,7 @@
 from torchmetrics.image.psnr import PeakSignalNoiseRatio  # noqa: F401
 from torchmetrics.image.rase import RelativeAverageSpectralError  # noqa: F401
 from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow  # noqa: F401
+from torchmetrics.image.sam import SpectralAngleMapper  # noqa: F401
 from torchmetrics.image.ssim import (  # noqa: F401
     MultiScaleStructuralSimilarityIndexMeasure,
     StructuralSimilarityIndexMeasure,

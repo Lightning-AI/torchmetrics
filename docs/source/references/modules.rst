@@ -274,6 +274,12 @@ ConfusionMatrix
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
 
+CoverageError
+~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.CoverageError
+    :noindex:
+
 F1Score
 ~~~~~~~
 
@@ -308,6 +314,18 @@ KLDivergence
 ~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.KLDivergence
+    :noindex:
+
+LabelRankingAveragePrecision
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.LabelRankingAveragePrecision
+    :noindex:
+
+LabelRankingLoss
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.LabelRankingLoss
     :noindex:
 
 MatthewsCorrCoef
@@ -407,6 +425,11 @@ RelativeAverageSpectralError
 RootMeanSquaredErrorUsingSlidingWindow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: torchmetrics.RootMeanSquaredErrorUsingSlidingWindow
+
+SpectralAngleMapper
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpectralAngleMapper
     :noindex:
 
 StructuralSimilarityIndexMeasure

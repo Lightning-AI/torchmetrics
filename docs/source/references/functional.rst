@@ -112,6 +112,13 @@ confusion_matrix [func]
     :noindex:
 
 
+coverage_error [func]
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.coverage_error
+    :noindex:
+
+
 dice_score [func]
 ~~~~~~~~~~~~~~~~~
 
@@ -158,6 +165,20 @@ kl_divergence [func]
 ~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.kl_divergence
+    :noindex:
+
+
+label_ranking_average_precision [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.label_ranking_average_precision
+    :noindex:
+
+
+label_ranking_loss [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.label_ranking_loss
     :noindex:
 
 
@@ -270,6 +291,7 @@ peak_signal_noise_ratio [func]
 .. autofunction:: torchmetrics.functional.peak_signal_noise_ratio
     :noindex:
 
+
 relative_average_spectral_error [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -281,6 +303,14 @@ root_mean_squared_error_using_sliding_window [func]
 
 .. autofunction:: torchmetrics.functional.root_mean_squared_error_using_sliding_window
     :noindex:
+
+
+spectral_angle_mapper [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.spectral_angle_mapper
+    :noindex:
+
 
 universal_image_quality_index [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
