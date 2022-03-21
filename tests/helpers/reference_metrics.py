@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """File for non sklearn metrics that are to be used for reference for tests."""
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 import numpy as np
 import torch
@@ -203,12 +203,12 @@ def _calibration_error(
 
 
 def _sk_ergas(
-  preds: torch.Tensor,
-  target: torch.Tensor,
-  ratio: Union[int, float] = 4,
-  reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean"
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    ratio: Union[int, float] = 4,
+    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> torch.Tensor:
-  """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
+    """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
     # reshape to (batch_size, channel, height*width)
     b, c, h, w = preds.shape
     sk_preds = preds.reshape(b, c, h * w)
@@ -231,11 +231,11 @@ def _sk_ergas(
 
 
 def _sk_sam(
-  preds: torch.Tensor,
-  target: torch.Tensor,
-  reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean"
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> torch.Tensor:
-  """Reference implementation of spectral angle mapper."""
+    """Reference implementation of spectral angle mapper."""
     similarity = F.cosine_similarity(preds, target)
     sam_score = torch.clamp(similarity, -1, 1).acos()
     # reduction
