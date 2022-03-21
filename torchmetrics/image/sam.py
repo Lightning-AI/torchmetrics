@@ -35,6 +35,7 @@ class SpectralAngleMapper(Metric):
 
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
     Return:
         Tensor with SpectralAngleMapper score
 
@@ -62,7 +63,7 @@ class SpectralAngleMapper(Metric):
         reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
         **kwargs: Dict[str, Any],
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(compute_on_step=None, **kwargs)
         rank_zero_warn(
             "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer."
             " For large datasets, this may lead to a large memory footprint."
@@ -72,7 +73,7 @@ class SpectralAngleMapper(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
