@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new image metric `SpectralAngleMapper` ([#885](https://github.com/PyTorchLightning/metrics/pull/885))
 
 
+- Added `CoverageError` to classification metrics ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+
+
+- Added `LabelRankingAveragePrecision` and `LabelRankingLoss` ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+
+
 - Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
 
 
