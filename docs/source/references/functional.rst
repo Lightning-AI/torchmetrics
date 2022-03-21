@@ -264,6 +264,13 @@ Image
 *****
 
 
+error_relative_global_dimensionless_synthesis [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.error_relative_global_dimensionless_synthesis
+    :noindex:
+
+
 image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -296,13 +303,6 @@ universal_image_quality_index [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.universal_image_quality_index
-    :noindex:
-
-
-error_relative_global_dimensionless_synthesis [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.error_relative_global_dimensionless_synthesis
     :noindex:
 
 

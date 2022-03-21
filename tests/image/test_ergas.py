@@ -19,6 +19,7 @@ import torch
 
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.reference_metrics import _sk_ergas
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 
@@ -41,28 +42,6 @@ for size, channel, coef, ratio, dtype in [
             ratio=ratio,
         )
     )
-
-
-def _sk_ergas(preds, target, ratio, reduction):
-    # reshape to (batch_size, channel, height*width)
-    B, C, H, W = preds.shape
-    sk_preds = preds.reshape(B, C, H * W)
-    sk_target = target.reshape(B, C, H * W)
-    # compute rmse per band
-    diff = sk_preds - sk_target
-    sum_squared_error = torch.sum(diff * diff, dim=2)
-    rmse_per_band = torch.sqrt(sum_squared_error / (H * W))
-    mean_target = torch.mean(sk_target, dim=2)
-    # compute ergas score
-    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / C)
-    # reduction
-    if reduction == "sum":
-        to_return = torch.sum(ergas_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(ergas_score)
-    else:
-        to_return = ergas_score
-    return to_return
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])

@@ -13,7 +13,7 @@
 # limitations under the License.
 """File for non sklearn metrics that are to be used for reference for tests."""
 from typing import Optional, Union
-
+import torch
 import numpy as np
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
@@ -198,3 +198,25 @@ def _calibration_error(
             loss += np.sum(np.nan_to_num(debias))
         loss = np.sqrt(max(loss, 0.0))
     return loss
+
+
+def _sk_ergas(preds, target, ratio, reduction):
+    # reshape to (batch_size, channel, height*width)
+    B, C, H, W = preds.shape
+    sk_preds = preds.reshape(B, C, H * W)
+    sk_target = target.reshape(B, C, H * W)
+    # compute rmse per band
+    diff = sk_preds - sk_target
+    sum_squared_error = torch.sum(diff * diff, dim=2)
+    rmse_per_band = torch.sqrt(sum_squared_error / (H * W))
+    mean_target = torch.mean(sk_target, dim=2)
+    # compute ergas score
+    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / C)
+    # reduction
+    if reduction == "sum":
+        to_return = torch.sum(ergas_score)
+    elif reduction == "elementwise_mean":
+        to_return = torch.mean(ergas_score)
+    else:
+        to_return = ergas_score
+    return to_return
