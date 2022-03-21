@@ -30,6 +30,11 @@ from torchmetrics.functional.classification.kl_divergence import kl_divergence
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve
+from torchmetrics.functional.classification.ranking import (
+    coverage_error,
+    label_ranking_average_precision,
+    label_ranking_loss,
+)
 from torchmetrics.functional.classification.roc import roc
 from torchmetrics.functional.classification.specificity import specificity
 from torchmetrics.functional.classification.stat_scores import stat_scores
@@ -92,6 +97,7 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "cosine_similarity",
+    "coverage_error",
     "tweedie_deviance_score",
     "dice_score",
     "error_relative_global_dimensionless_synthesis",
@@ -104,6 +110,8 @@ __all__ = [
     "image_gradients",
     "jaccard_index",
     "kl_divergence",
+    "label_ranking_average_precision",
+    "label_ranking_loss",
     "matthews_corrcoef",
     "mean_absolute_error",
     "mean_absolute_percentage_error",
