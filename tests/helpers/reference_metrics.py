@@ -17,7 +17,6 @@ from typing import Optional, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
 
@@ -224,7 +223,7 @@ def _sk_ergas(preds, target, ratio, reduction):
         to_return = ergas_score
     return to_return
 
-  
+
 def _sk_sam(preds, target, reduction):
     similarity = F.cosine_similarity(preds, target)
     sam_score = torch.clamp(similarity, -1, 1).acos()
