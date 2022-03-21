@@ -27,6 +27,11 @@ from torchmetrics.functional.classification.kl_divergence import kl_divergence  
 from torchmetrics.functional.classification.matthews_corrcoef import matthews_corrcoef  # noqa: F401
 from torchmetrics.functional.classification.precision_recall import precision, precision_recall, recall  # noqa: F401
 from torchmetrics.functional.classification.precision_recall_curve import precision_recall_curve  # noqa: F401
+from torchmetrics.functional.classification.ranking import (  # noqa: F401
+    coverage_error,
+    label_ranking_average_precision,
+    label_ranking_loss,
+)
 from torchmetrics.functional.classification.roc import roc  # noqa: F401
 from torchmetrics.functional.classification.specificity import specificity  # noqa: F401
 from torchmetrics.functional.classification.stat_scores import stat_scores  # noqa: F401
