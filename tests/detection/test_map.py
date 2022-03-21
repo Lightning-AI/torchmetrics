@@ -270,8 +270,8 @@ def test_empty_metric():
 def test_missing_pred():
     """One good detection, one false negative.
 
-    Map should be lower than 1. Actually it is 0.5, but the exact value depends on where we are sampling (i.e.
-    recall's values)
+    Map should be lower than 1. Actually it is 0.5, but the exact value depends on where we are sampling (i.e. recall's
+    values)
     """
     gts = [
         dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0])),
@@ -292,8 +292,8 @@ def test_missing_pred():
 def test_missing_gt():
     """The symmetric case of test_missing_pred.
 
-    One good detection, one false positive. Map should be lower than 1. Actually it is 0.5, but the exact value
-    depends on where we are sampling (i.e. recall's values)
+    One good detection, one false positive. Map should be lower than 1. Actually it is 0.5, but the exact value depends
+    on where we are sampling (i.e. recall's values)
     """
     gts = [
         dict(boxes=torch.Tensor([[10, 20, 15, 25]]), labels=torch.IntTensor([0])),
