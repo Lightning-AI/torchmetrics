@@ -50,7 +50,8 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     rmse_val_sum: Tensor
     rmse_map: Tensor = None
     total_images: Tensor
-    higher_is_better = False
+    higher_is_better: bool = False
+    is_differentiable: bool = True
 
     def __init__(
         self,

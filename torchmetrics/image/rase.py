@@ -49,7 +49,8 @@ class RelativeAverageSpectralError(Metric):
     total_images: Tensor
     rmse_map: Tensor = None
     target_sum: Tensor = None
-    higher_is_better = False
+    higher_is_better: bool = False
+    is_differentiable: bool = True
 
     def __init__(
         self,
