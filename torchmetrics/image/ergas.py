@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Union
+from typing import Any, List, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -65,7 +65,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         self,
         ratio: Union[int, float] = 4,
         reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(

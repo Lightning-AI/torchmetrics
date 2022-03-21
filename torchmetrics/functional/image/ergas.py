@@ -49,7 +49,7 @@ def _ergas_compute(
     target: Tensor,
     ratio: Union[int, float] = 4,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
 
     Args:
@@ -87,7 +87,7 @@ def error_relative_global_dimensionless_synthesis(
     target: Tensor,
     ratio: Union[int, float] = 4,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
 
     Args:
