@@ -15,6 +15,7 @@ from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities import rank_zero_warn, reduce
 
@@ -24,7 +25,7 @@ def _psnr_compute(
     n_obs: Tensor,
     data_range: Tensor,
     base: float = 10.0,
-    reduction: str = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Computes peak signal-to-noise ratio.
 
@@ -39,7 +40,7 @@ def _psnr_compute(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
@@ -96,7 +97,7 @@ def peak_signal_noise_ratio(
     target: Tensor,
     data_range: Optional[float] = None,
     base: float = 10.0,
-    reduction: str = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
 ) -> Tensor:
     """Computes the peak signal-to-noise ratio.
@@ -112,7 +113,7 @@ def peak_signal_noise_ratio(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or None``: no reduction will be applied
 
         dim:
             Dimensions to reduce PSNR scores over provided as either an integer or a list of integers. Default is

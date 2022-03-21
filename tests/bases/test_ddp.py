@@ -115,10 +115,10 @@ def _test_non_contiguous_tensors(rank, worldsize):
             super().__init__()
             self.add_state("x", default=[], dist_reduce_fx=None)
 
-        def _update(self, x):
+        def update(self, x):
             self.x.append(x)
 
-        def _compute(self):
+        def compute(self):
             x = torch.cat(self.x, dim=0)
             return x.sum()
 
@@ -141,11 +141,11 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
             self.add_state("x", torch.tensor(0), dist_reduce_fx=torch.sum)
             self.add_state("c", torch.tensor(0), dist_reduce_fx=torch.sum)
 
-        def _update(self, x):
+        def update(self, x):
             self.x += x
             self.c += 1
 
-        def _compute(self):
+        def compute(self):
             return self.x // self.c
 
         def __repr__(self):

@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
 from torchmetrics.functional.classification.jaccard import _jaccard_from_confmat
@@ -89,7 +90,7 @@ class JaccardIndex(ConfusionMatrix):
         absent_score: float = 0.0,
         threshold: float = 0.5,
         multilabel: bool = False,
-        reduction: str = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
@@ -105,7 +106,7 @@ class JaccardIndex(ConfusionMatrix):
         self.ignore_index = ignore_index
         self.absent_score = absent_score
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes intersection over union (IoU)"""
         return _jaccard_from_confmat(
             self.confmat, self.num_classes, self.ignore_index, self.absent_score, self.reduction
