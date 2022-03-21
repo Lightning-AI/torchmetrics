@@ -367,7 +367,9 @@ class MeanAveragePrecision(Metric):
         ious = box_iou(det, gt)
         return ious
 
-    def __evaluate_image_gt_no_preds(self, gt, gt_label_mask, area_range, nb_iou_thrs):
+    def __evaluate_image_gt_no_preds(
+        self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
+    ) -> Dict[str, Any]:
         """Some GT but no predictions."""
         # GTs
         gt = gt[gt_label_mask]
@@ -389,7 +391,9 @@ class MeanAveragePrecision(Metric):
             "dtIgnore": det_ignore,
         }
 
-    def __evaluate_image_preds_no_gt(self, idx, det, det_label_mask, max_det, area_range, nb_iou_thrs):
+    def __evaluate_image_preds_no_gt(
+        self, idx: Tensor, det: int, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int
+    ) -> Dict[str, Any]:
         """Some predictions but no GT."""
         # GTs
         nb_gt = 0
