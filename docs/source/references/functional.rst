@@ -271,17 +271,17 @@ peak_signal_noise_ratio [func]
     :noindex:
 
 
+spectral_angle_mapper [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.spectral_angle_mapper
+    :noindex:
+
+
 universal_image_quality_index [func]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.universal_image_quality_index
-    :noindex:
-
-
-universal_spectral_angle_mapper [func]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: torchmetrics.functional.spectral_angle_mapper
     :noindex:
 
 

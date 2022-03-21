@@ -72,13 +72,10 @@ def _sam_compute(
         >>> _sam_compute(preds, target)
         tensor(0.5943)
     """
-    B, C, H, W = preds.shape
-    preds = preds.reshape(B, C, H * W)
-    target = target.reshape(B, C, H * W)
     dot_product = (preds * target).sum(dim=1)
     preds_norm = preds.norm(dim=1)
     target_norm = target.norm(dim=1)
-    sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).arccos()
+    sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
     return reduce(sam_score, reduction)
 
 

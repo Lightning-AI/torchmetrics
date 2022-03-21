@@ -398,6 +398,12 @@ PeakSignalNoiseRatio
 .. autoclass:: torchmetrics.PeakSignalNoiseRatio
     :noindex:
 
+SpectralAngleMapper
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.SpectralAngleMapper
+    :noindex:
+
 StructuralSimilarityIndexMeasure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -408,12 +414,6 @@ UniversalImageQualityIndex
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.UniversalImageQualityIndex
-    :noindex:
-
-SpectralAngleMapper
-~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: torchmetrics.SpectralAngleMapper
     :noindex:
 
 *********

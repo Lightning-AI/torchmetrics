@@ -15,6 +15,8 @@
 from typing import Optional, Union
 
 import numpy as np
+import torch
+import torch.nn.functional as F
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import assert_all_finite, check_consistent_length, column_or_1d
 
@@ -198,3 +200,16 @@ def _calibration_error(
             loss += np.sum(np.nan_to_num(debias))
         loss = np.sqrt(max(loss, 0.0))
     return loss
+
+
+def _sk_sam(preds, target, reduction):
+    similarity = F.cosine_similarity(preds, target)
+    sam_score = torch.clamp(similarity, -1, 1).acos()
+    # reduction
+    if reduction == "sum":
+        to_return = torch.sum(sam_score)
+    elif reduction == "elementwise_mean":
+        to_return = torch.mean(sam_score)
+    else:
+        to_return = sam_score
+    return to_return

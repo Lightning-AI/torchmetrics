@@ -18,6 +18,7 @@ import pytest
 import torch
 
 from tests.helpers import seed_all
+from tests.helpers.reference_metrics import _sk_sam
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
@@ -36,27 +37,6 @@ for size, channel, dtype in [
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(Input(preds=preds, target=target))
-
-
-def _sk_sam(preds, target, reduction):
-    # reshape to (batch_size, channel, height*width)
-    B, C, H, W = preds.shape
-    sk_preds = preds.reshape(B, C, H * W)
-    sk_target = target.reshape(B, C, H * W)
-    # compute arccos of cosine similarity
-    dot_product = (sk_preds * sk_target).sum(dim=1)
-    preds_norm = sk_preds.norm(dim=1)
-    target_norm = sk_target.norm(dim=1)
-    similarity = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1)
-    sam_score = similarity.arccos()
-    # reduction
-    if reduction == "sum":
-        to_return = torch.sum(sam_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(sam_score)
-    else:
-        to_return = sam_score
-    return to_return
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
