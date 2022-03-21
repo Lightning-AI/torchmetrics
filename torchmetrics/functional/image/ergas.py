@@ -69,16 +69,16 @@ def _ergas_compute(
         >>> _ergas_compute(preds, target)
         tensor(153.9085)
     """
-    B, C, H, W = preds.shape
-    preds = preds.reshape(B, C, H * W)
-    target = target.reshape(B, C, H * W)
+    b, c, h, w = preds.shape
+    preds = preds.reshape(b, c, h * w)
+    target = target.reshape(b, c, h * w)
 
     diff = preds - target
     sum_squared_error = torch.sum(diff * diff, dim=2)
-    rmse_per_band = torch.sqrt(sum_squared_error / (H * W))
+    rmse_per_band = torch.sqrt(sum_squared_error / (h * w))
     mean_target = torch.mean(target, dim=2)
 
-    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / C)
+    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     return reduce(ergas_score, reduction)
 
 
