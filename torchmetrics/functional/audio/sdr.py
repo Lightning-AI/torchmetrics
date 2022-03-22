@@ -192,7 +192,7 @@ def signal_distortion_ratio(
     # transform to decibels
     ratio = coh / (1 - coh)
     val = 10.0 * torch.log10(ratio)
-    
+
     # recompute sdr in float64 if val is NaN or Inf
     if (torch.isnan(val).any() or torch.isinf(val).any()) and preds.dtype != torch.float64:
         val = signal_distortion_ratio(preds.double(), target.double(), use_cg_iter, filter_length, zero_mean, load_diag)
