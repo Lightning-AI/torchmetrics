@@ -19,8 +19,7 @@ inputs:
   interval:
     description: cache hash reset interval in days
     required: false
-    default: 7
-    type: number
+    default: "7"
 
 runs:
   using: "composite"
