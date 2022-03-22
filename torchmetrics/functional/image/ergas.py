@@ -48,7 +48,7 @@ def _ergas_compute(
     preds: Tensor,
     target: Tensor,
     ratio: Union[int, float] = 4,
-    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
 
@@ -60,7 +60,7 @@ def _ergas_compute(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
@@ -86,7 +86,7 @@ def error_relative_global_dimensionless_synthesis(
     preds: Tensor,
     target: Tensor,
     ratio: Union[int, float] = 4,
-    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
 
@@ -98,7 +98,7 @@ def error_relative_global_dimensionless_synthesis(
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
     Return:
         Tensor with RelativeG score

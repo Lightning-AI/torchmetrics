@@ -39,7 +39,7 @@ for size, channel, coef, ratio, dtype in [
         Input(
             preds=preds,
             target=preds * coef,
-            ratio=ratio,
+            ratio=ratio
         )
     )
 

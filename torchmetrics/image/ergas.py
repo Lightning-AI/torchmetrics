@@ -34,7 +34,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
-            - ``'none'``: no reduction will be applied
+            - ``'none'`` or ``None``: no reduction will be applied
 
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -64,7 +64,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     def __init__(
         self,
         ratio: Union[int, float] = 4,
-        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
