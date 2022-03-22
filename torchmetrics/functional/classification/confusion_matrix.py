@@ -18,27 +18,8 @@ from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import DataType
-
-
-def _bincount(x: Tensor, minlength: int):
-    """torch.bincount currently does not support deterministic mode on GPU. This implementation fallsback to a for-
-    loop counting occurences in that case.
-
-    Args:
-        x: tensor to count
-        minlength: minimum length to count
-
-    Returns:
-        Number of occurences for each unique element in x
-    """
-    if x.is_cuda and torch.are_deterministic_algorithms_enabled():
-        output = torch.zeros(minlength, device=x.device)
-        for i in range(minlength):
-            output[i] = (x == i).sum()
-        return output
-    else:
-        return torch.bincount(x, minlength=minlength)
 
 
 def _confusion_matrix_update(
