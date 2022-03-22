@@ -21,6 +21,26 @@ from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
 
+def _bincount(x: Tensor, minlength: int):
+    """torch.bincount currently does not support deterministic mode on GPU. This implementation fallsback to a for-
+    loop counting occurences in that case.
+
+    Args:
+        x: tensor to count
+        minlength: minimum length to count
+
+    Returns:
+        Number of occurences for each unique element in x
+    """
+    if x.is_cuda and torch.are_deterministic_algorithms_enabled():
+        output = torch.zeros(minlength, device=x.device)
+        for i in range(minlength):
+            output[i] = (x == i).sum()
+        return output
+    else:
+        return torch.bincount(x, minlength=minlength)
+
+
 def _confusion_matrix_update(
     preds: Tensor, target: Tensor, num_classes: int, threshold: float = 0.5, multilabel: bool = False
 ) -> Tensor:
@@ -45,7 +65,7 @@ def _confusion_matrix_update(
         unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
         minlength = num_classes ** 2
 
-    bins = torch.bincount(unique_mapping, minlength=minlength)
+    bins = _bincount(unique_mapping, minlength=minlength)
     if multilabel:
         confmat = bins.reshape(num_classes, 2, 2)
     else:

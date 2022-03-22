@@ -31,7 +31,7 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional import confusion_matrix
+from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 
 seed_all(42)
 
@@ -186,3 +186,22 @@ def test_warning_on_nan(tmpdir):
         match=".* nan values found in confusion matrix have been replaced with zeros.",
     ):
         confusion_matrix(preds, target, num_classes=5, normalize="true")
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
+def test_bincount():
+    """test that bincount works in deterministic setting on GPU."""
+    torch.use_deterministic_algorithms(True)
+
+    preds = torch.randint(3, size=(10,))
+    target = torch.randint(3, size=(10,))
+    # uses custom implementation
+    res1 = confusion_matrix(preds, target, num_classes=3)
+
+    torch.use_deterministic_algorithms(False)
+
+    # uses torch.bincount
+    res2 = confusion_matrix(preds, target, num_classes=3)
+
+    # check for correctness
+    assert torch.allclose(res1, res2)
