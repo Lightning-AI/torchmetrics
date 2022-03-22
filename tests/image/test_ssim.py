@@ -20,7 +20,7 @@ import torch
 from skimage.metrics import structural_similarity
 
 from tests.helpers import seed_all
-from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from tests.helpers.testers import NUM_BATCHES, MetricTester
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 
@@ -28,6 +28,7 @@ seed_all(42)
 
 Input = namedtuple("Input", ["preds", "target"])
 
+BATCH_SIZE = 4  # custom batch size to prevent memory issues in CI
 _inputs = []
 for size, channel, coef, dtype in [
     (12, 3, 0.9, torch.float),
