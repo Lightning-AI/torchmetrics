@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from collections import namedtuple
 from functools import partial
 from typing import Callable
@@ -22,6 +21,7 @@ from mir_eval.separation import bss_eval_sources
 from scipy.io import wavfile
 from torch import Tensor
 
+from tests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SignalDistortionRatio
@@ -138,10 +138,8 @@ def test_error_on_different_shape(metric_class=SignalDistortionRatio):
 
 
 def test_on_real_audio():
-    current_file_dir = os.path.dirname(__file__)
-
-    rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
-    rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
+    rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
+    rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     assert torch.allclose(
         signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
         torch.tensor(0.2211),
