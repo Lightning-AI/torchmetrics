@@ -88,6 +88,15 @@ jobs:
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip list
 
+    - name: Pull testing data from S3
+      working-directory: ./tests/data
+      run: |
+        # wget is simpler but does not work on Windows
+        python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/audio.zip', 'audio.zip')"
+        ls -l .
+        unzip -o audio.zip
+        ls -l audio/
+
     - name: Tests
       env:
         TEST_DIRS: "${{ needs.check-diff.outputs.test-dirs }}"
