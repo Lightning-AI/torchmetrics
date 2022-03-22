@@ -12,6 +12,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
   cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   pytest:
 
@@ -80,15 +84,24 @@ jobs:
         key: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-${{ hashFiles('requirements.txt') }}
         restore-keys: ${{ runner.os }}-py${{ matrix.python-version }}-td${{ steps.times.outputs.period }}-pip-
 
-    - name: Install dependencies
+    - name: Install base dependencies
       run: |
         pip --version
         pip install --requirement requirements.txt --upgrade --find-links $PYTORCH_URL
+
+    - name: Freeze Numpy (hotfix)
+      if: matrix.requires == 'latest'
+      run: |
+        pip install -q "numpy==1.20.0"  # temp fix for cypesq
+        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+        pip install -q "Pillow<9.0"  # It messes with torchvision
+
+    - name: Install all dependencies
+      run: |
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt --upgrade --find-links $PYTORCH_URL
         pip list
-      shell: bash
 
     - name: HF cache
       uses: actions/cache@v2
