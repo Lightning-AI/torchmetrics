@@ -151,6 +151,9 @@ def test_on_real_audio():
     )
 
 
+@pytest.mark.skipif(
+    not _TORCH_GREATER_EQUAL_1_8, reason="when pytorch < 1.8, sdr is using numpy which doesn't have this problem"
+)
 def test_too_low_precision():
     """Corner case where the precision of the input is important."""
     current_file_dir = os.path.dirname(__file__)
