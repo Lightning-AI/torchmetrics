@@ -10,6 +10,7 @@ on:  # Trigger the workflow on push or pull request, but only for the master bra
 jobs:
   flake8:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -26,6 +27,7 @@ jobs:
 
   typing-check-mypy:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
