@@ -94,8 +94,8 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
         padded input
     """
     _max = inputs.shape[dim] - 2
-    x = torch.index_select(inputs, dim, torch.arange(pad, 0, -1))
-    y = torch.index_select(inputs, dim, torch.arange(_max, _max - pad, -1))
+    x = torch.index_select(inputs, dim, torch.arange(pad, 0, -1, device=inputs.device))
+    y = torch.index_select(inputs, dim, torch.arange(_max, _max - pad, -1, device=inputs.device))
     return torch.cat((x, inputs, y), dim)
 
 
