@@ -89,13 +89,13 @@ jobs:
         pip list
 
     - name: Pull testing data from S3
-      working-directory: ./tests/data
+      working-directory: ./tests
       run: |
         # wget is simpler but does not work on Windows
-        python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/audio.zip', 'audio.zip')"
+        python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
         ls -l .
-        unzip -o audio.zip
-        ls -l audio/
+        unzip -o data.zip
+        ls -l data/*
 
     - name: Tests
       env:
