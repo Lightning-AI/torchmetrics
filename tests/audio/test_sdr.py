@@ -18,6 +18,7 @@ from typing import Callable
 
 import pytest
 import torch
+import numpy as np
 from mir_eval.separation import bss_eval_sources
 from scipy.io import wavfile
 from torch import Tensor
@@ -108,9 +109,7 @@ class TestSDR(MetricTester):
             metric_args=dict(),
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6")
     def test_sdr_half_cpu(self, preds, target, sk_metric):
         self.run_precision_test_cpu(
             preds=preds,
@@ -145,6 +144,21 @@ def test_on_real_audio():
     assert torch.allclose(
         signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
         torch.tensor(0.2211),
+        rtol=0.0001,
+        atol=1e-4,
+    )
+
+
+def test_issue_895():
+    current_file_dir = os.path.dirname(__file__)
+    data = np.load(os.path.join(current_file_dir, "examples/issue_895.npz"))
+    preds = torch.tensor(data['preds'])
+    target = torch.tensor(data['target'])
+    sdr_tm = signal_distortion_ratio(preds, target)
+    sdr_bss, _, _, _ = bss_eval_sources(target.numpy(), preds.numpy(), False)
+    assert torch.allclose(
+        sdr_tm.mean(),
+        torch.tensor(sdr_bss).mean(),
         rtol=0.0001,
         atol=1e-4,
     )
