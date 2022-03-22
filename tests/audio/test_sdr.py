@@ -151,7 +151,7 @@ def test_on_real_audio():
     )
 
 
-def test_issue_with_too_low_precision():
+def test_too_low_precision():
     """Corner case where the precision of the input is important."""
     current_file_dir = os.path.dirname(__file__)
     data = np.load(os.path.join(current_file_dir, "examples/issue_895.npz"))
