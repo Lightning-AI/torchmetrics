@@ -275,7 +275,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     if x.is_cuda and torch.are_deterministic_algorithms_enabled():
         if minlength is None:
             minlength = len(torch.unique(x))
-        output = torch.zeros(minlength, device=x.device)
+        output = torch.zeros(minlength, device=x.device, dtype=torch.long)
         for i in range(minlength):
             output[i] = (x == i).sum()
         return output

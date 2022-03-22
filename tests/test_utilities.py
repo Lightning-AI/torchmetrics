@@ -131,6 +131,10 @@ def test_bincount():
 
     # uses torch.bincount
     res2 = _bincount(x, minlength=10)
-
+    
+    # explicit call to make sure, that res2 is not by accident using our manual implementation
+    res3 = torch.bincount(x. minlength=10)
+    
     # check for correctness
     assert torch.allclose(res1, res2)
+    assert torch.allclose(res1, res3)
