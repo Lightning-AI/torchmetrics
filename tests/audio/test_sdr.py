@@ -152,12 +152,14 @@ def test_on_real_audio():
 
 
 def test_issue_with_too_low_precision():
-    """ Corner case where the precision of the input is important. """
+    """Corner case where the precision of the input is important."""
     current_file_dir = os.path.dirname(__file__)
     data = np.load(os.path.join(current_file_dir, "examples/issue_895.npz"))
     preds = torch.tensor(data["preds"])
     target = torch.tensor(data["target"])
-    with pytest.warns(UserWarning, match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision"):
+    with pytest.warns(
+        UserWarning, match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision"
+    ):
         sdr_tm = signal_distortion_ratio(preds, target)
     sdr_bss, _, _, _ = bss_eval_sources(target.numpy(), preds.numpy(), False)
     assert torch.allclose(
