@@ -202,7 +202,46 @@ def _calibration_error(
     return loss
 
 
-def _sk_sam(preds, target, reduction):
+def _sk_ergas(
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    ratio: Union[int, float] = 4,
+    reduction: str = "elementwise_mean",
+) -> torch.Tensor:
+    """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
+    reduction_options = ("elementwise_mean", "sum", "none")
+    if reduction not in reduction_options:
+        raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
+    # reshape to (batch_size, channel, height*width)
+    b, c, h, w = preds.shape
+    sk_preds = preds.reshape(b, c, h * w)
+    sk_target = target.reshape(b, c, h * w)
+    # compute rmse per band
+    diff = sk_preds - sk_target
+    sum_squared_error = torch.sum(diff * diff, dim=2)
+    rmse_per_band = torch.sqrt(sum_squared_error / (h * w))
+    mean_target = torch.mean(sk_target, dim=2)
+    # compute ergas score
+    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
+    # reduction
+    if reduction == "sum":
+        to_return = torch.sum(ergas_score)
+    elif reduction == "elementwise_mean":
+        to_return = torch.mean(ergas_score)
+    else:
+        to_return = ergas_score
+    return to_return
+
+
+def _sk_sam(
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    reduction: str = "elementwise_mean",
+) -> torch.Tensor:
+    """Reference implementation of spectral angle mapper."""
+    reduction_options = ("elementwise_mean", "sum", "none")
+    if reduction not in reduction_options:
+        raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
     similarity = F.cosine_similarity(preds, target)
     sam_score = torch.clamp(similarity, -1, 1).acos()
     # reduction
