@@ -43,6 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853))
 
 
+- Added normalizer, tokenizer to ROUGE metric ([#838](https://github.com/PyTorchLightning/metrics/pull/838))
+
+
+- Improved shape checking of `permutation_invariant_training` ([#864](https://github.com/PyTorchLightning/metrics/pull/864))
+
+
+- Allowed reduction `None` ([#891](https://github.com/PyTorchLightning/metrics/pull/891))
+
+
 ### Deprecated
 
 - Deprecated argument `compute_on_step` ([#792](https://github.com/PyTorchLightning/metrics/pull/792))
