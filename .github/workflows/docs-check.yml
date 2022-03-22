@@ -8,6 +8,7 @@ jobs:
 
   test-docs:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -44,6 +45,7 @@ jobs:
 
   make-docs:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -88,6 +90,7 @@ jobs:
 
   paper-JOSS:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -107,6 +110,7 @@ jobs:
 
   paper-cite:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
