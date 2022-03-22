@@ -22,7 +22,7 @@ from mir_eval.separation import bss_eval_sources
 from scipy.io import wavfile
 from torch import Tensor
 
-from tests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
+from tests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SignalDistortionRatio
@@ -154,8 +154,7 @@ def test_on_real_audio():
 )
 def test_too_low_precision():
     """Corner case where the precision of the input is important."""
-    current_file_dir = os.path.dirname(__file__)
-    data = np.load(os.path.join(current_file_dir, "examples/issue_895.npz"))
+    data = np.load(_SAMPLE_NUMPY_ISSUE_895)
     preds = torch.tensor(data["preds"])
     target = torch.tensor(data["target"])
     with pytest.warns(
