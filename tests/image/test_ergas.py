@@ -35,13 +35,7 @@ for size, channel, coef, ratio, dtype in [
     (15, 3, 0.5, 4, torch.float64),
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(
-        Input(
-            preds=preds,
-            target=preds * coef,
-            ratio=ratio
-        )
-    )
+    _inputs.append(Input(preds=preds, target=preds * coef, ratio=ratio))
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
