@@ -28,7 +28,7 @@ seed_all(42)
 
 Input = namedtuple("Input", ["preds", "target"])
 
-BATCH_SIZE = 4  # custom batch size to prevent memory issues in CI
+BATCH_SIZE = 2  # custom batch size to prevent memory issues in CI
 _inputs = []
 for size, channel, coef, dtype in [
     (12, 3, 0.9, torch.float),
