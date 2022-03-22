@@ -124,7 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug in MAP metric related to either no ground truth or no predictions ([#884](https://github.com/PyTorchLightning/metrics/pull/884))
 
 
-- Fixed `ConfusionMatrix` on GPU when running in deterministic mode ([#900](https://github.com/PyTorchLightning/metrics/pull/900))
+- Fixed `ConfusionMatrix`, `AUROC` and `AveragePrecision` on GPU when running in deterministic mode ([#900](https://github.com/PyTorchLightning/metrics/pull/900))
 
 
 ## [0.7.2] - 2022-02-10
