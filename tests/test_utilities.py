@@ -16,7 +16,7 @@ import torch
 from torch import tensor
 
 from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn
-from torchmetrics.utilities.data import get_num_classes, to_categorical, to_onehot
+from torchmetrics.utilities.data import _bincount, get_num_classes, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 
 
@@ -102,3 +102,25 @@ def test_to_categorical():
 )
 def test_get_num_classes(preds, target, num_classes, expected_num_classes):
     assert get_num_classes(preds, target, num_classes) == expected_num_classes
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
+def test_bincount():
+    """test that bincount works in deterministic setting on GPU."""
+    torch.use_deterministic_algorithms(True)
+
+    x = torch.randint(100, size=(100,))
+    # uses custom implementation
+    res1 = _bincount(x, minlength=10)
+
+    torch.use_deterministic_algorithms(False)
+
+    # uses torch.bincount
+    res2 = _bincount(x, minlength=10)
+
+    # explicit call to make sure, that res2 is not by accident using our manual implementation
+    res3 = torch.bincount(x, minlength=10)
+
+    # check for correctness
+    assert torch.allclose(res1, res2)
+    assert torch.allclose(res1, res3)
