@@ -18,7 +18,7 @@ import pytest
 import torch
 
 from tests.helpers.testers import MetricTester
-from torchmetrics.detection.map import MeanAveragePrecision
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
