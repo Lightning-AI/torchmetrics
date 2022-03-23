@@ -485,7 +485,7 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
     ):
         if not torch.cuda.is_available():
-            pytest.skip()
+            pytest.skip("Test requires GPU")
 
         def metric_functional_ignore_indexes(preds, target, indexes):
             return metric_functional(preds, target)
