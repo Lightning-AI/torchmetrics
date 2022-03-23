@@ -19,8 +19,8 @@ framework designed for scaling models without boilerplate.
 
 While TorchMetrics was built to be used with native PyTorch, using TorchMetrics with Lightning offers additional benefits:
 
-* Module metrics are automatically placed on the correct device when properly defined inside a LightningModule.
-  This means that your data will always be placed on the same device as your metrics. No need to call `.to(device)` anymore!
+* Modular metrics are automatically placed on the correct device when properly defined inside a LightningModule.
+  This means that your data will always be placed on the same device as your metrics. No need to call ``.to(device)`` anymore!
 * Native support for logging metrics in Lightning using
   `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ inside
   your LightningModule.
@@ -49,17 +49,17 @@ The example below shows how to use a metric in your `LightningModule <https://py
             # log epoch metric
             self.log('train_acc_epoch', self.accuracy)
 
-Metric logging in Lightning happens through the `self.log` or `self.log_dict` method. Both methods only supports logging of *scalar-tensors*.
+Metric logging in Lightning happens through the ``self.log`` or ``self.log_dict`` method. Both methods only support the logging of *scalar-tensors*.
 While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics such as :class:`~torchmetrics.ConfusionMatrix`, :class:`~torchmetrics.ROC`,
-:class:`~torchmetrics.MAP`, :class:`~torchmetrics.RougeScore` return outputs that are non-scalar tensors (often dicts or list of tensors) and should therefore be
+:class:`~torchmetrics.MeanAveragePrecision`, :class:`~torchmetrics.ROUGEScore` return outputs that are non-scalar tensors (often dicts or list of tensors) and should therefore be
 dealt with separately. For info about the return type and shape please look at the documentation for the ``compute`` method for each metric you want to log.
 
 ********************
 Logging TorchMetrics
 ********************
 
-Logging metrics can be done in two ways: either logging the metric object directly or the computed metric values. When :class:`~torchmetrics.Metric` objects, which return a scalar tensor,
-are logged directly in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method.
+Logging metrics can be done in two ways: either logging the metric object directly or the computed metric values. When :class:`~torchmetrics.Metric` objects, which return a scalar tensor
+are logged directly in Lightning using the LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ method,
 Lightning will log the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``. If ``on_epoch`` is True, the logger automatically logs the end of epoch metric
 value by calling ``.compute()``.
 
@@ -127,8 +127,8 @@ of the metrics.
             self.log('valid_acc_epoch', self.valid_acc.compute())
             self.valid_acc.reset()
 
-Note that logging metrics this ways will require you to manually reset the metrics at the end of the epoch yourself. In general we recommend logging
-the metric object to make sure that metrics are correctly computed and reset. Additionally, we highly recommend that the two ways of logging is not
+Note that logging metrics this way will require you to manually reset the metrics at the end of the epoch yourself. In general, we recommend logging
+the metric object to make sure that metrics are correctly computed and reset. Additionally, we highly recommend that the two ways of logging are not
 mixed as it can lead to wrong results.
 
 .. note::
@@ -153,15 +153,14 @@ mixed as it can lead to wrong results.
 
 
 ***************
-Common pitfalls
+Common Pitfalls
 ***************
 
 The following contains a list of pitfalls to be aware of:
 
 * If using metrics in data parallel mode (dp), the metric update/logging should be done
   in the ``<mode>_step_end`` method (where ``<mode>`` is either ``training``, ``validation``
-  or ``test``). This is due to metric states else being destroyed after each forward pass,
-  leading to wrong accumulation. In practice do the following:
+  or ``test``). This is because ``dp`` split the batches during the forward pass and metric states are destroyed after each forward pass, thus leading to wrong accumulation. In practice do the following:
 
 .. testcode:: python
 
@@ -174,7 +173,7 @@ The following contains a list of pitfalls to be aware of:
             return {'loss': loss, 'preds': preds, 'target': target}
 
         def training_step_end(self, outputs):
-            #update and log
+            # update and log
             self.metric(outputs['preds'], outputs['target'])
             self.log('metric', self.metric)
 
