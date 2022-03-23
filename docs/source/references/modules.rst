@@ -449,7 +449,7 @@ Object detection metrics can be used to evaluate the predicted detections with g
 MeanAveragePrecision
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: torchmetrics.detection.map.MeanAveragePrecision
+.. autoclass:: torchmetrics.detection.mean_ap.MeanAveragePrecision
     :noindex:
 
 **********
