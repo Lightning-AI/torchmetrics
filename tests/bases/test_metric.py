@@ -392,14 +392,14 @@ def test_constant_memory(device, requires_grad):
     for _ in range(10):
         metric.update(x.sum())
         memory = get_memory_usage()
-        assert base_memory_level >= memory
+        assert base_memory_level >= memory, "memory increased above base level"
 
     # try forward method
-    metric = DummyMetricSum().cuda()
+    metric = DummyMetricSum().to(device)
     metric(x.sum())
     base_memory_level = get_memory_usage()
 
     for _ in range(10):
         metric.update(x.sum())
         memory = get_memory_usage()
-        assert base_memory_level >= memory
+        assert base_memory_level >= memory, "memory increased above base level"
