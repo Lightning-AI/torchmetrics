@@ -27,7 +27,7 @@ from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8, _TORCH_LOWER_1_12
 
 seed_all(42)
 
@@ -149,18 +149,21 @@ def test_on_real_audio():
     )
 
 
-@pytest.mark.skipif(
-    not _TORCH_GREATER_EQUAL_1_8, reason="when pytorch < 1.8, sdr is using numpy which doesn't have this problem"
-)
 def test_too_low_precision():
     """Corner case where the precision of the input is important."""
     data = np.load(_SAMPLE_NUMPY_ISSUE_895)
     preds = torch.tensor(data["preds"])
     target = torch.tensor(data["target"])
-    with pytest.warns(
-        UserWarning, match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision"
-    ):
+
+    if _TORCH_GREATER_EQUAL_1_8 and _TORCH_LOWER_1_12:
+        with pytest.warns(
+            UserWarning, match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision"
+        ):
+            sdr_tm = signal_distortion_ratio(preds, target)
+    else:  # when pytorch < 1.8 or pytorch > 1.12, sdr doesn't have this problem
         sdr_tm = signal_distortion_ratio(preds, target)
+
+    # check equality with bss_eval_sources in every pytorch version
     sdr_bss, _, _, _ = bss_eval_sources(target.numpy(), preds.numpy(), False)
     assert torch.allclose(
         sdr_tm.mean(),
