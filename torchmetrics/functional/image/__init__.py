@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis  # noqa: F401
 from torchmetrics.functional.image.gradients import image_gradients  # noqa: F401
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio  # noqa: F401
 from torchmetrics.functional.image.sam import spectral_angle_mapper  # noqa: F401

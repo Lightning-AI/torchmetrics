@@ -17,8 +17,10 @@ from functools import partial
 import pytest
 import torch
 from pesq import pesq as pesq_backend
+from scipy.io import wavfile
 from torch import Tensor
 
+from tests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
@@ -130,14 +132,8 @@ def test_error_on_different_shape(metric_class=PerceptualEvaluationSpeechQuality
 
 
 def test_on_real_audio():
-    import os
-
-    from scipy.io import wavfile
-
-    current_file_dir = os.path.dirname(__file__)
-
-    rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
-    rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
+    rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
+    rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     pesq = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
     assert pesq == 1.0832337141036987
     pesq = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb")
