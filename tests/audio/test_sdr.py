@@ -162,7 +162,7 @@ def test_too_low_precision():
         ):
             sdr_tm = signal_distortion_ratio(preds, target)
     else:  # when pytorch < 1.8 or pytorch > 1.12, sdr doesn't have this problem
-        sdr_tm = signal_distortion_ratio(preds, target)
+        sdr_tm = signal_distortion_ratio(preds, target).double()
 
     # check equality with bss_eval_sources in every pytorch version
     sdr_bss, _, _, _ = bss_eval_sources(target.numpy(), preds.numpy(), False)
