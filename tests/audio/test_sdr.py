@@ -157,7 +157,8 @@ def test_too_low_precision():
 
     if _TORCH_GREATER_EQUAL_1_8 and _TORCH_LOWER_1_12:
         with pytest.warns(
-            UserWarning, match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision"
+            UserWarning,
+            match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision",
         ):
             sdr_tm = signal_distortion_ratio(preds, target)
     else:  # when pytorch < 1.8 or pytorch > 1.12, sdr doesn't have this problem
