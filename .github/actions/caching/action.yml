@@ -16,6 +16,10 @@ inputs:
     description: some extra hash for pip cache
     required: false
     default: ""
+  interval:
+    description: cache hash reset interval in days
+    required: false
+    default: "7"
 
 runs:
   using: "composite"
@@ -30,7 +34,7 @@ runs:
     run: python .github/assistant.py set-oldest-versions
     shell: bash
 
-  - run: python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(f'TIME_PERIOD={int(days / 7)}')" >> $GITHUB_ENV
+  - run: python -c "import time ; days = time.time() / 60 / 60 / 24 ; print(f'TIME_PERIOD={int(days / ${{ inputs.interval }})}')" >> $GITHUB_ENV
     if: inputs.requires == 'latest'
     shell: bash
 

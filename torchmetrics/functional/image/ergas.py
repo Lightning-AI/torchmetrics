@@ -66,8 +66,8 @@ def _ergas_compute(
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> preds, target = _ergas_update(preds, target)
-        >>> _ergas_compute(preds, target)
-        tensor(153.9085)
+        >>> torch.round(_ergas_compute(preds, target))
+        tensor(154.)
     """
     b, c, h, w = preds.shape
     preds = preds.reshape(b, c, h * w)
@@ -112,8 +112,9 @@ def error_relative_global_dimensionless_synthesis(
         >>> from torchmetrics.functional import error_relative_global_dimensionless_synthesis
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
-        >>> error_relative_global_dimensionless_synthesis(preds, target)
-        tensor(153.9085)
+        >>> ergds = error_relative_global_dimensionless_synthesis(preds, target)
+        >>> torch.round(ergds)
+        tensor(154.)
 
     References: Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
     Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
