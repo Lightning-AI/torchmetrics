@@ -37,7 +37,9 @@ def retrieval_precision(preds: Tensor, target: Tensor, k: Optional[int] = None, 
 
     Raises:
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0
+            If ``k`` parameter is not `None` or an integer larger than 0.
+        ValueError:
+            If ``adaptive_k`` parameter is not boolean.
 
     Example:
         >>> preds = tensor([0.2, 0.3, 0.5])
