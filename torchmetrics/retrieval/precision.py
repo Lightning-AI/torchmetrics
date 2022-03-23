@@ -63,9 +63,9 @@ class RetrievalPrecision(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``k`` parameter is not `None` or an integer larger than 0.
+            If ``k`` is not `None` or an integer larger than 0.
         ValueError:
-            If ``adaptive_k`` parameter is not boolean.
+            If ``adaptive_k`` is not boolean.
 
     Example:
         >>> from torchmetrics import RetrievalPrecision
