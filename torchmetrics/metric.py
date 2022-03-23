@@ -237,8 +237,8 @@ class Metric(Module, ABC):
                 "HINT: Did you forget to call ``unsync`` ?."
             )
 
-        with torch.no_grad():
-            self.update(*args, **kwargs)
+        # global accumulation
+        self.update(*args, **kwargs)
 
         self._to_sync = self.dist_sync_on_step  # type: ignore
         # skip restore cache operation from compute as cache is stored below.
