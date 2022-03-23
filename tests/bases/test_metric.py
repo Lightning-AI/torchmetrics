@@ -371,7 +371,7 @@ def test_device_if_child_module(metric_class):
 def test_constant_memory(device, requires_grad):
     """Checks that when updating a metric the memory does not increase."""
     if not torch.cuda.is_available() and device == "cuda":
-        pytest.mark.skip("Test requires GPU support")
+        pytest.skip("Test requires GPU support")
 
     def get_memory_usage():
         if device == "cpu":
