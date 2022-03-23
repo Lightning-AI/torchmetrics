@@ -144,6 +144,7 @@ class Metric(Module, ABC):
         self._update_called = False
         self._to_sync = True
         self._should_unsync = True
+        self._enable_grad = False
 
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
@@ -247,6 +248,7 @@ class Metric(Module, ABC):
         cache = {attr: getattr(self, attr) for attr in self._defaults}
 
         # call reset, update, compute, on single batch
+        self._enable_grad = True  # allow grads for batch computation
         self.reset()
         self.update(*args, **kwargs)
         self._forward_cache = self.compute()
@@ -259,6 +261,7 @@ class Metric(Module, ABC):
         self._should_unsync = True
         self._to_sync = True
         self._computed = None
+        self._enable_grad = False
 
         return self._forward_cache
 
@@ -294,7 +297,8 @@ class Metric(Module, ABC):
         def wrapped_func(*args: Any, **kwargs: Any) -> Optional[Any]:
             self._computed = None
             self._update_called = True
-            return update(*args, **kwargs)
+            with torch.set_grad_enabled(self._enable_grad):
+                return update(*args, **kwargs)
 
         return wrapped_func
 
