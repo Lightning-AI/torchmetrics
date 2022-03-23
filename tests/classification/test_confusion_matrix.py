@@ -31,7 +31,7 @@ from tests.classification.inputs import _input_multilabel_prob as _input_mlb_pro
 from tests.helpers import seed_all
 from tests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester
 from torchmetrics.classification.confusion_matrix import ConfusionMatrix
-from torchmetrics.functional import confusion_matrix
+from torchmetrics.functional.classification.confusion_matrix import confusion_matrix
 
 seed_all(42)
 

@@ -8,7 +8,7 @@ jobs:
 
   test-docs:
     runs-on: ubuntu-20.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -44,7 +44,7 @@ jobs:
 
   make-docs:
     runs-on: ubuntu-20.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -92,8 +92,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Build draft PDF
-        uses: openjournals/openjournals-draft-action@master
+      - name: Build PDF
+        uses: openjournals/openjournals-draft-action@v.1.0
         with:
           journal: joss
           # This should be the path to the paper within your repo.
