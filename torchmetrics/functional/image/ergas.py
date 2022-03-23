@@ -66,8 +66,8 @@ def _ergas_compute(
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> preds, target = _ergas_update(preds, target)
-        >>> _ergas_compute(preds, target)
-        tensor(153.9085)
+        >>> torch.round(_ergas_compute(preds, target))
+        tensor(154.)
     """
     b, c, h, w = preds.shape
     preds = preds.reshape(b, c, h * w)
