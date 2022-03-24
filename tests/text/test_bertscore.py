@@ -98,6 +98,9 @@ def test_score_fn_with_idf(preds, targets):
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def test_score_fn_all_layers(preds, targets, device):
     """Tests for functional and all layers."""
+    if not torch.cuda.is_available() and device == "cuda":
+        pytest.skip("Test requires GPU support")
+
     original_score = original_bert_score(
         preds, targets, model_type=MODEL_NAME, all_layers=True, idf=False, batch_size=3
     )
