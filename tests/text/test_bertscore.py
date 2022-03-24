@@ -94,8 +94,9 @@ def test_score_fn_with_idf(preds, targets):
     "preds,targets",
     [(preds, targets)],
 )
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
-def test_score_fn_all_layers(preds, targets):
+def test_score_fn_all_layers(preds, targets, device):
     """Tests for functional and all layers."""
     original_score = original_bert_score(
         preds, targets, model_type=MODEL_NAME, all_layers=True, idf=False, batch_size=3
@@ -103,7 +104,7 @@ def test_score_fn_all_layers(preds, targets):
     original_score = _parse_original_bert_score(original_score)
 
     metrics_score = metrics_bert_score(
-        preds, targets, model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3
+        preds, targets, model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3, device=device
     )
 
     for metric in _METRICS:
