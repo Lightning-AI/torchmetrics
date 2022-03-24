@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis  # noqa: F401
 from torchmetrics.image.psnr import PeakSignalNoiseRatio  # noqa: F401
 from torchmetrics.image.rase import RelativeAverageSpectralError  # noqa: F401
 from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow  # noqa: F401

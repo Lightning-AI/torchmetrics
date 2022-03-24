@@ -264,6 +264,13 @@ Image
 *****
 
 
+error_relative_global_dimensionless_synthesis [func]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.error_relative_global_dimensionless_synthesis
+    :noindex:
+
+
 image_gradients [func]
 ~~~~~~~~~~~~~~~~~~~~~~
 
