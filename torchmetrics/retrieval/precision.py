@@ -84,7 +84,7 @@ class RetrievalPrecision(RetrievalMetric):
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         k: Optional[int] = None,
-        adaptive_k: Optional[bool] = False,
+        adaptive_k: bool = False,
         compute_on_step: Optional[bool] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
