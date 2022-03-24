@@ -178,8 +178,7 @@ class MetricTracker(nn.ModuleList):
                 return best.item()
             except ValueError as error:
                 warnings.warn(
-                    "Encountered the following error when trying to get the best metric:"
-                    f"{error}"
+                    f"Encountered the following error when trying to get the best metric: {error}"
                     "this is probably due to the 'best' not being defined for this metric."
                     "Returning `None` instead.",
                     UserWarning,
@@ -200,8 +199,7 @@ class MetricTracker(nn.ModuleList):
                 except ValueError as error:
                     warnings.warn(
                         f"Encountered the following error when trying to get the best metric for metric {k}:"
-                        f"{error}"
-                        "this is probably due to the 'best' not being defined for this metric."
+                        f"{error} this is probably due to the 'best' not being defined for this metric."
                         "Returning `None` instead.",
                         UserWarning,
                     )
