@@ -121,6 +121,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed compatibility of `ClasswiseWrapper` with the `prefix` argument of `MetricCollection` ([#843](https://github.com/PyTorchLightning/metrics/pull/843))
 
 
+- Fixed `BestScore` on GPU ([#912](https://github.com/PyTorchLightning/metrics/pull/912))
+
+
 ## [0.7.3] - 2022-03-23
 
 ### Fixed
