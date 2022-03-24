@@ -121,18 +121,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed compatibility of `ClasswiseWrapper` with the `prefix` argument of `MetricCollection` ([#843](https://github.com/PyTorchLightning/metrics/pull/843))
 
 
+## [0.7.3] - 2022-03-23
+
+### Fixed
+
 - Fixed unsafe log operation in `TweedieDeviace` for power=1 ([#847](https://github.com/PyTorchLightning/metrics/pull/847))
-
-
 - Fixed bug in MAP metric related to either no ground truth or no predictions ([#884](https://github.com/PyTorchLightning/metrics/pull/884))
-
-
 - Fixed `ConfusionMatrix`, `AUROC` and `AveragePrecision` on GPU when running in deterministic mode ([#900](https://github.com/PyTorchLightning/metrics/pull/900))
-
-
 - Fixed NaN or Inf results returned by `signal_distortion_ratio` ([#899](https://github.com/PyTorchLightning/metrics/pull/899))
-
-
 - Fixed memory leak when using `update` method with tensor where `requires_grad=True` ([#902](https://github.com/PyTorchLightning/metrics/pull/902))
 
 
