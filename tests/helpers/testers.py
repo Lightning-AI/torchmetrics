@@ -24,7 +24,7 @@ from torch import Tensor, tensor
 from torch.multiprocessing import Pool, set_start_method
 
 from torchmetrics import Metric
-from torchmetrics.detection.map import MAPMetricResults
+from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import apply_to_collection
 
 try:
