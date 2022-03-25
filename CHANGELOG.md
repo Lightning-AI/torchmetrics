@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new image metric `UniversalImageQualityIndex` ([#824](https://github.com/PyTorchLightning/metrics/pull/824))
 
 
+- Added support for 3D image and uniform kernel in `StructuralSimilarityIndexMeasure` ([#818](https://github.com/PyTorchLightning/metrics/pull/818))
+
+
 - Added smart update of `MetricCollection` ([#709](https://github.com/PyTorchLightning/metrics/pull/709))
 
 
@@ -56,6 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Allowed reduction `None` ([#891](https://github.com/PyTorchLightning/metrics/pull/891))
+
+
+- `MetricTracker.best_metric` will now give a warning when computing on metric that do not have a best ([#913](https://github.com/PyTorchLightning/metrics/pull/913))
 
 
 ### Deprecated
