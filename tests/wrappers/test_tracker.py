@@ -16,7 +16,15 @@ import pytest
 import torch
 
 from tests.helpers import seed_all
-from torchmetrics import Accuracy, MeanAbsoluteError, MeanSquaredError, MetricCollection, Precision, Recall
+from torchmetrics import (
+    Accuracy,
+    ConfusionMatrix,
+    MeanAbsoluteError,
+    MeanSquaredError,
+    MetricCollection,
+    Precision,
+    Recall,
+)
 from torchmetrics.wrappers import MetricTracker
 
 seed_all(42)
@@ -117,3 +125,40 @@ def test_tracker(base_metric, metric_input, maximize):
     else:
         assert val != 0.0
         assert idx in list(range(5))
+
+
+@pytest.mark.parametrize(
+    "base_metric",
+    [
+        ConfusionMatrix(3),
+        MetricCollection([ConfusionMatrix(3), Accuracy(3)]),
+    ],
+)
+def test_best_metric_for_not_well_defined_metric_collection(base_metric):
+    """Test that if user tries to compute the best metric for a metric that does not have a well defined best, we
+    throw an warning and return None."""
+    tracker = MetricTracker(base_metric)
+    for _ in range(3):
+        tracker.increment()
+        for _ in range(5):
+            tracker.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
+
+    with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
+        best = tracker.best_metric()
+        if isinstance(best, dict):
+            assert best["Accuracy"] is not None
+            assert best["ConfusionMatrix"] is None
+        else:
+            assert best is None
+
+    with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
+        idx, best = tracker.best_metric(return_step=True)
+
+        if isinstance(best, dict):
+            assert best["Accuracy"] is not None
+            assert best["ConfusionMatrix"] is None
+            assert idx["Accuracy"] is not None
+            assert idx["ConfusionMatrix"] is None
+        else:
+            assert best is None
+            assert idx is None
