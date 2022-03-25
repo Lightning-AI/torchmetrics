@@ -330,14 +330,14 @@ def _get_embeddings_and_idf_scale(
         processed_attention_mask = _process_attention_mask_for_special_tokens(attention_mask)
         # Multiply embeddings with attention_mask (b=batch_size, l=num_layers, s=seq_len, d=emb_dim)
         out = torch.einsum("blsd, bs -> blsd", out, processed_attention_mask)
-        embeddings_list.append(out)
+        embeddings_list.append(out.cpu())
 
         # Calculate weighted (w.r.t. sentence length) input_ids IDF matrix
         input_ids_idf = (
             batch["input_ids_idf"] * processed_attention_mask if idf else processed_attention_mask.type(out.dtype)
         )
         input_ids_idf /= input_ids_idf.sum(-1, keepdim=True)
-        idf_scale_list.append(input_ids_idf)
+        idf_scale_list.append(input_ids_idf.cpu())
 
     embeddings = torch.cat(embeddings_list)
     idf_scale = torch.cat(idf_scale_list)
