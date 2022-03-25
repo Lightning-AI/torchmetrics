@@ -18,7 +18,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel
+from torchmetrics.functional.image.helper import _gaussian_kernel_2d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -95,7 +95,7 @@ def _uqi_compute(
     device = preds.device
     channel = preds.size(1)
     dtype = preds.dtype
-    kernel = _gaussian_kernel(channel, kernel_size, sigma, dtype, device)
+    kernel = _gaussian_kernel_2d(channel, kernel_size, sigma, dtype, device)
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
