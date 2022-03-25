@@ -11,22 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from collections import namedtuple
 from functools import partial
 from typing import Callable
 
+import numpy as np
 import pytest
 import torch
 from mir_eval.separation import bss_eval_sources
 from scipy.io import wavfile
 from torch import Tensor
 
+from tests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6, _TORCH_GREATER_EQUAL_1_8, _TORCH_LOWER_1_12_DEV
 
 seed_all(42)
 
@@ -138,13 +139,36 @@ def test_error_on_different_shape(metric_class=SignalDistortionRatio):
 
 
 def test_on_real_audio():
-    current_file_dir = os.path.dirname(__file__)
-
-    rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
-    rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
+    rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
+    rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     assert torch.allclose(
         signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
         torch.tensor(0.2211),
         rtol=0.0001,
         atol=1e-4,
+    )
+
+
+def test_too_low_precision():
+    """Corner case where the precision of the input is important."""
+    data = np.load(_SAMPLE_NUMPY_ISSUE_895)
+    preds = torch.tensor(data["preds"])
+    target = torch.tensor(data["target"])
+
+    if _TORCH_GREATER_EQUAL_1_8 and _TORCH_LOWER_1_12_DEV:
+        with pytest.warns(
+            UserWarning,
+            match="Detected `nan` or `inf` value in computed metric, retrying computation in double precision",
+        ):
+            sdr_tm = signal_distortion_ratio(preds, target)
+    else:  # when pytorch < 1.8 or pytorch >= 1.12, sdr doesn't have this problem
+        sdr_tm = signal_distortion_ratio(preds, target).double()
+
+    # check equality with bss_eval_sources in every pytorch version
+    sdr_bss, _, _, _ = bss_eval_sources(target.numpy(), preds.numpy(), False)
+    assert torch.allclose(
+        sdr_tm.mean(),
+        torch.tensor(sdr_bss).mean(),
+        rtol=0.0001,
+        atol=1e-2,
     )

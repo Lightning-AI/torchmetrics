@@ -11,18 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import pickle
 from collections import OrderedDict
 
 import cloudpickle
 import numpy as np
+import psutil
 import pytest
 import torch
 from torch import Tensor, nn, tensor
 
 from tests.helpers import seed_all
 from tests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_LOWER_1_6
 
 seed_all(42)
@@ -35,24 +36,6 @@ def test_error_on_wrong_input():
 
     with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
         DummyMetric(dist_sync_fn=[2, 3])
-
-
-def test_error_on_not_implemented_methods():
-    """Test that error is raised if _update or _compute is not implemented."""
-
-    class TempMetric(Metric):
-        def _compute(self):
-            return None
-
-    with pytest.raises(NotImplementedError, match="Expected method `_update` to be implemented in subclass."):
-        TempMetric()
-
-    class TempMetric(Metric):
-        def _update(self):
-            pass
-
-    with pytest.raises(NotImplementedError, match="Expected method `_compute` to be implemented in subclass."):
-        TempMetric()
 
 
 def test_inherit():
@@ -135,7 +118,7 @@ def test_reset_compute():
 
 def test_update():
     class A(DummyMetric):
-        def _update(self, x):
+        def update(self, x):
             self.x += x
 
     a = A()
@@ -151,10 +134,10 @@ def test_update():
 
 def test_compute():
     class A(DummyMetric):
-        def _update(self, x):
+        def update(self, x):
             self.x += x
 
-        def _compute(self):
+        def compute(self):
             return self.x
 
     a = A()
@@ -201,10 +184,10 @@ def test_hash():
 
 def test_forward():
     class A(DummyMetric):
-        def _update(self, x):
+        def update(self, x):
             self.x += x
 
-        def _compute(self):
+        def compute(self):
             return self.x
 
     a = A()
@@ -381,3 +364,44 @@ def test_device_if_child_module(metric_class):
     assert module.device == module.metric.device
     if isinstance(module.metric.x, Tensor):
         assert module.device == module.metric.x.device
+
+
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+@pytest.mark.parametrize("requires_grad", [True, False])
+def test_constant_memory(device, requires_grad):
+    """Checks that when updating a metric the memory does not increase."""
+    if not torch.cuda.is_available() and device == "cuda":
+        pytest.skip("Test requires GPU support")
+
+    def get_memory_usage():
+        if device == "cpu":
+            pid = os.getpid()
+            py = psutil.Process(pid)
+            return py.memory_info()[0] / 2.0 ** 30
+        else:
+            return torch.cuda.memory_allocated()
+
+    x = torch.randn(10, requires_grad=requires_grad, device=device)
+
+    # try update method
+    metric = DummyMetricSum().to(device)
+
+    metric.update(x.sum())
+
+    # we allow for 5% flucturation due to measuring
+    base_memory_level = 1.05 * get_memory_usage()
+
+    for _ in range(10):
+        metric.update(x.sum())
+        memory = get_memory_usage()
+        assert base_memory_level >= memory, "memory increased above base level"
+
+    # try forward method
+    metric = DummyMetricSum().to(device)
+    metric(x.sum())
+    base_memory_level = get_memory_usage()
+
+    for _ in range(10):
+        metric.update(x.sum())
+        memory = get_memory_usage()
+        assert base_memory_level >= memory, "memory increased above base level"

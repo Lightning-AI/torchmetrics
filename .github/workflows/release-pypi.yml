@@ -12,6 +12,7 @@ jobs:
   # based on https://github.com/pypa/gh-action-pypi-publish
   build-package:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -33,6 +34,7 @@ jobs:
         path: dist
 
   upload-package:
+    timeout-minutes: 5
     runs-on: ubuntu-20.04
     needs: build-package
     steps:
@@ -52,6 +54,7 @@ jobs:
 
   publish-package:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     needs: build-package
     steps:
     - uses: actions/checkout@v2

@@ -18,6 +18,7 @@ from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _input_format_classification
+from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import DataType
 
 
@@ -45,7 +46,7 @@ def _confusion_matrix_update(
         unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
         minlength = num_classes ** 2
 
-    bins = torch.bincount(unique_mapping, minlength=minlength)
+    bins = _bincount(unique_mapping, minlength=minlength)
     if multilabel:
         confmat = bins.reshape(num_classes, 2, 2)
     else:

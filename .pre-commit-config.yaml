@@ -34,7 +34,7 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-case-conflict
       - id: check-added-large-files
-        args: ['--maxkb=250', '--enforce-all']
+        args: ['--maxkb=100', '--enforce-all']
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
