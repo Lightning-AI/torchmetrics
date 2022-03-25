@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -26,17 +26,26 @@ class StructuralSimilarityIndexMeasure(Metric):
     """Computes Structual Similarity Index Measure (SSIM_).
 
     Args:
-        kernel_size: size of the gaussian kernel
-        sigma: Standard deviation of the gaussian kernel
+        preds: estimated image
+        target: ground truth image
+        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
+        sigma: Standard deviation of the gaussian kernel, anisotropic kernels are possible.
+            Ignored if a uniform kernel is used
+        kernel_size: the size of the uniform kernel, anisotropic kernels are possible.
+            Ignored if a Gaussian kernel is used
         reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
+        return_full_image: If true, the full ``ssim`` image is returned as a second argument.
+            Mutually exclusive with ``return_contrast_sensitivity``
+        return_contrast_sensitivity: If true, the constant term is returned as a second argument.
+            The luminance term can be obtained with luminance=ssim/contrast
+            Mutually exclusive with ``return_full_image``
 
         compute_on_step:
             Forward only calls ``update()`` and returns None if this is set to False.
@@ -66,13 +75,16 @@ class StructuralSimilarityIndexMeasure(Metric):
 
     def __init__(
         self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
+        gaussian_kernel: bool = True,
+        sigma: Union[float, Sequence[float]] = 1.5,
+        kernel_size: Union[int, Sequence[int]] = 11,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         data_range: Optional[float] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         compute_on_step: Optional[bool] = None,
+        return_full_image: bool = False,
+        return_contrast_sensitivity: bool = False,
         **kwargs: Dict[str, Any],
     ) -> None:
         super().__init__(compute_on_step=compute_on_step, **kwargs)
@@ -84,12 +96,15 @@ class StructuralSimilarityIndexMeasure(Metric):
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
-        self.kernel_size = kernel_size
+        self.gaussian_kernel = gaussian_kernel
         self.sigma = sigma
+        self.kernel_size = kernel_size
+        self.reduction = reduction
         self.data_range = data_range
         self.k1 = k1
         self.k2 = k2
-        self.reduction = reduction
+        self.return_full_image = return_full_image
+        self.return_contrast_sensitivity = return_contrast_sensitivity
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
@@ -107,7 +122,17 @@ class StructuralSimilarityIndexMeasure(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ssim_compute(
-            preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range, self.k1, self.k2
+            preds,
+            target,
+            self.gaussian_kernel,
+            self.sigma,
+            self.kernel_size,
+            self.reduction,
+            self.data_range,
+            self.k1,
+            self.k2,
+            self.return_full_image,
+            self.return_contrast_sensitivity,
         )
 
 
@@ -116,11 +141,11 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     Structural Similarity Index Measure by incorporating image details at different resolution scores.
 
     Args:
+        gaussian_kernel: If true (default), a gaussian kernel is used, if false a uniform kernel is used
         kernel_size: size of the gaussian kernel
         sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'elementwise_mean'``: takes the mean
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
@@ -143,6 +168,14 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     Return:
         Tensor with Multi-Scale SSIM score
 
+    Raises:
+        ValueError:
+            If ``kernel_size`` is not an int or a Sequence of ints with size 2 or 3.
+        ValueError:
+            If ``betas`` is not a tuple of floats with lengt 2.
+        ValueError:
+            If ``normalize`` is neither `None`, `ReLU` nor `simple`.
+
     Example:
         >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
         >>> import torch
@@ -164,8 +197,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     def __init__(
         self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
+        gaussian_kernel: bool = True,
+        kernel_size: Union[int, Sequence[int]] = 11,
+        sigma: Union[float, Sequence[float]] = 1.5,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         data_range: Optional[float] = None,
         k1: float = 0.01,
@@ -185,18 +219,25 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-        all_kernel_ints = all(isinstance(ks, int) for ks in kernel_size)
-        if not isinstance(kernel_size, Sequence) or len(kernel_size) != 2 or not all_kernel_ints:
+        if not (isinstance(kernel_size, Sequence) or isinstance(kernel_size, int)):
             raise ValueError(
-                "Argument `kernel_size` expected to be an sequence of size 2 where each element is an int"
-                f" but got {kernel_size}"
+                f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}"
             )
-        self.kernel_size = kernel_size
+        if isinstance(kernel_size, Sequence) and (
+            len(kernel_size) not in (2, 3) or not all(isinstance(ks, int) for ks in kernel_size)
+        ):
+            raise ValueError(
+                "Argument `kernel_size` expected to be an sequence of size 2 or 3 where each element is an int, "
+                f"or a single int. Got {kernel_size}"
+            )
+
+        self.gaussian_kernel = gaussian_kernel
         self.sigma = sigma
+        self.kernel_size = kernel_size
+        self.reduction = reduction
         self.data_range = data_range
         self.k1 = k1
         self.k2 = k2
-        self.reduction = reduction
         if not isinstance(betas, tuple):
             raise ValueError("Argument `betas` is expected to be of a type tuple.")
         if isinstance(betas, tuple) and not all(isinstance(beta, float) for beta in betas):
@@ -224,8 +265,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         return _multiscale_ssim_compute(
             preds,
             target,
-            self.kernel_size,
+            self.gaussian_kernel,
             self.sigma,
+            self.kernel_size,
             self.reduction,
             self.data_range,
             self.k1,
