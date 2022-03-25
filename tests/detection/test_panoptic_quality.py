@@ -21,5 +21,5 @@ from torchmetrics.detection.panoptic_quality import PanopticQuality
 
 def test_empty_metric():
     """Test empty metric."""
-    metric = PanopticQuality()
+    metric = PanopticQuality(things={}, stuffs={})
     metric.compute()
