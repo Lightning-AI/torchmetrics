@@ -16,8 +16,6 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.utilities.prints import rank_zero_warn
-
 METRIC_EPS = 1e-6
 
 
