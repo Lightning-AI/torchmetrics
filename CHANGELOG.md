@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
 
 
-- Added `adaptive_k` for the RetrievalPrecision metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
+- Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
 
 
 ### Changed
