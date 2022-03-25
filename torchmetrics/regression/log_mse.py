@@ -65,7 +65,7 @@ class MeanSquaredLogError(Metric):
         self.add_state("sum_squared_log_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -77,6 +77,6 @@ class MeanSquaredLogError(Metric):
         self.sum_squared_log_error += sum_squared_log_error
         self.total += n_obs
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Compute mean squared logarithmic error over state."""
         return _mean_squared_log_error_compute(self.sum_squared_log_error, self.total)

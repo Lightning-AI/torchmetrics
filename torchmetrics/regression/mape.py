@@ -27,7 +27,7 @@ class MeanAbsolutePercentageError(Metric):
     r"""
     Computes `Mean Absolute Percentage Error`_ (MAPE):
 
-    .. math:: \text{MAPE} = \frac{1}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, y_i)}
+    .. math:: \text{MAPE} = \frac{1}{n}\sum_{i=1}^n\frac{|   y_i - \hat{y_i} |}{\max(\epsilon, | y_i |)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
@@ -73,7 +73,7 @@ class MeanAbsolutePercentageError(Metric):
         self.add_state("sum_abs_per_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -85,6 +85,6 @@ class MeanAbsolutePercentageError(Metric):
         self.sum_abs_per_error += sum_abs_per_error
         self.total += num_obs
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes mean absolute percentage error over state."""
         return _mean_absolute_percentage_error_compute(self.sum_abs_per_error, self.total)

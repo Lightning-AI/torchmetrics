@@ -17,8 +17,10 @@ from functools import partial
 import pytest
 import torch
 from pystoi import stoi as stoi_backend
+from scipy.io import wavfile
 from torch import Tensor
 
+from tests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
@@ -130,14 +132,8 @@ def test_error_on_different_shape(metric_class=ShortTimeObjectiveIntelligibility
 
 
 def test_on_real_audio():
-    import os
-
-    from scipy.io import wavfile
-
-    current_file_dir = os.path.dirname(__file__)
-
-    rate, ref = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech.wav"))
-    rate, deg = wavfile.read(os.path.join(current_file_dir, "examples/audio_speech_bab_0dB.wav"))
+    rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
+    rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     assert torch.allclose(
         short_time_objective_intelligibility(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
         torch.tensor(0.6739177),

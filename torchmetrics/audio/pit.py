@@ -91,7 +91,7 @@ class PermutationInvariantTraining(Metric):
         self.add_state("sum_pit_metric", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def _update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Update state with predictions and targets.
 
         Args:
@@ -103,6 +103,6 @@ class PermutationInvariantTraining(Metric):
         self.sum_pit_metric += pit_metric.sum()
         self.total += pit_metric.numel()
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         """Computes average PermutationInvariantTraining metric."""
         return self.sum_pit_metric / self.total
