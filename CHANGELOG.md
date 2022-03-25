@@ -60,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allowed reduction `None` ([#891](https://github.com/PyTorchLightning/metrics/pull/891))
 
 
+- `MetricTracker.best_metric` will now give a warning when computing on metric that do not have a best ([#913](https://github.com/PyTorchLightning/metrics/pull/913))
+
+
 ### Deprecated
 
 - Deprecated argument `compute_on_step` ([#792](https://github.com/PyTorchLightning/metrics/pull/792))
