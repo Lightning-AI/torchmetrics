@@ -58,7 +58,7 @@ def _gaussian_kernel_2d(
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1])
 
 
-def _get_uniform_weight_and_bias_for_conv2d(inputs: Tensor, window_size: int) -> Tuple[Tensor, Tensor]:
+def _uniform_weight_bias_conv2d(inputs: Tensor, window_size: int) -> Tuple[Tensor, Tensor]:
     """Construct uniform weight and bias for a 2d convolution.
 
     Args:
@@ -92,7 +92,7 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int) -> Tensor:
     return torch.cat((x, inputs, y), dim)
 
 
-def _reflection_pad2d(inputs: Tensor, pad: int) -> Tensor:
+def _reflection_pad_2d(inputs: Tensor, pad: int) -> Tensor:
     """Applies reflection padding to the input image.
 
     Args:
@@ -117,8 +117,8 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
     Return:
         Image transformed with the uniform input
     """
-    inputs = _reflection_pad2d(inputs, window_size // 2)
-    kernel_weight, kernel_bias = _get_uniform_weight_and_bias_for_conv2d(inputs, window_size)
+    inputs = _reflection_pad_2d(inputs, window_size // 2)
+    kernel_weight, kernel_bias = _uniform_weight_bias_conv2d(inputs, window_size)
     inputs = F.conv2d(inputs, kernel_weight, kernel_bias)
     return inputs
 
@@ -163,7 +163,8 @@ def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Te
         inputs = F.pad(inputs, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
     else:
         rank_zero_warn(
-            "An older version of pyTorch is used. For optimal speed, please upgrade to at least pyTorch 1.10."
+            "An older version of pyTorch is used."
+            " For optimal speed, please upgrade to at least PyTorch v1.10 or higher."
         )
         for dim, pad in enumerate([pad_h, pad_w, pad_d]):
             inputs = _single_dimension_pad(inputs, dim + 2, pad)
