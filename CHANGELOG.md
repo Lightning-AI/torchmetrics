@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new image metric `ErrorRelativeGlobalDimensionlessSynthesis` ([#894](https://github.com/PyTorchLightning/metrics/pull/894))
 
 
+- Added support for 3D image and uniform kernel in `StructuralSimilarityIndexMeasure` ([#818](https://github.com/PyTorchLightning/metrics/pull/818))
+
+
 - Added smart update of `MetricCollection` ([#709](https://github.com/PyTorchLightning/metrics/pull/709))
 
 
