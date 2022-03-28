@@ -21,5 +21,15 @@ from torchmetrics.detection.panoptic_quality import PanopticQuality
 
 def test_empty_metric():
     """Test empty metric."""
-    metric = PanopticQuality(things={}, stuffs={})
+    metric = PanopticQuality(things={}, stuffs={}, void=0)
+    metric.compute()
+
+
+def test_random_input():
+    """Test evaluation on random image."""
+    metric = PanopticQuality(things={0: "person", 1: "dog", 3: "cat"}, stuffs={6: "sky", 8: "grass"}, void=255)
+    height, width = 300, 400
+    preds = torch.randint(low=0, high=9, size=(height, width, 2))
+    target = torch.randint(low=0, high=9, size=(height, width, 2))
+    metric.update(preds, target)
     metric.compute()

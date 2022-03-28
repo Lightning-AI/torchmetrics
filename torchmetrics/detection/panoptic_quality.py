@@ -20,6 +20,23 @@ from torch import IntTensor, Tensor
 from torchmetrics.metric import Metric
 
 
+def _recursive_tuple(lists: List):
+    return tuple(map(_recursive_tuple, lists)) if isinstance(lists, list) else lists
+
+
+def _totuple(t: torch.Tensor):
+    return _recursive_tuple(t.tolist())
+
+
+def _get_color_areas(img: torch.Tensor, color_pixel_dimension: int = 1):
+    """Calculate a dictionary {pixel_color: area}."""
+    # flatten height*width dimensions
+    flatten_img = torch.flatten(img, 0, -1 - color_pixel_dimension)
+    unique_keys, unique_keys_area = torch.unique(flatten_img, dim=0, return_counts=True)
+    # dictionary indexed by color tuples
+    return dict(zip(_totuple(unique_keys), unique_keys_area))
+
+
 class PanopticQuality(Metric):
     r"""
     Computes the `Panoptic Quality (PQ) <https://arxiv.org/abs/1801.00868>`_
@@ -54,34 +71,59 @@ class PanopticQuality(Metric):
     false_positives: List[Tensor]
     false_negatives: List[Tensor]
 
-    def __init__(
-        self, things: Dict[int, str], stuffs: Dict[int, str], void: Optional[int] = None, dist_sync_on_step=False
-    ):
+    def __init__(self, things: Dict[int, str], stuffs: Dict[int, str], void: int, dist_sync_on_step=False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
         if set(stuffs.keys()) & set(things.keys()):
             raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys.")
-        if void and void in stuffs.keys():
+        if void in stuffs.keys():
             raise ValueError("Expected arguments `void` and `stuffs` to have distinct keys.")
-        if void and void in things.keys():
+        if void in things.keys():
             raise ValueError("Expected arguments `void` and `things` to have distinct keys.")
 
         self.things = things
         self.stuffs = stuffs
         self.void = void
+        self.void_color = (self.void, 0)
         n_categories = len(things) + len(stuffs)
 
         # things metrics are stored with a continous id in [0, len(things)[,
-        thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things.key())}
+        thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things.keys())}
         # stuff metrics are stored with a continous id in [len(things), len(things) + len(stuffs)[
-        stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs.key())}
-        self.cat_id_to_continuous_id = dict(thing_id_to_continuous_id, **stuff_id_to_continuous_id)
+        stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs.keys())}
+        self.cat_id_to_continuous_id = {}
+        self.cat_id_to_continuous_id.update(thing_id_to_continuous_id)
+        self.cat_id_to_continuous_id.update(stuff_id_to_continuous_id)
 
         # per category intemediate metrics
         self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
         self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
+
+    def _is_same_instance(self, pred_color, target_color):
+        """
+        Check that the two colors refer to the same instance,
+        by checking both the category and instance id for things,
+        but only category id for stuffs.
+        """
+        if pred_color[0] != target_color[0]:
+            return False
+        category_id = pred_color[0]
+        if category_id in self.stuffs:
+            return True
+        return pred_color[1] == target_color[1]
+
+    def _prepocess_image(self, img: torch.Tensor) -> torch.Tensor:
+        # torch.isin not present in older version of torch
+        img = img.numpy()
+        stuffs_pixels = np.isin(img[:, :, 0], list(self.stuffs.keys()))
+        things_pixels = np.isin(img[:, :, 0], list(self.things.keys()))
+        # reset instance ids of stuffs
+        img[stuffs_pixels, 1] = 0
+        # reset unknown categories to void
+        img[~(things_pixels | stuffs_pixels)] = self.void_color
+        return torch.tensor(img)
 
     def update(
         self,
@@ -108,61 +150,74 @@ class PanopticQuality(Metric):
         # TODO: handle case where self.void is not None
         # TODO: consider out of class pixels as void
         # TODO: handle is_crowd?
+        # TODO: ignore instance_id of stuffs
+        preds = self._prepocess_image(preds)
+        target = self._prepocess_image(target)
 
         if preds.shape != target.shape:
             raise ValueError("Expected argument `preds` and `target` to have the same shape")
         if preds.dim() != 3 or preds.shape[-1] != 2:
             raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
 
-        # flatten height*width dimensions
-        flatten_preds = torch.flatten(preds, 0, 1)
-        flatten_target = torch.flatten(target, 0, 1)
         # calculate the area of each prediction, ground truth and pairwise intersection
-        pred_areas = dict(torch.unique(flatten_preds, dim=0, return_counts=True))
-        target_areas = dict(torch.unique(flatten_target, dim=0, return_counts=True))
-        intersection_matrix = torch.stack((preds, target), -1)
-        intersection_areas = dict(torch.unique(intersection_matrix, dim=0, return_counts=True))
+        pred_areas = _get_color_areas(preds, color_pixel_dimension=1)
+        target_areas = _get_color_areas(target, color_pixel_dimension=1)
+        intersection_matrix = torch.transpose(torch.stack((preds, target), -1), -1, -2)
+        intersection_areas = _get_color_areas(intersection_matrix, color_pixel_dimension=2)
 
         # select intersection of things of same category with iou > 0.5
         pred_segment_matched = set()
         target_segment_matched = set()
-        for (pred_color, target_color), intersection_area in intersection_areas:
-            if pred_color[0] == target_color[0] and pred_color[0] in self.things.keys():
-                prediction_area = pred_areas[pred_color]
-                target_area = target_areas[target_color]
-                iou = (prediction_area + target_area - intersection_area) / intersection_area
+        for (pred_color, target_color), intersection_area in intersection_areas.items():
+            if not self._is_same_instance(pred_color, target_color):
+                continue
 
-                if iou > 0.5:
-                    pred_segment_matched.add(pred_color)
-                    target_segment_matched.add(target_color)
-                    continuous_id = self.cat_id_to_continuous_id[pred_color[0]]
-                    self.iou_sum[continuous_id] += iou
-                    self.true_positives[continuous_id] += 1
+            # ignore unknown categories
+            if pred_color[0] not in self.cat_id_to_continuous_id:
+                continue
+
+            continuous_id = self.cat_id_to_continuous_id[pred_color[0]]
+            prediction_area = pred_areas[pred_color]
+            target_area = target_areas[target_color]
+            iou = intersection_area / (prediction_area + target_area - intersection_area)
+
+            if iou > 0.5:
+                pred_segment_matched.add(pred_color)
+                target_segment_matched.add(target_color)
+                self.iou_sum[continuous_id] += iou
+                self.true_positives[continuous_id] += 1
 
         # count false negative: ground truth but not matched
         false_negatives = set(target_areas.keys()).difference(target_segment_matched)
         for category_id, _ in false_negatives:
+
+            # ignore unknown categories
+            if category_id not in self.cat_id_to_continuous_id:
+                continue
+
             continuous_id = self.cat_id_to_continuous_id[category_id]
             self.false_negatives[continuous_id] += 1
 
         # count false positive: predicted but not matched
         false_positives = set(pred_areas.keys()).difference(pred_segment_matched)
         for category_id, _ in false_positives:
+
+            # ignore unknown categories
+            if category_id not in self.cat_id_to_continuous_id:
+                continue
+
             continuous_id = self.cat_id_to_continuous_id[category_id]
             self.false_positives[continuous_id] += 1
 
     def compute(self):
-        # TODO: exclude from mean categories that are never seen
+        # TODO: exclude from mean categories that are never seen ?
         # TODO: per class metrics
 
         # per category calculation
-        panoptic_quality = self.iou_sum / (
-            self.true_positives + 0.5 * self.false_positives + 0.5 * self.false_negatives
-        )
-        segmentation_quality = torch.where(self.true_positives > 0, self.iou_sum / self.true_positives, 0.0)
-        recognition_quality = self.true_positives / (
-            self.true_positives + 0.5 * self.false_positives + 0.5 * self.false_negatives
-        )
+        denominator = self.true_positives + 0.5 * self.false_positives + 0.5 * self.false_negatives
+        panoptic_quality = torch.where(denominator > 0.0, self.iou_sum / denominator, 0.0)
+        segmentation_quality = torch.where(self.true_positives > 0.0, self.iou_sum / self.true_positives, 0.0)
+        recognition_quality = torch.where(denominator > 0.0, self.true_positives / denominator, 0.0)
 
         metrics = dict(
             all=dict(
