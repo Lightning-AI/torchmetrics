@@ -1,16 +1,9 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
-import numpy as np
 import torch
-from deprecate import deprecated, void
-from PIL import Image
 from torch import Tensor
 from torch.nn import functional as F
-from torchvision import transforms
 from typing_extensions import Literal
-
-from torchmetrics.functional.image.helper import _gaussian_kernel
-from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -67,7 +60,7 @@ def _scc_compute(
         ValueError:
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
         ValueError:
-            If the length of ``kernel_size`` or ``sigma`` is not ``2``.
+            If the length of ``kernel_size`` is not ``2``.
         ValueError:
             If one of the elements of ``kernel_size`` is not an ``odd positive number``."""
 
@@ -161,7 +154,7 @@ def spatial_correlation_coefficient(
         ValueError:
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
         ValueError:
-            If the length of ``kernel_size`` or ``sigma`` is not ``2``.
+            If the length of ``kernel_size``  is not ``2``.
         ValueError:
             If one of the elements of ``kernel_size`` is not an ``odd positive number``.
 
