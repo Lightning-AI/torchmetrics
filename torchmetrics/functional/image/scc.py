@@ -8,81 +8,175 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.functional.image.helper import _gaussian_kernel
 from torchmetrics.utilities.distributed import reduce
+import numpy as np
 
-def filter_process(img,fltr,mode='same'):
-    output = F.conv2d(img.unsqueeze(0).unsqueeze(0), torch.rot90(fltr, 2).unsqueeze(0).unsqueeze(0), padding=mode)
-
-    return output.squeeze(0).squeeze(0)
-
-def _get_sums(Input_Image,Noisy_Image,win,mode='same'):
-    mu1, mu2 = (filter_process(Input_Image, win, mode), filter_process(Noisy_Image, win, mode))
-    return mu1 * mu1, mu2 * mu2, mu1 * mu2
+from torchvision import transforms
+from PIL import Image
 
 
 
-def _get_sigmas(Input_Image,Noisy_Image,win,mode='same'):
-    Input_Image_sum_sq, Noisy_Image_sum_sq, Input_Image_Noisy_Image_sum_mul = _get_sums(Input_Image, Noisy_Image, win, mode)
-    outputs = filter_process(Input_Image*Input_Image, win, mode) - Input_Image_sum_sq,\
-              filter_process(Noisy_Image*Noisy_Image,win,mode) - Noisy_Image_sum_sq,\
-              filter_process(Input_Image*Noisy_Image,win,mode) - Input_Image_Noisy_Image_sum_mul
-
-    return outputs
-
-
-
-
-def _scc_single(Input_Image,Noisy_Image,Window,Window_Size):
-
-    win = torch.ones((Window_Size, Window_Size))/Window_Size**2
-    sigma_Input_Image_sq, sigma_Noisy_Image_sq, sigma_Input_Image_Noisy_Image = _get_sigmas(Input_Image, Noisy_Image, win)
-    sigma_Input_Image_sq[sigma_Input_Image_sq < 0] = 0
-    sigma_Noisy_Image_sq[sigma_Noisy_Image_sq < 0] = 0
-
-    den = torch.sqrt(sigma_Input_Image_sq) * torch.sqrt(sigma_Noisy_Image_sq)
-
-    idx = (den == 0)
-
-    den[ den == 0 ] = 1
-
-    scc = sigma_Input_Image_Noisy_Image/den
-
-    scc[idx] = 0
-
-    return scc
-
-def spatial_correlation_coefficient(
-        Input_Image: Tensor,
-        Noisy_Image: Tensor,
-        Window: List[int] = [[[-1,-1,-1],[-1,8,-1],[-1,-1,-1]]],
-        Window_Size: int = 8,
-):
-    """calculates spatial correlation coeffcient
-       :param Input_Image: first original image
-       :param Noisy_Image: second deformed image
-       :param Window: High Pass Filter for spatial processing
-       :param Window_Size: sliding window size default = 8
-       :returns:  float -- scc value.
+def _scc_update(preds:Tensor, targets:Tensor):
+    """Updates and returns variables required to compute Spatial Correlation Coefficient. Checks for same shape and
+       type of the input tensors.
+       Args:
+           preds: Predicted tensor
+           targets: Ground truth tensor
        """
 
+    if preds.dtype != targets.dtype:
+        raise TypeError(
+            "Expected `preds` and `target` to have the same data type."
+            f" Got preds: {preds.dtype} and target: {targets.dtype}."
+        )
+    _check_same_shape(preds, targets)
+    if len(preds.shape) != 4:
+        raise ValueError(
+            "Expected `preds` and `target` to have BxCxHxW shape."
+            f" Got preds: {preds.shape} and target: {targets.shape}."
+        )
+    return preds, targets
 
-    coefs = torch.zeros(Input_Image.shape)
+def _scc_compute(
+        preds: Tensor,
+        targets: Tensor,
+        kernel_size: Sequence[int] = (8,8),
+        reduction: Sequence[Literal['elementwise_mean', 'sum', 'none']] = 'elementwise_mean'
+):
 
-    for i in range(Input_Image.shape[0]):
-        coefs[i,:,:] = _scc_single(Input_Image[i,:,:],Noisy_Image[i,:,:],Window,Window_Size)
+    '''Args:
+        preds: estimated image
+        targets: ground truth image
+        kernel_size: size of the Uniform kernel (default: (9, 9))
 
-    scc = torch.mean(coefs)
+        reduction: a method to reduce metric score over labels.
 
-    return scc
+            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
+            - ``'none'``: no reduction will be applied
 
 
-if __name__ == '__main__':
-    a = torch.rand((3,10, 10))
-    b = torch.rand((3,10, 10))
-    c = torch.rand((3,3))
-    ots = spatial_correlation_coefficient(a,b,c,8)
-    print(ots)
+    Return:
+        Tensor with Spatial Correlation Coefficient score
 
+    Raises:
+        TypeError:
+            If ``preds`` and ``target`` don't have the same data type.
+        ValueError:
+            If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
+        ValueError:
+            If the length of ``kernel_size`` or ``sigma`` is not ``2``.
+        ValueError:
+            If one of the elements of ``kernel_size`` is not an ``odd positive number``.'''
+
+    if len(kernel_size) != 2 :
+        raise ValueError(
+            "Expected `kernel_size` and `sigma` to have the length of two."
+            f" Got kernel_size: {len(kernel_size)}."
+        )
+
+    if any(x % 2 == 0 or x <= 0 for x in kernel_size):
+        raise ValueError(f"Expected `kernel_size` to have odd positive number. Got {kernel_size}.")
+
+    batch_size = preds.shape[0]
+
+    classes = preds.shape[1]
+
+
+    coefs = torch.zeros((batch_size,classes,preds.shape[2],preds.shape[3]))
+
+    kernel = torch.div(torch.ones((1,1,kernel_size[0],kernel_size[1])), kernel_size[0]*kernel_size[1])
+
+
+    for i in range(classes):
+
+        mu1, mu2 = F.conv2d(preds[:,i,:,:].unsqueeze(1), kernel, padding='same'), F.conv2d(targets[:,i,:,:].unsqueeze(1), kernel,padding='same')
+
+
+
+        preds_sum_sq, targets_sum_sq, preds_targets_sum_mul = mu1 * mu1, mu2 * mu2, mu1 * mu2
+
+        outputs = F.conv2d(preds[:,i,:,:].unsqueeze(1) * preds[:,i,:,:].unsqueeze(1), kernel, padding='same') - preds_sum_sq, \
+                  F.conv2d(targets[:,i,:,:].unsqueeze(1) * targets[:,i,:,:].unsqueeze(1), kernel, padding='same') - targets_sum_sq, \
+                  F.conv2d(preds[:,i,:,:].unsqueeze(1) * targets[:,i,:,:].unsqueeze(1), kernel, padding='same') - preds_targets_sum_mul
+
+        sigma_preds_sq, sigma_targets_sq, sigma_preds_targets = outputs
+
+        sigma_preds_sq[sigma_preds_sq < 0] = 0
+        sigma_targets_sq[sigma_targets_sq < 0] = 0
+
+        den = torch.sqrt(sigma_preds_sq) * torch.sqrt(sigma_targets_sq)
+
+        idx = (den == 0)
+
+        den[den == 0] = 1
+
+        scc = sigma_preds_targets / den
+
+        scc[idx] = 0
+
+        coefs[:,i,:,:] = scc.squeeze(1)
+
+
+    batch_score = []
+    for i in range(scc.shape[0]):
+        batch_score.append(torch.mean(scc[i, :, :, :]))
+
+    final_batch_score = torch.as_tensor(batch_score)
+
+    final_batch_score = reduce(final_batch_score, reduction=reduction)
+
+    return final_batch_score
+
+
+
+def spatial_correlation_coefficient(
+        preds: Tensor,
+        targets: Tensor,
+        kernel_size: Sequence[int] = (9, 9),
+        reduction: Sequence[Literal['elementwise_mean', 'sum', 'none']] = 'elementwise_mean'
+) -> Tensor:
+    ''' Spatial Correlation Coefficient
+
+    Args:
+        preds: estimated image
+        targets: ground truth image
+        kernel_size: size of the Uniform kernel (default: (9, 9))
+
+        reduction: a method to reduce metric score over labels.
+
+            - ``'elementwise_mean'``: takes the mean (default)
+            - ``'sum'``: takes the sum
+            - ``'none'``: no reduction will be applied
+
+
+    Return:
+        Tensor with Spatial Correlation Coefficient score
+
+    Raises:
+        TypeError:
+            If ``preds`` and ``target`` don't have the same data type.
+        ValueError:
+            If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
+        ValueError:
+            If the length of ``kernel_size`` or ``sigma`` is not ``2``.
+        ValueError:
+            If one of the elements of ``kernel_size`` is not an ``odd positive number``.
+
+
+
+        Example:
+        >>> from torchmetrics.functional.image.scc import spatial_correlation_coefficient
+        >>> preds = torch.rand([16, 3, 16, 16])
+        >>> target = torch.rand([16, 3, 16, 16])
+        >>> spatial_correlation_coefficient(preds, target)
+        tensor(0.3511)
+    '''
+
+    preds,targets = _scc_update(preds, targets)
+
+    return _scc_compute(preds, targets, kernel_size, reduction)
 
 
 
