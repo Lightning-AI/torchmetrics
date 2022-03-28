@@ -94,20 +94,20 @@ def _scc_compute(
                 preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            )
-            - preds_sum_sq,
+            )\
+            - preds_sum_sq,\
             F.conv2d(
                 targets[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            )
-            - targets_sum_sq,
+            )\
+            - targets_sum_sq,\
             F.conv2d(
                 preds[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            )
-            - preds_targets_sum_mul,
+            )\
+            - preds_targets_sum_mul,\
         )
 
         sigma_preds_sq, sigma_targets_sq, sigma_preds_targets = outputs
