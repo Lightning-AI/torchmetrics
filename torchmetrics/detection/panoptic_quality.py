@@ -71,26 +71,26 @@ class PanopticQuality(Metric):
     false_positives: List[Tensor]
     false_negatives: List[Tensor]
 
-    def __init__(self, things: Dict[int, str], stuffs: Dict[int, str], void: int, dist_sync_on_step=False):
+    def __init__(self, things: Dict[int, str], stuff: Dict[int, str], void: int, dist_sync_on_step=False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
-        if set(stuffs.keys()) & set(things.keys()):
+        if set(stuff.keys()) & set(things.keys()):
             raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys.")
-        if void in stuffs.keys():
+        if void in stuff.keys():
             raise ValueError("Expected arguments `void` and `stuffs` to have distinct keys.")
         if void in things.keys():
             raise ValueError("Expected arguments `void` and `things` to have distinct keys.")
 
         self.things = things
-        self.stuffs = stuffs
+        self.stuff = stuff
         self.void = void
         self.void_color = (self.void, 0)
-        n_categories = len(things) + len(stuffs)
+        n_categories = len(things) + len(stuff)
 
         # things metrics are stored with a continous id in [0, len(things)[,
         thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things.keys())}
         # stuff metrics are stored with a continous id in [len(things), len(things) + len(stuffs)[
-        stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs.keys())}
+        stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuff.keys())}
         self.cat_id_to_continuous_id = {}
         self.cat_id_to_continuous_id.update(thing_id_to_continuous_id)
         self.cat_id_to_continuous_id.update(stuff_id_to_continuous_id)
@@ -110,14 +110,14 @@ class PanopticQuality(Metric):
         if pred_color[0] != target_color[0]:
             return False
         category_id = pred_color[0]
-        if category_id in self.stuffs:
+        if category_id in self.stuff:
             return True
         return pred_color[1] == target_color[1]
 
     def _prepocess_image(self, img: torch.Tensor) -> torch.Tensor:
         # torch.isin not present in older version of torch
         img = img.numpy()
-        stuffs_pixels = np.isin(img[:, :, 0], list(self.stuffs.keys()))
+        stuffs_pixels = np.isin(img[:, :, 0], list(self.stuff.keys()))
         things_pixels = np.isin(img[:, :, 0], list(self.things.keys()))
         # reset instance ids of stuffs
         img[stuffs_pixels, 1] = 0
@@ -147,10 +147,9 @@ class PanopticQuality(Metric):
                 If ``preds`` or ``target`` has wrong shape.
         """
 
-        # TODO: handle case where self.void is not None
-        # TODO: consider out of class pixels as void
-        # TODO: handle is_crowd?
-        # TODO: ignore instance_id of stuffs
+        # TODO: handle group label?
+        # TODO: handle void regions in IOU calculation
+
         preds = self._prepocess_image(preds)
         target = self._prepocess_image(target)
 
@@ -171,11 +170,8 @@ class PanopticQuality(Metric):
         for (pred_color, target_color), intersection_area in intersection_areas.items():
             if not self._is_same_instance(pred_color, target_color):
                 continue
-
-            # ignore unknown categories
-            if pred_color[0] not in self.cat_id_to_continuous_id:
+            if pred_color[0] == self.void:
                 continue
-
             continuous_id = self.cat_id_to_continuous_id[pred_color[0]]
             prediction_area = pred_areas[pred_color]
             target_area = target_areas[target_color]
@@ -190,22 +186,16 @@ class PanopticQuality(Metric):
         # count false negative: ground truth but not matched
         false_negatives = set(target_areas.keys()).difference(target_segment_matched)
         for category_id, _ in false_negatives:
-
-            # ignore unknown categories
-            if category_id not in self.cat_id_to_continuous_id:
+            if category_id == self.void:
                 continue
-
             continuous_id = self.cat_id_to_continuous_id[category_id]
             self.false_negatives[continuous_id] += 1
 
         # count false positive: predicted but not matched
         false_positives = set(pred_areas.keys()).difference(pred_segment_matched)
         for category_id, _ in false_positives:
-
-            # ignore unknown categories
-            if category_id not in self.cat_id_to_continuous_id:
+            if category_id == self.void:
                 continue
-
             continuous_id = self.cat_id_to_continuous_id[category_id]
             self.false_positives[continuous_id] += 1
 
@@ -214,7 +204,7 @@ class PanopticQuality(Metric):
         # TODO: per class metrics
 
         # per category calculation
-        denominator = self.true_positives + 0.5 * self.false_positives + 0.5 * self.false_negatives
+        denominator = (self.true_positives + 0.5 * self.false_positives + 0.5 * self.false_negatives).double()
         panoptic_quality = torch.where(denominator > 0.0, self.iou_sum / denominator, 0.0)
         segmentation_quality = torch.where(self.true_positives > 0.0, self.iou_sum / self.true_positives, 0.0)
         recognition_quality = torch.where(denominator > 0.0, self.true_positives / denominator, 0.0)
@@ -224,7 +214,7 @@ class PanopticQuality(Metric):
                 pq=torch.mean(panoptic_quality),
                 rq=torch.mean(recognition_quality),
                 sq=torch.mean(segmentation_quality),
-                n=len(self.things) + len(self.stuffs),
+                n=len(self.things) + len(self.stuff),
             ),
             things=dict(
                 pq=torch.mean(panoptic_quality[: len(self.things)]),
@@ -236,7 +226,7 @@ class PanopticQuality(Metric):
                 pq=torch.mean(panoptic_quality[len(self.things) :]),
                 rq=torch.mean(recognition_quality[len(self.things) :]),
                 sq=torch.mean(segmentation_quality[len(self.things) :]),
-                n=len(self.stuffs),
+                n=len(self.stuff),
             ),
         )
 
