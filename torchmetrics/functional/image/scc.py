@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import  Optional, Sequence
 
 import torch
 from torch import Tensor
@@ -35,8 +35,8 @@ def _scc_update(preds: Tensor, targets: Tensor):
 def _scc_compute(
     preds: Tensor,
     targets: Tensor,
-    kernel_size: Sequence[int] = (8, 8),
-    reduction: Sequence[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
+    kernel_size: Optional[Sequence[int]] = (9, 9),
+    reduction: Optional[Sequence[Literal["elementwise_mean", "sum", "none"]]] = "elementwise_mean",
 ):
 
     """Args:
@@ -89,11 +89,23 @@ def _scc_compute(
         preds_sum_sq, targets_sum_sq, preds_targets_sum_mul = mu1 * mu1, mu2 * mu2, mu1 * mu2
 
         outputs = (
-            F.conv2d(preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1), kernel, padding="same")
+            F.conv2d(
+                preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1),
+                kernel,
+                padding="same",
+            )
             - preds_sum_sq,
-            F.conv2d(targets[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1), kernel, padding="same")
+            F.conv2d(
+                targets[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1),
+                kernel,
+                padding="same",
+            )
             - targets_sum_sq,
-            F.conv2d(preds[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1), kernel, padding="same")
+            F.conv2d(
+                preds[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1),
+                kernel,
+                padding="same",
+            )
             - preds_targets_sum_mul,
         )
 
@@ -128,8 +140,8 @@ def _scc_compute(
 def spatial_correlation_coefficient(
     preds: Tensor,
     targets: Tensor,
-    kernel_size: Sequence[int] = (9, 9),
-    reduction: Sequence[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
+    kernel_size: Optional[Sequence[int]] = (9, 9),
+    reduction: Optional[Sequence[Literal["elementwise_mean", "sum", "none"]]]= "elementwise_mean",
 ) -> Tensor:
     """Spatial Correlation Coefficient.
 
