@@ -38,7 +38,7 @@ def test_random_input():
     metric.compute()
 
 
-def test_aaa_correct_preds_input():
+def test_correct_preds_input():
     """Test evaluation on random image."""
     metric = PanopticQuality(things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"})
     height, width = 300, 400
@@ -49,3 +49,35 @@ def test_aaa_correct_preds_input():
         assert metric[metric_class]["pq"] == 1.0
         assert metric[metric_class]["rq"] == 1.0
         assert metric[metric_class]["sq"] == 1.0
+
+
+def test_error_on_wrong_input():
+    """Test class input validation."""
+
+    with pytest.raises(ValueError):
+        PanopticQuality(things={"person": 0}, stuff={1: "sky"})
+
+    with pytest.raises(ValueError):
+        PanopticQuality(things={0: "person"}, stuff={"sky": 1})
+
+    with pytest.raises(ValueError):
+        PanopticQuality(things={0: "person"}, stuff={0: "sky"})
+
+    metric = PanopticQuality(things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"})
+    valid_image = torch.randint(low=0, high=9, size=(400, 300, 2))
+    metric.update(valid_image, valid_image)
+
+    with pytest.raises(ValueError):
+        metric.update([], valid_image)  # type: ignore
+
+    with pytest.raises(ValueError):
+        metric.update(valid_image, [])  # type: ignore
+
+    with pytest.raises(ValueError):
+        preds = torch.randint(low=0, high=9, size=(400, 300, 2))
+        target = torch.randint(low=0, high=9, size=(300, 400, 2))
+        metric.update(preds, target)
+
+    with pytest.raises(ValueError):
+        preds = torch.randint(low=0, high=9, size=(400, 300))
+        metric.update(preds, preds)

@@ -12,29 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from xmlrpc.client import boolean
 import numpy as np
 from typing import Any, Dict, List
 import torch
 from torch import Tensor
+from typing import Tuple
 
 from torchmetrics.metric import Metric
 
 
-def _nested_tuple(nested_list: List):
+def _nested_tuple(nested_list: List) -> Tuple:
     """Construct a nested tuple from a nested list."""
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
 
 
-def _totuple(t: torch.Tensor):
+def _totuple(t: torch.Tensor) -> Tuple:
     """Convert a tensor into a nested tuple."""
     return _nested_tuple(t.tolist())
 
 
-def _get_color_areas(img: torch.Tensor):
+def _get_color_areas(img: torch.Tensor) -> Dict:
     """Calculate a dictionary {pixel_color: area}."""
     unique_keys, unique_keys_area = torch.unique(img, dim=0, return_counts=True)
     # dictionary indexed by color tuples
     return dict(zip(_totuple(unique_keys), unique_keys_area))
+
+
+def _is_dict_int_str(value) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(map(type, value.keys())).issubset({int})
+        and set(map(type, value.values())).issubset({str})
+    )
 
 
 class PanopticQuality(Metric):
@@ -72,6 +82,12 @@ class PanopticQuality(Metric):
     def __init__(self, things: Dict[int, str], stuff: Dict[int, str], dist_sync_on_step=False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
+        if not _is_dict_int_str(things):
+            raise ValueError("Expected argument `things` to be of type `Dict[int, str]`")
+
+        if not _is_dict_int_str(stuff):
+            raise ValueError("Expected argument `stuff` to be of type `Dict[int, str]`")
+
         if set(stuff.keys()) & set(things.keys()):
             raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys.")
 
@@ -79,8 +95,8 @@ class PanopticQuality(Metric):
         self.stuff = stuff
 
         # void color to mark unlabelled regions
-        void_category_id = 1 + max(max(things), max(stuff))
-        self.void_color = (void_category_id, 0)
+        unused_category_id = 1 + max([0] + list(things) + list(stuff))
+        self.void_color = (unused_category_id, 0)
         n_categories = len(things) + len(stuff)
 
         # things metrics are stored with a continous id in [0, len(things)[,
@@ -96,6 +112,16 @@ class PanopticQuality(Metric):
         self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
+
+    def _validate_inputs(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+        if not isinstance(preds, torch.Tensor):
+            raise ValueError("Expected argument `preds` to be of type `torch.Tensor`")
+        if not isinstance(target, torch.Tensor):
+            raise ValueError("Expected argument `target` to be of type `torch.Tensor`")
+        if preds.shape != target.shape:
+            raise ValueError("Expected argument `preds` and `target` to have the same shape")
+        if preds.dim() != 3 or preds.shape[-1] != 2:
+            raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
 
     def _prepocess_image(self, img: torch.Tensor) -> torch.Tensor:
         # flatten the height*width dimensions
@@ -131,12 +157,7 @@ class PanopticQuality(Metric):
         """
 
         # TODO: handle group label?
-
-        if preds.shape != target.shape:
-            raise ValueError("Expected argument `preds` and `target` to have the same shape")
-        if preds.dim() != 3 or preds.shape[-1] != 2:
-            raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
-
+        self._validate_inputs(preds, target)
         preds = self._prepocess_image(preds)
         target = self._prepocess_image(target)
 
