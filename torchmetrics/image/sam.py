@@ -11,78 +11,66 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, List
 
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.uqi import _uqi_compute, _uqi_update
+from torchmetrics.functional.image.sam import _sam_compute, _sam_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class UniversalImageQualityIndex(Metric):
-    """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
+class SpectralAngleMapper(Metric):
+    """The Spectral Angle Mapper determines the spectral similarity between image spectra and reference spectra by
+    calculating the angle between the spectra, where small angles between indicate high similarity and high angles
+    indicate low similarity.
 
     Args:
-        kernel_size: size of the gaussian kernel
-        sigma: Standard deviation of the gaussian kernel
         reduction: a method to reduce metric score over labels.
-
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Return:
-        Tensor with UniversalImageQualityIndex score
+        Tensor with SpectralAngleMapper score
 
     Example:
         >>> import torch
-        >>> from torchmetrics import UniversalImageQualityIndex
-        >>> preds = torch.rand([16, 1, 16, 16])
-        >>> target = preds * 0.75
-        >>> uqi = UniversalImageQualityIndex()
-        >>> uqi(preds, target)
-        tensor(0.9216)
+        >>> from torchmetrics import SpectralAngleMapper
+        >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
+        >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+        >>> sam = SpectralAngleMapper()
+        >>> sam(preds, target)
+        tensor(0.5943)
+
+    References: Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid
+    landscape endmembers using the Spectral Angle Mapper (SAM) algorithm" in PL, Summaries of the Third Annual JPL
+    Airborne Geoscience Workshop, vol. 1, June 1, 1992.
     """
 
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better: bool = True
+    higher_is_better: bool = False
+    is_differentiable: bool = True
 
     def __init__(
         self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[float] = None,
-        compute_on_step: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+        **kwargs: Any,
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
-            "Metric `UniversalImageQualityIndex` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
+            "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer."
+            " For large datasets, this may lead to a large memory footprint."
         )
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
-        self.kernel_size = kernel_size
-        self.sigma = sigma
-        self.data_range = data_range
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
@@ -92,12 +80,12 @@ class UniversalImageQualityIndex(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _uqi_update(preds, target)
+        preds, target = _sam_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes explained variance over state."""
+        """Computes spectra over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range)
+        return _sam_compute(preds, target, self.reduction)

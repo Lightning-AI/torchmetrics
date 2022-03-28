@@ -179,7 +179,7 @@ class MeanAveragePrecision(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.detection.map import MeanAveragePrecision
+        >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
         >>> preds = [
         ...   dict(
         ...     boxes=torch.Tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -332,22 +332,22 @@ class MeanAveragePrecision(Metric):
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
 
-    def _compute_iou(self, id: int, class_id: int, max_det: int) -> Tensor:
+    def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
         """Computes the Intersection over Union (IoU) for ground truth and detection bounding boxes for the given
         image and class.
 
         Args:
-            id:
+            idx:
                 Image Id, equivalent to the index of supplied samples
             class_id:
                 Class Id of the supplied ground truth and detection labels
             max_det:
                 Maximum number of evaluated detection bounding boxes
         """
-        gt = self.groundtruth_boxes[id]
-        det = self.detection_boxes[id]
-        gt_label_mask = self.groundtruth_labels[id] == class_id
-        det_label_mask = self.detection_labels[id] == class_id
+        gt = self.groundtruth_boxes[idx]
+        det = self.detection_boxes[idx]
+        gt_label_mask = self.groundtruth_labels[idx] == class_id
+        det_label_mask = self.detection_labels[idx] == class_id
         if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
         gt = gt[gt_label_mask]
@@ -356,8 +356,8 @@ class MeanAveragePrecision(Metric):
             return Tensor([])
 
         # Sort by scores and use only max detections
-        scores = self.detection_scores[id]
-        scores_filtered = scores[self.detection_labels[id] == class_id]
+        scores = self.detection_scores[idx]
+        scores_filtered = scores[self.detection_labels[idx] == class_id]
         inds = torch.argsort(scores_filtered, descending=True)
         det = det[inds]
         if len(det) > max_det:
@@ -367,13 +367,67 @@ class MeanAveragePrecision(Metric):
         ious = box_iou(det, gt)
         return ious
 
+    def __evaluate_image_gt_no_preds(
+        self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
+    ) -> Dict[str, Any]:
+        """Some GT but no predictions."""
+        # GTs
+        gt = gt[gt_label_mask]
+        nb_gt = len(gt)
+        areas = box_area(gt)
+        ignore_area = (areas < area_range[0]) | (areas > area_range[1])
+        gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8))
+        gt_ignore = gt_ignore.to(torch.bool)
+
+        # Detections
+        nb_det = 0
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
+
+        return {
+            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
+            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
+            "dtScores": torch.zeros(nb_det, dtype=torch.bool, device=self.device),
+            "gtIgnore": gt_ignore,
+            "dtIgnore": det_ignore,
+        }
+
+    def __evaluate_image_preds_no_gt(
+        self, det: Tensor, idx: int, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int
+    ) -> Dict[str, Any]:
+        """Some predictions but no GT."""
+        # GTs
+        nb_gt = 0
+        gt_ignore = torch.zeros(nb_gt, dtype=torch.bool, device=self.device)
+
+        # Detections
+        det = det[det_label_mask]
+        scores = self.detection_scores[idx]
+        scores_filtered = scores[det_label_mask]
+        scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
+        det = det[dtind]
+        if len(det) > max_det:
+            det = det[:max_det]
+        nb_det = len(det)
+        det_areas = box_area(det).to(self.device)
+        det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
+        ar = det_ignore_area.reshape((1, nb_det))
+        det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
+
+        return {
+            "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
+            "gtMatches": torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device),
+            "dtScores": scores_sorted,
+            "gtIgnore": gt_ignore,
+            "dtIgnore": det_ignore,
+        }
+
     def _evaluate_image(
-        self, id: int, class_id: int, area_range: Tuple[int, int], max_det: int, ious: dict
+        self, idx: int, class_id: int, area_range: Tuple[int, int], max_det: int, ious: dict
     ) -> Optional[dict]:
         """Perform evaluation for single class and image.
 
         Args:
-            id:
+            idx:
                 Image Id, equivalent to the index of supplied samples.
             class_id:
                 Class Id of the supplied ground truth and detection labels.
@@ -384,15 +438,28 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-        gt = self.groundtruth_boxes[id]
-        det = self.detection_boxes[id]
-        gt_label_mask = self.groundtruth_labels[id] == class_id
-        det_label_mask = self.detection_labels[id] == class_id
-        if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
+        gt = self.groundtruth_boxes[idx]
+        det = self.detection_boxes[idx]
+        gt_label_mask = self.groundtruth_labels[idx] == class_id
+        det_label_mask = self.detection_labels[idx] == class_id
+
+        # No Gt and No predictions --> ignore image
+        if len(gt_label_mask) == 0 and len(det_label_mask) == 0:
             return None
+
+        nb_iou_thrs = len(self.iou_thresholds)
+
+        # Some GT but no predictions
+        if len(gt_label_mask) > 0 and len(det_label_mask) == 0:
+            return self.__evaluate_image_gt_no_preds(gt, gt_label_mask, area_range, nb_iou_thrs)
+
+        # Some predictions but no GT
+        if len(gt_label_mask) == 0 and len(det_label_mask) >= 0:
+            return self.__evaluate_image_preds_no_gt(det, idx, det_label_mask, max_det, area_range, nb_iou_thrs)
+
         gt = gt[gt_label_mask]
         det = det[det_label_mask]
-        if len(gt) == 0 and len(det) == 0:
+        if gt.numel() == 0 and det.numel() == 0:
             return None
 
         areas = box_area(gt)
@@ -403,14 +470,14 @@ class MeanAveragePrecision(Metric):
         # Convert to uint8 temporarily and back to bool, because "Sort currently does not support bool dtype on CUDA"
         ignore_area_sorted = ignore_area_sorted.to(torch.bool)
         gt = gt[gtind]
-        scores = self.detection_scores[id]
+        scores = self.detection_scores[idx]
         scores_filtered = scores[det_label_mask]
         scores_sorted, dtind = torch.sort(scores_filtered, descending=True)
         det = det[dtind]
         if len(det) > max_det:
             det = det[:max_det]
         # load computed ious
-        ious = ious[id, class_id][:, gtind] if len(ious[id, class_id]) > 0 else ious[id, class_id]
+        ious = ious[idx, class_id][:, gtind] if len(ious[idx, class_id]) > 0 else ious[idx, class_id]
 
         nb_iou_thrs = len(self.iou_thresholds)
         nb_gt = len(gt)
@@ -424,10 +491,11 @@ class MeanAveragePrecision(Metric):
             for idx_iou, t in enumerate(self.iou_thresholds):
                 for idx_det, _ in enumerate(det):
                     m = MeanAveragePrecision._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
-                    if m != -1:
-                        det_ignore[idx_iou, idx_det] = gt_ignore[m]
-                        det_matches[idx_iou, idx_det] = 1
-                        gt_matches[idx_iou, m] = 1
+                    if m == -1:
+                        continue
+                    det_ignore[idx_iou, idx_det] = gt_ignore[m]
+                    det_matches[idx_iou, idx_det] = 1
+                    gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
         det_areas = box_area(det)
@@ -532,7 +600,9 @@ class MeanAveragePrecision(Metric):
         area_ranges = self.bbox_area_ranges.values()
 
         ious = {
-            (id, class_id): self._compute_iou(id, class_id, max_detections) for id in img_ids for class_id in class_ids
+            (idx, class_id): self._compute_iou(idx, class_id, max_detections)
+            for idx in img_ids
+            for class_id in class_ids
         }
 
         eval_imgs = [
@@ -706,7 +776,7 @@ class MeanAveragePrecision(Metric):
 
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
-        map, mar = self._summarize_results(precisions, recalls)
+        map_val, mar_val = self._summarize_results(precisions, recalls)
 
         # if class mode is enabled, evaluate metrics per class
         map_per_class_values: Tensor = Tensor([-1])
@@ -726,8 +796,8 @@ class MeanAveragePrecision(Metric):
             mar_max_dets_per_class_values = Tensor(mar_max_dets_per_class_list)
 
         metrics = COCOMetricResults()
-        metrics.update(map)
-        metrics.update(mar)
+        metrics.update(map_val)
+        metrics.update(mar_val)
         metrics.map_per_class = map_per_class_values
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
         return metrics

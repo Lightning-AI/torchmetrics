@@ -17,12 +17,47 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
+from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
 
 
 def _del_column(data: Tensor, idx: int) -> Tensor:
     """Delete the column at index."""
     return torch.cat([data[:, :idx], data[:, (idx + 1) :]], 1)
+
+
+def _drop_negative_ignored_indices(
+    preds: Tensor, target: Tensor, ignore_index: int, mode: DataType
+) -> Tuple[Tensor, Tensor]:
+    """Remove negative ignored indices.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        ignore_index: Specify a class (label) to ignore. If given, this class index does not contribute
+            to the returned score, regardless of reduction method. If an index is ignored, and
+            ``reduce='macro'``, the class statistics for the ignored class will all be returned
+            as ``-1``.
+        mode: Mode of the input tensors
+
+    Return:
+        Tensors of preds and target without negative ignore target values.
+    """
+    if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
+        # In case or multi-dimensional multi-class with logits
+        n_dims = len(preds.shape)
+        num_classes = preds.shape[1]
+        # move class dim to last so that we can flatten the addtional dimensions into N: [N, C, ...] -> [N, ..., C]
+        preds = preds.transpose(1, n_dims - 1)
+
+        # flatten: [N, ..., C] -> [N', C]
+        preds = preds.reshape(-1, num_classes)
+        target = target.reshape(-1)
+
+    if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
+        preds = preds[target != ignore_index]
+        target = target[target != ignore_index]
+
+    return preds, target
 
 
 def _stat_scores(
@@ -83,6 +118,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
+    mode: DataType = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Updates and returns the the number of true positives, false positives, true negatives, false negatives.
     Raises ValueError if:
@@ -107,13 +143,26 @@ def _stat_scores_update(
             to the returned score, regardless of reduction method. If an index is ignored, and
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
+        mode: Mode of the input tensors
     """
 
+    _negative_index_dropped = False
+
+    if ignore_index is not None and ignore_index < 0 and mode is not None:
+        preds, target = _drop_negative_ignored_indices(preds, target, ignore_index, mode)
+        _negative_index_dropped = True
+
     preds, target, _ = _input_format_classification(
-        preds, target, threshold=threshold, num_classes=num_classes, multiclass=multiclass, top_k=top_k
+        preds,
+        target,
+        threshold=threshold,
+        num_classes=num_classes,
+        multiclass=multiclass,
+        top_k=top_k,
+        ignore_index=ignore_index,
     )
 
-    if ignore_index is not None and not 0 <= ignore_index < preds.shape[1]:
+    if ignore_index is not None and ignore_index >= preds.shape[1]:
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[1]} classes")
 
     if ignore_index is not None and preds.shape[1] == 1:
@@ -129,14 +178,14 @@ def _stat_scores_update(
             target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
 
     # Delete what is in ignore_index, if applicable (and classes don't matter):
-    if ignore_index is not None and reduce != "macro":
+    if ignore_index is not None and reduce != "macro" and not _negative_index_dropped:
         preds = _del_column(preds, ignore_index)
         target = _del_column(target, ignore_index)
 
     tp, fp, tn, fn = _stat_scores(preds, target, reduce=reduce)
 
     # Take care of ignore_index
-    if ignore_index is not None and reduce == "macro":
+    if ignore_index is not None and reduce == "macro" and not _negative_index_dropped:
         tp[..., ignore_index] = -1
         fp[..., ignore_index] = -1
         tn[..., ignore_index] = -1

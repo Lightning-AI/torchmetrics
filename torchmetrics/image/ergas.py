@@ -11,67 +11,63 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence
+
+from typing import Any, List, Union
 
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.uqi import _uqi_compute, _uqi_update
+from torchmetrics.functional.image.ergas import _ergas_compute, _ergas_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 
 
-class UniversalImageQualityIndex(Metric):
-    """Computes Universal Image Quality Index (UniversalImageQualityIndex_).
+class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
+    """Relative dimensionless global error synthesis (ERGAS) is used to calculate the accuracy of Pan sharpened
+    image considering normalized average error of each band of the result image
+    (ErrorRelativeGlobalDimensionlessSynthesis).
 
     Args:
-        kernel_size: size of the gaussian kernel
-        sigma: Standard deviation of the gaussian kernel
+        ratio: ratio of high resolution to low resolution
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-        compute_on_step:
-            Forward only calls ``update()`` and returns None if this is set to False.
-
-            .. deprecated:: v0.8
-                Argument has no use anymore and will be removed v0.9.
-
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Return:
-        Tensor with UniversalImageQualityIndex score
+        Tensor with ErrorRelativeGlobalDimensionlessSynthesis score
 
     Example:
         >>> import torch
-        >>> from torchmetrics import UniversalImageQualityIndex
-        >>> preds = torch.rand([16, 1, 16, 16])
+        >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
-        >>> uqi = UniversalImageQualityIndex()
-        >>> uqi(preds, target)
-        tensor(0.9216)
+        >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
+        >>> torch.round(ergas(preds, target))
+        tensor(154.)
+
+    References: Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
+    Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
+    15 October 2007, doi: 10.1109/LGRS.2007.896328.
     """
 
     preds: List[Tensor]
     target: List[Tensor]
-    higher_is_better: bool = True
+    higher_is_better: bool = False
+    is_differentiable: bool = True
 
     def __init__(
         self,
-        kernel_size: Sequence[int] = (11, 11),
-        sigma: Sequence[float] = (1.5, 1.5),
+        ratio: Union[int, float] = 4,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[float] = None,
-        compute_on_step: Optional[bool] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> None:
-        super().__init__(compute_on_step=compute_on_step, **kwargs)
+        super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `UniversalImageQualityIndex` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
@@ -80,9 +76,7 @@ class UniversalImageQualityIndex(Metric):
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
-        self.kernel_size = kernel_size
-        self.sigma = sigma
-        self.data_range = data_range
+        self.ratio = ratio
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
@@ -92,7 +86,7 @@ class UniversalImageQualityIndex(Metric):
             preds: Predictions from model
             target: Ground truth values
         """
-        preds, target = _uqi_update(preds, target)
+        preds, target = _ergas_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 
@@ -100,4 +94,4 @@ class UniversalImageQualityIndex(Metric):
         """Computes explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range)
+        return _ergas_compute(preds, target, self.ratio, self.reduction)
