@@ -303,6 +303,7 @@ class TextTester(MetricTester):
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
+            check_scriptable:
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
@@ -418,6 +419,7 @@ class TextTester(MetricTester):
             preds: torch tensor with predictions
             targets: torch tensor with targets
             metric_module: the metric module to test
+            metric_functional:
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the sk_metric.

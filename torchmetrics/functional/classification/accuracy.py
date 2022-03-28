@@ -33,6 +33,7 @@ def _mode(
     top_k: Optional[int],
     num_classes: Optional[int],
     multiclass: Optional[bool],
+    ignore_index: Optional[int] = None,
 ) -> DataType:
     """Finds the mode of the input tensors.
 
@@ -56,7 +57,13 @@ def _mode(
     """
 
     mode = _check_classification_inputs(
-        preds, target, threshold=threshold, top_k=top_k, num_classes=num_classes, multiclass=multiclass
+        preds,
+        target,
+        threshold=threshold,
+        top_k=top_k,
+        num_classes=num_classes,
+        multiclass=multiclass,
+        ignore_index=ignore_index,
     )
     return mode
 
@@ -96,7 +103,6 @@ def _accuracy_update(
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
-
     preds, target = _input_squeeze(preds, target)
     tp, fp, tn, fn = _stat_scores_update(
         preds,
@@ -108,6 +114,7 @@ def _accuracy_update(
         top_k=top_k,
         multiclass=multiclass,
         ignore_index=ignore_index,
+        mode=mode,
     )
     return tp, fp, tn, fn
 
@@ -160,17 +167,8 @@ def _accuracy_compute(
         >>> reduce = average = 'micro'
         >>> mdmc_average = 'global'
         >>> mode = _mode(preds, target, threshold, top_k, num_classes=None, multiclass=None)
-        >>> tp, fp, tn, fn = _accuracy_update(
-        ...                     preds,
-        ...                     target,
-        ...                     reduce,
-        ...                     mdmc_average,
-        ...                     threshold,
-        ...                     num_classes=None,
-        ...                     top_k=top_k,
-        ...                     multiclass=None,
-        ...                     ignore_index=None,
-        ...                     mode=mode)
+        >>> tp, fp, tn, fn = _accuracy_update(preds, target, reduce, mdmc_average, threshold,
+        ...     num_classes=None, top_k=top_k, multiclass=None, ignore_index=None, mode=mode)
         >>> _accuracy_compute(tp, fp, tn, fn, average, mdmc_average, mode)
         tensor(0.6667)
     """
@@ -183,16 +181,17 @@ def _accuracy_compute(
         numerator = tp
         denominator = tp + fn
 
-    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        cond = tp + fp + fn == 0
-        numerator = numerator[~cond]
-        denominator = denominator[~cond]
+    if mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        if average == AverageMethod.MACRO:
+            cond = tp + fp + fn == 0
+            numerator = numerator[~cond]
+            denominator = denominator[~cond]
 
-    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
-        numerator[meaningless_indeces, ...] = -1
-        denominator[meaningless_indeces, ...] = -1
+        if average == AverageMethod.NONE:
+            # a class is not present if there exists no TPs, no FPs, and no FNs
+            meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
+            numerator[meaningless_indeces, ...] = -1
+            denominator[meaningless_indeces, ...] = -1
 
     return _reduce_stat_scores(
         numerator=numerator,
@@ -208,6 +207,7 @@ def _subset_accuracy_update(
     target: Tensor,
     threshold: float,
     top_k: Optional[int],
+    ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute subset accuracy.
 
@@ -221,7 +221,9 @@ def _subset_accuracy_update(
     """
 
     preds, target = _input_squeeze(preds, target)
-    preds, target, mode = _input_format_classification(preds, target, threshold=threshold, top_k=top_k)
+    preds, target, mode = _input_format_classification(
+        preds, target, threshold=threshold, top_k=top_k, ignore_index=ignore_index
+    )
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
@@ -399,18 +401,18 @@ def accuracy(
     if mdmc_average not in allowed_mdmc_average:
         raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
 
-    if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
+    if num_classes and ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
         raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
     if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
         raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
 
     preds, target = _input_squeeze(preds, target)
-    mode = _mode(preds, target, threshold, top_k, num_classes, multiclass)
+    mode = _mode(preds, target, threshold, top_k, num_classes, multiclass, ignore_index)
     reduce = "macro" if average in ["weighted", "none", None] else average
 
     if subset_accuracy and _check_subset_validity(mode):
-        correct, total = _subset_accuracy_update(preds, target, threshold, top_k)
+        correct, total = _subset_accuracy_update(preds, target, threshold, top_k, ignore_index)
         return _subset_accuracy_compute(correct, total)
     tp, fp, tn, fn = _accuracy_update(
         preds, target, reduce, mdmc_average, threshold, num_classes, top_k, multiclass, ignore_index, mode

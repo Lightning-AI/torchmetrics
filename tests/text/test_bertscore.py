@@ -206,9 +206,9 @@ def test_score(preds, targets):
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
     original_score = _parse_original_bert_score(original_score)
 
-    Scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
-    Scorer.update(preds=preds, target=targets)
-    metrics_score = Scorer.compute()
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
+    scorer.update(preds=preds, target=targets)
+    metrics_score = scorer.compute()
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -224,9 +224,9 @@ def test_score_with_idf(preds, targets):
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, num_layers=8, idf=True, batch_size=3)
     original_score = _parse_original_bert_score(original_score)
 
-    Scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=True, batch_size=3)
-    Scorer.update(preds=preds, target=targets)
-    metrics_score = Scorer.compute()
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=True, batch_size=3)
+    scorer.update(preds=preds, target=targets)
+    metrics_score = scorer.compute()
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -244,9 +244,9 @@ def test_score_all_layers(preds, targets):
     )
     original_score = _parse_original_bert_score(original_score)
 
-    Scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3)
-    Scorer.update(preds=preds, target=targets)
-    metrics_score = Scorer.compute()
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=False, batch_size=3)
+    scorer.update(preds=preds, target=targets)
+    metrics_score = scorer.compute()
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -262,9 +262,9 @@ def test_score_all_layers_with_idf(preds, targets):
     original_score = original_bert_score(preds, targets, model_type=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
     original_score = _parse_original_bert_score(original_score)
 
-    Scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
-    Scorer.update(preds=preds, target=targets)
-    metrics_score = Scorer.compute()
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, all_layers=True, idf=True, batch_size=3)
+    scorer.update(preds=preds, target=targets)
+    metrics_score = scorer.compute()
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -282,10 +282,10 @@ def test_accumulation(preds, targets):
     )
     original_score = _parse_original_bert_score(original_score)
 
-    Scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3)
     for p, r in zip(preds, targets):
-        Scorer.update(preds=p, target=r)
-    metrics_score = Scorer.compute()
+        scorer.update(preds=p, target=r)
+    metrics_score = scorer.compute()
 
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
@@ -296,9 +296,9 @@ def _bert_score_ddp(rank, world_size, preds, targets, original_score):
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "12355"
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
-    Scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3, max_length=128)
-    Scorer.update(preds, targets)
-    metrics_score = Scorer.compute()
+    scorer = BERTScore(model_name_or_path=MODEL_NAME, num_layers=8, idf=False, batch_size=3, max_length=128)
+    scorer.update(preds, targets)
+    metrics_score = scorer.compute()
     for metric in _METRICS:
         _assert_list(metrics_score[metric], original_score[metric])
     dist.destroy_process_group()

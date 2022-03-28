@@ -30,7 +30,7 @@ long_description = setup_tools._load_readme_description(
 BASE_REQUIREMENTS = setup_tools._load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt")):
+def _prepare_extras(skip_files: Tuple[str] = ("devel.txt",)):
     # find all extra requirements
     _load_req = partial(setup_tools._load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))

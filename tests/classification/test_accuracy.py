@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections import namedtuple
 from functools import partial
 
 import numpy as np
@@ -132,6 +133,30 @@ _ml_t2 = [_ml_t1, _ml_t1]
 _ml_ta2 = [[1, 0, 1, 1], [0, 1, 1, 0]]
 _av_preds_ml = tensor([_ml_t2, _ml_t2]).float()
 _av_target_ml = tensor([_ml_ta2, _ml_ta2])
+
+# Inputs with negative target values to be ignored
+Input = namedtuple("Input", ["preds", "target", "ignore_index", "result"])
+_binary_with_neg_tgt = Input(
+    preds=torch.tensor([0, 1, 0]), target=torch.tensor([0, 1, -1]), ignore_index=-1, result=torch.tensor(1.0)
+)
+_multiclass_logits_with_neg_tgt = Input(
+    preds=torch.tensor([[0.8, 0.1], [0.2, 0.7], [0.5, 0.5]]),
+    target=torch.tensor([0, 1, -1]),
+    ignore_index=-1,
+    result=torch.tensor(1.0),
+)
+_multidim_multiclass_with_neg_tgt = Input(
+    preds=torch.tensor([[0, 0], [1, 1], [0, 0]]),
+    target=torch.tensor([[0, 0], [-1, 1], [1, -1]]),
+    ignore_index=-1,
+    result=torch.tensor(0.75),
+)
+_multidim_multiclass_logits_with_neg_tgt = Input(
+    preds=torch.tensor([[[0.8, 0.7], [0.2, 0.4]], [[0.1, 0.2], [0.9, 0.8]], [[0.7, 0.9], [0.2, 0.4]]]),
+    target=torch.tensor([[0, 0], [-1, 1], [1, -1]]),
+    ignore_index=-1,
+    result=torch.tensor(0.75),
+)
 
 
 # Replace with a proper sk_metric test once sklearn 0.24 hits :)
@@ -360,3 +385,56 @@ def test_same_input(average):
 
     assert torch.allclose(class_res, torch.tensor(sk_res).float())
     assert torch.allclose(func_res, torch.tensor(sk_res).float())
+
+
+@pytest.mark.parametrize(
+    "preds, target, ignore_index, result",
+    [
+        (
+            _binary_with_neg_tgt.preds,
+            _binary_with_neg_tgt.target,
+            _binary_with_neg_tgt.ignore_index,
+            _binary_with_neg_tgt.result,
+        ),
+        (
+            _multiclass_logits_with_neg_tgt.preds,
+            _multiclass_logits_with_neg_tgt.target,
+            _multiclass_logits_with_neg_tgt.ignore_index,
+            _multiclass_logits_with_neg_tgt.result,
+        ),
+        (
+            _multidim_multiclass_with_neg_tgt.preds,
+            _multidim_multiclass_with_neg_tgt.target,
+            _multidim_multiclass_with_neg_tgt.ignore_index,
+            _multidim_multiclass_with_neg_tgt.result,
+        ),
+        (
+            _multidim_multiclass_logits_with_neg_tgt.preds,
+            _multidim_multiclass_logits_with_neg_tgt.target,
+            _multidim_multiclass_logits_with_neg_tgt.ignore_index,
+            _multidim_multiclass_logits_with_neg_tgt.result,
+        ),
+    ],
+)
+def test_negative_ignore_index(preds, target, ignore_index, result):
+    # We deduct -1 for an ignored index
+    num_classes = len(target.unique()) - 1
+
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    acc_score = acc(preds, target)
+    assert torch.allclose(acc_score, result)
+    # Test functional metrics
+    acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
+    assert torch.allclose(acc_score, result)
+
+    # If the ignore index is not set properly, we expect to see an error
+    ignore_index = None
+    # Test class
+    acc = Accuracy(num_classes=num_classes, ignore_index=ignore_index)
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc_score = acc(preds, target)
+
+    # Test functional
+    with pytest.raises(ValueError, match="^[The `target` has to be a non-negative tensor.]"):
+        acc_score = accuracy(preds, target, num_classes=num_classes, ignore_index=ignore_index)
