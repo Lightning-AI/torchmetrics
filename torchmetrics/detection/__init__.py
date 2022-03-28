@@ -15,3 +15,5 @@ from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchmetrics.detection.mean_ap import MeanAveragePrecision  # noqa: F401
+
+from torchmetrics.detection.panoptic_quality import PanopticQuality

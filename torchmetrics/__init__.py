@@ -49,6 +49,7 @@ from torchmetrics.classification import (  # noqa: E402
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
+from torchmetrics.detection import PanopticQuality  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
     ErrorRelativeGlobalDimensionlessSynthesis,
     MultiScaleStructuralSimilarityIndexMeasure,
@@ -147,6 +148,7 @@ __all__ = [
     "MinMetric",
     "MultioutputWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
+    "PanopticQuality",
     "PearsonCorrCoef",
     "PermutationInvariantTraining",
     "Precision",
