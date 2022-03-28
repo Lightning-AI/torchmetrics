@@ -1,29 +1,29 @@
 from typing import List, Optional, Sequence, Tuple, Union
 
+import numpy as np
 import torch
 from deprecate import deprecated, void
+from PIL import Image
 from torch import Tensor
 from torch.nn import functional as F
+from torchvision import transforms
 from typing_extensions import Literal
 
+from torchmetrics.functional.image.helper import _gaussian_kernel
 from torchmetrics.utilities import _future_warning
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.functional.image.helper import _gaussian_kernel
 from torchmetrics.utilities.distributed import reduce
-import numpy as np
-
-from torchvision import transforms
-from PIL import Image
 
 
+def _scc_update(preds: Tensor, targets: Tensor):
+    """Updates and returns variables required to compute Spatial Correlation Coefficient.
 
-def _scc_update(preds:Tensor, targets:Tensor):
-    """Updates and returns variables required to compute Spatial Correlation Coefficient. Checks for same shape and
-       type of the input tensors.
-       Args:
-           preds: Predicted tensor
-           targets: Ground truth tensor
-       """
+    Checks for same shape and
+    type of the input tensors.
+    Args:
+        preds: Predicted tensor
+        targets: Ground truth tensor
+    """
 
     if preds.dtype != targets.dtype:
         raise TypeError(
@@ -38,14 +38,15 @@ def _scc_update(preds:Tensor, targets:Tensor):
         )
     return preds, targets
 
+
 def _scc_compute(
-        preds: Tensor,
-        targets: Tensor,
-        kernel_size: Sequence[int] = (8,8),
-        reduction: Sequence[Literal['elementwise_mean', 'sum', 'none']] = 'elementwise_mean'
+    preds: Tensor,
+    targets: Tensor,
+    kernel_size: Sequence[int] = (8, 8),
+    reduction: Sequence[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ):
 
-    '''Args:
+    """Args:
         preds: estimated image
         targets: ground truth image
         kernel_size: size of the Uniform kernel (default: (9, 9))
@@ -68,12 +69,11 @@ def _scc_compute(
         ValueError:
             If the length of ``kernel_size`` or ``sigma`` is not ``2``.
         ValueError:
-            If one of the elements of ``kernel_size`` is not an ``odd positive number``.'''
+            If one of the elements of ``kernel_size`` is not an ``odd positive number``."""
 
-    if len(kernel_size) != 2 :
+    if len(kernel_size) != 2:
         raise ValueError(
-            "Expected `kernel_size` and `sigma` to have the length of two."
-            f" Got kernel_size: {len(kernel_size)}."
+            "Expected `kernel_size` and `sigma` to have the length of two." f" Got kernel_size: {len(kernel_size)}."
         )
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):
@@ -83,23 +83,26 @@ def _scc_compute(
 
     classes = preds.shape[1]
 
+    coefs = torch.zeros((batch_size, classes, preds.shape[2], preds.shape[3]))
 
-    coefs = torch.zeros((batch_size,classes,preds.shape[2],preds.shape[3]))
-
-    kernel = torch.div(torch.ones((1,1,kernel_size[0],kernel_size[1])), kernel_size[0]*kernel_size[1])
-
+    kernel = torch.div(torch.ones((1, 1, kernel_size[0], kernel_size[1])), kernel_size[0] * kernel_size[1])
 
     for i in range(classes):
 
-        mu1, mu2 = F.conv2d(preds[:,i,:,:].unsqueeze(1), kernel, padding='same'), F.conv2d(targets[:,i,:,:].unsqueeze(1), kernel,padding='same')
-
-
+        mu1, mu2 = F.conv2d(preds[:, i, :, :].unsqueeze(1), kernel, padding="same"), F.conv2d(
+            targets[:, i, :, :].unsqueeze(1), kernel, padding="same"
+        )
 
         preds_sum_sq, targets_sum_sq, preds_targets_sum_mul = mu1 * mu1, mu2 * mu2, mu1 * mu2
 
-        outputs = F.conv2d(preds[:,i,:,:].unsqueeze(1) * preds[:,i,:,:].unsqueeze(1), kernel, padding='same') - preds_sum_sq, \
-                  F.conv2d(targets[:,i,:,:].unsqueeze(1) * targets[:,i,:,:].unsqueeze(1), kernel, padding='same') - targets_sum_sq, \
-                  F.conv2d(preds[:,i,:,:].unsqueeze(1) * targets[:,i,:,:].unsqueeze(1), kernel, padding='same') - preds_targets_sum_mul
+        outputs = (
+            F.conv2d(preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1), kernel, padding="same")
+            - preds_sum_sq,
+            F.conv2d(targets[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1), kernel, padding="same")
+            - targets_sum_sq,
+            F.conv2d(preds[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1), kernel, padding="same")
+            - preds_targets_sum_mul,
+        )
 
         sigma_preds_sq, sigma_targets_sq, sigma_preds_targets = outputs
 
@@ -108,7 +111,7 @@ def _scc_compute(
 
         den = torch.sqrt(sigma_preds_sq) * torch.sqrt(sigma_targets_sq)
 
-        idx = (den == 0)
+        idx = den == 0
 
         den[den == 0] = 1
 
@@ -116,8 +119,7 @@ def _scc_compute(
 
         scc[idx] = 0
 
-        coefs[:,i,:,:] = scc.squeeze(1)
-
+        coefs[:, i, :, :] = scc.squeeze(1)
 
     batch_score = []
     for i in range(scc.shape[0]):
@@ -130,14 +132,13 @@ def _scc_compute(
     return final_batch_score
 
 
-
 def spatial_correlation_coefficient(
-        preds: Tensor,
-        targets: Tensor,
-        kernel_size: Sequence[int] = (9, 9),
-        reduction: Sequence[Literal['elementwise_mean', 'sum', 'none']] = 'elementwise_mean'
+    preds: Tensor,
+    targets: Tensor,
+    kernel_size: Sequence[int] = (9, 9),
+    reduction: Sequence[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
-    ''' Spatial Correlation Coefficient
+    """Spatial Correlation Coefficient.
 
     Args:
         preds: estimated image
@@ -172,11 +173,8 @@ def spatial_correlation_coefficient(
         >>> target = torch.rand([16, 3, 16, 16])
         >>> spatial_correlation_coefficient(preds, target)
         tensor(0.3511)
-    '''
+    """
 
-    preds,targets = _scc_update(preds, targets)
+    preds, targets = _scc_update(preds, targets)
 
     return _scc_compute(preds, targets, kernel_size, reduction)
-
-
-
