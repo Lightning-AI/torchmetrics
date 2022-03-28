@@ -1,4 +1,4 @@
-from typing import  Optional, Sequence
+from typing import Optional, Sequence
 
 import torch
 from torch import Tensor
@@ -142,7 +142,7 @@ def spatial_correlation_coefficient(
     preds: Tensor,
     targets: Tensor,
     kernel_size: Optional[Sequence[int]] = (9, 9),
-    reduction: Optional[Sequence[Literal["elementwise_mean", "sum", "none"]]]= "elementwise_mean",
+    reduction: Optional[Sequence[Literal["elementwise_mean", "sum", "none"]]] = "elementwise_mean",
 ) -> Tensor:
     """Spatial Correlation Coefficient.
 
