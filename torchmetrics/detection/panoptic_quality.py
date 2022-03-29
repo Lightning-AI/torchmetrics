@@ -12,39 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from xmlrpc.client import boolean
-import numpy as np
-from typing import Any, Dict, List
+from typing import Dict, List
+
 import torch
 from torch import Tensor
-from typing import Tuple
 
+from torchmetrics.functional.detection.panoptic_quality import (
+    _get_category_id_to_continous_id,
+    _get_void_color,
+    _panoptic_quality_compute,
+    _panoptic_quality_update,
+    _prepocess_image,
+    _validate_categories,
+    _validate_inputs,
+)
 from torchmetrics.metric import Metric
-
-
-def _nested_tuple(nested_list: List) -> Tuple:
-    """Construct a nested tuple from a nested list."""
-    return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
-
-
-def _totuple(t: torch.Tensor) -> Tuple:
-    """Convert a tensor into a nested tuple."""
-    return _nested_tuple(t.tolist())
-
-
-def _get_color_areas(img: torch.Tensor) -> Dict:
-    """Calculate a dictionary {pixel_color: area}."""
-    unique_keys, unique_keys_area = torch.unique(img, dim=0, return_counts=True)
-    # dictionary indexed by color tuples
-    return dict(zip(_totuple(unique_keys), unique_keys_area))
-
-
-def _is_dict_int_str(value) -> bool:
-    return (
-        isinstance(value, dict)
-        and set(map(type, value.keys())).issubset({int})
-        and set(map(type, value.values())).issubset({str})
-    )
 
 
 class PanopticQuality(Metric):
@@ -82,59 +64,18 @@ class PanopticQuality(Metric):
     def __init__(self, things: Dict[int, str], stuff: Dict[int, str], dist_sync_on_step=False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
-        if not _is_dict_int_str(things):
-            raise ValueError("Expected argument `things` to be of type `Dict[int, str]`")
-
-        if not _is_dict_int_str(stuff):
-            raise ValueError("Expected argument `stuff` to be of type `Dict[int, str]`")
-
-        if set(stuff.keys()) & set(things.keys()):
-            raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys.")
-
+        _validate_categories(things, stuff)
         self.things = things
         self.stuff = stuff
-
-        # void color to mark unlabelled regions
-        unused_category_id = 1 + max([0] + list(things) + list(stuff))
-        self.void_color = (unused_category_id, 0)
-        n_categories = len(things) + len(stuff)
-
-        # things metrics are stored with a continous id in [0, len(things)[,
-        thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things.keys())}
-        # stuff metrics are stored with a continous id in [len(things), len(things) + len(stuffs)[
-        stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuff.keys())}
-        self.cat_id_to_continuous_id = {}
-        self.cat_id_to_continuous_id.update(thing_id_to_continuous_id)
-        self.cat_id_to_continuous_id.update(stuff_id_to_continuous_id)
+        self.void_color = _get_void_color(things, stuff)
+        self.cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuff)
 
         # per category intemediate metrics
+        n_categories = len(things) + len(stuff)
         self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
         self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-
-    def _validate_inputs(self, preds: torch.Tensor, target: torch.Tensor) -> None:
-        if not isinstance(preds, torch.Tensor):
-            raise ValueError("Expected argument `preds` to be of type `torch.Tensor`")
-        if not isinstance(target, torch.Tensor):
-            raise ValueError("Expected argument `target` to be of type `torch.Tensor`")
-        if preds.shape != target.shape:
-            raise ValueError("Expected argument `preds` and `target` to have the same shape")
-        if preds.dim() != 3 or preds.shape[-1] != 2:
-            raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
-
-    def _prepocess_image(self, img: torch.Tensor) -> torch.Tensor:
-        # flatten the height*width dimensions
-        img = torch.flatten(img, 0, -2)
-        # torch.isin not present in older version of torch, using numpy instead
-        img = img.numpy()
-        stuff_pixels = np.isin(img[:, 0], list(self.stuff.keys()))
-        things_pixels = np.isin(img[:, 0], list(self.things.keys()))
-        # reset instance ids of stuffs
-        img[stuff_pixels, 1] = 0
-        # set unknown categories to void color
-        img[~(things_pixels | stuff_pixels)] = self.void_color
-        return torch.tensor(img)
 
     def update(
         self,
@@ -142,6 +83,8 @@ class PanopticQuality(Metric):
         target: torch.IntTensor,
     ):
         r"""
+        Update state with predictions and targets.
+
         Args:
             preds: ``torch.IntTensor`` panoptic detection of shape [height, width, 2] containing
             the pair (category_id, instance_id) for each pixel of the image.
@@ -155,85 +98,20 @@ class PanopticQuality(Metric):
             ValueError:
                 If ``preds`` or ``target`` has wrong shape.
         """
-
-        # TODO: handle group label?
-        self._validate_inputs(preds, target)
-        preds = self._prepocess_image(preds)
-        target = self._prepocess_image(target)
-
-        # calculate the area of each prediction, ground truth and pairwise intersection
-        pred_areas = _get_color_areas(preds)
-        target_areas = _get_color_areas(target)
-        # intersection matrix of shape [height, width, 2, 2]
-        intersection_matrix = torch.transpose(torch.stack((preds, target), -1), -1, -2)
-        intersection_areas = _get_color_areas(intersection_matrix)
-
-        # select intersection of things of same category with iou > 0.5
-        pred_segment_matched = set()
-        target_segment_matched = set()
-        for (pred_color, target_color), intersection in intersection_areas.items():
-            # test only non void, matching category
-            if target_color == self.void_color:
-                continue
-            if pred_color[0] != target_color[0]:
-                continue
-            continuous_id = self.cat_id_to_continuous_id[pred_color[0]]
-            pred_area = pred_areas[pred_color]
-            target_area = target_areas[target_color]
-            pred_void_area = intersection_areas.get((pred_color, self.void_color), 0)
-            void_target_area = intersection_areas.get((self.void_color, target_color), 0)
-            union = pred_area - pred_void_area + target_area - void_target_area - intersection
-            iou = intersection / union
-
-            if iou > 0.5:
-                pred_segment_matched.add(pred_color)
-                target_segment_matched.add(target_color)
-                self.iou_sum[continuous_id] += iou
-                self.true_positives[continuous_id] += 1
-
-        # count false negative: ground truth but not matched
-        false_negatives = set(target_areas.keys()).difference(target_segment_matched)
-        false_negatives.discard(self.void_color)
-        for target_color in false_negatives:
-            continuous_id = self.cat_id_to_continuous_id[target_color[0]]
-            self.false_negatives[continuous_id] += 1
-
-        # count false positive: predicted but not matched
-        false_positives = set(pred_areas.keys()).difference(pred_segment_matched)
-        false_positives.discard(self.void_color)
-        for pred_color in false_positives:
-            continuous_id = self.cat_id_to_continuous_id[pred_color[0]]
-            self.false_positives[continuous_id] += 1
+        _validate_inputs(preds, target)
+        flatten_preds = _prepocess_image(self.things, self.stuff, preds, self.void_color)
+        flatten_target = _prepocess_image(self.things, self.stuff, target, self.void_color)
+        iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
+            flatten_preds, flatten_target, self.cat_id_to_continuous_id, self.void_color
+        )
+        self.iou_sum += iou_sum
+        self.true_positives += true_positives
+        self.false_positives += false_positives
+        self.false_negatives += false_negatives
 
     def compute(self):
-        # TODO: exclude from mean categories that are never seen ?
-        # TODO: per class metrics
-
-        # per category calculation
-        denominator = (self.true_positives + 0.5 * self.false_positives + 0.5 * self.false_negatives).double()
-        panoptic_quality = torch.where(denominator > 0.0, self.iou_sum / denominator, 0.0)
-        segmentation_quality = torch.where(self.true_positives > 0.0, self.iou_sum / self.true_positives, 0.0)
-        recognition_quality = torch.where(denominator > 0.0, self.true_positives / denominator, 0.0)
-
-        metrics = dict(
-            all=dict(
-                pq=torch.mean(panoptic_quality),
-                rq=torch.mean(recognition_quality),
-                sq=torch.mean(segmentation_quality),
-                n=len(self.things) + len(self.stuff),
-            ),
-            things=dict(
-                pq=torch.mean(panoptic_quality[: len(self.things)]),
-                rq=torch.mean(recognition_quality[: len(self.things)]),
-                sq=torch.mean(segmentation_quality[: len(self.things)]),
-                n=len(self.things),
-            ),
-            stuff=dict(
-                pq=torch.mean(panoptic_quality[len(self.things) :]),
-                rq=torch.mean(recognition_quality[len(self.things) :]),
-                sq=torch.mean(segmentation_quality[len(self.things) :]),
-                n=len(self.stuff),
-            ),
+        """Computes panoptic quality based on inputs passed in to ``update`` previously."""
+        results = _panoptic_quality_compute(
+            self.things, self.stuff, self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
         )
-
-        return metrics
+        return results
