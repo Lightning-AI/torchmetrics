@@ -146,16 +146,24 @@ def _panoptic_quality_update(
             true_positives[continuous_id] += 1
 
     # count false negative: ground truth but not matched
+    # areas that are mostly void in the prediction are ignored
     false_negative_colors = set(target_areas.keys()).difference(target_segment_matched)
     false_negative_colors.discard(void_color)
     for target_color in false_negative_colors:
+        void_target_area = intersection_areas.get((void_color, target_color), 0)
+        if void_target_area / target_areas[target_color] > 0.5:
+            continue
         continuous_id = cat_id_to_continuous_id[target_color[0]]
         false_negatives[continuous_id] += 1
 
     # count false positive: predicted but not matched
+    # areas that are mostly void in the target are ignored
     false_positive_colors = set(pred_areas.keys()).difference(pred_segment_matched)
     false_positive_colors.discard(void_color)
     for pred_color in false_positive_colors:
+        pred_void_area = intersection_areas.get((pred_color, void_color), 0)
+        if pred_void_area / pred_areas[pred_color] > 0.5:
+            continue
         continuous_id = cat_id_to_continuous_id[pred_color[0]]
         false_positives[continuous_id] += 1
 
