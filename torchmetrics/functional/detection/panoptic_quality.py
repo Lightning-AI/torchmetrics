@@ -83,7 +83,11 @@ def _get_category_id_to_continous_id(things: Dict[int, str], stuff: Dict[int, st
 
 
 def _prepocess_image(
-    things: Dict[int, str], stuff: Dict[int, str], img: torch.Tensor, void_color: Tuple[int, int]
+    things: Dict[int, str],
+    stuff: Dict[int, str],
+    img: torch.Tensor,
+    void_color: Tuple[int, int],
+    allow_unknown_category: bool,
 ) -> torch.Tensor:
     # flatten the height*width dimensions
     img = torch.flatten(img, 0, -2)
@@ -93,6 +97,8 @@ def _prepocess_image(
     things_pixels = np.isin(img[:, 0], list(things.keys()))
     # reset instance ids of stuffs
     img[stuff_pixels, 1] = 0
+    if not allow_unknown_category and not np.all(things_pixels | stuff_pixels):
+        raise ValueError("Unknown categories found in preds")
     # set unknown categories to void color
     img[~(things_pixels | stuff_pixels)] = void_color
     return torch.tensor(img)
@@ -212,14 +218,14 @@ def _panoptic_quality_compute(
 
 
 def panoptic_quality(
-    things: Dict[int, str], stuff: Dict[int, str], preds: torch.Tensor, target: torch.Tensor
+    things: Dict[int, str], stuff: Dict[int, str], preds: torch.Tensor, target: torch.Tensor, allow_unknown_preds_category: bool= False
 ) -> Tensor:
     _validate_categories(things, stuff)
     _validate_inputs(preds, target)
     void_color = _get_void_color(things, stuff)
     cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuff)
-    flatten_preds = _prepocess_image(things, stuff, preds, void_color)
-    flatten_target = _prepocess_image(things, stuff, target, void_color)
+    flatten_preds = _prepocess_image(things, stuff, preds, void_color, allow_unknown_preds_category)
+    flatten_target = _prepocess_image(things, stuff, target, void_color, True)
     iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
         flatten_preds, flatten_target, cat_id_to_continuous_id, void_color
     )
