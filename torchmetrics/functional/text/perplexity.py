@@ -69,12 +69,12 @@ def perplexity(self, probs: Tensor, mask: Tensor) -> Tensor:
     Returns:
         Perplexity
 
-    Examples: TODO
+    Examples:
         >>> from torch import tensor
-        >>> probs = tensor(...)
-        >>> mask = tensor(...)
+        >>> probs = tensor([[.2, .04, .8], [.34, .12, .56]])
+        >>> mask = tensor([[True, True, False], [True, True, True]])
         >>> perplexity(probs, mask)
-        tensor(...)
+        tensor(7.3522)
     """
     total, count = _perplexity_update(probs, mask)
     return _perplexity_compute(total, count)

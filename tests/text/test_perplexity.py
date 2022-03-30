@@ -11,7 +11,7 @@ def test_perplexity_class(self) -> None:
     probs = tensor([[0.2, 0.04, 0.8], [0.34, 0.12, 0.56]])
     mask = tensor([[True, True, False], [True, True, True]])
 
-    expected = 4.58
+    expected = 7.3522
 
     metric = Perplexity()
     metric.update(probs, mask)
@@ -26,7 +26,7 @@ def test_perplexity_functional(self) -> None:
     probs = tensor([[0.2, 0.04, 0.8], [0.34, 0.12, 0.56]])
     mask = tensor([[True, True, False], [True, True, True]])
 
-    expected = 4.58
+    expected = 7.3522
 
     actual = perplexity(probs, mask)
 

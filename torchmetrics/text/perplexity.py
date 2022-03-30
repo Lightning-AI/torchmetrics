@@ -37,7 +37,7 @@ class Perplexity(Metric):
         >>> mask = tensor([[True, True, False], [True, True, True]])
         >>> metric = Perplexity()
         >>> metric(probs, mask)
-        tensor(4.58)
+        tensor(7.3522)
     """
     is_differentiable = False
     higher_is_better = False
