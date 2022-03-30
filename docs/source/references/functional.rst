@@ -525,6 +525,12 @@ match_error_rate [func]
 .. autofunction:: torchmetrics.functional.match_error_rate
     :noindex:
 
+perplexity [func]
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.functional.perplexity
+    :noindex:
+
 rouge_score [func]
 ~~~~~~~~~~~~~~~~~~
 

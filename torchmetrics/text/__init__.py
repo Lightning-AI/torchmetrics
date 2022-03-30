@@ -16,6 +16,7 @@ from torchmetrics.text.cer import CharErrorRate  # noqa: F401
 from torchmetrics.text.chrf import CHRFScore  # noqa: F401
 from torchmetrics.text.eed import ExtendedEditDistance  # noqa: F401
 from torchmetrics.text.mer import MatchErrorRate  # noqa: F401
+from torchmetrics.text.perplexity import Perplexity  # noqa: F401
 from torchmetrics.text.sacre_bleu import SacreBLEUScore  # noqa: F401
 from torchmetrics.text.squad import SQuAD  # noqa: F401
 from torchmetrics.text.ter import TranslationEditRate  # noqa: F401
