@@ -284,6 +284,10 @@ We currently have implemented metrics within the following domains:
   [AUROC](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#auroc)
   and [19 more](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#classification-metrics)
   )
+- Detection (
+  [MeanAveragePrecision](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#meanaverageprecision),
+  [PanopticQuality](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#panopticquality)
+  )
 - Information Retrieval (
   [RetrievalMAP](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmap),
   [RetrievalMRR](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#retrievalmrr),
