@@ -61,7 +61,13 @@ class PanopticQuality(Metric):
     false_positives: List[Tensor]
     false_negatives: List[Tensor]
 
-    def __init__(self, things: Dict[int, str], stuff: Dict[int, str], dist_sync_on_step=False):
+    def __init__(
+        self,
+        things: Dict[int, str],
+        stuff: Dict[int, str],
+        allow_unknown_preds_category: bool = False,
+        dist_sync_on_step: bool = False,
+    ):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
         _validate_categories(things, stuff)
@@ -69,6 +75,7 @@ class PanopticQuality(Metric):
         self.stuff = stuff
         self.void_color = _get_void_color(things, stuff)
         self.cat_id_to_continuous_id = _get_category_id_to_continous_id(things, stuff)
+        self.allow_unknown_preds_category = allow_unknown_preds_category
 
         # per category intemediate metrics
         n_categories = len(things) + len(stuff)
@@ -97,10 +104,14 @@ class PanopticQuality(Metric):
         Raises:
             ValueError:
                 If ``preds`` or ``target`` has wrong shape.
+            ValueError:
+                If ``preds`` containts
         """
         _validate_inputs(preds, target)
-        flatten_preds = _prepocess_image(self.things, self.stuff, preds, self.void_color)
-        flatten_target = _prepocess_image(self.things, self.stuff, target, self.void_color)
+        flatten_preds = _prepocess_image(
+            self.things, self.stuff, preds, self.void_color, self.allow_unknown_preds_category
+        )
+        flatten_target = _prepocess_image(self.things, self.stuff, target, self.void_color, True)
         iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
             flatten_preds, flatten_target, self.cat_id_to_continuous_id, self.void_color
         )

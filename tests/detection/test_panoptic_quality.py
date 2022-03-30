@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from collections import namedtuple
 from tests.helpers import seed_all
 import pytest
 import torch
 
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.panoptic_quality import PanopticQuality
+from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
 
 seed_all(42)
 
@@ -30,7 +31,9 @@ def test_empty_metric():
 
 def test_perfect_match():
     """Test evaluation on random image."""
-    metric = PanopticQuality(things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"})
+    metric = PanopticQuality(
+        things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"}, allow_unknown_preds_category=True
+    )
     height, width = 300, 400
     preds = torch.randint(low=0, high=9, size=(height, width, 2))
     metric.update(preds, preds)
@@ -53,7 +56,9 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError):
         PanopticQuality(things={0: "person"}, stuff={0: "sky"})
 
-    metric = PanopticQuality(things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"})
+    metric = PanopticQuality(
+        things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"}, allow_unknown_preds_category=True
+    )
     valid_image = torch.randint(low=0, high=9, size=(400, 300, 2))
     metric.update(valid_image, valid_image)
 
@@ -65,7 +70,7 @@ def test_error_on_wrong_input():
 
     with pytest.raises(ValueError):
         preds = torch.randint(low=0, high=9, size=(400, 300, 2))
-        target = torch.randint(low=0, high=9, size=(300, 400, 2))
+        target = torch.randint(low=0, high=9, size=(30, 40, 2))
         metric.update(preds, target)
 
     with pytest.raises(ValueError):
