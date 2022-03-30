@@ -78,7 +78,7 @@ def _lcs(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> int:
     Args:
         pred_tokens:
             A tokenized predicted sentence.
-        target_toknes:
+        target_tokens:
             A tokenized target sentence.
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
