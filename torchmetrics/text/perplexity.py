@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from torch import Tensor, tensor
 
@@ -52,7 +52,7 @@ class Perplexity(Metric):
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, probs: Tensor, mask: Tensor) -> None:
+    def update(self, probs: Tensor, mask: Optional[Tensor] = None) -> None:
         """Store references/predictions for computing the perplexity.
 
         Args:

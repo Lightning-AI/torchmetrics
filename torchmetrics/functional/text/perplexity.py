@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from torch import Tensor, isnan
 
@@ -27,7 +27,7 @@ def nanmean(v: Tensor, *args, inplace: bool = False, **kwargs) -> Tensor:
     return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)
 
 
-def _perplexity_update(probs: Tensor, mask: Tensor) -> Tuple[Tensor, Tensor]:
+def _perplexity_update(probs: Tensor, mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
     """Update the perplexity score with the current probabilities.
 
     Args:
@@ -37,8 +37,9 @@ def _perplexity_update(probs: Tensor, mask: Tensor) -> Tuple[Tensor, Tensor]:
         Perplexity, summed over all samples
         Number of samples
     """
-    probs = probs.clone()
-    probs[~mask] = float("NaN")
+    if mask is not None:
+        probs = probs.clone()
+        probs[~mask] = float("NaN")
 
     # It doesn't matter the log and exp base, as long as they are the same, because they cancel each other out.
     total = (-nanmean(probs.log(), dim=-1)).exp().sum()
@@ -58,7 +59,7 @@ def _perplexity_compute(total: Tensor, count: Tensor) -> Tensor:
     return total / count
 
 
-def perplexity(self, probs: Tensor, mask: Tensor) -> Tensor:
+def perplexity(self, probs: Tensor, mask: Optional[Tensor] = None) -> Tensor:
     """Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
     of bits per word a model needs to represent the sample.
 
