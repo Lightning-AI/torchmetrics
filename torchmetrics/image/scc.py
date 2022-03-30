@@ -14,7 +14,6 @@
 
 from typing import Any, Dict, List, Optional, Sequence
 
-
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -22,6 +21,7 @@ from torchmetrics.functional.image.scc import _scc_compute, _scc_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+
 
 class SpatialCorrelationCoefficient(Metric):
     preds: List[Tensor]
@@ -63,4 +63,3 @@ class SpatialCorrelationCoefficient(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _scc_compute(preds, target, self.kernel_size, self.reduction)
-
