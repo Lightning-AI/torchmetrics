@@ -106,20 +106,17 @@ def _scc_compute(
                 preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            )\
-            - preds_sum_sq,\
+            ) - preds_sum_sq,
             F.conv2d(
                 target[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            )\
-            - target_sum_sq,\
+            ) - target_sum_sq,
             F.conv2d(
                 preds[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            )\
-            - preds_target_sum_mul,\
+            ) - preds_target_sum_mul,
         )
 
         sigma_preds_sq, sigma_target_sq, sigma_preds_target = outputs
@@ -196,4 +193,5 @@ def spatial_correlation_coefficient(
     preds, target = _scc_update(preds, target)
 
     return _scc_compute(preds, target, kernel_size, reduction)
+
 
