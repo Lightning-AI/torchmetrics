@@ -103,21 +103,30 @@ def _scc_compute(
 
         preds_sum_sq, target_sum_sq, preds_target_sum_mul = mu1 * mu1, mu2 * mu2, mu1 * mu2
 
-        outputs_1 = F.conv2d(
+        outputs_1 = (
+            F.conv2d(
                 preds[:, i, :, :].unsqueeze(1) * preds[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            ) - preds_sum_sq
-        outputs_2 = F.conv2d(
+            )
+            - preds_sum_sq
+        )
+        outputs_2 = (
+            F.conv2d(
                 target[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            ) - target_sum_sq
-        outputs_3 = F.conv2d(
+            )
+            - target_sum_sq
+        )
+        outputs_3 = (
+            F.conv2d(
                 preds[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
-            ) - preds_target_sum_mul
+            )
+            - preds_target_sum_mul
+        )
 
         sigma_preds_sq, sigma_target_sq, sigma_preds_target = outputs_1, outputs_2, outputs_3
 

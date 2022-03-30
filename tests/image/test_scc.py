@@ -17,6 +17,7 @@ from functools import partial
 import pytest
 import torch
 from sewar.full_ref import scc
+
 from tests.helpers import seed_all
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional.image.scc import spatial_correlation_coefficient
