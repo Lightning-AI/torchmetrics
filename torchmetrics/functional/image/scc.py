@@ -1,48 +1,60 @@
-from typing import Optional, Sequence
+# Copyright The PyTorch Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+from typing import Optional, Sequence, Tuple, Union
 import torch
 from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
-
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _scc_update(preds: Tensor, targets: Tensor):
+def _scc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Updates and returns variables required to compute Spatial Correlation Coefficient.
 
     Checks for same shape and
     type of the input tensors.
     Args:
         preds: Predicted tensor
-        targets: Ground truth tensor
+        target: Ground truth tensor
     """
 
-    if preds.dtype != targets.dtype:
+    if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
-            f" Got preds: {preds.dtype} and target: {targets.dtype}."
+            f" Got preds: {preds.dtype} and target: {target.dtype}."
         )
-    _check_same_shape(preds, targets)
+    _check_same_shape(preds, target)
     if len(preds.shape) != 4:
         raise ValueError(
             "Expected `preds` and `target` to have BxCxHxW shape."
-            f" Got preds: {preds.shape} and target: {targets.shape}."
+            f" Got preds: {preds.shape} and target: {target.shape}."
         )
-    return preds, targets
+    return preds, target
 
 
 def _scc_compute(
     preds: Tensor,
-    targets: Tensor,
-    kernel_size: Optional[Sequence[int]] = (9, 9),
-    reduction: Optional[Sequence[Literal["elementwise_mean", "sum", "none"]]] = "elementwise_mean",
-):
+    target: Tensor,
+    kernel_size: Sequence[int] = (9, 9),
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
 
     """Args:
         preds: estimated image
-        targets: ground truth image
+        target: ground truth image
         kernel_size: size of the Uniform kernel (default: (9, 9))
 
         reduction: a method to reduce metric score over labels.
@@ -84,10 +96,10 @@ def _scc_compute(
     for i in range(classes):
 
         mu1, mu2 = F.conv2d(preds[:, i, :, :].unsqueeze(1), kernel, padding="same"), F.conv2d(
-            targets[:, i, :, :].unsqueeze(1), kernel, padding="same"
+            target[:, i, :, :].unsqueeze(1), kernel, padding="same"
         )
 
-        preds_sum_sq, targets_sum_sq, preds_targets_sum_mul = mu1 * mu1, mu2 * mu2, mu1 * mu2
+        preds_sum_sq, target_sum_sq, preds_target_sum_mul = mu1 * mu1, mu2 * mu2, mu1 * mu2
 
         outputs = (
             F.conv2d(
@@ -97,31 +109,31 @@ def _scc_compute(
             )\
             - preds_sum_sq,\
             F.conv2d(
-                targets[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1),
+                target[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
             )\
-            - targets_sum_sq,\
+            - target_sum_sq,\
             F.conv2d(
-                preds[:, i, :, :].unsqueeze(1) * targets[:, i, :, :].unsqueeze(1),
+                preds[:, i, :, :].unsqueeze(1) * target[:, i, :, :].unsqueeze(1),
                 kernel,
                 padding="same",
             )\
-            - preds_targets_sum_mul,\
+            - preds_target_sum_mul,\
         )
 
-        sigma_preds_sq, sigma_targets_sq, sigma_preds_targets = outputs
+        sigma_preds_sq, sigma_target_sq, sigma_preds_target = outputs
 
         sigma_preds_sq[sigma_preds_sq < 0] = 0
-        sigma_targets_sq[sigma_targets_sq < 0] = 0
+        sigma_target_sq[sigma_target_sq < 0] = 0
 
-        den = torch.sqrt(sigma_preds_sq) * torch.sqrt(sigma_targets_sq)
+        den = torch.sqrt(sigma_preds_sq) * torch.sqrt(sigma_target_sq)
 
         idx = den == 0
 
         den[den == 0] = 1
 
-        scc = sigma_preds_targets / den
+        scc = sigma_preds_target / den
 
         scc[idx] = 0
 
@@ -140,15 +152,15 @@ def _scc_compute(
 
 def spatial_correlation_coefficient(
     preds: Tensor,
-    targets: Tensor,
-    kernel_size: Optional[Sequence[int]] = (9, 9),
-    reduction: Optional[Sequence[Literal["elementwise_mean", "sum", "none"]]] = "elementwise_mean",
+    target: Tensor,
+    kernel_size: Sequence[int] = (9, 9),
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Spatial Correlation Coefficient.
 
     Args:
         preds: estimated image
-        targets: ground truth image
+        target: ground truth image
         kernel_size: size of the Uniform kernel (default: (9, 9))
 
         reduction: a method to reduce metric score over labels.
@@ -175,12 +187,13 @@ def spatial_correlation_coefficient(
 
         Example:
         >>> from torchmetrics.functional.image.scc import spatial_correlation_coefficient
-        >>> preds = torch.rand([16, 3, 16, 16])
-        >>> target = torch.rand([16, 3, 16, 16])
+        >>> preds = torch.ones([16, 3, 16, 16])
+        >>> target = torch.ones([16, 3, 16, 16])
         >>> spatial_correlation_coefficient(preds, target)
-        tensor(0.3511)
+        tensor(1.)
     """
 
-    preds, targets = _scc_update(preds, targets)
+    preds, target = _scc_update(preds, target)
 
-    return _scc_compute(preds, targets, kernel_size, reduction)
+    return _scc_compute(preds, target, kernel_size, reduction)
+
