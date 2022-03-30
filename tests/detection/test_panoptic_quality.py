@@ -13,6 +13,7 @@
 # limitations under the License.
 from collections import namedtuple
 from tests.helpers import seed_all
+import numpy as np
 import pytest
 import torch
 
@@ -21,6 +22,63 @@ from torchmetrics.detection.panoptic_quality import PanopticQuality
 from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
 
 seed_all(42)
+
+Input = namedtuple("Input", ["preds", "target"])
+
+_inputs = Input(
+    preds=torch.tensor(
+        [
+            [
+                [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
+                [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
+                [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
+            ]
+        ]
+    ),
+    target=torch.tensor(
+        [
+            [
+                [[6, 0], [6, 0], [6, 0], [6, 0], [0, 0]],
+                [[0, 1], [0, 1], [6, 0], [0, 0], [0, 0]],
+                [[0, 1], [0, 1], [6, 0], [1, 0], [1, 0]],
+                [[0, 1], [7, 0], [7, 0], [1, 0], [1, 0]],
+                [[0, 1], [7, 0], [7, 0], [7, 0], [7, 0]],
+            ]
+        ]
+    ),
+)
+_args = dict(things={0: "person", 1: "cat"}, stuff={6: "sky", 7: "grass"})
+
+
+def _compare_fn(preds, target) -> dict:
+    return np.array([0.7753])
+
+
+class TestPanopticQuality(MetricTester):
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
+    def test_panoptic_quality_class(self, ddp, dist_sync_on_step):
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=_inputs.preds,
+            target=_inputs.target,
+            metric_class=PanopticQuality,
+            sk_metric=_compare_fn,
+            dist_sync_on_step=dist_sync_on_step,
+            check_batch=False,
+            metric_args=_args,
+        )
+
+    def test_panoptic_quality_fn(self):
+        self.run_functional_metric_test(
+            _inputs.preds,
+            _inputs.target,
+            metric_functional=panoptic_quality,
+            sk_metric=_compare_fn,
+            metric_args=_args,
+        )
 
 
 def test_empty_metric():
@@ -76,3 +134,7 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError):
         preds = torch.randint(low=0, high=9, size=(400, 300))
         metric.update(preds, preds)
+
+if __name__ == "__main__":
+    test = TestPanopticQuality()
+    test.test_panoptic_quality_class(False, False)

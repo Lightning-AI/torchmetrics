@@ -15,7 +15,6 @@
 
 from typing import Dict, List, Tuple
 
-import numpy as np
 import torch
 from torch import Tensor
 
@@ -91,17 +90,15 @@ def _prepocess_image(
 ) -> torch.Tensor:
     # flatten the height*width dimensions
     img = torch.flatten(img, 0, -2)
-    # torch.isin not present in all recent version of torch, using numpy instead
-    img = img.numpy()
-    stuff_pixels = np.isin(img[:, 0], list(stuff.keys()))
-    things_pixels = np.isin(img[:, 0], list(things.keys()))
+    stuff_pixels = torch.isin(img[:, 0], list(stuff.keys()))
+    things_pixels = torch.isin(img[:, 0], list(things.keys()))
     # reset instance ids of stuffs
     img[stuff_pixels, 1] = 0
-    if not allow_unknown_category and not np.all(things_pixels | stuff_pixels):
+    if not allow_unknown_category and not torch.all(things_pixels | stuff_pixels):
         raise ValueError("Unknown categories found in preds")
     # set unknown categories to void color
     img[~(things_pixels | stuff_pixels)] = void_color
-    return torch.tensor(img)
+    return img
 
 
 def _panoptic_quality_update(
@@ -218,7 +215,11 @@ def _panoptic_quality_compute(
 
 
 def panoptic_quality(
-    things: Dict[int, str], stuff: Dict[int, str], preds: torch.Tensor, target: torch.Tensor, allow_unknown_preds_category: bool= False
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    things: Dict[int, str],
+    stuff: Dict[int, str],
+    allow_unknown_preds_category: bool = False,
 ) -> Tensor:
     _validate_categories(things, stuff)
     _validate_inputs(preds, target)
@@ -230,4 +231,4 @@ def panoptic_quality(
         flatten_preds, flatten_target, cat_id_to_continuous_id, void_color
     )
     results = _panoptic_quality_compute(things, stuff, iou_sum, true_positives, false_positives, false_negatives)
-    return results
+    return results["all"]["pq"]

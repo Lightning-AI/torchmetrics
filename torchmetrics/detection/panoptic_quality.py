@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import torch
 from torch import Tensor
@@ -35,7 +35,7 @@ class PanopticQuality(Metric):
     for panoptic segmentations. It is defined as:
 
     .. math::
-        PQ = \frac{IOU}{TP + 0.5*FP + 0.5*FN}
+        PQ = \frac{IOU}{TP + 0.5\cdot FP + 0.5\cdot FN}
 
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
     the number of true postitives, false positives and false negatives.
@@ -56,19 +56,14 @@ class PanopticQuality(Metric):
             If ``things``, ``stuffs`` share the same ``category_id``.
     """
 
-    iou_sum: List[Tensor]
-    true_positives: List[Tensor]
-    false_positives: List[Tensor]
-    false_negatives: List[Tensor]
-
     def __init__(
         self,
         things: Dict[int, str],
         stuff: Dict[int, str],
         allow_unknown_preds_category: bool = False,
-        dist_sync_on_step: bool = False,
+        **kwargs: Dict[str, Any],
     ):
-        super().__init__(dist_sync_on_step=dist_sync_on_step)
+        super().__init__(**kwargs)
 
         _validate_categories(things, stuff)
         self.things = things
@@ -86,9 +81,9 @@ class PanopticQuality(Metric):
 
     def update(
         self,
-        preds: torch.IntTensor,
-        target: torch.IntTensor,
-    ):
+        preds: torch.Tensor,
+        target: torch.Tensor,
+    ) -> None:
         r"""
         Update state with predictions and targets.
 
@@ -120,9 +115,9 @@ class PanopticQuality(Metric):
         self.false_positives += false_positives
         self.false_negatives += false_negatives
 
-    def compute(self):
+    def compute(self) -> float:
         """Computes panoptic quality based on inputs passed in to ``update`` previously."""
         results = _panoptic_quality_compute(
             self.things, self.stuff, self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
         )
-        return results
+        return results["all"]["pq"]
