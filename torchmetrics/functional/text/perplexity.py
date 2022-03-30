@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 from torch import Tensor, isnan
 
 
 # From https://github.com/pytorch/pytorch/issues/21987#issuecomment-539402619
 # From PyTorch v1.10, this is officially supported.
-def nanmean(v: Tensor, *args: Tuple[Any], inplace: bool = False, **kwargs: Dict[str, Any]) -> Tensor:
+def nanmean(v: Tensor, *args, inplace: bool = False, **kwargs) -> Tensor:  # type: ignore
     if not inplace:
         v = v.clone()
     is_nan = isnan(v)
@@ -59,7 +59,7 @@ def _perplexity_compute(total: Tensor, count: Tensor) -> Tensor:
     return total / count
 
 
-def perplexity(self, probs: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+def perplexity(probs: Tensor, mask: Optional[Tensor] = None) -> Tensor:
     """Perplexity measures how well a language model predicts a text sample. It's calculated as the average number
     of bits per word a model needs to represent the sample.
 
