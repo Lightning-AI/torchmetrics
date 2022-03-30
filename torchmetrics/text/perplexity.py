@@ -48,11 +48,11 @@ class Perplexity(Metric):
         self,
         **kwargs: Dict[str, Any],
     ):
-        super().__init__(**kwargs)
+        super().__init__(compute_on_step=None, **kwargs)
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("count", default=tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, probs: Tensor, mask: Optional[Tensor] = None) -> None:
+    def update(self, probs: Tensor, mask: Optional[Tensor] = None) -> None:  # type: ignore
         """Store references/predictions for computing the perplexity.
 
         Args:

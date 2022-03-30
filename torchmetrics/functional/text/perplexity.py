@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from torch import Tensor, isnan
 
 
 # From https://github.com/pytorch/pytorch/issues/21987#issuecomment-539402619
 # From PyTorch v1.10, this is officially supported.
-def nanmean(v: Tensor, *args, inplace: bool = False, **kwargs) -> Tensor:
+def nanmean(v: Tensor, *args: Tuple[Any], inplace: bool = False, **kwargs: Dict[str, Any]) -> Tensor:
     if not inplace:
         v = v.clone()
     is_nan = isnan(v)
