@@ -81,6 +81,11 @@ def _get_category_id_to_continous_id(things: Dict[int, str], stuff: Dict[int, st
     return cat_id_to_continuous_id
 
 
+def _isin(arr: torch.tensor, values: List) -> torch.Tensor:
+    """basic implementation of torch.isin to support pre 0.10 version"""
+    return (arr[..., None] == arr.new(values)).any(-1)
+
+
 def _prepocess_image(
     things: Dict[int, str],
     stuff: Dict[int, str],
@@ -90,14 +95,14 @@ def _prepocess_image(
 ) -> torch.Tensor:
     # flatten the height*width dimensions
     img = torch.flatten(img, 0, -2)
-    stuff_pixels = torch.isin(img[:, 0], list(stuff.keys()))
-    things_pixels = torch.isin(img[:, 0], list(things.keys()))
+    stuff_pixels = _isin(img[:, 0], list(stuff.keys()))
+    things_pixels = _isin(img[:, 0], list(things.keys()))
     # reset instance ids of stuffs
     img[stuff_pixels, 1] = 0
     if not allow_unknown_category and not torch.all(things_pixels | stuff_pixels):
         raise ValueError("Unknown categories found in preds")
     # set unknown categories to void color
-    img[~(things_pixels | stuff_pixels)] = void_color
+    img[~(things_pixels | stuff_pixels)] = img.new(void_color)
     return img
 
 
@@ -111,12 +116,12 @@ def _panoptic_quality_update(
     Returns stat scores (iou sum, true positives, false positives, false negatives) required
     to compute accuracy.
     """
-
+    device = flatten_preds.device
     n_categories = len(cat_id_to_continuous_id)
-    iou_sum = torch.zeros(n_categories, dtype=torch.double)
-    true_positives = torch.zeros(n_categories, dtype=torch.int)
-    false_positives = torch.zeros(n_categories, dtype=torch.int)
-    false_negatives = torch.zeros(n_categories, dtype=torch.int)
+    iou_sum = torch.zeros(n_categories, dtype=torch.double, device = device)
+    true_positives = torch.zeros(n_categories, dtype=torch.int, device = device)
+    false_positives = torch.zeros(n_categories, dtype=torch.int, device = device)
+    false_negatives = torch.zeros(n_categories, dtype=torch.int, device = device)
 
     # calculate the area of each prediction, ground truth and pairwise intersection
     pred_areas = _get_color_areas(flatten_preds)
