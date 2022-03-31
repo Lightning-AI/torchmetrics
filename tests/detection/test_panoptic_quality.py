@@ -34,7 +34,21 @@ _inputs = Input(
                 [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
                 [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
                 [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
-            ]
+            ],
+            [
+                [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
+                [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
+                [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
+            ],
+            [
+                [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
+                [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
+                [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
+            ],
         ]
     ),
     target=torch.tensor(
@@ -45,7 +59,21 @@ _inputs = Input(
                 [[0, 1], [0, 1], [6, 0], [1, 0], [1, 0]],
                 [[0, 1], [7, 0], [7, 0], [1, 0], [1, 0]],
                 [[0, 1], [7, 0], [7, 0], [7, 0], [7, 0]],
-            ]
+            ],
+            [
+                [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
+                [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
+                [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
+                [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
+            ],
+            [
+                [[7, 0], [1, 0], [7, 0], [7, 0], [1, 1]],
+                [[1, 0], [1, 0], [7, 0], [1, 1], [1, 1]],
+                [[1, 0], [1, 0], [7, 0], [1, 1], [0, 0]],
+                [[1, 0], [6, 0], [7, 0], [0, 0], [0, 0]],
+                [[1, 0], [6, 0], [6, 0], [6, 0], [6, 0]],
+            ],
         ]
     ),
 )
@@ -53,7 +81,7 @@ _args = dict(things={0: "person", 1: "cat"}, stuff={6: "sky", 7: "grass"})
 
 
 def _compare_fn(preds, target) -> dict:
-    return np.array([0.7753])
+    return np.array([0.7753, 1.0, 0.0])
 
 
 class TestPanopticQuality(MetricTester):
@@ -85,21 +113,6 @@ def test_empty_metric():
     """Test empty metric."""
     metric = PanopticQuality(things={}, stuff={})
     metric.compute()
-
-
-def test_perfect_match():
-    """Test evaluation on random image."""
-    metric = PanopticQuality(
-        things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"}, allow_unknown_preds_category=True
-    )
-    height, width = 300, 400
-    preds = torch.randint(low=0, high=9, size=(height, width, 2))
-    metric.update(preds, preds)
-    metric = metric.compute()
-    for metric_class in ["all", "things", "stuff"]:
-        assert metric[metric_class]["pq"] == 1.0
-        assert metric[metric_class]["rq"] == 1.0
-        assert metric[metric_class]["sq"] == 1.0
 
 
 def test_error_on_wrong_input():
@@ -134,6 +147,7 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError):
         preds = torch.randint(low=0, high=9, size=(400, 300))
         metric.update(preds, preds)
+
 
 if __name__ == "__main__":
     test = TestPanopticQuality()
