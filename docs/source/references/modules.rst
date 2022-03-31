@@ -687,7 +687,7 @@ MatchErrorRate
 Perplexity
 ~~~~~~~~~~
 
-.. autoclass:: torchmetrics.text.perplexity.Perplexity
+.. autoclass:: torchmetrics.Perplexity
     :noindex:
 
 ROUGEScore
