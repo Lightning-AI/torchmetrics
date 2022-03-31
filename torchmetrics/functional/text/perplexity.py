@@ -14,17 +14,9 @@
 
 from typing import Optional, Tuple
 
-from torch import Tensor, isnan
+from torch import Tensor
 
-
-# From https://github.com/pytorch/pytorch/issues/21987#issuecomment-539402619
-# From PyTorch v1.10, this is officially supported.
-def nanmean(v: Tensor, *args, inplace: bool = False, **kwargs) -> Tensor:  # type: ignore
-    if not inplace:
-        v = v.clone()
-    is_nan = isnan(v)
-    v[is_nan] = 0
-    return v.sum(*args, **kwargs) / (~is_nan).float().sum(*args, **kwargs)
+from torchmetrics.utilities.data import nanmean
 
 
 def _perplexity_update(probs: Tensor, mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
