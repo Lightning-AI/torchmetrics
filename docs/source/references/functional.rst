@@ -526,7 +526,7 @@ match_error_rate [func]
     :noindex:
 
 perplexity [func]
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. autofunction:: torchmetrics.functional.perplexity
     :noindex:
