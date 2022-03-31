@@ -190,7 +190,7 @@ def _auroc_compute(
     partial_auc = _auc_compute_without_check(fpr, tpr, 1.0)
 
     # McClish correction: standardize result to be 0.5 if non-discriminant and 1 if maximal
-    min_area: Tensor = 0.5 * max_area ** 2
+    min_area: Tensor = 0.5 * max_area**2
     return 0.5 * (1 + (partial_auc - min_area) / (max_area - min_area))
 
 
