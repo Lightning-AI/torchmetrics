@@ -63,7 +63,7 @@ def _sk_hinge(preds, target, squared, multiclass_mode):
         measures = np.clip(measures, 0, None)
 
         if squared:
-            measures = measures ** 2
+            measures = measures**2
         return measures.mean(axis=0)
     if multiclass_mode == MulticlassMode.ONE_VS_ALL:
         result = np.zeros(sk_preds.shape[1])

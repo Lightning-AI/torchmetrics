@@ -294,10 +294,10 @@ def _calculate_fscore(
             n: matching_n_grams[n] / ref_n_grams[n] if ref_n_grams[n] > 0 else tensor(0.0) for n in matching_n_grams
         }
         denominator: Dict[int, Tensor] = {
-            n: torch.max(beta ** 2 * precision[n] + recall[n], _EPS_SMOOTHING) for n in matching_n_grams
+            n: torch.max(beta**2 * precision[n] + recall[n], _EPS_SMOOTHING) for n in matching_n_grams
         }
         f_score: Dict[int, Tensor] = {
-            n: (1 + beta ** 2) * precision[n] * recall[n] / denominator[n] for n in matching_n_grams
+            n: (1 + beta**2) * precision[n] * recall[n] / denominator[n] for n in matching_n_grams
         }
 
         return f_score
