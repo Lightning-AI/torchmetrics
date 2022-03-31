@@ -20,8 +20,6 @@ from typing_extensions import Literal
 from torchmetrics.functional.classification.confusion_matrix import _confusion_matrix_update
 from torchmetrics.utilities.data import get_num_classes
 
-# from torchmetrics.utilities.distributed import reduce
-
 
 def _jaccard_from_confmat(
     confmat: Tensor,
@@ -164,6 +162,5 @@ def jaccard_index(
         tensor(0.9660)
     """
 
-    num_classes = get_num_classes(preds=preds, target=target, num_classes=num_classes)
     confmat = _confusion_matrix_update(preds, target, num_classes, threshold)
     return _jaccard_from_confmat(confmat, num_classes, average, ignore_index, absent_score)

@@ -61,7 +61,7 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
 
     noise = target - preds
 
-    snr_value = (torch.sum(target ** 2, dim=-1) + eps) / (torch.sum(noise ** 2, dim=-1) + eps)
+    snr_value = (torch.sum(target**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
     snr_value = 10 * torch.log10(snr_value)
 
     return snr_value

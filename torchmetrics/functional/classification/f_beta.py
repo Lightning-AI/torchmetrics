@@ -72,8 +72,8 @@ def _fbeta_compute(
         precision = _safe_divide(tp.float(), tp + fp)
         recall = _safe_divide(tp.float(), tp + fn)
 
-    num = (1 + beta ** 2) * precision * recall
-    denom = beta ** 2 * precision + recall
+    num = (1 + beta**2) * precision * recall
+    denom = beta**2 * precision + recall
     denom[denom == 0.0] = 1.0  # avoid division by 0
 
     # if classes matter and a given class is not present in both the preds and the target,

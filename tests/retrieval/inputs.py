@@ -26,6 +26,12 @@ _input_retrieval_scores = Input(
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
+_input_retrieval_scores_for_adaptive_k = Input(
+    indexes=torch.randint(high=NUM_BATCHES * BATCH_SIZE // 2, size=(NUM_BATCHES, BATCH_SIZE)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+)
+
 _input_retrieval_scores_extra = Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
@@ -86,5 +92,5 @@ _input_retrieval_scores_mismatching_sizes_func = Input(
 _input_retrieval_scores_wrong_targets = Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-    target=torch.randint(low=-(2 ** 31), high=2 ** 31, size=(NUM_BATCHES, BATCH_SIZE)),
+    target=torch.randint(low=-(2**31), high=2**31, size=(NUM_BATCHES, BATCH_SIZE)),
 )
