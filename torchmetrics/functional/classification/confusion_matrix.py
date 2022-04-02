@@ -44,7 +44,7 @@ def _confusion_matrix_update(
         minlength = 4 * num_classes
     else:
         unique_mapping = (target.view(-1) * num_classes + preds.view(-1)).to(torch.long)
-        minlength = num_classes ** 2
+        minlength = num_classes**2
 
     bins = _bincount(unique_mapping, minlength=minlength)
     if multilabel:

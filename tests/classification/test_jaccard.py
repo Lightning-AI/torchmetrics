@@ -234,14 +234,3 @@ def test_jaccard_ignore_index(pred, target, ignore_index, num_classes, reduction
         reduction=reduction,
     )
     assert torch.allclose(jaccard_val, tensor(expected).to(jaccard_val))
-
-
-def test_warning_on_difference_in_number_of_classes():
-    """Test that warning is thrown if the detected number of classes are different from the the specified number of
-    classes."""
-    preds = torch.randint(3, (10,))
-    target = torch.randint(3, (10,))
-    with pytest.warns(
-        RuntimeWarning,
-    ):
-        jaccard_index(preds, target, num_classes=4)

@@ -119,7 +119,7 @@ def _get_embeddings_and_idf_scale(
             batch["input_ids_idf"] * processed_attention_mask if idf else processed_attention_mask.type(out.dtype)
         )
         input_ids_idf /= input_ids_idf.sum(-1, keepdim=True)
-        idf_scale_list.append(input_ids_idf)
+        idf_scale_list.append(input_ids_idf.cpu())
 
     embeddings = torch.cat(embeddings_list)
     idf_scale = torch.cat(idf_scale_list)
