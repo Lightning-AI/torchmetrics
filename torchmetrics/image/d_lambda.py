@@ -75,9 +75,9 @@ class SpectralDistortionIndex(Metric):
         if not isinstance(p, int) or p <= 0:
             raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
         self.p = p
-        allowed_reduction = ["elementwise_mean", "sum", "none"]
-        if reduction not in allowed_reduction:
-            raise ValueError(f"Expected argument `reduction` be one of {allowed_reduction} but got {reduction}")
+        ALLOWED_REDUCTION = ("elementwise_mean", "sum", "none")
+        if reduction not in ALLOWED_REDUCTION:
+            raise ValueError(f"Expected argument `reduction` be one of {ALLOWED_REDUCTION} but got {reduction}")
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
