@@ -98,7 +98,7 @@ class PanopticQuality(Metric):
         self,
         preds: torch.Tensor,
         target: torch.Tensor,
-    ) -> None:
+    ) -> None:  # type: ignore
         r"""
         Update state with predictions and targets.
 
