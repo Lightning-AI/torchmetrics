@@ -18,7 +18,7 @@ import pytest
 import torch
 
 from tests.helpers import seed_all
-from tests.helpers.non_sklearn_metrics import d_lambda
+from tests.helpers.reference_metrics import d_lambda
 from tests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex

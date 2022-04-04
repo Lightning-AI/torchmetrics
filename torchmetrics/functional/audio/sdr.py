@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
 from typing import Optional
 
 import torch
@@ -192,6 +193,15 @@ def signal_distortion_ratio(
     # transform to decibels
     ratio = coh / (1 - coh)
     val = 10.0 * torch.log10(ratio)
+
+    # recompute sdr in float64 if val is NaN or Inf
+    if (torch.isnan(val).any() or torch.isinf(val).any()) and preds.dtype != torch.float64:
+        warnings.warn(
+            "Detected `nan` or `inf` value in computed metric, retrying computation in double precision",
+            UserWarning,
+        )
+        val = signal_distortion_ratio(preds.double(), target.double(), use_cg_iter, filter_length, zero_mean, load_diag)
+
     return val
 
 
@@ -229,13 +239,13 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
         preds = preds - torch.mean(preds, dim=-1, keepdim=True)
 
     alpha = (torch.sum(preds * target, dim=-1, keepdim=True) + eps) / (
-        torch.sum(target ** 2, dim=-1, keepdim=True) + eps
+        torch.sum(target**2, dim=-1, keepdim=True) + eps
     )
     target_scaled = alpha * target
 
     noise = target_scaled - preds
 
-    val = (torch.sum(target_scaled ** 2, dim=-1) + eps) / (torch.sum(noise ** 2, dim=-1) + eps)
+    val = (torch.sum(target_scaled**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
     val = 10 * torch.log10(val)
 
     return val

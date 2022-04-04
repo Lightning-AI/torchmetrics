@@ -91,7 +91,7 @@ class TweedieDevianceScore(Metric):
         self.add_state("sum_deviance_score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("num_observations", torch.tensor(0), dist_reduce_fx="sum")
 
-    def _update(self, preds: Tensor, targets: Tensor) -> None:  # type: ignore
+    def update(self, preds: Tensor, targets: Tensor) -> None:  # type: ignore
         """Update metric states with predictions and targets.
 
         Args:
@@ -103,5 +103,5 @@ class TweedieDevianceScore(Metric):
         self.sum_deviance_score += sum_deviance_score
         self.num_observations += num_observations
 
-    def _compute(self) -> Tensor:
+    def compute(self) -> Tensor:
         return _tweedie_deviance_score_compute(self.sum_deviance_score, self.num_observations)

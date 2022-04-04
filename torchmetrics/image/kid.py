@@ -42,7 +42,7 @@ def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor
     k_xy_sum = k_xy_sums.sum()
 
     value = (kt_xx_sum + kt_yy_sum) / (m * (m - 1))
-    value -= 2 * k_xy_sum / (m ** 2)
+    value -= 2 * k_xy_sum / (m**2)
     return value
 
 
@@ -226,7 +226,7 @@ class KernelInceptionDistance(Metric):
         self.add_state("real_features", [], dist_reduce_fx=None)
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def _update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
         """Update the state with extracted features.
 
         Args:
@@ -240,7 +240,7 @@ class KernelInceptionDistance(Metric):
         else:
             self.fake_features.append(features)
 
-    def _compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:
         """Calculate KID score based on accumulated extracted features from the two distributions. Returns a tuple
         of mean and standard deviation of KID scores calculated on subsets of extracted features.
 

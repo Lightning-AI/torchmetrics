@@ -11,10 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added new image metric `SpectralAngleMapper` ([#885](https://github.com/PyTorchLightning/metrics/pull/885))
+
+
+- Added `CoverageError` to classification metrics ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+
+
+- Added `LabelRankingAveragePrecision` and `LabelRankingLoss` ([#787](https://github.com/PyTorchLightning/metrics/pull/787))
+
+
 - Added support for `MetricCollection` in `MetricTracker` ([#718](https://github.com/PyTorchLightning/metrics/pull/718))
 
 
+- Added new image metric `ErrorRelativeGlobalDimensionlessSynthesis` ([#894](https://github.com/PyTorchLightning/metrics/pull/894))
+
+
 - Added new image metric `UniversalImageQualityIndex` ([#824](https://github.com/PyTorchLightning/metrics/pull/824))
+
+
+- Added support for 3D image and uniform kernel in `StructuralSimilarityIndexMeasure` ([#818](https://github.com/PyTorchLightning/metrics/pull/818))
 
 
 - Added smart update of `MetricCollection` ([#709](https://github.com/PyTorchLightning/metrics/pull/709))
@@ -29,12 +44,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added negative `ignore_index` for the Accuracy metric ([#362](https://github.com/PyTorchLightning/metrics/pull/362))
 
 
-Added `SpectralDistortionIndex` metric to image domain ([#873](https://github.com/PyTorchLightning/metrics/pull/873))
+- Added `SpectralDistortionIndex` metric to image domain ([#873](https://github.com/PyTorchLightning/metrics/pull/873))
+
+
+- Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
 
 
 ### Changed
 
-- Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853))
+- Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/PyTorchLightning/metrics/pull/853), [#914](https://github.com/PyTorchLightning/metrics/pull/914))
+
+
+- Added normalizer, tokenizer to ROUGE metric ([#838](https://github.com/PyTorchLightning/metrics/pull/838))
+
+
+- Improved shape checking of `permutation_invariant_training` ([#864](https://github.com/PyTorchLightning/metrics/pull/864))
+
+
+- Allowed reduction `None` ([#891](https://github.com/PyTorchLightning/metrics/pull/891))
+
+
+- `MetricTracker.best_metric` will now give a warning when computing on metric that do not have a best ([#913](https://github.com/PyTorchLightning/metrics/pull/913))
 
 
 ### Deprecated
@@ -43,9 +73,6 @@ Added `SpectralDistortionIndex` metric to image domain ([#873](https://github.co
 
 
 - Deprecated passing in `dist_sync_on_step`, `process_group`, `dist_sync_fn` direct argument ([#833](https://github.com/PyTorchLightning/metrics/pull/833))
-
-
-- Moved particular metrics implementation from  `update` and `compute` methods to `_update` and `_compute` ([#840](https://github.com/PyTorchLightning/metrics/pull/840))
 
 
 ### Removed
@@ -106,7 +133,18 @@ Added `SpectralDistortionIndex` metric to image domain ([#873](https://github.co
 - Fixed compatibility of `ClasswiseWrapper` with the `prefix` argument of `MetricCollection` ([#843](https://github.com/PyTorchLightning/metrics/pull/843))
 
 
+- Fixed `BestScore` on GPU ([#912](https://github.com/PyTorchLightning/metrics/pull/912))
+
+
+## [0.7.3] - 2022-03-23
+
+### Fixed
+
 - Fixed unsafe log operation in `TweedieDeviace` for power=1 ([#847](https://github.com/PyTorchLightning/metrics/pull/847))
+- Fixed bug in MAP metric related to either no ground truth or no predictions ([#884](https://github.com/PyTorchLightning/metrics/pull/884))
+- Fixed `ConfusionMatrix`, `AUROC` and `AveragePrecision` on GPU when running in deterministic mode ([#900](https://github.com/PyTorchLightning/metrics/pull/900))
+- Fixed NaN or Inf results returned by `signal_distortion_ratio` ([#899](https://github.com/PyTorchLightning/metrics/pull/899))
+- Fixed memory leak when using `update` method with tensor where `requires_grad=True` ([#902](https://github.com/PyTorchLightning/metrics/pull/902))
 
 
 ## [0.7.2] - 2022-02-10

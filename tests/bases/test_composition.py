@@ -28,10 +28,10 @@ class DummyMetric(Metric):
         self._val_to_return = val_to_return
         self._update_called = True
 
-    def _update(self, *args, **kwargs) -> None:
+    def update(self, *args, **kwargs) -> None:
         self._num_updates += 1
 
-    def _compute(self):
+    def compute(self):
         return tensor(self._val_to_return)
 
 
@@ -319,7 +319,7 @@ def test_metrics_or(second_operand, expected_result):
 def test_metrics_pow(second_operand, expected_result):
     first_metric = DummyMetric(2)
 
-    final_pow = first_metric ** second_operand
+    final_pow = first_metric**second_operand
 
     assert isinstance(final_pow, CompositionalMetric)
 
@@ -384,7 +384,7 @@ def test_metrics_rmod(first_operand, expected_result):
 def test_metrics_rpow(first_operand, expected_result):
     second_operand = DummyMetric(2)
 
-    final_rpow = first_operand ** second_operand
+    final_rpow = first_operand**second_operand
 
     assert isinstance(final_rpow, CompositionalMetric)
     final_rpow.update()

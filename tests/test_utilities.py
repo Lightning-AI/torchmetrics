@@ -16,7 +16,7 @@ import torch
 from torch import tensor
 
 from torchmetrics.utilities import rank_zero_debug, rank_zero_info, rank_zero_warn
-from torchmetrics.utilities.data import _flatten, _flatten_dict, get_num_classes, to_categorical, to_onehot
+from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
 from torchmetrics.utilities.distributed import class_reduce, reduce
 
 
@@ -92,18 +92,6 @@ def test_to_categorical():
     assert torch.allclose(result, expected.to(result.dtype))
 
 
-@pytest.mark.parametrize(
-    ["preds", "target", "num_classes", "expected_num_classes"],
-    [
-        (torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), 10, 10),
-        (torch.rand(32, 10, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
-        (torch.rand(32, 28, 28), torch.randint(10, (32, 28, 28)), None, 10),
-    ],
-)
-def test_get_num_classes(preds, target, num_classes, expected_num_classes):
-    assert get_num_classes(preds, target, num_classes) == expected_num_classes
-
-
 def test_flatten_list():
     """Check that _flatten utility function works as expected."""
     inp = [[1, 2, 3], [4, 5], [6]]
@@ -116,3 +104,25 @@ def test_flatten_dict():
     inp = {"a": {"b": 1, "c": 2}, "d": 3}
     out = _flatten_dict(inp)
     assert out == {"b": 1, "c": 2, "d": 3}
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
+def test_bincount():
+    """test that bincount works in deterministic setting on GPU."""
+    torch.use_deterministic_algorithms(True)
+
+    x = torch.randint(100, size=(100,))
+    # uses custom implementation
+    res1 = _bincount(x, minlength=10)
+
+    torch.use_deterministic_algorithms(False)
+
+    # uses torch.bincount
+    res2 = _bincount(x, minlength=10)
+
+    # explicit call to make sure, that res2 is not by accident using our manual implementation
+    res3 = torch.bincount(x, minlength=10)
+
+    # check for correctness
+    assert torch.allclose(res1, res2)
+    assert torch.allclose(res1, res3)
