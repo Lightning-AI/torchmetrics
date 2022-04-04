@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 <p align="center">
   <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
-  <a href="#implementing-your-own-metric">Implementing a metric</a> •
+  <a href="#implementing-your-own-module-metric">Implementing a metric</a> •
   <a href="#build-in-metrics">Built-in metrics</a> •
   <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
   <a href="#community">Community</a> •

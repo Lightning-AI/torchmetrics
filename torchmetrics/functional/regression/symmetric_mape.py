@@ -68,7 +68,7 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
     r"""
     Computes symmetric mean absolute percentage error (SMAPE_):
 
-    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
+    .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{max(| y_i | + | \hat{y_i} |, \epsilon)}
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
