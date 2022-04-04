@@ -13,11 +13,12 @@
 # limitations under the License.
 from collections import namedtuple
 from typing import Set
-from tests.helpers import seed_all
+
 import numpy as np
 import pytest
 import torch
 
+from tests.helpers import seed_all
 from tests.helpers.testers import MetricTester
 from torchmetrics.detection.panoptic_quality import PanopticQuality
 from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
