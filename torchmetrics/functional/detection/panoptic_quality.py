@@ -78,7 +78,7 @@ def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]):
 
 
 def _isin(arr: torch.tensor, values: List) -> torch.Tensor:
-    """basic implementation of torch.isin to support pre 0.10 version"""
+    """basic implementation of torch.isin to support pre 0.10 version."""
     return (arr[..., None] == arr.new(values)).any(-1)
 
 
