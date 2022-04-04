@@ -72,6 +72,8 @@ class SpectralDistortionIndex(Metric):
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
+        if not isinstance(p, int) or p <= 0:
+            raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
         self.p = p
         allowed_reduction = ["elementwise_mean", "sum", "none"]
         if reduction not in allowed_reduction:
