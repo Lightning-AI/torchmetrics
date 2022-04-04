@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `adaptive_k` for the `RetrievalPrecision` metric ([#910](https://github.com/PyTorchLightning/metrics/pull/910))
 
 
-- Added new detection metric `PanopticQuality` ([#XXX](https://github.com/PyTorchLightning/metrics/pull/XXX))
+- Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
 
 
 ### Changed
