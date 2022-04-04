@@ -70,16 +70,9 @@ def _d_lambda_compute(
         >>> _d_lambda_compute(preds, target)
         tensor(0.0234)
     """
-<<<<<<< HEAD
-    L = preds.shape[1]
-=======
-    if p <= 0:
-        raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
-
     length = preds.shape[1]
     m1 = torch.zeros((length, length))
     m2 = torch.zeros((length, length))
->>>>>>> c8a56e5da962019d98e028af56c2a692a1004c53
 
     for k in range(length):
         for r in range(k, length):
