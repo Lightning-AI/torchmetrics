@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from typing import Set
 from tests.helpers import seed_all
 import numpy as np
 import pytest
@@ -49,7 +50,7 @@ _inputs = Input(
         ]
     ),
 )
-_args = dict(things={0: "person", 1: "cat"}, stuff={6: "sky", 7: "grass"})
+_args = dict(things={0, 1}, stuff={6, 7})
 
 
 def _compare_fn(preds, target) -> dict:
@@ -83,7 +84,7 @@ class TestPanopticQuality(MetricTester):
 
 def test_empty_metric():
     """Test empty metric."""
-    metric = PanopticQuality(things={}, stuff={})
+    metric = PanopticQuality(things=set(), stuff=set())
     metric.compute()
 
 
@@ -91,17 +92,15 @@ def test_error_on_wrong_input():
     """Test class input validation."""
 
     with pytest.raises(ValueError):
-        PanopticQuality(things={"person": 0}, stuff={1: "sky"})
+        PanopticQuality(things=[0], stuff={1})
 
     with pytest.raises(ValueError):
-        PanopticQuality(things={0: "person"}, stuff={"sky": 1})
+        PanopticQuality(things={0}, stuff={"sky"})
 
     with pytest.raises(ValueError):
-        PanopticQuality(things={0: "person"}, stuff={0: "sky"})
+        PanopticQuality(things={0}, stuff={0})
 
-    metric = PanopticQuality(
-        things={0: "person", 1: "dog", 3: "cat"}, stuff={6: "sky", 8: "grass"}, allow_unknown_preds_category=True
-    )
+    metric = PanopticQuality(things={0, 1, 3}, stuff={6, 8}, allow_unknown_preds_category=True)
     valid_image = torch.randint(low=0, high=9, size=(400, 300, 2))
     metric.update(valid_image, valid_image)
 

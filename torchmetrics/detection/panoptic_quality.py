@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List
+from typing import Any, Dict, Set
 
 import torch
-from torch import Tensor
 
 from torchmetrics.functional.detection.panoptic_quality import (
     _get_category_id_to_continous_id,
@@ -47,19 +46,35 @@ class PanopticQuality(Metric):
 
     Args:
         ``things``:
-            Dictionary of ``category_id``: ``category_name`` for countable things.
+            Set of ``category_id`` for countable things.
         ``stuffs``:
-            Dictionary of ``category_id``: ``category_name`` for uncountable stuffs.
+            Set of ``category_id`` for uncountable stuffs.
 
     Raises:
         ValueError:
             If ``things``, ``stuffs`` share the same ``category_id``.
+
+    Example:
+        >>> pred = torch.tensor([[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                      [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                      [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                      [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                      [[0, 0], [7, 0], [7, 0], [7, 0]]])
+        >>> target = torch.tensor([[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                        [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                        [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                        [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                        [[0, 1], [7, 0], [7, 0], [7, 0]]])
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuff = {6, 7})
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuff = {6, 7})
+        >>> panoptic_quality(pred, target)
+        tensor(0.5463, dtype=torch.float64)
     """
 
     def __init__(
         self,
-        things: Dict[int, str],
-        stuff: Dict[int, str],
+        things: Set[int],
+        stuff: Set[int],
         allow_unknown_preds_category: bool = False,
         **kwargs: Dict[str, Any],
     ):

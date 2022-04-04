@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 import torch
 from torch import Tensor
@@ -36,21 +36,17 @@ def _get_color_areas(img: torch.Tensor) -> Dict[Tuple, torch.Tensor]:
     return dict(zip(_totuple(unique_keys), unique_keys_area))
 
 
-def _is_dict_int_str(value) -> bool:
-    """Check wheter value is a `Dict[int, str]`"""
-    return (
-        isinstance(value, dict)
-        and set(map(type, value.keys())).issubset({int})
-        and set(map(type, value.values())).issubset({str})
-    )
+def _is_set_int(value) -> bool:
+    """Check wheter value is a `Set[int]`"""
+    return isinstance(value, Set) and set(map(type, value)).issubset({int})
 
 
-def _validate_categories(things: Dict[int, str], stuff: Dict[int, str]):
-    if not _is_dict_int_str(things):
-        raise ValueError("Expected argument `things` to be of type `Dict[int, str]`")
-    if not _is_dict_int_str(stuff):
-        raise ValueError("Expected argument `stuff` to be of type `Dict[int, str]`")
-    if set(stuff.keys()) & set(things.keys()):
+def _validate_categories(things: Set[int], stuff: Set[int]):
+    if not _is_set_int(things):
+        raise ValueError("Expected argument `things` to be of type `Set[int]`")
+    if not _is_set_int(stuff):
+        raise ValueError("Expected argument `stuff` to be of type `Set[int]`")
+    if stuff & things:
         raise ValueError("Expected arguments `things` and `stuffs` to have distinct keys.")
 
 
@@ -65,16 +61,16 @@ def _validate_inputs(preds: torch.Tensor, target: torch.Tensor) -> None:
         raise ValueError("Expected argument `preds` to have shape [height, width, 2]")
 
 
-def _get_void_color(things: Dict[int, str], stuff: Dict[int, str]):
+def _get_void_color(things: Set[int], stuff: Set[int]):
     unused_category_id = 1 + max([0] + list(things) + list(stuff))
     return (unused_category_id, 0)
 
 
-def _get_category_id_to_continous_id(things: Dict[int, str], stuff: Dict[int, str]):
+def _get_category_id_to_continous_id(things: Set[int], stuff: Set[int]):
     # things metrics are stored with a continous id in [0, len(things)[,
-    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things.keys())}
+    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
     # stuff metrics are stored with a continous id in [len(things), len(things) + len(stuffs)[
-    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuff.keys())}
+    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuff)}
     cat_id_to_continuous_id = {}
     cat_id_to_continuous_id.update(thing_id_to_continuous_id)
     cat_id_to_continuous_id.update(stuff_id_to_continuous_id)
@@ -87,16 +83,16 @@ def _isin(arr: torch.tensor, values: List) -> torch.Tensor:
 
 
 def _prepocess_image(
-    things: Dict[int, str],
-    stuff: Dict[int, str],
+    things: Set[int],
+    stuff: Set[int],
     img: torch.Tensor,
     void_color: Tuple[int, int],
     allow_unknown_category: bool,
 ) -> torch.Tensor:
     # flatten the height*width dimensions
     img = torch.flatten(img, 0, -2)
-    stuff_pixels = _isin(img[:, 0], list(stuff.keys()))
-    things_pixels = _isin(img[:, 0], list(things.keys()))
+    stuff_pixels = _isin(img[:, 0], list(stuff))
+    things_pixels = _isin(img[:, 0], list(things))
     # reset instance ids of stuffs
     img[stuff_pixels, 1] = 0
     if not allow_unknown_category and not torch.all(things_pixels | stuff_pixels):
@@ -118,10 +114,10 @@ def _panoptic_quality_update(
     """
     device = flatten_preds.device
     n_categories = len(cat_id_to_continuous_id)
-    iou_sum = torch.zeros(n_categories, dtype=torch.double, device = device)
-    true_positives = torch.zeros(n_categories, dtype=torch.int, device = device)
-    false_positives = torch.zeros(n_categories, dtype=torch.int, device = device)
-    false_negatives = torch.zeros(n_categories, dtype=torch.int, device = device)
+    iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
+    true_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
 
     # calculate the area of each prediction, ground truth and pairwise intersection
     pred_areas = _get_color_areas(flatten_preds)
@@ -179,8 +175,8 @@ def _panoptic_quality_update(
 
 
 def _panoptic_quality_compute(
-    things: Dict[int, str],
-    stuff: Dict[int, str],
+    things: Set[int],
+    stuff: Set[int],
     iou_sum: torch.Tensor,
     true_positives: torch.Tensor,
     false_positives: torch.Tensor,
@@ -222,8 +218,8 @@ def _panoptic_quality_compute(
 def panoptic_quality(
     preds: torch.Tensor,
     target: torch.Tensor,
-    things: Dict[int, str],
-    stuff: Dict[int, str],
+    things: Set[int],
+    stuff: Set[int],
     allow_unknown_preds_category: bool = False,
 ) -> Tensor:
     _validate_categories(things, stuff)
