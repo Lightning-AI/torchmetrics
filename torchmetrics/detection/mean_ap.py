@@ -147,7 +147,7 @@ class MeanAveragePrecision(Metric):
     .. note::
         This metric is following the mAP implementation of
         `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
-        , a standard implementation for the mAP metric for object detection.
+        a standard implementation for the mAP metric for object detection.
 
     .. note::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed (with corresponding
