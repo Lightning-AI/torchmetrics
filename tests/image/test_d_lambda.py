@@ -108,7 +108,7 @@ class TestD_Lambda(MetricTester):
 def test_d_lambda_invalid_inputs(preds, target, p):
     preds_t = torch.rand(preds)
     target_t = torch.rand(target, dtype=torch.float64)
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         spectral_distortion_index(preds_t, target_t, p)
 
     target_t = torch.rand(target)
