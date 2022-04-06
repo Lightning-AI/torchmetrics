@@ -111,6 +111,7 @@ def test_d_lambda_invalid_inputs(preds, target, p):
     with pytest.raises(ValueError):
         spectral_distortion_index(preds_t, target_t, p)
 
+
 def test_d_lambda_invalid_type():
     preds_t = torch.rand((1, 1, 16, 16))
     target_t = torch.rand((1, 1, 16, 16), dtype=torch.float64)
