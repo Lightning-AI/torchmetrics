@@ -12,7 +12,7 @@ n  # Copyright The PyTorch Lightning team.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import torch
 from torch import IntTensor, Tensor
