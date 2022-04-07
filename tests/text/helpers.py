@@ -449,11 +449,10 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
         def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
             try:
                 return function(*args, **kwargs)
-            except OSError as e:
-                if _error_msg_start in str(e):
-                    pytest.skip(reason)
-                else:
-                    raise e
+            except OSError as ex:
+                if _error_msg_start not in str(ex):
+                    raise ex
+                pytest.skip(reason)
 
         return run_test
 
