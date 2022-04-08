@@ -13,8 +13,8 @@
 # limitations under the License.
 import pickle
 import sys
-from functools import partial
-from typing import Any, Callable, Sequence, Union
+from functools import partial, wraps
+from typing import Any, Callable, Optional, Sequence, Union
 
 import pytest
 import torch
@@ -435,3 +435,25 @@ class TextTester(MetricTester):
         if metric.is_differentiable:
             # check for numerical correctness
             assert torch.autograd.gradcheck(partial(metric_functional, **metric_args), (preds[0], targets[0]))
+
+
+def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
+    """Wrapper which handles HF-related tests if they fail due to connection issues.
+
+    The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
+    """
+    _error_msg_start = "We couldn't connect to"
+
+    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
+        @wraps(function)
+        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
+            try:
+                return function(*args, **kwargs)
+            except OSError as ex:
+                if _error_msg_start not in str(ex):
+                    raise ex
+                pytest.skip(reason)
+
+        return run_test
+
+    return test_decorator
